@@ -96,7 +96,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
             theDataset.setAuthority(ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound));
         }
         if (theDataset.getStorageIdentifier() == null) {
-        	String driverId = theDataset.getDataverseContext().getEffectiveStorageDriverId();
+        	String driverId = theDataset.getEffectiveStorageDriverId();
         	theDataset.setStorageIdentifier(driverId  + "://" + theDataset.getAuthorityForFileStorage() + "/" + theDataset.getIdentifierForFileStorage());
         }
         if (theDataset.getIdentifier()==null) {

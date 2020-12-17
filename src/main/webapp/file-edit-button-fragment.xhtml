@@ -9,11 +9,34 @@
     xmlns:pt="http://java.sun.com/jsf/passthrough"
     xmlns:cc="http://java.sun.com/jsf/composite"
     xmlns:o="http://omnifaces.org/ui"
+    xmlns:of="http://omnifaces.org/functions"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+    
+    <ui:remove>
+    <!--
+    If you include this fragment, you must also include file-edit-popup-fragment.xhtml
+    
+    This can be used for a single, specific file (passing "fileMetadata") or a group of selected files.
+    
+    Parameters:
+    dataserVersion - the datasetversion object to associate with this view
+    fileMetadata - for single file, the fileMetadata object of that file
+    fileMetadataForAction - used by DatasetPage popups to identify single file (also clears for selected file)
+    isDraftReplacementFile - for single file, if the file is a draft and already replacing a past file 
+    configureTools - for single file, list of configureTools for the file
+    bean - the named value of the backing bean for the below method(s), also used by isFilePg param
+    unrestrictFileAction - name of the method on the above bean to call for unrestrict (method must take a boolean)    
+    editFileAction - for selected files, name of method on the above bean to send for edit metadata
+    refreshTagsPopoupAction - for selected files, name of method on the above bean to refresh tags popup
+    -->            
+    </ui:remove>
+    
+    <ui:param name="isFilePg" value="#{of:isInstance('edu.harvard.iq.dataverse.FilePage', bean)}"/>
+
 
     <!-- Edit Options -->
     <li>
-        <p:commandLink onclick="if (!(#{fileMetadata!=null} || testFilesSelectedForEditMetadata()))
+        <p:commandLink onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
                     return false;"                        
                        oncomplete="if(#{fileMetadata!=null}) window.location.assign('/editdatafiles.xhtml?selectedFileIds=#{fileMetadata.dataFile.id}&#38;datasetId=#{fileMetadata.datasetVersion.dataset.id}#{isFilePg?'&#38;mode=SINGLE':''}&#38;version=#{fileMetadata.datasetVersion.version}')"
                        action="#{bean[editFileAction]()}">
@@ -21,24 +44,26 @@
         </p:commandLink>
     </li>
 
-    <ui:fragment rendered="#{!settingsWrapper.publicInstall or !hasPackageFile}">
+    <ui:fragment rendered="#{!settingsWrapper.publicInstall}">
         <ui:fragment rendered="#{fileMetadata == null or !fileMetadata.restricted}">
             <li>
-                <p:commandLink  update="@([id$=accessPopup])" 
-                                onclick="if (!(#{fileMetadata!=null} || testFilesSelectedForRestriction()))
+                <p:commandLink  onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
                                             return false;" 
-                                oncomplete="PF('accessPopup').show()">
+                                update="@([id$=accessPopup])"            
+                                oncomplete="PF('accessPopup').show();bind_bsui_components();">
                     <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
-                    <h:outputText value="#{bundle['file.restrict']}"/>
+                    <f:setPropertyActionListener target="#{bean.termsOfAccess}" value="#{datasetVersion.termsOfUseAndAccess.termsOfAccess}" />
+                    <f:setPropertyActionListener target="#{bean.fileAccessRequest}" value="#{datasetVersion.termsOfUseAndAccess.fileAccessRequest}" />                     
+                    <h:outputText value="#{bundle['file.restrict']}"/>                                                                
                 </p:commandLink>
             </li>
         </ui:fragment>
         <ui:fragment rendered="#{fileMetadata == null or fileMetadata.restricted}">
             <li>
                 <p:commandLink  
-                    onclick="if (!(#{fileMetadata!=null} || testFilesSelectedForUnRestriction()))
+                    onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
                                 return false;" 
-                    action="#{bean[restrictFileAction](false)}">
+                    action="#{bean[unrestrictFileAction](false)}">
                     <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
                     <h:outputText value="#{bundle['file.unrestrict']}"/>
                 </p:commandLink>
@@ -46,8 +71,8 @@
         </ui:fragment>   
     </ui:fragment>
 
-    <!-- TO-DO ADD REPLACE FOR SINGLE FILE-->      
-    <ui:fragment rendered="#{isFilePg and !hasPackageFile}">
+    <!-- TO-DO #7342 - ADD REPLACE FOR SINGLE FILE-->      
+    <ui:fragment rendered="#{isFilePg}">
         <ui:fragment rendered="#{fileMetadata.dataFile.released and !isDraftReplacementFile}">                                        
             <li><!-- start: replace file link -->
                 <h:outputLink value="/editdatafiles.xhtml?mode=SINGLE_REPLACE&#38;datasetId=#{fileMetadata.datasetVersion.dataset.id}&#38;fid=#{fileMetadata.dataFile.id}&#38;version=#{fileMetadata.datasetVersion.version}">
@@ -64,11 +89,11 @@
         </ui:fragment>
     </ui:fragment>
 
-    <!-- TO-DO #3488 ADD FILE TAGS FOR FILE PG AND SINGLE FILE-->    
+    <!-- TO-DO #3488 - ADD FILE TAGS FOR FILE PG AND SINGLE FILE-->    
     <ui:fragment rendered="#{fileMetadata==null}">    
         <li>
             <p:commandLink      update="@([id$=fileTagsPopup])" 
-                                onclick="if (!(#{fileMetadata!=null} || testFilesSelectedForTags()))
+                                onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
                                             return false;" 
                                 oncomplete="PF('fileTagsPopup').show();"
                                 action="#{bean[refreshTagsPopoupAction]()}">            
@@ -77,7 +102,7 @@
         </li>  
     </ui:fragment> 
 
-    <!-- TO-DO ADD PROVENANCE FOR SINGLE FILE-->    
+    <!-- TO-DO #7342 - ADD PROVENANCE FOR SINGLE FILE-->    
     <ui:fragment rendered="#{isFilePg and systemConfig.provCollectionEnabled}">
         <li>
             <p:commandLink
@@ -89,18 +114,15 @@
         </li> 
     </ui:fragment>     
 
-
-    <ui:fragment rendered="#{!fileMetadata.dataFile.released or hasPackageFile}"> 
-        <li>
-            <p:commandLink title="#{bundle['file.delete']}" update="@([id$=deleteFileConfirm])" 
-                           onclick="if (!(#{fileMetadata!=null} || testFilesSelectedForDelete()))
-                                       return false;" 
-                           oncomplete="PF('deleteFileConfirmation').show();">
-                <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />                
-                <h:outputText value= "#{bundle['file.delete']}"/>
-            </p:commandLink>
-        </li>
-    </ui:fragment>
+    <li>
+        <p:commandLink title="#{bundle['file.delete']}" update="@([id$=deleteFileConfirm])" 
+                       onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
+                                   return false;" 
+                       oncomplete="PF('deleteFileConfirmation').show();">
+            <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />                
+            <h:outputText value= "#{bundle['file.delete']}"/>
+        </p:commandLink>
+    </li>
 
 
     <!---Modular configure-->

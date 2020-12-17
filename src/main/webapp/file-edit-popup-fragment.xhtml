@@ -3,11 +3,22 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:p="http://primefaces.org/ui">
+    
+    <ui:remove>
+    <!--       
+    Parameters:
+    dataserVersion - the datasetversion object to associate with this view
+    fileMetadataForAction - used by DatasetPage popups to identify single file (also clears for selected files)
+    bean - the named value of the backing bean for the below method(s)
+    restrictFileAction - name of the method on the above bean to call for restrict (method must take a boolean)    
+    deleteFileAction - name of method on the above bean to delete files
+    -->            
+    </ui:remove>    
 
-    <p:dialog id="accessPopup" styleClass="smallPopUp" header="#{bundle['file.restrictions']}" widgetVar="accessPopup" modal="true">
+    <p:dialog id="accessPopup" styleClass="smallPopUp" header="#{bundle['dataset.access.accessHeader']}" widgetVar="accessPopup" modal="true">
         <p:focus context="accessPopup"/>
         <p class="help-block">
-            #{bundle['file.restrictions.description']}
+            #{bundle['dataset.access.description']}
         </p>
         <div class="form-horizontal">
             <div class="form-group">
@@ -17,7 +28,7 @@
                           data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.title']}"></span>
                 </label>
                 <div class="col-sm-9">
-                    <p:inputTextarea id="termsAccessInput" value="#{datasetVersion.termsOfUseAndAccess.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" widgetVar="inputtoa"/>
+                    <p:inputTextarea id="termsAccessInput" value="#{bean.termsOfAccess}" autoResize="false" rows="5" styleClass="form-control" widgetVar="inputtoa"/>
                 </div>
             </div>
             <div class="form-group">
@@ -28,18 +39,18 @@
                 </label>
                 <div class="col-sm-9">
                     <p:selectBooleanCheckbox id="requestAccess2" itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.enableBtn']}"
-                                             value="#{datasetVersion.termsOfUseAndAccess.fileAccessRequest}" widgetVar="inputfar"/>
+                                             value="#{bean.fileAccessRequest}" widgetVar="inputfar"/>
                 </div>
             </div>
         </div>
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}1" onclick="PF('accessPopup').hide();" update=":messagePanel" 
-                             rendered="#{fileMetadataForAction != null}" action="#{bean[restrictFileAction](true)}"/>
-            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}2" onclick="PF('accessPopup').hide();" update=":messagePanel" 
-                             rendered="#{fileMetadataForAction == null}"  action="#{bean[restrictSelectedFileAction](true)}"/>
+            <p:commandButton styleClass="btn btn-default" value="#{bundle.saveChanges}" 
+                             onclick="PF('accessPopup').hide();" 
+                             action="#{bean[restrictFileAction](true)}"
+                             update=":messagePanel" />
             <button class="btn btn-link" onclick="PF('accessPopup').hide();" type="button">
                 #{bundle.cancel}
-            </button>
+            </button>               
         </div>
     </p:dialog>  
 
@@ -49,10 +60,8 @@
             <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
         </ui:fragment>
         <div class="button-block">
-            <p:commandButton styleClass="btn btn-default" value="#{bundle['file.delete']}1" onclick="PF('deleteFileConfirmation').hide()" 
-                             rendered="#{fileMetadataForAction != null}" action="#{bean[deleteFileAction]}"/>
-            <p:commandButton styleClass="btn btn-default" value="#{bundle['file.delete']}2" onclick="PF('deleteFileConfirmation').hide()" 
-                             rendered="#{fileMetadataForAction == null}"  action="#{bean[deleteSelectedFileAction]}"/>
+            <p:commandButton styleClass="btn btn-default" value="#{bundle['file.delete']}" onclick="PF('deleteFileConfirmation').hide()" 
+                             action="#{bean[deleteFileAction]}"/>
             <button class="btn btn-link" onclick="PF('deleteFileConfirmation').hide()" type="button">
                 #{bundle.cancel}
             </button>
@@ -65,51 +74,15 @@
 
    
 
-    <!-- Simple Popups For Select Files-->
-    <p:dialog id="selectFilesForRestrict" styleClass="smallPopUp"
-              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForRestrict" modal="true">
-        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForRestrict']}</p>
+    <!-- Simple Popup For Select Files-->
+    <p:dialog id="selectFiles" styleClass="smallPopUp"
+              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFiles" modal="true">
+        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFiles']}</p>
         <div class="button-block">
-            <button class="btn btn-default" onclick="PF('selectFilesForRestrict').hide();PF('blockDatasetForm').hide();" type="button">
+            <button class="btn btn-default" onclick="PF('selectFiles').hide();" type="button">
                 #{bundle.close}
             </button>
         </div>
-    </p:dialog>
-    <p:dialog id="selectFilesForUnRestrict" styleClass="smallPopUp"
-              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForUnRestrict" modal="true">
-        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForUnRestrict']}</p>
-        <div class="button-block">
-            <button class="btn btn-default" onclick="PF('selectFilesForUnRestrict').hide();PF('blockDatasetForm').hide();" type="button">
-                #{bundle.close}
-            </button>
-        </div>
-    </p:dialog>    
-    <p:dialog id="selectFilesForDelete" styleClass="smallPopUp"
-              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDelete" modal="true">
-        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForDelete']}</p>
-        <div class="button-block">
-            <button class="btn btn-default" onclick="PF('selectFilesForDelete').hide();PF('blockDatasetForm').hide();" type="button">
-                #{bundle.close}
-            </button>
-        </div>
-    </p:dialog>
-    <p:dialog id="selectFilesForEditMetadata" styleClass="smallPopUp"
-              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForEditMetadata" modal="true">
-        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForMetadataEdit']}</p>
-        <div class="button-block">
-            <button class="btn btn-default" onclick="PF('selectFilesForEditMetadata').hide();PF('blockDatasetForm').hide();" type="button">
-                #{bundle.close}
-            </button>
-        </div>
-    </p:dialog>
-    <p:dialog id="selectFilesForEditTags" styleClass="smallPopUp"
-              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForEditTags" modal="true">
-        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForMetadataEdit']}</p>
-        <div class="button-block">
-            <button class="btn btn-default" onclick="PF('selectFilesForEditTags').hide();PF('blockDatasetForm').hide();" type="button">
-                #{bundle.close}
-            </button>
-        </div>
-    </p:dialog>    
+    </p:dialog>       
 
 </ui:composition>

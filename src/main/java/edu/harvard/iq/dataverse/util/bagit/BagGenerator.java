@@ -756,8 +756,10 @@ public class BagGenerator {
                         info.append(CRLF);
 
                     } else {
-                        info.append(((JsonObject) person).get(contactNameTerm.getLabel()).getAsString());
-                        info.append(CRLF);
+                        if(contactNameTerm != null) {
+                          info.append(((JsonObject) person).get(contactNameTerm.getLabel()).getAsString());
+                          info.append(CRLF);
+                        }
                         if ((contactEmailTerm!=null) &&((JsonObject) person).has(contactEmailTerm.getLabel())) {
                             info.append("Contact-Email: ");
                             info.append(((JsonObject) person).get(contactEmailTerm.getLabel()).getAsString());
@@ -774,9 +776,10 @@ public class BagGenerator {
 
                 } else {
                     JsonObject person = contacts.getAsJsonObject();
-
-                    info.append(person.get(contactNameTerm.getLabel()).getAsString());
-                    info.append(CRLF);
+                    if(contactNameTerm != null) {
+                      info.append(person.get(contactNameTerm.getLabel()).getAsString());
+                      info.append(CRLF);
+                    }
                     if ((contactEmailTerm!=null) && (person.has(contactEmailTerm.getLabel()))) {
                         info.append("Contact-Email: ");
                         info.append(person.get(contactEmailTerm.getLabel()).getAsString());

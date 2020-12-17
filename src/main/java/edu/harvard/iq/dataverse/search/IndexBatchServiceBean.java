@@ -1,14 +1,15 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
@@ -44,11 +45,71 @@ public class IndexBatchServiceBean {
     DvObjectServiceBean dvObjectService;
     @EJB
     SystemConfig systemConfig;
+    
+    @Asynchronous
+    public Future<JsonObjectBuilder> indexStatus() {
+        JsonObjectBuilder response = Json.createObjectBuilder();
+        logger.info("Beginning indexStatus()");
+        JsonObject contentInDatabaseButStaleInOrMissingFromSolr = getContentInDatabaseButStaleInOrMissingFromSolr().build();
+        JsonObject contentInSolrButNotDatabase = null;
+        JsonObject permissionsInSolrButNotDatabase = null;
+        try {
+            contentInSolrButNotDatabase = getContentInSolrButNotDatabase().build();
+            permissionsInSolrButNotDatabase = getPermissionsInSolrButNotDatabase().build();
+          
+        } catch (SearchException ex) {
+            String msg = "Can not determine index status. " + ex.getLocalizedMessage() + ". Is Solr down? Exception: " + ex.getCause().getLocalizedMessage();
+            logger.info(msg);
+            response.add("SearchException ", msg);
+            return new AsyncResult<>(response);
+        }
+           
+        JsonObject permissionsInDatabaseButStaleInOrMissingFromSolr = getPermissionsInDatabaseButStaleInOrMissingFromSolr().build();
+    
+        JsonObjectBuilder data = Json.createObjectBuilder()
+                .add("contentInDatabaseButStaleInOrMissingFromIndex", contentInDatabaseButStaleInOrMissingFromSolr)
+                .add("contentInIndexButNotDatabase", contentInSolrButNotDatabase)
+                .add("permissionsInDatabaseButStaleInOrMissingFromIndex", permissionsInDatabaseButStaleInOrMissingFromSolr)
+                .add("permissionsInIndexButNotDatabase", permissionsInSolrButNotDatabase);
 
+        logger.log(Level.INFO, "contentInDatabaseButStaleInOrMissingFromIndex: {0}", contentInDatabaseButStaleInOrMissingFromSolr);
+        logger.log(Level.INFO, "contentInIndexButNotDatabase: {0}", contentInSolrButNotDatabase);
+        logger.log(Level.INFO, "permissionsInDatabaseButStaleInOrMissingFromIndex: {0}", permissionsInDatabaseButStaleInOrMissingFromSolr);
+        logger.log(Level.INFO, "permissionsInIndexButNotDatabase: {0}", permissionsInSolrButNotDatabase);    
+      
+        return new AsyncResult<>(data);
+    }
+    @Asynchronous
+    public Future<JsonObjectBuilder> clearOrphans() {
+        JsonObjectBuilder response = Json.createObjectBuilder();
+        List<String> solrIds = new ArrayList<>();
+        logger.info("Beginning clearOrphans() to check for orphan Solr documents.");
+        try {     
+            logger.info("checking for orphans type dataverse");
+            solrIds.addAll(indexService.findDataversesInSolrOnly());
+            logger.info("checking for orphans type dataset");
+            solrIds.addAll(indexService.findDatasetsInSolrOnly());
+            logger.info("checking for orphans file");
+            solrIds.addAll(indexService.findFilesInSolrOnly());
+            logger.info("checking for orphan permissions");
+            solrIds.addAll(indexService.findPermissionsInSolrOnly());
+        } catch (SearchException e) {
+            logger.info("SearchException in clearOrphans: " + e.getMessage());
+            response.add("response from clearOrphans","SearchException: " + e.getMessage() );
+        } 
+        logger.info("found " + solrIds.size()+ " orphan documents");
+        IndexResponse resultOfSolrDeletionAttempt = solrIndexService.deleteMultipleSolrIds(solrIds);
+        logger.info(resultOfSolrDeletionAttempt.getMessage());
+        response.add("resultOfSolrDeletionAttempt", resultOfSolrDeletionAttempt.getMessage());
+        
+        return new AsyncResult<>(response);
+    }
+
+    
     @Asynchronous
     public Future<JsonObjectBuilder> indexAllOrSubset(long numPartitions, long partitionId, boolean skipIndexed, boolean previewOnly) {
         JsonObjectBuilder response = Json.createObjectBuilder();
-        Future<String> responseFromIndexAllOrSubset = indexAllOrSubset(numPartitions, partitionId, skipIndexed);
+        indexAllOrSubset(numPartitions, partitionId, skipIndexed);
         String status = "indexAllOrSubset has begun";
         response.add("responseFromIndexAllOrSubset", status);
         return new AsyncResult<>(response);
@@ -221,5 +282,85 @@ public class IndexBatchServiceBean {
         }
         logger.info(dataverseIndexCount + " dataverses and " + datasetIndexCount + " datasets indexed. Total time to index " + (end - start) + ".");
     }
+      private JsonObjectBuilder getContentInDatabaseButStaleInOrMissingFromSolr() {
+        logger.info("checking for stale or missing dataverses");
+        List<Long> stateOrMissingDataverses = indexService.findStaleOrMissingDataverses();
+        logger.info("checking for stale or missing datasets");  
+        List<Long> staleOrMissingDatasets = indexService.findStaleOrMissingDatasets();
+        JsonArrayBuilder jsonStaleOrMissingDataverses = Json.createArrayBuilder();
+        for (Long id : stateOrMissingDataverses) {
+            jsonStaleOrMissingDataverses.add(id);
+        }
+        JsonArrayBuilder datasetsInDatabaseButNotSolr = Json.createArrayBuilder();
+        for (Long id : staleOrMissingDatasets) {
+            datasetsInDatabaseButNotSolr.add(id);
+        }
+        JsonObjectBuilder contentInDatabaseButStaleInOrMissingFromSolr = Json.createObjectBuilder()
+                /**
+                 * @todo What about files? Currently files are always indexed
+                 * along with their parent dataset
+                 */
+                .add("dataverses", jsonStaleOrMissingDataverses.build())
+                .add("datasets", datasetsInDatabaseButNotSolr.build());
+        logger.info("completed check for stale or missing content.");
+        return contentInDatabaseButStaleInOrMissingFromSolr;
+    }
+
+    private JsonObjectBuilder getContentInSolrButNotDatabase() throws SearchException {
+        logger.info("checking for dataverses in Solr only");
+        List<String> dataversesInSolrOnly = indexService.findDataversesInSolrOnly();
+        logger.info("checking for datasets in Solr only");
+        List<String> datasetsInSolrOnly = indexService.findDatasetsInSolrOnly();
+        logger.info("checking for files in Solr only");
+        List<String> filesInSolrOnly = indexService.findFilesInSolrOnly();
+        JsonArrayBuilder dataversesInSolrButNotDatabase = Json.createArrayBuilder();
+        logger.info("completed check for content in Solr but not database");
+        for (String dataverseId : dataversesInSolrOnly) {
+            dataversesInSolrButNotDatabase.add(dataverseId);
+        }
+        JsonArrayBuilder datasetsInSolrButNotDatabase = Json.createArrayBuilder();
+        for (String datasetId : datasetsInSolrOnly) {
+            datasetsInSolrButNotDatabase.add(datasetId);
+        }
+        JsonArrayBuilder filesInSolrButNotDatabase = Json.createArrayBuilder();
+        for (String fileId : filesInSolrOnly) {
+            filesInSolrButNotDatabase.add(fileId);
+        }
+        JsonObjectBuilder contentInSolrButNotDatabase = Json.createObjectBuilder()
+                /**
+                 * @todo What about files? Currently files are always indexed
+                 * along with their parent dataset
+                 */
+                .add("dataverses", dataversesInSolrButNotDatabase.build())
+                .add("datasets", datasetsInSolrButNotDatabase.build())
+                .add("files", filesInSolrButNotDatabase.build());
+        
+        return contentInSolrButNotDatabase;
+    }
+
+    private JsonObjectBuilder getPermissionsInDatabaseButStaleInOrMissingFromSolr() {
+        List<Long> staleOrMissingPermissions;
+        logger.info("checking for permissions in database but stale or missing from Solr");
+        staleOrMissingPermissions = solrIndexService.findPermissionsInDatabaseButStaleInOrMissingFromSolr();
+        logger.info("completed checking for permissions in database but stale or missing from Solr");
+        JsonArrayBuilder stalePermissionList = Json.createArrayBuilder();
+        for (Long dvObjectId : staleOrMissingPermissions) {
+            stalePermissionList.add(dvObjectId);
+        }
+        return Json.createObjectBuilder()
+                .add("dvobjects", stalePermissionList.build());
+    }
+    
+    private JsonObjectBuilder getPermissionsInSolrButNotDatabase() throws SearchException {
+        
+        List<String> staleOrMissingPermissions = indexService.findPermissionsInSolrOnly();
+        JsonArrayBuilder stalePermissionList = Json.createArrayBuilder();
+        for (String id : staleOrMissingPermissions) {
+            stalePermissionList.add(id);
+        }
+        return Json.createObjectBuilder()
+                .add("permissions", stalePermissionList.build());
+    }
+
 
 }

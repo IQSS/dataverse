@@ -4,12 +4,15 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.PermissionServiceBean.StaticPermissionQuery;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.SessionUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -43,12 +46,42 @@ public class DataverseSession implements Serializable{
     @Inject
     SettingsWrapper settingsWrapper;
     
+    @Inject
+    DataverseHeaderFragment headerFragment;
+    
     @EJB
     SystemConfig systemConfig;
+    
+    @EJB
+    BannerMessageServiceBean bannerMessageService;
     
     private static final Logger logger = Logger.getLogger(DataverseSession.class.getCanonicalName());
     
     private boolean statusDismissed = false;
+    
+    private List<BannerMessage> dismissedMessages = new ArrayList<>();
+
+    public List<BannerMessage> getDismissedMessages() {
+        return dismissedMessages;
+    }
+
+    public void setDismissedMessages(List<BannerMessage> dismissedMessages) {
+        this.dismissedMessages = dismissedMessages;
+    }
+
+    /**
+     * If debug is set to true, some pages show extra debugging information to
+     * superusers.
+     *
+     * The way to set the Boolean to true is to pass debug=true as a query
+     * parameter. The Boolean will remain true (even if nothing is passed to it)
+     * until debug=false is passed.
+     *
+     * Because a boolean is false by default when it comes from a viewParam we
+     * use a Boolean instead. That way, if the debug viewParam is null, we can
+     * leave the state alone (see setDebug()).
+     */
+    private Boolean debug;
     
     public User getUser() {
         if ( user == null ) {
@@ -82,7 +115,22 @@ public class DataverseSession implements Serializable{
     public void setStatusDismissed(boolean status) {
         statusDismissed = status; //MAD: Set to true to enable code!
     }
-    
+
+    public Boolean getDebug() {
+        // Only superusers get extra debugging information.
+        if (!getUser().isSuperuser()) {
+            return false;
+        }
+        return debug;
+    }
+
+    public void setDebug(Boolean debug) {
+        // Leave the debug state alone if nothing is passed.
+        if (debug != null) {
+            this.debug = debug;
+        }
+    }
+
     public StaticPermissionQuery on( Dataverse d ) {
             return permissionsService.userOn(user, d);
     }
@@ -146,6 +194,19 @@ public class DataverseSession implements Serializable{
                 && !localeCode.equals(FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage())) {
             FacesContext.getCurrentInstance().getViewRoot().setLocale(new Locale(localeCode));
         } 
+    }
+    
+    public void dismissMessage(BannerMessage message){
+               
+        if (message.isDismissibleByUser()){
+            if (user.isAuthenticated()){
+                bannerMessageService.dismissMessageByUser(message, (AuthenticatedUser) user);
+            }
+
+        } else {
+            dismissedMessages.add(message);
+        }
+        
     }
     
     public void configureSessionTimeout() {

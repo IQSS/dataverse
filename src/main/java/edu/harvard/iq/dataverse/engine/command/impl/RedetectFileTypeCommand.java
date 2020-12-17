@@ -53,11 +53,11 @@ public class RedetectFileTypeCommand extends AbstractCommand<DataFile> {
             } else {
                 // Need to create a temporary local file: 
 
-                ReadableByteChannel targetFileChannel = (ReadableByteChannel) storageIO.getReadChannel();
                 tempFile = File.createTempFile("tempFileTypeCheck", ".tmp");
-                FileChannel tempFileChannel = new FileOutputStream(tempFile).getChannel();
-                tempFileChannel.transferFrom(targetFileChannel, 0, storageIO.getSize());
-
+                try (ReadableByteChannel targetFileChannel = (ReadableByteChannel) storageIO.getReadChannel();
+                		FileChannel tempFileChannel = new FileOutputStream(tempFile).getChannel();) {
+                    tempFileChannel.transferFrom(targetFileChannel, 0, storageIO.getSize());
+                }
                 localFile = tempFile;
             }
 

@@ -127,6 +127,13 @@ public class DataverseServiceBean implements java.io.Serializable {
     public List<Dataverse> findAll() {
         return em.createNamedQuery("Dataverse.findAll").getResultList();
     }
+    
+    public List<Long> findIdStale() {
+        return em.createNamedQuery("Dataverse.findIdStale").getResultList();
+    }
+    public List<Long> findIdStalePermission() {
+        return em.createNamedQuery("Dataverse.findIdStalePermission").getResultList();
+    }
 
     /**
      * @param numPartitions The number of partitions you intend to split the
@@ -461,7 +468,7 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
 
     public List<Dataset> findDatasetsThisIdHasLinkedTo(long dataverseId) {
-        return datasetLinkingService.findDatasetsThisDataverseIdHasLinkedTo(dataverseId);
+        return datasetLinkingService.findLinkedDatasets(dataverseId);
     }
 
     public List<Dataverse> findDataversesThatLinkToThisDatasetId(long datasetId) {

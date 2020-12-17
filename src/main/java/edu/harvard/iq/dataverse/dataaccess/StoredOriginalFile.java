@@ -26,6 +26,8 @@ import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.logging.Logger;
+
+import org.apache.tika.io.IOUtils;
 /**
  *
  * @author Leonid Andreev
@@ -56,17 +58,18 @@ public class StoredOriginalFile {
 
         long storedOriginalSize; 
         InputStreamIO inputStreamIO;
-        
+        Channel storedOriginalChannel = null;
         try {
             storageIO.open();
-            Channel storedOriginalChannel = storageIO.openAuxChannel(SAVED_ORIGINAL_FILENAME_EXTENSION);
+            storedOriginalChannel = storageIO.openAuxChannel(SAVED_ORIGINAL_FILENAME_EXTENSION);
             storedOriginalSize = dataFile.getDataTable().getOriginalFileSize() != null ? 
                     dataFile.getDataTable().getOriginalFileSize() : 
                     storageIO.getAuxObjectSize(SAVED_ORIGINAL_FILENAME_EXTENSION);
             inputStreamIO = new InputStreamIO(Channels.newInputStream((ReadableByteChannel) storedOriginalChannel), storedOriginalSize);
             logger.fine("Opened stored original file as Aux "+SAVED_ORIGINAL_FILENAME_EXTENSION);
         } catch (IOException ioEx) {
-            // The original file not saved, or could not be opened.
+        	IOUtils.closeQuietly(storedOriginalChannel);
+        	// The original file not saved, or could not be opened.
             logger.fine("Failed to open stored original file as Aux "+SAVED_ORIGINAL_FILENAME_EXTENSION+"!");
             return null;
         }

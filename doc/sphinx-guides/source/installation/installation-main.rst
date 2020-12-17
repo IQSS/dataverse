@@ -72,9 +72,11 @@ This allows the installer to be run in non-interactive mode (with ``./install -y
 
 All the Payara configuration tasks performed by the installer are isolated in the shell script ``dvinstall/as-setup.sh`` (as ``asadmin`` commands). 
 
-**IMPORTANT:** As a security measure, the ``as-setup.sh`` script stores passwords as "aliases" rather than plaintext. If you change your database password, for example, you will need to update the alias with ``asadmin update-password-alias db_password_alias``, for example. Here is a list of the password aliases that are set by the installation process and entered into Payara's ``domain.xml`` file:
+While Postgres can accomodate usernames and database names containing hyphens, it is strongly recommended to use only alphanumeric characters.
 
-- ``db_password_alias``
+**IMPORTANT:** As a security measure, the ``as-setup.sh`` script stores passwords as "aliases" rather than plaintext. If you change your database password, for example, you will need to update the alias with ``asadmin update-password-alias dataverse.db.password``, for example. Here is a list of the password aliases that are set by the installation process and entered into Payara's ``domain.xml`` file:
+
+- ``dataverse.db.password``
 - ``doi_password_alias``
 - ``rserve_password_alias``
 
@@ -206,8 +208,7 @@ Fresh Reinstall
 Early on when you're installing Dataverse, you may think, "I just want to blow away what I've installed and start over." That's fine. You don't have to uninstall the various components like Payara, PostgreSQL and Solr, but you should be conscious of how to clear out their data. For Payara, a common helpful process is to:
 
 - Stop Payara; 
-- Remove the ``generated`` and ``osgi-cache`` directories; 
-- Delete all the rows from the ``EJB__TIMER__TBL`` table in the database;
+- Remove the ``generated`` and ``osgi-cache`` directories;
 - Start Payara
 
 Drop database

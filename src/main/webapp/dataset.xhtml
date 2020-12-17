@@ -667,7 +667,11 @@
                     </ui:fragment>
                     <!-- Create/Save Dataset Button Panel TOP editMode -->
                     <div class="button-block form-top" jsf:rendered="#{DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE'}">
-                        <p:commandButton id="saveTop" styleClass="btn btn-default" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();PF('blockDatasetForm').show();"/>
+                        <p:commandButton id="saveTop" styleClass="btn btn-default" value="#{bundle.saveChanges}"
+                                         onclick="PF('blockDatasetForm').show();"
+                                         update=":datasetForm,:messagePanel"
+                                         oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
+                                         action="#{DatasetPage.save}"/>
                         <p:commandButton id="cancelTop" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" oncomplete="javascript:bind_bsui_components();">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
@@ -814,31 +818,29 @@
                     </div>
                     <!-- Create/Save Dataset Button Panel BTM editMode -->
                     <div class="button-block" jsf:rendered="#{!empty DatasetPage.editMode}">
-                        <p:commandButton id="save" styleClass="btn btn-default" value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" onclick="checkNewlyRestricted();PF('blockDatasetForm').show();"/>
+                        <p:commandButton id="save" styleClass="btn btn-default" value="#{DatasetPage.editMode == 'CREATE' ? bundle['file.addBtn'] : bundle.saveChanges}" 
+                                         onclick="PF('blockDatasetForm').show();"
+                                         update=":datasetForm,:messagePanel"
+                                         oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
+                                         action="#{DatasetPage.save}"/>
                         <p:commandButton id="cancel" styleClass="btn btn-link" value="#{bundle.cancel}" action="#{DatasetPage.cancel}" process="@this" update="@form" rendered="#{DatasetPage.editMode != 'CREATE'}" oncomplete="javascript:bind_bsui_components();">
                             <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="#{DatasetPage.editMode == 'METADATA' ? 1 : DatasetPage.selectedTabIndex}"/>
                         </p:commandButton>
                         <button id="cancelCreate" class="btn btn-link" value="#{bundle.cancel}" onclick="cancelDatasetCreate();return false;" jsf:rendered="#{DatasetPage.editMode == 'CREATE'}">#{bundle.cancel}</button>
                         <p:remoteCommand name="cancelCreateCommand" process="@this" partialSubmit="true" async="true" update="" action="#{DatasetPage.cancelCreate}" rendered="#{DatasetPage.editMode == 'CREATE'}"/>     
-                        <p:commandButton value="Direct" id="datasetSave"
-                                         style="display:none"
-                                         update=":datasetForm,:messagePanel"
-                                         oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
-                                         action="#{DatasetPage.save}"/>
                     </div>
                     <!-- END: Create/Save Dataset Button Panel BTM editMode -->
                     <p:blockUI block="datasetForm" widgetVar="blockDatasetForm"/>
-                    <!-- POPUPS -->                    
-                    <ui:include src="file-edit-popup-fragment.xhtml">
-                        <ui:param name="datasetVersion" value="#{DatasetPage.workingVersion}"/>   
-                        <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>                        
-                        <ui:param name="bean" value="#{DatasetPage}"/>                        
-                        <ui:param name="restrictFileAction" value="restrictFile"/>
-                        <ui:param name="deleteFileAction" value="deleteFile"/> 
-                        <ui:param name="restrictSelectedFileAction" value="restrictSelectedFiles"/>
-                        <ui:param name="deleteSelectedFileAction" value="deleteSelectedFiles"/> 
-                    </ui:include>                  
-
+                    <!-- POPUPS -->
+                    <ui:fragment rendered="#{empty DatasetPage.editMode}">                    
+                        <ui:include src="file-edit-popup-fragment.xhtml">
+                              <ui:param name="datasetVersion" value="#{DatasetPage.workingVersion}"/>   
+                              <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>                        
+                              <ui:param name="bean" value="#{DatasetPage}"/>                        
+                              <ui:param name="restrictFileAction" value="restrictFiles"/>
+                              <ui:param name="deleteFileAction" value="deleteFiles"/> 
+                        </ui:include>                  
+                    </ui:fragment>
                     <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true" rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                         <p class="help-block">#{bundle['dataset.share.datasetShare.tip']}</p>
                         <div id="sharrre-widget" data-url="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" data-text="#{bundle['dataset.share.datasetShare.shareText']}"></div>
@@ -1372,9 +1374,10 @@
                     <p:dialog id="downloadPopup" styleClass="largePopUp" header="#{bundle['file.downloadDialog.header']}" widgetVar="downloadPopup" modal="true">
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                         <ui:include src="file-download-popup-fragment.xhtml">
+                            <ui:param name="popupContext" value="downloadDataset"/>
                             <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
                             <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
-                            <ui:param name="guestbookResponse" value="#{DatasetPage.fileDownloadHelper.guestbookResponse}" rendered="#{!settingsWrapper.rsyncDownload}"/>
+                            <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}" rendered="#{!settingsWrapper.rsyncDownload}"/>
                             <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
                             <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                         </ui:include>
@@ -1404,7 +1407,7 @@
                         <ui:include src="package-download-popup-fragment.xhtml">
                             <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
                             <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
-                            <ui:param name="guestbookResponse" value="#{DatasetPage.fileDownloadHelper.guestbookResponse}" rendered="#{!settingsWrapper.rsyncDownload}"/>
+                            <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}" rendered="#{!settingsWrapper.rsyncDownload}"/>
                             <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
                             <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                         </ui:include>
@@ -1669,44 +1672,17 @@
                         }
                     }
                                       
-                    function testFilesSelected(popup) {
+                    function testFilesSelected() {
                         var count = PF('filesTable').getSelectedRowsCount();
                         if (count == 0) {
-                            PF(popup).show();
+                            PF('selectFiles').show();
                         } else {
                             return true;
                         }                        
                     }
- 
-                    function testFilesSelectedForTags() {
-                        return testFilesSelected("selectFilesForEditTags");
-                    }
-
-                    function testFilesSelectedForRestriction() {
-                        return testFilesSelected("selectFilesForRestrict");
-                    }
-                    
-                    function testFilesSelectedForUnRestriction() {
-                        return testFilesSelected("selectFilesForUnRestrict");
-                    }                    
-                    
-                    function testFilesSelectedForDelete() {
-                        return testFilesSelected("selectFilesForDelete");
-                    }
-                    
-                    function testFilesSelectedForEditMetadata() {
-                        return testFilesSelected("selectFilesForEditMetadata");
-                    }
                     
                     function updateTemplate() {
                         $('button[id$="updateTemplate"]').trigger('click');
-                    }
-                    function checkNewlyRestricted() {
-                        if ($('input[id$="showAccessPopup"]').val() === 'true') {
-                            PF('accessPopup').show();
-                        } else {
-                            $('button[id$="datasetSave"]').trigger('click');
-                        }
                     }
                     function updateHiddenReason(textArea) {
                         $('input[id$="hiddenReasonInput"]').val(textArea.value);

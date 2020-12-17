@@ -3,7 +3,7 @@ Native API
 
 Dataverse 4 exposes most of its GUI functionality via a REST-based API. This section describes that functionality. Most API endpoints require an API token that can be passed as the ``X-Dataverse-key`` HTTP header or in the URL as the ``key`` query parameter.
 
-.. note:: |CORS| Some API endpoint allow CORS_ (cross-origin resource sharing), which makes them usable from scripts runing in web browsers. These endpoints are marked with a *CORS* badge.
+.. note:: |CORS| Some API endpoint allow CORS_ (cross-origin resource sharing), which makes them usable from scripts running in web browsers. These endpoints are marked with a *CORS* badge.
 
 .. note:: Bash environment variables shown below. The idea is that you can "export" these environment variables before copying and pasting the commands that use them. For example, you can set ``$SERVER_URL`` by running ``export SERVER_URL="https://demo.dataverse.org"`` in your Bash shell. To check if the environment variable was set properly, you can "echo" it (e.g. ``echo $SERVER_URL``). See also :ref:`curl-examples-and-environment-variables`.
 
@@ -989,16 +989,16 @@ Note that the dataset citation date field type must be a date field.
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export ID=24
-  export DATASET_FIELD_TYPE_NAME=:dateOfDeposit
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
+  export DATASET_FIELD_TYPE_NAME=dateOfDeposit
 
-  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/$ID/citationdate --data "$DATASET_FIELD_TYPE_NAME"
+  curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/citationdate?persistentId=$PERSISTENT_IDENTIFIER --data "$DATASET_FIELD_TYPE_NAME"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT https://demo.dataverse.org/api/datasets/24/citationdate --data ":dateOfDeposit"
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT https://demo.dataverse.org/api/datasets/:persistentId/citationdate?persistentId=doi:10.5072/FK2/J8SJZB --data "dateOfDeposit"
 
 Revert Citation Date Field Type to Default for Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1009,15 +1009,15 @@ Restores the default citation date field type, ``:publicationDate``, for a given
 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
-  export ID=24
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/J8SJZB
 
-  curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE $SERVER_URL/api/datasets/$ID/citationdate
+  curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE $SERVER_URL/api/datasets/:persistentId/citationdate?persistentId=$PERSISTENT_IDENTIFIER
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/datasets/24/citationdate
+  curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/datasets/:persistentId/citationdate?persistentId=doi:10.5072/FK2/J8SJZB
 
 .. _list-roles-on-a-dataset-api:
 
@@ -1176,7 +1176,7 @@ The fully expanded example above (without environment variables) looks like this
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -F file=@data.tsv -F jsonData={"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false"} https://demo.dataverse.org/api/datasets/:persistentId/add?persistentId=doi:10.5072/FK2/J8SJZB
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -F file=@data.tsv -F 'jsonData={"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false"}' "https://demo.dataverse.org/api/datasets/:persistentId/add?persistentId=doi:10.5072/FK2/J8SJZB"
 
 You should expect a 201 ("CREATED") response and JSON indicating the database id that has been assigned to your newly uploaded file.
 
@@ -1653,6 +1653,11 @@ The fully expanded example above (without environment variables) looks like this
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/datasets/24/destroy
   
 Calling the destroy endpoint is permanent and irreversible. It will remove the dataset and its datafiles, then re-index the parent dataverse in Solr. This endpoint requires the API token of a superuser.
+
+Configure a Dataset to Use a Specific File Store
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``/api/datasets/$dataset-id/storageDriver`` can be used to check, configure or reset the designated file store (storage driver) for a dataset. Please see the :doc:`/admin/dataverses-datasets` section of the guide for more information on this API.
 
 Files
 -----
@@ -2520,6 +2525,18 @@ Get All Notifications by User
 Each user can get a dump of their notifications by passing in their API token::
 
     curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/notifications/all
+    
+.. _User Information:
+
+User Information
+----------------
+
+Get User Information in JSON Format
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Each user can get a dump of their basic information in JSON format by passing in their API token::
+
+    curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/users/:me    
 
 .. _pids-api:
 
@@ -2647,6 +2664,48 @@ Delete Database Setting
 Delete the setting under ``name``::
 
   DELETE http://$SERVER/api/admin/settings/$name
+  
+Manage Banner Messages
+~~~~~~~~~~~~~~~~~~~~~~
+
+Communications to users can be handled via banner messages that are displayed at the top of all pages within your Dataverse installation. Two types of banners can be configured:
+
+- A banner message where dismissibleByUser is set to false will be displayed to anyone viewing the application. These messages will be dismissible for a given session but will be displayed in any subsequent session until they are deleted by the Admin. This type of banner message is useful for situations such as upcoming maintenance windows and other downtime.
+- A banner message where dismissibleByUser is set to true is intended to be used in situations where the Admin wants to make sure that all logged in users see a certain notification. These banner messages will only be displayed to users when they are logged in and can be dismissed by the logged in user. Once they have been dismissed by a user, that user will not see the message again. This type of banner message is useful for situations where a message needs to communicated once, such as a minor terms of use update or an update about a new workflow in your Dataverse installation. 
+
+Note that HTML can be included in banner messages.
+
+Add a Banner Message::
+
+  curl -H "Content-type:application/json" -X POST http://$SERVER/api/admin/bannerMessage --upload-file messages.json
+  
+Where ``messages.json`` looks like this::
+
+  {
+    "dismissibleByUser": "true",
+    "messageTexts": [
+    {
+      "lang": "en",
+      "message": "Dismissible Banner Message added via API"
+    },
+    {
+      "lang": "fr",
+      "message": "Message de bannière ajouté via l'API"
+    }
+    ]
+  }
+     
+Get a list of active Banner Messages::
+
+  curl  -X GET http://$SERVER/api/admin/bannerMessage
+  
+Delete a Banner Message by its id::
+
+  curl  -X DELETE http://$SERVER/api/admin/bannerMessage/$id   
+  
+Deactivate a Banner Message by its id (allows you to hide a message while retaining information about which users have dismissed the banner)::
+
+  curl  -X PUT http://$SERVER/api/admin/bannerMessage/$id/deactivate    
 
 List Authentication Provider Factories
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2871,7 +2930,10 @@ Sample output using "dataverseAdmin" as the ``identifier``::
       "affiliation": "Dataverse.org"
     }
 
-Create an authenticateUser::
+Create an Authenticated User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Create an authenticatedUser::
 
     POST http://$SERVER/api/admin/authenticatedUsers
 
