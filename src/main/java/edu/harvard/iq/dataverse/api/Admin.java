@@ -1745,14 +1745,17 @@ public class Admin extends AbstractApiBean {
             List<DatasetVersion> dsl = datasetversionService.getUnarchivedDatasetVersions();
             if (dsl != null) {
                 if (listonly) {
+                    JsonArrayBuilder jab = Json.createArrayBuilder();
                     logger.info("Unarchived versions found: ");
                     int current = 0;
                     for (DatasetVersion dv : dsl) {
                         if (limit != null && current > limit) {
                             break;
                         }
+                        jab.add(dv.getDataset().getGlobalId().toString() + ", v" + dv.getFriendlyVersionNumber());
                         logger.info("    " + dv.getDataset().getGlobalId().toString() + ", v" + dv.getFriendlyVersionNumber());
                     }
+                    return ok(jab); 
                 }
                 String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
                 AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dsl.get(0));
