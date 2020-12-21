@@ -46,6 +46,7 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -1723,9 +1724,16 @@ public class Admin extends AbstractApiBean {
     }
     
     
+    /**
+     * Iteratively archives all unarchived dataset versions
+     * @param
+     * listonly - don't archive, just list unarchived versions
+     * limit - max number to process
+     * @return
+     */
     @GET
     @Path("/archiveAllUnarchivedDataVersions")
-    public Response archiveAllUnarchivedDatasetVersions() {
+    public Response archiveAllUnarchivedDatasetVersions(@QueryParam("listonly") boolean listonly, @QueryParam("limit") Integer limit) {
 
         try {
             AuthenticatedUser au = findAuthenticatedUserOrDie();
@@ -1736,6 +1744,16 @@ public class Admin extends AbstractApiBean {
             session.setUser(au);
             List<DatasetVersion> dsl = datasetversionService.getUnarchivedDatasetVersions();
             if (dsl != null) {
+                if (listonly) {
+                    logger.info("Unarchived versions found: ");
+                    int current = 0;
+                    for (DatasetVersion dv : dsl) {
+                        if (limit != null && current > limit) {
+                            break;
+                        }
+                        logger.info("    " + dv.getDataset().getGlobalId().toString() + ", v" + dv.getFriendlyVersionNumber());
+                    }
+                }
                 String className = settingsService.getValueForKey(SettingsServiceBean.Key.ArchiverClassName);
                 AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dsl.get(0));
 
@@ -1746,6 +1764,9 @@ public class Admin extends AbstractApiBean {
                             int successes = 0;
                             int failures = 0;
                             for (DatasetVersion dv : dsl) {
+                                if (limit != null && (successes + failures) > limit) {
+                                    break;
+                                }
                                 try {
                                     AbstractSubmitToArchiveCommand cmd = ArchiverUtil.createSubmitToArchiveCommand(className, dvRequestService.getDataverseRequest(), dv);
 
@@ -1759,6 +1780,7 @@ public class Admin extends AbstractApiBean {
                                         logger.severe("Error submitting version due to conflict/error at Archive for " + dv.getDataset().getGlobalId().toString() + " v" + dv.getFriendlyVersionNumber());
                                     }
                                 } catch (CommandException ex) {
+                                    failures++;
                                     logger.log(Level.SEVERE, "Unexpected Exception calling  submit archive command", ex);
                                 }
                                 logger.fine(successes + failures + " of " + total + " archive submissions complete");
