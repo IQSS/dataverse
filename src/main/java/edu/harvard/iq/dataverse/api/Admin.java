@@ -1750,7 +1750,7 @@ public class Admin extends AbstractApiBean {
                     logger.info("Unarchived versions found: ");
                     int current = 0;
                     for (DatasetVersion dv : dsl) {
-                        if (limit != null && current > limit) {
+                        if (limit != null && current >= limit) {
                             break;
                         }
                         if (!latestonly || dv.equals(dv.getDataset().getLatestVersionForCopy())) {
@@ -1771,7 +1771,7 @@ public class Admin extends AbstractApiBean {
                             int successes = 0;
                             int failures = 0;
                             for (DatasetVersion dv : dsl) {
-                                if (limit != null && (successes + failures) > limit) {
+                                if (limit != null && (successes + failures) >= limit) {
                                     break;
                                 }
                                 if (!latestonly || dv.equals(dv.getDataset().getLatestVersionForCopy())) {
