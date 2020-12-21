@@ -1173,7 +1173,7 @@ w
      */
     public List<DatasetVersion> getUnarchivedDatasetVersions(){
         
-        String queryString = "SELECT OBJECT(o) FROM DatasetVersion AS o WHERE o.releasetime IS NOT NULL and o.archivalcopylocation IS NULL";
+        String queryString = "SELECT OBJECT(o) FROM DatasetVersion AS o WHERE o.releaseTime IS NOT NULL and o.archivalCopyLocation IS NULL";
         
         try{
             TypedQuery<DatasetVersion> query = em.createQuery(queryString, DatasetVersion.class);
