@@ -42,8 +42,8 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
     private static final String DURACLOUD_HOST = ":DuraCloudHost";
     private static final String DURACLOUD_CONTEXT = ":DuraCloudContext";
 
-    public DuraCloudSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version, String type) {
-        super(aRequest, version, type);
+    public DuraCloudSubmitToArchiveCommand(DataverseRequest aRequest, DatasetVersion version) {
+        super(aRequest, version);
     }
 
     @Override
@@ -127,7 +127,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                                 public void run() {
                                     try (PipedOutputStream out = new PipedOutputStream(in)){
                                         // Generate bag
-                                        BagGenerator bagger = new BagGenerator(new OREMap(dv, false, getType()), dataciteXml, getType());
+                                        BagGenerator bagger = new BagGenerator(new OREMap(dv, false), dataciteXml);
                                         bagger.setAuthenticationKey(token.getTokenString());
                                         bagger.generateBag(out);
                                     } catch (Exception e) {

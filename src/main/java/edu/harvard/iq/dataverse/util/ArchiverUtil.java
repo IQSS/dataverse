@@ -20,18 +20,13 @@ public class ArchiverUtil {
     }
 
     public static AbstractSubmitToArchiveCommand createSubmitToArchiveCommand(String className, DataverseRequest dvr, DatasetVersion version) {
-    	return createSubmitToArchiveCommand(className, null, dvr, version);
-    }
-
-	public static AbstractSubmitToArchiveCommand createSubmitToArchiveCommand(String className, String type,
-			DataverseRequest dvr, DatasetVersion version) {
         if (className != null) {
             try {
                 Class<?> clazz = Class.forName(className);
                 if (AbstractSubmitToArchiveCommand.class.isAssignableFrom(clazz)) {
                     Constructor<?> ctor;
-                    ctor = clazz.getConstructor(DataverseRequest.class, DatasetVersion.class, String.class);
-                    return (AbstractSubmitToArchiveCommand) ctor.newInstance(new Object[] { dvr, version, type });
+                    ctor = clazz.getConstructor(DataverseRequest.class, DatasetVersion.class);
+                    return (AbstractSubmitToArchiveCommand) ctor.newInstance(new Object[] { dvr, version });
                 }
             } catch (Exception e) {
                 logger.warning("Unable to instantiate an Archiver of class: " + className);

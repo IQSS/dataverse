@@ -136,12 +136,11 @@ public class BagGenerator {
      * and zipping are done in parallel, using a connection pool. The required space
      * on disk is ~ n+1/n of the final bag size, e.g. 125% of the bag size for a
      * 4-way parallel zip operation.
-     * @param type 
      * @throws Exception 
      * @throws JsonSyntaxException 
      */
 
-    public BagGenerator(OREMap oreMap, String dataciteXml, String type) throws JsonSyntaxException, Exception {
+    public BagGenerator(OREMap oreMap, String dataciteXml) throws JsonSyntaxException, Exception {
         this.oremap = oreMap;
         this.oremapObject = oreMap.getOREMap();
                 //(JsonObject) new JsonParser().parse(oreMap.getOREMap().toString());
