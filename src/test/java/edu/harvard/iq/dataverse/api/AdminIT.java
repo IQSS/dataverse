@@ -750,4 +750,39 @@ public class AdminIT {
           message
         );
     }
+    
+    @Test
+    public void testBannerMessages(){
+        
+        String pathToJsonFile = "scripts/api/data/bannerMessageError.json";
+        Response addBannerMessageErrorResponse = UtilIT.addBannerMessage(pathToJsonFile);
+        addBannerMessageErrorResponse.prettyPrint();
+        String body = addBannerMessageErrorResponse.getBody().asString();
+        String status = JsonPath.from(body).getString("status");
+        assertEquals("ERROR", status);
+        
+        pathToJsonFile = "scripts/api/data/bannerMessageTest.json";
+        
+        Response addBannerMessageResponse = UtilIT.addBannerMessage(pathToJsonFile);
+        addBannerMessageResponse.prettyPrint();
+        body = addBannerMessageResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+        
+        Response getBannerMessageResponse = UtilIT.getBannerMessages();
+        getBannerMessageResponse.prettyPrint();
+        body = getBannerMessageResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+        String deleteId = UtilIT.getBannerMessageIdFromResponse(getBannerMessageResponse.getBody().asString());
+         
+        System.out.print("delete id: " + deleteId);
+        
+        Response deleteBannerMessageResponse = UtilIT.deleteBannerMessage(new Long (deleteId));
+        deleteBannerMessageResponse.prettyPrint();
+        body = deleteBannerMessageResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+        
+    }
 }

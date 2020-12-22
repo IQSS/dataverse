@@ -4,10 +4,10 @@ if [ ! -d dv/deps ]; then
 fi
 wdir=`pwd`
 
-if [ ! -e dv/deps/payara-5.2020.2.zip ]; then
+if [ ! -e dv/deps/payara-5.2020.6.zip ]; then
 	echo "payara dependency prep"
 	# no more fiddly patching :)
-	wget https://github.com/payara/Payara/releases/download/payara-server-5.2020.2/payara-5.2020.2.zip  -O dv/deps/payara-5.2020.2.zip
+	wget https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2020.6/payara-5.2020.6.zip  -O dv/deps/payara-5.2020.6.zip
 fi
 
 if [ ! -e dv/deps/solr-7.7.2dv.tgz ]; then
