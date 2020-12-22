@@ -435,6 +435,22 @@ public class GlobusServiceBean implements java.io.Serializable{
         return false;
     }
 
+    public boolean getSuccessfulTransfers(AccessToken clientTokenUser, String taskId ) throws MalformedURLException {
+
+        URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint_manager/task/"+taskId+"/successful_transfers");
+
+        MakeRequestResponse result = makeRequest(url, "Bearer",clientTokenUser.getOtherTokens().get(0).getAccessToken(),
+                "GET",  null);
+
+        Transferlist transferlist = null;
+
+        if (result.status == 200) {
+            logger.info(" SUCCESS ====== " );
+            return true;
+        }
+        return false;
+    }
+
 
 
     public AccessToken getClientToken(String basicGlobusToken) throws MalformedURLException {
