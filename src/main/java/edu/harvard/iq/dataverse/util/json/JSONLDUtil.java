@@ -218,7 +218,7 @@ public class JSONLDUtil {
                     } else if (datasetTerms.contains(key)) {
                         if (!append || !isSet(terms, key)) {
                             // Other Dataset-level TermsOfUseAndAccess
-                            setSemTerm(terms, key, jsonld.getString(JsonLDTerm.termsOfUse.getUrl()));
+                            setSemTerm(terms, key, jsonld.getString(key));
                         } else {
                             throw new BadRequestException(
                                     "Can't append to a single-value field that already has a value: " + key);
