@@ -184,7 +184,7 @@
                                                  jsf:rendered="#{showAccessFileButtonGroup}">
                                                 <div class="btn-group">
                                                     <button type="button" class="btn btn-default btn-access-file dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                        #{bundle['file.accessBtn']} <span class="caret"></span>
+                                                        #{((not empty FilePage.exploreTools) or FilePage.showComputeButton()) ? bundle['file.accessBtn'] : bundle['file.downloadBtn']} <span class="caret"></span>
                                                     </button>
                                                     <ul class="dropdown-menu pull-right text-left">
                                                         <!-- Explore/Download/Request Button Block -->
