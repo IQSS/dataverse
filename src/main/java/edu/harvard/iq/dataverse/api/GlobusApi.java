@@ -197,7 +197,8 @@ public class GlobusApi extends AbstractApiBean {
                     String requestUrl = httpRequest.getRequestURL().toString() ;
 
                     ProcessBuilder processBuilder = new ProcessBuilder();
-                    String command = "curl -H \"X-Dataverse-key:" + token.getTokenString() + "\" -X POST " + requestUrl.substring(0, requestUrl.indexOf("/globus")) + "/datasets/:persistentId/add?persistentId=doi:"+ directory + " -F jsonData='"+fileJson.toString() +"'";
+
+                    String command = "curl -H \"X-Dataverse-key:" + token.getTokenString() + "\" -X POST " + httpRequest.getProtocol() +"//" + httpRequest.getServerName() + "/api/datasets/:persistentId/add?persistentId=doi:"+ directory + " -F jsonData='"+fileJson.toString() +"'";
                     msgt("*******====command ==== " + command);
                      processBuilder.command("bash", "-c", command);
                     msgt("*******=== Start api/datasets/:persistentId/add call");
