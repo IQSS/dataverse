@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFileCategory;
@@ -15,8 +14,10 @@ import edu.harvard.iq.dataverse.persistence.dataset.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowComment;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 /**
@@ -47,6 +48,11 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         ctxt.permissions().checkEditDatasetLock(getDataset(), getRequest(), this);
         // Invariant: Dataset has no locks preventing the update
         DatasetVersion updateVersion = getDataset().getLatestVersionForCopy();
+        DatasetVersion latestVersion = getDataset().getLatestVersion();
+
+        if (updateVersion.getFileMetadatas().size() != latestVersion.getFileMetadatas().size()) {
+            throw new IllegalCommandException("Cannot curate version with different amount of files", this);
+        }
 
         // Copy metadata from draft version to latest published version
         updateVersion.setDatasetFields(getDataset().getEditVersion().initDatasetFields());
@@ -81,65 +87,26 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         Dataset tempDataset = ctxt.em().merge(getDataset());
 
         // Look for file metadata changes and update published metadata if needed
-        for (DataFile dataFile : tempDataset.getFiles()) {
-            List<FileMetadata> fmdList = dataFile.getFileMetadatas();
-            FileMetadata draftFmd = dataFile.getLatestFileMetadata();
-            FileMetadata publishedFmd = null;
-            for (FileMetadata fmd : fmdList) {
-                if (fmd.getDatasetVersion().equals(updateVersion)) {
-                    publishedFmd = fmd;
-                    break;
-                }
-            }
-            boolean metadataUpdated = false;
-            if (draftFmd != null && publishedFmd != null) {
-                if (!draftFmd.getLabel().equals(publishedFmd.getLabel())) {
-                    publishedFmd.setLabel(draftFmd.getLabel());
-                    metadataUpdated = true;
-                }
-                String draftDesc = draftFmd.getDescription();
-                String pubDesc = publishedFmd.getDescription();
-                if ((draftDesc != null && (!draftDesc.equals(pubDesc))) || (draftDesc == null && pubDesc != null)) {
-                    publishedFmd.setDescription(draftDesc);
-                    metadataUpdated = true;
-                }
-                if (!draftFmd.getCategories().equals(publishedFmd.getCategories())) {
-                    publishedFmd.setCategories(draftFmd.getCategories());
-                    metadataUpdated = true;
-                }
-                FileTermsOfUse draftTermsOfUse = draftFmd.getTermsOfUse();
-                FileTermsOfUse publishedTermsOfUse = publishedFmd.getTermsOfUse();
-                if (!ctxt.files().isSameTermsOfUse(draftTermsOfUse, publishedTermsOfUse)) {
-                    publishedTermsOfUse.setLicense(draftTermsOfUse.getLicense());
-                    publishedTermsOfUse.setAllRightsReserved(draftTermsOfUse.isAllRightsReserved());
-                    publishedTermsOfUse.setRestrictType(draftTermsOfUse.getRestrictType());
-                    publishedTermsOfUse.setRestrictCustomText(draftTermsOfUse.getRestrictCustomText());
-                    
-                    metadataUpdated = true;
-                }
+        for (FileMetadata fileMetadataInLatestVersion : latestVersion.getFileMetadatas()) {
+            DataFile dataFile = fileMetadataInLatestVersion.getDataFile();
+            
+            FileMetadata fileMetadataInUpdateVersion = findFileMetadataOfDataFileInVersion(updateVersion, dataFile)
+                    .orElseThrow(() -> new IllegalCommandException("Curated version doesn't contain DataFile with id: " + dataFile.getId(), this));
+            
+            boolean metadataUpdated = copyFileMetadata(fileMetadataInLatestVersion, fileMetadataInUpdateVersion, ctxt);
 
-                String draftProv = draftFmd.getProvFreeForm();
-                String pubProv = publishedFmd.getProvFreeForm();
-                if ((draftProv != null && (!draftProv.equals(pubProv))) || (draftProv == null && pubProv != null)) {
-                    publishedFmd.setProvFreeForm(draftProv);
-                    metadataUpdated = true;
-                }
-
-            } else {
-                throw new IllegalCommandException("Cannot change files in the dataset", this);
-            }
             if (metadataUpdated) {
                 dataFile.setModificationTime(getTimestamp());
             }
             // Now delete filemetadata from draft version before deleting the version itself
-            FileMetadata mergedFmd = ctxt.em().merge(draftFmd);
+            FileMetadata mergedFmd = ctxt.em().merge(fileMetadataInLatestVersion);
             ctxt.em().remove(mergedFmd);
             // including removing metadata from the list on the datafile
-            draftFmd.getDataFile().getFileMetadatas().remove(draftFmd);
-            tempDataset.getEditVersion().getFileMetadatas().remove(draftFmd);
+            dataFile.getFileMetadatas().remove(fileMetadataInLatestVersion);
+            tempDataset.getEditVersion().getFileMetadatas().remove(fileMetadataInLatestVersion);
             // And any references in the list held by categories
             for (DataFileCategory cat : tempDataset.getCategories()) {
-                cat.getFileMetadatas().remove(draftFmd);
+                cat.getFileMetadatas().remove(fileMetadataInLatestVersion);
             }
         }
 
@@ -175,4 +142,45 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         return savedDataset;
     }
 
+    private Optional<FileMetadata> findFileMetadataOfDataFileInVersion(DatasetVersion version, DataFile dataFile) {
+        return version.getFileMetadatas().stream().filter(fm -> fm.getDataFile().equals(dataFile))
+            .findFirst();
+    }
+
+    private boolean copyFileMetadata(FileMetadata source, FileMetadata dest, CommandContext ctxt) {
+        boolean metadataUpdated = false;
+
+        if (!StringUtils.equals(source.getLabel(), dest.getLabel())) {
+            dest.setLabel(source.getLabel());
+            metadataUpdated = true;
+        }
+
+        if (!StringUtils.equals(source.getDescription(), dest.getDescription())) {
+            dest.setDescription(source.getDescription());
+            metadataUpdated = true;
+        }
+
+        if (!source.getCategories().equals(dest.getCategories())) {
+            dest.setCategories(source.getCategories());
+            metadataUpdated = true;
+        }
+
+        FileTermsOfUse sourceTermsOfUse = source.getTermsOfUse();
+        FileTermsOfUse destTermsOfUse = dest.getTermsOfUse();
+        if (!ctxt.files().isSameTermsOfUse(sourceTermsOfUse, destTermsOfUse)) {
+            destTermsOfUse.setLicense(sourceTermsOfUse.getLicense());
+            destTermsOfUse.setAllRightsReserved(sourceTermsOfUse.isAllRightsReserved());
+            destTermsOfUse.setRestrictType(sourceTermsOfUse.getRestrictType());
+            destTermsOfUse.setRestrictCustomText(sourceTermsOfUse.getRestrictCustomText());
+            
+            metadataUpdated = true;
+        }
+
+        if (!StringUtils.equals(source.getProvFreeForm(), dest.getProvFreeForm())) {
+            dest.setProvFreeForm(source.getProvFreeForm());
+            metadataUpdated = true;
+        }
+        
+        return metadataUpdated;
+    }
 }
