@@ -1,6 +1,9 @@
 #!/bin/bash
 echo "Installing dependencies for Dataverse"
 
+# wget seems to be missing in box 'bento/centos-8.2'
+dnf install -qy wget
+
 # python3 and psycopg2 for the Dataverse installer
 dnf install -qy python3 python3-psycopg2
 
