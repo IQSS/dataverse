@@ -218,7 +218,7 @@ public class GlobusApi extends AbstractApiBean {
 
     private void msg(String m) {
         //System.out.println(m);
-        logger.fine(m);
+        logger.info(m);
     }
 
     private void dashes() {
