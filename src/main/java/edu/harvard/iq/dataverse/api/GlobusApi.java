@@ -198,7 +198,7 @@ public class GlobusApi extends AbstractApiBean {
 
                     ProcessBuilder processBuilder = new ProcessBuilder();
 
-                    String command = "curl -H \"X-Dataverse-key:" + token.getTokenString() + "\" -X POST " + httpRequest.getProtocol() +"//" + httpRequest.getServerName() + "/api/datasets/:persistentId/add?persistentId=doi:"+ directory + " -F jsonData='"+fileJson.toString() +"'";
+                    String command = "curl -H \"X-Dataverse-key:" + token.getTokenString() + "\" -X POST https://" + httpRequest.getServerName() + "/api/datasets/:persistentId/add?persistentId=doi:"+ directory + " -F jsonData='"+fileJson.toString() +"'";
                     msgt("*******====command ==== " + command);
                      processBuilder.command("bash", "-c", command);
                     msgt("*******=== Start api/datasets/:persistentId/add call");
@@ -214,7 +214,7 @@ public class GlobusApi extends AbstractApiBean {
       }
 
         msgt("*******   successfully completed " );
-        return ok("Async: ====  datasetId :" + dataset.getId() + ": will add files to the table");
+        return ok(" dataset Name :" + dataset.getDisplayName() + ": Files to this dataset will be added to the table and will display in the UI.");
     }
 
     private void msg(String m) {
