@@ -472,7 +472,7 @@ public class JsonPrinter {
 
         blockBld.add("displayName", block.getLocaleDisplayName());
 
-        JsonArrayBuilder parsedFields = new DatasetFieldParser().parseDatasetFields(fields, excludeEmailFromExport);
+        JsonArrayBuilder parsedFields = new JsonDatasetFieldsPrinter().json(fields, excludeEmailFromExport);
 
         blockBld.add("fields", parsedFields);
         return blockBld;
@@ -492,7 +492,7 @@ public class JsonPrinter {
         if (dfv.isEmpty()) {
             return null;
         } else {
-            JsonArrayBuilder fieldArray = new DatasetFieldParser().parseDatasetFields(Lists.newArrayList(dfv),
+            JsonArrayBuilder fieldArray = new JsonDatasetFieldsPrinter().json(Lists.newArrayList(dfv),
                                                                                             true);
             JsonArray out = fieldArray.build();
             return out.getJsonObject(0);

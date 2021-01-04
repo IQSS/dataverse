@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.persistence;
 
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
@@ -8,7 +9,9 @@ import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static edu.harvard.iq.dataverse.persistence.MocksFactory.makeComplexDatasetFieldType;
 import static edu.harvard.iq.dataverse.persistence.MocksFactory.makeMetadataBlock;
@@ -101,6 +104,30 @@ public class MockMetadataFactory {
         return authorFieldType;
     }
 
+    public static DatasetFieldType makeSubjectFieldType(MetadataBlock metadataBlock, String... allowedValues) {
+        
+        DatasetFieldType subjectFieldType = MocksFactory.makeControlledVocabDatasetFieldType(DatasetFieldConstant.subject, true, 
+                metadataBlock, allowedValues);
+        
+        return subjectFieldType;
+    }
+
+    public static DatasetField makeSubjectField(DatasetFieldType subjectFieldType, List<String> values) {
+        
+        List<ControlledVocabularyValue> vocabularyValues = new ArrayList<>();
+
+        subjectFieldType.getControlledVocabularyValues().stream()
+            .filter(cvv -> values.contains(cvv.getStrValue()))
+            .forEach(cvv -> vocabularyValues.add(cvv));
+        
+        DatasetField subjectField = new DatasetField();
+        subjectField.setDatasetFieldType(subjectFieldType);
+        subjectField.setControlledVocabularyValues(vocabularyValues);
+        
+        return subjectField;
+        
+    }
+
     public static List<DatasetField> fillAuthorField(DatasetField authorField, String authorName, String authorAffiliation) {
         List<DatasetField> children = authorField.getDatasetFieldsChildren();
 
@@ -182,6 +209,43 @@ public class MockMetadataFactory {
         return dateOfDeposit;
     }
 
+
+    public static DatasetFieldType makeSeriesFieldType(MetadataBlock metadataBlock) {
+
+        DatasetFieldType seriesNameFieldType = MocksFactory.makeChildDatasetFieldType(DatasetFieldConstant.seriesName,
+                                                                                       FieldType.TEXT,
+                                                                                       false);
+        seriesNameFieldType.setDisplayOrder(72);
+        DatasetFieldType seriesInformationFieldType = MocksFactory.makeChildDatasetFieldType(DatasetFieldConstant.seriesInformation,
+                                                                                        FieldType.TEXTBOX,
+                                                                                        false);
+        seriesInformationFieldType.setDisplayOrder(73);
+
+        DatasetFieldType seriesFieldType = makeComplexDatasetFieldType(
+                DatasetFieldConstant.series, false, metadataBlock,
+                seriesNameFieldType, seriesInformationFieldType
+        );
+        seriesFieldType.setDisplayOrder(71);
+        return seriesFieldType;
+    }
+    
+    public static DatasetField makeSeriesField(DatasetFieldType seriesFieldType, String seriesName, String seriesInformation) {
+        DatasetField seriesField = DatasetField.createNewEmptyDatasetField(seriesFieldType, null);
+        List<DatasetField> children = seriesField.getDatasetFieldsChildren();
+        
+        children.stream()
+            .filter(datasetField -> datasetField.getDatasetFieldType().getName().equals(DatasetFieldConstant.seriesName))
+            .forEach(datasetField -> datasetField.setFieldValue(seriesName));
+
+        children.stream()
+            .filter(datasetField -> datasetField.getDatasetFieldType().getName().equals(DatasetFieldConstant.seriesInformation))
+            .forEach(datasetField -> datasetField.setFieldValue(seriesInformation));
+
+        return seriesField;
+    }
+    
+    
+    
     // -------------------- Geospatial fields --------------------
 
     public static DatasetFieldType makeGeographicBoundingBoxFieldType(MetadataBlock metadataBlock) {

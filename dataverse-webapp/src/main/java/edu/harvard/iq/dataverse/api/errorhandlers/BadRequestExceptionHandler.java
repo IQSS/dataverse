@@ -1,19 +1,15 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.api.errorhandlers;
 
 import edu.harvard.iq.dataverse.common.BundleUtil;
 
-import javax.json.Json;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+
+import static edu.harvard.iq.dataverse.api.errorhandlers.ApiErrorResponse.errorResponse;
 
 /**
  * @author skraffmi
@@ -36,11 +32,7 @@ public class BadRequestExceptionHandler implements ExceptionMapper<BadRequestExc
             outputMessage = "Bad Request. The API request cannot be completed with the parameters supplied. Please check your code for typos, or consult our API guide at http://guides.dataverse.org.";
         }
         return Response.status(400)
-                .entity(Json.createObjectBuilder()
-                                .add("status", "ERROR")
-                                .add("code", 400)
-                                .add("message", "'" + uri + "' " + outputMessage)
-                                .build())
+                .entity(errorResponse(400, "'" + uri + "' " + outputMessage))
                 .type("application/json").build();
 
 

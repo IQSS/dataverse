@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.persistence.dataset;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.persistence.MockMetadataFactory;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
-import jersey.repackaged.com.google.common.collect.Lists;
+import com.google.common.collect.Lists;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -46,7 +46,7 @@ public class DatasetFieldUtilTest {
         DatasetField field1 = MocksFactory.makeEmptyDatasetField(fieldType1, 2);
         DatasetField field2 = MocksFactory.makeEmptyDatasetField(fieldType2, 1);
 
-        List<DatasetField> datasetFields = com.google.common.collect.Lists.newArrayList(field1, field2);
+        List<DatasetField> datasetFields = Lists.newArrayList(field1, field2);
 
 
         // when

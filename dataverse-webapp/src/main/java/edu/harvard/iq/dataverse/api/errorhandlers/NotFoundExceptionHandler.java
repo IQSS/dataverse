@@ -1,12 +1,13 @@
 package edu.harvard.iq.dataverse.api.errorhandlers;
 
-import javax.json.Json;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+
+import static edu.harvard.iq.dataverse.api.errorhandlers.ApiErrorResponse.errorResponse;
 
 /**
  * Produces custom 404 messages for the API.
@@ -30,11 +31,7 @@ public class NotFoundExceptionHandler implements ExceptionMapper<NotFoundExcepti
             outputMessage = "endpoint does not exist on this server. Please check your code for typos, or consult our API guide at http://guides.dataverse.org.";
         }
         return Response.status(404)
-                .entity(Json.createObjectBuilder()
-                                .add("status", "ERROR")
-                                .add("code", 404)
-                                .add("message", "'" + uri + "' " + outputMessage)
-                                .build())
+                .entity(errorResponse(404, "'" + uri + "' " + outputMessage))
                 .type("application/json").build();
 
 

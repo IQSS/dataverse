@@ -269,13 +269,6 @@ public abstract class AbstractApiBean {
     @Context
     protected HttpServletRequest httpRequest;
 
-    /**
-     * For pretty printing (indenting) of JSON output.
-     */
-    public enum Format {
-
-        PRETTY
-    }
 
     private final LazyRef<JsonParser> jsonParserRef = new LazyRef<>(new Callable<JsonParser>() {
         @Override
