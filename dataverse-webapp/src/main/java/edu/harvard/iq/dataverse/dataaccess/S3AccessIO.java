@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.client.builder.AwsClientBuilder;
@@ -23,13 +22,19 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
+
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.util.FileUtil;
+
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 
 import javax.validation.constraints.NotNull;
 import java.io.File;
@@ -47,7 +52,10 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.logging.Logger;
 
@@ -263,10 +271,14 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException("DvObject type other than datafile is not yet supported");
         }
 
+        DataFile dataFile = (DataFile)dvObject;
         File inputFile = fileSystemPath.toFile();
         
-        putFileToS3(fileSystemPath.toFile(), key);
-
+        if (ChecksumType.MD5.equals(dataFile.getChecksumType())) {
+            putFileToS3(fileSystemPath.toFile(), key, dataFile.getChecksumValue());
+        } else {
+            putFileToS3(fileSystemPath.toFile(), key, null);
+        }
         // if it has uploaded successfully, we can reset the size
         // of the object:
         setSize(inputFile.length());
@@ -315,9 +327,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         
         File tempFile = copyInputStreamToTempFile(inputStream);
         long tempFileSize = tempFile.length();
-
         try {
-            putFileToS3(tempFile, key);
+            putFileToS3(tempFile, key, null);
         } finally {
             tempFile.delete();
         }
@@ -425,8 +436,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
         String destinationKey = getDestinationKey(auxItemTag);
         File inputFile = fileSystemPath.toFile();
-
-        putFileToS3(inputFile, destinationKey);
+        String checksum = FileUtil.calculateChecksum(inputFile.getAbsolutePath(), ChecksumType.MD5);
+        putFileToS3(inputFile, destinationKey, checksum);
     }
 
     @Override
@@ -470,9 +481,9 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
         String destinationKey = getDestinationKey(auxItemTag);
         File tempFile = copyInputStreamToTempFile(inputStream);
-
+        
         try {
-            putFileToS3(tempFile, destinationKey);
+            putFileToS3(tempFile, destinationKey, null);
         } finally {
             tempFile.delete();
         }
@@ -764,9 +775,20 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
     
-    private void putFileToS3(File file, String s3Key) throws IOException {
-        
+    private void putFileToS3(File file, String s3Key, String providedMD5Checksum) throws IOException {
+        ObjectMetadata metadata = new ObjectMetadata();
+        if (StringUtils.isNotBlank(providedMD5Checksum)) {
+            try {
+                metadata.setContentMD5(Base64.getEncoder().encodeToString(Hex.decodeHex(providedMD5Checksum.toCharArray())));
+            } catch (DecoderException e) {
+                throw new IOException(e);
+            }
+            Map<String, String> userMetadata = new HashMap<String, String>();
+            userMetadata.put("MD5", providedMD5Checksum);
+            metadata.setUserMetadata(userMetadata);
+        }
         PutObjectRequest putRequest = new PutObjectRequest(bucketName, s3Key, file);
+        putRequest.setMetadata(metadata);
         putObjectToS3(putRequest);
     }
     
@@ -786,6 +808,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             Upload s3Upload = s3Transfer.upload(putRequest);
             s3Upload.waitForCompletion();
+            if (!verifyUploadedFile(putRequest))  {
+                s3.deleteObject(bucketName, key);
+                throw new IOException("File storage error - checsums before and after put are not identical");
+            }
         } catch (InterruptedException e) {
             throw new IOException("Interrupted s3 upload", e);
         } catch (AmazonClientException e) {
@@ -800,6 +826,17 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         s3Transfer.shutdownNow(false);
     }
     
+
+    private boolean verifyUploadedFile(PutObjectRequest putRequest) {
+        String checksumSent = putRequest.getMetadata().getContentMD5();
+        String checksumLocal = FileUtil.calculateChecksum(putRequest.getFile().getAbsolutePath(), ChecksumType.MD5);
+        try {
+            checksumLocal = Base64.getEncoder().encodeToString(Hex.decodeHex(checksumLocal.toCharArray()));
+        } catch (DecoderException e) {
+            return false;
+        }
+        return checksumLocal.equals(checksumSent);
+    }
 
     private File copyInputStreamToTempFile(InputStream inputStream) throws IOException {
         String directoryString = FileUtil.getFilesTempDirectory();
