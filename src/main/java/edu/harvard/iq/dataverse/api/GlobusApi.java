@@ -214,7 +214,7 @@ public class GlobusApi extends AbstractApiBean {
       }
 
         msgt("*******   successfully completed " );
-        return ok("Async: ====  datasetId :" + dataset.getId() + ": will add files to the table");
+        return ok(" dataset Name :" + dataset.getDisplayName() + ": Files to this dataset will be added to the table and will display in the UI.");
     }
 
     private void msg(String m) {
