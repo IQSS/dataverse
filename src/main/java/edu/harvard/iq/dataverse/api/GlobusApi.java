@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -189,9 +190,27 @@ public class GlobusApi extends AbstractApiBean {
                     StorageIO<DvObject> dataFileStorageIO = DataAccess.getDirectStorageIO(fullPath);
                     InputStream in = dataFileStorageIO.getInputStream();
 
+
+                    String suppliedContentType = fileJson.getString("contentType");
+                    String fileName = fileJson.getString("fileName");
+                    // Default to suppliedContentType if set or the overall undetermined default if a contenttype isn't supplied
+                    String finalType = StringUtils.isBlank(suppliedContentType) ? FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT : suppliedContentType;
+                    String type = FileUtil.determineFileTypeByExtension(fileName);
+                    if (!StringUtils.isBlank(type)) {
+                        //Use rules for deciding when to trust browser supplied type
+                        if (FileUtil.useRecognizedType(finalType, type)) {
+                            finalType = type;
+                        }
+                        logger.info("Supplied type: " + suppliedContentType + ", finalType: " + finalType);
+                    }
+
+                    JsonPatch path = Json.createPatchBuilder().add("/mimeType",finalType).build();
+                    fileJson = path.apply(fileJson);
+
+
                     String checksumVal =  FileUtil.calculateChecksum(in, DataFile.ChecksumType.MD5);
 
-                    JsonPatch path = Json.createPatchBuilder().add("/md5Hash",checksumVal).build();
+                    path = Json.createPatchBuilder().add("/md5Hash",checksumVal).build();
                     fileJson = path.apply(fileJson);
 
                     String requestUrl = httpRequest.getRequestURL().toString() ;
