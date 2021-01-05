@@ -1133,7 +1133,7 @@ public class FileUtil implements java.io.Serializable  {
     }   // end createDataFiles
     
 
-	private static boolean useRecognizedType(String suppliedContentType, String recognizedType) {
+	public static boolean useRecognizedType(String suppliedContentType, String recognizedType) {
 		// is it any better than the type that was supplied to us,
 		// if any?
 		// This is not as trivial a task as one might expect...
