@@ -109,7 +109,6 @@
                             <f:passThroughAttribute name="aria-labelledby" value="searchLabel"/>
                         </p:inputText>
                         <p:watermark for="searchFiles" value="#{bundle['file.search.placeholder']}"/>
-                        <h:inputHidden id="showAccessPopup" value="#{DatasetPage.showAccessPopup}"/>
                         <p:remoteCommand name="submitsearch" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"/>
 
                         <span class="input-group-btn">
@@ -460,6 +459,7 @@
                     </button>
                     <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                         <ui:include src="file-edit-button-fragment.xhtml">
+                            <ui:param name="datasetVersion" value="#{DatasetPage.workingVersion}"/>
                             <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
                             <ui:param name="bean" value="#{DatasetPage}"/>
                             <ui:param name="unrestrictFileAction" value="restrictFiles"/>
@@ -627,7 +627,7 @@
                                                         and DatasetPage.sessionUserAuthenticated 
                                                         and DatasetPage.canUpdateDataset()}">
                     <!-- Kebab / Edit / File Options Dropdown -->
-                    <a type="button" style="padding:6px 8px;" class="btn-file-options btn btn-link bootstrap-button-tooltip dropdown-toggle #{DatasetPage.lockedFromEdits ? 'disabled' : ''}" 
+                    <a type="button" class="btn-file-options btn btn-link bootstrap-button-tooltip dropdown-toggle #{DatasetPage.lockedFromEdits ? 'disabled' : ''}" 
                        disabled="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}"
                        title="#{bundle['file.optionsBtn']}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <span class="glyphicon glyphicon-option-vertical"/><span class="sr-only">#{bundle['file.optionsBtn']}</span><span class="caret"></span>
@@ -637,6 +637,7 @@
                         <!-- TO-DO NEW FILE-LEVEL EDIT OPTIONS... RENDER LOGIC, LINKS, DISABLED LOGIC -->
                         <!-- Edit Options -->
                         <ui:include src="file-edit-button-fragment.xhtml">
+                            <ui:param name="datasetVersion" value="#{DatasetPage.workingVersion}"/>
                             <ui:param name="fileMetadata" value="#{fileMetadata}"/>
                             <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
                             <ui:param name="isDraftReplacementFile" value="#{false}"/>
