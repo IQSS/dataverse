@@ -98,14 +98,12 @@ We don't know what's causing this issue, but here's a known workaround:
 
 - Stop Payara; 
 
-- Remove the ``generated`` and ``osgi-cache`` directories; 
-
-- Delete all the rows from the ``EJB__TIMER__TBL`` table in the database;
+- Remove the ``generated`` and ``osgi-cache`` directories;
 
 - Start Payara
 
 The shell script below performs the steps above. 
-Note that it may or may not work on your system, so it is provided as an example only, downloadable :download:`here </_static/util/clear_timer.sh>`. Aside from the configuration values that need to be changed to reflect your environment (the Payara directory, name of the database, etc.) the script relies on the database being configured in a certain way for access. (See the comments in the script for more information)
+Note that it may or may not work on your system, so it is provided as an example only, downloadable :download:`here </_static/util/clear_timer.sh>`. The configuration values might need to be changed to reflect your environment (the Payara directory). See the comments in the script for more information.
 
 .. literalinclude:: ../_static/util/clear_timer.sh
 
@@ -114,7 +112,7 @@ Note that it may or may not work on your system, so it is provided as an example
 Timer Not Working
 -----------------
 
-Dataverse relies on EJB timers to perform scheduled tasks: harvesting from remote servers, updating the local OAI sets and running metadata exports. (See :doc:`timers` for details.) If these scheduled jobs are not running on your server, this may be the result of the incompatibility between the version of PostgreSQL database you are using, and PostgreSQL JDBC driver in use by your instance of Payara. The symptoms:
+Dataverse relies on EJB timers to perform scheduled tasks: harvesting from remote servers, updating the local OAI sets and running metadata exports. (See :doc:`timers` for details.) If these scheduled jobs are not running on your server, you might experience the following symptoms:
 
 If you are seeing the following in your server.log...
 
@@ -127,9 +125,9 @@ followed by an Exception stack trace with these lines in it:
 :fixedwidthplain:`Exception Description: Could not deserialize object from byte array` ...
 
 
-... it most likely means that it is the JDBC driver incompatibility that's preventing the timer from working correctly. 
-Make sure you install the correct version of the driver. For example, if you are running the version 9.3 of PostgreSQL, make sure you have the driver postgresql-9.3-1104.jdbc4.jar in your :fixedwidthplain:`<PAYARA FOLDER>/glassfish/lib` directory. Go `here <https://jdbc.postgresql.org/download.html>`_
-to download the correct version of the driver. If you have an older driver in glassfish/lib, make sure to remove it, replace it with the new version and restart Payara. (You may need to remove the entire contents of :fixedwidthplain:`<PAYARA FOLDER>/glassfish/domains/domain1/generated` before you start Payara). 
+... you should reach out by opening an issue. In the good old days of running Dataverse 4 running on Glassfish 4, this
+was a hint for an unsupported JDBC driver. In Dataverse 5 this would be a new regression and its cause would need to be
+investigated.
 
 
 Constraint Violations Issues

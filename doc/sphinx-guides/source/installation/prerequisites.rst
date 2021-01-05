@@ -47,7 +47,7 @@ If you don't want to be prompted, here is an example of the non-interactive invo
 Payara
 ------
 
-Payara 5.2020.2 is recommended. Newer versions might work fine.
+Payara 5.2020.6 is recommended. Newer versions might work fine, regular updates are recommended.
 
 Installing Payara
 =================
@@ -58,8 +58,8 @@ Installing Payara
 
 - Download and install Payara (installed in ``/usr/local/payara5`` in the example commands below)::
 
-	# wget https://github.com/payara/Payara/releases/download/payara-server-5.2020.2/payara-5.2020.2.zip
-	# unzip payara-5.2020.2.zip
+	# wget https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2020.6/payara-5.2020.6.zip
+	# unzip payara-5.2020.6.zip
 	# mv payara5 /usr/local
 
 If you intend to install and run Payara under a service account (and we hope you do), chown -R the Payara hierarchy to root to protect it but give the service account access to the below directories:
@@ -322,7 +322,7 @@ components and libraries. Please consult the instructions in the
 Installing R
 ============
 
-For RHEL/CentOS, the EPEL distribution is strongly recommended::
+For RHEL/CentOS, the EPEL distribution is strongly recommended:
 
 If :fixedwidthplain:`yum` isn't configured to use EPEL repositories ( https://fedoraproject.org/wiki/EPEL ):
 

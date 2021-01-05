@@ -2375,11 +2375,8 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
     
-    private boolean bulkUpdateCheckVersion(){
-        return workingVersion.isReleased();
-    }
     
-    private void refreshSelectedFiles(){
+    private void refreshSelectedFiles(List<FileMetadata> filesToRefresh){
         if (readOnly) {
             dataset = datasetService.find(dataset.getId());
         }
@@ -2389,7 +2386,7 @@ public class DatasetPage implements java.io.Serializable {
         workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
         workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(requestAccess);
         List <FileMetadata> newSelectedFiles = new ArrayList<>();
-        for (FileMetadata fmd : selectedFiles){
+        for (FileMetadata fmd : filesToRefresh){
             for (FileMetadata fmdn: workingVersion.getFileMetadatas()){
                 if (fmd.getDataFile().equals(fmdn.getDataFile())){
                     newSelectedFiles.add(fmdn);
@@ -2397,9 +2394,9 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         
-        selectedFiles.clear();
+        filesToRefresh.clear();
         for (FileMetadata fmdn : newSelectedFiles ){
-            selectedFiles.add(fmdn);
+            filesToRefresh.add(fmdn);
         }
         readOnly = false;
     }
@@ -3243,119 +3240,36 @@ public class DatasetPage implements java.io.Serializable {
             return null;
         }
     }
-
-    List<FileMetadata> previouslyRestrictedFiles = null;
     
-    public boolean isShowAccessPopup() {
+    public String restrictFiles(boolean restricted) throws CommandException {
+        List filesToRestrict = new ArrayList();
         
-        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-
-            if (fmd.isRestricted()) {
-            
-                if (editMode == EditMode.CREATE) {
-                    // if this is a brand new file, it's definitely not 
-                    // of a previously restricted kind!
-                    return true; 
-                }
-            
-                if (previouslyRestrictedFiles != null) {
-                    // We've already checked whether we are in the CREATE mode, 
-                    // above; and that means we can safely assume this filemetadata
-                    // has an existing db id. So it is safe to use the .contains()
-                    // method below:
-                    if (!previouslyRestrictedFiles.contains(fmd)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        
-        return false;
-    }
-    
-    public void setShowAccessPopup(boolean showAccessPopup) {} // dummy set method
-    
-    public String testSelectedFilesForRestrict(){
-        //RequestContext requestContext = RequestContext.getCurrentInstance();
-        if (selectedFiles.isEmpty()) {
-                PrimeFaces.current().executeScript("PF('selectFilesForRestrict').show()");           
-            return "";
-        } else {           
-            boolean validSelection = true;
-            for (FileMetadata fmd : selectedFiles) {
-                if (fmd.isRestricted() == true) {
-                    validSelection = false;
-                    break;
-                }
-            }
-            if (!validSelection) {
-                PrimeFaces.current().executeScript("PF('selectFilesForRestrict').show()");
-                return "";
-            }                       
-            testSelectedFilesForMapData();
-            PrimeFaces.current().executeScript("PF('accessPopup').show()");
-            return "";
-        }        
-    }
-    
-    public String restrictFiles(boolean restricted) throws CommandException{
         if (fileMetadataForAction != null) {
-            return restrictFile(restricted);
-        }
-        return restrictSelectedFiles(restricted);
-    }
-    
-    private String restrictFile(boolean restricted) throws CommandException {
-        restrictFiles(Collections.singletonList(fileMetadataForAction), restricted);   
-        save();        
-        return  returnToDraftVersion(); 
-    };    
-       
-    private String restrictSelectedFiles(boolean restricted) throws CommandException{        
-        if (selectedFiles.isEmpty()) {
-            if (restricted) {
-                PrimeFaces.current().executeScript("PF('selectFilesForRestrict').show()");
-            } else {
-                PrimeFaces.current().executeScript("PF('selectFilesForUnRestrict').show()");
-            }
-            return "";
+            filesToRestrict.add(fileMetadataForAction);
         } else {
-            boolean validSelection = true;
-            for (FileMetadata fmd : selectedFiles) {
-                if (fmd.isRestricted() == restricted) {
-                    validSelection = false;
-                    break;
-                }
-            }
-            if (!validSelection) {
-                if (restricted) {
-                    PrimeFaces.current().executeScript("PF('selectFilesForRestrict').show()");
-                }
-                if (!restricted) {
-                    PrimeFaces.current().executeScript("PF('selectFilesForUnRestrict').show()");
-                }
-                return "";
-            }
+            filesToRestrict = this.getSelectedFiles();
         }
         
-        if (editMode != EditMode.CREATE) {
-            if (bulkUpdateCheckVersion()) {
-                refreshSelectedFiles();
-            }
-            restrictFiles(this.getSelectedFiles(), restricted);
-        }
-        
-        save();
-        return  returnToDraftVersion();
+        restrictFiles(filesToRestrict, restricted);
+        return save();
     }
     
     private void restrictFiles(List<FileMetadata> filesToRestrict, boolean restricted) throws CommandException {
+
+        // todo: this seems to be have been added to get around an optmistic lock; it may be worth investigating
+        // if there's a better way to handle
+        if (workingVersion.isReleased()) {
+            refreshSelectedFiles(filesToRestrict);
+        }
+        
+        if (restricted) { // get values from access popup
+            workingVersion.getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
+            workingVersion.getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);  
+        }
+              
+
         Command<Void> cmd;
-        previouslyRestrictedFiles = new ArrayList<>();
         for (FileMetadata fmd : filesToRestrict) {
-            if(fmd.isRestricted()) {
-                previouslyRestrictedFiles.add(fmd);
-            }
             if (restricted  != fmd.isRestricted()) {
                 cmd = new RestrictFileCommand(fmd.getDataFile(), dvRequestService.getDataverseRequest(), restricted);
                 commandEngine.submit(cmd);
@@ -3380,28 +3294,24 @@ public class DatasetPage implements java.io.Serializable {
     private List<FileMetadata> filesToBeDeleted = new ArrayList<>();
 
     public String deleteFiles() throws CommandException{
+        List filesToDelete = new ArrayList();
+        
         if (fileMetadataForAction != null) {
-            return deleteFile();
+            filesToDelete.add(fileMetadataForAction);
+        } else {
+            bulkFileDeleteInProgress = true;
+            filesToDelete = this.getSelectedFiles();
         }
-        return deleteSelectedFiles();
+        
+        deleteFiles(filesToDelete);
+        return save();
     }
-    
-    private String  deleteFile(){
-        deleteFiles(Collections.singletonList(fileMetadataForAction));
-        return save();       
-    }     
-    
-    private String  deleteSelectedFiles(){
-        bulkFileDeleteInProgress = true;
-        if (bulkUpdateCheckVersion()){
-           refreshSelectedFiles(); 
-        }
-        deleteFiles(selectedFiles);
-        return save();       
-    }   
-    
+        
     private void deleteFiles(List<FileMetadata> filesToDelete) {
-
+        if (workingVersion.isReleased()) {
+            refreshSelectedFiles(filesToDelete);
+        }
+        
         for (FileMetadata markedForDelete : filesToDelete) {
             
             if (markedForDelete.getId() != null) {
@@ -3644,7 +3554,7 @@ public class DatasetPage implements java.io.Serializable {
                     // have been created in the dataset. 
                     dataset = datasetService.find(dataset.getId());
                     
-                    List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(dataset.getEditVersion(), newFiles, false);
+                    List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(dataset.getEditVersion(), newFiles, null);
                     newFiles.clear();
                     
                     // and another update command: 
@@ -4598,9 +4508,9 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public void refreshTagsPopUp(){
-        if (bulkUpdateCheckVersion()){
-           refreshSelectedFiles();           
-        }  
+        if (workingVersion.isReleased()) {
+            refreshSelectedFiles(selectedFiles);
+        }
         updateFileCounts();
         refreshCategoriesByName();
         refreshTabFileTagsByName();
@@ -4781,8 +4691,8 @@ public class DatasetPage implements java.io.Serializable {
         // page with the FileMetadata.setCategoriesByName() method. 
         // So here we only need to take care of the new, custom category
         // name, if entered: 
-        if (bulkUpdateCheckVersion()) {
-            refreshSelectedFiles();
+        if (workingVersion.isReleased()) {
+            refreshSelectedFiles(selectedFiles);
         }
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
             if (selectedFiles != null && selectedFiles.size() > 0) {
@@ -5668,5 +5578,23 @@ public class DatasetPage implements java.io.Serializable {
     public void setFileMetadataForAction(FileMetadata fileMetadataForAction) {
         this.fileMetadataForAction = fileMetadataForAction;
     }
+    
+    private String termsOfAccess;
+    private boolean fileAccessRequest;
 
+    public String getTermsOfAccess() {
+        return termsOfAccess;
+    }
+
+    public void setTermsOfAccess(String termsOfAccess) {
+        this.termsOfAccess = termsOfAccess;
+    }
+
+    public boolean isFileAccessRequest() {
+        return fileAccessRequest;
+    }
+
+    public void setFileAccessRequest(boolean fileAccessRequest) {
+        this.fileAccessRequest = fileAccessRequest;
+    }
 }
