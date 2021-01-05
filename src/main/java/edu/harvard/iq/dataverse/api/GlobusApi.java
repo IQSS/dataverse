@@ -101,7 +101,7 @@ public class GlobusApi extends AbstractApiBean {
         // -------------------------------------
         // (2) Get the User ApiToken
         // -------------------------------------
-        ApiToken token = authSvc.findApiTokenByUser((AuthenticatedUser)authUser);
+        ApiToken token = authSvc.findApiTokenByUser((AuthenticatedUser) authUser);
 
         // -------------------------------------
         // (3) Get the Dataset Id
@@ -151,13 +151,13 @@ public class GlobusApi extends AbstractApiBean {
                 msgt("******* (api) basicGlobusToken: " + basicGlobusToken);
                 AccessToken clientTokenUser = globusServiceBean.getClientToken(basicGlobusToken);
 
-                success = globusServiceBean.getSuccessfulTransfers(clientTokenUser, taskIdentifier ) ;
+                success = globusServiceBean.getSuccessfulTransfers(clientTokenUser, taskIdentifier);
                 msgt("******* (api) success: " + success);
 
             } catch (Exception ex) {
                 ex.printStackTrace();
                 logger.info(ex.getMessage());
-                return error(Response.Status.INTERNAL_SERVER_ERROR, "Failed to get task id" );
+                return error(Response.Status.INTERNAL_SERVER_ERROR, "Failed to get task id");
             }
 
         } while (!success);
@@ -204,37 +204,57 @@ public class GlobusApi extends AbstractApiBean {
                         logger.info("Supplied type: " + suppliedContentType + ", finalType: " + finalType);
                     }
 
-                    JsonPatch path = Json.createPatchBuilder().add("/mimeType",finalType).build();
+                    JsonPatch path = Json.createPatchBuilder().add("/mimeType", finalType).build();
                     fileJson = path.apply(fileJson);
 
 
-                    String checksumVal =  FileUtil.calculateChecksum(in, DataFile.ChecksumType.MD5);
+                    String checksumVal = FileUtil.calculateChecksum(in, DataFile.ChecksumType.MD5);
 
-                    path = Json.createPatchBuilder().add("/md5Hash",checksumVal).build();
+                    path = Json.createPatchBuilder().add("/md5Hash", checksumVal).build();
                     fileJson = path.apply(fileJson);
 
-                    String requestUrl = httpRequest.getRequestURL().toString() ;
+                    String requestUrl = httpRequest.getRequestURL().toString();
 
                     ProcessBuilder processBuilder = new ProcessBuilder();
 
-                    String command = "curl -H \"X-Dataverse-key:" + token.getTokenString() + "\" -X POST https://" + httpRequest.getServerName() + "/api/datasets/:persistentId/add?persistentId=doi:"+ directory + " -F jsonData='"+fileJson.toString() +"'";
+                    String command = "curl -H \"X-Dataverse-key:" + token.getTokenString() + "\" -X POST https://" + httpRequest.getServerName() + "/api/datasets/:persistentId/add?persistentId=doi:" + directory + " -F jsonData='" + fileJson.toString() + "'";
                     msgt("*******====command ==== " + command);
-                     processBuilder.command("bash", "-c", command);
+
+
+                    //processBuilder.command("bash", "-c", command);
                     msgt("*******=== Start api/datasets/:persistentId/add call");
-                     Process process = processBuilder.start();
+                    //Process process = processBuilder.start();
+
+
+                    new Thread(new Runnable() {
+                        public void run() {
+                            try {
+                                processBuilder.command("bash", "-c", command);
+                                Process process = processBuilder.start();
+                            } catch (Exception ex) {
+                                logger.log(Level.SEVERE, "******* Unexpected Exception while executing api/datasets/:persistentId/add call ", ex);
+                            }
+                        }
+                    }).start();
+
+
                 }
             }
 
+
         } catch (Exception e) {
             String message = e.getMessage();
-            msgt("*******   UNsuccessfully completed "  + message);
+            msgt("*******   Exception from globus API call " + message);
             msgt("*******  datasetId :" + dataset.getId() + " ======= GLOBUS  CALL Exception ============== " + message);
             e.printStackTrace();
-      }
+        }
+        //msgt("*******   successfully completed " );
+        return ok(" dataset Name :" + dataset.getDisplayName() + ": Files to this dataset will be added to the table and will display in the UI.  Processing can take significant time for large datasets.");
 
-        msgt("*******   successfully completed " );
-        return ok(" dataset Name :" + dataset.getDisplayName() + ": Files to this dataset will be added to the table and will display in the UI.");
+
     }
+
+
 
     private void msg(String m) {
         //System.out.println(m);
