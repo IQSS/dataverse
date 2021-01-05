@@ -23,6 +23,25 @@ As a profile of AtomPub, XML is used throughout SWORD. As of Dataverse 4.0 datas
 
 .. _SWORDv2 specification: http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html
 
+.. _sword-auth:
+
+Authentication for SWORD
+------------------------
+
+The :doc:`/api/auth` section describes how to pass API tokens for the "native" API (as a header or query parameter) but SWORD uses a different mechanism known as HTTP Basic Authentication (`RFC 7617`_).
+
+HTTP Basic Authentication commonly makes use of both a username and a password but the SWORD API uses only a username that is populated with the user's API token. The password should be blank or empty.
+
+Clients such as ``curl`` expect both a username and a password separated by a colon. With ``curl``, the way to indicate that the password should be blank or empty is to include the colon at the end of the username (the API token) like this:
+
+``curl -u 54b143b5-d001-4254-afc0-a1c0f6a5b5a7:``
+
+All the curl examples below take this form but instead of showing an API token like above, a Bash environment variable called ``$API_TOKEN`` is shown instead like this:
+
+``curl -u $API_TOKEN:``
+
+.. _RFC 7617: https://tools.ietf.org/html/rfc7617
+
 .. _incompatible:
 
 Backward incompatible changes
@@ -45,7 +64,7 @@ Differences in Dataverse 4 from DVN 3.x lead to a few minor backward incompatibl
 New features as of v1.1
 -----------------------
 
-- Dataverse 4 supports API tokens and requires them to be used for APIs instead of a username and password. In the ``curl`` examples below, you will see ``curl -u $API_TOKEN:`` showing that you should send your API token as the username and nothing as the password. For example, ``curl -u 54b143b5-d001-4254-afc0-a1c0f6a5b5a7:``.
+- Dataverse 4+ supports API tokens and requires them to be used for APIs instead of a username and password. In the ``curl`` examples below, you will see ``curl -u $API_TOKEN:`` showing that you should send your API token as the username and nothing as the password. For example, ``curl -u 54b143b5-d001-4254-afc0-a1c0f6a5b5a7:``. See also :ref:`sword-auth`.
 
 - SWORD operations no longer require "admin" permission. In order to use any SWORD operation in DVN 3.x, you had to be an "admin" on a dataverse (the container for your dataset) and similar rules were applied in Dataverse 4.4 and earlier (the ``EditDataverse`` permission was required). The SWORD API has now been fully integrated with the Dataverse 4 permission model such that any action you have permission to perform in the GUI or "native" API you are able to perform via SWORD. This means that even a user with a "Contributor" role can operate on datasets via SWORD. Note that users with the "Contributor" role do not have the ``PublishDataset`` permission and will not be able publish their datasets via any mechanism, GUI or API.
 
