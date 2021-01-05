@@ -60,7 +60,7 @@ public class WebApplicationExceptionHandler implements ExceptionMapper<WebApplic
                 if ( (ex.getMessage()+"").toLowerCase().startsWith("datafile")) {
                     jrb.message(ex.getMessage());
                 } else {
-                    jrb.message("The resource does not exist on this server. Please check your code for typos, or consult our API guide at http://guides.dataverse.org.");
+                    jrb.message("API endpoint does not exist on this server. Please check your code for typos, or consult our API guide at http://guides.dataverse.org.");
                     jrb.request(request);
                 }
                 break;
