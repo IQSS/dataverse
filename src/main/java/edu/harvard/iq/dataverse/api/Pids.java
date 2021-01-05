@@ -15,6 +15,7 @@ import javax.json.JsonObjectBuilder;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -51,6 +52,8 @@ public class Pids extends AbstractApiBean {
         try {
             JsonObjectBuilder result = PidUtil.queryDoi(persistentId, baseUrl, username, password);
             return ok(result);
+        } catch (NotFoundException ex) {
+            return error(ex.getResponse().getStatusInfo().toEnum(), ex.getLocalizedMessage());
         } catch (InternalServerErrorException ex) {
             return error(ex.getResponse().getStatusInfo().toEnum(), ex.getLocalizedMessage());
         }

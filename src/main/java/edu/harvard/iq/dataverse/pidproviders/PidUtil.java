@@ -25,6 +25,17 @@ public class PidUtil {
 
     private static final Logger logger = Logger.getLogger(PidUtil.class.getCanonicalName());
 
+    /**
+     * @throws BadRequestException if user didn't supply a DOI.
+     *
+     * @throws NotFoundException if DOI not found in DataCite.
+     *
+     * @throws ServiceUnavailableException if non 200 or non 404 response from
+     * DataCite.
+     *
+     * @throws InternalServerErrorException on local misconfiguration such as
+     * DataCite hostname not in DNS.
+     */
     public static JsonObjectBuilder queryDoi(String persistentId, String baseUrl, String username, String password) {
         try {
             // This throws an exception if this is not a DOI, which is the only
@@ -53,7 +64,7 @@ public class PidUtil {
             }
             if (status == 404) {
                 //Could check to see if Dataverse expects the DOI to be registered - that would result in a 404 from Dataverse before having to contact DataCite, and DataCite could still return a 404
-                throw new NotFoundException();
+                throw new NotFoundException("404 (NOT FOUND) from DataCite for DOI " + persistentId);
             }
             if (status != 200) {
                 /* We could just send back whatever status code DataCite sends, but we've seen
