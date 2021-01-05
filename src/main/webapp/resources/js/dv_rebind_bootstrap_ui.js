@@ -30,37 +30,7 @@ function bind_bsui_components(){
     disabledLinks();
     
     // Truncate checksums
-    // TO-DO DETERMINE IF THIS IS PLACE IS OVERKILL, ON EVERY PG, EVERY REBIND ACTION ... 
-    // PROBABLY NEEDED LIKE ALL THE OTHER FUNCTIONS FOR DYNAMIC AJAX UPDATES ON PG
     checksumTruncate();
-    
-    /*
-    * Truncate file checksums
-    */
-    function checksumTruncate(){
-        
-        // TO-DO MOVE THIS CHUNK OUT OF BIND_BSUI, TO BOTTOM OF THIS FILE
-        
-        $('span.checksum-truncate').each(function () {
-            
-            var checksumText = $(this).text();
-            
-            if (checksumText.length > 35) {
-                $(this).text( checksumText.substr(0, 8) + '...' + checksumText.substr(checksumText.length-3, checksumText.length) );
-            }
-            
-            // TO-DO WIRE UP CLICK TO COPY W/ CLIPBOARD.JS ... SEE JIM'S PR 5211
-            // var clipboard = new Clipboard('button.checksum');
-            // clipboard.on('success', function(e) {
-            //     console.log(e);
-            // });
-            // clipboard.on('error', function(e) {
-            //     console.log(e);
-            // });
-            
-        });
-        
-    }
     
     // Sharrre
     sharrre();
@@ -182,6 +152,26 @@ function sharrre(){
             // var sharrrecount = $('#sharrre-total').val();
             // $('#sharrre-count').prepend(sharrrecount);
         }
+    });
+}
+    
+/*
+ * Truncate file checksums
+ */
+function checksumTruncate(){
+    $('span.checksum-truncate').each(function () {
+        var checksumText = $(this).text();
+        if (checksumText.length > 35) {
+            $(this).text(checksumText.substr(0, 8) + '...' + checksumText.substr(checksumText.length-3, checksumText.length));
+        }
+        $(this).append(' <span class="glyphicon glyphicon-copy"></span>');
+        var clipboard = new Clipboard('span.checksum-truncate');
+        clipboard.on('success', function(e) {
+            console.log(e);
+        });
+        clipboard.on('error', function(e) {
+            console.log(e);
+        });
     });
 }
 

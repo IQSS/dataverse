@@ -29,7 +29,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-sm-10 col-file-metadata">
+            <div class="col-md-10 col-file-metadata">
                 <div class="fileNameOriginal">
                     <ui:fragment rendered="#{!editDatafilesPage}">
                         <!-- conditional render in file page links, if file has global id, use that; if not, we use database id -->
@@ -52,15 +52,15 @@
                         <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(fileMetadata.dataFile.id)}"/>
                     </h:outputFormat>
                     <!-- CHECKSUM -->
-                    <div class="checksum-block" style="word-break: break-all;" jsf:rendered="#{!fileMetadata.dataFile.tabularData}">
+                    <div class="checksum-block" jsf:rendered="#{!fileMetadata.dataFile.tabularData}">
                         <span class="#{!editDatafilesPage ? 'checksum-truncate' : ''}"
                                       jsf:rendered="#{!(empty fileMetadata.dataFile.checksumValue)}"
-                                      title="#{fileMetadata.dataFile.checksumValue}">#{fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue}</span>
-                        <!-- TO-DO Click to copy #7312 #6685 #5210 -->
-                        <!-- <span class="glyphicon glyphicon-copy"></span> -->
+                                      data-clipboard-action="copy"
+                                      data-clipboard-text="#{fileMetadata.dataFile.checksumValue}"
+                                      title="#{bundle['file.metaData.checksum.copy']} #{fileMetadata.dataFile.checksumValue}">#{fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue}</span>
                     </div>
                     <!-- UNF + Variables, Obsersvations -->
-                    <div class="unf-block" style="word-break: break-all;" jsf:rendered="#{fileMetadata.dataFile.tabularData}">
+                    <div class="unf-block" jsf:rendered="#{fileMetadata.dataFile.tabularData}">
                         <h:outputText id="fileNumVars" value="#{fileMetadata.dataFile.dataTable.varQuantity} #{bundle['file.metaData.dataFile.dataTab.variables']}, "/>
                         <h:outputText id="fileNumObs" value="#{fileMetadata.dataFile.dataTable.caseQuantity} #{bundle['file.metaData.dataFile.dataTab.observations']} #{!empty fileMetadata.dataFile.unf ? ' - ' : ''}"/>
                         <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}" rendered="#{!empty fileMetadata.dataFile.unf}"/>
