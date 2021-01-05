@@ -8,6 +8,10 @@ package edu.harvard.iq.dataverse.api.util;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import static edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil.LOG_HEADER;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -47,7 +51,12 @@ public class FailedPIDResolutionLoggingServiceBean {
         }
 
         public FailedPIDResolutionEntry(String persistentId, String requestURI, String method, IpAddress sourceAddress) {
-            setIdentifier(persistentId);
+            try {
+                setIdentifier(URLEncoder.encode(persistentId, StandardCharsets.UTF_8.toString()));
+            } catch (UnsupportedEncodingException e) {
+                // Should never happen
+                e.printStackTrace();
+            }
             setRequestUrl(requestURI);
             setMethod(method);
             setClientIp(sourceAddress.toString());
