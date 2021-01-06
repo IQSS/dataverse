@@ -50,7 +50,7 @@ the terms "OAI Set" and "Harvesting Set" are used
 interchangeably. Sets are defined by search queries. Any such query
 that finds any number of published, local (non-harvested) datasets can
 be used to create an OAI set. Sets can overlap local Dataverse collections, and can include as few or as many of your local datasets as you wish. A
-good way to master the Dataverse search query language is to
+good way to master the Dataverse Platform search query language is to
 experiment with the Advanced Search page. We also recommend that you
 consult the :doc:`/api/search` section of the API Guide. 
 
@@ -61,7 +61,7 @@ can go back and try to re-define the query.
 
 Some useful examples of search queries to define OAI sets: 
 
-- A good way to create a set that would include all your local, published datasets is to do so by the Unique Identifier authority registered to your Dataverse, for example: 
+- A good way to create a set that would include all your local, published datasets is to do so by the Unique Identifier authority registered to your Dataverse installation, for example: 
 
   ``dsPersistentId:"doi:1234/"``
 
@@ -69,11 +69,11 @@ Some useful examples of search queries to define OAI sets:
   
   Note also that the search terms limiting the results to published and local datasets **are added to the query automatically**, so you don't need to worry about that. 
   
-- A query to create a set to include the datasets from a specific local dataverse: 
+- A query to create a set to include the datasets from a specific Dataverse collection: 
 
   ``parentId:NNN``
 
-  where NNN is the database id of the dataverse object (consult the Dataverse table of the SQL database used by the application to verify the database id). 
+  where NNN is the database id of the Dataverse collection object (consult the Dataverse table of the SQL database used by the application to verify the database id). 
 
 - A query to find all the dataset by a certain author: 
 
@@ -95,7 +95,7 @@ Some useful examples of search queries to define OAI sets:
   
   ``dsPersistentId:10.5000/XXYYZZ``
 
-  For all dataverses with subjects of Astronomy and Astrophysics or Earth and Environmental Sciences:
+  For all Dataverse collections with subjects of Astronomy and Astrophysics or Earth and Environmental Sciences:
  
   ``(dvSubject:"Astronomy and Astrophysics" OR dvSubject:"Earth and Environmental Sciences")``
 
@@ -106,14 +106,14 @@ Some useful examples of search queries to define OAI sets:
 Important: New SOLR schema required!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In order to be able to define OAI sets, your SOLR server must be upgraded with the search schema that came with the Dataverse release 4.5 (or later), and all your local datasets must be re-indexed, once the new schema is installed. 
+In order to be able to define OAI sets, your SOLR server must be upgraded with the search schema that came with release 4.5 (or later), and all your local datasets must be re-indexed, once the new schema is installed. 
 
 OAI Set updates
 ---------------
 
 Every time a new harvesting set is created, or changes are made to an
 existing set, the contents of the set are automatically updated - the
-Dataverse application will find the datasets defined by the query, and
+Dataverse installation will find the datasets defined by the query, and
 attempt to run the metadata export on the ones that haven't been
 exported yet. Only the datasets for which the export has completed
 successfully, and the results cached on the filesystem are included in
@@ -134,9 +134,7 @@ the sets every time any changes to the metadata are made.
 The OAI set will however be updated automatically by a scheduled metadata export job that
 runs every night (at 2AM, by default). This export timer is created
 and activated automatically every time the application is deployed
-or restarted. Once again, this is new in Dataverse 4, and unlike DVN
-v3, where export jobs had to be scheduled and activated by the admin
-user. See the :doc:`/admin/metadataexport` section of the Admin Guide, for more information on the automated metadata exports.
+or restarted. See the :doc:`/admin/metadataexport` section of the Admin Guide, for more information on the automated metadata exports.
 
 It is still possible however to make changes like this be immediately
 reflected in the OAI server, by going to the *Harvesting Server* page
