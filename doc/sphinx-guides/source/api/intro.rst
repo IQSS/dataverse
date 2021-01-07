@@ -1,16 +1,16 @@
 Introduction
 ============
 
-Dataverse APIs allow users to accomplish many tasks such as...
+Dataverse Platform APIs allow users to accomplish many tasks such as...
 
 - creating datasets
 - uploading files
 - publishing datasets
 - and much, much more
 
-... all without using the Dataverse web interface.
+... all without using the Dataverse installation's web interface.
 
-APIs open the door for integrations between Dataverse and other software. For a list, see the :doc:`/admin/integrations` section of the Admin Guide.
+APIs open the door for integrations between the Dataverse Platform and other software. For a list, see the :doc:`/admin/integrations` section of the Admin Guide.
 
 .. contents:: |toctitle|
     :local:
@@ -18,7 +18,7 @@ APIs open the door for integrations between Dataverse and other software. For a 
 What is an API?
 ---------------
 
-API stands for "Application Programming Interface" and an example is Dataverse's "file upload" API. In the diagram below, we can see that while users can click a button within Dataverse's web interface to upload a file, there are many other ways to get files into Dataverse, all using an API that allows for uploading of files.
+API stands for "Application Programming Interface" and an example is the Dataverse Platform's "file upload" API. In the diagram below, we can see that while users can click a button within Dataverse installation's web interface to upload a file, there are many other ways to get files into a Dataverse installation, all using an API that allows for uploading of files.
 
 .. graphviz::
 
@@ -65,34 +65,34 @@ API stands for "Application Programming Interface" and an example is Dataverse's
 The components above that use the "file" upload API are:
 
 - DvUploader is terminal-based application for uploading files that is described in the :doc:`/user/dataset-management` section of the User Guide.
-- OJS, OSF, and RSpace are all web applications that can integrate with Dataverse and are described in "Getting Data In" in the :doc:`/admin/integrations` section of the Admin Guide.
+- OJS, OSF, and RSpace are all web applications that can integrate with a Dataverse installation and are described in "Getting Data In" in the :doc:`/admin/integrations` section of the Admin Guide.
 - The script in the diagram can be as simple as a single line of code that is run in a terminal. You can copy and paste "one-liners" like this from the guide. See the :doc:`getting-started` section for examples using a tool called "curl".
 
 The diagram above shows only a few examples of software using a specific API but many more APIs are available.
 
 .. _types-of-api-users:
 
-Types of Dataverse API Users
-----------------------------
+Types of Dataverse Platform API Users
+-------------------------------------
 
 This guide is intended to serve multiple audiences but pointers various sections of the guide are provided below based on the type of API user you are.
 
-API Users Within a Single Installation of Dataverse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+API Users Within a Single Dataverse Installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Each installation of Dataverse will have its own groups of people interested in APIs.
+Each Dataverse installation will have its own groups of people interested in APIs.
 
 Users of Integrations and Apps
 ++++++++++++++++++++++++++++++
 
 Integrations and apps can take many forms but two examples are:
 
-- Using Open Science Framework (OSF), a web application, to deposit and publish data into Dataverse.
-- Using DVUploader, a terminal-based desktop application, to upload files into Dataverse.
+- Using Open Science Framework (OSF), a web application, to deposit and publish data into a Dataverse installation.
+- Using DVUploader, a terminal-based desktop application, to upload files into a Dataverse installation.
 
-In both examples, users need to obtain an API Token to authenticate with Dataverse.
+In both examples, users need to obtain an API Token to authenticate with a Dataverse installation.
 
-|Start| A good starting point is "API Tokens" in the :doc:`/user/account` section of the User Guide. DvUploader is documented in the :doc:`/user/dataset-management` section of the User Guide. The integrations that are enabled depend on your installation of Dataverse. You can find a list in the :doc:`/admin/integrations` section of the Admin Guide.
+|Start| A good starting point is "API Tokens" in the :doc:`/user/account` section of the User Guide. DvUploader is documented in the :doc:`/user/dataset-management` section of the User Guide. The integrations that are enabled depend on your Dataverse installation. You can find a list in the :doc:`/admin/integrations` section of the Admin Guide.
 
 Power Users
 +++++++++++
@@ -104,16 +104,16 @@ Power users may be researchers or curators who are comfortable with automating p
 Support Teams and Superusers
 ++++++++++++++++++++++++++++
 
-Support teams that answer questions about their installation of Dataverse should familiarize themselves with the :doc:`getting-started` section to get a sense of common tasks that researchers and curators might be trying to accomplish by using Dataverse APIs.
+Support teams that answer questions about their Dataverse installation should familiarize themselves with the :doc:`getting-started` section to get a sense of common tasks that researchers and curators might be trying to accomplish by using Dataverse Platform APIs.
 
-Superusers of an installation of Dataverse have access a superuser dashboard described in the :doc:`/admin/dashboard` section of the Admin Guide but some operations can only be done via API.
+Superusers of a Dataverse installation have access a superuser dashboard described in the :doc:`/admin/dashboard` section of the Admin Guide but some operations can only be done via API.
 
 |Start| A good starting point for both groups is the :doc:`getting-started` section of this guide followed by the :doc:`/admin/troubleshooting` section of the Admin Guide.
 
 Sysadmins
 +++++++++
 
-Sysadmins often write scripts to automate tasks and Dataverse APIs make this possible. Sysadmins have control over the server that Dataverse is running on and may be called upon to execute API commands that are limited to "localhost" (the server itself) for security reasons.
+Sysadmins often write scripts to automate tasks and Dataverse Platform APIs make this possible. Sysadmins have control over the server that the Dataverse installation is running on and may be called upon to execute API commands that are limited to "localhost" (the server itself) for security reasons.
 
 |Start| A good starting point for sysadmins is "Blocking API Endpoints" in the :doc:`/installation/config` section of the Installation Guide, followed by the :doc:`getting-started` section of this guide, followed by the :doc:`/admin/troubleshooting` section of the Admin Guide.
 
