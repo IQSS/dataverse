@@ -1,7 +1,7 @@
 Native API
 ==========
 
-Dataverse 4 exposes most of its GUI functionality via a REST-based API. This section describes that functionality. Most API endpoints require an API token that can be passed as the ``X-Dataverse-key`` HTTP header or in the URL as the ``key`` query parameter.
+The Dataverse Platform exposes most of its GUI functionality via a REST-based API. This section describes that functionality. Most API endpoints require an API token that can be passed as the ``X-Dataverse-key`` HTTP header or in the URL as the ``key`` query parameter.
 
 .. note:: |CORS| Some API endpoint allow CORS_ (cross-origin resource sharing), which makes them usable from scripts running in web browsers. These endpoints are marked with a *CORS* badge.
 
@@ -9,25 +9,25 @@ Dataverse 4 exposes most of its GUI functionality via a REST-based API. This sec
 
 .. _CORS: https://www.w3.org/TR/cors/
 
-.. warning:: Dataverse 4's API is versioned at the URI - all API calls may include the version number like so: ``http://server-address/api/v1/...``. Omitting the ``v1`` part would default to the latest API version (currently 1). When writing scripts/applications that will be used for a long time, make sure to specify the API version, so they don't break when the API is upgraded.
+.. warning:: The Dataverse Platform's API is versioned at the URI - all API calls may include the version number like so: ``http://server-address/api/v1/...``. Omitting the ``v1`` part would default to the latest API version (currently 1). When writing scripts/applications that will be used for a long time, make sure to specify the API version, so they don't break when the API is upgraded.
 
 .. contents:: |toctitle|
     :local:
 
-Dataverses
-----------
+Dataverse Collections
+---------------------
 
 .. _create-dataverse-api:
 
-Create a Dataverse
-~~~~~~~~~~~~~~~~~~
+Create a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A dataverse is a container for datasets and other dataverses as explained in the :doc:`/user/dataverse-management` section of the User Guide.
+A Dataverse collection is a container for datasets and other Dataverse collections as explained in the :doc:`/user/dataverse-management` section of the User Guide.
 
-The steps for creating a dataverse are:
+The steps for creating a Dataverse collection are:
 
-- Prepare a JSON file containing the name, description, etc, of the dataverse you'd like to create.
-- Figure out the alias or database id of the "parent" dataverse into which you will be creating your new dataverse.
+- Prepare a JSON file containing the name, description, etc, of the Dataverse collection you'd like to create.
+- Figure out the alias or database id of the "parent" Dataverse collection into which you will be creating your new Dataverse collection.
 - Execute a curl command or equivalent.
 
 Download :download:`dataverse-complete.json <../_static/api/dataverse-complete.json>` file and modify it to suit your needs. The fields ``name``, ``alias``, and ``dataverseContacts`` are required. The controlled vocabulary for ``dataverseType`` is the following:
@@ -46,7 +46,7 @@ Download :download:`dataverse-complete.json <../_static/api/dataverse-complete.j
 
 The curl command below assumes you have kept the name "dataverse-complete.json" and that this file is in your current working directory.
 
-Next you need to figure out the alias or database id of the "parent" dataverse into which you will be creating your new dataverse. Out of the box the top level dataverse has an alias of "root" and a database id of "1" but your installation may vary. The easiest way to determine the alias of your root dataverse is to click "Advanced Search" and look at the URL. You may also choose a parent under the root.
+Next you need to figure out the alias or database id of the "parent" Dataverse collection into which you will be creating your new Dataverse collection. Out of the box the top level Dataverse collection has an alias of "root" and a database id of "1" but your installation may vary. The easiest way to determine the alias of your root Dataverse collection is to click "Advanced Search" and look at the URL. You may also choose a parent under the root.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
 
@@ -64,16 +64,16 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST https://demo.dataverse.org/api/dataverses/root --upload-file dataverse-complete.json
 
-You should expect an HTTP 200 response and JSON beginning with "status":"OK" followed by a representation of the newly-created dataverse.
+You should expect an HTTP 200 response and JSON beginning with "status":"OK" followed by a representation of the newly-created Dataverse collection.
 
 .. _view-dataverse:
 
-View a Dataverse
-~~~~~~~~~~~~~~~~
+View a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| View a JSON representation of the dataverse identified by ``$id``. ``$id`` can be the database ID of the dataverse, its alias, or the special value ``:root`` for the root dataverse.
+|CORS| View a JSON representation of the Dataverse collection identified by ``$id``. ``$id`` can be the database ID of the Dataverse collection, its alias, or the special value ``:root`` for the root Dataverse collection.
 
-To view a published dataverse:
+To view a published Dataverse collection:
 
 .. code-block:: bash
 
@@ -88,7 +88,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl https://demo.dataverse.org/api/dataverses/root
 
-To view an unpublished dataverse:
+To view an unpublished Dataverse collection:
 
 .. code-block:: bash
 
@@ -104,12 +104,12 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root
 
-Delete a Dataverse
-~~~~~~~~~~~~~~~~~~
+Delete a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Before you may delete a dataverse you must first delete or move all of its contents elsewhere.
+Before you may delete a Dataverse collection you must first delete or move all of its contents elsewhere.
 
-Deletes the dataverse whose database ID or alias is given:
+Deletes the Dataverse collection whose database ID or alias is given:
 
 .. code-block:: bash
 
@@ -127,10 +127,10 @@ The fully expanded example above (without environment variables) looks like this
 
 .. _show-contents-of-a-dataverse-api:
 
-Show Contents of a Dataverse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Show Contents of a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Lists all the dataverses and datasets directly under a dataverse (direct children only, not recursive) specified by database id or alias. If you pass your API token and have access, unpublished dataverses and datasets will be included in the response.
+|CORS| Lists all the Dataverse collections and datasets directly under a Dataverse collection (direct children only, not recursive) specified by database id or alias. If you pass your API token and have access, unpublished Dataverse collections and datasets will be included in the response.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
 
@@ -148,10 +148,10 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root/contents
 
-Report the data (file) size of a Dataverse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Report the data (file) size of a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Shows the combined size in bytes of all the files uploaded into the dataverse ``id``:
+Shows the combined size in bytes of all the files uploaded into the Dataverse collection ``id``:
 
 .. code-block:: bash
 
@@ -167,13 +167,13 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root/storagesize
 
-The size of published and unpublished files will be summed both in the dataverse specified and beneath all its sub-dataverses, recursively. 
-By default, only the archival files are counted - i.e., the files uploaded by users (plus the tab-delimited versions generated for tabular data files on ingest). If the optional argument ``includeCached=true`` is specified, the API will also add the sizes of all the extra files generated and cached by Dataverse - the resized thumbnail versions for image files, the metadata exports for published datasets, etc. 
+The size of published and unpublished files will be summed both in the Dataverse collection specified and beneath all its sub-collections, recursively. 
+By default, only the archival files are counted - i.e., the files uploaded by users (plus the tab-delimited versions generated for tabular data files on ingest). If the optional argument ``includeCached=true`` is specified, the API will also add the sizes of all the extra files generated and cached by the Dataverse installation - the resized thumbnail versions for image files, the metadata exports for published datasets, etc. 
 
-List Roles Defined in a Dataverse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+List Roles Defined in a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-All the roles defined directly in the dataverse identified by ``id``:
+All the roles defined directly in the Dataverse collection identified by ``id``:
 
 .. code-block:: bash
 
@@ -189,10 +189,10 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root/roles
 
-List Facets Configured for a Dataverse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+List Facets Configured for a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| List all the facets for a given dataverse ``id``:
+|CORS| List all the facets for a given Dataverse collection ``id``:
 
 .. code-block:: bash
 
@@ -208,10 +208,10 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root/facets
 
-Set Facets for a Dataverse
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Set Facets for a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Assign search facets for a given dataverse identified by ``id``:
+Assign search facets for a given Dataverse collection identified by ``id``:
 
 .. code-block:: bash
 
@@ -229,10 +229,10 @@ The fully expanded example above (without environment variables) looks like this
 
 Where ``facets.json`` contains a JSON encoded list of metadata keys (e.g. ``["authorName","authorAffiliation"]``).
 
-Create a New Role in a Dataverse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Create a New Role in a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Creates a new role under dataverse ``id``. Needs a json file with the role description:
+Creates a new role under Dataverse collection ``id``. Needs a json file with the role description:
 
 .. code-block:: bash
 
@@ -261,10 +261,10 @@ Where ``roles.json`` looks like this::
 
 .. _list-role-assignments-on-a-dataverse-api:
 
-List Role Assignments in a Dataverse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+List Role Assignments in a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-List all the role assignments at the given dataverse:
+List all the role assignments at the given Dataverse collection:
 
 .. code-block:: bash
 
@@ -280,10 +280,10 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root/assignments
 
-Assign Default Role to User Creating a Dataset in a Dataverse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Assign Default Role to User Creating a Dataset in a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Assign a default role to a user creating a dataset in a dataverse ``id`` where ``roleAlias`` is the database alias of the role to be assigned:
+Assign a default role to a user creating a dataset in a Dataverse collection ``id`` where ``roleAlias`` is the database alias of the role to be assigned:
 
 .. code-block:: bash
 
@@ -300,12 +300,12 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X PUT https://demo.dataverse.org/api/dataverses/root/defaultContributorRole/curator
 
-Note: You may use "none" as the ``ROLE_ALIAS``. This will prevent a user who creates a dataset from having any role on that dataset. It is not recommended for dataverses with human contributors.
+Note: You may use "none" as the ``ROLE_ALIAS``. This will prevent a user who creates a dataset from having any role on that dataset. It is not recommended for Dataverse collections with human contributors.
 
 .. _assign-role-on-a-dataverse-api:
 
-Assign a New Role on a Dataverse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Assign a New Role on a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Assigns a new role, based on the POSTed JSON:
 
@@ -332,8 +332,8 @@ POSTed JSON example (the content of ``role.json`` file)::
 
 .. _revoke-role-on-a-dataverse-api:
 
-Delete Role Assignment from a Dataverse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Delete Role Assignment from a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Delete the assignment whose id is ``$id``:
 
@@ -352,12 +352,12 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X DELETE https://demo.dataverse.org/api/dataverses/root/assignments/6
 
-List Metadata Blocks Defined on a Dataverse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+List Metadata Blocks Defined on a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Get the metadata blocks defined on a dataverse which determine which field are available to authors when they create and edit datasets within that dataverse. This feature is described in :ref:`general-information` section of Dataverse Management of the User Guide.
+|CORS| Get the metadata blocks defined on a Dataverse collection which determine which field are available to authors when they create and edit datasets within that Dataverse collection. This feature is described in :ref:`general-information` section of Dataverse Collection Management of the User Guide.
 
-Please note that an API token is only required if the dataverse has not been published.
+Please note that an API token is only required if the Dataverse collection has not been published.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
 
@@ -375,12 +375,12 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root/metadatablocks
 
-Define Metadata Blocks for a Dataverse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Define Metadata Blocks for a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can define the metadata blocks available to authors within a dataverse.
+You can define the metadata blocks available to authors within a Dataverse collection.
 
-The metadata blocks that are available with a default installation of Dataverse are in :download:`define-metadatablocks.json <../_static/api/define-metadatablocks.json>` (also shown below) and you should download this file and edit it to meet your needs. Please note that the "citation" metadata block is required. You must have "EditDataverse" permission on the dataverse.
+The metadata blocks that are available with a default Dataverse installation are in :download:`define-metadatablocks.json <../_static/api/define-metadatablocks.json>` (also shown below) and you should download this file and edit it to meet your needs. Please note that the "citation" metadata block is required. You must have "EditDataverse" permission on the Dataverse collection.
 
 .. literalinclude:: ../_static/api/define-metadatablocks.json
 
@@ -400,10 +400,10 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -H "Content-type:application/json" --upload-file define-metadatablocks.json https://demo.dataverse.org/api/dataverses/root/metadatablocks
 
-Determine if a Dataverse Inherits Its Metadata Blocks from Its Parent
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Determine if a Dataverse Collection Inherits Its Metadata Blocks from Its Parent
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Get whether the dataverse is a metadata block root, or does it uses its parent blocks:
+Get whether the Dataverse collection is a metadata block root, or does it uses its parent blocks:
 
 .. code-block:: bash
 
@@ -419,10 +419,10 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root/metadatablocks/isRoot
 
-Configure a Dataverse to Inherit Its Metadata Blocks from Its Parent
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Configure a Dataverse Collection to Inherit Its Metadata Blocks from Its Parent
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Set whether the dataverse is a metadata block root, or does it uses its parent blocks. Possible
+Set whether the Dataverse collection is a metadata block root, or does it uses its parent blocks. Possible
 values are ``true`` and ``false`` (both are valid JSON expressions):
 
 .. code-block:: bash
@@ -444,8 +444,8 @@ The fully expanded example above (without environment variables) looks like this
 
 .. _create-dataset-command: 
 
-Create a Dataset in a Dataverse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Create a Dataset in a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A dataset is a container for files as explained in the :doc:`/user/dataset-management` section of the User Guide.
 
@@ -457,11 +457,11 @@ To create a dataset, you must supply a JSON file that contains at least the foll
 - Description
 - Subject
 
-As a starting point, you can download :download:`dataset-finch1.json <../../../../scripts/search/tests/data/dataset-finch1.json>` and modify it to meet your needs. (In addition to this minimal example, you can download :download:`dataset-create-new-all-default-fields.json <../../../../scripts/api/data/dataset-create-new-all-default-fields.json>` which populates all of the metadata fields that ship with Dataverse.)
+As a starting point, you can download :download:`dataset-finch1.json <../../../../scripts/search/tests/data/dataset-finch1.json>` and modify it to meet your needs. (In addition to this minimal example, you can download :download:`dataset-create-new-all-default-fields.json <../../../../scripts/api/data/dataset-create-new-all-default-fields.json>` which populates all of the metadata fields that ship with a Dataverse installation.)
 
 The curl command below assumes you have kept the name "dataset-finch1.json" and that this file is in your current working directory.
 
-Next you need to figure out the alias or database id of the "parent" dataverse into which you will be creating your new dataset. Out of the box the top level dataverse has an alias of "root" and a database id of "1" but your installation may vary. The easiest way to determine the alias of your root dataverse is to click "Advanced Search" and look at the URL. You may also choose a parent dataverse under the root dataverse.
+Next you need to figure out the alias or database id of the "parent" Dataverse collection into which you will be creating your new dataset. Out of the box the top level Dataverse collection has an alias of "root" and a database id of "1" but your installation may vary. The easiest way to determine the alias of your root Dataverse collection is to click "Advanced Search" and look at the URL. You may also choose a parent Dataverse collection under the root Dataverse collection.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
 
@@ -481,14 +481,14 @@ The fully expanded example above (without the environment variables) looks like 
 
 You should expect an HTTP 200 ("OK") response and JSON indicating the database ID and Persistent ID (PID such as DOI or Handle) that has been assigned to your newly created dataset.
 
-.. note:: Only a Dataverse account with superuser permissions is allowed to include files when creating a dataset via this API. Adding files this way only adds their file metadata to the database, you will need to manually add the physical files to the file system.
+.. note:: Only a Dataverse installation account with superuser permissions is allowed to include files when creating a dataset via this API. Adding files this way only adds their file metadata to the database, you will need to manually add the physical files to the file system.
 
-Import a Dataset into a Dataverse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Import a Dataset into a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. note:: This action requires a Dataverse account with super-user permissions.
+.. note:: This action requires a Dataverse installation account with super-user permissions.
 
-To import a dataset with an existing persistent identifier (PID), the dataset's metadata should be prepared in Dataverse's native JSON format. The PID is provided as a parameter at the URL. The following line imports a dataset with the PID ``PERSISTENT_IDENTIFIER`` to Dataverse, and then releases it:
+To import a dataset with an existing persistent identifier (PID), the dataset's metadata should be prepared in Dataverse installation's native JSON format. The PID is provided as a parameter at the URL. The following line imports a dataset with the PID ``PERSISTENT_IDENTIFIER`` to the Dataverse installation, and then releases it:
 
 .. code-block:: bash
 
@@ -507,7 +507,7 @@ The fully expanded example above (without environment variables) looks like this
 
 The ``pid`` parameter holds a persistent identifier (such as a DOI or Handle). The import will fail if no PID is provided, or if the provided PID fails validation.
 
-The optional ``release`` parameter tells Dataverse to immediately publish the dataset. If the parameter is changed to ``no``, the imported dataset will remain in ``DRAFT`` status.
+The optional ``release`` parameter tells the Dataverse installation to immediately publish the dataset. If the parameter is changed to ``no``, the imported dataset will remain in ``DRAFT`` status.
 
 The JSON format is the same as that supported by the native API's :ref:`create dataset command<create-dataset-command>`, although it also allows packages.  For example:
 
@@ -519,17 +519,17 @@ Before calling the API, make sure the data files referenced by the ``POST``\ ed 
 
 .. warning:: 
   
-  * This API does not cover staging files (with correct contents, checksums, sizes, etc.) in the corresponding places in the Dataverse filestore.
+  * This API does not cover staging files (with correct contents, checksums, sizes, etc.) in the corresponding places in the Dataverse installation's filestore.
   * This API endpoint does not support importing *files'* persistent identifiers.
-  * A Dataverse server can import datasets with a valid PID that uses a different protocol or authority than said server is configured for. However, the server will not update the PID metadata on subsequent update and publish actions.
+  * A Dataverse installation can import datasets with a valid PID that uses a different protocol or authority than said server is configured for. However, the server will not update the PID metadata on subsequent update and publish actions.
 
 
-Import a Dataset into a Dataverse with a DDI file
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Import a Dataset into a Dataverse Installation with a DDI file
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. note:: This action requires a Dataverse account with super-user permissions.
+.. note:: This action requires a Dataverse installation account with super-user permissions.
 
-To import a dataset with an existing persistent identifier (PID), you have to provide the PID as a parameter at the URL. The following line imports a dataset with the PID ``PERSISTENT_IDENTIFIER`` to Dataverse, and then releases it:
+To import a dataset with an existing persistent identifier (PID), you have to provide the PID as a parameter at the URL. The following line imports a dataset with the PID ``PERSISTENT_IDENTIFIER`` to the Dataverse installation, and then releases it:
 
 .. code-block:: bash
 
@@ -548,21 +548,21 @@ The fully expanded example above (without environment variables) looks like this
 
 The optional ``pid`` parameter holds a persistent identifier (such as a DOI or Handle). The import will fail if the provided PID fails validation.
 
-The optional ``release`` parameter tells Dataverse to immediately publish the dataset. If the parameter is changed to ``no``, the imported dataset will remain in ``DRAFT`` status.
+The optional ``release`` parameter tells the Dataverse installation to immediately publish the dataset. If the parameter is changed to ``no``, the imported dataset will remain in ``DRAFT`` status.
 
 The file is a DDI xml file.
 
 .. warning::
 
   * This API does not handle files related to the DDI file.
-  * A Dataverse server can import datasets with a valid PID that uses a different protocol or authority than said server is configured for. However, the server will not update the PID metadata on subsequent update and publish actions.
+  * A Dataverse installation can import datasets with a valid PID that uses a different protocol or authority than said server is configured for. However, the server will not update the PID metadata on subsequent update and publish actions.
 
 .. _publish-dataverse-api:
 
-Publish a Dataverse
-~~~~~~~~~~~~~~~~~~~
+Publish a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In order to publish a dataverse, you must know either its "alias" (which the GUI calls an "identifier") or its database ID.
+In order to publish a Dataverse collection, you must know either its "alias" (which the GUI calls an "identifier") or its database ID.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
 
@@ -585,7 +585,7 @@ You should expect a 200 ("OK") response and JSON output.
 Datasets
 --------
 
-**Note** Creation of new datasets is done with a ``POST`` onto dataverses. See Dataverses_ section.
+**Note** Creation of new datasets is done with a ``POST`` onto a Dataverse collection. See Dataverse_ section.
 
 **Note** In all commands below, dataset versions can be referred to as:
 

@@ -1,7 +1,7 @@
 Introduction
 ============
 
-Dataverse Platform APIs allow users to accomplish many tasks such as...
+The Dataverse Platform APIs allow users to accomplish many tasks such as...
 
 - creating datasets
 - uploading files
@@ -120,37 +120,37 @@ Sysadmins often write scripts to automate tasks and Dataverse Platform APIs make
 In House Developers
 +++++++++++++++++++
 
-Some organizations that run Dataverse employ developers who are tasked with using Dataverse APIs to accomplish specific tasks such as building custom integrations with in house systems or creating reports specific to the organization's needs. 
+Some organizations that run a Dataverse installation employ developers who are tasked with using the Dataverse installation's APIs to accomplish specific tasks such as building custom integrations with in house systems or creating reports specific to the organization's needs. 
 
 |Start| A good starting point for in house developers is the :doc:`getting-started` section.
 
 API Users Across the Dataverse Project
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The Dataverse project loves contributors! Depending on your interests and skills, you might fall into one or more of the groups below.
+The Dataverse Project loves contributors! Depending on your interests and skills, you might fall into one or more of the groups below.
 
 Developers of Integrations, External Tools, and Apps
 ++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-One of the primary purposes for Dataverse APIs in the first place is to enable integrations with third party software. Integrations are listed in the following places:
+One of the primary purposes for Dataverse Platform APIs in the first place is to enable integrations with third party software. Integrations are listed in the following places:
 
 - The :doc:`/admin/integrations` section of the Admin Guide.
 - The :doc:`/api/external-tools` section this guide.
 - The :doc:`apps` section of this guide.
 
-|Start| Good starting points are the three sections above to get a sense of third-party software that already integrates with Dataverse, followed by the :doc:`getting-started` section.
+|Start| Good starting points are the three sections above to get a sense of third-party software that already integrates with the Dataverse Platform, followed by the :doc:`getting-started` section.
 
-Developers of Dataverse API Client Libraries 
-++++++++++++++++++++++++++++++++++++++++++++
+Developers of Dataverse Platform API Client Libraries 
++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-A client library helps developers using a specific programming language such as Python, Javascript, R, or Java interact with Dataverse APIs in a manner that is idiomatic for their language. For example, a Python programmer may want to
+A client library helps developers using a specific programming language such as Python, Javascript, R, or Java interact with Dataverse Platform APIs in a manner that is idiomatic for their language. For example, a Python programmer may want to
 
 |Start| A good starting point is the :doc:`client-libraries` section, followed by the :doc:`getting-started` section.
 
-Developers of Dataverse Itself
-++++++++++++++++++++++++++++++
+Developers of The Dataverse Software Itself
++++++++++++++++++++++++++++++++++++++++++++
 
-Developers working on Dataverse itself use Dataverse APIs when adding features, fixing bugs, and testing those features and bug fixes.
+Developers working on the Dataverse Software itself use the APIs when adding features, fixing bugs, and testing those features and bug fixes.
 
 |Start| A good starting point is the :doc:`/developers/testing` section of the Developer Guide.
 
@@ -178,7 +178,7 @@ See :doc:`auth`.
 Lists of Dataverse APIs
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-- :doc:`search`: For searching dataverses, datasets, and files.
+- :doc:`search`: For searching dataverse collections, datasets, and files.
 - :doc:`dataaccess`: For downloading and subsetting data.
 - :doc:`native-api`: For performing most tasks that are possible in the GUI. See :doc:`getting-started` for the most common commands which operate on endpoints with names like:
 
@@ -208,7 +208,7 @@ Please note that some APIs are only documented in other guides that are more sui
 Client Libraries
 ~~~~~~~~~~~~~~~~
 
-See :doc:`client-libraries` for how to use Dataverse APIs from Python, R, and Java.
+See :doc:`client-libraries` for how to use Dataverse Platform APIs from Python, R, Java, and Javascript.
 
 Examples
 ~~~~~~~~
@@ -225,11 +225,11 @@ See :doc:`faq`.
 Getting Help
 ------------
 
-Dataverse API questions are on topic in all the usual places:
+Dataverse Platform API questions are on topic in all the usual places:
 
 - The dataverse-community Google Group: https://groups.google.com/forum/#!forum/dataverse-community
-- Dataverse community calls: https://dataverse.org/community-calls
-- The Dataverse chat room: http://chat.dataverse.org 
-- The Dataverse ticketing system: support@dataverse.org
+- Dataverse Project community calls: https://dataverse.org/community-calls
+- The Dataverse Project chat room: http://chat.dataverse.org 
+- The Dataverse Project ticketing system: support@dataverse.org
 
 After your question has been answered, you are welcome to help improve the :doc:`faq` section of this guide.
