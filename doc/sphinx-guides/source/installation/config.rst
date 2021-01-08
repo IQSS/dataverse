@@ -869,7 +869,7 @@ For example:
 .. _Archiving API Calls:
 
 API Calls
-++++++++
++++++++++
 
 Once this configuration is complete, you, as a user with the *PublishDataset* permission, should be able to use the API call to manually submit a DatasetVersion for processing:
 
@@ -887,9 +887,9 @@ A batch API call is also available that will attempt to archive any currently un
 
 The call supports three optional query parameters that can be used in combination:
 
-``listonly={true/false}`` default is false. Using true retrieves the list of unarchived versions but does not attempt to archive any
+``listonly={true/false}`` default is false. Using true retrieves the list of unarchived versions but does not attempt to archive any.
 
-``latestonly={true/false}`` default is false. Using true only lists/processes the most recently published version of a given dataset (instead of all published versions)
+``latestonly={true/false}`` default is false. Using true only lists/processes the most recently published version of a given dataset (instead of all published versions).
 
 ``limit={n}`` default is no limit/process all unarchived versions (subject to other parameters). Defines a maximum number of versions to attempt to archive in response to one invocation of the API call.
 
