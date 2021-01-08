@@ -986,8 +986,8 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
     } // end getBasicDatasetVersionInfo
     
     
-    
-    public HashMap<?, ?> getFileMetadataHistory(DataFile df){
+    //Not used?
+    public HashMap getFileMetadataHistory(DataFile df){
         
         if (df == null){
             throw new NullPointerException("DataFile 'df' cannot be null");
@@ -1175,18 +1175,18 @@ w
         
         String queryString = "SELECT OBJECT(o) FROM DatasetVersion AS o WHERE o.releaseTime IS NOT NULL and o.archivalCopyLocation IS NULL";
         
-        try{
+        try {
             TypedQuery<DatasetVersion> query = em.createQuery(queryString, DatasetVersion.class);
             List<DatasetVersion> dsl = query.getResultList();
             return dsl;
-            
+
         } catch (javax.persistence.NoResultException e) {
             logger.log(Level.FINE, "No unarchived DatasetVersions found: {0}", queryString);
             return null;
-         } catch (EJBException e) {
-             logger.log(Level.WARNING, "EJBException exception: {0}", e.getMessage());
-             return null;
-         }
+        } catch (EJBException e) {
+            logger.log(Level.WARNING, "EJBException exception: {0}", e.getMessage());
+            return null;
+        }
     } // end getUnarchivedDatasetVersions
-    
+
 } // end class
