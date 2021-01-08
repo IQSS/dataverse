@@ -191,11 +191,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
         Dataset readyDataset = ctxt.em().merge(theDataset);
         
-        if ( readyDataset != null ) {
-            // Success! - send notification: 
-            notifyUsersDatasetPublishStatus(ctxt, theDataset, UserNotification.Type.PUBLISHEDDS);
-        }
-        
         // Finally, unlock the dataset:
         ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.Workflow);
         ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.finalizePublication);
@@ -219,6 +214,12 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             dataset  = ((PublishDatasetResult) r).getDataset();
         }
         
+        try {
+            // Success! - send notification:
+            notifyUsersDatasetPublishStatus(ctxt, dataset, UserNotification.Type.PUBLISHEDDS);
+        } catch (Exception e) {
+            logger.warning("Failure to send dataset published messages for : " + dataset.getId() + " : " + e.getMessage());
+        }
         try {
             Future<String> indexString = ctxt.index().indexDataset(dataset, true);                   
         } catch (IOException | SolrServerException e) {    

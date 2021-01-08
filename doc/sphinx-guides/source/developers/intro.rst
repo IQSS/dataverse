@@ -28,6 +28,8 @@ Dataverse is a `Jakarta EE <https://en.wikipedia.org/wiki/Jakarta_EE>`_ applicat
 
 We make use of a variety of Jakarta EE technologies such as JPA, JAX-RS, JMS, and JSF. The front end is built using PrimeFaces and Bootstrap.
 
+In addition, we start to adopt parts of Eclipse MicroProfile, namely `MicroProfile Config <https://github.com/eclipse/microprofile-config>`_.
+
 Roadmap
 -------
 
