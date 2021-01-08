@@ -1821,7 +1821,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 						"You must upload a file or provide a storageidentifier, filename, and mimetype.");
 			}
 		} else {
-			newFilename = new String(contentDispositionHeader.getFileName().getBytes(), StandardCharsets.UTF_8);
+			newFilename = new String(contentDispositionHeader.getFileName().getBytes(StandardCharsets.US_ASCII), StandardCharsets.UTF_8);
 			newFileContentType = formDataBodyPart.getMediaType().toString();
 		}
 
