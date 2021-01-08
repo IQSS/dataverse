@@ -374,8 +374,8 @@
                                             <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
                                             <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{fileMetadata.dataFile.tabularData}"/>
                                             <h:outputText id="fileCreatePublishDate" value=" - #{fileMetadata.getFileDateToDisplay()}" rendered="#{!(empty fileMetadata.id)}"/>
-                                            <div class="checksum-block" style="word-break: break-all;" rendered="#{!(empty fileMetadata.dataFile.checksumValue)}">
-                                                <h:outputText id="fileChecksum" value="#{fileMetadata.dataFile.tabularData ? fileMetadata.dataFile.originalChecksumType : fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue};"/>
+                                            <div class="checksum-block" style="word-break: break-all;">
+                                                <h:outputText id="fileChecksum" value="#{fileMetadata.dataFile.tabularData ? fileMetadata.dataFile.originalChecksumType : fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue}"/>
                                             </div>
                                             <!-- UNF + Variables, Obsersvations -->
                                             <div class="unf-block" style="word-break: break-all;" jsf:rendered="#{fileMetadata.dataFile.tabularData}">

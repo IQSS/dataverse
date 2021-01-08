@@ -1236,20 +1236,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     }
 
-    public String dataFileChecksumDisplay(DataFile datafile) {
-        if (datafile == null) {
-            return "";
-        }
-
-        if (datafile.getChecksumValue() != null && !StringUtils.isEmpty(datafile.getChecksumValue())) {
-            if (datafile.getChecksumType() != null) {
-                return " " + datafile.getChecksumType() + ": " + datafile.getChecksumValue() + " ";
-            }
-        }
-
-        return "";
-    }
-
     public void setDisplayCardValues() {
 
         Set<Long> harvestedDatasetIds = null;

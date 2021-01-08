@@ -156,22 +156,29 @@ function sharrre(){
 }
     
 /*
- * Truncate file checksums
+ * Truncate file checksums + click to copy
  */
 function checksumTruncate(){
     $('span.checksum-truncate').each(function () {
         var checksumText = $(this).text();
-        if (checksumText.length > 35) {
-            $(this).text(checksumText.substr(0, 8) + '...' + checksumText.substr(checksumText.length-3, checksumText.length));
+        if (checksumText.length > 25) {
+            // COUNT ":" IN UNF VERSION LABEL
+            var labelCount = (checksumText.match(/:/g) || []).length;
+            // COUNT "=" IN UNF SUFFIX
+            var suffixCount = (checksumText.match(/=/g) || []).length;
+            // TRUNCATE MIDDLE W/ "..." + FIRST/LAST 3 CHARACTERS
+            $(this).text(checksumText.substr(0, labelCount + 3) + '...' + checksumText.substr((checksumText.length - suffixCount - 3), checksumText.length));
         }
+        // ADD CLIPBOARD ICON
         $(this).append(' <span class="glyphicon glyphicon-copy"></span>');
-        var clipboard = new Clipboard('span.checksum-truncate');
-        clipboard.on('success', function(e) {
-            console.log(e);
-        });
-        clipboard.on('error', function(e) {
-            console.log(e);
-        });
+    });
+    // USE CLIPBOARD.JS TO COPY
+    var clipboard = new Clipboard('span.checksum-truncate');
+    clipboard.on('success', function(e) {
+        console.log(e);
+    });
+    clipboard.on('error', function(e) {
+        console.log(e);
     });
 }
 

@@ -372,6 +372,15 @@
 
         <p:column class="col-file-action button-block text-right" style="width:40%;" ariaHeaderText="#{bundle['file.actionsBlock']}">
             <f:facet name="header">
+                <script type="text/javascript">
+                    function downloadFiles(url, filelist) {
+                        filelist = filelist + ','; //Prevents last file from being dropped on server
+                        var form = $('<form></form>').attr('action', url).attr('method', 'post').attr('enctype', 'text/plain');
+                        form.append($("<input></input>").attr('type', 'hidden').attr('name', 'fileIds').attr('value', filelist));
+                        //Submit and then remove form
+                        form.appendTo('body').submit().remove();
+                    }
+                </script>
                 <!-- EDIT -->
                 <div style="margin-right:14px;" class="btn-group" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
                                                                                   and DatasetPage.canUpdateDataset() and !widgetWrapper.widgetView and (DatasetPage.fileMetadatasSearch.size() gt 0)}">
@@ -471,16 +480,6 @@
                                disabled="#{DatasetPage.locked}">
                     <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
                 </p:commandLink>
-
-                <script type="text/javascript">
-                    function downloadFiles(url, filelist) {
-                        filelist = filelist + ','; //Prevents last file from being dropped on server
-                        var form = $('<form></form>').attr('action', url).attr('method', 'post').attr('enctype', 'text/plain');
-                        form.append($("<input></input>").attr('type', 'hidden').attr('name', 'fileIds').attr('value', filelist));
-                        //Submit and then remove form
-                        form.appendTo('body').submit().remove();
-                    }
-                </script>
             </f:facet>
 
             <!-- FILE LEVEL MSGs -->

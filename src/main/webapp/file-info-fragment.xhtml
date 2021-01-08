@@ -52,18 +52,21 @@
                         <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(fileMetadata.dataFile.id)}"/>
                     </h:outputFormat>
                     <!-- CHECKSUM -->
-                    <div class="checksum-block" jsf:rendered="#{!fileMetadata.dataFile.tabularData}">
-                        <span class="#{!editDatafilesPage ? 'checksum-truncate' : ''}"
-                                      jsf:rendered="#{!(empty fileMetadata.dataFile.checksumValue)}"
+                    <div class="checksum-block" jsf:rendered="#{!fileMetadata.dataFile.tabularData and !(empty fileMetadata.dataFile.checksumValue)}">
+                        #{fileMetadata.dataFile.checksumType}: <span class="#{!editDatafilesPage ? 'checksum-truncate' : ''}"
                                       data-clipboard-action="copy"
                                       data-clipboard-text="#{fileMetadata.dataFile.checksumValue}"
-                                      title="#{bundle['file.metaData.checksum.copy']} #{fileMetadata.dataFile.checksumValue}">#{fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue}</span>
+                                      title="#{bundle['file.metaData.checksum.copy']} #{fileMetadata.dataFile.checksumValue}">#{fileMetadata.dataFile.checksumValue}</span>
                     </div>
-                    <!-- UNF + Variables, Obsersvations -->
+                    <!-- TABULAR VARIABLES, OBSERVATIONS + UNF -->
                     <div class="unf-block" jsf:rendered="#{fileMetadata.dataFile.tabularData}">
                         <h:outputText id="fileNumVars" value="#{fileMetadata.dataFile.dataTable.varQuantity} #{bundle['file.metaData.dataFile.dataTab.variables']}, "/>
                         <h:outputText id="fileNumObs" value="#{fileMetadata.dataFile.dataTable.caseQuantity} #{bundle['file.metaData.dataFile.dataTab.observations']} #{!empty fileMetadata.dataFile.unf ? ' - ' : ''}"/>
-                        <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}" rendered="#{!empty fileMetadata.dataFile.unf}"/>
+                        <span jsf:id="fileUNF" class="#{!editDatafilesPage ? 'checksum-truncate' : ''}"
+                                      jsf:rendered="#{!(empty fileMetadata.dataFile.unf)}"
+                                      data-clipboard-action="copy"
+                                      data-clipboard-text="#{fileMetadata.dataFile.unf}"
+                                      title="#{bundle['file.metaData.checksum.copy']} #{fileMetadata.dataFile.unf}">#{fileMetadata.dataFile.unf}</span>
                     </div>
                 </div>
                 <div class="fileDescription small" jsf:rendered="#{!(empty fileMetadata.description)}">
