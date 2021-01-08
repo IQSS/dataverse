@@ -496,12 +496,19 @@ public class AuthenticationServiceBean {
 
         deletePendingAccessRequests(au);
         
-        
+        deleteBannerMessages(au);
+               
         if (!explicitGroupService.findGroups(au).isEmpty()) {
             for(ExplicitGroup explicitGroup: explicitGroupService.findGroups(au)){
                 explicitGroup.removeByRoleAssgineeIdentifier(au.getIdentifier());
             }            
         }
+        
+    }
+    
+    private void deleteBannerMessages(AuthenticatedUser  au){
+        
+       em.createNativeQuery("delete from userbannermessage where user_id  = "+au.getId()).executeUpdate();
         
     }
     

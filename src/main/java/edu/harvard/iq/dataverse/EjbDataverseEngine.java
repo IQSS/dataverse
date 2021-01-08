@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -45,6 +46,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+
+import org.apache.log4j.lf5.LogLevel;
 
 /**
  * An EJB capable of executing {@link Command}s in a JEE environment.
@@ -335,12 +338,35 @@ public class EjbDataverseEngine {
     public CommandContext getContext() {
         if (ctxt == null) {
             ctxt = new CommandContext() {
-                
+
                 public Stack<Command> commandsCalled;
-                
+
                 @Override
-                public void addCommand (Command command){
-                    commandsCalled.push(command);
+                public void addCommand(Command command) {
+
+                    if (logger.isLoggable(Level.FINE) && !commandsCalled.isEmpty()) {
+                        int instance = (int) (100 * Math.random());
+                        try {
+                            logger.fine("Current Command Stack (" + instance + "): ");
+                            commandsCalled.forEach((c) -> {
+                                logger.fine("Command (" + instance + "): " + c.getClass().getSimpleName()
+                                        + "for DvObjects");
+                                for (Map.Entry<String, DvObject> e : ((Map<String, DvObject>) c.getAffectedDvObjects())
+                                        .entrySet()) {
+                                    logger.fine("(" + instance + "): " + e.getKey() + " : " + e.getValue().getId());
+                                }
+                            });
+                            logger.fine("Adding command(" + instance + "): " + command.getClass().getSimpleName()
+                                    + " for DvObjects");
+                            for (Map.Entry<String, DvObject> e : ((Map<String, DvObject>) command
+                                    .getAffectedDvObjects()).entrySet()) {
+                                logger.fine(e.getKey() + " : " + e.getValue().getId());
+                            }
+                        } catch (Exception e) {
+                            logger.fine("Exception logging command stack(" + instance + "): " + e.getMessage());
+                        }
+                    }
+					commandsCalled.push(command);
                 }
                 
                 

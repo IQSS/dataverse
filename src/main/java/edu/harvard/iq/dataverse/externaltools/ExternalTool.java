@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.externaltools;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -344,23 +345,25 @@ public class ExternalTool implements Serializable {
     }
 
     public String getDescriptionLang() {
-        String toolName = "";
+        String description = "";
         if (this.toolName != null) {
-            toolName = "externaltools." + this.toolName + ".description";
-            return (BundleUtil.getStringFromBundle(toolName));
-        } else {
-            return this.getDescription();
+            description = (BundleUtil.getStringFromBundle("externaltools." + this.toolName + ".description"));
+        } 
+        if (StringUtil.isEmpty(description)) {
+            description = this.getDescription();
         }
+        return description;
     }
 
     public String getDisplayNameLang() {
-        String toolName = "";
+        String displayName = "";
         if (this.toolName != null) {
-            toolName = "externaltools." + this.toolName + ".displayname";
-            return (BundleUtil.getStringFromBundle(toolName));
-        } else {
-            return this.getDisplayName();
+            displayName = (BundleUtil.getStringFromBundle("externaltools." + this.toolName + ".displayname"));
+        } 
+        if (StringUtil.isEmpty(displayName)) {
+            displayName = this.getDisplayName();
         }
+        return displayName;
     }
 
 
