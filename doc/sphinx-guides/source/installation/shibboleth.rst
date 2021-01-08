@@ -50,6 +50,10 @@ Install ``wget`` if you don't have it already:
 
 ``yum install wget``
 
+If you are running el8 (RHEL/CentOS 8):
+
+``wget http://download.opensuse.org/repositories/security:/shibboleth/CentOS_8/security:shibboleth.repo``
+
 If you are running el7 (RHEL/CentOS 7):
 
 ``wget http://download.opensuse.org/repositories/security:/shibboleth/CentOS_7/security:shibboleth.repo``
@@ -273,7 +277,7 @@ On CentOS 6:
 Configure Apache and shibd to Start at Boot
 -------------------------------------------
 
-On CentOS 7:
+On CentOS 7/8:
 
 ``systemctl enable httpd.service``
 

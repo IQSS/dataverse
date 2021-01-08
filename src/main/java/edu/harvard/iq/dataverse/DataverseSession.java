@@ -4,12 +4,15 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.PermissionServiceBean.StaticPermissionQuery;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.util.SessionUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -43,12 +46,28 @@ public class DataverseSession implements Serializable{
     @Inject
     SettingsWrapper settingsWrapper;
     
+    @Inject
+    DataverseHeaderFragment headerFragment;
+    
     @EJB
     SystemConfig systemConfig;
+    
+    @EJB
+    BannerMessageServiceBean bannerMessageService;
     
     private static final Logger logger = Logger.getLogger(DataverseSession.class.getCanonicalName());
     
     private boolean statusDismissed = false;
+    
+    private List<BannerMessage> dismissedMessages = new ArrayList<>();
+
+    public List<BannerMessage> getDismissedMessages() {
+        return dismissedMessages;
+    }
+
+    public void setDismissedMessages(List<BannerMessage> dismissedMessages) {
+        this.dismissedMessages = dismissedMessages;
+    }
 
     /**
      * If debug is set to true, some pages show extra debugging information to
@@ -175,6 +194,19 @@ public class DataverseSession implements Serializable{
                 && !localeCode.equals(FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage())) {
             FacesContext.getCurrentInstance().getViewRoot().setLocale(new Locale(localeCode));
         } 
+    }
+    
+    public void dismissMessage(BannerMessage message){
+               
+        if (message.isDismissibleByUser()){
+            if (user.isAuthenticated()){
+                bannerMessageService.dismissMessageByUser(message, (AuthenticatedUser) user);
+            }
+
+        } else {
+            dismissedMessages.add(message);
+        }
+        
     }
     
     public void configureSessionTimeout() {
