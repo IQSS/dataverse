@@ -887,7 +887,7 @@ A batch API call is also available that will attempt to archive any currently un
 
 The call supports three optional query parameters that can be used in combination:
 
-``listonly={true/false}`` default is false. Using true retrieves the list of unarchived versions but does not attempt to archive any
+``listonly={true/false}`` default is false. Using true retrieves the list of unarchived versions but does not attempt to archive any.
 
 ``latestonly={true/false}`` default is false. Using true only lists/processes the most recently published version of a given dataset (instead of all published versions)
 
