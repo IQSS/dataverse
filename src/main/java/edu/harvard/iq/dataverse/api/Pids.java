@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.Dataset;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.DeletePidCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReservePidCommand;
@@ -15,6 +14,8 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -48,8 +49,14 @@ public class Pids extends AbstractApiBean {
         String baseUrl = systemConfig.getDataCiteRestApiUrlString();
         String username = System.getProperty("doi.username");
         String password = System.getProperty("doi.password");
-        JsonObjectBuilder result = PidUtil.queryDoi(persistentId, baseUrl, username, password);
-        return ok(result);
+        try {
+            JsonObjectBuilder result = PidUtil.queryDoi(persistentId, baseUrl, username, password);
+            return ok(result);
+        } catch (NotFoundException ex) {
+            return error(ex.getResponse().getStatusInfo().toEnum(), ex.getLocalizedMessage());
+        } catch (InternalServerErrorException ex) {
+            return error(ex.getResponse().getStatusInfo().toEnum(), ex.getLocalizedMessage());
+        }
     }
 
     @GET
