@@ -302,9 +302,11 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     
                     // Provide both the "Content-disposition" and "Content-Type" headers,
                     // to satisfy the widest selection of browsers out there. 
-                    
-                    httpHeaders.add("Content-disposition", "attachment; filename=\"" + URLEncoder.encode(fileName, "UTF-8") + "\"");
-                    httpHeaders.add("Content-Type", mimeType + "; name=\"" + URLEncoder.encode(fileName, "UTF-8") + "\"");
+                    // Encode the filename as UTF-8, then deal with spaces. "encode" changes
+                    // a space to + so we change it back to a space (%20).
+                    String finalFileName = URLEncoder.encode(fileName, "UTF-8").replaceAll("\\+", "%20");
+                    httpHeaders.add("Content-disposition", "attachment; filename=\"" + finalFileName + "\"");
+                    httpHeaders.add("Content-Type", mimeType + "; name=\"" + finalFileName + "\"");
                     
                     long contentSize; 
                     boolean useChunkedTransfer = false; 

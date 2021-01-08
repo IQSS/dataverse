@@ -371,7 +371,7 @@ public class DownloadFilesIT {
     }
 
     /**
-     * Download a file with a UTF-8 filename.
+     * Download a file with a UTF-8 filename with a space.
      */
     @Test
     public void downloadFilenameUtf8() throws IOException {
@@ -398,14 +398,14 @@ public class DownloadFilesIT {
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
         String datasetPid = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
 
-        // Put a filename with an en-dash (READ–ME.md) into a zip file.
+        // Put a filename with an en-dash ("MY READ–ME.md") into a zip file.
         StringBuilder sb = new StringBuilder();
         sb.append("This is my README.");
         Path pathtoTempDir = Paths.get(Files.createTempDirectory(null).toString());
         String pathToZipFile = pathtoTempDir + File.separator + "test.zip";
         File f = new File(pathToZipFile);
         ZipOutputStream out = new ZipOutputStream(new FileOutputStream(f));
-        ZipEntry e = new ZipEntry("READ–ME.md");
+        ZipEntry e = new ZipEntry("MY READ–ME.md");
         out.putNextEntry(e);
         byte[] data = sb.toString().getBytes();
         out.write(data, 0, data.length);
@@ -433,11 +433,11 @@ public class DownloadFilesIT {
         downloadFile.then().assertThat()
                 .statusCode(OK.getStatusCode());
         Headers headers = downloadFile.getHeaders();
-        // In READ–ME.md the en-dash ("–") is "%E2%80%93" (e2 80 93 in hex).
-        Assert.assertEquals("attachment; filename=\"READ%E2%80%93ME.md\"", headers.getValue("Content-disposition"));
-        Assert.assertEquals("text/markdown; name=\"READ%E2%80%93ME.md\";charset=UTF-8", headers.getValue("Content-Type"));
+        // In "MY READ–ME.md" below the space is %20 and the en-dash ("–") is "%E2%80%93" (e2 80 93 in hex).
+        Assert.assertEquals("attachment; filename=\"MY%20READ%E2%80%93ME.md\"", headers.getValue("Content-disposition"));
+        Assert.assertEquals("text/markdown; name=\"MY%20READ%E2%80%93ME.md\";charset=UTF-8", headers.getValue("Content-Type"));
 
-        // Download all files as a zip and assert READ–ME.md has an en-dash.
+        // Download all files as a zip and assert "MY READ–ME.md" has an en-dash.
         Response downloadFiles = UtilIT.downloadFiles(datasetPid, apiToken);
         downloadFiles.then().assertThat()
                 .statusCode(OK.getStatusCode());
@@ -445,8 +445,8 @@ public class DownloadFilesIT {
         HashSet<String> filenamesFound = gatherFilenames(downloadFiles.getBody().asInputStream());
 
         // Note that a MANIFEST.TXT file is added.
-        // READ–ME.md (with an en-dash) is correctly extracted from the downloaded zip
-        HashSet<String> expectedFiles = new HashSet<>(Arrays.asList("MANIFEST.TXT", "READ–ME.md"));
+        // "MY READ–ME.md" (with an en-dash) is correctly extracted from the downloaded zip
+        HashSet<String> expectedFiles = new HashSet<>(Arrays.asList("MANIFEST.TXT", "MY READ–ME.md"));
         Assert.assertEquals(expectedFiles, filenamesFound);
     }
 
