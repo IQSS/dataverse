@@ -585,7 +585,7 @@ You should expect a 200 ("OK") response and JSON output.
 Datasets
 --------
 
-**Note** Creation of new datasets is done with a ``POST`` onto a Dataverse collection. See Dataverse_ section.
+**Note** Creation of new datasets is done with a ``POST`` onto a Dataverse collection. See the Dataverse Collections section above.
 
 **Note** In all commands below, dataset versions can be referred to as:
 
@@ -760,12 +760,12 @@ The fully expanded example above (without environment variables) looks like this
 Schema.org JSON-LD
 ^^^^^^^^^^^^^^^^^^
 
-Please note that the ``schema.org`` format has changed in backwards-incompatible ways after Dataverse 4.9.4:
+Please note that the ``schema.org`` format has changed in backwards-incompatible ways after Dataverse software version 4.9.4:
 
 - "description" was a single string and now it is an array of strings.
 - "citation" was an array of strings and now it is an array of objects.
 
-Both forms are valid according to Google's Structured Data Testing Tool at https://search.google.com/structured-data/testing-tool . (This tool will report "The property affiliation is not recognized by Google for an object of type Thing" and this known issue is being tracked at https://github.com/IQSS/dataverse/issues/5029 .) Schema.org JSON-LD is an evolving standard that permits a great deal of flexibility. For example, https://schema.org/docs/gs.html#schemaorg_expected indicates that even when objects are expected, it's ok to just use text. As with all metadata export formats, we will try to keep the Schema.org JSON-LD format Dataverse emits backward-compatible to made integrations more stable, despite the flexibility that's afforded by the standard.
+Both forms are valid according to Google's Structured Data Testing Tool at https://search.google.com/structured-data/testing-tool . (This tool will report "The property affiliation is not recognized by Google for an object of type Thing" and this known issue is being tracked at https://github.com/IQSS/dataverse/issues/5029 .) Schema.org JSON-LD is an evolving standard that permits a great deal of flexibility. For example, https://schema.org/docs/gs.html#schemaorg_expected indicates that even when objects are expected, it's ok to just use text. As with all metadata export formats, we will try to keep the Schema.org JSON-LD format your Dataverse installation emits backward-compatible to made integrations more stable, despite the flexibility that's afforded by the standard.
 
 List Files in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -830,9 +830,9 @@ Update Metadata For a Dataset
 
 Updates the metadata for a dataset. If a draft of the dataset already exists, the metadata of that draft is overwritten; otherwise, a new draft is created with this metadata.
 
-You must download a JSON representation of the dataset, edit the JSON you download, and then send the updated JSON to the Dataverse server.
+You must download a JSON representation of the dataset, edit the JSON you download, and then send the updated JSON to the Dataverse installation.
 
-For example, after making your edits, your JSON file might look like :download:`dataset-update-metadata.json <../_static/api/dataset-update-metadata.json>` which you would send to Dataverse like this:
+For example, after making your edits, your JSON file might look like :download:`dataset-update-metadata.json <../_static/api/dataset-update-metadata.json>` which you would send to the Dataverse installation like this:
 
 .. code-block:: bash
 
@@ -868,7 +868,7 @@ Now that the resulting JSON file only contains the ``metadataBlocks`` key, you c
 
     vi dataset-update-metadata.json
 
-Now that you've made edits to the metadata in your JSON file, you can send it to Dataverse as described above.
+Now that you've made edits to the metadata in your JSON file, you can send it to a Dataverse installation as described above.
 
 Edit Dataset Metadata
 ~~~~~~~~~~~~~~~~~~~~~
@@ -933,7 +933,7 @@ For these deletes your JSON file must include an exact match of those dataset fi
 Publish a Dataset
 ~~~~~~~~~~~~~~~~~
 
-When publishing a dataset it's good to be aware of Dataverse's versioning system, which is described in the :doc:`/user/dataset-management` section of the User Guide.
+When publishing a dataset it's good to be aware of the Dataverse Platform's versioning system, which is described in the :doc:`/user/dataset-management` section of the User Guide.
 
 If this is the first version of the dataset, its version number will be set to ``1.0``. Otherwise, the new dataset version number is determined by the most recent version number and the ``type`` parameter. Passing ``type=minor`` increases the minor version number (2.3 is updated to 2.4). Passing ``type=major`` increases the major version number (2.3 is updated to 3.0). (Superusers can pass ``type=updatecurrent`` to update metadata without changing the version number.)
 
@@ -1180,7 +1180,7 @@ The fully expanded example above (without environment variables) looks like this
 
 You should expect a 201 ("CREATED") response and JSON indicating the database id that has been assigned to your newly uploaded file.
 
-Please note that it's possible to "trick" Dataverse into giving a file a content type (MIME type) of your choosing. For example, you can make a text file be treated like a video file with ``-F 'file=@README.txt;type=video/mpeg4'``, for example. If Dataverse does not properly detect a file type, specifying the content type via API like this a potential workaround.
+Please note that it's possible to "trick" a Dataverse installation into giving a file a content type (MIME type) of your choosing. For example, you can make a text file be treated like a video file with ``-F 'file=@README.txt;type=video/mpeg4'``, for example. If the Dataverse installation does not properly detect a file type, specifying the content type via API like this a potential workaround.
 
 The curl syntax above to upload a file is tricky and a Python version is provided below. (Please note that it depends on libraries such as "requests" that you may need to install but this task is out of scope for this guide.) Here are some parameters you can set in the script:
 
@@ -1200,7 +1200,7 @@ In practice, you only need one the ``dataset_id`` or the ``persistentId``. The e
     # --------------------------------------------------
     # Update the 4 params below to run this code
     # --------------------------------------------------
-    dataverse_server = 'https://your dataverse server' # no trailing slash
+    dataverse_server = 'https://your dataverse installation' # no trailing slash
     api_key = 'api key'
     dataset_id = 1  # database id of the dataset
     persistentId = 'doi:10.5072/FK2/6XACVA' # doi or hdl of the dataset
@@ -1286,7 +1286,7 @@ The fully expanded example above (without environment variables) looks like this
   curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/datasets/24/storagesize
 
 The size of published and unpublished files will be summed in the dataset specified. 
-By default, only the archival files are counted - i.e., the files uploaded by users (plus the tab-delimited versions generated for tabular data files on ingest). If the optional argument ``includeCached=true`` is specified, the API will also add the sizes of all the extra files generated and cached by Dataverse - the resized thumbnail versions for image files, the metadata exports for published datasets, etc. Because this deals with unpublished files the token supplied must have permission to view unpublished drafts. 
+By default, only the archival files are counted - i.e., the files uploaded by users (plus the tab-delimited versions generated for tabular data files on ingest). If the optional argument ``includeCached=true`` is specified, the API will also add the sizes of all the extra files generated and cached by the Dataverse installation - the resized thumbnail versions for image files, the metadata exports for published datasets, etc. Because this deals with unpublished files the token supplied must have permission to view unpublished drafts. 
 
 
 Get the size of Downloading all the files of a Dataset Version
@@ -1363,7 +1363,7 @@ The review process can sometimes resemble a tennis match, with the authors submi
 Link a Dataset
 ~~~~~~~~~~~~~~
 
-Creates a link between a dataset and a dataverse (see :ref:`dataset-linking` section of Dataverse Management in the User Guide for more information):
+Creates a link between a dataset and a Dataverse collection (see :ref:`dataset-linking` section of Dataverse Collection Management in the User Guide for more information):
 
 .. code-block:: bash
 
@@ -1494,7 +1494,7 @@ If the dataset is not locked (or if there is no lock of the specified type), the
 Dataset Metrics
 ~~~~~~~~~~~~~~~
 
-Please note that these dataset level metrics are only available if support for Make Data Count has been enabled in your installation of Dataverse. See the :ref:`Dataset Metrics <dataset-metrics-user>` in the :doc:`/user/dataset-management` section of the User Guide and the :doc:`/admin/make-data-count` section of the Admin Guide for details.
+Please note that these dataset level metrics are only available if support for Make Data Count has been enabled in your Dataverse installation. See the :ref:`Dataset Metrics <dataset-metrics-user>` in the :doc:`/user/dataset-management` section of the User Guide and the :doc:`/admin/make-data-count` section of the Admin Guide for details.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
 
@@ -1652,7 +1652,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/datasets/24/destroy
   
-Calling the destroy endpoint is permanent and irreversible. It will remove the dataset and its datafiles, then re-index the parent dataverse in Solr. This endpoint requires the API token of a superuser.
+Calling the destroy endpoint is permanent and irreversible. It will remove the dataset and its datafiles, then re-index the parent Dataverse collection in Solr. This endpoint requires the API token of a superuser.
 
 Configure a Dataset to Use a Specific File Store
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1773,7 +1773,7 @@ The fully expanded example above (without environment variables) looks like this
 Reingest a File
 ~~~~~~~~~~~~~~~
 
-Attempt to ingest an existing datafile as tabular data. This API can be used on a file that was not ingested as tabular back when it was uploaded. For example, a Stata v.14 file that was uploaded before ingest support for Stata 14 was added (in Dataverse v.4.9). It can also be used on a file that failed to ingest due to a bug in the ingest plugin that has since been fixed (hence the name "reingest").
+Attempt to ingest an existing datafile as tabular data. This API can be used on a file that was not ingested as tabular back when it was uploaded. For example, a Stata v.14 file that was uploaded before ingest support for Stata 14 was added (in Dataverse software v.4.9). It can also be used on a file that failed to ingest due to a bug in the ingest plugin that has since been fixed (hence the name "reingest").
 
 Note that this requires "superuser" credentials.
 
@@ -1816,7 +1816,7 @@ Note: at present, the API cannot be used on a file that's already successfully i
 Redetect File Type
 ~~~~~~~~~~~~~~~~~~
 
-Dataverse uses a variety of methods for determining file types (MIME types or content types) and these methods (listed below) are updated periodically. If you have files that have an unknown file type, you can have Dataverse attempt to redetect the file type.
+The Dataverse Platform uses a variety of methods for determining file types (MIME types or content types) and these methods (listed below) are updated periodically. If you have files that have an unknown file type, you can have the Dataverse Platform attempt to redetect the file type.
 
 When using the curl command below, you can pass ``dryRun=true`` if you don't want any changes to be saved to the database. Change this to ``dryRun=false`` (or omit it) to save the change.
 
@@ -2301,7 +2301,7 @@ In order to delete a token use::
 Builtin Users
 -------------
 
-Builtin users are known as "Username/Email and Password" users in the :doc:`/user/account` of the User Guide. Dataverse stores a password (encrypted, of course) for these users, which differs from "remote" users such as Shibboleth or OAuth users where the password is stored elsewhere. See also :ref:`auth-modes` section of Configuration in the Installation Guide. It's a valid configuration of Dataverse to not use builtin users at all.
+Builtin users are known as "Username/Email and Password" users in the :doc:`/user/account` of the User Guide. The Dataverse installation stores a password (encrypted, of course) for these users, which differs from "remote" users such as Shibboleth or OAuth users where the password is stored elsewhere. See also :ref:`auth-modes` section of Configuration in the Installation Guide. It's a valid configuration of a Dataverse installation to not use builtin users at all.
 
 Create a Builtin User
 ~~~~~~~~~~~~~~~~~~~~~
@@ -2321,10 +2321,10 @@ Optionally, you may use a third query parameter "sendEmailNotification=false" to
 Roles
 -----
 
-Create a New Role in a Dataverse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Create a New Role in a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Creates a new role in dataverse object whose Id is ``dataverseIdtf`` (that's an id/alias)::
+Creates a new role in Dataverse collection object whose Id is ``dataverseIdtf`` (that's an id/alias)::
 
   POST http://$SERVER/api/roles?dvo=$dataverseIdtf&key=$apiKey
 
@@ -2348,9 +2348,9 @@ Explicit Groups
 Create New Explicit Group
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Explicit groups list their members explicitly. These groups are defined in dataverses, which is why their API endpoint is under ``api/dataverses/$id/``, where ``$id`` is the id of the dataverse.
+Explicit groups list their members explicitly. These groups are defined in Dataverse collections, which is why their API endpoint is under ``api/dataverses/$id/``, where ``$id`` is the id of the Dataverse collection.
 
-Create a new explicit group under dataverse ``$id``::
+Create a new explicit group under Dataverse collection ``$id``::
 
   POST http://$server/api/dataverses/$id/groups
 
@@ -2362,31 +2362,31 @@ Data being POSTed is json-formatted description of the group::
    "aliasInOwner":"ccs"
   }
 
-List Explicit Groups in a Dataverse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+List Explicit Groups in a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-List explicit groups under dataverse ``$id``::
+List explicit groups under Dataverse collection ``$id``::
 
   GET http://$server/api/dataverses/$id/groups
 
-Show Single Group in a Dataverse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Show Single Group in a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Show group ``$groupAlias`` under dataverse ``$dv``::
 
   GET http://$server/api/dataverses/$dv/groups/$groupAlias
 
-Update Group in a Dataverse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Update Group in a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Update group ``$groupAlias`` under dataverse ``$dv``. The request body is the same as the create group one, except that the group alias cannot be changed. Thus, the field ``aliasInOwner`` is ignored. ::
+Update group ``$groupAlias`` under Dataverse collection ``$dv``. The request body is the same as the create group one, except that the group alias cannot be changed. Thus, the field ``aliasInOwner`` is ignored. ::
 
   PUT http://$server/api/dataverses/$dv/groups/$groupAlias
 
-Delete Group from a Dataverse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Delete Group from a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Delete group ``$groupAlias`` under dataverse ``$dv``::
+Delete group ``$groupAlias`` under Dataverse collection ``$dv``::
 
   DELETE http://$server/api/dataverses/$dv/groups/$groupAlias
 
@@ -2421,10 +2421,10 @@ Management of Shibboleth groups via API is documented in the :doc:`/installation
 Info
 ----
 
-Show Dataverse Version and Build Number
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Show Dataverse Software Version and Build Number
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Get the Dataverse version. The response contains the version and build numbers:
+|CORS| Get the Dataverse installation version. The response contains the version and build numbers:
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
@@ -2440,10 +2440,10 @@ The fully expanded example above (without environment variables) looks like this
 
   curl https://demo.dataverse.org/api/info/version
 
-Show Dataverse Server Name
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Show Dataverse Installation Server Name
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Get the server name. This is useful when a Dataverse system is composed of multiple app servers behind a load balancer:
+Get the server name. This is useful when a Dataverse installation is composed of multiple app servers behind a load balancer:
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
@@ -2611,7 +2611,7 @@ The fully expanded example above (without environment variables) looks like this
 Delete a PID
 ~~~~~~~~~~~~
 
-Delete PID (this is only possible for PIDs that are in the "draft" state) and within Dataverse, set ``globalidcreatetime`` to null and ``identifierregistered`` to false. A superuser API token is required.
+Delete PID (this is only possible for PIDs that are in the "draft" state) and within a Dataverse installation, set ``globalidcreatetime`` to null and ``identifierregistered`` to false. A superuser API token is required.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
@@ -3005,14 +3005,14 @@ List all role assignments of a role assignee (i.e. a user or a group)::
 
 Note that ``identifier`` can contain slashes (e.g. ``&ip/localhost-users``).
 
-List Permissions a User Has on a Dataverse or Dataset
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+List Permissions a User Has on a Dataverse Collection or Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-List permissions a user (based on API Token used) has on a dataverse or dataset::
+List permissions a user (based on API Token used) has on a Dataverse collection or dataset::
 
     GET http://$SERVER/api/admin/permissions/$identifier
 
-The ``$identifier`` can be a dataverse alias or database id or a dataset persistent ID or database id.
+The ``$identifier`` can be a Dataverse collection alias or database id or a dataset persistent ID or database id.
 
 Show Role Assignee
 ~~~~~~~~~~~~~~~~~~
@@ -3028,7 +3028,7 @@ The ``$identifier`` should start with an ``@`` if it's a user. Groups start with
 Saved Search
 ~~~~~~~~~~~~
 
-The Saved Search, Linked Dataverses, and Linked Datasets features shipped with Dataverse 4.0, but as a "`superuser-only <https://github.com/IQSS/dataverse/issues/90#issuecomment-86094663>`_" because they are **experimental** (see `#1364 <https://github.com/IQSS/dataverse/issues/1364>`_, `#1813 <https://github.com/IQSS/dataverse/issues/1813>`_, `#1840 <https://github.com/IQSS/dataverse/issues/1840>`_, `#1890 <https://github.com/IQSS/dataverse/issues/1890>`_, `#1939 <https://github.com/IQSS/dataverse/issues/1939>`_, `#2167 <https://github.com/IQSS/dataverse/issues/2167>`_, `#2186 <https://github.com/IQSS/dataverse/issues/2186>`_, `#2053 <https://github.com/IQSS/dataverse/issues/2053>`_, and `#2543 <https://github.com/IQSS/dataverse/issues/2543>`_). The following API endpoints were added to help people with access to the "admin" API make use of these features in their current form. There is a known issue (`#1364 <https://github.com/IQSS/dataverse/issues/1364>`_) that once a link to a dataverse or dataset is created, it cannot be removed (apart from database manipulation and reindexing) which is why a ``DELETE`` endpoint for saved searches is neither documented nor functional. The Linked Dataverses feature is `powered by Saved Search <https://github.com/IQSS/dataverse/issues/1852>`_ and therefore requires that the "makelinks" endpoint be executed on a periodic basis as well.
+The Saved Search, Linked Dataverses, and Linked Datasets features shipped with Dataverse 4.0, but as a "`superuser-only <https://github.com/IQSS/dataverse/issues/90#issuecomment-86094663>`_" because they are **experimental** (see `#1364 <https://github.com/IQSS/dataverse/issues/1364>`_, `#1813 <https://github.com/IQSS/dataverse/issues/1813>`_, `#1840 <https://github.com/IQSS/dataverse/issues/1840>`_, `#1890 <https://github.com/IQSS/dataverse/issues/1890>`_, `#1939 <https://github.com/IQSS/dataverse/issues/1939>`_, `#2167 <https://github.com/IQSS/dataverse/issues/2167>`_, `#2186 <https://github.com/IQSS/dataverse/issues/2186>`_, `#2053 <https://github.com/IQSS/dataverse/issues/2053>`_, and `#2543 <https://github.com/IQSS/dataverse/issues/2543>`_). The following API endpoints were added to help people with access to the "admin" API make use of these features in their current form. There is a known issue (`#1364 <https://github.com/IQSS/dataverse/issues/1364>`_) that once a link to a Dataverse collection or dataset is created, it cannot be removed (apart from database manipulation and reindexing) which is why a ``DELETE`` endpoint for saved searches is neither documented nor functional. The Linked Dataverse collections feature is `powered by Saved Search <https://github.com/IQSS/dataverse/issues/1852>`_ and therefore requires that the "makelinks" endpoint be executed on a periodic basis as well.
 
 List all saved searches. ::
 
@@ -3038,11 +3038,11 @@ List a saved search by database id. ::
 
   GET http://$SERVER/api/admin/savedsearches/$id
 
-Execute a saved search by database id and make links to dataverses and datasets that are found. The JSON response indicates which dataverses and datasets were newly linked versus already linked. The ``debug=true`` query parameter adds to the JSON response extra information about the saved search being executed (which you could also get by listing the saved search). ::
+Execute a saved search by database id and make links to Dataverse collections and datasets that are found. The JSON response indicates which Dataverse collections and datasets were newly linked versus already linked. The ``debug=true`` query parameter adds to the JSON response extra information about the saved search being executed (which you could also get by listing the saved search). ::
 
   PUT http://$SERVER/api/admin/savedsearches/makelinks/$id?debug=true
 
-Execute all saved searches and make links to dataverses and datasets that are found. ``debug`` works as described above. This happens automatically with a timer. For details, see :ref:`saved-search-timer` in the Admin Guide. ::
+Execute all saved searches and make links to Dataverse collections and datasets that are found. ``debug`` works as described above. This happens automatically with a timer. For details, see :ref:`saved-search-timer` in the Admin Guide. ::
 
   PUT http://$SERVER/api/admin/savedsearches/makelinks/all?debug=true
 
@@ -3100,7 +3100,7 @@ if validation fails, will report the specific database entity and the offending 
 
 If the optional argument ``variables=true`` is specified, the API will also validate the metadata associated with any tabular data files found in the dataset specified. (For example: an invalid or empty variable name). 
 
-Validate all the datasets in the Dataverse, report any constraint violations found::
+Validate all the datasets in the Dataverse installation, report any constraint violations found::
 
   curl $SERVER_URL/api/admin/validate/datasets
 
@@ -3119,7 +3119,7 @@ This API streams its output in real time, i.e. it will start producing the outpu
 		  ]
       }
 
-Note that if you are attempting to validate a very large number of datasets in your Dataverse, this API may time out - subject to the timeout limit set in your app server configuration. If this is a production Dataverse instance serving large amounts of data, you most likely have that timeout set to some high value already. But if you need to increase it, it can be done with the asadmin command. For example::
+Note that if you are attempting to validate a very large number of datasets in your Dataverse installation, this API may time out - subject to the timeout limit set in your app server configuration. If this is a production Dataverse installation serving large amounts of data, you most likely have that timeout set to some high value already. But if you need to increase it, it can be done with the asadmin command. For example::
  
      asadmin set server-config.network-config.protocols.protocol.http-listener-1.http.request-timeout-seconds=3600
 
@@ -3161,7 +3161,7 @@ Unset the default workflow for ``triggerType``. After this call, dataset release
 
   DELETE http://$SERVER/api/admin/workflows/default/$triggerType
 
-Set the whitelist of IP addresses separated by a semicolon (``;``) allowed to resume workflows. Request body is a list of IP addresses allowed to send "resume workflow" messages to this Dataverse instance::
+Set the whitelist of IP addresses separated by a semicolon (``;``) allowed to resume workflows. Request body is a list of IP addresses allowed to send "resume workflow" messages to this Dataverse installation::
 
   PUT http://$SERVER/api/admin/workflows/ip-whitelist
 
@@ -3190,13 +3190,13 @@ Clear a specific metric cache. Currently this must match the name of the row in 
         CORS
       </span>
 
-Inherit Dataverse Role Assignments
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Inherit Dataverse Collection Role Assignments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Recursively applies the role assignments of the specified dataverse, for the roles specified by the ``:InheritParentRoleAssignments`` setting, to all dataverses contained within it:: 
+Recursively applies the role assignments of the specified Dataverse collection, for the roles specified by the ``:InheritParentRoleAssignments`` setting, to all Dataverse collections contained within it:: 
 
   GET http://$SERVER/api/admin/dataverse/{dataverse alias}/addRoleAssignmentsToChildren
   
-Note: setting ``:InheritParentRoleAssignments`` will automatically trigger inheritance of the parent dataverse's role assignments for a newly created dataverse. Hence this API call is intended as a way to update existing child dataverses or to update children after a change in role assignments has been made on a parent dataverse.
+Note: setting ``:InheritParentRoleAssignments`` will automatically trigger inheritance of the parent Dataverse collection's role assignments for a newly created Dataverse collection. Hence this API call is intended as a way to update existing child Dataverse collections or to update children after a change in role assignments has been made on a parent Dataverse collection.
 
 
