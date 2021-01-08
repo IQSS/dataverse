@@ -869,7 +869,7 @@ For example:
 .. _Archiving API Calls:
 
 API Calls
-++++++++
++++++++++
 
 Once this configuration is complete, you, as a user with the *PublishDataset* permission, should be able to use the API call to manually submit a DatasetVersion for processing:
 
