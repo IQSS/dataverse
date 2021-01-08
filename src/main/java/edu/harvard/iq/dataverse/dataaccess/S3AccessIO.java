@@ -883,7 +883,36 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
             if (s != null) {
                 if(!StringUtil.isEmpty(proxy)) {
-                    return s.toString().replace(endpoint, proxy);
+                    /*
+                     * AWS actually uses two URLs for its endpoint - for example
+                     *   https://s3.amazonaws.com is what's used to configure the custom-endpoint-url
+                     *     in Dataverse, but presigned URLs are of the form
+                     *   https://<bucketname>.s3.amazonaws.com
+                     * 
+                     * Since we only record the first form, we'll use a regexp to match endpoints
+                     * that have an additional 'bucket prefix' in the servername.
+                     * 
+                     * Institutional S3 servers, e.g. based on MinIO, don't need to do this (i.e.
+                     * it's just AWS network setup, not part of the S3 protocol itself), so
+                     * supporting this may only be used in testing.
+                     * 
+                     * Further, since the signatures only validate for the correct URLs, the risk in
+                     * a bad match appears to be limited to breaking things, but if the potential
+                     * for substitutions gets more complex, it might be better to just add another
+                     * config setting.
+                     */
+                    // endpoint-urls for AWS don't have to have the protocol, so while we expect
+                    // them for some servers, we check whether the protocol is in the url and then
+                    // normalizing to use the part without the protocol
+                    String endpointServer = endpoint;
+                    int protocolEnd = endpoint.indexOf("://");
+                    if (protocolEnd >=0 ) {
+                        endpointServer = endpoint.substring(protocolEnd + 3);
+                    }
+                    // We're then replacing 
+                    //    http or https followed by :// and an optional <bucketname>. before the normalized endpoint url
+                    // with the proxy info (which is protocol + machine name and optional port)
+                    return s.toString().replaceFirst("http[s]*:\\/\\/([^\\/]+\\.)"+endpointServer, proxy);
                 } else {
                     return s.toString();
                 }
