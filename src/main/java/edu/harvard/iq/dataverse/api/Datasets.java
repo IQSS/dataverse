@@ -1821,6 +1821,12 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 						"You must upload a file or provide a storageidentifier, filename, and mimetype.");
 			}
 		} else {
+            /*
+             * FWIW: This allows upload of files with utf-8 names via the API. It isn't
+             * clear yet whether the base problem is with senders not properly encoding or
+             * if there is an assumption of 8859_1 in the apache mime4j code being used
+             * under the hood in Jersey here. So this should be considered a practical rather than final fix.
+             */
 			newFilename = new String(contentDispositionHeader.getFileName().getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
 			newFileContentType = formDataBodyPart.getMediaType().toString();
 		}
