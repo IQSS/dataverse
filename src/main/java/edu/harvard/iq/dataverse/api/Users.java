@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.ChangeUserIdentifierCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.MergeInAccountCommand;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.ws.rs.DELETE;
@@ -172,6 +173,21 @@ public class Users extends AbstractApiBean {
         authSvc.save(newToken);
 
         return ok("New token for " + au.getUserIdentifier() + " is " + newToken.getTokenString());
+
+    }
+    
+    @GET
+    @Path(":me")
+    public Response getAuthenticatedUserByToken() {
+
+        String tokenFromRequestAPI = getRequestApiKey();
+
+        AuthenticatedUser authenticatedUser = findUserByApiToken(tokenFromRequestAPI);
+        if (authenticatedUser == null) {
+            return error(Response.Status.BAD_REQUEST, "User with token " + tokenFromRequestAPI + " not found.");
+        } else {
+            return ok(json(authenticatedUser));
+        }
 
     }
 

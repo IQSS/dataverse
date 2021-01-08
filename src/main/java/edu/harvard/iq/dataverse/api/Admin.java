@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.BannerMessage;
+import edu.harvard.iq.dataverse.BannerMessageServiceBean;
+import edu.harvard.iq.dataverse.BannerMessageText;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
@@ -98,7 +101,9 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.function.Consumer;
 import javax.inject.Inject;
+import javax.json.JsonArray;
 import javax.persistence.Query;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
@@ -145,6 +150,8 @@ public class Admin extends AbstractApiBean {
         DatasetVersionServiceBean datasetVersionService;
         @EJB
         ExplicitGroupServiceBean explicitGroupService;
+        @EJB
+        BannerMessageServiceBean bannerMessageService;
         
 
 	// Make the session available
@@ -324,15 +331,15 @@ public class Admin extends AbstractApiBean {
 						: ""));
 	}
 
-	@GET
-	@Path("authenticatedUsers/{identifier}/")
-	public Response getAuthenticatedUser(@PathParam("identifier") String identifier) {
-		AuthenticatedUser authenticatedUser = authSvc.getAuthenticatedUser(identifier);
-		if (authenticatedUser != null) {
-			return ok(json(authenticatedUser));
-		}
-		return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
-	}
+    @GET
+    @Path("authenticatedUsers/{identifier}/")
+    public Response getAuthenticatedUserByIdentifier(@PathParam("identifier") String identifier) {
+        AuthenticatedUser authenticatedUser = authSvc.getAuthenticatedUser(identifier);
+        if (authenticatedUser != null) {
+            return ok(json(authenticatedUser));
+        }
+        return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
+    }
 
     @DELETE
     @Path("authenticatedUsers/{identifier}/")
@@ -1839,4 +1846,78 @@ public class Admin extends AbstractApiBean {
     	DataAccess.getStorageDriverLabels().entrySet().forEach(s -> bld.add(s.getKey(), s.getValue()));
 		return ok(bld);
     }
+    
+    @POST
+    @Path("/bannerMessage")
+    public Response addBannerMessage(JsonObject jsonObject) throws WrappedResponse {
+
+        BannerMessage toAdd = new BannerMessage();
+        try {
+            String dismissible = jsonObject.getString("dismissibleByUser");
+
+            boolean dismissibleByUser = false;
+            if (dismissible.equals("true")) {
+                dismissibleByUser = true;
+            }
+            toAdd.setDismissibleByUser(dismissibleByUser);
+            toAdd.setBannerMessageTexts(new ArrayList());
+            toAdd.setActive(true);
+            JsonArray jsonArray = jsonObject.getJsonArray("messageTexts");
+            for (int i = 0; i < jsonArray.size(); i++) {
+                JsonObject obj = (JsonObject) jsonArray.get(i);
+                String message = obj.getString("message");
+                String lang = obj.getString("lang");
+                BannerMessageText messageText = new BannerMessageText();
+                messageText.setMessage(message);
+                messageText.setLang(lang);
+                messageText.setBannerMessage(toAdd);
+                toAdd.getBannerMessageTexts().add(messageText);
+            }
+                bannerMessageService.save(toAdd);
+                return ok("Banner Message added successfully.");
+
+        } catch (Exception e) {
+            logger.warning("Unexpected Exception: " + e.getMessage());
+            return error(Status.BAD_REQUEST, "Add Banner Message unexpected exception: " + e.getMessage());
+        }
+
+    }
+    
+    @DELETE
+    @Path("/bannerMessage/{id}")
+    public Response deleteBannerMessage(@PathParam("id") Long id) throws WrappedResponse {
+ 
+        BannerMessage message = em.find(BannerMessage.class, id);
+        if (message == null){
+            return error(Response.Status.NOT_FOUND, "Message id = "  + id + " not found.");
+        }
+        bannerMessageService.deleteBannerMessage(id);
+        
+        return ok("Message id =  " + id + " deleted.");
+
+    }
+    
+    @PUT
+    @Path("/bannerMessage/{id}/deactivate")
+    public Response deactivateBannerMessage(@PathParam("id") Long id) throws WrappedResponse {
+        BannerMessage message = em.find(BannerMessage.class, id);
+        if (message == null){
+            return error(Response.Status.NOT_FOUND, "Message id = "  + id + " not found.");
+        }
+        bannerMessageService.deactivateBannerMessage(id);
+        
+        return ok("Message id =  " + id + " deactivated.");
+
+    }
+    
+    @GET
+    @Path("/bannerMessage")
+    public Response getBannerMessages(@PathParam("id") Long id) throws WrappedResponse {
+
+        return ok(bannerMessageService.findAllBannerMessages().stream()
+                .map(m -> jsonObjectBuilder().add("id", m.getId()).add("displayValue", m.getDisplayValue()))
+                .collect(toJsonArray()));
+
+    }
+    
 }

@@ -20,7 +20,6 @@ from scripts/installer (this directory):
 
 install
 glassfish-setup.sh
-pgdriver (the entire directory with all its contents)
 
 from scripts/api:
 
@@ -31,10 +30,6 @@ setup-dvs.sh
 setup-identity-providers.sh
 setup-users.sh
 data (the entire directory with all its contents)
-
-from scripts/database:
-
-reference_data.sql
 
 from conf/jhove:
 
