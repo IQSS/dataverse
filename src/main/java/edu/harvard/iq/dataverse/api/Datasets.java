@@ -111,6 +111,7 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -1820,7 +1821,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 						"You must upload a file or provide a storageidentifier, filename, and mimetype.");
 			}
 		} else {
-			newFilename = contentDispositionHeader.getFileName();
+			newFilename = new String(contentDispositionHeader.getFileName().getBytes(), StandardCharsets.UTF_8);
 			newFileContentType = formDataBodyPart.getMediaType().toString();
 		}
 
