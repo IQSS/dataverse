@@ -862,6 +862,9 @@ div.manageTable.ui-datatable div.ui-datatable-tablewrapper, div.manageTable.ui-d
 div[id$="filesTable"].ui-datatable thead th.col-file-action, div[id$="filesTable"].ui-datatable tbody td.col-file-action {overflow:visible !important;}
 thead.ui-datatable-scrollable-theadclone {display:none}
 
+/* DATATABE + OVERFLOW VISIBLE */
+.ui-datatable thead th, .ui-datatable tbody td, .ui-datatable tfoot td, .ui-datatable tfoot th {overflow:visible;}
+
 /* FILE */
 #file-preview-icon-block > #border-block {/*border:1px solid #DDD;border-radius:4px; padding: 10px;*/}
 #file-preview-icon-block > #border-block > #preview-square {/*position: relative; overflow:hidden; padding-bottom:100%;*/}
