@@ -913,6 +913,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                     // We're then replacing 
                     //    http or https followed by :// and an optional <bucketname>. before the normalized endpoint url
                     // with the proxy info (which is protocol + machine name and optional port)
+                    logger.fine("Original Url: " + s.toString());
                     String finalUrl = s.toString().replaceFirst("http[s]*:\\/\\/([^\\/]+\\.)"+endpointServer, proxy);
                     logger.fine("ProxiedURL: " + finalUrl);
                     return finalUrl; 
