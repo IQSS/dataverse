@@ -909,10 +909,13 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                     if (protocolEnd >=0 ) {
                         endpointServer = endpoint.substring(protocolEnd + 3);
                     }
+                    logger.fine("Endpoint: " + endpointServer);
                     // We're then replacing 
                     //    http or https followed by :// and an optional <bucketname>. before the normalized endpoint url
                     // with the proxy info (which is protocol + machine name and optional port)
-                    return s.toString().replaceFirst("http[s]*:\\/\\/([^\\/]+\\.)"+endpointServer, proxy);
+                    String finalUrl = s.toString().replaceFirst("http[s]*:\\/\\/([^\\/]+\\.)"+endpointServer, proxy);
+                    logger.fine("ProxiedURL: " + finalUrl);
+                    return finalUrl; 
                 } else {
                     return s.toString();
                 }
@@ -957,7 +960,21 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         String urlString = null;
         if (presignedUrl != null) {
             if(!StringUtil.isEmpty(proxy)) {
-                urlString = presignedUrl.toString().replace(endpoint, proxy);
+                //See discussion in getTemporaryS3Url
+                // endpoint-urls for AWS don't have to have the protocol, so while we expect
+                // them for some servers, we check whether the protocol is in the url and then
+                // normalizing to use the part without the protocol
+                String endpointServer = endpoint;
+                int protocolEnd = endpoint.indexOf("://");
+                if (protocolEnd >=0 ) {
+                    endpointServer = endpoint.substring(protocolEnd + 3);
+                }
+                logger.fine("Endpoint: " + endpointServer);
+                // We're then replacing 
+                //    http or https followed by :// and an optional <bucketname>. before the normalized endpoint url
+                // with the proxy info (which is protocol + machine name and optional port)
+                urlString = presignedUrl.toString().replaceFirst("http[s]*:\\/\\/([^\\/]+\\.)"+endpointServer, proxy);
+                logger.fine("ProxiedURL: " + urlString);
             } else {
                 urlString = presignedUrl.toString();
             }
