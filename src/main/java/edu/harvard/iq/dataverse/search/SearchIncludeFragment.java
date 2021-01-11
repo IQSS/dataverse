@@ -1201,7 +1201,29 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public String tabularDataDisplayInfo(DataFile datafile) {
-        String ret = "";
+        String tabInfo = "";
+
+        if (datafile == null) {
+            return null;
+        }
+
+        if (datafile.isTabularData() && datafile.getDataTable() != null) {
+            DataTable datatable = datafile.getDataTable();
+            Long varNumber = datatable.getVarQuantity();
+            Long obsNumber = datatable.getCaseQuantity();
+            if (varNumber != null && varNumber.intValue() != 0) {
+                tabInfo = tabInfo.concat(varNumber + " " + BundleUtil.getStringFromBundle("file.metaData.dataFile.dataTab.variables"));
+                if (obsNumber != null && obsNumber.intValue() != 0) {
+                    tabInfo = tabInfo.concat(", " + obsNumber + " " + BundleUtil.getStringFromBundle("file.metaData.dataFile.dataTab.observations"));
+                }
+            }
+        }
+
+        return tabInfo;
+    }
+    
+    public String tabularDataUnfDisplay(DataFile datafile) {
+        String tabUnf = "";
 
         if (datafile == null) {
             return null;
@@ -1210,21 +1232,12 @@ public class SearchIncludeFragment implements java.io.Serializable {
         if (datafile.isTabularData() && datafile.getDataTable() != null) {
             DataTable datatable = datafile.getDataTable();
             String unf = datatable.getUnf();
-            Long varNumber = datatable.getVarQuantity();
-            Long obsNumber = datatable.getCaseQuantity();
-            if (varNumber != null && varNumber.intValue() != 0) {
-                ret = ret.concat(varNumber + " " + BundleUtil.getStringFromBundle("file.metaData.dataFile.dataTab.variables"));
-                if (obsNumber != null && obsNumber.intValue() != 0) {
-                    ret = ret.concat(", " + obsNumber + " " + BundleUtil.getStringFromBundle("file.metaData.dataFile.dataTab.observations"));
-                }
-                ret = ret.concat(" - ");
-            }
             if (unf != null && !unf.equals("")) {
-                ret = ret.concat(BundleUtil.getStringFromBundle("file.metaData.dataFile.dataTab.unf") + ": " + unf);
+                tabUnf = tabUnf.concat(unf);
             }
         }
 
-        return ret;
+        return tabUnf;
     }
 
     public String dataFileSizeDisplay(DataFile datafile) {
