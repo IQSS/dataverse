@@ -1213,14 +1213,14 @@ public class SearchIncludeFragment implements java.io.Serializable {
             Long varNumber = datatable.getVarQuantity();
             Long obsNumber = datatable.getCaseQuantity();
             if (varNumber != null && varNumber.intValue() != 0) {
-                ret = ret.concat(varNumber + " Variables");
+                ret = ret.concat(varNumber + " " + BundleUtil.getStringFromBundle("file.metaData.dataFile.dataTab.variables"));
                 if (obsNumber != null && obsNumber.intValue() != 0) {
-                    ret = ret.concat(", " + obsNumber + " Observations");
+                    ret = ret.concat(", " + obsNumber + " " + BundleUtil.getStringFromBundle("file.metaData.dataFile.dataTab.observations"));
                 }
                 ret = ret.concat(" - ");
             }
             if (unf != null && !unf.equals("")) {
-                ret = ret.concat("UNF: " + unf);
+                ret = ret.concat(BundleUtil.getStringFromBundle("file.metaData.dataFile.dataTab.unf") + ": " + unf);
             }
         }
 

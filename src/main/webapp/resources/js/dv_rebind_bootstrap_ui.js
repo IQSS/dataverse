@@ -163,11 +163,18 @@ function checksumTruncate(){
         var checksumText = $(this).text();
         if (checksumText.length > 25) {
             // COUNT ":" IN UNF VERSION LABEL
-            var labelCount = (checksumText.match(/:/g) || []).length;
+            var labelIndex = checksumText.indexOf(':');
             // COUNT "=" IN UNF SUFFIX
             var suffixCount = (checksumText.match(/=/g) || []).length;
+            
             // TRUNCATE MIDDLE W/ "..." + FIRST/LAST 3 CHARACTERS
-            $(this).text(checksumText.substr(0, labelCount + 3) + '...' + checksumText.substr((checksumText.length - suffixCount - 3), checksumText.length));
+            // CHECK IF UNF LABEL
+            if (labelIndex > 0) {
+                $(this).text(checksumText.substr(0, (labelIndex + 3) + 3) + '...' + checksumText.substr((checksumText.length - suffixCount - 3), checksumText.length));
+            }
+            else {
+                $(this).text(checksumText.substr(0, 3) + '...' + checksumText.substr((checksumText.length - 3), checksumText.length));
+            }
         }
         // ADD CLIPBOARD ICON
         $(this).append(' <span class="glyphicon glyphicon-copy"></span>');

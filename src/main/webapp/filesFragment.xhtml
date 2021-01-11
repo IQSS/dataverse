@@ -35,11 +35,12 @@
     <p:remoteCommand name="rebindCommand" process="@this" update="filesTable" oncomplete="javascript:bind_bsui_components();"/>
 
     <!-- Files Table -->
+    <!-- TABLESTYLE + WIDTH:AUTO FIX COL WIDTH OVERFLOW HIDDEN, MIN-WIDTH 100% ADDED FOR TABLE CONTENT LESS THAN 100% https://stackoverflow.com/a/38582318 -->
     <p:dataTable id="filesTable" 
                  rows="10" paginator="#{DatasetPage.fileMetadatasSearch.size() gt 10}" paginatorPosition="bottom"
                  paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} #{bundle['file.dynamicCounter.filesPerPage']} {RowsPerPageDropdown}"
                  rowsPerPageTemplate="10,25,50"
-                 style="margin-right:1px;"
+                 style="margin-right:1px;" tableStyle="min-width:100%;width:auto;"
                  value="#{DatasetPage.fileMetadatasSearch}"
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                  selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
