@@ -69,7 +69,6 @@ There are a number of optional components you may choose to install or configure
 - Apache: a web server that can "reverse proxy" Jakarta EE applications (like Dataverse) and rewrite HTTP traffic.
 - Shibboleth: an authentication system described in :doc:`shibboleth`. Its use with Dataverse requires Apache.
 - OAuth2: an authentication system described in :doc:`oauth2`.
-- Geoconnect: a system that allows users to create maps from geospatial files, described in :doc:`geoconnect`.
 
 See also the :doc:`/admin/integrations` section of the Admin Guide.
 

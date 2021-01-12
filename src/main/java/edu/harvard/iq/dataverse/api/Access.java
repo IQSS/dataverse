@@ -68,7 +68,6 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
-import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
 
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -166,8 +165,6 @@ public class Access extends AbstractApiBean {
     PermissionServiceBean permissionService;
     @Inject
     DataverseSession session;
-    @EJB
-    WorldMapTokenServiceBean worldMapTokenServiceBean;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @EJB
@@ -1697,11 +1694,6 @@ public class Access extends AbstractApiBean {
                 return true;
             }
                     
-            
-            // We don't want to return false just yet. 
-            // If all else fails, we'll want to use the special WorldMapAuth 
-            // token authentication before we give up. 
-            //return false;
         } else {
             
             // OK, this is a restricted file. 
@@ -1755,30 +1747,9 @@ public class Access extends AbstractApiBean {
                 }
             }
         } 
-        
-        
-        // And if all that failed, we'll still check if the download can be authorized based
-        // on the special WorldMap token:
 
         
-        if ((apiToken != null)&&(apiToken.length()==64)){
-            /* 
-                WorldMap token check
-                - WorldMap tokens are 64 chars in length
-            
-                - Use the worldMapTokenServiceBean to verify token 
-                    and check permissions against the requested DataFile
-            */
-            if (!(this.worldMapTokenServiceBean.isWorldMapTokenAuthorizedForDataFileDownload(apiToken, df))){
-                return false;
-            }
-            
-            // Yes! User may access file
-            //
-            logger.fine("WorldMap token-based auth: Token is valid for the requested datafile");
-            return true;
-            
-        } else if ((apiToken != null)&&(apiToken.length()!=64)) {
+        if ((apiToken != null)) {
             // Will try to obtain the user information from the API token, 
             // if supplied: 
         
@@ -1794,7 +1765,7 @@ public class Access extends AbstractApiBean {
                 return false;
             } 
             
-        if (permissionService.requestOn(createDataverseRequest(user), df).has(Permission.DownloadFile)) { 
+        if (permissionService.requestOn(createDataverseRequest(user), df).has(Permission.DownloadFile)) { // FIXME: Indent this line more.
                 if (published) {
                     logger.log(Level.FINE, "API token-based auth: User {0} has rights to access the datafile.", user.getIdentifier());
                     return true; 
