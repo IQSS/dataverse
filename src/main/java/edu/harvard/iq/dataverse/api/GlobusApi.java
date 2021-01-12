@@ -228,10 +228,10 @@ public class GlobusApi extends AbstractApiBean {
 
                         JsonObjectBuilder fileoutput= Json.createObjectBuilder()
                                 .add("storageIdentifier " , storageIdentifier)
-                                .add("Result " , " The datatable is not updated since the Storage Identifier already exists in dvObject. ");
+                                .add("message " , " The datatable is not updated since the Storage Identifier already exists in dvObject. ");
 
                         jarr.add(fileoutput);
-                     } else {
+                    } else {
 
                         // Default to suppliedContentType if set or the overall undetermined default if a contenttype isn't supplied
                         String finalType = StringUtils.isBlank(suppliedContentType) ? FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT : suppliedContentType;
@@ -254,15 +254,99 @@ public class GlobusApi extends AbstractApiBean {
                         path = Json.createPatchBuilder().add("/md5Hash", checksumVal).build();
                         fileJson = path.apply(fileJson);
 
-                        addGlobusFileToDataset(dataset, fileJson.toString(), addFileHelper, fileName, finalType, storageIdentifier);
+                        //addGlobusFileToDataset(dataset, fileJson.toString(), addFileHelper, fileName, finalType, storageIdentifier);
 
-                        JsonObject a1 = addFileHelper.getSuccessResultAsJsonObjectBuilder().build();
 
-                        JsonArray f1 = a1.getJsonArray("files");
-                        JsonObject file1 = f1.getJsonObject(0);
+                        if (!systemConfig.isHTTPUpload()) {
+                            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
+                        }
 
-                        jarr.add(file1);
 
+                        //------------------------------------
+                        // (1) Make sure dataset does not have package file
+                        // --------------------------------------
+
+                        for (DatasetVersion dv : dataset.getVersions()) {
+                            if (dv.isHasPackageFile()) {
+                                return error(Response.Status.FORBIDDEN,
+                                        BundleUtil.getStringFromBundle("file.api.alreadyHasPackageFile")
+                                );
+                            }
+                        }
+
+                        //---------------------------------------
+                        // (2) Load up optional params via JSON
+                        //---------------------------------------
+
+                        OptionalFileParams optionalFileParams = null;
+                        msgt("(api) jsonData 2: " +  fileJson.toString());
+
+                        try {
+                            optionalFileParams = new OptionalFileParams(fileJson.toString());
+                        } catch (DataFileTagException ex) {
+                            return error( Response.Status.BAD_REQUEST, ex.getMessage());
+                        }
+
+
+                        //-------------------
+                        // (3) Create the AddReplaceFileHelper object
+                        //-------------------
+                        msg("ADD!");
+
+                        //-------------------
+                        // (4) Run "runAddFileByDatasetId"
+                        //-------------------
+                        addFileHelper.runAddFileByDataset(dataset,
+                                fileName,
+                                finalType,
+                                storageIdentifier,
+                                null,
+                                optionalFileParams);
+
+
+                        if (addFileHelper.hasError()){
+
+                            JsonObjectBuilder fileoutput= Json.createObjectBuilder()
+                                    .add("storageIdentifier " , storageIdentifier)
+                                    .add("error Code: " ,addFileHelper.getHttpErrorCode().toString())
+                                    .add("message " ,  addFileHelper.getErrorMessagesAsString("\n"));
+
+                            jarr.add(fileoutput);
+
+                        }else{
+                            String successMsg = BundleUtil.getStringFromBundle("file.addreplace.success.add");
+
+                            JsonObject a1 = addFileHelper.getSuccessResultAsJsonObjectBuilder().build();
+
+                            JsonArray f1 = a1.getJsonArray("files");
+                            JsonObject file1 = f1.getJsonObject(0);
+
+                            try {
+                                //msgt("as String: " + addFileHelper.getSuccessResult());
+
+                                logger.fine("successMsg: " + successMsg);
+                                String duplicateWarning = addFileHelper.getDuplicateFileWarning();
+                                if (duplicateWarning != null && !duplicateWarning.isEmpty()) {
+                                   // return ok(addFileHelper.getDuplicateFileWarning(), addFileHelper.getSuccessResultAsJsonObjectBuilder());
+                                    JsonObjectBuilder fileoutput= Json.createObjectBuilder()
+                                            .add("storageIdentifier " , storageIdentifier)
+                                            .add("warning message: " ,addFileHelper.getDuplicateFileWarning())
+                                            .add("message " ,  file1);
+                                    jarr.add(fileoutput);
+
+                                } else {
+                                    JsonObjectBuilder fileoutput= Json.createObjectBuilder()
+                                            .add("storageIdentifier " , storageIdentifier)
+                                            .add("message " ,  file1);
+                                    jarr.add(fileoutput);
+                                }
+
+                                //"Look at that!  You added a file! (hey hey, it may have worked)");
+                            } catch (Exception ex) {
+                                Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
+                                return error(Response.Status.BAD_REQUEST, "NoFileException!  Serious Error! See administrator!");
+                            }
+                        }
                     }
                 }
             }
@@ -369,6 +453,8 @@ public class GlobusApi extends AbstractApiBean {
 
             }
         }
+
+
 
     } // end: addFileToDataset
 
