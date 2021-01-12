@@ -504,8 +504,9 @@ public class Datasets extends AbstractApiBean {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
             String dataverseSiteUrl = systemConfig.getDataverseSiteUrl();
             String anchor = dataverseSiteUrl + "/dataset.xhtml?persistentId=" + dsv.getDataset().getPersistentURL();
-            return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
-                    : okLinkset(JsonPrinter.jsonLinkset(new SignpostingResources(systemConfig, dsv)));
+            String signpostingConf = settingsService.getValueForKey(SettingsServiceBean.Key.SignpostingConf, "");
+            return (!signpostingConf.isEmpty() || dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
+                    : okLinkset(JsonPrinter.jsonLinkset(new SignpostingResources(systemConfig, dsv, signpostingConf)));
         });
     }
     @GET
