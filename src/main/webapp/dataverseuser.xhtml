@@ -445,9 +445,11 @@
                                             </p>
                                         </div>
                                         <div class="col-sm-1">
-                                            <h:commandLink rendered="#{DataverseUserPage.showVerifyEmailButton()}" styleClass="btn btn-default" action="#{DataverseUserPage.sendConfirmEmail()}">
+                                            <p:commandLink rendered="#{DataverseUserPage.showVerifyEmailButton()}" styleClass="btn btn-default" 
+                                                           oncomplete="#{DataverseUserPage.sendConfirmEmail()}"
+                                                           onclick="testHasEmailToken(#{DataverseUserPage.hasActiveVerificationToken})">
                                                 <span class="glyphicon glyphicon-ok"></span> #{bundle['confirmEmail.submitRequest']}
-                                            </h:commandLink>
+                                            </p:commandLink>
                                         </div>
                                     </div>
                                 </div>
@@ -716,7 +718,27 @@
                             </div>
                         </p:tab>
                     </p:tabView>
+                        <p:dialog id="tokenExists" styleClass="smallPopUp"
+                                  header="#{bundle['account.emailvalidation.header']}" widgetVar="tokenExists" modal="true">
+                            <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['account.emailvalidation.token.exists']}</p>
+                            <div class="button-block">
+                                <button class="btn btn-default" onclick="PF('tokenExists').hide();" type="button">
+                                    #{bundle.close}
+                                </button>
+                            </div>
+                        </p:dialog> 
                 </h:form>
+                <script>
+                    //<![CDATA[        
+                        function testHasEmailToken(hasActiveVerificationToken) {
+                            if (hasActiveVerificationToken===true) {
+                                PF("tokenExists").show();
+                            } else {
+                                return true;
+                            }                        
+                        }
+                    //]]>
+                </script>
             </ui:define>
         </ui:composition>
     </h:body>
