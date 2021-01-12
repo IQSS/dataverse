@@ -1,6 +1,6 @@
 ## Upgrade Steps
 
-In addition to mapping friendly names to these file types, the types are further mapped to aggregate file types facets on the homepage. This requires them to be reindexed to appear in the facet count.
+In addition to mapping friendly names to these file types, the types are further mapped to aggregate file types facets on the homepage. A full reindex is required for the facets to be refreshed.
 
 Kick off full reindex
 
