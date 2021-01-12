@@ -1204,7 +1204,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         String tabInfo = "";
 
         if (datafile == null) {
-            return null;
+            return "";
         }
 
         if (datafile.isTabularData() && datafile.getDataTable() != null) {
@@ -1226,7 +1226,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         String tabUnf = "";
 
         if (datafile == null) {
-            return null;
+            return "";
         }
 
         if (datafile.isTabularData() && datafile.getDataTable() != null) {
