@@ -428,23 +428,6 @@
                                             <span class="glyphicon glyphicon-pencil" aria-hidden="true"/> #{bundle['dataset.editBtn']}
                                         </p:commandLink>
                                     </div>
-
-                                    <!-- Export Button -->
-                                    <div class="btn-group" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released}">
-                                        <button id="fileExport" class="btn btn-default btn-export dropdown-toggle" type="button" data-toggle="dropdown"
-                                                aria-haspopup="true" aria-controls="fileExportMenu" aria-expanded="false">
-                                            <span class="glyphicon glyphicon-export"/> #{bundle['dataset.exportBtn']} <span class="caret"/></button>
-                                        <ul id="fileExportMenu" class="dropdown-menu"
-                                                role="menu" aria-labelledby="fileExport">
-                                            <ui:repeat var="exporter" value="#{FilePage.getExporters()}">
-                                                <li role="none">
-                                                    <h:outputLink role="menuitem" value="#{exporter[1]}" target="_blank">
-                                                        <h:outputText value="#{exporter[0]}"/>
-                                                    </h:outputLink>
-                                                </li>  
-                                            </ui:repeat>
-                                        </ul>
-                                    </div>
                                 </div>
                                 <!-- END: Add + Edit Metadata Button -->
                                 
