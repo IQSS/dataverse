@@ -1765,7 +1765,7 @@ public class Access extends AbstractApiBean {
                 return false;
             } 
             
-        if (permissionService.requestOn(createDataverseRequest(user), df).has(Permission.DownloadFile)) { // FIXME: Indent this line more.
+            if (permissionService.requestOn(createDataverseRequest(user), df).has(Permission.DownloadFile)) {
                 if (published) {
                     logger.log(Level.FINE, "API token-based auth: User {0} has rights to access the datafile.", user.getIdentifier());
                     return true; 
