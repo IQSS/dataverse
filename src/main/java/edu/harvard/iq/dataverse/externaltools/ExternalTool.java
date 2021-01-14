@@ -97,17 +97,6 @@ public class ExternalTool implements Serializable {
     @Column(nullable = true, columnDefinition = "TEXT")
     private String contentType;
 
-    @Transient
-    private boolean worldMapTool;
-    
-    public boolean isWorldMapTool() {
-        return worldMapTool;
-    }
-
-    public void setWorldMapTool(boolean worldMapTool) {
-        this.worldMapTool = worldMapTool;
-    }
-
     /**
      * This default constructor is only here to prevent this error at
      * deployment:
