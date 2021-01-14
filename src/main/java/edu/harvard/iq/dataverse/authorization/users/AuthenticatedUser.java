@@ -12,7 +12,6 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2A
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
-import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
@@ -126,18 +125,7 @@ public class AuthenticatedUser implements User, Serializable {
     public String getIdentifier() {
         return IDENTIFIER_PREFIX + userIdentifier;
     }
-    
-    @OneToMany(mappedBy = "dataverseUser", cascade={CascadeType.REMOVE})
-    private List<WorldMapToken> worldMapTokens;
 
-    public List<WorldMapToken> getWorldMapTokens() {
-        return worldMapTokens;
-    }
-
-    public void setWorldMapTokens(List<WorldMapToken> worldMapTokens) {
-        this.worldMapTokens = worldMapTokens;
-    }
-    
     @OneToMany(mappedBy = "user", cascade={CascadeType.REMOVE})
     private List<UserNotification> notifications;
 

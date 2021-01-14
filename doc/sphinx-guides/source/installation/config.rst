@@ -774,7 +774,7 @@ Once you have created the analytics file, run this curl command to add it to you
 Tracking Button Clicks
 ++++++++++++++++++++++
 
-The basic analytics configuration above tracks page navigation. However, it does not capture potentially interesting events, such as those from users clicking buttons on pages, that do not result in a new page opening. In Dataverse, these events include file downloads, requesting access to restricted data, exporting metadata, social media sharing, requesting citation text, launching external tools or WorldMap, contacting authors, and launching computations.
+The basic analytics configuration above tracks page navigation. However, it does not capture potentially interesting events, such as those from users clicking buttons on pages, that do not result in a new page opening. In Dataverse, these events include file downloads, requesting access to restricted data, exporting metadata, social media sharing, requesting citation text, launching external tools, contacting authors, and launching computations.
 
 Both Google and Matomo provide the optional capability to track such events and Dataverse has added CSS style classes (btn-compute, btn-contact, btn-download, btn-explore, btn-export, btn-preview, btn-request, btn-share, and downloadCitation) to it's HTML to facilitate it.
 
@@ -1757,20 +1757,6 @@ The ``:TwoRavensUrl`` option is no longer valid. See :doc:`r-rapache-tworavens` 
 +++++++++++++++++++++
 
 The ``:TwoRavensTabularView`` option is no longer valid. See :doc:`r-rapache-tworavens` and the :doc:`/admin/external-tools` section of the Admin Guide.
-
-:GeoconnectCreateEditMaps
-+++++++++++++++++++++++++
-
-Set ``GeoconnectCreateEditMaps`` to true to allow the user to create maps using Geoconnect. This boolean enables the map configure tool option for a data file and the ingest to create a shape file.
-
-``curl -X PUT -d true http://localhost:8080/api/admin/settings/:GeoconnectCreateEditMaps``
-
-:GeoconnectViewMaps
-+++++++++++++++++++
-
-Set ``GeoconnectViewMaps`` to true to allow a user to view existing maps. This boolean enables the map explore tool option for a data file.
-
-``curl -X PUT -d true http://localhost:8080/api/admin/settings/:GeoconnectViewMaps``
 
 .. _:DatasetPublishPopupCustomText:
 
