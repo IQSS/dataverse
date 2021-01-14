@@ -820,7 +820,7 @@
         <profile>
             <id>all-unit-tests</id>
         </profile>
-        <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
+      <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
       <profile>
         <id>Java9Plus</id>
         <activation>
