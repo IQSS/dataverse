@@ -90,7 +90,6 @@ For more information, please see https://docs.payara.fish/documentation/payara-s
 - exporting to Schema.org format (and showing JSON-LD in HTML's <meta/> tag)
 - exporting to DDI format
 - which Dataverse installation an "external tool" should return to
-- which Dataverse installation Geoconnect should return to
 - URLs embedded in SWORD API responses
 
 The supplied site URL will be saved under the JVM option :ref:`dataverse.siteUrl`.
