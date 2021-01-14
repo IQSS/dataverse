@@ -15,6 +15,7 @@
             <ui:param name="pageTitle" value="#{bundle.account} - #{dataverseServiceBean.findRootDataverse().name}"/>
             <ui:param name="dataverse" value="#{dataverseServiceBean.findRootDataverse()}"/>
             <ui:param name="showDataverseHeader" value="false"/>
+            <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:param name="loginRedirectPage" value="dataverseuser.xhtml"/>
             <ui:define name="body">
                 <script>
@@ -446,10 +447,11 @@
                                         </div>
                                         <div class="col-sm-1">
                                             <p:commandLink rendered="#{DataverseUserPage.showVerifyEmailButton()}" styleClass="btn btn-default" 
-                                                           oncomplete="#{DataverseUserPage.sendConfirmEmail()}"
-                                                           onclick="testHasEmailToken(#{DataverseUserPage.hasActiveVerificationToken})">
+                                                            id="verifyEmailButton"
+                                                           onclick="testHasEmailToken(#{DataverseUserPage.getHasActiveVerificationToken()})">
                                                 <span class="glyphicon glyphicon-ok"></span> #{bundle['confirmEmail.submitRequest']}
                                             </p:commandLink>
+                                            <p:remoteCommand name="sendConfirmEmailCommand" process="@this" update="@([id$=verifyEmailButton]), :messagePanel" actionListener="#{DataverseUserPage.sendConfirmEmail()}"/>
                                         </div>
                                     </div>
                                 </div>
@@ -720,7 +722,12 @@
                     </p:tabView>
                         <p:dialog id="tokenExists" styleClass="smallPopUp"
                                   header="#{bundle['account.emailvalidation.header']}" widgetVar="tokenExists" modal="true">
-                            <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['account.emailvalidation.token.exists']}</p>
+                            
+                             <h:outputFormat value="#{bundle['account.emailvalidation.token.exists']}" escape="false">
+                                <o:param>#{DataverseUserPage.currentUser.email}</o:param>
+                            </h:outputFormat>
+                            
+                            
                             <div class="button-block">
                                 <button class="btn btn-default" onclick="PF('tokenExists').hide();" type="button">
                                     #{bundle.close}
@@ -734,7 +741,7 @@
                             if (hasActiveVerificationToken===true) {
                                 PF("tokenExists").show();
                             } else {
-                                return true;
+                                sendConfirmEmailCommand();
                             }                        
                         }
                     //]]>
