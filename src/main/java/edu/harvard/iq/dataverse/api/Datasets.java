@@ -78,7 +78,6 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -101,6 +100,7 @@ import edu.harvard.iq.dataverse.util.*;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonLinkset;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
@@ -493,7 +493,29 @@ public class Datasets extends AbstractApiBean {
             return notFound("metadata block named " + blockName + " not found");
         });
     }
-    
+
+    /**
+     * Add Signposting
+     * @param datasetId
+     * @param versionId
+     * @param uriInfo
+     * @param headers
+     * @return
+     */
+    @GET
+    @Path("{id}/versions/{versionId}/linkset")
+    public Response getLinkset( @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        if ( ":draft".equals(versionId) ) {
+            return badRequest("The :draft version can be viewed");
+        }
+        return response( req -> {
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+            String dataverseSiteUrl = systemConfig.getDataverseSiteUrl();
+            String anchor = dataverseSiteUrl + "/dataset.xhtml?persistentId=" + dsv.getDataset().getPersistentURL();
+            return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
+                    : okLinkset(JsonPrinter.jsonLinkset(new SignpostingResources(systemConfig, dsv)));
+        });
+    }
     @GET
     @Path("{id}/modifyRegistration")
     public Response updateDatasetTargetURL(@PathParam("id") String id ) {
@@ -2284,29 +2306,6 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         dataset.setStorageDriverId(null);
         datasetService.merge(dataset);
     	return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
-    }
-
-    /**
-     * Add Signposting
-     * @param datasetId
-     * @param versionId
-     * @param uriInfo
-     * @param headers
-     * @return
-     */
-    @GET
-    @Path("{id}/versions/{versionId}/linkset")
-    public Response getLinkset( @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        if ( ":draft".equals(versionId) ) {
-            return badRequest("The :draft version can be viewed");
-        }
-        return response( req -> {
-            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
-            String dataverseSiteUrl = systemConfig.getDataverseSiteUrl();
-            String anchor = dataverseSiteUrl + "/dataset.xhtml?persistentId=" + dsv.getDataset().getPersistentURL();
-            return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
-                    : okLinkset(JsonPrinter.jsonLinkset(new SignpostingResources(systemConfig, dsv)));
-        });
     }
 }
 
