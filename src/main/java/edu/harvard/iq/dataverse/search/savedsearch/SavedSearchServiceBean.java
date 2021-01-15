@@ -242,7 +242,7 @@ public class SavedSearchServiceBean {
     }
 
     private SolrQueryResponse findHits(SavedSearch savedSearch) throws SearchException {
-        String sortField = SearchFields.RELEVANCE;
+        String sortField = SearchFields.TYPE; // first return dataverses, then datasets
         String sortOrder = SortBy.DESCENDING;
         SortBy sortBy = new SortBy(sortField, sortOrder);
         int paginationStart = 0;
@@ -345,14 +345,12 @@ public class SavedSearchServiceBean {
          * Saved Search was created. The default IP address in the
          * DataverseRequest constructor is used instead, which as of this
          * writing is 0.0.0.0 to mean "undefined". Is this a feature or a bug?
-         * What is the expected interplay between Saved Search and IP Groups?
-         * Users might be surprised to see certain DvObjects in the results of
-         * their query when creating the Saved Search and later find that those
-         * DvObjects, which are only visible due to an IP Groups membership, are
-         * not found by Saved Search when executed by cron, for example. As of
-         * this writing Saved Search is a superuser-only feature so perhaps IP
-         * Groups are irrelevant because all DvObjects are discoverable to
-         * superusers.
+         * This is not an issue for the search itself, since it is now run as the
+         * Guest User, but would present a problem if the user does not have
+         * permission to create links and could only create the saved search due to 
+         * a granted permission from the IP Group.
+         * As of this writing Saved Search is a superuser-only feature; so IP
+         * Groups are irrelevant because all superusers can create links.
          */
         return null;
     }
