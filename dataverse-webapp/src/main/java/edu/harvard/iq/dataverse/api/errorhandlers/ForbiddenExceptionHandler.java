@@ -25,7 +25,7 @@ public class ForbiddenExceptionHandler implements ExceptionMapper<ForbiddenExcep
         String uri = request.getRequestURI();
         return Response.status(403)
                 .entity(errorResponse(403, "'" + uri + "' you are not authorized to access this object via this api endpoint. "
-                                            + "Please check your code for typos, or consult our API guide at http://guides.dataverse.org."))
+                                            + "Please check your code for typos, or consult our API guide at https://repod.icm.edu.pl/guides/en/4.11/user/index.html."))
                 .type("application/json").build();
 
 

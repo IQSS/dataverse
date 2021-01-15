@@ -28,7 +28,7 @@ public class NotFoundExceptionHandler implements ExceptionMapper<NotFoundExcepti
         if (exMessage != null && exMessage.toLowerCase().startsWith("datafile")) {
             outputMessage = exMessage;
         } else {
-            outputMessage = "endpoint does not exist on this server. Please check your code for typos, or consult our API guide at http://guides.dataverse.org.";
+            outputMessage = "endpoint does not exist on this server. Please check your code for typos, or consult our API guide at https://repod.icm.edu.pl/guides/en/4.11/user/index.html.";
         }
         return Response.status(404)
                 .entity(errorResponse(404, "'" + uri + "' " + outputMessage))

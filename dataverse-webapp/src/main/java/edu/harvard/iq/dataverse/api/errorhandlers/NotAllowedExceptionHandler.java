@@ -21,7 +21,7 @@ public class NotAllowedExceptionHandler implements ExceptionMapper<NotAllowedExc
         String uri = request.getRequestURI();
         return Response.status(405)
                 .entity(errorResponse(405, 
-                            "'" + uri + "' endpoint does not support method '" + request.getMethod() + "'. Consult our API guide at http://guides.dataverse.org."))
+                            "'" + uri + "' endpoint does not support method '" + request.getMethod() + "'. Consult our API guide at https://repod.icm.edu.pl/guides/en/4.11/user/index.html."))
                 .type("application/json").build();
 
 
