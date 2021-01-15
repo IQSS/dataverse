@@ -11,6 +11,9 @@
       xmlns:cc="http://java.sun.com/jsf/composite"
       xmlns:o="http://omnifaces.org/ui">
     <h:head>
+        <!-- Add Signposting-->
+        <f:event type="preRenderView" listener="#{facesContext.externalContext.response.setHeader('link', DatasetPage.getSignpostingLinkHeader())}" />
+        <!-- End add Signposting-->
     </h:head>
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">

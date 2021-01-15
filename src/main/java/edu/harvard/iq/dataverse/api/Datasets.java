@@ -97,15 +97,13 @@ import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.ArchiverUtil;
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.EjbUtil;
-import edu.harvard.iq.dataverse.util.FileUtil;
-import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.*;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.IOException;
 import java.io.InputStream;
@@ -2286,6 +2284,29 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         dataset.setStorageDriverId(null);
         datasetService.merge(dataset);
     	return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
+    }
+
+    /**
+     * Add Signposting
+     * @param datasetId
+     * @param versionId
+     * @param uriInfo
+     * @param headers
+     * @return
+     */
+    @GET
+    @Path("{id}/versions/{versionId}/linkset")
+    public Response getLinkset( @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        if ( ":draft".equals(versionId) ) {
+            return badRequest("The :draft version can be viewed");
+        }
+        return response( req -> {
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+            String dataverseSiteUrl = systemConfig.getDataverseSiteUrl();
+            String anchor = dataverseSiteUrl + "/dataset.xhtml?persistentId=" + dsv.getDataset().getPersistentURL();
+            return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
+                    : okLinkset(JsonPrinter.jsonLinkset(new SignpostingResources(systemConfig, dsv)));
+        });
     }
 }
 

@@ -39,6 +39,7 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.DatasetFieldWalker;
+import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import edu.harvard.iq.dataverse.workflow.Workflow;
@@ -877,5 +878,33 @@ public class JsonPrinter {
         JsonObjectBuilder b = jsonObjectBuilder();
         in.keySet().forEach( k->b.add(k, in.get(k)) );
         return b;
+    }
+
+
+    /**
+     * Add Signposting
+     * @param sr
+     * @return
+     */
+    public static JsonArrayBuilder jsonLinkset(SignpostingResources sr) {
+        return sr.getJsonLinkset();
+    }
+
+    /**
+     * Add Signposting
+     * @param ds
+     * @return
+     */
+    public static JsonObjectBuilder jsonLinkset(Dataset ds) {
+        return jsonObjectBuilder()
+                .add("anchor", ds.getPersistentURL())
+                .add("cite-as", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", ds.getPersistentURL())))
+                .add("type", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", "https://schema.org/AboutPage")))
+                .add("author", ds.getPersistentURL())
+                .add("protocol", ds.getProtocol())
+                .add("authority", ds.getAuthority())
+                .add("publisher", getRootDataverseNameforCitation(ds))
+                .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
+                .add("storageIdentifier", ds.getStorageIdentifier());
     }
 }
