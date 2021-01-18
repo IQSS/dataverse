@@ -178,7 +178,11 @@ public class BagGenerator {
     public void setIgnoreHashes(boolean val) {
         ignorehashes = val;
     }
-
+    
+    public void setDefaultCheckSumType(ChecksumType type) {
+    	hashtype=type;
+    }
+    
     public static void println(String s) {
         System.out.println(s);
         System.out.flush();
@@ -526,7 +530,6 @@ public class BagGenerator {
                 } else {
                     titles.add(childTitle);
                 }
-                
                 String childPath = currentPath + childTitle;
                 JsonElement directoryLabel = child.get(JsonLDTerm.DVCore("directoryLabel").getLabel());
                 if(directoryLabel!=null) {
@@ -538,18 +541,22 @@ public class BagGenerator {
                 if (child.has(JsonLDTerm.checksum.getLabel())) {
                     ChecksumType childHashType = ChecksumType.fromString(
                             child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@type").getAsString());
-                    if (hashtype != null && !hashtype.equals(childHashType)) {
-                        logger.warning("Multiple hash values in use - not supported");
-                    }
-                    if (hashtype == null)
+                    if (hashtype == null) {
+                    	//If one wasn't set as a default, pick up what the first child with one uses
                         hashtype = childHashType;
-                    childHash = child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@value").getAsString();
-                    if (checksumMap.containsValue(childHash)) {
-                        // Something else has this hash
-                        logger.warning("Duplicate/Collision: " + child.get("@id").getAsString() + " has SHA1 Hash: "
-                                + childHash);
                     }
-                    checksumMap.put(childPath, childHash);
+                    if (hashtype != null && !hashtype.equals(childHashType)) {
+                        logger.warning("Multiple hash values in use - will calculate " + hashtype.toString()
+                            + " hashes for " + childTitle);
+                    } else {
+                        childHash = child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@value").getAsString();
+                        if (checksumMap.containsValue(childHash)) {
+                            // Something else has this hash
+                            logger.warning("Duplicate/Collision: " + child.get("@id").getAsString() + " has SHA1 Hash: "
+                                + childHash);
+                        }
+                        checksumMap.put(childPath, childHash);
+                    }
                 }
                 if ((hashtype == null) | ignorehashes) {
                     // Pick sha512 when ignoring hashes or none exist
@@ -872,19 +879,15 @@ public class BagGenerator {
      */
     String getSingleValue(JsonElement jsonElement, String key) {
         String val = "";
-        if (jsonElement.isJsonObject()) {
-            if (((JsonObject) jsonElement).get(key).isJsonPrimitive()) {
-                val = ((JsonObject) jsonElement).get(key).getAsString();
-            } else {
-                // shouldn't happen
-                logger.warning("Unexpected non-primative element");
-            }
-        } else {
-            //Should always be an array of objects
-            Iterator<JsonElement> iter = ((JsonArray) jsonElement).iterator();
+        if(jsonElement.isJsonObject()) {
+            JsonObject jsonObject=jsonElement.getAsJsonObject();
+            val = jsonObject.get(key).getAsString();
+        } else if (jsonElement.isJsonArray()) {
+            
+            Iterator<JsonElement> iter = jsonElement.getAsJsonArray().iterator();
             ArrayList<String> stringArray = new ArrayList<String>();
             while (iter.hasNext()) {
-                stringArray.add(((JsonObject) iter.next()).get(key).getAsString());
+                stringArray.add(iter.next().getAsJsonObject().getAsJsonPrimitive(key).getAsString());
             }
             if (stringArray.size() > 1) {
                 val = String.join(",", stringArray);

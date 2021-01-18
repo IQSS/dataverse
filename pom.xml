@@ -43,7 +43,7 @@
         Jacoco 0.8.2 seems to break Netbeans code coverage integration so we'll use 0.8.1 instead.
         See https://github.com/jacoco/jacoco/issues/772 for discussion of how the XML changed.
         -->
-        <jacoco.version>0.8.1</jacoco.version>
+        <jacoco.version>0.8.6</jacoco.version>
     </properties>
     <pluginRepositories>
         <pluginRepository>
@@ -203,6 +203,11 @@
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
             <!-- no version here as managed by BOM above! -->
+        </dependency>
+        <dependency>
+          <groupId>com.apicatalog</groupId>
+          <artifactId>titanium-json-ld</artifactId>
+          <version>0.8.4</version>
         </dependency>
         <dependency>
             <!-- required by org.swordapp.server.sword2-server -->
@@ -825,28 +830,7 @@
         <profile>
             <id>all-unit-tests</id>
         </profile>
-        <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
-      <profile>
-        <id>Java8</id>
-        <activation>
-          <jdk>1.8</jdk>
-        </activation>
-        <build>
-          <plugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-compiler-plugin</artifactId>
-              <version>3.8.0</version>
-              <configuration>
-                <source>1.8</source>
-                <target>1.8</target>
-                <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
-                <compilerArgument>${compilerArgument}</compilerArgument>
-              </configuration>
-            </plugin>
-          </plugins>
-        </build>
-      </profile>
+      <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
       <profile>
         <id>Java9Plus</id>
         <activation>
@@ -859,7 +843,7 @@
               <artifactId>maven-compiler-plugin</artifactId>
               <version>3.8.0</version>
               <configuration>
-                <release>8</release>
+                <release>11</release>
                 <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
                 <compilerArgument>${compilerArgument}</compilerArgument>
               </configuration>

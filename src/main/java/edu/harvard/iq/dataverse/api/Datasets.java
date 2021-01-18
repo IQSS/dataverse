@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetLock;
@@ -78,7 +77,7 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
+import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -103,6 +102,8 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.bagit.OREMap;
+import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
@@ -121,6 +122,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -134,10 +136,12 @@ import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
+import javax.json.stream.JsonParsingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -158,7 +162,6 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import com.amazonaws.services.s3.model.PartETag;
-import java.util.Map.Entry;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -185,9 +188,6 @@ public class Datasets extends AbstractApiBean {
     @EJB
     DDIExportServiceBean ddiExportService;
     
-    @EJB
-    DatasetFieldServiceBean datasetfieldService;
-
     @EJB
     MetadataBlockServiceBean metadataBlockService;
     
@@ -567,6 +567,7 @@ public class Datasets extends AbstractApiBean {
   
     @PUT
     @Path("{id}/versions/{versionId}")
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response updateDraftVersion( String jsonBody, @PathParam("id") String id,  @PathParam("versionId") String versionId ){
         
         if ( ! ":draft".equals(versionId) ) {
@@ -619,6 +620,96 @@ public class Datasets extends AbstractApiBean {
             
         }
     }
+    
+    @GET
+    @Path("{id}/versions/{versionId}/metadata")
+    @Produces("application/json-ld")
+    public Response getVersionJsonLDMetadata(@PathParam("id") String id, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        try {
+            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(id), uriInfo, headers);
+            OREMap ore = new OREMap(dsv,
+                    settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false));
+            return ok(ore.getOREMapBuilder(true));
+
+        } catch (WrappedResponse ex) {
+            ex.printStackTrace();
+            return ex.getResponse();
+        } catch (Exception jpe) {
+            logger.log(Level.SEVERE, "Error getting jsonld metadata for dsv: ", jpe.getLocalizedMessage());
+            jpe.printStackTrace();
+            return error(Response.Status.INTERNAL_SERVER_ERROR, jpe.getLocalizedMessage());
+        }
+    }
+
+    @GET
+    @Path("{id}/metadata")
+    @Produces("application/json-ld")
+    public Response getVersionJsonLDMetadata(@PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        return getVersionJsonLDMetadata(id, ":draft", uriInfo, headers);
+    }
+            
+    @PUT
+    @Path("{id}/metadata")
+    @Consumes("application/json-ld")
+    public Response updateVersionMetadata(String jsonLDBody, @PathParam("id") String id, @DefaultValue("false") @QueryParam("replace") boolean replaceTerms) {
+
+        try {
+            Dataset ds = findDatasetOrDie(id);
+            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DatasetVersion dsv = ds.getEditVersion();
+            boolean updateDraft = ds.getLatestVersion().isDraft();
+            dsv = JSONLDUtil.updateDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc, !replaceTerms, false);
+            
+            DatasetVersion managedVersion;
+            if (updateDraft) {
+                Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
+                managedVersion = managedDataset.getEditVersion();
+            } else {
+                managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
+            }
+            String info = updateDraft ? "Version Updated" : "Version Created";
+            return ok(Json.createObjectBuilder().add(info, managedVersion.getVersionDate()));
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        } catch (JsonParsingException jpe) {
+            logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}", jsonLDBody);
+            return error(Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage());
+        }
+    }
+    
+	@PUT
+	@Path("{id}/metadata/delete")
+	@Consumes("application/json-ld")
+	public Response deleteMetadata(String jsonLDBody, @PathParam("id") String id) {
+        logger.info("In delteMetadata");
+		try {
+			Dataset ds = findDatasetOrDie(id);
+			DataverseRequest req = createDataverseRequest(findUserOrDie());
+			DatasetVersion dsv = ds.getEditVersion();
+			boolean updateDraft = ds.getLatestVersion().isDraft();
+			dsv = JSONLDUtil.deleteDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc);
+			logger.info("Updating ver");
+			DatasetVersion managedVersion;
+			if (updateDraft) {
+				Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
+				managedVersion = managedDataset.getEditVersion();
+			} else {
+				managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
+			}
+			String info = updateDraft ? "Version Updated" : "Version Created";
+			return ok(Json.createObjectBuilder().add(info, managedVersion.getVersionDate()));
+
+		} catch (WrappedResponse ex) {
+		    ex.printStackTrace();
+			return ex.getResponse();
+		} catch (JsonParsingException jpe) {
+		    logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}", jsonLDBody);
+		    jpe.printStackTrace();
+            return error(Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage());
+		}
+	}
     
     @PUT
     @Path("{id}/deleteMetadata")
@@ -799,7 +890,7 @@ public class Datasets extends AbstractApiBean {
 
             JsonArray fieldsJson = json.getJsonArray("fields");
             if( fieldsJson == null ){
-                singleField  = jsonParser().parseField(json, Boolean.FALSE);
+                singleField = jsonParser().parseField(json, Boolean.FALSE);
                 fields.add(singleField);
             } else {
                 fields = jsonParser().parseMultipleFields(json);

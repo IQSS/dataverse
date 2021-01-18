@@ -217,6 +217,7 @@ public class JsonResponseBuilder {
         if (ex.isPresent()) {
             metadata.append("|");
             logger.log(level, metadata.toString(), ex);
+            ex.get().printStackTrace();
         } else {
             logger.log(level, metadata.toString());
         }
