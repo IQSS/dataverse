@@ -96,8 +96,13 @@ import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.*;
+import edu.harvard.iq.dataverse.util.ArchiverUtil;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.EjbUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.SignpostingResources;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.jsonLinkset;
@@ -512,8 +517,9 @@ public class Datasets extends AbstractApiBean {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
             String dataverseSiteUrl = systemConfig.getDataverseSiteUrl();
             String anchor = dataverseSiteUrl + "/dataset.xhtml?persistentId=" + dsv.getDataset().getPersistentURL();
-            return (dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
-                    : okLinkset(JsonPrinter.jsonLinkset(new SignpostingResources(systemConfig, dsv)));
+            String signpostingConf = settingsService.getValueForKey(SettingsServiceBean.Key.SignpostingConf, "");
+            return (!signpostingConf.isEmpty() || dsv == null || dsv.getId() == null) ? notFound("Dataset version not found")
+                    : okLinkset(JsonPrinter.jsonLinkset(new SignpostingResources(systemConfig, dsv, signpostingConf)));
         });
     }
     @GET

@@ -8,20 +8,41 @@ package edu.harvard.iq.dataverse.util;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import java.io.StringReader;
 import java.util.List;
 
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+/*
+{
+  "indetifier-schema": {"ORCID":"https://orcid.org/", "ISNI":"https://isni.org/isni/", "ScopusID":"https://www.scopus.com/authid/detail.uri?authorId="},
+  "license": {"CCO":"https://creativecommons.org/licenses/by/4.0/", "MIT": "https://url", "APACHE":"https://url"},
+  "cite-as": {"doi":"https://citation.crosscite.org/format?style=bibtex&doi=", "type":"application/vnd.datacite.datacite+json"}
+}
 
+ */
 public class SignpostingResources {
     SystemConfig systemConfig;
     DatasetVersion workingDatasetVersion;
-    public SignpostingResources(SystemConfig systemConfig, DatasetVersion workingDatasetVersion){
+    JsonObject idschemaJsonObj;
+    JsonObject licJsonObj;
+    JsonObject citeAsJsonObj;
+
+    public SignpostingResources(SystemConfig systemConfig, DatasetVersion workingDatasetVersion, String jsonSetting){
         this.systemConfig = systemConfig;
         this.workingDatasetVersion = workingDatasetVersion;
+        JsonReader jsonReader = Json.createReader(new StringReader(jsonSetting));
+        JsonObject spJsonSetting = jsonReader.readObject();
+        jsonReader.close();
+        idschemaJsonObj = spJsonSetting.getJsonObject("indetifier-schema");
+        licJsonObj = spJsonSetting.getJsonObject("license");
+        citeAsJsonObj = spJsonSetting.getJsonObject("cite-as");
     }
 
     private String getIdentifierSchema(List<DatasetAuthor> datasetAuthors) {
@@ -34,12 +55,13 @@ public class SignpostingResources {
                     Link: <http://www.isni.org/:id>; rel="author"
              */
             if (da.getIdValue() != null && !da.getIdValue().isEmpty()) {
-                if (da.getIdType().equals("ORCID"))
-                    identifierSchema += ", <https://orcid.org/" + da.getIdValue() + "> ; rel=\"author\"";
-                else if (da.getIdType().equals("ISNI"))
-                    identifierSchema += ", <https://isni.org/isni/" + da.getIdValue() + "> ; rel=\"author\"";
-                else if (da.getIdType().equals("ScopusID"))
-                    identifierSchema += ", <https://www.scopus.com/authid/detail.uri?authorId=" + da.getIdValue() + "> ; rel=\"author\"";
+                identifierSchema += ", <" + idschemaJsonObj.getString(da.getIdType()) + da.getIdValue() + "> ; rel=\"author\"";
+//                if (da.getIdType().equals("ORCID"))
+//                    identifierSchema += ", <https://orcid.org/" + da.getIdValue() + "> ; rel=\"author\"";
+//                else if (da.getIdType().equals("ISNI"))
+//                    identifierSchema += ", <https://isni.org/isni/" + da.getIdValue() + "> ; rel=\"author\"";
+//                else if (da.getIdType().equals("ScopusID"))
+//                    identifierSchema += ", <https://www.scopus.com/authid/detail.uri?authorId=" + da.getIdValue() + "> ; rel=\"author\"";
 
             }
         }
@@ -52,10 +74,12 @@ public class SignpostingResources {
         Dataset ds = workingDatasetVersion.getDataset();
         String citeAs = "<" + ds.getPersistentURL() + "> ; rel=\"cite-as\"";
         String describedby = ""; //not only crosscite.
-        if (ds.getProtocol().equals("doi")) {
-            describedby = ", <https://citation.crosscite.org/format?style=bibtex&doi="+ ds.getAuthority() + "/"
-                    + ds.getIdentifier() + "> ; rel=\"describedby\" \n" + "; type=\"application/vnd.datacite.datacite+json";
-        }
+        describedby = ", <" + citeAsJsonObj.getString(ds.getProtocol())+ ds.getAuthority() + "/"
+                + ds.getIdentifier() + "> ; rel=\"describedby\" \n" + "; type=\""+ citeAsJsonObj.getString("type") + "\"";
+//        if (ds.getProtocol().equals("doi")) {
+//            describedby = ", <https://citation.crosscite.org/format?style=bibtex&doi="+ ds.getAuthority() + "/"
+//                    + ds.getIdentifier() + "> ; rel=\"describedby\" \n" + "; type=\"application/vnd.datacite.datacite+json";
+//        }
         describedby += ", <" + systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=schema.org&persistentId="
                 + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() + "> ; rel=\"describedby\" \n" + "; type=\"application/json+ld\"";
         String type = ", <https://schema.org/AboutPage> ; rel=\"type\"";
@@ -83,12 +107,14 @@ public class SignpostingResources {
                     Link: <http://www.isni.org/:id>; rel="author"
              */
             if (da.getIdValue() != null && !da.getIdValue().isEmpty()) {
-                if (da.getIdType().equals("ORCID"))
-                    authors.add(jsonObjectBuilder().add("href", "https://orcid.org/" + da.getIdValue()));
-                else if (da.getIdType().equals("ISNI"))
-                    authors.add(jsonObjectBuilder().add("href","https://isni.org/isni/" + da.getIdValue()));
-                else if (da.getIdType().equals("ScopusID"))
-                    authors.add(jsonObjectBuilder().add("href","https://www.scopus.com/authid/detail.uri?authorId=" + da.getIdValue()));
+
+                authors.add(jsonObjectBuilder().add("href", idschemaJsonObj.getString(da.getIdType())  + da.getIdValue()));
+//                if (da.getIdType().equals("ORCID"))
+//                    authors.add(jsonObjectBuilder().add("href", "https://orcid.org/" + da.getIdValue()));
+//                else if (da.getIdType().equals("ISNI"))
+//                    authors.add(jsonObjectBuilder().add("href","https://isni.org/isni/" + da.getIdValue()));
+//                else if (da.getIdType().equals("ScopusID"))
+//                    authors.add(jsonObjectBuilder().add("href","https://www.scopus.com/authid/detail.uri?authorId=" + da.getIdValue()));
             }
         }
         return authors;
@@ -113,11 +139,14 @@ public class SignpostingResources {
         String lic = "";
         if (workingDatasetVersion.getTermsOfUseAndAccess().getLicense() == TermsOfUseAndAccess.License.CC0){
             //On the current Dataverse, only None and CC0. In the signposting protocol: cardinality is 1
-            lic = "https://creativecommons.org/licenses/by/4.0/";
+//            lic = "https://creativecommons.org/licenses/by/4.0/";
+            lic = licJsonObj.getString(TermsOfUseAndAccess.License.CC0.name());
         }
         JsonArrayBuilder jab = Json.createArrayBuilder();
-        jab.add(jsonObjectBuilder().add("href", "https://citation.crosscite.org/format?style=bibtex&doi="+ ds.getAuthority() + "/"
-                + ds.getIdentifier()).add("type","application/vnd.datacite.datacite+json"));
+        jab.add(jsonObjectBuilder().add("href", citeAsJsonObj.getJsonObject(ds.getProtocol())+ ds.getAuthority() + "/"
+                + ds.getIdentifier()).add("type",citeAsJsonObj.getJsonObject("type")));
+//        jab.add(jsonObjectBuilder().add("href", "https://citation.crosscite.org/format?style=bibtex&doi="+ ds.getAuthority() + "/"
+//        + ds.getIdentifier()).add("type","application/vnd.datacite.datacite+json"));
 //        jab.add(jsonObjectBuilder().add("href", systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=schema.org&persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier()).add("type","application/vnd.datacite.datacite+json"));
         jab.add(jsonObjectBuilder().add("href", systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=schema.org&persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier()).add("type","application/json+ld"));
         JsonArrayBuilder linkset = Json.createArrayBuilder();
@@ -133,7 +162,7 @@ public class SignpostingResources {
             DataFile df = fm.getDataFile();
             JsonObjectBuilder itemAnchor = jsonObjectBuilder().add("anchor", getPublicDownloadUrl(df));
             itemAnchor.add("collection", Json.createArrayBuilder().add(jsonObjectBuilder()
-                    .add("href", landingPage)).add(jsonObjectBuilder().add("type","text/html")));
+            .add("href", landingPage)).add(jsonObjectBuilder().add("type","text/html")));
             linkset.add(itemAnchor);
         }
         return linkset;

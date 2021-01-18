@@ -49,6 +49,8 @@ import edu.harvard.iq.dataverse.util.*;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 
+import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -77,6 +79,8 @@ import javax.inject.Named;
 
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
+
+import javax.json.*;
 import javax.validation.ConstraintViolation;
 import org.apache.commons.httpclient.HttpClient;
 //import org.primefaces.context.RequestContext;
@@ -5482,7 +5486,7 @@ public class DatasetPage implements java.io.Serializable {
     public String getSignpostingLinkHeader(){
         if (!workingVersion.isReleased())
             return "DRAFT";
-        SignpostingResources sr = new SignpostingResources(systemConfig, workingVersion);
+        SignpostingResources sr = new SignpostingResources(systemConfig, workingVersion, settingsService.getValueForKey(SettingsServiceBean.Key.SignpostingConf));
         return sr.getLinks();
     }
 }
