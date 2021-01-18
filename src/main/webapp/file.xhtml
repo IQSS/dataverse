@@ -420,7 +420,7 @@
                                     <!-- END: Preview Button Group -->
                                     <div class="btn-group" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
                                         <!-- Modular/Configured Explore Tool -->
-                                        <h:commandLink rendered="#{!FilePage.selectedTool.worldMapTool and !downloadPopupRequired}" 
+                                        <h:commandLink rendered="#{!downloadPopupRequired}" 
                                                          type="submit"
                                                          styleClass="btn btn-default #{(FilePage.fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
                                                          disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
@@ -431,7 +431,7 @@
                                                 <f:param value="#{FilePage.selectedTool.getDisplayNameLang()}"/>
                                             </h:outputFormat>
                                         </h:commandLink>
-                                        <p:commandLink rendered="#{!FilePage.selectedTool.worldMapTool and downloadPopupRequired}"
+                                        <p:commandLink rendered="#{downloadPopupRequired}"
                                                          action="#{FilePage.guestbookResponseService.modifyDatafileAndFormat(FilePage.guestbookResponse, FilePage.fileMetadata, 'externalTool', FilePage.selectedTool)}"
                                                          styleClass="btn btn-default"
                                                          disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
@@ -445,32 +445,6 @@
                                                 <f:param value="#{FilePage.selectedTool.getDisplayNameLang()}"/>
                                             </h:outputFormat>
                                         </p:commandLink>
-                                        <!-- Modular/Configured Explore Tool -->
-                                        <!-- WorldMap Explore -->
-                                        <h:commandLink rendered="#{FilePage.selectedTool.worldMapTool and !downloadPopupRequired}" 
-                                                       styleClass="btn btn-default #{(FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
-                                                       disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
-                                                       action="#{FilePage.fileDownloadService.startWorldMapDownloadLink(FilePage.guestbookResponse, FilePage.fileMetadata )}" target="_blank" rel="noopener">
-                                            <span class="glyphicon glyphicon-equalizer"></span> 
-                                            <h:outputFormat value="#{bundle['file.previewTab.exploreBtn']}">
-                                                <f:param value="#{bundle.explore}"/>
-                                                <f:param value="#{bundle['file.mapData.worldMap']}"/>
-                                            </h:outputFormat>
-                                        </h:commandLink>
-                                        <p:commandLink rendered="#{FilePage.selectedTool.worldMapTool and downloadPopupRequired}"
-                                                         styleClass="btn btn-default #{(FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
-                                                         disabled="#{FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload}"
-                                                         process="@this"
-                                                         action="#{FilePage.guestbookResponseService.modifyDatafileAndFormat(FilePage.guestbookResponse, FilePage.fileMetadata, 'worldMap')}"
-                                                         update="@widgetVar(downloadPopup)"
-                                                         oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                                            <span class="glyphicon glyphicon-equalizer"></span> 
-                                            <h:outputFormat value="#{bundle['file.previewTab.exploreBtn']}">
-                                                <f:param value="#{bundle.explore}"/>
-                                                <f:param value="#{bundle['file.mapData.worldMap']}"/>
-                                            </h:outputFormat>
-                                        </p:commandLink>
-                                        <!-- END WorldMap Explore -->
                                     </div>
                                 </div>
                                 <!-- FRAME EXTERNAL TOOL EMBED -->

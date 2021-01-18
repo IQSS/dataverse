@@ -409,45 +409,11 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             
             
             if (dataFile.isRestricted()) {
-                // A couple things need to happen if the file has been restricted: 
-                // 1. If there's a map layer associated with this shape file, or 
-                //    tabular-with-geo-tag file, all that map layer data (that 
-                //    includes most of the actual data in the file!) need to be
-                //    removed from WorldMap and GeoConnect, since anyone can get 
-                //    download the data from there;
-                // 2. If this (image) file has been assigned as the dedicated 
+                // If the file has been restricted: 
+                //    If this (image) file has been assigned as the dedicated 
                 //    thumbnail for the dataset, we need to remove that assignment, 
                 //    now that the file is restricted. 
-
-                // Map layer: 
-                
-                if (ctxt.mapLayerMetadata().findMetadataByDatafile(dataFile) != null) {
-                    // (We need an AuthenticatedUser in order to produce a WorldMap token!)
-                    String id = getUser().getIdentifier();
-                    id = id.startsWith("@") ? id.substring(1) : id;
-                    AuthenticatedUser authenticatedUser = ctxt.authentication().getAuthenticatedUser(id);
-                    try {
-                        ctxt.mapLayerMetadata().deleteMapLayerFromWorldMap(dataFile, authenticatedUser);
-
-                        // If that was successful, delete the layer on the Dataverse side as well:
-                        //SEK 4/20/2017                
-                        //Command to delete from Dataverse side
-                        ctxt.engine().submit(new DeleteMapLayerMetadataCommand(this.getRequest(), dataFile));
-
-                        // RP - Bit of hack, update the datafile here b/c the reference to the datafile 
-                        // is not being passed all the way up/down the chain.   
-                        //
-                        dataFile.setPreviewImageAvailable(false);
-
-                    } catch (IOException ioex) {
-                        // We are not going to treat it as a fatal condition and bail out, 
-                        // but we will send a notification to the user, warning them about
-                        // the layer still being out there, un-deleted:
-                        ctxt.notifications().sendNotification(authenticatedUser, getTimestamp(), UserNotification.Type.MAPLAYERDELETEFAILED, dataFile.getFileMetadata().getId());
-                    }
-
-                }
-                
+               
                 // Dataset thumbnail assignment: 
                 
                 if (dataFile.equals(getDataset().getThumbnailFile())) {

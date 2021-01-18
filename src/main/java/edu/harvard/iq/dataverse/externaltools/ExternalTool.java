@@ -97,17 +97,6 @@ public class ExternalTool implements Serializable {
     @Column(nullable = true, columnDefinition = "TEXT")
     private String contentType;
 
-    @Transient
-    private boolean worldMapTool;
-    
-    public boolean isWorldMapTool() {
-        return worldMapTool;
-    }
-
-    public void setWorldMapTool(boolean worldMapTool) {
-        this.worldMapTool = worldMapTool;
-    }
-
     /**
      * This default constructor is only here to prevent this error at
      * deployment:
@@ -345,25 +334,25 @@ public class ExternalTool implements Serializable {
     }
 
     public String getDescriptionLang() {
-        String toolName = "";
+        String description = "";
         if (this.toolName != null) {
-            toolName = "externaltools." + this.toolName + ".description";
-            return (BundleUtil.getStringFromBundle(toolName));
-        } else {
-            return this.getDescription();
+            description = (BundleUtil.getStringFromBundle("externaltools." + this.toolName + ".description"));
+        } 
+        if (StringUtil.isEmpty(description)) {
+            description = this.getDescription();
         }
+        return description;
     }
 
     public String getDisplayNameLang() {
-        String toolName = "";
+        String displayName = "";
         if (this.toolName != null) {
-            toolName = "externaltools." + this.toolName + ".displayname";
-            toolName = (BundleUtil.getStringFromBundle(toolName));
+            displayName = (BundleUtil.getStringFromBundle("externaltools." + this.toolName + ".displayname"));
         } 
-        if (StringUtil.isEmpty(toolName)) {
-            toolName = this.getDisplayName();
+        if (StringUtil.isEmpty(displayName)) {
+            displayName = this.getDisplayName();
         }
-        return toolName;
+        return displayName;
     }
 
 

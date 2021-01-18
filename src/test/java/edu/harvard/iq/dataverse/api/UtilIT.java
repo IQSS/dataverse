@@ -1845,40 +1845,6 @@ public class UtilIT {
         }
     }
 
-    static Response listMapLayerMetadatas() {
-        return given().get("/api/admin/geoconnect/mapLayerMetadatas");
-    }
-
-    static Response checkMapLayerMetadatas(String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .post("/api/admin/geoconnect/mapLayerMetadatas/check");
-    }
-
-    static Response checkMapLayerMetadatas(Long mapLayerMetadataId, String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .post("/api/admin/geoconnect/mapLayerMetadatas/check/" + mapLayerMetadataId);
-    }
-
-    static Response getMapFromFile(long fileId, String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/files/" + fileId + "/map");
-    }
-
-    static Response checkMapFromFile(long fileId, String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/files/" + fileId + "/map/check");
-    }
-
-    static Response deleteMapFromFile(long fileId, String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .delete("/api/files/" + fileId + "/map?key=" + apiToken);
-    }
-
     static Response getRsyncScript(String datasetPersistentId, String apiToken) {
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {

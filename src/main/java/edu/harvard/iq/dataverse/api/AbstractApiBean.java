@@ -18,7 +18,6 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
-import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
@@ -217,9 +216,6 @@ public abstract class AbstractApiBean {
 
     @EJB
     protected DatasetVersionServiceBean datasetVersionSvc;
-
-    @EJB
-    protected MapLayerMetadataServiceBean mapLayerMetadataSrv;
 
     @EJB
     protected SystemConfig systemConfig;

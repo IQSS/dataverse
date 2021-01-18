@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -301,9 +302,11 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     
                     // Provide both the "Content-disposition" and "Content-Type" headers,
                     // to satisfy the widest selection of browsers out there. 
-                    
-                    httpHeaders.add("Content-disposition", "attachment; filename=\"" + fileName + "\"");
-                    httpHeaders.add("Content-Type", mimeType + "; name=\"" + fileName + "\"");
+                    // Encode the filename as UTF-8, then deal with spaces. "encode" changes
+                    // a space to + so we change it back to a space (%20).
+                    String finalFileName = URLEncoder.encode(fileName, "UTF-8").replaceAll("\\+", "%20");
+                    httpHeaders.add("Content-disposition", "attachment; filename=\"" + finalFileName + "\"");
+                    httpHeaders.add("Content-Type", mimeType + "; name=\"" + finalFileName + "\"");
                     
                     long contentSize; 
                     boolean useChunkedTransfer = false; 

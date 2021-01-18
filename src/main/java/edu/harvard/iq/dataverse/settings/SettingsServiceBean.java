@@ -229,20 +229,6 @@ public class SettingsServiceBean {
         for example: :TabularIngestSizeLimit:RData */
         TabularIngestSizeLimit,
         /**
-        Whether to allow user to create GeoConnect Maps
-        This boolean effects whether the user sees the map button on 
-        the dataset page and if the ingest will create a shape file
-        Default is false
-        */
-        GeoconnectCreateEditMaps,
-        /**
-        Whether to allow a user to view existing maps
-        This boolean effects whether a user may see the 
-        Explore World Map Button
-        Default is false;
-        */
-        GeoconnectViewMaps,
-        /**
          The message added to a popup upon dataset publish
          * 
          */
