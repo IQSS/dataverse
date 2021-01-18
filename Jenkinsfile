@@ -24,8 +24,8 @@ node {
 
     try {
       withMaven(
-        jdk: 'jdk8',
-        maven: 'mvn-3-5-0') {
+        jdk: 'jdk11',
+        maven: 'mvn-3-6-3') {
           sh "mvn test"
         }
     }
@@ -43,8 +43,8 @@ node {
 
     try {
       withMaven(
-        jdk: 'jdk8',
-        maven: 'mvn-3-5-0') {
+        jdk: 'jdk11',
+        maven: 'mvn-3-6-3') {
           sh "mvn clean package -DskipTests"
       }
     }
