@@ -41,11 +41,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-// NIO imports:
-// Dataverse imports:
 
 
 public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
@@ -57,12 +54,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     public FileAccessIO(T dvObject, String filesDirectory) {
-        this(dvObject, null, filesDirectory);
-    }
-
-    public FileAccessIO(T dvObject, DataAccessRequest req, String filesDirectory) {
-
-        super(dvObject, req);
+        super(dvObject);
 
         this.setIsLocalFile(true);
         filesRootDirectory = filesDirectory;
@@ -80,10 +72,6 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
     @Override
     public void open(DataAccessOption... options) throws IOException {
-        DataFile dataFile;
-        Dataset dataset;
-        Dataverse dataverse = null;
-        DataAccessRequest req = this.getRequest();
 
         if (isWriteAccessRequested(options)) {
             isWriteAccess = true;
@@ -94,11 +82,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         }
 
         if (dvObject instanceof DataFile) {
-            dataFile = this.getDataFile();
-
-            if (req != null && req.getParameter("noVarHeader") != null) {
-                this.setNoVarHeader(true);
-            }
+            DataFile dataFile = this.getDataFile();
 
             if (dataFile.getStorageIdentifier() == null || "".equals(dataFile.getStorageIdentifier())) {
                 throw new IOException("Data Access: No local storage identifier defined for this datafile.");
@@ -107,13 +91,8 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
             if (isReadAccess) {
                 FileInputStream fin = openLocalFileAsInputStream();
 
-                if (fin == null) {
-                    throw new IOException("Failed to open local file " + getStorageLocation());
-                }
-
                 this.setInputStream(fin);
                 setChannel(fin.getChannel());
-                this.setSize(getLocalFileSize());
 
                 if (dataFile.getContentType() != null
                         && dataFile.getContentType().equals("text/tab-separated-values")
@@ -133,10 +112,6 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
                 }
                 FileOutputStream fout = openLocalFileAsOutputStream();
 
-                if (fout == null) {
-                    throw new IOException("Failed to open local file " + getStorageLocation() + " for writing.");
-                }
-
                 this.setOutputStream(fout);
                 setChannel(fout.getChannel());
             }
@@ -152,7 +127,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
             //This case is for uploading a dataset related auxiliary file 
             //e.g. image thumbnails/metadata exports
             //TODO: do we really need to do anything here? should we return the dataset directory?
-            dataset = this.getDataset();
+            Dataset dataset = this.getDataset();
             if (isReadAccess) {
                 //TODO: Not necessary for dataset as there is no files associated with this
                 //  FileInputStream fin = openLocalFileAsInputStream();
@@ -172,14 +147,10 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
             }
 
         } else if (dvObject instanceof Dataverse) {
-            dataverse = this.getDataverse();
+            throw new IOException("Data Access: Storage driver does not support dvObject type Dataverse yet");
         } else {
             throw new IOException("Data Access: Invalid DvObject type");
         }
-        // This "status" is a leftover from 3.6; we don't have a use for it 
-        // in 4.0 yet; and we may not need it at all. 
-        // -- L.A. 4.0.2
-        /*this.setStatus(200);*/
     }
 
     @Override
@@ -194,41 +165,6 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
             throw new FileNotFoundException("FileAccessIO: Could not locate aux file for writing.");
         }
         Files.copy(fileSystemPath, outputPath, StandardCopyOption.REPLACE_EXISTING);
-        long newFileSize = outputPath.toFile().length();
-
-        // if it has worked successfully, we also need to reset the size
-        // of the object. 
-        setSize(newFileSize);
-    }
-
-    @Override
-    public void saveInputStream(InputStream inputStream, Long filesize) throws IOException {
-        saveInputStream(inputStream);
-    }
-
-    @Override
-    public void saveInputStream(InputStream inputStream) throws IOException {
-        // Since this is a local fileystem file, we can use the
-        // quick NIO Files.copy method: 
-
-        File outputFile = getFileSystemPath().toFile();
-
-        if (outputFile == null) {
-            throw new FileNotFoundException("FileAccessIO: Could not locate file for writing.");
-        }
-
-        try (OutputStream outputStream = new FileOutputStream(outputFile)) {
-            int read;
-            byte[] bytes = new byte[1024];
-            while ((read = inputStream.read(bytes)) != -1) {
-                outputStream.write(bytes, 0, read);
-            }
-        }
-        inputStream.close();
-
-        // if it has worked successfully, we also need to reset the size
-        // of the object. 
-        setSize(outputFile.length());
     }
 
     @Override
@@ -238,10 +174,6 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
         if (isWriteAccessRequested(options)) {
             FileOutputStream auxOut = new FileOutputStream(auxPath.toFile());
-
-            if (auxOut == null) {
-                throw new IOException("Failed to open Auxiliary File " + dvObject.getStorageIdentifier() + "." + auxItemTag + " for writing.");
-            }
 
             return auxOut.getChannel();
         }
@@ -254,10 +186,6 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         }
 
         FileInputStream auxIn = new FileInputStream(auxPath.toFile());
-
-        if (auxIn == null) {
-            throw new IOException("Failed to open Auxiliary File " + dvObject.getStorageIdentifier() + "." + auxItemTag + " for reading");
-        }
 
         return auxIn.getChannel();
 
@@ -447,7 +375,12 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
         return getFileSystemPath().toFile().exists();
     }
-    
+
+    @Override
+    public long getSize() throws IOException {
+        return getFileSystemPath().toFile().length();
+    }
+
     /*@Override
     public void delete() throws IOException {
         Path victim = getFileSystemPath();
@@ -492,30 +425,12 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
     }
 
-    public FileInputStream openLocalFileAsInputStream() {
-        FileInputStream in;
-
-        try {
-            in = new FileInputStream(getFileSystemPath().toFile());
-        } catch (IOException ex) {
-            logger.log(Level.FINE, "", ex);
-            return null;
-        }
-
-        return in;
+    FileInputStream openLocalFileAsInputStream() throws IOException {
+        return new FileInputStream(getFileSystemPath().toFile());
     }
 
-    public FileOutputStream openLocalFileAsOutputStream() {
-        FileOutputStream out;
-
-        try {
-            out = new FileOutputStream(getFileSystemPath().toFile());
-        } catch (IOException ex) {
-            logger.log(Level.FINE, "", ex);
-            return null;
-        }
-
-        return out;
+    FileOutputStream openLocalFileAsOutputStream() throws IOException {
+        return new FileOutputStream(getFileSystemPath().toFile());
     }
 
     private String getDatasetDirectory() throws IOException {
@@ -603,6 +518,16 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
             in = Files.newInputStream(path);
         }
         return in;
+    }
+
+    @Override
+    public boolean isMD5CheckSupported() {
+        return false;
+    }
+
+    @Override
+    public String getMD5() throws IOException {
+        throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
     }
 
 }

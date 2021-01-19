@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -20,6 +14,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
@@ -42,8 +38,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Leonid Andreev
@@ -51,7 +45,7 @@ import java.util.logging.Logger;
 @Provider
 public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstance> {
 
-    private static final Logger logger = Logger.getLogger(DownloadInstanceWriter.class.getCanonicalName());
+    private static final Logger logger = LoggerFactory.getLogger(DownloadInstanceWriter.class);
 
     @Inject
     private DataConverter dataConverter;
@@ -83,7 +77,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     storageIO.open();
                 } catch (IOException ioex) {
                     //throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
-                    logger.log(Level.INFO, "Datafile {0}: Failed to locate and/or open physical file. Error message: {1}", new Object[]{dataFile.getId(), ioex.getLocalizedMessage()});
+                    logger.info("Datafile {}: Failed to locate and/or open physical file. Error message: {}", dataFile.getId(), ioex.getLocalizedMessage());
                     throw new NotFoundException("Datafile " + dataFile.getId() + ": Failed to locate and/or open physical file.");
                 }
 
@@ -114,7 +108,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             storageIO.setVarHeader(null);
                         }
                     } else if (dataFile.isTabularData()) {
-                        logger.fine("request for tabular data download;");
+                        logger.debug("request for tabular data download;");
                         // We can now generate thumbnails for some tabular data files (specifically, 
                         // tab files tagged as "geospatial"). We are going to assume that you can 
                         // do only ONE thing at a time - request the thumbnail for the file, or 
@@ -124,7 +118,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         checkForWholeDatasetDownload = true;
 
                         if (di.getConversionParam().equals("noVarHeader")) {
-                            logger.fine("tabular data with no var header requested");
+                            logger.debug("tabular data with no var header requested");
                             storageIO.setNoVarHeader(Boolean.TRUE);
                             storageIO.setVarHeader(null);
                         } else if (di.getConversionParam().equals("format")) {
@@ -133,11 +127,11 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             // access drivers are available.
 
                             if ("original".equals(di.getConversionParamValue())) {
-                                logger.fine("stored original of an ingested file requested");
+                                logger.debug("stored original of an ingested file requested");
                                 storageIO = StoredOriginalFile.retreive(storageIO);
                             } else {
                                 // Other format conversions: 
-                                logger.fine("format conversion on a tabular file requested (" + di.getConversionParamValue() + ")");
+                                logger.debug("format conversion on a tabular file requested (" + di.getConversionParamValue() + ")");
                                 String requestedMimeType = di.getServiceFormatType(di.getConversionParam(), di.getConversionParamValue());
                                 if (requestedMimeType == null) {
                                     // default mime type, in case real type is unknown;
@@ -150,7 +144,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                                                               di.getConversionParamValue(), requestedMimeType);
                             }
                         } else if (di.getConversionParam().equals("subset")) {
-                            logger.fine("processing subset request.");
+                            logger.debug("processing subset request.");
 
                             // TODO: 
                             // If there are parameters on the list that are 
@@ -160,14 +154,14 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             // instead. 
 
                             if (di.getExtraArguments() != null && di.getExtraArguments().size() > 0) {
-                                logger.fine("processing extra arguments list of length " + di.getExtraArguments().size());
+                                logger.debug("processing extra arguments list of length " + di.getExtraArguments().size());
                                 List<Integer> variablePositionIndex = new ArrayList<>();
                                 String subsetVariableHeader = null;
                                 for (int i = 0; i < di.getExtraArguments().size(); i++) {
                                     DataVariable variable = (DataVariable) di.getExtraArguments().get(i);
                                     if (variable != null) {
                                         if (variable.getDataTable().getDataFile().getId().equals(dataFile.getId())) {
-                                            logger.fine("adding variable id " + variable.getId() + " to the list.");
+                                            logger.debug("adding variable id " + variable.getId() + " to the list.");
                                             variablePositionIndex.add(variable.getFileOrder());
                                             if (subsetVariableHeader == null) {
                                                 subsetVariableHeader = variable.getName();
@@ -176,7 +170,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                                 subsetVariableHeader = subsetVariableHeader.concat(variable.getName());
                                             }
                                         } else {
-                                            logger.warning("variable does not belong to this data file.");
+                                            logger.warn("variable does not belong to this data file.");
                                         }
                                     }
                                 }
@@ -195,7 +189,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                             long subsetSize = tempSubsetFile.length();
 
                                             InputStreamIO subsetStreamIO = new InputStreamIO(subsetStream, subsetSize);
-                                            logger.fine("successfully created subset output stream.");
+                                            logger.debug("successfully created subset output stream.");
                                             subsetVariableHeader = subsetVariableHeader.concat("\n");
                                             subsetStreamIO.setVarHeader(subsetVariableHeader);
 
@@ -220,7 +214,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                     }
                                 }
                             } else {
-                                logger.fine("empty list of extra arguments.");
+                                logger.debug("empty list of extra arguments.");
                             }
                         }
                     }
@@ -242,7 +236,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         try {
                             storageIO.getInputStream().close();
                         } catch (IOException ioex) {
-                            logger.log(Level.WARNING, "Exception during closing input stream: ", ioex);
+                            logger.warn("Exception during closing input stream: ", ioex);
                         }
                         // [attempt to] redirect: 
                         String redirect_url_str;
@@ -269,11 +263,11 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             // increment the download count, if necessary:
                             if (di.getGbr() != null) {
                                 try {
-                                    logger.fine("writing guestbook response, for an S3 download redirect.");
+                                    logger.debug("writing guestbook response, for an S3 download redirect.");
                                     Command<?> cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
                                     di.getCommand().submit(cmd);
                                 } catch (CommandException e) {
-                                    logger.log(Level.WARNING, "Exception during create guestbook response command: ", e);
+                                    logger.warn("Exception during create guestbook response command: ", e);
                                 }
                             }
 
@@ -307,7 +301,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     boolean useChunkedTransfer = false;
                     //if ((contentSize = getFileSize(di, storageIO.getVarHeader())) > 0) {
                     if ((contentSize = getContentSize(storageIO)) > 0) {
-                        logger.fine("Content size (retrieved from the AccessObject): " + contentSize);
+                        logger.debug("Content size (retrieved from the AccessObject): " + contentSize);
                         httpHeaders.add("Content-Length", contentSize);
                     } else {
                         //httpHeaders.add("Transfer-encoding", "chunked");
@@ -355,7 +349,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     }
 
 
-                    logger.fine("di conversion param: " + di.getConversionParam() + ", value: " + di.getConversionParamValue());
+                    logger.debug("di conversion param: " + di.getConversionParam() + ", value: " + di.getConversionParamValue());
 
                     // Downloads of thumbnail images (scaled down, low-res versions of graphic image files) and 
                     // "preprocessed metadata" records for tabular data files are NOT considered "real" downloads, 
@@ -368,14 +362,14 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
 
                     if (di.getGbr() != null && meaningfulDownload) {
                         try {
-                            logger.fine("writing guestbook response.");
+                            logger.debug("writing guestbook response.");
                             Command<?> cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
                             di.getCommand().submit(cmd);
                         } catch (CommandException ce) {
-                            logger.log(Level.WARNING, ce, () -> "Exception while writing into guestbook: ");
+                            logger.warn("Exception while writing into guestbook: ", ce);
                         }
                     } else {
-                        logger.fine("not writing guestbook response");
+                        logger.debug("not writing guestbook response");
                     }
 
                     if (checkForWholeDatasetDownload) {
@@ -422,57 +416,17 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
     }
 
     private long getContentSize(StorageIO<?> accessObject) {
-        long contentSize = 0;
 
-        if (accessObject.getSize() > -1) {
-            contentSize += accessObject.getSize();
+        try {
+            long contentSize = accessObject.getSize();
+
             if (accessObject.getVarHeader() != null) {
-                if (accessObject.getVarHeader().getBytes().length > 0) {
-                    contentSize += accessObject.getVarHeader().getBytes().length;
-                }
+                contentSize += accessObject.getVarHeader().getBytes().length;
             }
             return contentSize;
-        }
-        return -1;
-    }
 
-    private long getFileSize(DownloadInstance di) {
-        return getFileSize(di, null);
-    }
-
-    private long getFileSize(DownloadInstance di, String extraHeader) {
-        if (di.getDownloadInfo() != null && di.getDownloadInfo().getDataFile() != null) {
-            DataFile df = di.getDownloadInfo().getDataFile();
-
-            // For non-tabular files, we probably know the file size: 
-            // (except for when this is a thumbNail rquest on an image file - 
-            // because the size will obviously be different... can still be 
-            // figured out - but perhaps we shouldn't bother; since thumbnails 
-            // are essentially guaranteed to be small)
-            if (!df.isTabularData() && (di.getConversionParam() == null || "".equals(di.getConversionParam()))) {
-                if (df.getFilesize() > 0) {
-                    return df.getFilesize();
-                }
-            }
-
-            // For Tabular files:
-            // If it's just a straight file download, it's pretty easy - we 
-            // already know the size of the file on disk (just like in the 
-            // fragment above); we just need to make sure if we are also supplying
-            // the additional variable name header - then we need to add its 
-            // size to the total... But the cases when it's a format conversion 
-            // and, especially, subsets are of course trickier. (these are not
-            // supported yet).
-
-            if (df.isTabularData() && (di.getConversionParam() == null || "".equals(di.getConversionParam()))) {
-                long fileSize = df.getFilesize();
-                if (fileSize > 0) {
-                    if (extraHeader != null) {
-                        fileSize += extraHeader.getBytes().length;
-                    }
-                    return fileSize;
-                }
-            }
+        } catch(IOException e) {
+            logger.warn("Unable to obtain content size", e);
         }
         return -1;
     }

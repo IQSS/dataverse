@@ -24,13 +24,15 @@ public class InputStreamIO extends StorageIO<DataFile> {
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.InputStreamIO");
 
+    private long size;
+
     public InputStreamIO(InputStream inputStream, long size) throws IOException {
         super();
 
         this.setIsLocalFile(false);
         this.setInputStream(inputStream);
         setChannel(Channels.newChannel(inputStream));
-        this.setSize(size);
+        this.size = size;
     }
 
     @Override
@@ -44,22 +46,17 @@ public class InputStreamIO extends StorageIO<DataFile> {
     }
 
     @Override
+    public long getSize() throws IOException {
+        return size;
+    }
+
+    @Override
     public void open(DataAccessOption... options) throws IOException {
         throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
     }
 
     @Override
     public void savePath(Path fileSystemPath) throws IOException {
-        throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
-    }
-
-    @Override
-    public void saveInputStream(InputStream inputStream, Long filesize) throws IOException {
-        throw new UnsupportedOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
-    }
-
-    @Override
-    public void saveInputStream(InputStream inputStream) throws IOException {
         throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
     }
 
@@ -141,11 +138,6 @@ public class InputStreamIO extends StorageIO<DataFile> {
     }
 
     @Override
-    public WritableByteChannel getWriteChannel() throws IOException {
-        throw new UnsupportedDataAccessOperationException("InputStreamIO: there is no write channel associated with this object.");
-    }
-
-    @Override
     public OutputStream getOutputStream() throws IOException {
         throw new UnsupportedDataAccessOperationException("InputStreamIO: there is no output stream associated with this object.");
     }
@@ -157,6 +149,16 @@ public class InputStreamIO extends StorageIO<DataFile> {
 
     @Override
     public void revertBackupAsAux(String auxItemTag) throws IOException {
+        throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+    }
+
+    @Override
+    public boolean isMD5CheckSupported() {
+        throw new UnsupportedOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+    }
+
+    @Override
+    public String getMD5() throws IOException {
         throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
     }
 

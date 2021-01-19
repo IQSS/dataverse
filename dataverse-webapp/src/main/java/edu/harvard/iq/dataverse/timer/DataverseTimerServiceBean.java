@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.timer;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.datafile.FileIntegrityChecker;
 import edu.harvard.iq.dataverse.datafile.FileService;
 import edu.harvard.iq.dataverse.datafile.pojo.FilesIntegrityReport;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -87,7 +88,7 @@ public class DataverseTimerServiceBean implements Serializable {
     @Inject
     SettingsServiceBean settingsService;
     @EJB
-    FileService fileService;
+    FileIntegrityChecker fileIntegrityChecker;
 
 
     // The init method that wipes and recreates all the timers on startup
@@ -197,7 +198,7 @@ public class DataverseTimerServiceBean implements Serializable {
                 logException(e, logger);
             }
         } else if (timer.getInfo() instanceof FilesIntegrityCheckTimerInfo) {
-            FilesIntegrityReport report = fileService.checkFilesIntegrity();
+            FilesIntegrityReport report = fileIntegrityChecker.checkFilesIntegrity();
 
             logger.info(report.getSummaryInfo());
         }

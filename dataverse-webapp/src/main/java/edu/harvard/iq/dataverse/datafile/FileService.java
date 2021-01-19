@@ -59,9 +59,6 @@ public class FileService {
     private EjbDataverseEngine commandEngine;
     private DataFileServiceBean dataFileService;
     private SettingsServiceBean settingsService;
-    private AuthenticationServiceBean authSvc;
-    private MailService mailService;
-
 
 
     // -------------------- CONSTRUCTORS --------------------
@@ -72,14 +69,11 @@ public class FileService {
 
     @Inject
     public FileService(DataverseRequestServiceBean dvRequestService, EjbDataverseEngine commandEngine, 
-                       DataFileServiceBean dataFileServiceBean, SettingsServiceBean settingsService,
-                       AuthenticationServiceBean authSvc, MailService mailService) {
+                       DataFileServiceBean dataFileServiceBean, SettingsServiceBean settingsService) {
         this.dvRequestService = dvRequestService;
         this.commandEngine = commandEngine;
         this.dataFileService = dataFileServiceBean;
         this.settingsService = settingsService;
-        this.authSvc = authSvc;
-        this.mailService = mailService;
     }
 
     // -------------------- LOGIC --------------------
@@ -215,51 +209,6 @@ public class FileService {
             }
             socket.close();
         }
-
-    }
-
-    public FilesIntegrityReport checkFilesIntegrity() {
-        List<DataFile> dataFiles = dataFileService.findAll();
-        
-        FilesIntegrityReport report = new FilesIntegrityReport();
-        
-        if (dataFiles.isEmpty()) {
-            report.setWarning("No datafiles found - check database.");
-        } else {
-
-            report.setCheckedCount(dataFiles.size());
-            for (DataFile dataFile:dataFiles) {
-                try {
-                    StorageIO<DataFile> storageIO = DataAccess.dataAccess().getStorageIO(dataFile);
-                    storageIO.open(DataAccessOption.READ_ACCESS);
-                    if (!storageIO.exists() || storageIO.getSize() == 0 || storageIO.getSize() != dataFile.getFilesize()) {
-                        report.addSuspicious(dataFile);
-                    }
-                } catch (IOException e) {
-                    logger.info(e.getMessage());
-                    report.addSuspicious(dataFile);
-                }
-            
-            }
-            
-            StringBuffer messageBodyBuffer = new StringBuffer();
-            messageBodyBuffer.append("Datafiles integrity check summary: \n");
-            messageBodyBuffer.append("Files checked: " + report.getCheckedCount() + "\n");
-            messageBodyBuffer.append("Number of files with failures: " + report.getSuspicious().size() + "\n\n");
-            messageBodyBuffer.append("List of files with failures:\n");
-            report.getSuspicious().stream().
-                forEach(datafile -> messageBodyBuffer.append("File id: " + datafile.getId() + ", file label: " + datafile.getLatestFileMetadata().getLabel() + "\n"));
-            
-            String messageSubject = "Dataverse files integrity check report";
-            
-            authSvc.findAllAuthenticatedUsers().
-                stream().
-                filter(user -> user.isSuperuser()).
-                forEach(user -> mailService.sendMailAsync(user.getEmail(), new EmailContent(messageSubject, messageBodyBuffer.toString(), "")));
-
-            
-        }
-        return report;
 
     }
 

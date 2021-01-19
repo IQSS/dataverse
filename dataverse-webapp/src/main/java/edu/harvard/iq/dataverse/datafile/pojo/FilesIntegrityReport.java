@@ -9,46 +9,42 @@ public class FilesIntegrityReport {
 
     private int checkedCount;
     
-    private List<DataFile> suspicious;
-
-    private String warning;
+    private int skippedChecksumVerification;
     
-    public FilesIntegrityReport() {
-        suspicious = new ArrayList<DataFile>();
-    }
+    private List<FileIntegrityFail> suspicious = new ArrayList<>();
 
-    public void setWarning(String warning) {
-        this.warning = warning;
-    }
 
-    public void setCheckedCount(int checkedCount) {
-        this.checkedCount = checkedCount;
-    }
+    // -------------------- GETTERS --------------------
 
     public int getCheckedCount() {
         return checkedCount;
     }
 
-    public void addSuspicious(DataFile dataFile) {
-        suspicious.add(dataFile);
+    public int getSkippedChecksumVerification() {
+        return skippedChecksumVerification;
     }
 
-    public List<DataFile> getSuspicious() {
+    public List<FileIntegrityFail> getSuspicious() {
         return suspicious;
     }
 
-    public String getWarning() {
-        return warning;
+    // -------------------- LOGIC --------------------
+
+    public void addSuspicious(DataFile dataFile, FileIntegrityCheckResult checkResult) {
+        suspicious.add(new FileIntegrityFail(dataFile, checkResult));
+    }
+
+    public void incrementSkippedChecksumVerification() {
+        ++skippedChecksumVerification;
     }
 
     public String getSummaryInfo() {
-        if (warning != null) {
-            return warning;
-        } else {
-            String message = "Found " + checkedCount + " files in repository.";
-            message += " Found " + suspicious.size() + " suspicious files.";
-            return message;
-        }
+        return String.format("Found %d files in repository. Found %d suspicious files.", checkedCount, suspicious.size());
+    }
 
+    // -------------------- SETTERS --------------------
+
+    public void setCheckedCount(int checkedCount) {
+        this.checkedCount = checkedCount;
     }
 }

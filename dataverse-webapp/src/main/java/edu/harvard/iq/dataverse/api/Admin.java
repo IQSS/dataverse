@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.consent.api.ConsentApiService;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.datafile.FileIntegrityChecker;
 import edu.harvard.iq.dataverse.datafile.FileService;
 import edu.harvard.iq.dataverse.datafile.pojo.FilesIntegrityReport;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
@@ -139,7 +140,7 @@ public class Admin extends AbstractApiBean {
     DataverseSession session;
 
     @EJB
-    FileService fileServiceBean;
+    FileIntegrityChecker fileIntegrityChecker;
 
     public static final String listUsersPartialAPIPath = "list-users";
     public static final String listUsersFullAPIPath = "/api/admin/" + listUsersPartialAPIPath;
@@ -1054,7 +1055,7 @@ public class Admin extends AbstractApiBean {
     
             JsonObjectBuilder info = Json.createObjectBuilder();
     
-            FilesIntegrityReport report = fileServiceBean.checkFilesIntegrity();
+            FilesIntegrityReport report = fileIntegrityChecker.checkFilesIntegrity();
             info.add("message", report.getSummaryInfo());
 
             return ok(info);

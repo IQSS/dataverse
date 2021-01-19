@@ -101,18 +101,6 @@ public class FileAccessIOTest {
     }
 
     /**
-     * Test of savePath method, of class FileAccessIO.
-     *
-     * @throws java.io.IOException if test is broken
-     */
-    @Test
-    public void testSavePath() throws IOException {
-        datasetAccess.savePath(fileSystemPath);
-        InputStream inputStream = new ByteArrayInputStream("Hello".getBytes());
-        datasetAccess.saveInputStream(inputStream);
-    }
-
-    /**
      * Test of openAuxChannel method, of class FileAccessIO.
      *
      * @throws java.io.IOException if test is broken

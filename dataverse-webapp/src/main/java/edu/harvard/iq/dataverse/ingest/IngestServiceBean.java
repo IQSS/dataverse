@@ -182,8 +182,6 @@ public class IngestServiceBean {
                 String storageId = dataFile.getStorageIdentifier().replaceFirst("^tmp://", "");
 
                 Path tempLocationPath = Paths.get(FileUtil.getFilesTempDirectory() + "/" + storageId);
-                WritableByteChannel writeChannel = null;
-                FileChannel readChannel = null;
 
                 boolean unattached = false;
                 boolean savedSuccess = false;
@@ -198,59 +196,15 @@ public class IngestServiceBean {
                     storageIO = dataAccess.createNewStorageIO(dataFile, storageId);
 
                     logger.fine("Successfully created a new storageIO object.");
-                    /* 
-                         This commented-out code demonstrates how to copy bytes
-                         from a local InputStream (or a readChannel) into the
-                         writable byte channel of a Dataverse DataAccessIO object:
-                     */
-                    
-                    /*
-                        storageIO.open(DataAccessOption.WRITE_ACCESS);
-                                                
-                        writeChannel = storageIO.getWriteChannel();
-                        readChannel = new FileInputStream(tempLocationPath.toFile()).getChannel();
-                                                
-                        long bytesPerIteration = 16 * 1024; // 16K bytes
-                        long start = 0;
-                        while ( start < readChannel.size() ) {
-                            readChannel.transferTo(start, bytesPerIteration, writeChannel);
-                            start += bytesPerIteration;
-                        }
-                     */
 
-                    /* 
-                            But it's easier to use this convenience method from the
-                            DataAccessIO: 
-                            
-                            (if the underlying storage method for this file is 
-                            local filesystem, the DataAccessIO will simply copy 
-                            the file using Files.copy, like this:
-                        
-                            Files.copy(tempLocationPath, storageIO.getFileSystemLocation(), StandardCopyOption.REPLACE_EXISTING);
-                     */
                     storageIO.savePath(tempLocationPath);
 
-                    // Set filesize in bytes
-                    // 
                     dataFile.setFilesize(storageIO.getSize());
                     savedSuccess = true;
                     logger.fine("Success: permanently saved file " + dataFile.getFileMetadata().getLabel());
 
                 } catch (IOException ioex) {
                     logger.warning("Failed to save the file, storage id " + dataFile.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
-                } finally {
-                    if (readChannel != null) {
-                        try {
-                            readChannel.close();
-                        } catch (IOException e) {
-                        }
-                    }
-                    if (writeChannel != null) {
-                        try {
-                            writeChannel.close();
-                        } catch (IOException e) {
-                        }
-                    }
                 }
 
                 // Since we may have already spent some CPU cycles scaling down image thumbnails, 
@@ -1040,25 +994,6 @@ public class IngestServiceBean {
         return ingestSuccessful;
     }
 
-    private BufferedInputStream openFile(DataFile dataFile) throws IOException {
-        BufferedInputStream inputStream;
-        StorageIO<DataFile> storageIO = new DataAccess().getStorageIO(dataFile);
-        storageIO.open();
-        if (storageIO.isLocalFile()) {
-            inputStream = new BufferedInputStream(storageIO.getInputStream());
-        } else {
-            ReadableByteChannel dataFileChannel = storageIO.getReadChannel();
-            File tempFile = File.createTempFile("tempIngestSourceFile", ".tmp");
-            FileChannel tempIngestSourceChannel = new FileOutputStream(tempFile).getChannel();
-
-            tempIngestSourceChannel.transferFrom(dataFileChannel, 0, storageIO.getSize());
-
-            inputStream = new BufferedInputStream(new FileInputStream(tempFile));
-            logger.fine("Saved " + storageIO.getSize() + " bytes in a local temp file.");
-        }
-        return inputStream;
-    }
-
     private void restoreIngestedDataFile(DataFile dataFile, TabularDataIngest tabDataIngest, long originalSize, String originalFileName, String originalContentType) {
         dataFile.setDataTables(null);
         if (tabDataIngest != null && tabDataIngest.getDataTable() != null) {
@@ -1833,11 +1768,6 @@ public class IngestServiceBean {
 
                 } catch (Exception ex) {
                     logger.warning("Exception " + ex.getClass() + " caught trying to look up the size of the saved original; (datafile id=" + fileId + ", datatable id=" + datatableId + "): " + ex.getMessage());
-                    return;
-                }
-
-                if (savedOriginalFileSize == null) {
-                    logger.warning("Failed to look up the size of the saved original file! (datafile id=" + fileId + ", datatable id=" + datatableId + ")");
                     return;
                 }
 

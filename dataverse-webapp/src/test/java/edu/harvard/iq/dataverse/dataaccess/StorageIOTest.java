@@ -39,16 +39,6 @@ public class StorageIOTest {
     }
 
     @Test
-    public void testGetWriteChannel() throws Exception {
-        try {
-            instance.getWriteChannel();
-            fail("Should not have write access");
-        } catch (IOException ex) {
-            assertEquals("No NIO write access in this DataAccessObject.", ex.getMessage());
-        }
-    }
-
-    @Test
     public void testGetReadChannel() throws Exception {
         try {
             instance.getReadChannel();
@@ -81,28 +71,12 @@ public class StorageIOTest {
     }
 
     @Test
-    public void testRequest() {
-        assertNotNull(instance.getRequest());
-        DataAccessRequest req = new DataAccessRequest();
-        instance.setRequest(req);
-        assertEquals(req, instance.getRequest());
-    }
-
-    @Test
-    public void testSize() {
-        assertEquals(0, instance.getSize());
-        instance.setSize(1);
-        assertEquals(1, instance.getSize());
-    }
-
-    @Test
     public void testInputStream() throws IOException {
         assertEquals(null, instance.getInputStream());
         InputStream is = new ByteArrayInputStream("Test".getBytes());
         instance.setInputStream(is);
         assertEquals(is, instance.getInputStream());
         instance.closeInputStream();
-        assertEquals(null, instance.getErrorMessage());
     }
 
     @Test
@@ -132,41 +106,6 @@ public class StorageIOTest {
         assertEquals(null, instance.getVarHeader());
         instance.setVarHeader("Test");
         assertEquals("Test", instance.getVarHeader());
-    }
-
-    @Test
-    public void testErrorMessage() {
-        assertEquals(null, instance.getErrorMessage());
-        instance.setErrorMessage("Test");
-        assertEquals("Test", instance.getErrorMessage());
-    }
-
-    @Test
-    public void testRemoteUrl() {
-        assertEquals(null, instance.getRemoteUrl());
-        instance.setRemoteUrl("Test");
-        assertEquals("Test", instance.getRemoteUrl());
-    }
-
-    @Test
-    public void testDownloadSupported() {
-        assertEquals(true, instance.isDownloadSupported());
-        instance.setIsDownloadSupported(false);
-        assertEquals(false, instance.isDownloadSupported());
-    }
-
-    @Test
-    public void testSubsetSupported() {
-        assertEquals(false, instance.isSubsetSupported());
-        instance.setIsSubsetSupported(true);
-        assertEquals(true, instance.isSubsetSupported());
-    }
-
-    @Test
-    public void testZippedStream() {
-        assertEquals(false, instance.isZippedStream());
-        instance.setIsZippedStream(true);
-        assertEquals(true, instance.isZippedStream());
     }
 
     @Test

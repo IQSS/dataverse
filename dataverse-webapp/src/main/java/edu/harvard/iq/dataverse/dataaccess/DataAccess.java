@@ -46,7 +46,23 @@ public class DataAccess {
      * datafiles that are already saved using one of the supported Dataverse DataAccess IO drivers.
      */
     public <T extends DvObject> StorageIO<T> getStorageIO(T dvObject) throws IOException {
-        return getStorageIO(dvObject, new DataAccessRequest());
+
+        if (dvObject == null
+                || dvObject.getStorageIdentifier() == null
+                || dvObject.getStorageIdentifier().isEmpty()) {
+            throw new IOException("getDataAccessObject: null or invalid datafile.");
+        }
+
+        if (dvObject.getStorageIdentifier().startsWith("file://")
+                || (!dvObject.getStorageIdentifier().matches("^[a-z][a-z0-9]*://.*"))) {
+            return new FileAccessIO<>(dvObject, SystemConfig.getFilesDirectoryStatic());
+        } else if (dvObject.getStorageIdentifier().startsWith("s3://")) {
+            return new S3AccessIO<>(dvObject);
+        } else if (dvObject.getStorageIdentifier().startsWith("tmp://")) {
+            throw new IOException("DataAccess IO attempted on a temporary file that hasn't been permanently saved yet.");
+        }
+
+        throw new IOException("getDataAccessObject: Unsupported storage method.");
     }
 
     /**
@@ -74,29 +90,6 @@ public class DataAccess {
 
     // -------------------- PRIVATE --------------------
 
-    /**
-     * passing DVObject instead of a datafile to accomodate for use of datafiles as well as datasets
-     */
-    private <T extends DvObject> StorageIO<T> getStorageIO(T dvObject, DataAccessRequest req) throws IOException {
-
-        if (dvObject == null
-                || dvObject.getStorageIdentifier() == null
-                || dvObject.getStorageIdentifier().isEmpty()) {
-            throw new IOException("getDataAccessObject: null or invalid datafile.");
-        }
-
-        if (dvObject.getStorageIdentifier().startsWith("file://")
-                || (!dvObject.getStorageIdentifier().matches("^[a-z][a-z0-9]*://.*"))) {
-            return new FileAccessIO<>(dvObject, req, SystemConfig.getFilesDirectoryStatic());
-        } else if (dvObject.getStorageIdentifier().startsWith("s3://")) {
-            return new S3AccessIO<>(dvObject, req);
-        } else if (dvObject.getStorageIdentifier().startsWith("tmp://")) {
-            throw new IOException("DataAccess IO attempted on a temporary file that hasn't been permanently saved yet.");
-        }
-
-        throw new IOException("getDataAccessObject: Unsupported storage method.");
-    }
-
     private <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag, String driverIdentifier) throws IOException {
         if (dvObject == null
                 || storageTag == null
@@ -113,9 +106,9 @@ public class DataAccess {
         }
 
         if (driverIdentifier.equals("file")) {
-            storageIO = new FileAccessIO<>(dvObject, null, SystemConfig.getFilesDirectoryStatic());
+            storageIO = new FileAccessIO<>(dvObject, SystemConfig.getFilesDirectoryStatic());
         } else if (driverIdentifier.equals("s3")) {
-            storageIO = new S3AccessIO<>(dvObject, null);
+            storageIO = new S3AccessIO<>(dvObject);
         } else {
             throw new IOException("createDataAccessObject: Unsupported storage method " + driverIdentifier);
         }

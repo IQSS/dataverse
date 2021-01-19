@@ -71,18 +71,16 @@ import java.util.logging.Logger;
  */
 public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
-    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.S3AccessIO");
+    private static final Logger logger = Logger.getLogger(S3AccessIO.class.getName());
+
+    private static final String MD5_METADATA_KEY = "MD5";
 
     public S3AccessIO() {
         this((T) null);
     }
-
+    
     public S3AccessIO(T dvObject) {
-        this(dvObject, null);
-    }
-
-    public S3AccessIO(T dvObject, DataAccessRequest req) {
-        super(dvObject, req);
+        super(dvObject);
         this.setIsLocalFile(false);
 
         try {
@@ -95,7 +93,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             // some custom S3 implementations require "PathStyleAccess" as they us a path, not a subdomain. default = false
             s3CB.withPathStyleAccessEnabled(s3pathStyleAccess);
             // let's build the client :-)
-            this.s3 = s3CB.build();
+            s3 = s3CB.build();
         } catch (Exception e) {
             throw new AmazonClientException(
                     "Cannot instantiate a S3 client; check your AWS credentials and region",
@@ -111,8 +109,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         key = storageLocation.substring(storageLocation.indexOf('/') + 1);
     }
 
-    public S3AccessIO(T dvObject, DataAccessRequest req, @NotNull AmazonS3 s3client) {
-        super(dvObject, req);
+    public S3AccessIO(T dvObject, @NotNull AmazonS3 s3client) {
+        super(dvObject);
         this.setIsLocalFile(false);
         this.s3 = s3client;
     }
@@ -153,8 +151,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException("ERROR: S3AccessIO - Failed to look up bucket " + bucketName + " (is AWS properly configured?)");
         }
 
-        DataAccessRequest req = this.getRequest();
-
         if (isWriteAccessRequested(options)) {
             isWriteAccess = true;
             isReadAccess = false;
@@ -168,23 +164,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
             DataFile dataFile = this.getDataFile();
 
-            if (req != null && req.getParameter("noVarHeader") != null) {
-                this.setNoVarHeader(true);
-            }
-
             if (storageIdentifier == null || "".equals(storageIdentifier)) {
                 throw new FileNotFoundException("Data Access: No local storage identifier defined for this datafile.");
             }
 
             if (isReadAccess) {
                 key = getMainFileKey();
-                ObjectMetadata objectMetadata = null;
-                try {
-                    objectMetadata = s3.getObjectMetadata(bucketName, key);
-                } catch (SdkClientException sce) {
-                    throw new IOException("Cannot get S3 object " + key + " (" + sce.getMessage() + ")");
-                }
-                this.setSize(objectMetadata.getContentLength());
 
                 if (dataFile.getContentType() != null
                         && dataFile.getContentType().equals("text/tab-separated-values")
@@ -272,68 +257,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
 
         DataFile dataFile = (DataFile)dvObject;
-        File inputFile = fileSystemPath.toFile();
         
         if (ChecksumType.MD5.equals(dataFile.getChecksumType())) {
             putFileToS3(fileSystemPath.toFile(), key, dataFile.getChecksumValue());
         } else {
             putFileToS3(fileSystemPath.toFile(), key, null);
         }
-        // if it has uploaded successfully, we can reset the size
-        // of the object:
-        setSize(inputFile.length());
-    }
-
-    /**
-     * Implements the StorageIO saveInputStream() method.
-     * This implementation is somewhat problematic, because S3 cannot save an object of
-     * an unknown length. This effectively nullifies any benefits of streaming;
-     * as we cannot start saving until we have read the entire stream.
-     * One way of solving this would be to buffer the entire stream as byte[],
-     * in memory, then save it... Which of course would be limited by the amount
-     * of memory available, and thus would not work for streams larger than that.
-     * So we have eventually decided to save save the stream to a temp file, then
-     * save to S3. This is slower, but guaranteed to work on any size stream.
-     * An alternative we may want to consider is to not implement this method
-     * in the S3 driver, and make it throw the UnsupportedDataAccessOperationException,
-     * similarly to how we handle attempts to open OutputStreams, in this and the
-     * Swift driver.
-     *
-     * @param inputStream InputStream we want to save
-     * @param auxItemTag  String representing this Auxiliary type ("extension")
-     * @throws IOException if anything goes wrong.
-     */
-    @Override
-    public void saveInputStream(InputStream inputStream, Long filesize) throws IOException {
-        if (filesize == null || filesize < 0) {
-            saveInputStream(inputStream);
-            return;
-        }
-        
-        if (!this.canWrite()) {
-            open(DataAccessOption.WRITE_ACCESS);
-        }
-
-        putInputStreamToS3(inputStream, filesize, key);
-        
-        setSize(filesize);
-    }
-
-    @Override
-    public void saveInputStream(InputStream inputStream) throws IOException {
-        if (!this.canWrite()) {
-            open(DataAccessOption.WRITE_ACCESS);
-        }
-        
-        File tempFile = copyInputStreamToTempFile(inputStream);
-        long tempFileSize = tempFile.length();
-        try {
-            putFileToS3(tempFile, key, null);
-        } finally {
-            tempFile.delete();
-        }
-        
-        setSize(tempFileSize);
     }
 
     @Override
@@ -627,8 +556,14 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     @Override
-    public WritableByteChannel getWriteChannel() throws UnsupportedDataAccessOperationException {
-        throw new UnsupportedDataAccessOperationException("S3AccessIO: there are no write Channels associated with S3 objects.");
+    public long getSize() throws IOException {
+        ObjectMetadata objectMetadata = null;
+        try {
+            objectMetadata = s3.getObjectMetadata(bucketName, key);
+        } catch (SdkClientException sce) {
+            throw new IOException("Cannot get S3 object " + key + " (" + sce.getMessage() + ")");
+        }
+        return objectMetadata.getContentLength();
     }
 
     @Override
@@ -649,6 +584,23 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             logger.fine("Caught an AmazonClientException in S3AccessIO.getAuxFileAsInputStream() (object not cached?):    " + ase.getMessage());
             return null;
         }
+    }
+
+    @Override
+    public boolean isMD5CheckSupported() {
+        return true;
+    }
+
+    @Override
+    public String getMD5() throws IOException {
+        ObjectMetadata objectMetadata;
+        try {
+            objectMetadata = s3.getObjectMetadata(bucketName, key);
+        } catch (SdkClientException sce) {
+            throw new IOException("Cannot get S3 object " + key + " (" + sce.getMessage() + ")");
+        }
+        
+        return objectMetadata.getUserMetadata().get(MD5_METADATA_KEY);
     }
 
     String getDestinationKey(String auxItemTag) throws IOException {
@@ -784,7 +736,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                 throw new IOException(e);
             }
             Map<String, String> userMetadata = new HashMap<String, String>();
-            userMetadata.put("MD5", providedMD5Checksum);
+            userMetadata.put(MD5_METADATA_KEY, providedMD5Checksum);
             metadata.setUserMetadata(userMetadata);
         }
         PutObjectRequest putRequest = new PutObjectRequest(bucketName, s3Key, file);

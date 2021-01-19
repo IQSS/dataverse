@@ -32,7 +32,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.Channel;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
@@ -50,15 +49,7 @@ public abstract class StorageIO<T extends DvObject> {
     }
 
     public StorageIO(T dvObject) {
-        this(dvObject, null);
-    }
-
-    public StorageIO(T dvObject, DataAccessRequest req) {
         this.dvObject = dvObject;
-        this.req = req;
-        if (this.req == null) {
-            this.req = new DataAccessRequest();
-        }
     }
 
 
@@ -85,37 +76,13 @@ public abstract class StorageIO<T extends DvObject> {
 
     public abstract boolean exists() throws IOException;
 
+    public abstract long getSize() throws IOException;
+
     public abstract void delete() throws IOException;
 
     // this method for copies a local Path (for ex., a
     // temp file, into this DataAccess location):
     public abstract void savePath(Path fileSystemPath) throws IOException;
-
-    // same, for an InputStream:
-
-    /**
-     * This method copies a local InputStream into this DataAccess location.
-     * Note that the S3 driver implementation of this abstract method is problematic,
-     * because S3 cannot save an object of an unknown length. This effectively
-     * nullifies any benefits of streaming; as we cannot start saving until we
-     * have read the entire stream.
-     * One way of solving this would be to buffer the entire stream as byte[],
-     * in memory, then save it... Which of course would be limited by the amount
-     * of memory available, and thus would not work for streams larger than that.
-     * So we have eventually decided to save save the stream to a temp file, then
-     * save to S3. This is slower, but guaranteed to work on any size stream.
-     * An alternative we may want to consider is to not implement this method
-     * in the S3 driver, and make it throw the UnsupportedDataAccessOperationException,
-     * similarly to how we handle attempts to open OutputStreams, in this driver.
-     * (Not an issue in FileAccessIO)
-     *
-     * @param inputStream InputStream we want to save
-     * @param auxItemTag  String representing this Auxiliary type ("extension")
-     * @throws IOException if anything goes wrong.
-     */
-    public abstract void saveInputStream(InputStream inputStream) throws IOException;
-
-    public abstract void saveInputStream(InputStream inputStream, Long filesize) throws IOException;
 
     // Auxiliary File Management: (new as of 4.0.2!)
 
@@ -173,42 +140,26 @@ public abstract class StorageIO<T extends DvObject> {
 
     public abstract void deleteAllAuxObjects() throws IOException;
 
-    private DataAccessRequest req;
+    public abstract boolean isMD5CheckSupported();
+
+    public abstract String getMD5() throws IOException;
+
     private InputStream in;
     private OutputStream out;
     protected Channel channel;
     protected DvObject dvObject;
 
-    /*private int status;*/
-    private long size;
-
     private String mimeType;
     private String fileName;
     private String varHeader;
-    private String errorMessage;
 
     private boolean isLocalFile = false;
     private boolean noVarHeader = false;
-
-    // For remote downloads:
-    private boolean isZippedStream = false;
-    private boolean isDownloadSupported = true;
-    private boolean isSubsetSupported = false;
-
-    private String remoteUrl;
 
     // getters:
 
     public Channel getChannel() throws IOException {
         return channel;
-    }
-
-    public WritableByteChannel getWriteChannel() throws IOException {
-        if (canWrite() && channel != null && channel instanceof WritableByteChannel) {
-            return (WritableByteChannel) channel;
-        }
-
-        throw new IOException("No NIO write access in this DataAccessObject.");
     }
 
     public ReadableByteChannel getReadChannel() throws IOException {
@@ -235,18 +186,6 @@ public abstract class StorageIO<T extends DvObject> {
         return (Dataverse) dvObject;
     }
 
-    public DataAccessRequest getRequest() {
-        return req;
-    }
-
-    /*public int getStatus() {
-        return status;
-    }*/
-
-    public long getSize() {
-        return size;
-    }
-
     public InputStream getInputStream() throws IOException {
         return in;
     }
@@ -267,14 +206,6 @@ public abstract class StorageIO<T extends DvObject> {
         return varHeader;
     }
 
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public String getRemoteUrl() {
-        return remoteUrl;
-    }
-
     public boolean isLocalFile() {
         return isLocalFile;
     }
@@ -289,18 +220,6 @@ public abstract class StorageIO<T extends DvObject> {
         return dvObject == null;
     }
 
-    public boolean isDownloadSupported() {
-        return isDownloadSupported;
-    }
-
-    public boolean isSubsetSupported() {
-        return isSubsetSupported;
-    }
-
-    public boolean isZippedStream() {
-        return isZippedStream;
-    }
-
     public boolean noVarHeader() {
         return noVarHeader;
     }
@@ -308,14 +227,6 @@ public abstract class StorageIO<T extends DvObject> {
     // setters:
     public void setDvObject(T f) {
         dvObject = f;
-    }
-
-    public void setRequest(DataAccessRequest dar) {
-        req = dar;
-    }
-
-    public void setSize(long s) {
-        size = s;
     }
 
     public void setInputStream(InputStream is) {
@@ -342,51 +253,21 @@ public abstract class StorageIO<T extends DvObject> {
         varHeader = vh;
     }
 
-    public void setErrorMessage(String em) {
-        errorMessage = em;
-    }
-
-    public void setRemoteUrl(String u) {
-        remoteUrl = u;
-    }
-
     public void setIsLocalFile(boolean f) {
         isLocalFile = f;
-    }
-
-    public void setIsDownloadSupported(boolean d) {
-        isDownloadSupported = d;
-    }
-
-    public void setIsSubsetSupported(boolean s) {
-        isSubsetSupported = s;
-    }
-
-    public void setIsZippedStream(boolean zs) {
-        isZippedStream = zs;
     }
 
     public void setNoVarHeader(boolean nvh) {
         noVarHeader = nvh;
     }
 
-    public void closeInputStream() {
+    public void closeInputStream() throws IOException {
         if (in != null) {
-            try {
-                in.close();
-            } catch (IOException ex) {
-                // we really don't care.
-                String eMsg = "Warning: IO exception closing input stream.";
-                if (errorMessage == null) {
-                    errorMessage = eMsg;
-                } else {
-                    errorMessage = eMsg + "; " + errorMessage;
-                }
-            }
+            in.close();
         }
     }
 
-    public String generateVariableHeader(List<DataVariable> dvs) {
+    protected String generateVariableHeader(List<DataVariable> dvs) {
         String varHeader = null;
 
         if (dvs != null) {
