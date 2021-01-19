@@ -2312,7 +2312,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     @POST
     @Path("{id}/addglobusFiles")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response globus(@PathParam("id") String datasetId,
+    public Response addGlobusFileToDataset(@PathParam("id") String datasetId,
                            @FormDataParam("jsonData") String jsonData
     )
     {
@@ -2578,7 +2578,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             }
 
             msg("****** pre ingest start");
-            ingestService.startIngestJobsForDataset(dataset, (AuthenticatedUser) authUser);
+            ingestService.startIngestJobsForDataset(dataset, dvRequest2.getAuthenticatedUser() ); //(AuthenticatedUser) authUser);
             msg("******* post ingest start");
 
         } catch (Exception e) {
