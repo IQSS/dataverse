@@ -352,7 +352,7 @@
                             </div>
                             <div class="metadata-container" jsf:rendered="#{!empty DataverseUserPage.currentUser}">
                                 <!-- Shib -->
-                                <p class="help-block" id="userShib" jsf:rendered="#{true or not DataverseUserPage.accountDetailsEditable}">
+                                <p class="help-block" id="userShib" jsf:rendered="#{not DataverseUserPage.accountDetailsEditable}">
                                     <h:outputText value="#{bundle['user.isShibUser']}" />
                                     <h:outputText value=" #{bundle['user.helpShibUserMigrateOffShibBeforeLink']} " />
                                     <p:commandLink value="#{settingsWrapper.supportTeamName}" oncomplete="PF('contactForm').show()" update=":contactDialog" actionListener="#{sendFeedbackDialog.initUserInput}">
@@ -364,7 +364,7 @@
                                     <h:outputText value=" #{bundle['user.helpShibUserMigrateOffShibAfterLink']}" />
                                 </p>
                                 <!-- OAuth -->
-                                <p class="help-block" id="userOAuth" jsf:rendered="#{true or DataverseUserPage.userAuthProvider.OAuthProvider}">
+                                <p class="help-block" id="userOAuth" jsf:rendered="#{DataverseUserPage.userAuthProvider.OAuthProvider}">
                                     <h:outputFormat value="#{bundle['user.helpOAuthBeforeLink']} ">
                                         <f:param value="#{DataverseUserPage.userAuthProvider.info.title}"/>
                                     </h:outputFormat>
