@@ -1828,6 +1828,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                                                 systemConfig);
 
 
+
         //-------------------
         // (4) Run "runAddFileByDatasetId"
         //-------------------
@@ -1836,7 +1837,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                                 newFileContentType,
                                 newStorageIdentifier,
                                 fileInputStream,
-                                optionalFileParams);
+                                optionalFileParams  );
 
 
         if (addFileHelper.hasError()){
@@ -2503,6 +2504,9 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                         //-------------------
                         msg("ADD!");
 
+
+                        boolean globustype = true;
+
                         //-------------------
                         // (4) Run "runAddFileByDatasetId"
                         //-------------------
@@ -2511,7 +2515,8 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                                 finalType,
                                 storageIdentifier,
                                 null,
-                                optionalFileParams);
+                                optionalFileParams,
+                                globustype);
 
 
                         if (addFileHelper.hasError()){
@@ -2560,12 +2565,30 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                     }
                 }
             }
+
+            try {
+                Command<Dataset> cmd;
+
+                logger.info("******* : ====  datasetId :" + dataset.getId() + " ======= UpdateDatasetVersionCommand START in globus function ");
+                cmd = new UpdateDatasetVersionCommand(dataset, dvRequest2);
+                ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
+                commandEngine.submit(cmd);
+            } catch (CommandException ex) {
+                logger.log(Level.WARNING, "====  datasetId :" + dataset.getId() + "======CommandException updating DatasetVersion from batch job: " + ex.getMessage());
+            }
+
+            msg("****** pre ingest start");
+            ingestService.startIngestJobsForDataset(dataset, (AuthenticatedUser) authUser);
+            msg("******* post ingest start");
+
         } catch (Exception e) {
             String message = e.getMessage();
             msgt("*******   Exception from globus API call " + message);
             msgt("*******  datasetId :" + dataset.getId() + " ======= GLOBUS  CALL Exception ============== " + message);
             e.printStackTrace();
         }
+
+
         return ok(Json.createObjectBuilder().add("Files", jarr));
 
     }
