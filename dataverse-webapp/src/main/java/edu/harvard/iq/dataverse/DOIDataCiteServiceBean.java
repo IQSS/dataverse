@@ -203,7 +203,7 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         }
         if (idStatus != null && idStatus.equals("public")) {
             //if public then it has been released set to unavailable and reset target to n2t url
-            doiDataCiteRegisterService.deactivateIdentifier(identifier, doiMetadata, dvObject);
+            doiDataCiteRegisterService.deactivateIdentifier(identifier);
         }
     }
 
