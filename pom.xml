@@ -817,27 +817,6 @@
         </profile>
         <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
       <profile>
-        <id>Java8</id>
-        <activation>
-          <jdk>1.8</jdk>
-        </activation>
-        <build>
-          <plugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-compiler-plugin</artifactId>
-              <version>3.8.0</version>
-              <configuration>
-                <source>11</source>
-                <target>11</target>
-                <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
-                <compilerArgument>${compilerArgument}</compilerArgument>
-              </configuration>
-            </plugin>
-          </plugins>
-        </build>
-      </profile>
-      <profile>
         <id>Java9Plus</id>
         <activation>
           <jdk>[1.9</jdk>
