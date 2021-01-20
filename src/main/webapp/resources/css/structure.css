@@ -10,7 +10,7 @@ body {
 }
 body.widget-view {margin-bottom:44px;}
 body .ui-widget {font-size: inherit;}
-body .ui-widget .ui-widget-content :not(.ui-dialog-titlebar, .ui-dialog-content){background: none;}
+body .ui-widget .ui-widget-content :not(.ui-dialog-titlebar, .ui-dialog-content, .dropdown-menu){background: none;}
 .ui-widget-content a {color: #4b75ff;}
 .ui-datalist-item .ui-widget-content td > a { font-size: 18px !important;}
 .ui-widget-content a:hover, .ui-widget-content a:focus {color: #337ab7;}
@@ -430,6 +430,13 @@ form.btn-form {display:inline-block;}
 .button-block form.btn-form:last-child .btn-group, 
 .button-block span.ui-state-disabled:last-child, .button-block.pull-right .btn:last-child, 
 .button-block .btn:only-child, .button-block div.btn-group:only-child {margin-right:0;}
+/*QDR*/
+div.btn-group[aria-label='File Actions'] div.btn-group:nth-child(2) {
+    margin-left: -8px;
+}
+div.btn-group[aria-label='File Actions'] div.btn-group:nth-child(2) a.btn.btn-link.bootstrap-button-tooltip span.caret{
+    margin-left: 0px;
+}
 
 /* DIASABLED LINK-BTN TITLE PF COMMANDLINK HACK */
 /* TODO - REVIEW DISABLED CLASS LINKS WHICH 
