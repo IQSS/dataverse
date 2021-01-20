@@ -51,6 +51,9 @@
                 <o:resourceInclude path="/CustomizationFilesServlet?customFileType=style" />
             </style>
         </ui:fragment>
+        <ui:fragment rendered="#{DatasetPage.getCVMConf().size() > 0}">
+            <script src="#{resource['js/jquery-ui.js']}"></script>
+        </ui:fragment>
     </h:head>
     <h:body styleClass="#{widgetWrapper.widgetView ? 'widget-view' : ''}">
         <f:loadBundle basename="propertyFiles.Bundle" var="bundle"/>
