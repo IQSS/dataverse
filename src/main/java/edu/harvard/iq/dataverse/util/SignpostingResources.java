@@ -1,14 +1,29 @@
 package edu.harvard.iq.dataverse.util;
 
 /**
- * Eko Indarto
- * Adding Signposting
+ * Eko Indarto, DANS
+ * Vic Ding, DANS
+ *
+ * This file prepares the resources used in Signposting
+ *
+ * It requires correspondence configuration to function well.
+ * The configuration key used is SignpostingConf.
+ * It is a json structure shown below
+ * {
+ *   "indetifier-schema": {"ORCID":"https://orcid.org/", "ISNI":"https://isni.org/isni/", "ScopusID":"https://www.scopus.com/authid/detail.uri?authorId="},
+ *   "license": {"CCO":"https://creativecommons.org/licenses/by/4.0/", "MIT": "https://url", "APACHE":"https://url"},
+ *   "cite-as": {"doi":"https://citation.crosscite.org/format?style=bibtex&doi=", "type":"application/vnd.datacite.datacite+json"}
+ * }
+ *
+ * The configuration can be modified during run time by the administrator.
+ *
  */
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -17,17 +32,12 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 import java.io.StringReader;
 import java.util.List;
+import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-/*
-{
-  "indetifier-schema": {"ORCID":"https://orcid.org/", "ISNI":"https://isni.org/isni/", "ScopusID":"https://www.scopus.com/authid/detail.uri?authorId="},
-  "license": {"CCO":"https://creativecommons.org/licenses/by/4.0/", "MIT": "https://url", "APACHE":"https://url"},
-  "cite-as": {"doi":"https://citation.crosscite.org/format?style=bibtex&doi=", "type":"application/vnd.datacite.datacite+json"}
-}
 
- */
 public class SignpostingResources {
+    private static final Logger logger = Logger.getLogger(SignpostingResources.class.getCanonicalName());
     SystemConfig systemConfig;
     DatasetVersion workingDatasetVersion;
     JsonObject idschemaJsonObj;
@@ -45,76 +55,90 @@ public class SignpostingResources {
         citeAsJsonObj = spJsonSetting.getJsonObject("cite-as");
     }
 
+    /**
+     * Get identifier schema for each author
+     *
+     * Author may have identifiers from different providers
+     * ORCID: the url format is https://orcid.org/:id
+     * ISNI: the url format is https://isni.org/isni/:id
+     * ScopusID: the url format is https://www.scopus.com/authid/detail.uri?authorId=:id
+     * VIAF: the url format is http://viaf.org/viaf/:id
+     *
+     * For example:
+     *      if author has VIAF
+    *       Link: <http://viaf.org/viaf/:id/>; rel="author"
+     *
+     * @param datasetAuthors
+     * @return
+     */
     private String getIdentifierSchema(List<DatasetAuthor> datasetAuthors) {
+        StringBuilder sb = new StringBuilder();
         String identifierSchema = "";
-        for (DatasetAuthor da:datasetAuthors){
-             /*
-                else if author has VIAF
-                    Link: <http://viaf.org/viaf/:id/>; rel="author"
-                else if author has ISNI
-                    Link: <http://www.isni.org/:id>; rel="author"
-             */
-            if (da.getIdValue() != null && !da.getIdValue().isEmpty()) {
-                identifierSchema += ", <" + idschemaJsonObj.getString(da.getIdType()) + da.getIdValue() + "> ; rel=\"author\"";
-//                if (da.getIdType().equals("ORCID"))
-//                    identifierSchema += ", <https://orcid.org/" + da.getIdValue() + "> ; rel=\"author\"";
-//                else if (da.getIdType().equals("ISNI"))
-//                    identifierSchema += ", <https://isni.org/isni/" + da.getIdValue() + "> ; rel=\"author\"";
-//                else if (da.getIdType().equals("ScopusID"))
-//                    identifierSchema += ", <https://www.scopus.com/authid/detail.uri?authorId=" + da.getIdValue() + "> ; rel=\"author\"";
 
+        for (DatasetAuthor da:datasetAuthors){
+            if (da.getIdValue() != null && !da.getIdValue().isEmpty()) {
+                sb.append("<").
+                        append(idschemaJsonObj.getString(da.getIdType())).
+                        append(da.getIdValue()).
+                        append(">;rel=\"author\"");
+                if (identifierSchema == "") {
+                    identifierSchema = sb.toString();
+                } else {
+                    identifierSchema = String.join(",", identifierSchema, sb.toString());
+                }
             }
         }
+        logger.info(String.format("within getidentifiershcema, it is: [%s]", identifierSchema));
         return identifierSchema;
     }
 
     public String getLinks(){
-        String identifierSchema = getIdentifierSchema(workingDatasetVersion.getDatasetAuthors());
-
         Dataset ds = workingDatasetVersion.getDataset();
-        String citeAs = "<" + ds.getPersistentURL() + "> ; rel=\"cite-as\"";
-        String describedby = ""; //not only crosscite.
-        describedby = ", <" + citeAsJsonObj.getString(ds.getProtocol())+ ds.getAuthority() + "/"
-                + ds.getIdentifier() + "> ; rel=\"describedby\" \n" + "; type=\""+ citeAsJsonObj.getString("type") + "\"";
-//        if (ds.getProtocol().equals("doi")) {
-//            describedby = ", <https://citation.crosscite.org/format?style=bibtex&doi="+ ds.getAuthority() + "/"
-//                    + ds.getIdentifier() + "> ; rel=\"describedby\" \n" + "; type=\"application/vnd.datacite.datacite+json";
-//        }
-        describedby += ", <" + systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=schema.org&persistentId="
-                + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() + "> ; rel=\"describedby\" \n" + "; type=\"application/json+ld\"";
-        String type = ", <https://schema.org/AboutPage> ; rel=\"type\"";
 
-        String lic = ""; //non only CC0
+        // signposting identifierSchema
+        String identifierSchema = getIdentifierSchema(workingDatasetVersion.getDatasetAuthors());
+        logger.info(String.format("identifierSchema is: %s", identifierSchema));
+
+        // Signposting citeAs
+        String citeAs = "<" + ds.getPersistentURL() + ">;rel=\"cite-as\"";
+        logger.info(String.format("citeAs is: %s", citeAs));
+
+        // Signposting describedby
+        String describedby = "<" + citeAsJsonObj.getString(ds.getProtocol()) + ds.getAuthority() + "/"
+                + ds.getIdentifier() + ">;rel=\"describedby\"" + "; type=\""+ citeAsJsonObj.getString("type") + "\"";
+        describedby += ",<" + systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=schema.org&persistentId="
+                + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() + ">;rel=\"describedby\"" + ";type=\"application/json+ld\"";
+        logger.info(String.format("describedby is: %s", describedby));
+
+        // Signposting type
+        String type = "<https://schema.org/AboutPage>;rel=\"type\"";
+        logger.info(String.format("type is: %s", type));
+
+        // Signposting license
+        String license = ""; //non only CC0
         if (workingDatasetVersion.getTermsOfUseAndAccess().getLicense() == TermsOfUseAndAccess.License.CC0){
             //On the current Dataverse, only None and CC0. In the signposting protocol: cardinality is 1
-            lic = ", <https://creativecommons.org/licenses/by/4.0/> ; rel=\"license\"";
+            license = "<https://creativecommons.org/publicdomain/zero/1.0/>;rel=\"license\"";
+        } else {
+            // TODO: should get license from ds when flexible license is there
+            license = ";rel=\"license\"";
         }
+        logger.info(String.format("license is: %s", license));
 
-        String linkset = ", <" + systemConfig.getDataverseSiteUrl() + "/api/datasets/:persistentId/versions/"
+        // Signposting linkset
+        String linkset = "<" + systemConfig.getDataverseSiteUrl() + "/api/datasets/:persistentId/versions/"
                 + workingDatasetVersion.getVersionNumber() + "." + workingDatasetVersion.getMinorVersionNumber()
-                + "/linkset?persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() + "> ; rel=\"linkset\" ; type=\"application/linkset+json\"";
+                + "/linkset?persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() + "> ; rel=\"linkset\";type=\"application/linkset+json\"";
+        logger.info(String.format("linkset is: %s", linkset));
 
-        return citeAs + type + identifierSchema + lic + linkset + describedby;
+        return String.join(", ", citeAs, type, identifierSchema, license, linkset, describedby);
     }
 
     private JsonArrayBuilder getIdentifiersSchema(List<DatasetAuthor> datasetAuthors){
         JsonArrayBuilder authors = Json.createArrayBuilder();
         for (DatasetAuthor da:datasetAuthors){
-             /*
-                else if author has VIAF
-                    Link: <http://viaf.org/viaf/:id/>; rel="author"
-                else if author has ISNI
-                    Link: <http://www.isni.org/:id>; rel="author"
-             */
             if (da.getIdValue() != null && !da.getIdValue().isEmpty()) {
-
                 authors.add(jsonObjectBuilder().add("href", idschemaJsonObj.getString(da.getIdType())  + da.getIdValue()));
-//                if (da.getIdType().equals("ORCID"))
-//                    authors.add(jsonObjectBuilder().add("href", "https://orcid.org/" + da.getIdValue()));
-//                else if (da.getIdType().equals("ISNI"))
-//                    authors.add(jsonObjectBuilder().add("href","https://isni.org/isni/" + da.getIdValue()));
-//                else if (da.getIdType().equals("ScopusID"))
-//                    authors.add(jsonObjectBuilder().add("href","https://www.scopus.com/authid/detail.uri?authorId=" + da.getIdValue()));
             }
         }
         return authors;
@@ -122,8 +146,6 @@ public class SignpostingResources {
 
     public JsonArrayBuilder getJsonLinkset() {
         Dataset ds = workingDatasetVersion.getDataset();
-//        String pid =  ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() ;
-//        String anchor = systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + pid;
         String landingPage = systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() ;
         JsonArrayBuilder authors = getIdentifiersSchema(workingDatasetVersion.getDatasetAuthors());
 
@@ -138,16 +160,11 @@ public class SignpostingResources {
 
         String lic = "";
         if (workingDatasetVersion.getTermsOfUseAndAccess().getLicense() == TermsOfUseAndAccess.License.CC0){
-            //On the current Dataverse, only None and CC0. In the signposting protocol: cardinality is 1
-//            lic = "https://creativecommons.org/licenses/by/4.0/";
             lic = licJsonObj.getString(TermsOfUseAndAccess.License.CC0.name());
         }
         JsonArrayBuilder jab = Json.createArrayBuilder();
         jab.add(jsonObjectBuilder().add("href", citeAsJsonObj.getJsonObject(ds.getProtocol())+ ds.getAuthority() + "/"
                 + ds.getIdentifier()).add("type",citeAsJsonObj.getJsonObject("type")));
-//        jab.add(jsonObjectBuilder().add("href", "https://citation.crosscite.org/format?style=bibtex&doi="+ ds.getAuthority() + "/"
-//        + ds.getIdentifier()).add("type","application/vnd.datacite.datacite+json"));
-//        jab.add(jsonObjectBuilder().add("href", systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=schema.org&persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier()).add("type","application/vnd.datacite.datacite+json"));
         jab.add(jsonObjectBuilder().add("href", systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=schema.org&persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier()).add("type","application/json+ld"));
         JsonArrayBuilder linkset = Json.createArrayBuilder();
         JsonObjectBuilder mandatory = jsonObjectBuilder()
