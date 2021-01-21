@@ -416,7 +416,7 @@
                                                 &#160;
                                                 <p:commandLink rendered="#{DataverseUserPage.showVerifyEmailButton()}" styleClass="btn btn-default" 
                                                                 id="verifyEmailButton"
-                                                                oncomplete="#{DataverseUserPage.sendConfirmEmail()}"
+                                                                action="#{DataverseUserPage.sendConfirmEmail()}"
                                                                 update="@([id$=verifyEmailButton]), :messagePanel"
                                                                 onclick="if (!testHasEmailToken(#{DataverseUserPage.getHasActiveVerificationToken()})) return false;"
                                                                >
