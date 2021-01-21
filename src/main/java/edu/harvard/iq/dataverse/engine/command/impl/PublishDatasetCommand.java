@@ -212,12 +212,12 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         }
 
         if (dataset != null) {
-            logger.fine("From onSuccess, calling FinalizeDatasetPublicationCommand for dataset " + dataset.getGlobalId().asString());
             Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
-            //A pre-publication workflow will call this when it completes
+            //A pre-publication workflow will call FinalizeDatasetPublicationCommand itself when it completes
             if (! prePubWf.isPresent() ) {
+                logger.fine("From onSuccess, calling FinalizeDatasetPublicationCommand for dataset " + dataset.getGlobalId().asString());
                 ctxt.datasets().callFinalizePublishCommandAsynchronously(dataset.getId(), ctxt, request, datasetExternallyReleased);
-            }
+            } 
             return true;
         }
         
