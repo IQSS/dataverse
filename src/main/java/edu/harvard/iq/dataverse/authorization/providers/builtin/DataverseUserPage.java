@@ -482,7 +482,6 @@ public class DataverseUserPage implements java.io.Serializable {
                     userNotification.setTheObject(datasetService.find(userNotification.getObjectId()));
                     break;
 
-                case MAPLAYERUPDATED:
                 case CREATEDS:
                 case SUBMITTEDDS:
                 case PUBLISHEDDS:
@@ -491,10 +490,6 @@ public class DataverseUserPage implements java.io.Serializable {
                     userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
                     break;
                     
-                case MAPLAYERDELETEFAILED:
-                    userNotification.setTheObject(fileService.findFileMetadata(userNotification.getObjectId()));
-                    break;
-
                 case CREATEACC:
                     userNotification.setTheObject(userNotification.getUser());
                     break;
