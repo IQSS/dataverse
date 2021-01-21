@@ -429,11 +429,9 @@ public class WorkflowServiceBean {
     	 * resumed workflows. (The overall method is needed to allow the context to be updated in the start() method with the
     	 * settings and APItoken retrieved by the WorkflowServiceBean) - JM - 9/18.
     	 */
-        String id = ctxt.getInvocationId();
         WorkflowContext newCtxt =new WorkflowContext( ctxt.getRequest(), 
                 em.merge(ctxt.getDataset()), ctxt.getNextVersionNumber(), 
-                ctxt.getNextMinorVersionNumber(), ctxt.getType(), settings, apiToken, ctxt.getDatasetExternallyReleased());
-        newCtxt.setInvocationId(id);
+                ctxt.getNextMinorVersionNumber(), ctxt.getType(), settings, apiToken, ctxt.getDatasetExternallyReleased(), ctxt.getInvocationId());
         return newCtxt;
     }
 
