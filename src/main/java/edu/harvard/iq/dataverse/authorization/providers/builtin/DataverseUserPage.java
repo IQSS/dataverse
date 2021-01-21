@@ -548,10 +548,6 @@ public class DataverseUserPage implements java.io.Serializable {
         //for user page to determine how to handle Confirm Email click
         return confirmEmailService.hasActiveVerificationToken(currentUser);
     }
-    
-    public void setHasActiveVerificationToken(boolean value){
-        //dummy method
-    }
 
     public boolean isEmailIsVerified() {
         return confirmEmailService.hasVerifiedEmail(currentUser);
