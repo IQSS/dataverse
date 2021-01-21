@@ -18,15 +18,7 @@
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:param name="loginRedirectPage" value="dataverseuser.xhtml"/>
             <ui:define name="body">
-                <script>
-                    //<![CDATA[
-                    window.onpageshow = function(event) {
-                        if (event.persisted) {
-                            window.location.reload();
-                        }
-                    };
-                    //]]>
-                </script>
+
                 <f:loadBundle basename="propertyFiles.Bundle" var="bundle"/>
                 <f:metadata>
                     <f:event type="preRenderView" listener="#{facesContext.externalContext.response.setHeader('Cache-Control', 'no-cache, no-store')}"/>
@@ -424,10 +416,12 @@
                                                 &#160;
                                                 <p:commandLink rendered="#{DataverseUserPage.showVerifyEmailButton()}" styleClass="btn btn-default" 
                                                                 id="verifyEmailButton"
-                                                               onclick="testHasEmailToken(#{DataverseUserPage.getHasActiveVerificationToken()})">
+                                                                oncomplete="#{DataverseUserPage.sendConfirmEmail()}"
+                                                                update="@([id$=verifyEmailButton]), :messagePanel"
+                                                                onclick="if (!testHasEmailToken(#{DataverseUserPage.getHasActiveVerificationToken()})) return false;"
+                                                               >
                                                     <span class="glyphicon glyphicon-ok"></span> #{bundle['confirmEmail.submitRequest']}
                                                 </p:commandLink>
-                                                <p:remoteCommand name="sendConfirmEmailCommand" process="@this" update="@([id$=verifyEmailButton]), :messagePanel" actionListener="#{DataverseUserPage.sendConfirmEmail()}"/>
                                             </td>
                                         </tr>
                                         <!-- PersistentId, ORCID iD -->
@@ -713,10 +707,10 @@
                 <script>
                     //<![CDATA[        
                         function testHasEmailToken(hasActiveVerificationToken) {
-                            if (hasActiveVerificationToken===true) {
+                            if (hasActiveVerificationToken) {                               
                                 PF("tokenExists").show();
                             } else {
-                                sendConfirmEmailCommand();
+                                return true;
                             }                        
                         }
                     //]]>
