@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -171,7 +172,7 @@ public class ImportGenericServiceBean {
     }
 
     public DatasetDTO processXML(XMLStreamReader xmlr, ForeignMetadataFormatMapping foreignFormatMapping) throws XMLStreamException {
-        // init - similarly to what I'm doing in the metadata extraction code? 
+        // init - similarly to what I'm doing in the metadata extraction code?
         DatasetDTO datasetDTO = this.initializeDataset();
 
         while (xmlr.next() == XMLStreamConstants.COMMENT) ; // skip pre root comments
@@ -180,9 +181,9 @@ public class ImportGenericServiceBean {
         if (openingTag != null) {
             xmlr.require(XMLStreamConstants.START_ELEMENT, null, openingTag);
         } else {
-            // TODO: 
+            // TODO:
             // add support for parsing the body regardless of the start element.
-            // June 20 2014 -- L.A. 
+            // June 20 2014 -- L.A.
             throw new EJBException("No support for format mappings without start element defined (yet)");
         }
 
@@ -193,12 +194,12 @@ public class ImportGenericServiceBean {
     }
 
     // Helper method for importing harvested Dublin Core xml.
-    // Dublin Core is considered a mandatory, built in metadata format mapping. 
-    // It is distributed as required content, in reference_data.sql. 
+    // Dublin Core is considered a mandatory, built in metadata format mapping.
+    // It is distributed as required content, in reference_data.sql.
     // Note that arbitrary formatting tags are supported for the outer xml
     // wrapper. -- L.A. 4.5
     public DatasetDTO processOAIDCxml(String DcXmlToParse) throws XMLStreamException {
-        // look up DC metadata mapping: 
+        // look up DC metadata mapping:
 
         ForeignMetadataFormatMapping dublinCoreMapping = findFormatMappingByName(DCTERMS);
         if (dublinCoreMapping == null) {
@@ -227,9 +228,9 @@ public class ImportGenericServiceBean {
 
         datasetDTO.getDatasetVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
 
-        // Our DC import handles the contents of the dc:identifier field 
-        // as an "other id". In the context of OAI harvesting, we expect 
-        // the identifier to be a global id, so we need to rearrange that: 
+        // Our DC import handles the contents of the dc:identifier field
+        // as an "other id". In the context of OAI harvesting, we expect
+        // the identifier to be a global id, so we need to rearrange that:
 
         String identifier = getOtherIdFromDTO(datasetDTO.getDatasetVersion());
         logger.fine("Imported identifier: " + identifier);
@@ -259,8 +260,8 @@ public class ImportGenericServiceBean {
                     String dataverseFieldName = mappingDefined.getDatasetfieldName();
                     // Process attributes, if any are defined in the mapping:
                     if (mappingDefinedFieldType.isCompound()) {
-                        List<HashSet<FieldDTO>> compoundField = new ArrayList<>();
-                        HashSet<FieldDTO> set = new HashSet<>();
+                        List<Set<FieldDTO>> compoundField = new ArrayList<>();
+                        Set<FieldDTO> set = new HashSet<>();
                         for (ForeignMetadataFieldMapping childMapping : mappingDefined.getChildFieldMappings()) {
                             if (childMapping.isAttribute()) {
                                 String attributeName = childMapping.getForeignFieldXPath();
@@ -330,7 +331,7 @@ public class ImportGenericServiceBean {
                             }
                         }
                 } else {
-                    // recursively, process the xml stream further down: 
+                    // recursively, process the xml stream further down:
                     processXMLElement(xmlr, currentPath + currentElement + ":", currentElement, foreignFormatMapping, datasetDTO);
                 }
 
@@ -364,8 +365,8 @@ public class ImportGenericServiceBean {
             }
         }
 
-        // TODO: 
-        // it looks like the code below has already been executed, in one of the 
+        // TODO:
+        // it looks like the code below has already been executed, in one of the
         // if () blocks above... is this ok to be doing it again?? -- L.A. 4.5
         if (dataverseFieldType.isChild()) {
             DatasetFieldType parentDatasetFieldType = dataverseFieldType.getParentDatasetFieldType();
@@ -385,7 +386,7 @@ public class ImportGenericServiceBean {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.otherId.equals(fieldDTO.getTypeName())) {
                         String otherId = "";
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             for (FieldDTO next : foo) {
                                 if (DatasetFieldConstant.otherIdValue.equals(next.getTypeName())) {
                                     otherId = next.getSinglePrimitive();
@@ -451,7 +452,7 @@ public class ImportGenericServiceBean {
         datasetDTO.setAuthority(authority);
         datasetDTO.setIdentifier(identifier);
 
-        // reassemble and return: 
+        // reassemble and return:
         logger.fine("parsed identifier, finalized " + protocol + ":" + authority + "/" + identifier);
         return protocol + ":" + authority + "/" + identifier;
     }
@@ -534,10 +535,10 @@ public class ImportGenericServiceBean {
         if (!importType.equals(ImportType.MIGRATION)) {
             //EMK TODO:  Call methods for reading FileMetadata and related objects from xml, return list of FileMetadata objects.
                    /*try {
-            
+
              Map<String, DataTable> dataTableMap = new DataTableImportDDI().processDataDscr(xmlr);
              } catch(Exception e) {
-            
+
              }*/
         }
         return datasetDTO;
@@ -548,8 +549,8 @@ public class ImportGenericServiceBean {
         try {
             // Read docDescr and studyDesc into DTO objects.
             Map<String, String> fileMap = mapDCTerms(xmlToParse, datasetDTO);
-            // 
-            // convert DTO to Json, 
+            //
+            // convert DTO to Json,
             Gson gson = new Gson();
             String json = gson.toJson(datasetDTO.getDatasetVersion());
             JsonReader jsonReader = Json.createReader(new StringReader(json));
@@ -563,10 +564,10 @@ public class ImportGenericServiceBean {
 
         //EMK TODO:  Call methods for reading FileMetadata and related objects from xml, return list of FileMetadata objects.
         /*try {
-            
+
          Map<String, DataTable> dataTableMap = new DataTableImportDDI().processDataDscr(xmlr);
          } catch(Exception e) {
-            
+
          }*/
         // Save Dataset and DatasetVersion in database
     }
@@ -624,17 +625,17 @@ public class ImportGenericServiceBean {
         //while ( xmlr.next() == XMLStreamConstants.COMMENT ); // skip pre root comments
         xmlr.nextTag();
         MetadataBlockDTO citationBlock = datasetDTO.getDatasetVersion().getMetadataBlocks().get("citation");
-     
+
 /*         if (codeBookLevelId != null && !codeBookLevelId.equals("")) {
             if (citationBlock.getField("otherId")==null) {
-                // this means no ids were found during the parsing of the 
-                // study description section. we'll use the one we found in 
+                // this means no ids were found during the parsing of the
+                // study description section. we'll use the one we found in
                 // the codeBook entry:
                 FieldDTO otherIdValue = FieldDTO.createPrimitiveFieldDTO("otherIdValue", codeBookLevelId);
                 FieldDTO otherId = FieldDTO.createCompoundFieldDTO("otherId", otherIdValue);
                 citationBlock.getFields().add(otherId);
-                
-          } 
+
+          }
         }*/
 
 
@@ -930,7 +931,7 @@ public class ImportGenericServiceBean {
     }
 
 
-    private void addToSet(HashSet<FieldDTO> set, String typeName, String value) {
+    private void addToSet(Set<FieldDTO> set, String typeName, String value) {
         if (value != null) {
             set.add(FieldDTO.createPrimitiveFieldDTO(typeName, value));
         }

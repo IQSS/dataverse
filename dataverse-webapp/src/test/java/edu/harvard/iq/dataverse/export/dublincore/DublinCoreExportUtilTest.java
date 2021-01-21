@@ -1,83 +1,85 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.export.dublincore;
 
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
-import org.junit.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.logging.Logger;
 
-import static org.junit.Assert.assertEquals;
+import static javax.json.Json.createArrayBuilder;
+import static javax.json.Json.createObjectBuilder;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author skraffmi
  */
-public class DublinCoreExportUtilTest {
+class DublinCoreExportUtilTest {
 
-    private static final Logger logger = Logger.getLogger(DublinCoreExportUtilTest.class.getCanonicalName());
+    // -------------------- TESTS --------------------
 
-    public DublinCoreExportUtilTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
-    /**
-     * Test of datasetJson2dublincore method, of class DublinCoreExportUtil.
-     */
     @Test
-    public void testDatasetJson2dublincore() throws Exception {
-        byte[] file = Files.readAllBytes(Paths.get(getClass().getClassLoader()
-                .getResource("json/export/ddi/dataset-finch1.json").toURI()));
-        String datasetVersionAsJson = new String(file);
+    @DisplayName("Should convert json to DublinCore")
+    void datasetJson2dublincore() throws Exception {
+
+        // given
+        String datasetVersionAsJson = readFileFromResources("json/export/ddi/dataset-finch1.json");
         JsonReader jsonReader = Json.createReader(new StringReader(datasetVersionAsJson));
-        JsonObject obj = jsonReader.readObject();
+        JsonObject json = jsonReader.readObject();
 
-        String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files
-                .readAllBytes(Paths.get(getClass().getClassLoader()
-                        .getResource("xml/export/ddi/dataset-finchDC.xml").toURI()))));
-        logger.info(datasetAsDdi);
-
+        // when
         OutputStream output = new ByteArrayOutputStream();
-        DublinCoreExportUtil.datasetJson2dublincore(obj, output, DublinCoreExportUtil.DC_FLAVOR_DCTERMS);
+        DublinCoreExportUtil.datasetJson2dublincore(json, output, DublinCoreExportUtil.DC_FLAVOR_DCTERMS);
         String result = XmlPrinter.prettyPrintXml(output.toString());
 
-        logger.info(result);
-        assertEquals(datasetAsDdi, result);
-        
-        /*
-        System.out.println("datasetJson2dublincore");
-        JsonObject datasetDtoAsJson = null;
-        OutputStream expResult = null;
-        OutputStream result = DublinCoreExportUtil.datasetJson2dublincore(datasetDtoAsJson);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-*/
+        // then
+        String datasetAsDdi = XmlPrinter.prettyPrintXml(readFileFromResources("xml/export/ddi/dataset-finchDC.xml"));
+        assertThat(result).isEqualTo(datasetAsDdi);
     }
 
+    @Test
+    @DisplayName("Should handle cases when there is a single value instead of expected array")
+    void datasetJson2dublincore__singleValueInsteadOfArray() throws Exception {
+
+        // given
+        JsonObject json = createObjectBuilder()
+                .add("identifier", "PCA2E3")
+                .add("protocol", "doi")
+                .add("authority", "10.5072/FK2")
+                .add("datasetVersion", createObjectBuilder()
+                    .add("metadataBlocks", createObjectBuilder()
+                        .add("citation", createObjectBuilder()
+                            .add("fields", createArrayBuilder()
+                                .add(createObjectBuilder()
+                                    .add("typeName", "language")
+                                    .add("multiple", false)
+                                    .add("typeClass", "controlledVocabulary")
+                                    .add("value", "Polish")))))).build();
+
+        // when
+        OutputStream output = new ByteArrayOutputStream();
+        DublinCoreExportUtil.datasetJson2dublincore(json, output, DublinCoreExportUtil.DC_FLAVOR_DCTERMS);
+        String result = output.toString();
+
+        // then
+        assertThat(result).contains("<dcterms:language>Polish</dcterms:language>");
+    }
+
+    // -------------------- PRIVATE --------------------
+
+    private String readFileFromResources(String path) throws URISyntaxException, IOException {
+        URI uri = getClass().getClassLoader()
+                .getResource(path)
+                .toURI();
+        return String.join("\n", Files.readAllLines(Paths.get(uri)));
+    }
 }

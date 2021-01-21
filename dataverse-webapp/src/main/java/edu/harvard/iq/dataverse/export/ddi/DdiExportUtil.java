@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -94,7 +93,7 @@ public class DdiExportUtil {
     }
 
 
-    // "full" ddi, with the the "<fileDscr>"  and "<dataDscr>/<var>" sections: 
+    // "full" ddi, with the the "<fileDscr>"  and "<dataDscr>/<var>" sections:
     public static void datasetJson2ddi(JsonObject datasetDtoAsJson, DatasetVersion version, OutputStream outputStream, String dataverseUrl)
             throws XMLStreamException {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson.toString()));
@@ -131,8 +130,8 @@ public class DdiExportUtil {
         DatasetVersionDTO version = datasetDto.getDatasetVersion();
         String persistentProtocol = datasetDto.getProtocol();
         String persistentAgency = persistentProtocol;
-        // The "persistentAgency" tag is used for the "agency" attribute of the 
-        // <IDNo> ddi section; back in the DVN3 days we used "handle" and "DOI" 
+        // The "persistentAgency" tag is used for the "agency" attribute of the
+        // <IDNo> ddi section; back in the DVN3 days we used "handle" and "DOI"
         // for the 2 supported protocols, respectively. For the sake of backward
         // compatibility, we should probably stick with these labels: (-- L.A. 4.5)
         if ("hdl".equals(persistentAgency)) {
@@ -231,8 +230,8 @@ public class DdiExportUtil {
         DatasetVersionDTO version = datasetDto.getDatasetVersion();
         String persistentProtocol = datasetDto.getProtocol();
         String persistentAgency = persistentProtocol;
-        // The "persistentAgency" tag is used for the "agency" attribute of the 
-        // <IDNo> ddi section; back in the DVN3 days we used "handle" and "DOI" 
+        // The "persistentAgency" tag is used for the "agency" attribute of the
+        // <IDNo> ddi section; back in the DVN3 days we used "handle" and "DOI"
         // for the 2 supported protocols, respectively. For the sake of backward
         // compatibility, we should probably stick with these labels: (-- L.A. 4.5)
         if ("hdl".equals(persistentAgency)) {
@@ -251,7 +250,7 @@ public class DdiExportUtil {
         xmlw.writeStartElement("IDNo");
         writeAttribute(xmlw, "agency", persistentAgency);
         xmlw.writeCharacters(persistentProtocol + ":" + persistentAuthority + "/" + persistentId);
-        xmlw.writeEndElement(); // IDNo      
+        xmlw.writeEndElement(); // IDNo
         xmlw.writeEndElement(); // titlStmt
         xmlw.writeStartElement("distStmt");
         writeFullElement(xmlw, "distrbtr", datasetDto.getPublisher());
@@ -262,7 +261,7 @@ public class DdiExportUtil {
         xmlw.writeStartElement("biblCit");
         xmlw.writeCharacters(version.getCitation());
         xmlw.writeEndElement(); // biblCit
-        xmlw.writeEndElement(); // citation      
+        xmlw.writeEndElement(); // citation
         xmlw.writeEndElement(); // docDscr
 
     }
@@ -290,7 +289,7 @@ public class DdiExportUtil {
                     if (DatasetFieldConstant.timePeriodCovered.equals(fieldDTO.getTypeName())) {
                         String dateValStart = "";
                         String dateValEnd = "";
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             per++;
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
@@ -312,7 +311,7 @@ public class DdiExportUtil {
                     if (DatasetFieldConstant.dateOfCollection.equals(fieldDTO.getTypeName())) {
                         String dateValStart = "";
                         String dateValEnd = "";
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             coll++;
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
@@ -340,7 +339,7 @@ public class DdiExportUtil {
             if ("geospatial".equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.geographicCoverage.equals(fieldDTO.getTypeName())) {
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.country.equals(next.getTypeName())) {
@@ -359,7 +358,7 @@ public class DdiExportUtil {
                         }
                     }
                     if (DatasetFieldConstant.geographicBoundingBox.equals(fieldDTO.getTypeName())) {
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.westLongitude.equals(next.getTypeName())) {
@@ -393,7 +392,7 @@ public class DdiExportUtil {
                 }
             }
         }
-        xmlw.writeEndElement(); //sumDscr     
+        xmlw.writeEndElement(); //sumDscr
     }
 
     private static void writeMultipleElement(XMLStreamWriter xmlw, String element, FieldDTO fieldDTO) throws XMLStreamException {
@@ -462,7 +461,7 @@ public class DdiExportUtil {
                     }
 
                     if (DatasetFieldConstant.keyword.equals(fieldDTO.getTypeName())) {
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String keywordValue = "";
                             String keywordVocab = "";
                             String keywordURI = "";
@@ -493,7 +492,7 @@ public class DdiExportUtil {
                         }
                     }
                     if (DatasetFieldConstant.topicClassification.equals(fieldDTO.getTypeName())) {
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String topicClassificationValue = "";
                             String topicClassificationVocab = "";
                             String topicClassificationURI = "";
@@ -525,7 +524,7 @@ public class DdiExportUtil {
                 }
             }
         }
-        xmlw.writeEndElement(); // subject       
+        xmlw.writeEndElement(); // subject
     }
 
     private static void writeAuthorsElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
@@ -539,7 +538,7 @@ public class DdiExportUtil {
                         xmlw.writeStartElement("rspStmt");
                         String authorName = "";
                         String authorAffiliation = "";
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.authorName.equals(next.getTypeName())) {
@@ -576,7 +575,7 @@ public class DdiExportUtil {
                         String datasetContactName = "";
                         String datasetContactAffiliation = "";
                         String datasetContactEmail = "";
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.datasetContactName.equals(next.getTypeName())) {
@@ -618,7 +617,7 @@ public class DdiExportUtil {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.producer.equals(fieldDTO.getTypeName())) {
 
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String producerName = "";
                             String producerAffiliation = "";
                             String producerAbbreviation = "";
@@ -681,7 +680,7 @@ public class DdiExportUtil {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.distributor.equals(fieldDTO.getTypeName())) {
                         xmlw.writeStartElement("distrbtr");
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String distributorName = "";
                             String distributorAffiliation = "";
                             String distributorAbbreviation = "";
@@ -737,7 +736,7 @@ public class DdiExportUtil {
             if ("citation".equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.publication.equals(fieldDTO.getTypeName())) {
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String pubString = "";
                             String citation = "";
                             String IDType = "";
@@ -793,7 +792,7 @@ public class DdiExportUtil {
                     if (DatasetFieldConstant.description.equals(fieldDTO.getTypeName())) {
                         String descriptionText = "";
                         String descriptionDate = "";
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.descriptionText.equals(next.getTypeName())) {
@@ -827,7 +826,7 @@ public class DdiExportUtil {
                     if (DatasetFieldConstant.grantNumber.equals(fieldDTO.getTypeName())) {
                         String grantNumber = "";
                         String grantAgency = "";
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.grantNumberValue.equals(next.getTypeName())) {
@@ -861,7 +860,7 @@ public class DdiExportUtil {
                     if (DatasetFieldConstant.otherId.equals(fieldDTO.getTypeName())) {
                         String otherId = "";
                         String otherIdAgency = "";
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.otherIdValue.equals(next.getTypeName())) {
@@ -895,7 +894,7 @@ public class DdiExportUtil {
                     if (DatasetFieldConstant.software.equals(fieldDTO.getTypeName())) {
                         String softwareName = "";
                         String softwareVersion = "";
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.softwareName.equals(next.getTypeName())) {
@@ -1032,9 +1031,9 @@ public class DdiExportUtil {
         }
     }
 
-    // TODO: 
-    // see if there's more information that we could encode in this otherMat. 
-    // contentType? Unfs and such? (in the "short" DDI that is being used for 
+    // TODO:
+    // see if there's more information that we could encode in this otherMat.
+    // contentType? Unfs and such? (in the "short" DDI that is being used for
     // harvesting *all* files are encoded as otherMats; even tabular ones.
     private static void createOtherMats(XMLStreamWriter xmlw, List<FileDTO> fileDtos, String dataverseUrl)
             throws XMLStreamException {
@@ -1057,7 +1056,7 @@ public class DdiExportUtil {
                 xmlw.writeCharacters(fileDTo.getDataFile().getFilename());
                 xmlw.writeEndElement(); // labl
                 writeFileDescription(xmlw, fileDTo);
-                // there's no readily available field in the othermat section 
+                // there's no readily available field in the othermat section
                 // for the content type (aka mime type); so we'll store it in this
                 // specially formatted notes section:
                 String contentType = fileDTo.getDataFile().getContentType();
@@ -1074,13 +1073,13 @@ public class DdiExportUtil {
         }
     }
 
-    // An alternative version of the createOtherMats method - this one is used 
-    // when a "full" DDI is being cooked; just like the fileDscr and data/var sections methods, 
+    // An alternative version of the createOtherMats method - this one is used
+    // when a "full" DDI is being cooked; just like the fileDscr and data/var sections methods,
     // it operates on the list of FileMetadata entities, not on File DTOs. This is because
-    // DTOs do not support "tabular", variable-level metadata yet. And we need to be able to 
+    // DTOs do not support "tabular", variable-level metadata yet. And we need to be able to
     // tell if this file is in fact tabular data - so that we know if it needs an
-    // otherMat, or a fileDscr section. 
-    // -- L.A. 4.5 
+    // otherMat, or a fileDscr section.
+    // -- L.A. 4.5
 
     private static void createOtherMatsFromFileMetadatas(XMLStreamWriter xmlw, List<FileMetadata> fileMetadatas, String dataverseUrl)
             throws XMLStreamException {
@@ -1111,7 +1110,7 @@ public class DdiExportUtil {
                     xmlw.writeCharacters(description);
                     xmlw.writeEndElement(); // txt
                 }
-                // there's no readily available field in the othermat section 
+                // there's no readily available field in the othermat section
                 // for the content type (aka mime type); so we'll store it in this
                 // specially formatted notes section:
                 String contentType = fileMetadata.getDataFile().getContentType();
@@ -1162,7 +1161,7 @@ public class DdiExportUtil {
     }
 
     private static void writeFullElementList(XMLStreamWriter xmlw, String name, List<String> values) throws XMLStreamException {
-        //For the simplest Elements we can 
+        //For the simplest Elements we can
         if (values != null && !values.isEmpty()) {
             for (String value : values) {
                 xmlw.writeStartElement(name);
@@ -1173,7 +1172,7 @@ public class DdiExportUtil {
     }
 
     private static void writeFullElement(XMLStreamWriter xmlw, String name, String value) throws XMLStreamException {
-        //For the simplest Elements we can 
+        //For the simplest Elements we can
         if (!StringUtilisEmpty(value)) {
             xmlw.writeStartElement(name);
             xmlw.writeCharacters(value);
@@ -1195,16 +1194,16 @@ public class DdiExportUtil {
         Files.write(Paths.get("/tmp/out.json"), datasetVersionAsJson.getBytes());
     }
 
-    // Methods specific to the tabular data ("<dataDscr>") section. 
-    // Note that these do NOT operate on DTO objects, but instead directly 
-    // on Dataverse DataVariable, DataTable, etc. objects. 
-    // This is because for this release (4.5) we are recycling the already available 
-    // code, and this is what we got. (We already have DTO objects for DataTable, 
-    // and DataVariable, etc., but the current version JsonPrinter.jsonAsDatasetDto() 
-    // does not produce JSON for these objects - it stops at DataFile. Eventually 
+    // Methods specific to the tabular data ("<dataDscr>") section.
+    // Note that these do NOT operate on DTO objects, but instead directly
+    // on Dataverse DataVariable, DataTable, etc. objects.
+    // This is because for this release (4.5) we are recycling the already available
+    // code, and this is what we got. (We already have DTO objects for DataTable,
+    // and DataVariable, etc., but the current version JsonPrinter.jsonAsDatasetDto()
+    // does not produce JSON for these objects - it stops at DataFile. Eventually
     // we want all of our objects to be exportable as JSON, and then all the exports
-    // can go through the same DTO state... But we don't have time for it now; 
-    // plus, the structure of file-level metadata is currently being re-designed, 
+    // can go through the same DTO state... But we don't have time for it now;
+    // plus, the structure of file-level metadata is currently being re-designed,
     // so we probably should not invest any time into it right now). -- L.A. 4.5
 
     private static void createDataDscr(XMLStreamWriter xmlw, DatasetVersion datasetVersion) throws XMLStreamException {
@@ -1215,7 +1214,7 @@ public class DdiExportUtil {
 
         boolean tabularData = false;
 
-        // we're not writing the opening <dataDscr> tag until we find an actual 
+        // we're not writing the opening <dataDscr> tag until we find an actual
         // tabular datafile.
         for (FileMetadata fileMetadata : datasetVersion.getFileMetadatas()) {
             DataFile dataFile = fileMetadata.getDataFile();

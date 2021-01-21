@@ -35,7 +35,9 @@ public class DCTermsExporter implements Exporter {
 
     @Override
     public String getDisplayName() {
-        return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dublinCore") != null ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dublinCore") : "Dublin Core (DCTERMS)";
+        return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dublinCore") != null
+                ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dublinCore")
+                : "Dublin Core (DCTERMS)";
     }
 
     @Override
@@ -43,11 +45,10 @@ public class DCTermsExporter implements Exporter {
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
             JsonObject datasetAsJson = JsonPrinter.jsonAsDatasetDto(version, excludeEmailFromExport)
                     .build();
-
             DublinCoreExportUtil.datasetJson2dublincore(datasetAsJson, byteArrayOutputStream, DublinCoreExportUtil.DC_FLAVOR_DCTERMS);
             return byteArrayOutputStream.toString(StandardCharsets.UTF_8.name());
         } catch (XMLStreamException | IOException xse) {
-            throw new ExportException("Caught XMLStreamException performing DCTERMS export");
+            throw new ExportException("Caught XMLStreamException performing DCTERMS export", xse);
         }
     }
 

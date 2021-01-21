@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.api.dto;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author ellenk
@@ -30,19 +30,19 @@ public class MetadataBlockDTO {
     }
 
     public void addField(FieldDTO newField) {
-        FieldDTO current = getField(newField.typeName);
+        FieldDTO current = getField(newField.getTypeName());
         // If there is no Field in this Metadatablock with the typeName,
         // then add it to the list
         if (current == null) {
             fields.add(newField);
             // Else, add/replace the value in the new field to the current field
         } else {
-            if (current.multiple) {
-                if (newField.typeClass.equals("compound")) {
-                    ArrayList<HashSet<FieldDTO>> currentValue = current.getMultipleCompound();
+            if (current.getMultiple()) {
+                if ("compound".equals(newField.getTypeClass())) {
+                    List<Set<FieldDTO>> currentValue = current.getMultipleCompound();
                     currentValue.addAll(newField.getMultipleCompound());
                     current.setMultipleCompound(currentValue);
-                } else if (newField.typeClass.equals("controlledVocabulary")) {
+                } else if ("controlledVocabulary".equals(newField.getTypeClass())) {
                     List<String> currentValue = current.getMultipleVocab();
                     currentValue.addAll(newField.getMultipleVocab());
                     current.setMultipleVocab(currentValue);
@@ -52,9 +52,9 @@ public class MetadataBlockDTO {
                     current.setMultiplePrimitive(currentValue);
                 }
             } else {
-                // If this Field doesn't allow multiples, just replace the value 
+                // If this Field doesn't allow multiples, just replace the value
                 // with the new field value.
-                current.value = newField.value;
+                current.setValue(newField.getValue());
             }
         }
     }

@@ -131,7 +131,7 @@ public class JsonParser {
 
         /*  We decided that subject is not user set, but gotten from the subject of the dataverse's
             datasets - leavig this code in for now, in case we need to go back to it at some point
-        
+
         if (jobj.containsKey("dataverseSubjects")) {
             List<ControlledVocabularyValue> dvSubjectList = new LinkedList<>();
             DatasetFieldType subjectType = datasetFieldSvc.findByName(DatasetFieldConstant.subject);
@@ -479,7 +479,7 @@ public class JsonParser {
             dataFile.setChecksumValue(md5);
         }
 
-        // TODO: 
+        // TODO:
         // unf (if available)... etc.?
 
         dataFile.setContentType(contentType);
@@ -499,10 +499,10 @@ public class JsonParser {
      * @throws JsonParseException
      */
     private List<DatasetField> remapGeographicCoverage(CompoundVocabularyException ex) throws JsonParseException {
-        List<HashSet<FieldDTO>> geoCoverageList = new ArrayList<>();
+        List<Set<FieldDTO>> geoCoverageList = new ArrayList<>();
         // For each exception, create HashSet of otherGeographic Coverage and add to list
         for (ControlledVocabularyException vocabEx : ex.getExList()) {
-            HashSet<FieldDTO> set = new HashSet<>();
+            Set<FieldDTO> set = new HashSet<>();
             set.add(FieldDTO.createPrimitiveFieldDTO(DatasetFieldConstant.otherGeographicCoverage, vocabEx.getStrValue()));
             geoCoverageList.add(set);
         }
@@ -537,7 +537,7 @@ public class JsonParser {
         if (json == null) {
             return null;
         }
-        
+
         DatasetFieldType type = datasetFieldSvc.findByNameOpt(json.getString("typeName", ""));
 
 
@@ -617,7 +617,7 @@ public class JsonParser {
                         if (!compoundType.getChildDatasetFieldTypes().contains(childField.getDatasetFieldType())) {
                             throw new JsonParseException("field " + childField.getDatasetFieldType().getName() + " is not a child of " + compoundType.getName());
                         }
-                        
+
                         parentField.getDatasetFieldsChildren().add(childField);
                         childField.setDatasetFieldParent(parentField);
                     }
@@ -630,7 +630,7 @@ public class JsonParser {
             JsonObject value = json.getJsonObject("value");
             DatasetField parentField = new DatasetField();
             parentField.setDatasetFieldType(compoundType);
-            
+
             for (String key : value.keySet()) {
                 JsonObject childFieldJson = value.getJsonObject(key);
                 DatasetField childField = null;
@@ -741,7 +741,7 @@ public class JsonParser {
                     if (cvv == null) {
                         throw new ControlledVocabularyException("Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'", cvvType, strValue);
                     }
-                    // Only add value to the list if it is not a duplicate 
+                    // Only add value to the list if it is not a duplicate
                     if (strValue.equals("Other")) {
                         System.out.println("vals = " + vals + ", contains: " + vals.contains(cvv));
                     }

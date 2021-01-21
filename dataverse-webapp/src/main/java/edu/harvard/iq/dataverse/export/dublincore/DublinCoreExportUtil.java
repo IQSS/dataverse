@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.export.dublincore;
 
 import com.google.gson.Gson;
@@ -20,11 +15,13 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.OutputStream;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author skraffmi
@@ -84,10 +81,10 @@ public class DublinCoreExportUtil {
     }
 
     //UPDATED by rmo-cdsp:
-    // If the requested flavor is "OAI_DC" (the minimal, original 15 field format), 
+    // If the requested flavor is "OAI_DC" (the minimal, original 15 field format),
     // we shuld NOT be exporting the extended, DCTERMS fields (aka not createDC)
     // - such as, for example, "dateSubmitted" ... (4.5.1?)
-    // -- L.A. 
+    // -- L.A.
     // but use createOAIDC instead (the minimal, original 15 field format)
 
     private static void createDC(XMLStreamWriter xmlw, DatasetDTO datasetDto, String dcFlavor) throws XMLStreamException {
@@ -101,7 +98,7 @@ public class DublinCoreExportUtil {
 
         xmlw.writeStartElement(dcFlavor + ":" + "identifier");
         xmlw.writeCharacters(globalId.toURL().toString());
-        xmlw.writeEndElement(); // decterms:identifier       
+        xmlw.writeEndElement(); // decterms:identifier
 
         writeAuthorsElement(xmlw, version, dcFlavor);
 
@@ -151,7 +148,7 @@ public class DublinCoreExportUtil {
 
         xmlw.writeStartElement(dcFlavor + ":" + "identifier");
         xmlw.writeCharacters(globalId.toURL().toString());
-        xmlw.writeEndElement(); // decterms:identifier       
+        xmlw.writeEndElement(); // decterms:identifier
 
         writeAuthorsElement(xmlw, version, dcFlavor); //creator
 
@@ -186,7 +183,7 @@ public class DublinCoreExportUtil {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.author.equals(fieldDTO.getTypeName())) {
                         String authorName = "";
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.authorName.equals(next.getTypeName())) {
@@ -213,7 +210,7 @@ public class DublinCoreExportUtil {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.description.equals(fieldDTO.getTypeName())) {
                         String descriptionText = "";
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.descriptionText.equals(next.getTypeName())) {
@@ -250,7 +247,7 @@ public class DublinCoreExportUtil {
                     }
 
                     if (DatasetFieldConstant.keyword.equals(fieldDTO.getTypeName())) {
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String keywordValue = "";
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
@@ -277,7 +274,7 @@ public class DublinCoreExportUtil {
             if ("citation".equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.publication.equals(fieldDTO.getTypeName())) {
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String pubString = "";
                             String citation = "";
                             String IDType = "";
@@ -321,7 +318,7 @@ public class DublinCoreExportUtil {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.contributor.equals(fieldDTO.getTypeName())) {
                         String contributorName = "";
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.contributorName.equals(next.getTypeName())) {
@@ -349,7 +346,7 @@ public class DublinCoreExportUtil {
                     if (DatasetFieldConstant.timePeriodCovered.equals(fieldDTO.getTypeName())) {
                         String dateValStart = "";
                         String dateValEnd = "";
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.timePeriodCoveredStart.equals(next.getTypeName())) {
@@ -370,7 +367,7 @@ public class DublinCoreExportUtil {
                     if (DatasetFieldConstant.dateOfCollection.equals(fieldDTO.getTypeName())) {
                         String dateValStart = "";
                         String dateValEnd = "";
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.dateOfCollectionStart.equals(next.getTypeName())) {
@@ -400,7 +397,7 @@ public class DublinCoreExportUtil {
             if ("geospatial".equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.geographicCoverage.equals(fieldDTO.getTypeName())) {
-                        for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.country.equals(next.getTypeName())) {
@@ -452,7 +449,9 @@ public class DublinCoreExportUtil {
             MetadataBlockDTO value = entry.getValue();
             for (FieldDTO fieldDTO : value.getFields()) {
                 if (datasetFieldTypeName.equals(fieldDTO.getTypeName())) {
-                    return fieldDTO.getMultiplePrimitive();
+                    return fieldDTO.getMultiple()
+                            ? fieldDTO.getMultiplePrimitive()
+                            : Stream.of(fieldDTO.getSinglePrimitive()).collect(Collectors.toList());
                 }
             }
         }
@@ -460,7 +459,7 @@ public class DublinCoreExportUtil {
     }
 
     private static void writeFullElementList(XMLStreamWriter xmlw, String name, List<String> values) throws XMLStreamException {
-        //For the simplest Elements we can 
+        //For the simplest Elements we can
         if (values != null && !values.isEmpty()) {
             for (String value : values) {
                 xmlw.writeStartElement(name);
@@ -472,7 +471,7 @@ public class DublinCoreExportUtil {
 
 
     private static void writeFullElement(XMLStreamWriter xmlw, String name, String value) throws XMLStreamException {
-        //For the simplest Elements we can 
+        //For the simplest Elements we can
         if (!StringUtilisEmpty(value)) {
             xmlw.writeStartElement(name);
             xmlw.writeCharacters(value);
