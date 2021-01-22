@@ -10,90 +10,21 @@ A refactoring has greatly improved Saved Search performance in the application. 
 
 A previous version of dataverse changed the indexing logic so that when a user links a dataverse, its children are also indexed as linked. This means that the children to not need to be separately linked, and in this version we removed the logic that creates a saved search to create those links when a dataverse is linked.
 
-We recommend cleaning up the db to a) remove these saved searches and b) remove the links for the objects. We can do this via a few queries.
+We recommend cleaning up the db to a) remove these saved searches and b) remove the links for the objects. We can do this via a few queries, which are available in the folder here:
+
+https://github.com/IQSS/dataverse/raw/develop/scripts/issues/7398/
+
+There are four queries available, and they should be run in this order:
+
+- ss_for_deletion.txt to identify the Saved Searches to be deleted
+- delete_ss.txt to delete the Saved Searches identified in the previous query
+- dld_for_deletion.txt to identify the linked datasets and dataverses to be deleted
+- delete_dld.txt to delete the linked datasets and dataverses identified in the previous query
 
 Note: removing these saved searches and links should not affect what users will see as linked due to the aforementioned indexing change. Similarly, not removing these saved searches and links should not affect anything, but is a cleanup of unnecessary rows in the database.
 
-------------------------------------------
+## Additional Upgrade Instructions
 
-First clean up the saved searches:
+X\. (Optional, but recommended) DB Cleanup
 
--- this query will show you the saved searches that will get deleted
-
-select ss.id, ss.definitionpoint_id, dld.dataverse_id, ssfq.filterquery
-from savedsearch ss, savedsearchfilterquery ssfq, dataverselinkingdataverse dld
-where ss.id = ssfq.savedsearch_id
-and ss.definitionpoint_id = dld.linkingdataverse_id
-and dld.dataverse_id = rtrim(reverse(split_part(reverse(ssfq.filterquery),'/',1)),'"')::integer
-and ss.query='*'
-and ssfq.filterquery like 'subtreePaths%'
-order by ss.definitionpoint_id;
-
-
--- these queries will delete them
-
-begin;
-
-create temporary table delete_ss on commit drop as (
-Select ss.id
-from savedsearch ss, savedsearchfilterquery ssfq, dataverselinkingdataverse dld
-where ss.id = ssfq.savedsearch_id
-and ss.definitionpoint_id = dld.linkingdataverse_id
-and dld.dataverse_id = rtrim(reverse(split_part(reverse(ssfq.filterquery),'/',1)),'"')::integer
-and ss.query='*'
-and ssfq.filterquery like 'subtreePaths%'
-);
-
-delete from savedsearchfilterquery where savedsearch_id in (select id from delete_ss);
-delete from savedsearch where id in (select id from delete_ss);
-
-commit;
-
-------------------------------------------
-
-Then clean up the linked datasets and dataverses:
-
--- these queries will show you the linked objects that will get deleted
-
-select dld.dataset_id, dvo.owner_id, dld.linkingdataverse_id, 
-dvld.dataverse_id, dvld.linkingdataverse_id  
-from datasetlinkingdataverse dld, dvobject dvo, dataverselinkingdataverse dvld
-where dld.dataset_id = dvo.id
-and dld.linkingdataverse_id = dvld.linkingdataverse_id
-and dvo.owner_id = dvld.dataverse_id
-order by dld.linkingdataverse_id;
-
-select dld.dataverse_id, dvo.owner_id, dld.linkingdataverse_id, 
-dvld.dataverse_id, dvld.linkingdataverse_id  
-from dataverselinkingdataverse dld, dvobject dvo, dataverselinkingdataverse dvld
-where dld.dataverse_id = dvo.id
-and dld.linkingdataverse_id = dvld.linkingdataverse_id
-and dvo.owner_id = dvld.dataverse_id
-order by dld.linkingdataverse_id;
-
-
--- these queries will delete them
-
-begin;
-
-delete from datasetlinkingdataverse where id in (
-select dld.id
-from datasetlinkingdataverse dld, dvobject dvo, dataverselinkingdataverse dvld
-where dld.dataset_id = dvo.id
-and dld.linkingdataverse_id = dvld.linkingdataverse_id
-and dvo.owner_id = dvld.dataverse_id
-);
-
-delete from dataverselinkingdataverse where id in (
-select dld.id
-from dataverselinkingdataverse dld, dvobject dvo, dataverselinkingdataverse dvld
-where dld.dataverse_id = dvo.id
-and dld.linkingdataverse_id = dvld.linkingdataverse_id
-and dvo.owner_id = dvld.dataverse_id
-);
-
-commit;
-
-## Upgrade Instructions
-
-X\. Add as optional upgrade step.
+Perform the DB Cleanup for Saved Searches and Linked Objects, summarized in the "Notes for Dataverse Installation Administrators" section above.
