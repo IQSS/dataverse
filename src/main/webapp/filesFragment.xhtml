@@ -112,8 +112,8 @@
                         <p:remoteCommand name="submitsearch" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"/>
 
                         <span class="input-group-btn">
-                            <p:commandLink styleClass="btn btn-default" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
-                                <span class="glyphicon glyphicon-search"></span> #{bundle['dataverse.search.btn.find']}
+                            <p:commandLink title="#{bundle['dataverse.search.btn.find']}" styleClass="btn btn-default" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
+                                <span class="glyphicon glyphicon-search no-text"/>
                             </p:commandLink>
                         </span>
                     </div>
