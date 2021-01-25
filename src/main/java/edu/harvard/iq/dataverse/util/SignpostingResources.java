@@ -211,17 +211,24 @@ public class SignpostingResources {
                 .add("item", items).add("describedby", mediaTypes);
         linkset.add(mandatory);
 
-        // prepare type value
-        // TODO: useDefaultFileType should always be true for now, when we know where we can get actual file type
-        //      we can set the switch to false and fetch the actual type
-        String fileType = useDefaultFileType ? defaultFileTypeValue : "";
-        for (FileMetadata fm:fms){
-            DataFile df = fm.getDataFile();
-            JsonObjectBuilder itemAnchor = jsonObjectBuilder().add("anchor", getPublicDownloadUrl(df));
-            itemAnchor.add("collection", Json.createArrayBuilder().add(jsonObjectBuilder()
-            .add("href", landingPage)).add(jsonObjectBuilder().add("type",fileType)));
-            linkset.add(itemAnchor);
+        if (useDefaultFileType) {
+            for (FileMetadata fm:fms){
+                DataFile df = fm.getDataFile();
+                JsonObjectBuilder itemAnchor = jsonObjectBuilder().add("anchor", getPublicDownloadUrl(df));
+                itemAnchor.add("collection", Json.createArrayBuilder().add(jsonObjectBuilder()
+                        .add("href", landingPage)).add(jsonObjectBuilder().add("type", defaultFileTypeValue)));
+                linkset.add(itemAnchor);
+            }
+        } else {
+            for (FileMetadata fm:fms){
+                DataFile df = fm.getDataFile();
+                JsonObjectBuilder itemAnchor = jsonObjectBuilder().add("anchor", getPublicDownloadUrl(df));
+                itemAnchor.add("collection", Json.createArrayBuilder().add(jsonObjectBuilder()
+                        .add("href", landingPage)));
+                linkset.add(itemAnchor);
+            }
         }
+
         return linkset;
     }
 
