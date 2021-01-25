@@ -39,11 +39,7 @@
         <mockito.version>2.28.2</mockito.version>
         <flyway.version>5.2.4</flyway.version>
         <jhove.version>1.20.1</jhove.version>
-        <!--
-        Jacoco 0.8.2 seems to break Netbeans code coverage integration so we'll use 0.8.1 instead.
-        See https://github.com/jacoco/jacoco/issues/772 for discussion of how the XML changed.
-        -->
-        <jacoco.version>0.8.1</jacoco.version>
+        <jacoco.version>0.8.6</jacoco.version>
     </properties>
     <pluginRepositories>
         <pluginRepository>
@@ -817,27 +813,6 @@
         </profile>
         <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
       <profile>
-        <id>Java8</id>
-        <activation>
-          <jdk>1.8</jdk>
-        </activation>
-        <build>
-          <plugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-compiler-plugin</artifactId>
-              <version>3.8.0</version>
-              <configuration>
-                <source>1.8</source>
-                <target>1.8</target>
-                <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
-                <compilerArgument>${compilerArgument}</compilerArgument>
-              </configuration>
-            </plugin>
-          </plugins>
-        </build>
-      </profile>
-      <profile>
         <id>Java9Plus</id>
         <activation>
           <jdk>[1.9</jdk>
@@ -849,7 +824,7 @@
               <artifactId>maven-compiler-plugin</artifactId>
               <version>3.8.0</version>
               <configuration>
-                <release>8</release>
+                <release>11</release>
                 <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
                 <compilerArgument>${compilerArgument}</compilerArgument>
               </configuration>
