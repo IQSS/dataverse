@@ -1150,11 +1150,6 @@ public class Access extends AbstractApiBean {
             return error(FORBIDDEN, "User not authorized to edit the dataset.");
         }
 
-        if (!dataFile.isTabularData()) {
-            return error(BAD_REQUEST, "Not a tabular DataFile (db id=" + fileId + ")");
-        }
-         
-
         AuxiliaryFile saved = auxiliaryFileService.processAuxiliaryFile(fileInputStream, dataFile, formatTag, formatVersion, origin, isPublic);
       
         if (saved!=null) {
