@@ -14,7 +14,6 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -68,20 +67,15 @@ public class SolrIndexServiceBean {
 
         List<PermissionsSolrDoc> definitionPoints = solrDocFactory.determinePermissionsDocsOnSelfAndChildren(definitionPoint);
 
-        List<String> updatePermissionTimeSuccessStatus = new ArrayList<>();
         Set<Long> affectedDvObjectIds = collectDvObjectIds(definitionPoints);
         
         try {
             persistToSolr(definitionPoints);
-            
-            for (long dvObjectId : affectedDvObjectIds) {
-                dvObjectService.updatePermissionIndexTime(dvObjectId);
-                updatePermissionTimeSuccessStatus.add(dvObjectId + ":" + "success");
-            }
-            
+
+            dvObjectService.updatePermissionIndexTime(affectedDvObjectIds);
+
             return new IndexResponse("Number of dvObject permissions indexed for " + definitionPoint
-                    + " (updatePermissionTimeSuccessful:" + updatePermissionTimeSuccessStatus
-                    + "): " + affectedDvObjectIds.size());
+                    + " (is:" + affectedDvObjectIds.size());
             
         } catch (SolrServerException | IOException ex) {
             return new IndexResponse("problem indexing");
@@ -115,9 +109,7 @@ public class SolrIndexServiceBean {
         try {
             persistToSolr(definitionPoints);
             
-            for (Long dvObjectId : affectedDvObjectIds) {
-                dvObjectService.updatePermissionIndexTime(dvObjectId);
-            }
+            dvObjectService.updatePermissionIndexTime(affectedDvObjectIds);
             return new IndexResponse("indexed all permissions");
         } catch (SolrServerException | IOException ex) {
             return new IndexResponse("problem indexing");

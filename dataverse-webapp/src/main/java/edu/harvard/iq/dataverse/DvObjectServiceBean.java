@@ -1,11 +1,10 @@
 package edu.harvard.iq.dataverse;
 
-import org.apache.commons.lang.StringUtils;
-import org.ocpsoft.common.util.Strings;
-
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.DvObjectContainer;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
+import org.apache.commons.lang.StringUtils;
+import org.ocpsoft.common.util.Strings;
 
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -16,6 +15,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -142,6 +142,17 @@ public class DvObjectServiceBean implements java.io.Serializable {
             logger.log(Level.FINE, "Unable to update permission index time on DvObject with id of {0}", dvObjectId);
         }
         return rowsAffected;
+    }
+
+    /**
+     * Updates permission index time in bulk so it is more performant.
+     */
+    public int updatePermissionIndexTime(Collection<Long> dvObjectIds) {
+
+        return em.createQuery("UPDATE DvObject o SET o.permissionIndexTime=:currentTime WHERE o.id IN :ids")
+                 .setParameter("ids", dvObjectIds)
+                 .setParameter("currentTime", new Timestamp(new Date().getTime()))
+                 .executeUpdate();
     }
 
     @TransactionAttribute(REQUIRES_NEW)
