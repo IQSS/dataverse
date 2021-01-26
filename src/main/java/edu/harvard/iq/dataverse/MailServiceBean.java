@@ -153,15 +153,11 @@ public class MailServiceBean implements java.io.Serializable {
                 }
 
                 try {
-                   System.out.print("after set Text");
-                   System.out.print(msg.getContent().toString());
                     Transport.send(msg, recipients);
                     sent = true;
                 } catch (SMTPSendFailedException ssfe) {
                     logger.warning("Failed to send mail to: " + to);
                     logger.warning("SMTPSendFailedException Message: " + ssfe);
-                } catch (IOException io){
-                    System.out.print("catching io exception: " + io.getMessage());
                 }
             } else {
                 logger.fine("Skipping sending mail to " + to + ", because the \"no-reply\" address not set (" + Key.SystemEmail + " setting).");
