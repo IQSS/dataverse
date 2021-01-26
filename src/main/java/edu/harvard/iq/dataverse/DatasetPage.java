@@ -5098,15 +5098,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     
-    public FileDownloadHelper getFileDownloadHelper() {
-        return fileDownloadHelper;
-    }
-
-    public void setFileDownloadHelper(FileDownloadHelper fileDownloadHelper) {
-        this.fileDownloadHelper = fileDownloadHelper;
-    }
-    
-    
+    // todo: we should be able to remove - this is passed in the html pages to other fragments, but they could just access this service bean directly.
     public FileDownloadServiceBean getFileDownloadService() {
         return fileDownloadService;
     }
