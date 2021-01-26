@@ -2462,13 +2462,18 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                     } else {
 
                         // calculate mimeType
+                        //logger.info(" JC Step 0 Supplied type: " + fileName ) ;
+                        //logger.info(" JC Step 1 Supplied type: " + suppliedContentType ) ;
                         String finalType = StringUtils.isBlank(suppliedContentType) ? FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT : suppliedContentType;
+                        //logger.info(" JC Step 2 finalType: " + finalType ) ;
                         String type = FileUtil.determineFileTypeByExtension(fileName);
+                        //logger.info(" JC Step 3 type by fileextension: " + type ) ;
                         if (!StringUtils.isBlank(type)) {
                             //Use rules for deciding when to trust browser supplied type
-                            if (FileUtil.useRecognizedType(finalType, type)) {
+                            //if (FileUtil.useRecognizedType(finalType, type)) {
                                 finalType = type;
-                            }
+                                //logger.info(" JC Step 4 type after useRecognized function : " + finalType ) ;
+                            //}
                             logger.info("Supplied type: " + suppliedContentType + ", finalType: " + finalType);
                         }
 
@@ -2567,11 +2572,11 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                 logger.info(" ******** TEST  the datafile id is = " + dataFile.getId() + " =  " + dataFile.getDisplayName());
             }
 
-            msg("******* pre ingest start");
+            msg("******* pre ingest start in globus API");
 
             ingestService.startIngestJobsForDataset(dataset, (AuthenticatedUser) authUser);
 
-            msg("******* post ingest start");
+            msg("******* post ingest start in globus API");
 
         } catch (Exception e) {
             String message = e.getMessage();
