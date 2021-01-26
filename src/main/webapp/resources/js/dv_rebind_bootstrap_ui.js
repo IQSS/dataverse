@@ -42,8 +42,8 @@ function bind_bsui_components(){
     }
     
     // clipboard.js copy btn
-    var clipboard = new Clipboard('button.btn-copy, span.checksum-truncate');
-
+    var clipboard = new ClipboardJS('button.btn-copy, span.checksum-truncate');
+    
     clipboard.on('success', function (e) {
         console.log(e);
     });
