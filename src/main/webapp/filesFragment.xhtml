@@ -120,27 +120,19 @@
                     </div>
                 </div>
                 <div class="col-xs-7 text-right">
-                    <p:outputPanel id="filesButtons">
-                        <div jsf:id="uploadComputeBlock" class="button-block pull-right no-margin-top"
-                             jsf:rendered="#{!(DatasetPage.editMode == 'FILE' or DatasetPage.editMode == 'CREATE')
-                                             and (DatasetPage.canUpdateDataset()
-                                             or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
-                            <!-- DOWNLOAD DCM SCRIPT BUTTON -->
-                            <h:commandLink id="rsyncDLFF" actionListener="#{DatasetPage.downloadRsyncScript()}" styleClass="btn btn-default"
-                                           rendered="#{DatasetPage.sessionUserAuthenticated
-                                                       and DatasetPage.canUpdateDataset() and empty DatasetPage.workingVersion.fileMetadatas
-                                                       and !widgetWrapper.widgetView and DatasetPage.lockedDueToDcmUpload}">
-                                <span class="glyphicon glyphicon-download-alt"/> <h:outputText value=" #{bundle['file.rsyncUpload.step2.downloadScriptButton']}"/>
-                            </h:commandLink>
-                            <!-- UPLOAD FILES BUTTON -->
-                            <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
-                                          type="button" styleClass="btn btn-default btn-access #{DatasetPage.lockedFromEdits ? 'disabled' : ''}"
-                                          disabled="#{DatasetPage.lockedFromEdits}" rendered="#{DatasetPage.sessionUserAuthenticated 
-                                                      and DatasetPage.canUpdateDataset()
-                                                      and !widgetWrapper.widgetView}">
-                                <span class="glyphicon glyphicon-plus"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
-                            </h:outputLink>
-                        </div>
+                    <p:outputPanel id="filesButtons" class="button-block no-margin-top"
+                                    rendered="#{DatasetPage.sessionUserAuthenticated and DatasetPage.canUpdateDataset() and !widgetWrapper.widgetView}">
+                        <!-- DOWNLOAD DCM SCRIPT BUTTON -->
+                        <h:commandLink id="rsyncDLFF" actionListener="#{DatasetPage.downloadRsyncScript()}" styleClass="btn btn-default"
+                                       rendered="#{!empty DatasetPage.workingVersion.fileMetadatas and DatasetPage.lockedDueToDcmUpload}">
+                            <span class="glyphicon glyphicon-download-alt"/> <h:outputText value=" #{bundle['file.rsyncUpload.step2.downloadScriptButton']}"/>
+                        </h:commandLink>
+                        <!-- UPLOAD FILES BUTTON -->
+                        <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
+                                      type="button" styleClass="btn btn-default btn-access #{DatasetPage.lockedFromEdits ? 'disabled' : ''}"
+                                      disabled="#{DatasetPage.lockedFromEdits}">
+                            <span class="glyphicon glyphicon-plus"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
+                        </h:outputLink>
                     </p:outputPanel>
                 </div>
             </div>
@@ -543,7 +535,6 @@
                     </ul>
                 </div>
 
-                <!-- TO-DO NEW FILE OPTIONS RENDER LOGIC -->
                 <!-- File Options -->
                 <div class="btn-group" jsf:rendered="#{!widgetWrapper.widgetView 
                                                         and DatasetPage.sessionUserAuthenticated 
@@ -571,9 +562,7 @@
                     </ul>
                 </div>
                 <!-- END: File Options -->
-
             </div>
-
         </p:column>      
     </p:dataTable>
 
