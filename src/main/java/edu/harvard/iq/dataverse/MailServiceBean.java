@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -122,8 +123,12 @@ public class MailServiceBean implements java.io.Serializable {
 
         boolean sent = false;
         String rootDataverseName = dataverseService.findRootDataverse().getName();
-        InternetAddress systemAddress = getSystemAddress();
-        String body = messageText + BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName)));
+        InternetAddress systemAddress = getSystemAddress(); 
+        
+        String body = messageText
+                + (isHtmlContent ? BundleUtil.getStringFromBundle("notification.email.closing.html", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName)))
+                        : BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName))));
+       
         logger.fine("Sending email to " + to + ". Subject: <<<" + subject + ">>>. Body: " + body);
         try {
             MimeMessage msg = new MimeMessage(session);
@@ -148,11 +153,15 @@ public class MailServiceBean implements java.io.Serializable {
                 }
 
                 try {
+                   System.out.print("after set Text");
+                   System.out.print(msg.getContent().toString());
                     Transport.send(msg, recipients);
                     sent = true;
                 } catch (SMTPSendFailedException ssfe) {
                     logger.warning("Failed to send mail to: " + to);
                     logger.warning("SMTPSendFailedException Message: " + ssfe);
+                } catch (IOException io){
+                    System.out.print("catching io exception: " + io.getMessage());
                 }
             } else {
                 logger.fine("Skipping sending mail to " + to + ", because the \"no-reply\" address not set (" + Key.SystemEmail + " setting).");
@@ -541,7 +550,7 @@ public class MailServiceBean implements java.io.Serializable {
 
             case INGESTCOMPLETED:
                 dataset = (Dataset) targetObject;
-
+                messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
                 String ingestedCompletedMessage = messageText + BundleUtil.getStringFromBundle("notification.ingest.completed", Arrays.asList(
                         systemConfig.getDataverseSiteUrl(),
                         dataset.getGlobalIdString(),
@@ -552,7 +561,7 @@ public class MailServiceBean implements java.io.Serializable {
                 return ingestedCompletedMessage;
             case INGESTCOMPLETEDWITHERRORS:
                 dataset = (Dataset) targetObject;
-
+                messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
                 String ingestedCompletedWithErrorsMessage = messageText + BundleUtil.getStringFromBundle("notification.ingest.completedwitherrors", Arrays.asList(
                         systemConfig.getDataverseSiteUrl(),
                         dataset.getGlobalIdString(),
