@@ -12,6 +12,15 @@
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     <o:importFunctions type="java.lang.Math" />
     <p:remoteCommand name="refreshPaginator" action="#{DatasetPage.refreshPaginator()}" process="@this" update="@form" />
+    
+    <ui:remove>
+    <!--
+    This fragment is included only on the dataset pg, empty editMode render logic
+    
+    Parameters:
+    fileDownloadHelper - object from containing page backing bean
+    -->            
+    </ui:remove>
 
     <!-- Toggle Files Display Components -->
     <div jsf:id="filesDisplayToggleBlock" jsf:rendered="#{DatasetPage.fileTreeViewRequired}" class="row">

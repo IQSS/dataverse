@@ -1056,10 +1056,7 @@ public final class DatasetVersionDifference {
         }
         
         // File restrictions
-        value1 = fm1.isRestricted() ? BundleUtil.getStringFromBundle("restricted") : BundleUtil.getStringFromBundle("public");
-        value2 = fm2.isRestricted() ? BundleUtil.getStringFromBundle("restricted") : BundleUtil.getStringFromBundle("public");
-        
-        return !value1.equals(value2);
+        return fm1.isRestricted() != fm2.isRestricted();
     }
 
     private datasetFileDifferenceItem selectFileMetadataDiffs(FileMetadata fm1, FileMetadata fm2) {
