@@ -521,6 +521,9 @@
                                 //]]>
                             </script>
                             <div class="btn-toolbar" role="toolbar">
+                                <button class="btn btn-default btn-copy" data-clipboard-action="copy" data-clipboard-target="#apiToken code">
+                                    Copy to Clipboard
+                                </button>
                                 <button class="btn btn-default" jsf:action="#{ApiTokenPage.generate()}">
                                     #{ApiTokenPage.checkForApiToken() ? bundle['apitoken.regenerateBtn'] : bundle['apitoken.generateBtn']}
                                 </button>

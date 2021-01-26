@@ -40,6 +40,16 @@ function bind_bsui_components(){
         var dialog_id = this.jq.attr('id').split(/[:]+/).pop();
         handleResizeDialog(dialog_id);
     }
+    
+    // clipboard.js copy btn
+    var clipboard = new Clipboard('button.btn-copy, span.checksum-truncate');
+
+    clipboard.on('success', function (e) {
+        console.log(e);
+    });
+    clipboard.on('error', function (e) {
+        console.log(e);
+    });
 }
 
 function bind_tooltip_popover(){
