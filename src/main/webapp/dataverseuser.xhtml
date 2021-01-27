@@ -521,7 +521,7 @@
                                 //]]>
                             </script>
                             <div class="btn-toolbar" role="toolbar">
-                                <button class="btn btn-default btn-copy" data-clipboard-action="copy" data-clipboard-target="#apiToken code" type="button">
+                                <button class="btn btn-default btn-copy" data-clipboard-action="copy" data-clipboard-target="#apiToken code" type="button" jsf:rendered="${!ApiTokenPage.checkForApiToken() and !ApiTokenPage.tokenIsExpired()}">
                                     #{bundle['copyClipboard']}
                                 </button>
                                 <button class="btn btn-default" jsf:action="#{ApiTokenPage.generate()}">
