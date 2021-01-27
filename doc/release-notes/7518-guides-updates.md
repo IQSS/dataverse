@@ -1,7 +1,5 @@
-## Upgrade Steps
+## Guides Updates
 
-In addition to mapping friendly names to these file types, the types are further mapped to aggregate file types facets on the homepage. A full reindex is required for the facets to be refreshed.
+The Dataverse Software Guides have been updated to follow recent changes to how different terms are used across the Dataverse Project. For more information, see Mercè's note the community:
 
-Kick off full reindex
-
-http://guides.dataverse.org/en/4.20/admin/solr-search-index.html
+<https://groups.google.com/g/dataverse-community/c/pD-aFrpXMPo>
