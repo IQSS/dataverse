@@ -575,6 +575,16 @@ public class FileMetadata implements Serializable {
         }
     };
     
+    public static final Comparator<FileMetadata> compareByFullPath = new Comparator<FileMetadata>() {
+        @Override
+        public int compare(FileMetadata o1, FileMetadata o2) {
+            String folder1 = StringUtil.isEmpty(o1.getDirectoryLabel()) ? "" : o1.getDirectoryLabel().toUpperCase() + "/";
+            String folder2 = StringUtil.isEmpty(o2.getDirectoryLabel()) ? "" : o2.getDirectoryLabel().toUpperCase() + "/";
+            
+            return folder1.concat(o1.getLabel().toUpperCase()).compareTo(folder2.concat(o2.getLabel().toUpperCase()));
+        }
+    };
+    
     
     public String toPrettyJSON(){
         

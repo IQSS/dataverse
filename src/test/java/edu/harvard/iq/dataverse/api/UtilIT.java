@@ -36,6 +36,7 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import static com.jayway.restassured.path.xml.XmlPath.from;
 import static com.jayway.restassured.RestAssured.given;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.StringReader;
 import javax.json.JsonArray;
 import static org.junit.Assert.assertEquals;
@@ -640,6 +641,16 @@ public class UtilIT {
             requestSpecification.multiPart("jsonData", jsonAsString);
         }
         return requestSpecification.post("/api/datasets/" + datasetId + "/add");
+    }
+    
+    static Response getCrawlableFileAccess(String datasetId, String folderName, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken);
+        String apiPath = "/api/datasets/" + datasetId + "/versions/:draft/fileaccess";
+        if (StringUtil.nonEmpty(folderName)) {
+            apiPath = apiPath.concat("?folder="+folderName);
+        }
+        return requestSpecification.get(apiPath);
     }
 
     static Response replaceFile(String fileIdOrPersistentId, String pathToFile, String apiToken) {

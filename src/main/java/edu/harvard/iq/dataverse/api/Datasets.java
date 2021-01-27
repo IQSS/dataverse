@@ -156,6 +156,7 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import com.amazonaws.services.s3.model.PartETag;
+import edu.harvard.iq.dataverse.FileMetadata;
 import java.util.Map.Entry;
 
 @Path("datasets")
@@ -465,6 +466,29 @@ public class Datasets extends AbstractApiBean {
         return response( req -> ok( jsonFileMetadatas(
                          getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers).getFileMetadatas())));
     }
+    
+    @GET
+    @Path("{id}/versions/{versionId}/fileaccess")
+    @Produces("text/html")
+    public Response getFileAccessFolderView(@PathParam("id") String datasetId, @PathParam("versionId") String versionId, @QueryParam("folder") String folderName, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
+
+        folderName = folderName == null ? "" : folderName; 
+        
+        DatasetVersion version; 
+        try {
+            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            version = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+               
+        String output = FileUtil.formatFolderListingHtml(folderName, version, "");
+        return Response.ok()
+                .entity(output)
+                //.type("application/html").
+                .build();
+    }
+    
     
     @GET
     @Path("{id}/versions/{versionId}/metadata")

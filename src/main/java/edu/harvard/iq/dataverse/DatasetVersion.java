@@ -214,6 +214,33 @@ public class DatasetVersion implements Serializable {
         Collections.sort(fileMetadatasCopy, FileMetadata.compareByLabelAndFolder);
         return fileMetadatasCopy;
     }
+    
+    public List<FileMetadata> getFileMetadatasFolderListing(String folderName) {
+        ArrayList<FileMetadata> fileMetadatasCopy = new ArrayList<>();
+        HashSet<String> subFolders = new HashSet<>();
+
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            String thisFolder = fileMetadata.getDirectoryLabel() == null ? "" : fileMetadata.getDirectoryLabel(); 
+            
+            if (folderName.equals(thisFolder)) {
+                fileMetadatasCopy.add(fileMetadata);
+            } else if (thisFolder.startsWith(folderName)) {
+                String subFolder = "".equals(folderName) ? thisFolder : thisFolder.substring(folderName.length() + 1);
+                if (subFolder.indexOf('/') > 0) {
+                    subFolder = subFolder.substring(0, subFolder.indexOf('/'));
+                }
+                
+                if (!subFolders.contains(subFolder)) {
+                    fileMetadatasCopy.add(fileMetadata);
+                    subFolders.add(subFolder);
+                }
+                
+            }
+        }
+        Collections.sort(fileMetadatasCopy, FileMetadata.compareByFullPath);
+                
+        return fileMetadatasCopy; 
+    }
 
     public void setFileMetadatas(List<FileMetadata> fileMetadatas) {
         this.fileMetadatas = fileMetadatas;

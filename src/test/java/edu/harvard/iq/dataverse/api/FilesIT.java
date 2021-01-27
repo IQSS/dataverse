@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import static java.lang.Thread.sleep;
+import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1468,6 +1469,63 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
     }
     
+    /*
+        A skeletal implementation of a test for the new "crawlable file access" API 
+        (#7084; work in progress)
+    */    
+    @Test
+    public void test_CrawlableAccessToDatasetFiles() {
+        msgt("test_test_CrawlableAccessToDatasetFiles");
+         // Create user
+        String apiToken = createUserGetToken();
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+
+        // Create Dataset
+        Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
+        
+        msgt("dataset id: "+datasetId);
+       
+        String pathToFile = "src/main/webapp/resources/images/dataverseproject.png";
+        
+        String description = "test file 1";
+        String folderName = "subfolder";
+
+        JsonObjectBuilder json = Json.createObjectBuilder()
+                .add("description", description)
+                .add("directoryLabel", folderName);
+
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, json.build(), apiToken);
+
+        msgt("Server response: " + addResponse.prettyPrint());
+      
+        addResponse.then().assertThat()
+                .body("status", equalTo(AbstractApiBean.STATUS_OK))
+                .body("data.files[0].label", equalTo("dataverseproject.png"))
+                .body("data.files[0].directoryLabel", equalTo(folderName))
+                .body("data.files[0].description", equalTo(description))
+                .statusCode(OK.getStatusCode());
+        
+        // TODO: upload more files, in more folders. 
+        
+        // Make some calls to the "/fileaccess API:
+        
+        // ... with no folder specified: 
+        // (with just the one file above, this should show one folder only - "subfolder")
+        Response fileAccessResponse = UtilIT.getCrawlableFileAccess(datasetId.toString(), "", apiToken);
+        fileAccessResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // TODO: actually parse and check the returned html
+        
+        // ... with the folder name "subfolder" specified: 
+        // (should result in being shown one access link to the file above)
+        fileAccessResponse = UtilIT.getCrawlableFileAccess(datasetId.toString(), folderName, apiToken);
+        fileAccessResponse.then().assertThat().statusCode(OK.getStatusCode());
+        // TODO: actually parse and check the returned html
+        
+        // TODO : add more testing functionality
+        // (this is a placeholder)
+    }
     
     private void msg(String m){
         System.out.println(m);
