@@ -48,7 +48,8 @@ function bind_bsui_components(){
     var clipboard = new ClipboardJS('button.btn-copy, span.checksum-truncate');
     
     clipboard.on('success', function (e) {
-        console.log(e);
+        // DEV TOOL DEBUG
+        // console.log(e);
     });
     clipboard.on('error', function (e) {
         console.log(e);
@@ -188,14 +189,8 @@ function checksumTruncate(){
         }
         // ADD CLIPBOARD ICON
         $(this).append(' <span class="glyphicon glyphicon-copy"></span>');
-    });
-    // USE CLIPBOARD.JS TO COPY
-    var clipboard = new Clipboard('span.checksum-truncate');
-    clipboard.on('success', function(e) {
-        console.log(e);
-    });
-    clipboard.on('error', function(e) {
-        console.log(e);
+        
+        // COPY TO CLIPBOARD MOVE TO bind_bsui_components() ABOVE
     });
 }
 
