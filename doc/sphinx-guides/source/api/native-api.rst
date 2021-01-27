@@ -1,7 +1,7 @@
 Native API
 ==========
 
-The Dataverse Platform exposes most of its GUI functionality via a REST-based API. This section describes that functionality. Most API endpoints require an API token that can be passed as the ``X-Dataverse-key`` HTTP header or in the URL as the ``key`` query parameter.
+The Dataverse software exposes most of its GUI functionality via a REST-based API. This section describes that functionality. Most API endpoints require an API token that can be passed as the ``X-Dataverse-key`` HTTP header or in the URL as the ``key`` query parameter.
 
 .. note:: |CORS| Some API endpoint allow CORS_ (cross-origin resource sharing), which makes them usable from scripts running in web browsers. These endpoints are marked with a *CORS* badge.
 
@@ -9,7 +9,7 @@ The Dataverse Platform exposes most of its GUI functionality via a REST-based AP
 
 .. _CORS: https://www.w3.org/TR/cors/
 
-.. warning:: The Dataverse Platform's API is versioned at the URI - all API calls may include the version number like so: ``http://server-address/api/v1/...``. Omitting the ``v1`` part would default to the latest API version (currently 1). When writing scripts/applications that will be used for a long time, make sure to specify the API version, so they don't break when the API is upgraded.
+.. warning:: The Dataverse software's API is versioned at the URI - all API calls may include the version number like so: ``http://server-address/api/v1/...``. Omitting the ``v1`` part would default to the latest API version (currently 1). When writing scripts/applications that will be used for a long time, make sure to specify the API version, so they don't break when the API is upgraded.
 
 .. contents:: |toctitle|
     :local:
@@ -933,7 +933,7 @@ For these deletes your JSON file must include an exact match of those dataset fi
 Publish a Dataset
 ~~~~~~~~~~~~~~~~~
 
-When publishing a dataset it's good to be aware of the Dataverse Platform's versioning system, which is described in the :doc:`/user/dataset-management` section of the User Guide.
+When publishing a dataset it's good to be aware of the Dataverse software's versioning system, which is described in the :doc:`/user/dataset-management` section of the User Guide.
 
 If this is the first version of the dataset, its version number will be set to ``1.0``. Otherwise, the new dataset version number is determined by the most recent version number and the ``type`` parameter. Passing ``type=minor`` increases the minor version number (2.3 is updated to 2.4). Passing ``type=major`` increases the major version number (2.3 is updated to 3.0). (Superusers can pass ``type=updatecurrent`` to update metadata without changing the version number.)
 
@@ -1816,7 +1816,7 @@ Note: at present, the API cannot be used on a file that's already successfully i
 Redetect File Type
 ~~~~~~~~~~~~~~~~~~
 
-The Dataverse Platform uses a variety of methods for determining file types (MIME types or content types) and these methods (listed below) are updated periodically. If you have files that have an unknown file type, you can have the Dataverse Platform attempt to redetect the file type.
+The Dataverse software uses a variety of methods for determining file types (MIME types or content types) and these methods (listed below) are updated periodically. If you have files that have an unknown file type, you can have the Dataverse software attempt to redetect the file type.
 
 When using the curl command below, you can pass ``dryRun=true`` if you don't want any changes to be saved to the database. Change this to ``dryRun=false`` (or omit it) to save the change.
 

@@ -111,8 +111,8 @@ Researchers can import datasets from a Dataverse installation into their Renku p
 command-line interface (CLI) by using the dataset's DOI. See the `renku Dataset
 documentation
 <https://renku-python.readthedocs.io/en/latest/commands.html#module-renku.cli.dataset>`_
-for details. Currently Dataverse Platform ``>=4.8.x`` is required for the import to work. If you need
-support for an earlier version of the Dataverse Platform, please get in touch with the Renku team at
+for details. Currently Dataverse software ``>=4.8.x`` is required for the import to work. If you need
+support for an earlier version of the Dataverse software, please get in touch with the Renku team at
 `Discourse <https://renku.discourse.group>`_ or `GitHub <https://github.com/SwissDataScienceCenter/renku>`_.
 
 Avgidea Data Search
@@ -123,12 +123,12 @@ Researchers can use a Google Sheets add-on to search for Dataverse installation'
 Discoverability
 ---------------
 
-Integration with `DataCite <https://datacite.org>`_ is built in to the Dataverse Platform. When datasets are published, metadata is sent to DataCite. You can further increase the discoverability of your datasets by setting up additional integrations.
+Integration with `DataCite <https://datacite.org>`_ is built in to the Dataverse software. When datasets are published, metadata is sent to DataCite. You can further increase the discoverability of your datasets by setting up additional integrations.
 
 OAI-PMH (Harvesting)
 ++++++++++++++++++++
 
-The Dataverse Platform supports a protocol called OAI-PMH that facilitates harvesting datasets from one system into another. For details on harvesting, see the :doc:`harvestserver` section.
+The Dataverse software supports a protocol called OAI-PMH that facilitates harvesting datasets from one system into another. For details on harvesting, see the :doc:`harvestserver` section.
 
 SHARE
 +++++

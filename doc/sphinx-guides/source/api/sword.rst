@@ -11,7 +11,7 @@ About
 
 Introduced in Dataverse Network (DVN) `3.6 <http://guides.dataverse.org/en/3.6.2/dataverse-api-main.html#data-deposit-api>`_, the SWORD API was formerly known as the "Data Deposit API" and ``data-deposit/v1`` appeared in the URLs. For backwards compatibility these URLs continue to work (with deprecation warnings). Due to architectural changes and security improvements (especially the introduction of API tokens) in Dataverse Software 4.0, a few backward incompatible changes were necessarily introduced and for this reason the version has been increased to ``v1.1``. For details, see :ref:`incompatible`.
 
-The Dataverse Platform implements most of SWORDv2_, which is specified at http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html . Please reference the `SWORDv2 specification`_ for expected HTTP status codes (i.e. 201, 204, 404, etc.), headers (i.e. "Location"), etc.
+The Dataverse software implements most of SWORDv2_, which is specified at http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html . Please reference the `SWORDv2 specification`_ for expected HTTP status codes (i.e. 201, 204, 404, etc.), headers (i.e. "Location"), etc.
 
 As a profile of AtomPub, XML is used throughout SWORD. As of Dataverse Software 4.0 datasets can also be created via JSON using the "native" API. SWORD is limited to the dozen or so fields listed below in the crosswalk, but the native API allows you to populate all metadata fields available in a Dataverse installation.
 
@@ -49,7 +49,7 @@ Backward incompatible changes
 
 For better security than in DVN 3.x, usernames and passwords are no longer accepted. The use of an API token is required.
 
-Differences in Dataverse Platform 4 from DVN 3.x lead to a few minor backward incompatible changes in the Dataverse Platform implementation of SWORD, which are listed below. Old ``v1`` URLs should continue to work but the ``Service Document`` will contain a deprecation warning and responses will contain ``v1.1`` URLs. See also :ref:`known-issues`.
+Differences in Dataverse software 4 from DVN 3.x lead to a few minor backward incompatible changes in the Dataverse software implementation of SWORD, which are listed below. Old ``v1`` URLs should continue to work but the ``Service Document`` will contain a deprecation warning and responses will contain ``v1.1`` URLs. See also :ref:`known-issues`.
 
 - Newly required fields when creating/editing datasets for compliance with the `Joint Declaration for Data Citation principles <http://thedata.org/blog/joint-declaration-data-citation-principles-and-dataverse>`_.
 
