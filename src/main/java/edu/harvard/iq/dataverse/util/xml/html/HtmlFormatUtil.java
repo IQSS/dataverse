@@ -20,7 +20,9 @@
 package edu.harvard.iq.dataverse.util.xml.html;
 
 /**
- *
+ * A simple utility that generates formatted HTML
+ * to avoid hard-coding html tags by hand. 
+ * 
  * @author leonid@hmdc.harvard.edu
  */
 public class HtmlFormatUtil  implements java.io.Serializable {
