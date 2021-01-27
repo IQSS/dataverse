@@ -181,34 +181,6 @@ Additional download options available for tabular data (found in the same drop-d
 
 See also :ref:`restricted-tabular-files`.
 
-Geospatial
-----------
-
-Geospatial `shapefiles <http://en.wikipedia.org/wiki/Shapefile>`_ can be further explored and manipulated through an optional integration with `WorldMap <../user/data-exploration/worldmap.html>`_, a geospatial data visualization and analysis tool developed by the `Center for Geographic Analysis <http://gis.harvard.edu/>`_ at Harvard University. A shapefile is a set of files, often uploaded/transferred in .zip format.  This set may contain up to 15 files.  A minimum of 3 specific files (.shp, .shx, .dbf) are needed to be a valid shapefile and a 4th file (.prj) is required for WorldMap--or any type of meaningful visualization.
-
-For ingest into a Dataverse installation and connecting to WorldMap, these 4 files are the minimum required:
-
-* .shp - shape format; the feature geometry itself
-* .shx - shape index format; a positional index of the feature geometry to allow seeking forwards and backwards quickly
-* .dbf - attribute format; columnar attributes for each shape, in dBase IV format
-* .prj - projection format; the coordinate system and projection information, a plain text file describing the projection using well-known text format
-
-For a zipped shapefile, we require 4 files with these extensions. Other files may be included within the zipped shapefile, but they are not required: 
-
-* .shp
-* .shx 
-* .prj 
-* .dbf 
-
-For example, if these files were included within a .zip, the Geoconnect configure tool option is displayed: 
-
-* subway_line.shp 
-* subway_line.shx 
-* subway_line.prj 
-* subway_line.dbf
-
-Once you publish your dataset with your shape files, you will be able to use the configure tool `Geoconnect <https://github.com/IQSS/geoconnect>`_ to visualize and manipulate these files for users to explore this geospatial data on `WorldMap <http://worldmap.harvard.edu/>`__. Please note: In order to map your data file, a copy will be sent to Harvard's `WorldMap <http://worldmap.harvard.edu/>`__ platform. You have the ability to delete any maps, and associated data, from the Harvard WorldMap platform, at any time.
-
 Astronomy (FITS)
 ----------------
 

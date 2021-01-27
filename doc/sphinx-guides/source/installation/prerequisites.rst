@@ -19,7 +19,7 @@ We assume you plan to run your Dataverse installation on Linux and we recommend 
 Java
 ----
 
-The Dataverse software requires Java SE 8 (8u74/JDK 1.8.0u74 or higher).
+The Dataverse software requires Java SE 11 (or higher).
 
 Installing Java
 ===============
@@ -30,17 +30,14 @@ The Oracle JDK can be downloaded from http://www.oracle.com/technetwork/java/jav
 
 On a RHEL/CentOS, install OpenJDK (devel version) using yum::
 
-	# yum install java-1.8.0-openjdk-devel
+	# sudo yum install java-11-openjdk
 
-If you have multiple versions of Java installed, Java 8 should be the default when ``java`` is invoked from the command line. You can test this by running ``java -version``.
+If you have multiple versions of Java installed, Java 11 should be the default when ``java`` is invoked from the command line. You can test this by running ``java -version``.
 
-On RHEL/CentOS you can make Java 8 the default with the ``alternatives`` command, having it prompt you to select the version of Java from a list::
+On RHEL/CentOS you can make Java 11 the default with the ``alternatives`` command, having it prompt you to select the version of Java from a list::
 
         # alternatives --config java
 
-If you don't want to be prompted, here is an example of the non-interactive invocation::
-
-        # alternatives --set java /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
 
 .. _payara:
 

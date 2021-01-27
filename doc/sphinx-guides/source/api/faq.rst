@@ -35,7 +35,7 @@ SWORD only supports a dozen or so operations. The Native API supports many more.
 To Operate on a Dataset Should I Use Its DOI (or Handle) or Its Database ID?
 ----------------------------------------------------------------------------
 
-It is fine to target a datasets using either its Persistent ID (PID such as DOI or Handle) or its database id.
+It is fine to target a dataset using either its Persistent ID (PID such as DOI or Handle) or its database id.
 
 Here's an example from :ref:`publish-dataset-api` of targeting a dataset using its DOI:
 

@@ -16,7 +16,7 @@ Workflow steps are created using *step providers*. The Dataverse software ships 
 
 Steps can be internal (say, writing some data to the log) or external. External steps involve the Dataverse software sending a request to an external system, and waiting for the system to reply. The wait period is arbitrary, and so allows the external system unbounded operation time. This is useful, e.g., for steps that require human intervention, such as manual approval of a dataset publication.
 
-The external system reports the step result back to the Dataverse installation, by sending a HTTP ``POST`` command to ``api/workflows/{invocation-id}``. The body of the request is passed to the paused step for further processing.
+The external system reports the step result back to the Dataverse installation, by sending a HTTP ``POST`` command to ``api/workflows/{invocation-id}`` with Content-Type: text/plain. The body of the request is passed to the paused step for further processing.
 
 If a step in a workflow fails, the Dataverse installation makes an effort to roll back all the steps that preceded it. Some actions, such as writing to the log, cannot be rolled back. If such an action has a public external effect (e.g. send an EMail to a mailing list) it is advisable to put it in the post-release workflow.
 
@@ -60,7 +60,7 @@ A step that writes data about the current workflow invocation to the instance lo
 pause
 +++++
 
-A step that pauses the workflow. The workflow is paused until a POST request is sent to ``/api/workflows/{invocation-id}``.
+A step that pauses the workflow. The workflow is paused until a POST request is sent to ``/api/workflows/{invocation-id}``. Sending 'fail' in the POST body (Content-type:text/plain) will trigger a failure and workflow rollback. All other responses are considered as successes. 
 
 .. code:: json
 
@@ -74,6 +74,7 @@ http/sr
 +++++++
 
 A step that sends a HTTP request to an external system, and then waits for a response. The response has to match a regular expression specified in the step parameters. The url, content type, and message body can use data from the workflow context, using a simple markup language. This step has specific parameters for rollback.
+The workflow is restarted when the external system replies with a POST request  to ``/api/workflows/{invocation-id}``. Responses starting with "OK" (Content-type:text/plain) are considered successes. Other responses will be considered failures and trigger workflow rollback.
 
 .. code:: json
 

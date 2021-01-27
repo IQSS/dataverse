@@ -587,7 +587,7 @@ Another variation of icon-only buttons uses the ``.btn-link`` style class from B
                         </li>
                         <li>
                             <a href="#" rel="noopener" class="ui-commandlink ui-widget" onclick="return false;">
-                                WorldMap
+                                Data Explorer
                             </a>
                         </li>
                     </ul>
