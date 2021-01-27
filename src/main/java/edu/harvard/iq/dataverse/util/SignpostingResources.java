@@ -56,6 +56,15 @@ public class SignpostingResources {
     public SignpostingResources(SystemConfig systemConfig, DatasetVersion workingDatasetVersion, String jsonSetting){
         this.systemConfig = systemConfig;
         this.workingDatasetVersion = workingDatasetVersion;
+        if (jsonSetting == null) {
+            jsonSetting = "{" +
+                    "\"indetifier-schema\": {\"ORCID\":\"https://orcid.org/\", \"ISNI\":\"https://isni.org/isni/\", \"ScopusID\":\"https://www.scopus.com/authid/detail.uri?authorId=\"}," +
+                    "\"license\": {\"CC0\":\"https://creativecommons.org/licenses/by/4.0/\", \"MIT\": \"https://url\", \"APACHE\":\"https://url\"}," +
+                    "\"cite-as\": {\"doi\":\"https://citation.crosscite.org/format?style=bibtex&doi=\", \"type\":\"application/vnd.datacite.datacite+json\"}," +
+                    "\"useDefaultFileType\": true," +
+                    "\"defaultFileTypeValue\": \"https://schema.org/Dataset\"" +
+                    "}";
+        }
         JsonReader jsonReader = Json.createReader(new StringReader(jsonSetting));
         JsonObject spJsonSetting = jsonReader.readObject();
         jsonReader.close();
