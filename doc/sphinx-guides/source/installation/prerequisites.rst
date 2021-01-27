@@ -303,10 +303,7 @@ R
 Dataverse uses `R <https://https://cran.r-project.org/>`_ to handle
 tabular data files. The instructions below describe a **minimal** R
 installation. It will allow you to ingest R (.RData) files as tabular
-data; to export tabular data as .RData files; and to run `Data
-Explorer <https://github.com/scholarsportal/Dataverse-Data-Explorer>`_
-(specifically, R is used to generate .prep metadata files that Data
-Explorer uses).  R can be considered an optional component, meaning
+data and to export tabular data as .RData files.  R can be considered an optional component, meaning
 that if you don't have R installed, you will still be able to run and
 use Dataverse - but the functionality specific to tabular data
 mentioned above will not be available to your users.  **Note** that if
