@@ -11,6 +11,8 @@ import javax.xml.stream.XMLStreamException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
+import java.util.Map;
 
 
 /**
@@ -27,12 +29,14 @@ public class OAI_DDIExporter implements Exporter {
 
     private boolean excludeEmailFromExport;
     private String dataverseUrl;
+    private VocabularyValuesIndexer vocabularyValuesIndexer;
 
     // -------------------- CONSTRUCTORS --------------------
 
     public OAI_DDIExporter(boolean excludeEmailFromExport, String dataverseUrl) {
         this.excludeEmailFromExport = excludeEmailFromExport;
         this.dataverseUrl = dataverseUrl;
+        this.vocabularyValuesIndexer = new VocabularyValuesIndexer();
     }
 
     // -------------------- LOGIC --------------------
@@ -52,8 +56,9 @@ public class OAI_DDIExporter implements Exporter {
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
             JsonObject datasetAsJson = JsonPrinter.jsonAsDatasetDto(version, excludeEmailFromExport)
                     .build();
-
-            DdiExportUtil.datasetJson2ddi(datasetAsJson, byteArrayOutputStream, dataverseUrl);
+            Map<String, Map<String, String>> localizedValuesIndex
+                    = vocabularyValuesIndexer.indexLocalizedNamesOfUsedKeysByTypeAndValue(version, Locale.ENGLISH);
+            DdiExportUtil.datasetJson2ddi(datasetAsJson, byteArrayOutputStream, dataverseUrl, localizedValuesIndex);
             return byteArrayOutputStream.toString(StandardCharsets.UTF_8.name());
         } catch (XMLStreamException | IOException xse) {
             throw new ExportException("Caught XMLStreamException performing DDI export");

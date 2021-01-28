@@ -29,12 +29,17 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.LEVEL_FILE;
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_SUBJECT_TAG;
@@ -49,12 +54,13 @@ public class DdiExportUtil {
     public static final String NOTE_TYPE_CONTENTTYPE = "DATAVERSE:CONTENTTYPE";
     public static final String NOTE_SUBJECT_CONTENTTYPE = "Content/MIME Type";
 
-    public static String datasetDtoAsJson2ddi(String datasetDtoAsJson, String dataverseUrl) {
+    public static String datasetDtoAsJson2ddi(String datasetDtoAsJson, String dataverseUrl,
+                                              Map<String, Map<String, String>> localizedVocabularyIndex) {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson));
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson, DatasetDTO.class);
         try {
-            return dto2ddi(datasetDto, dataverseUrl);
+            return dto2ddi(datasetDto, dataverseUrl, localizedVocabularyIndex);
         } catch (XMLStreamException ex) {
             Logger.getLogger(DdiExportUtil.class.getName()).log(Level.SEVERE, null, ex);
             return null;
@@ -62,23 +68,26 @@ public class DdiExportUtil {
     }
 
     // "short" ddi, without the "<fileDscr>"  and "<dataDscr>/<var>" sections:
-    public static void datasetJson2ddi(JsonObject datasetDtoAsJson, OutputStream outputStream, String dataverseUrl)
+    public static void datasetJson2ddi(JsonObject datasetDtoAsJson, OutputStream outputStream, String dataverseUrl,
+                                       Map<String, Map<String, String>> localizedVocabularyIndex)
             throws XMLStreamException {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson.toString()));
         Gson gson = new Gson();
         DatasetDTO datasetDto = gson.fromJson(datasetDtoAsJson.toString(), DatasetDTO.class);
-        dtoddi(datasetDto, outputStream, dataverseUrl);
+        dtoddi(datasetDto, outputStream, dataverseUrl, localizedVocabularyIndex);
     }
 
-    private static String dto2ddi(DatasetDTO datasetDto, String dataverseUrl)
+    private static String dto2ddi(DatasetDTO datasetDto, String dataverseUrl,
+                                  Map<String, Map<String, String>> localizedVocabularyIndex)
             throws XMLStreamException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        dtoddi(datasetDto, outputStream, dataverseUrl);
+        dtoddi(datasetDto, outputStream, dataverseUrl, localizedVocabularyIndex);
         String xml = outputStream.toString();
         return XmlPrinter.prettyPrintXml(xml);
     }
 
-    private static void dtoddi(DatasetDTO datasetDto, OutputStream outputStream, String dataverseUrl)
+    private static void dtoddi(DatasetDTO datasetDto, OutputStream outputStream, String dataverseUrl,
+                               Map<String, Map<String, String>> localizedVocabularyIndex)
             throws XMLStreamException {
         XMLStreamWriter xmlw = XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream);
         xmlw.writeStartElement("codeBook");
@@ -86,7 +95,7 @@ public class DdiExportUtil {
         xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
         xmlw.writeAttribute("xsi:schemaLocation", "ddi:codebook:2_5 http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd");
         writeAttribute(xmlw, "version", "2.5");
-        createStdyDscr(xmlw, datasetDto);
+        createStdyDscr(xmlw, datasetDto, localizedVocabularyIndex);
         createOtherMats(xmlw, datasetDto.getDatasetVersion().getFiles(), dataverseUrl);
         xmlw.writeEndElement(); // codeBook
         xmlw.flush();
@@ -94,7 +103,8 @@ public class DdiExportUtil {
 
 
     // "full" ddi, with the the "<fileDscr>"  and "<dataDscr>/<var>" sections:
-    public static void datasetJson2ddi(JsonObject datasetDtoAsJson, DatasetVersion version, OutputStream outputStream, String dataverseUrl)
+    public static void datasetJson2ddi(JsonObject datasetDtoAsJson, DatasetVersion version, OutputStream outputStream,
+                                       String dataverseUrl, Map<String, Map<String, String>> localizedVocabularyIndex)
             throws XMLStreamException {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson.toString()));
         Gson gson = new Gson();
@@ -106,7 +116,7 @@ public class DdiExportUtil {
         xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
         xmlw.writeAttribute("xsi:schemaLocation", "ddi:codebook:2_5 http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd");
         writeAttribute(xmlw, "version", "2.5");
-        createStdyDscr(xmlw, datasetDto);
+        createStdyDscr(xmlw, datasetDto, localizedVocabularyIndex);
         if(!version.getDataset().hasActiveEmbargo()) {
             createFileDscr(xmlw, version, dataverseUrl);
             createDataDscr(xmlw, version);
@@ -126,7 +136,8 @@ public class DdiExportUtil {
      * the DVN 3.x code for creating a complete DDI.
      * @todo Rename this from "study" to "dataset".
      */
-    private static void createStdyDscr(XMLStreamWriter xmlw, DatasetDTO datasetDto) throws XMLStreamException {
+    private static void createStdyDscr(XMLStreamWriter xmlw, DatasetDTO datasetDto,
+                                       Map<String, Map<String, String>> localizedVocabularyIndex) throws XMLStreamException {
         DatasetVersionDTO version = datasetDto.getDatasetVersion();
         String persistentProtocol = datasetDto.getProtocol();
         String persistentAgency = persistentProtocol;
@@ -202,7 +213,7 @@ public class DdiExportUtil {
 
         //Social Science Metadata block
 
-        writeMethodElement(xmlw, version);
+        writeMethodElement(xmlw, version, localizedVocabularyIndex);
 
         //Terms of Use and Access
         writeFullElement(xmlw, "useStmt", version.getTermsOfUse());
@@ -412,7 +423,8 @@ public class DdiExportUtil {
 
     }
 
-    private static void writeMethodElement(XMLStreamWriter xmlw, DatasetVersionDTO version) throws XMLStreamException {
+    private static void writeMethodElement(XMLStreamWriter xmlw, DatasetVersionDTO version,
+                                           Map<String, Map<String, String>> localizedVocabularyIndex) throws XMLStreamException {
         xmlw.writeStartElement("method");
         xmlw.writeStartElement("dataColl");
         writeFullElement(xmlw, "timeMeth", dto2Primitive(version, DatasetFieldConstant.timeMethod));
@@ -422,7 +434,14 @@ public class DdiExportUtil {
         writeFullElement(xmlw, "sampProc", dto2Primitive(version, DatasetFieldConstant.samplingProcedure));
         writeTargetSampleElement(xmlw, version);
         writeFullElement(xmlw, "deviat", dto2Primitive(version, DatasetFieldConstant.deviationsFromSampleDesign));
-        writeFullElement(xmlw, "collMode", dto2Primitive(version, DatasetFieldConstant.collectionMode));
+
+        for (String value : getValuesAsList(version, DatasetFieldConstant.collectionMode)) {
+            String localizedValue = Optional.ofNullable(localizedVocabularyIndex.get(DatasetFieldConstant.collectionMode))
+                    .map(i -> i.get(value))
+                    .orElse(value);
+            writeFullElement(xmlw, "collMode", localizedValue);
+        }
+
         writeFullElement(xmlw, "resInstru", dto2Primitive(version, DatasetFieldConstant.researchInstrument));
         writeFullElement(xmlw, "collSitu", dto2Primitive(version, DatasetFieldConstant.dataCollectionSituation));
         writeFullElement(xmlw, "actMin", dto2Primitive(version, DatasetFieldConstant.actionsToMinimizeLoss));
@@ -1146,6 +1165,19 @@ public class DdiExportUtil {
             }
         }
         return null;
+    }
+
+    private static List<String> getValuesAsList(DatasetVersionDTO datasetVersionDTO, String datasetFieldTypeName) {
+
+        return datasetVersionDTO.getMetadataBlocks().values()
+                .stream()
+                .flatMap(v -> v.getFields().stream())
+                .filter(f -> datasetFieldTypeName.equals(f.getTypeName()))
+                .findFirst()
+                .map(f -> f.getMultiple()
+                        ? f.getMultiplePrimitive()
+                        : Stream.of(f.getSinglePrimitive()).collect(Collectors.toList()))
+                .orElse(Collections.emptyList());
     }
 
     private static List<String> dto2PrimitiveList(DatasetVersionDTO datasetVersionDTO, String datasetFieldTypeName) {

@@ -38,17 +38,15 @@ public class BundleUtil {
         return MessageFormat.format(message, arguments);
     }
 
-
     public static String getStringFromNonDefaultBundle(String key, String bundleName, Object... arguments) {
         return getStringFromNonDefaultBundleWithLocale(key, bundleName, getCurrentLocale(), arguments);
     }
 
     public static String getStringFromNonDefaultBundleWithLocale(String key, String bundleName, Locale locale, Object... arguments) {
-        String stringFromPropertyFile = getStringFromPropertyFile(key, bundleName);
+        String stringFromPropertyFile = getStringFromPropertyFile(key, bundleName, locale);
 
         return MessageFormat.format(stringFromPropertyFile, arguments);
     }
-
 
     public static String getStringFromClasspathBundle(String key, String bundleName, Object... arguments) {
         String stringFromPropertyFile = getStringFromInternalBundle(key, bundleName, getCurrentLocale());
@@ -56,18 +54,16 @@ public class BundleUtil {
         return MessageFormat.format(stringFromPropertyFile, arguments);
     }
 
-
     public static Locale getCurrentLocale() {
         if (FacesContext.getCurrentInstance() == null) {
             return new Locale("en");
         } else if (FacesContext.getCurrentInstance().getViewRoot() == null) {
             return FacesContext.getCurrentInstance().getExternalContext().getRequestLocale();
-        } else if (FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage().equals("en_US")) {
+        } else if ("en_US".equals(FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage())) {
             return new Locale("en");
         }
 
         return FacesContext.getCurrentInstance().getViewRoot().getLocale();
-
     }
 
     // -------------------- PRIVATE --------------------

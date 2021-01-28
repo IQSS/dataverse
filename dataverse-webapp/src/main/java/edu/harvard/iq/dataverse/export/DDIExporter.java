@@ -11,6 +11,8 @@ import javax.xml.stream.XMLStreamException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * This exporter is for the "full" DDI, that includes the file-level,
@@ -30,12 +32,14 @@ public class DDIExporter implements Exporter {
 
     private boolean excludeEmailFromExport;
     private String dataverseUrl;
+    private VocabularyValuesIndexer vocabularyValuesIndexer;
 
     // -------------------- CONSTRUCTORS --------------------
 
-    DDIExporter(boolean excludeEmailFromExport, String DataverseUrl) {
+    DDIExporter(boolean excludeEmailFromExport, String dataverseUrl) {
         this.excludeEmailFromExport = excludeEmailFromExport;
-        this.dataverseUrl = DataverseUrl;
+        this.dataverseUrl = dataverseUrl;
+        this.vocabularyValuesIndexer = new VocabularyValuesIndexer();
     }
 
     // -------------------- LOGIC --------------------
@@ -47,16 +51,20 @@ public class DDIExporter implements Exporter {
 
     @Override
     public String getDisplayName() {
-        return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.ddi") != null ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.ddi") : "DDI";
+        return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.ddi") != null
+                ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.ddi")
+                : "DDI";
     }
 
     @Override
     public String exportDataset(DatasetVersion version) throws ExportException {
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+
             JsonObject datasetAsJson = JsonPrinter.jsonAsDatasetDto(version, excludeEmailFromExport)
                     .build();
-
-            DdiExportUtil.datasetJson2ddi(datasetAsJson, version, byteArrayOutputStream, dataverseUrl);
+            Map<String, Map<String, String>> localizedVocabularyIndex
+                    = vocabularyValuesIndexer.indexLocalizedNamesOfUsedKeysByTypeAndValue(version, Locale.ENGLISH);
+            DdiExportUtil.datasetJson2ddi(datasetAsJson, version, byteArrayOutputStream, dataverseUrl, localizedVocabularyIndex);
             return byteArrayOutputStream.toString(StandardCharsets.UTF_8.name());
         } catch (XMLStreamException | IOException xse) {
             throw new ExportException("Caught XMLStreamException performing DDI export");
@@ -71,8 +79,8 @@ public class DDIExporter implements Exporter {
     @Override
     public Boolean isHarvestable() {
         // No, we don't want this format to be harvested!
-        // For datasets with tabular data the <data> portions of the DDIs 
-        // become huge and expensive to parse; even as they don't contain any 
+        // For datasets with tabular data the <data> portions of the DDIs
+        // become huge and expensive to parse; even as they don't contain any
         // metadata useful to remote harvesters. -- L.A. 4.5
         return false;
     }
@@ -101,5 +109,6 @@ public class DDIExporter implements Exporter {
     public void setParam(String name, Object value) {
         // this exporter does not uses or supports any parameters as of now.
     }
+
 }
 

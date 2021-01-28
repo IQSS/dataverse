@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author michael
  * @author tjanek
  */
-public class DatasetVersionTest {
+ class DatasetVersionTest {
 
     private DatasetVersion datasetVersion;
     private FileMetadata fileMetadata;
@@ -38,8 +38,10 @@ public class DatasetVersionTest {
         fileMetadata.setLabel("foo.png");
     }
 
+    // -------------------- TESTS --------------------
+
     @Test
-    public void compareByVersionComparator() {
+    void compareByVersionComparator() {
         //given
         DatasetVersion ds1_0 = new DatasetVersion();
         ds1_0.setId(0L);
@@ -74,7 +76,7 @@ public class DatasetVersionTest {
     }
 
     @Test
-    public void isInReview() {
+    void isInReview() {
         Dataset ds = MocksFactory.makeDataset();
 
         DatasetVersion draft = ds.getLatestVersion();
@@ -91,7 +93,7 @@ public class DatasetVersionTest {
     }
 
     @Test
-    public void getOnlyFilesMetadataNotUnderEmbargoSorted() {
+    void getOnlyFilesMetadataNotUnderEmbargoSorted() {
         // given
         Dataset ds = MocksFactory.makeDataset();
         ds.setEmbargoDate(Date.from(Instant.now().plus(1, ChronoUnit.DAYS)));
@@ -107,7 +109,7 @@ public class DatasetVersionTest {
     }
 
     @Test
-    public void shouldSortFileMetadataByDisplayOrder() {
+    void shouldSortFileMetadataByDisplayOrder() {
         // given
         DatasetVersion version = withUnSortedFiles();
 
@@ -124,7 +126,7 @@ public class DatasetVersionTest {
     }
 
     @Test
-    public void shouldAddNewFileMetadataWithProperDisplayOrder() {
+    void shouldAddNewFileMetadataWithProperDisplayOrder() {
         // given
         DatasetVersion version = withFilesAndCustomDisplayOrder();
         FileMetadata toAdd = makeFileMetadata(40L, "file4.png", 0);
@@ -140,7 +142,7 @@ public class DatasetVersionTest {
     }
 
     @Test
-    public void shouldAddNewFileMetadataOnEmptyMetadatasWithZeroIndex() {
+    void shouldAddNewFileMetadataOnEmptyMetadatasWithZeroIndex() {
         // given
         DatasetVersion version = new DatasetVersion();
         FileMetadata toAdd = makeFileMetadata(40L, "file1.png", -5); // fake -5 displayOrder
@@ -153,29 +155,31 @@ public class DatasetVersionTest {
     }
 
 	@Test
-	public void validate_emptyFileMetadata() {
+	void validate_emptyFileMetadata() {
 		datasetVersion.setFileMetadatas(new ArrayList<>());
 		Set<ConstraintViolation> violations2 = datasetVersion.validate();
 		assertEquals(0, violations2.size());
 	}
 
 	@Test
-	public void validate_noDirectoryLabel_expectedNoViolation() {
+	void validate_noDirectoryLabel_expectedNoViolation() {
 		checkConstraintViolations(null, 0);
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = {"/has/leading/slash", "has/trailing/slash/", "/leadingAndTrailing/"})
-	public void validate_expectedViolationWithMessage(String directoryLabel) {
+	void validate_expectedViolationWithMessage(String directoryLabel) {
 		Set<ConstraintViolation> violations = checkConstraintViolations(directoryLabel, 1);
 		assertEquals("{directoryname.illegalCharacters}", violations.iterator().next().getMessageTemplate());
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = {"just/right", "", "a"})
-	public void validate_expectedNoViolation(String directoryLabel) {
+	void validate_expectedNoViolation(String directoryLabel) {
 		checkConstraintViolations(directoryLabel, 0);
 	}
+
+    // -------------------- PRIVATE --------------------
 
     private void verifySortOrder(List<FileMetadata> metadatas, String label, int expectedOrderIndex) {
         assertEquals(label, metadatas.get(expectedOrderIndex).getLabel());

@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.Objects;
 
@@ -27,21 +28,8 @@ import java.util.Objects;
 @Table(indexes = {@Index(columnList = "datasetfieldtype_id"), @Index(columnList = "displayorder")})
 public class ControlledVocabularyValue implements Serializable {
 
-    public static final Comparator<ControlledVocabularyValue> DisplayOrder = new Comparator<ControlledVocabularyValue>() {
-        @Override
-        public int compare(ControlledVocabularyValue o1, ControlledVocabularyValue o2) {
-            return Integer.compare(o1.getDisplayOrder(), o2.getDisplayOrder());
-        }
-    };
-
-    public ControlledVocabularyValue() {
-    }
-
-    public ControlledVocabularyValue(Long id, String strValue, DatasetFieldType datasetFieldType) {
-        this.id = id;
-        this.strValue = strValue;
-        this.datasetFieldType = datasetFieldType;
-    }
+    public static final Comparator<ControlledVocabularyValue> DisplayOrder
+            = Comparator.comparingInt(ControlledVocabularyValue::getDisplayOrder);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -58,83 +46,104 @@ public class ControlledVocabularyValue implements Serializable {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String strValue;
 
+    private String identifier;
+
+    private int displayOrder;
+
+    @ManyToOne
+    // @JoinColumn( nullable = false ) TODO this breaks for the N/A value. need to create an N/A type for that value.
+    private DatasetFieldType datasetFieldType;
+
+    @OneToMany(mappedBy = "controlledVocabularyValue", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private Collection<ControlledVocabAlternate> controlledVocabAlternates = new ArrayList<>();
+
+    @Column
+    private String displayGroup;
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    public ControlledVocabularyValue() { }
+
+    public ControlledVocabularyValue(Long id, String strValue, DatasetFieldType datasetFieldType) {
+        this.id = id;
+        this.strValue = strValue;
+        this.datasetFieldType = datasetFieldType;
+    }
+
+    // -------------------- GETTERS --------------------
+
     public String getStrValue() {
         return strValue;
     }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public int getDisplayOrder() {
+        return this.displayOrder;
+    }
+
+    public DatasetFieldType getDatasetFieldType() {
+        return datasetFieldType;
+    }
+
+    public Collection<ControlledVocabAlternate> getControlledVocabAlternates() {
+        return controlledVocabAlternates;
+    }
+
+    public String getDisplayGroup() {
+        return displayGroup;
+    }
+
+    // -------------------- LOGIC --------------------
+
+    public String getLocaleStrValue() {
+        return getLocaleStrValue(BundleUtil.getCurrentLocale());
+    }
+
+    public String getLocaleStrValue(Locale locale) {
+        String key = strValue.toLowerCase().replace(" ", "_");
+        key = StringUtils.stripAccents(key);
+        try {
+            return BundleUtil.getStringFromNonDefaultBundleWithLocale(
+                    "controlledvocabulary." + this.datasetFieldType.getName() + "." + key,
+                    getDatasetFieldType().getMetadataBlock().getName(), locale);
+        } catch (MissingResourceException | NullPointerException e) {
+            return getStrValue();
+        }
+    }
+
+    // -------------------- SETTERS --------------------
 
     public void setStrValue(String strValue) {
         this.strValue = strValue;
 
     }
 
-    private String identifier;
-
-    public String getIdentifier() {
-        return identifier;
-    }
-
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
-    }
-
-
-    private int displayOrder;
-
-    public int getDisplayOrder() {
-        return this.displayOrder;
     }
 
     public void setDisplayOrder(int displayOrder) {
         this.displayOrder = displayOrder;
     }
 
-
-    @ManyToOne
-    // @JoinColumn( nullable = false ) TODO this breaks for the N/A value. need to create an N/A type for that value.
-    private DatasetFieldType datasetFieldType;
-
-    public DatasetFieldType getDatasetFieldType() {
-        return datasetFieldType;
-    }
-
     public void setDatasetFieldType(DatasetFieldType datasetFieldType) {
         this.datasetFieldType = datasetFieldType;
-    }
-
-    @OneToMany(mappedBy = "controlledVocabularyValue", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private Collection<ControlledVocabAlternate> controlledVocabAlternates = new ArrayList<>();
-
-    public Collection<ControlledVocabAlternate> getControlledVocabAlternates() {
-        return controlledVocabAlternates;
     }
 
     public void setControlledVocabAlternates(Collection<ControlledVocabAlternate> controlledVocabAlternates) {
         this.controlledVocabAlternates = controlledVocabAlternates;
     }
 
-    public String getLocaleStrValue() {
-        String key = strValue.toLowerCase().replace(" ", "_");
-        key = StringUtils.stripAccents(key);
-        try {
-            return BundleUtil.getStringFromNonDefaultBundle("controlledvocabulary." + this.datasetFieldType.getName() + "." + key,
-                                                        getDatasetFieldType().getMetadataBlock().getName());
-        } catch (MissingResourceException | NullPointerException e) {
-            return getStrValue();
-        }
+    public void setDisplayGroup(String displayGroup) {
+        this.displayGroup = displayGroup;
     }
 
-    @Column
-    private String displayGroup;
+    // -------------------- hashCode & equals --------------------
 
-    public String getDisplayGroup() {
-		return displayGroup;
-	}
-
-	public void setDisplayGroup(String displayGroup) {
-		this.displayGroup = displayGroup;
-	}
-
-	@Override
+    @Override
     public int hashCode() {
         int hash = 0;
         hash += (this.id != null ? this.id.hashCode() : 0);
@@ -150,9 +159,10 @@ public class ControlledVocabularyValue implements Serializable {
         return Objects.equals(getId(), other.getId());
     }
 
+    // -------------------- toString --------------------
+
     @Override
     public String toString() {
         return "ControlledVocabularyValue[ id=" + id + " ]";
     }
-
 }
