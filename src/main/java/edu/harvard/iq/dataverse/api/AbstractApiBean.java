@@ -753,8 +753,9 @@ public abstract class AbstractApiBean {
 
     /**
      * Adding Signposting
+     *
      * @param bld
-     * @return
+     * @return HTTP OK response which contains the json structure of linkset
      */
     protected Response okLinkset( JsonArrayBuilder bld ) {
         return Response.ok( Json.createObjectBuilder()

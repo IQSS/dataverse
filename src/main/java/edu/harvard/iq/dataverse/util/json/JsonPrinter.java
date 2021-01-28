@@ -882,18 +882,19 @@ public class JsonPrinter {
 
 
     /**
-     * Add Signposting
-     * @param sr
-     * @return
+     * Get signposting from SignpostingResources
+     *
+     * @param sr corresponding SignpostingResources
+     * @return json linkset
      */
     public static JsonArrayBuilder jsonLinkset(SignpostingResources sr) {
         return sr.getJsonLinkset();
     }
 
     /**
-     * Add Signposting
-     * @param ds
-     * @return
+     * Get signposting from Dataset
+     * @param ds the designated Dataset
+     * @return json linkset
      */
     public static JsonObjectBuilder jsonLinkset(Dataset ds) {
         return jsonObjectBuilder()

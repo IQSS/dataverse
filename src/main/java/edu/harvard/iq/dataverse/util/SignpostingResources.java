@@ -35,6 +35,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.LinkedList;
 import java.util.List;
@@ -111,47 +112,42 @@ public class SignpostingResources {
         return identifierSchema;
     }
 
+    /**
+     * Get key, values of signposting items and return as string
+     *
+     * @return comma delimited string
+     */
     public String getLinks(){
-        // TODO: individual value should be ignored if it's empty
-        // list of the strings going to be returned
         List<String> valueList = new LinkedList<>();
         Dataset ds = workingDatasetVersion.getDataset();
 
-        // signposting identifierSchema
         String identifierSchema = getIdentifierSchema(workingDatasetVersion.getDatasetAuthors());
         if (!identifierSchema.equals("")) {
             valueList.add(identifierSchema);
         }
 
-        // Signposting citeAs
         if (!Objects.equals(ds.getPersistentURL(), "")) {
             String citeAs = "<" + ds.getPersistentURL() + ">;rel=\"cite-as\"";
             valueList.add(citeAs);
         }
 
-        // Signposting describedby
         String describedby = "<" + citeAsJsonObj.getString(ds.getProtocol()) + ds.getAuthority() + "/"
                 + ds.getIdentifier() + ">;rel=\"describedby\"" + "; type=\""+ citeAsJsonObj.getString("type") + "\"";
         describedby += ",<" + systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=schema.org&persistentId="
                 + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() + ">;rel=\"describedby\"" + ";type=\"application/json+ld\"";
         valueList.add(describedby);
 
-        // Signposting type
         String type = "<https://schema.org/AboutPage>;rel=\"type\"";
         valueList.add(type);
 
-        // Signposting license
         // TODO: support only CC0 now, should add flexible license support when flex-terms is ready
-        String license = ""; //non only CC0
+        String license = "";
         if (workingDatasetVersion.getTermsOfUseAndAccess().getLicense() == TermsOfUseAndAccess.License.CC0){
-            //On the current Dataverse, only None and CC0. In the signposting protocol: cardinality is 1
+            // On the current Dataverse, only None and CC0. In the signposting protocol: cardinality is 1
             license = "<https://creativecommons.org/publicdomain/zero/1.0/>;rel=\"license\"";
             valueList.add(license);
         }
 
-        // Signposting linkset
-        // TODO Fix: base url is empty in the linkset string
-        // String url = settingsWrapper.getValueForKey(SettingsServiceBean.Key.ComputeBaseUrl);
         String linkset = "<" + systemConfig.getDataverseSiteUrl() + "/api/datasets/:persistentId/versions/"
                 + workingDatasetVersion.getVersionNumber() + "." + workingDatasetVersion.getMinorVersionNumber()
                 + "/linkset?persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() + "> ; rel=\"linkset\";type=\"application/linkset+json\"";
@@ -177,7 +173,6 @@ public class SignpostingResources {
         JsonArrayBuilder authors = getIdentifiersSchema(workingDatasetVersion.getDatasetAuthors());
 
         JsonArrayBuilder items = Json.createArrayBuilder();
-//        List<DataFile> dfs = ds.getFiles();
 
         List<FileMetadata> fms = workingDatasetVersion.getFileMetadatas();
         for (FileMetadata fm:fms){
@@ -243,29 +238,32 @@ public class SignpostingResources {
 
 
     private String getPublicDownloadUrl(DataFile dataFile) {
+        StorageIO<DataFile> storageIO = null;
         try {
-            StorageIO<DataFile> storageIO = dataFile.getStorageIO();
-            if (storageIO instanceof SwiftAccessIO) {
-                String fileDownloadUrl = null;
-                try {
-                    SwiftAccessIO<DataFile> swiftIO = (SwiftAccessIO<DataFile>) storageIO;
-                    swiftIO.open();
-                    //if its a public install, lets just give users the permanent URL!
-                    if (systemConfig.isPublicInstall()){
-                        fileDownloadUrl = swiftIO.getRemoteUrl();
-                    } else {
-                        //TODO: if a user has access to this file, they should be given the swift url
-                        // perhaps even we could use this as the "private url"
-                        fileDownloadUrl = swiftIO.getTemporarySwiftUrl();
-                    }
-                    return fileDownloadUrl;
+            storageIO = dataFile.getStorageIO();
+        } catch (IOException e) {
+            logger.warning(String.format("Error getting storageID from file; original error message is: %s", e.getLocalizedMessage()));
+        }
 
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        if (storageIO instanceof SwiftAccessIO) {
+            String fileDownloadUrl = null;
+            SwiftAccessIO<DataFile> swiftIO = (SwiftAccessIO<DataFile>) storageIO;
+            try {
+                swiftIO.open();
+            } catch (IOException e) {
+                logger.warning(String.format("Error opening the swiftIO; original error message is: %s", e.getLocalizedMessage()));
             }
-        } catch (Exception e){
-            e.printStackTrace();
+
+            //if its a public install, lets just give users the permanent URL!
+            if (systemConfig.isPublicInstall()){
+                fileDownloadUrl = swiftIO.getRemoteUrl();
+            } else {
+                //TODO: if a user has access to this file, they should be given the swift url
+                // perhaps even we could use this as the "private url"
+                fileDownloadUrl = swiftIO.getTemporarySwiftUrl();
+            }
+            return fileDownloadUrl;
+
         }
 
         return FileUtil.getPublicDownloadUrl(systemConfig.getDataverseSiteUrl(), null, dataFile.getId());
