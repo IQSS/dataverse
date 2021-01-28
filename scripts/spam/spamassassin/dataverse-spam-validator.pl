@@ -2,10 +2,19 @@
 use Text::SpamAssassin;
 use JSON; 
 use strict; 
+use DBI; 
+
 
 my $DV_SA_INSTALL_DIRECTORY = $ENV{'DV_SA_INSTALL_DIRECTORY'}; 
 $DV_SA_INSTALL_DIRECTORY = "." unless $DV_SA_INSTALL_DIRECTORY; 
 my $SPAM_DETECTION_RULES = $DV_SA_INSTALL_DIRECTORY . "/dataverse_spam_prefs.cf";
+
+
+my $port = 5432;
+my $host = "localhost";
+my $username = "dvnapp";
+my $password = 'secret';
+my $database = "spamdb";
 
 unless ( -f $SPAM_DETECTION_RULES )
 {
@@ -74,15 +83,21 @@ my $json = JSON->new->allow_nonref;
 my $test_subject = ""; 
 my $test_textbody = ""; 
 
+my $dv_alias = ""; # for dataverses only;
+my $ds_identifier = "";
+
 eval {
     my $jsonref = $json->decode( $jsoninput );
 
+    my $dvdescription = "";
     if ( $dtype eq "dataverse" )
     {
 	my $dvname = $jsonref->{name};
-	my $dvdescription = $jsonref->{description}; 
+	$dvdescription = $jsonref->{description}; 
+	$dv_alias = $jsonref->{alias}; 
 
 	print "dataverse name: " . $dvname . "\n" if $verbose;
+	print "dataverse alias: " . $dv_alias . "\n" if $verbose;
 	print "dataverse description: " . $dvdescription . "\n" if $verbose; 
 
 	# The description of the dataverse is the main body of text on which we run SpamAssassin: 
@@ -94,6 +109,19 @@ eval {
     {
 	my $dstitle = "";
 	my $dsdescription = ""; 
+
+
+	$ds_identifier = $jsonref->{protocol} . ":" . $jsonref->{authority} . "/" . $jsonref->{identifier}; 
+	print "identifier: " . $ds_identifier . "\n" if $verbose;
+
+	# check the white list: 
+
+	my $whitelisted = &check_dataset_whitelist($ds_identifier, $DV_SA_INSTALL_DIRECTORY . "/dataset_whitelist.txt");
+
+	if ($whitelisted)
+	{
+	    exit 0;
+	}
 
 	my $metadatafields = $jsonref->{datasetVersion}->{metadataBlocks}->{citation}->{fields}; 
 
@@ -112,7 +140,7 @@ eval {
 		# (and multiple values are allowed!)
 		my $subfields = $field->{value}; 
 	    
-		for my $sfield (@$subfields)
+		for my $sfield (@$subfields) 
 		{
 		    # dsDescriptionValue is a required subfield... 
 		    # so we can expect it to be populated:
@@ -140,7 +168,7 @@ my $sa = Text::SpamAssassin->new(
     },
     );
  
-$sa->set_text($test_textbody);
+$sa->set_text($test_subject . " " . $test_textbody);
 $sa->set_header("Subject", $test_subject);
  
 # ... and run the check:
@@ -150,11 +178,74 @@ print "result: $result->{verdict}\n" if $verbose;
 print "score: $result->{score}\n" if $verbose; 
 print "matched rules: $result->{rules}\n" if $verbose; 
 
+system ("cp $infile $DV_SA_INSTALL_DIRECTORY/saved/"); 
+
 if ( $result->{verdict} eq "SUSPICIOUS" )
 {
+    # let's create a spamdb entry: 
+    # (skipped if the db credentials are not defined)
+    
+    if ( $database )
+    {
+	my $dbh = DBI->connect("DBI:Pg:dbname=$database;host=$host;port=$port",$username,$password); 
+
+	my $createquery = ""; 
+	my $sdalias; # only for dataverses
+	my $sdtitle = $dbh->quote($test_subject);
+	my $sdidentifier; # only for datasets
+	my $sdscore = $result->{score}; 
+
+	# constructing a formatted time stamp is a bit of a project:
+	my @lt = localtime; 
+	my $sddate = $dbh->quote((1900 + $lt[5]) . "-" . ($lt[4] + 1) . "-" . $lt[3] . " " . $lt[2] . ":" . $lt[1] . ":" . $lt[0]);
+    
+	if ( $dtype eq "dataverse" )
+	{
+	    $sdalias = $dbh->quote($dv_alias);
+	    $createquery = qq{INSERT INTO positivetestresult (alias, title, score, testdate) VALUES ($sdalias, $sdtitle, $sdscore, $sddate);};
+	}
+	else 
+	{
+	    $sdidentifier = $dbh->quote($ds_identifier); 
+	    $createquery = qq{INSERT INTO positivetestresult (identifier, title, score, testdate) VALUES ($sdidentifier, $sdtitle, $sdscore, $sddate);};
+	}
+
+	my $sth; 
+
+	eval {
+	    $sth = $dbh->prepare($createquery); 
+	    $sth->execute();
+	};
+	if ($@) {
+	    print STDERR "failed to save the db entry: " . $@ . "\n";
+	    exit 0; 
+	}
+
+	$sth->finish; 
+	$dbh->disconnect; 
+    }
+
     exit 1; 
 }
 
 exit 0; 
 
 
+sub check_dataset_whitelist {
+    my ($dsid, $wlfile) = @_;
+
+    open WLF, $wlfile || return 0;
+
+    while (<WLF>)
+    {
+	chop;
+	if ($_ eq $dsid)
+	{
+	    print "dataset $dsid whitelisted\n" if $verbose;
+	    close WLF;
+	    return 1;
+	}
+    }
+    close WLF;
+    return 0;
+}
