@@ -1,7 +1,7 @@
 External Tools
 ==============
 
-External tools can provide additional features that are not part of the Dataverse software itself, such as data file previews, visualization, and curation.
+External tools can provide additional features that are not part of the Dataverse Platform itself, such as data file previews, visualization, and curation.
 
 .. contents:: |toctitle|
   :local:

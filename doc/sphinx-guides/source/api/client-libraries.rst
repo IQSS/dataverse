@@ -34,6 +34,6 @@ The package is currently maintained by `Will Beasley <https://github.com/wibeasl
 Java
 ----
 
-https://github.com/IQSS/dataverse-client-java is the official Java library for Dataverse software APIs.
+https://github.com/IQSS/dataverse-client-java is the official Java library for Dataverse Platform APIs.
 
 `Richard Adams <http://www.researchspace.com/electronic-lab-notebook/about_us_team.html>`_ from `ResearchSpace <http://www.researchspace.com>`_ created and maintains this library.

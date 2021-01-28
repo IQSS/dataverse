@@ -1,7 +1,7 @@
 Building External Tools
 =======================
 
-External tools can provide additional features that are not part of the Dataverse software itself, such as data exploration. Thank you for your interest in building an external tool for the Dataverse software!
+External tools can provide additional features that are not part of the Dataverse Platform itself, such as data exploration. Thank you for your interest in building an external tool for the Dataverse Platform!
 
 .. contents:: |toctitle|
   :local:
@@ -9,7 +9,7 @@ External tools can provide additional features that are not part of the Datavers
 Introduction
 ------------
 
-External tools are additional applications the user can access or open from your Dataverse installation to preview, explore, and manipulate data files and datasets. The term "external" is used to indicate that the tool is not part of the main Dataverse software.
+External tools are additional applications the user can access or open from your Dataverse installation to preview, explore, and manipulate data files and datasets. The term "external" is used to indicate that the tool is not part of the main Dataverse Platform.
 
 Once you have created the external tool itself (which is most of the work!), you need to teach a Dataverse installation how to construct URLs that your tool needs to operate. For example, if you've deployed your tool to fabulousfiletool.com your tool might want the ID of a file and the siteUrl of the Dataverse installation like this: https://fabulousfiletool.com?fileId=42&siteUrl=http://demo.dataverse.org
 
@@ -164,12 +164,12 @@ Once you've gotten your tool working, please make a pull request to update the l
 
 Unless your tool runs entirely in a browser, you may have integrated server-side software with your Dataverse installation. If so, please double check that your software is listed in the :doc:`/admin/integrations` section of the Admin Guide and if not, please open an issue or pull request to add it. Thanks!
 
-If you've thought to yourself that there ought to be an app store for Dataverse software external tools, you're not alone. Please see https://github.com/IQSS/dataverse/issues/5688 :)
+If you've thought to yourself that there ought to be an app store for Dataverse Platform external tools, you're not alone. Please see https://github.com/IQSS/dataverse/issues/5688 :)
 
 Demoing Your External Tool
 ++++++++++++++++++++++++++
 
-https://demo.dataverse.org is the place to play around with the Dataverse software and your tool can be included. Please email support@dataverse.org to start the conversation about adding your tool. Additionally, you are welcome to open an issue at https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible which already includes a number of the tools listed above.
+https://demo.dataverse.org is the place to play around with the Dataverse Platform and your tool can be included. Please email support@dataverse.org to start the conversation about adding your tool. Additionally, you are welcome to open an issue at https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible which already includes a number of the tools listed above.
 
 Announcing Your External Tool
 +++++++++++++++++++++++++++++

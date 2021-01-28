@@ -8,7 +8,6 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
-import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
@@ -21,7 +20,6 @@ import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -173,40 +171,35 @@ public class SavedSearchServiceBean {
         JsonArrayBuilder savedSearchArrayBuilder = Json.createArrayBuilder();
         JsonArrayBuilder infoPerHit = Json.createArrayBuilder();
         SolrQueryResponse queryResponse = findHits(savedSearch);
-
-        List skipList = new ArrayList(); // a list for the definition point itself and already linked objects
-        skipList.add(savedSearch.getDefinitionPoint().getId());
         
+        // get linked objects and add to a list
         TypedQuery<Long> typedQuery = em.createNamedQuery("DataverseLinkingDataverse.findIdsByLinkingDataverseId", Long.class)
             .setParameter("linkingDataverseId", savedSearch.getDefinitionPoint().getId());
-        skipList.addAll(typedQuery.getResultList());
+        List alreadyLinkedObjectIds = typedQuery.getResultList();
         
         typedQuery = em.createNamedQuery("DatasetLinkingDataverse.findIdsByLinkingDataverseId", Long.class)
             .setParameter("linkingDataverseId", savedSearch.getDefinitionPoint().getId());
-        skipList.addAll(typedQuery.getResultList());
-           
+        alreadyLinkedObjectIds.addAll(typedQuery.getResultList());
+        
         for (SolrSearchResult solrSearchResult : queryResponse.getSolrSearchResults()) {
 
             JsonObjectBuilder hitInfo = Json.createObjectBuilder();
             hitInfo.add("name", solrSearchResult.getNameSort());
             hitInfo.add("dvObjectId", solrSearchResult.getEntityId());
-            
-            if (skipList.contains(solrSearchResult.getEntityId())) {
-                hitInfo.add(resultString, "Skipping because would link to itself or an already linked entity.");
-                infoPerHit.add(hitInfo);
-                continue;
-            }
 
             DvObject dvObjectThatDefinitionPointWillLinkTo = dvObjectService.findDvObject(solrSearchResult.getEntityId());
             if (dvObjectThatDefinitionPointWillLinkTo == null) {
                 hitInfo.add(resultString, "Could not find DvObject with id " + solrSearchResult.getEntityId());
                 infoPerHit.add(hitInfo);
-                continue;
-            }   
-                    
+                break;
+            }
             if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataverse()) {
                 Dataverse dataverseToLinkTo = (Dataverse) dvObjectThatDefinitionPointWillLinkTo;
-                if (dataverseToLinkToIsAlreadyPartOfTheSubtree(savedSearch.getDefinitionPoint(), dataverseToLinkTo)) {
+                if (wouldResultInLinkingToItself(savedSearch.getDefinitionPoint(), dataverseToLinkTo)) {
+                    hitInfo.add(resultString, "Skipping because dataverse id " + dataverseToLinkTo.getId() + " would link to itself.");
+                } else if (alreadyLinkedToTheDataverse(alreadyLinkedObjectIds, dataverseToLinkTo)) {
+                    hitInfo.add(resultString, "Skipping because dataverse " + savedSearch.getDefinitionPoint().getId() + " already links to dataverse " + dataverseToLinkTo.getId() + ".");
+                } else if (dataverseToLinkToIsAlreadyPartOfTheSubtree(savedSearch.getDefinitionPoint(), dataverseToLinkTo)) {
                     hitInfo.add(resultString, "Skipping because " + dataverseToLinkTo + " is already part of the subtree for " + savedSearch.getDefinitionPoint());
                 } else {
                     DataverseLinkingDataverse link = commandEngine.submitInNewTransaction(new LinkDataverseCommand(dvReq, savedSearch.getDefinitionPoint(), dataverseToLinkTo));
@@ -214,22 +207,29 @@ public class SavedSearchServiceBean {
                 }
             } else if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataset()) {
                 Dataset datasetToLinkTo = (Dataset) dvObjectThatDefinitionPointWillLinkTo;
-                if (datasetToLinkToIsAlreadyPartOfTheSubtree(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
+                if (alreadyLinkedToTheDataset(alreadyLinkedObjectIds, datasetToLinkTo)) {
+                    hitInfo.add(resultString, "Skipping because dataverse " + savedSearch.getDefinitionPoint() + " already links to dataset " + datasetToLinkTo + ".");
+                } else if (datasetToLinkToIsAlreadyPartOfTheSubtree(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
                     // already there from normal search/browse
                     hitInfo.add(resultString, "Skipping because dataset " + datasetToLinkTo.getId() + " is already part of the subtree for " + savedSearch.getDefinitionPoint().getAlias());
                 } else if (datasetAncestorAlreadyLinked(savedSearch.getDefinitionPoint(), datasetToLinkTo)) {
                     hitInfo.add(resultString, "FIXME: implement this?");
+                } else if (!datasetToLinkTo.isReleased()) {
+                    hitInfo.add(resultString, "Skipping because dataset " + datasetToLinkTo.getId() + " is not released " );
                 }
                 else {
                     DatasetLinkingDataverse link = commandEngine.submitInNewTransaction(new LinkDatasetCommand(dvReq, savedSearch.getDefinitionPoint(), datasetToLinkTo));
+                    alreadyLinkedObjectIds.add(datasetToLinkTo.getId()); // because search results could produce two hits (published and draft)
                     hitInfo.add(resultString, "Persisted DatasetLinkingDataverse id " + link.getId() + " link of " + link.getDataset() + " to " + link.getLinkingDataverse());
                 }
+            } else if (dvObjectThatDefinitionPointWillLinkTo.isInstanceofDataFile()) {
+                hitInfo.add(resultString, "Skipping because the search matched a file. The matched file id was " + dvObjectThatDefinitionPointWillLinkTo.getId() + ".");
             } else {
                 hitInfo.add(resultString, "Unexpected DvObject type.");
             }
             infoPerHit.add(hitInfo);
         }
-        
+
         JsonObjectBuilder info = getInfo(savedSearch, infoPerHit);
         if (debugFlag) {
             info.add("debug", getDebugInfo(savedSearch));
@@ -237,12 +237,13 @@ public class SavedSearchServiceBean {
         savedSearchArrayBuilder.add(info);
         response.add("hits for saved search id " + savedSearch.getId(), savedSearchArrayBuilder);
         
-        logger.info("SAVED SEARCH (" + savedSearch.getId() + ") total time in ms: " + (new Date().getTime() - start.getTime()));
+        Date end = new Date();
+        logger.info("SAVED SEARCH (" + savedSearch.getId() + ") total time in ms: " + (end.getTime() - start.getTime()));
         return response;
     }
 
     private SolrQueryResponse findHits(SavedSearch savedSearch) throws SearchException {
-        String sortField = SearchFields.TYPE; // first return dataverses, then datasets
+        String sortField = SearchFields.RELEVANCE;
         String sortOrder = SortBy.DESCENDING;
         SortBy sortBy = new SortBy(sortField, sortOrder);
         int paginationStart = 0;
@@ -250,23 +251,16 @@ public class SavedSearchServiceBean {
         int numResultsPerPage = Integer.MAX_VALUE;
         List<Dataverse> dataverses = new ArrayList<>();
         dataverses.add(savedSearch.getDefinitionPoint());
-        
-        // since saved search can only link Dataverses and Datasets, we can limit our search
-        List<String> searchFilterQueries = savedSearch.getFilterQueriesAsStrings();        
-        searchFilterQueries.add("dvObjectType:(dataverses OR datasets)");
-                        
-        // run the search as GuestUser to only link published objects
         SolrQueryResponse solrQueryResponse = searchService.search(
-                new DataverseRequest(GuestUser.get(), getHttpServletRequest()),
+                new DataverseRequest(savedSearch.getCreator(), getHttpServletRequest()),
                 dataverses,
                 savedSearch.getQuery(),
-                searchFilterQueries,
+                savedSearch.getFilterQueriesAsStrings(),
                 sortBy.getField(),
                 sortBy.getOrder(),
                 paginationStart,
                 dataRelatedToMe,
-                numResultsPerPage,
-                false // do not retrieve entities
+                numResultsPerPage
         );
         return solrQueryResponse;
     }
@@ -293,6 +287,18 @@ public class SavedSearchServiceBean {
             filterQueriesArrayBuilder.add(filterQueryToAdd);
         }
         return filterQueriesArrayBuilder;
+    }
+
+    private boolean alreadyLinkedToTheDataverse(List<Long> alreadyLinkedObjectIds, Dataverse dataverseToLinkTo) {
+        return alreadyLinkedObjectIds.contains(dataverseToLinkTo.getId());
+    }
+
+    private boolean alreadyLinkedToTheDataset(List<Long> alreadyLinkedObjectIds, Dataset linkToThisDataset) {
+        return alreadyLinkedObjectIds.contains(linkToThisDataset.getId());
+    }
+
+    private static boolean wouldResultInLinkingToItself(Dataverse savedSearchDefinitionPoint, Dataverse dataverseToLinkTo) {
+        return savedSearchDefinitionPoint.equals(dataverseToLinkTo);
     }
 
     private boolean datasetToLinkToIsAlreadyPartOfTheSubtree(Dataverse definitionPoint, Dataset datasetWeMayLinkTo) {
@@ -345,12 +351,14 @@ public class SavedSearchServiceBean {
          * Saved Search was created. The default IP address in the
          * DataverseRequest constructor is used instead, which as of this
          * writing is 0.0.0.0 to mean "undefined". Is this a feature or a bug?
-         * This is not an issue for the search itself, since it is now run as the
-         * Guest User, but would present a problem if the user does not have
-         * permission to create links and could only create the saved search due to 
-         * a granted permission from the IP Group.
-         * As of this writing Saved Search is a superuser-only feature; so IP
-         * Groups are irrelevant because all superusers can create links.
+         * What is the expected interplay between Saved Search and IP Groups?
+         * Users might be surprised to see certain DvObjects in the results of
+         * their query when creating the Saved Search and later find that those
+         * DvObjects, which are only visible due to an IP Groups membership, are
+         * not found by Saved Search when executed by cron, for example. As of
+         * this writing Saved Search is a superuser-only feature so perhaps IP
+         * Groups are irrelevant because all DvObjects are discoverable to
+         * superusers.
          */
         return null;
     }

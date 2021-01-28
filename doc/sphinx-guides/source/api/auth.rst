@@ -1,7 +1,7 @@
 API Tokens and Authentication 
 =============================
 
-An API token is similar to a password and allows you to authenticate to Dataverse software APIs to perform actions as you. Many Dataverse software APIs require the use of an API token.
+An API token is similar to a password and allows you to authenticate to Dataverse Platform APIs to perform actions as you. Many Dataverse Platform APIs require the use of an API token.
 
 .. contents:: |toctitle|
     :local:
@@ -25,7 +25,7 @@ Note: The SWORD API uses a different way of passing the API token. Please see :r
 
 See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
 
-There are two ways to pass your API token to Dataverse software APIs. The preferred method is to send the token in the ``X-Dataverse-key`` HTTP header, as in the following curl example.
+There are two ways to pass your API token to Dataverse Platform APIs. The preferred method is to send the token in the ``X-Dataverse-key`` HTTP header, as in the following curl example.
 
 .. code-block:: bash
 

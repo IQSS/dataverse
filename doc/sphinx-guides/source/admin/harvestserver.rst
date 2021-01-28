@@ -50,7 +50,7 @@ the terms "OAI Set" and "Harvesting Set" are used
 interchangeably. Sets are defined by search queries. Any such query
 that finds any number of published, local (non-harvested) datasets can
 be used to create an OAI set. Sets can overlap local Dataverse collections, and can include as few or as many of your local datasets as you wish. A
-good way to master the Dataverse software search query language is to
+good way to master the Dataverse Platform search query language is to
 experiment with the Advanced Search page. We also recommend that you
 consult the :doc:`/api/search` section of the API Guide. 
 

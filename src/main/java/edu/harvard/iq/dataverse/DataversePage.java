@@ -787,9 +787,18 @@ public class DataversePage implements java.io.Serializable {
             return "";
         }
 
+        AuthenticatedUser savedSearchCreator = getAuthenticatedUser();
+        if (savedSearchCreator == null) {
+            String msg = BundleUtil.getStringFromBundle("dataverse.link.user");
+            logger.severe(msg);
+            JsfHelper.addErrorMessage(msg);
+            return returnRedirect();
+        }
+
         linkingDataverse = dataverseService.find(linkingDataverseId);
 
         LinkDataverseCommand cmd = new LinkDataverseCommand(dvRequestService.getDataverseRequest(), linkingDataverse, dataverse);
+        //LinkDvObjectCommand cmd = new LinkDvObjectCommand (session.getUser(), linkingDataverse, dataverse);
         try {
             commandEngine.submit(cmd);
         } catch (CommandException ex) {
@@ -799,9 +808,32 @@ public class DataversePage implements java.io.Serializable {
             JsfHelper.addErrorMessage(msg);
             return returnRedirect();
         }
-        
-        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.linked.success.wait", getSuccessMessageArguments()));
-        return returnRedirect();        
+
+        SavedSearch savedSearchOfChildren = createSavedSearchForChildren(savedSearchCreator);
+
+        boolean createLinksAndIndexRightNow = false;
+        if (createLinksAndIndexRightNow) {
+            try {
+                // create links (does indexing) right now (might be expensive)
+                boolean debug = false;
+                DataverseRequest dataverseRequest = new DataverseRequest(savedSearchCreator, SavedSearchServiceBean.getHttpServletRequest());
+                savedSearchService.makeLinksForSingleSavedSearch(dataverseRequest, savedSearchOfChildren, debug);              
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.linked.success", getSuccessMessageArguments()));                   
+                return returnRedirect();
+            } catch (SearchException | CommandException ex) {
+                // error: solr is down, etc. can't link children right now
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.linked.internalerror", getSuccessMessageArguments()));
+                String msg = dataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName() + " but contents will not appear until an internal error has been fixed.";
+                logger.log(Level.SEVERE, "{0} {1}", new Object[]{msg, ex});
+                //JsfHelper.addErrorMessage(msg);
+                return returnRedirect();
+            }
+        } else {
+            // defer: please wait for the next timer/cron job
+            //JsfHelper.addSuccessMessage(dataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName() + ". Please wait for its contents to appear.");
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.linked.success.wait", getSuccessMessageArguments()));
+            return returnRedirect();
+        }
     }
     
     private List<String> getSuccessMessageArguments() {
