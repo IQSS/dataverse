@@ -117,12 +117,12 @@ public class ControlledVocabularyValue implements Serializable  {
         key = StringUtils.stripAccents(key);
         try {
             String val = BundleUtil.getStringFromPropertyFile("controlledvocabulary." + this.datasetFieldType.getName() + "." + key, getDatasetFieldType().getMetadataBlock().getName()); 
-            if( val== null) {
+            if( val == null) {
                 //Default to raw value 
                 val=strValue; 
             }
             return val;
-        } catch (MissingResourceException e) {
+        } catch (MissingResourceException | NullPointerException e) {
             return strValue;
         }
     }
