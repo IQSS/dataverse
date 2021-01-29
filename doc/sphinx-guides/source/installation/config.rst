@@ -146,7 +146,7 @@ As the person installing the Dataverse software, you may or may not be a local m
 Persistent Identifiers and Publishing Datasets
 ----------------------------------------------
 
-Persistent identifiers are a required and integral part of the Dataverse Platform. They provide a URL that is guaranteed to resolve to the datasets or files they represent. The Dataverse software currently supports creating identifiers using DOI and Handle.
+Persistent identifiers are a required and integral part of the Dataverse software. They provide a URL that is guaranteed to resolve to the datasets or files they represent. The Dataverse software currently supports creating identifiers using DOI and Handle.
 
 By default, the installer configures a default DOI namespace (10.5072) with DataCite as the registration provider. Please note that as of the release 4.9.3, we can no longer use EZID as the provider. Unlike EZID, DataCite requires that you register for a test account, configured with your own prefix (please contact support@datacite.org). Once you receive the login name, password, and prefix for the account, configure the credentials in your domain.xml, as the following two JVM options::
 

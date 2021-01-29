@@ -25,7 +25,7 @@ Windows is not well supported, unfortunately, but Vagrant and Minishift environm
 Install Java
 ~~~~~~~~~~~~
 
-Dataverse requires Java 11.
+The Dataverse software requires Java 11.
 
 We suggest downloading OpenJDK from https://adoptopenjdk.net
 

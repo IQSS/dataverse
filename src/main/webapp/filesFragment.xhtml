@@ -78,6 +78,21 @@
                                 <span class="glyphicon glyphicon-copy"></span> #{bundle['file.copy']}
                             </button>
                         </span>
+                        <script>
+                            //<![CDATA[
+                            $(document).ready(function () {
+                                // clipboard.js > cloud storage copy btn
+                                var clipboard = new Clipboard('button.btn-copy');
+
+                                clipboard.on('success', function (e) {
+                                    console.log(e);
+                                });
+                                clipboard.on('error', function (e) {
+                                    console.log(e);
+                                });
+                            });
+                            //]]>
+                        </script>
                     </div>
                 </div>
             </div>

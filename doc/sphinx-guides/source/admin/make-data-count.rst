@@ -1,7 +1,7 @@
 Make Data Count
 ===============
 
-`Make Data Count`_ is a project to collect and standardize metrics on data use, especially views, downloads, and citations. The Dataverse Platform can integrate Make Data Count to collect and display usage metrics including counts of dataset views, file downloads, and dataset citations.
+`Make Data Count`_ is a project to collect and standardize metrics on data use, especially views, downloads, and citations. The Dataverse software can integrate Make Data Count to collect and display usage metrics including counts of dataset views, file downloads, and dataset citations.
 
 .. contents:: Contents:
 	:local:
@@ -9,7 +9,7 @@ Make Data Count
 Introduction
 ------------
 
-`Make Data Count`_ is part of a broader Research Data Alliance (RDA) `Data Usage Metrics Working Group`_ which helped to produce a specification called the `COUNTER Code of Practice for Research Data`_ (`PDF`_, `HTML`_) that the Dataverse Platform makes every effort to comply with. The Code of Practice (CoP) is built on top of existing standards such as COUNTER and SUSHI that come out of the article publishing world.  The Make Data Count project has emphasized that they would like feedback on the code of practice. You can keep up to date on the Make Data Count project by subscribing to their `newsletter`_.
+`Make Data Count`_ is part of a broader Research Data Alliance (RDA) `Data Usage Metrics Working Group`_ which helped to produce a specification called the `COUNTER Code of Practice for Research Data`_ (`PDF`_, `HTML`_) that the Dataverse software makes every effort to comply with. The Code of Practice (CoP) is built on top of existing standards such as COUNTER and SUSHI that come out of the article publishing world.  The Make Data Count project has emphasized that they would like feedback on the code of practice. You can keep up to date on the Make Data Count project by subscribing to their `newsletter`_.
 
 Architecture
 ------------
@@ -29,7 +29,7 @@ The most important takeaways from the diagram are:
 - You should run Counter Processor once a day to create reports in SUSHI (JSON) format that are saved to disk for your Dataverse installation to process and that are sent to the DataCite hub.
 - You should set up a cron job to have your Dataverse installation process the daily SUSHI reports, updating the Dataverse installation database with the latest metrics.
 - You should set up a cron job to have your Dataverse installation pull the latest list of citations for each dataset on a periodic basis, perhaps weekly or daily. These citations come from Crossref via the DataCite hub.
-- APIs are available in the Dataverse Platform to retrieve Make Data Count metrics: views, downloads, and citations.
+- APIs are available in the Dataverse software to retrieve Make Data Count metrics: views, downloads, and citations.
 
 
 Limitations for Dataverse Installations Using Handles Rather Than DOIs
@@ -49,7 +49,7 @@ Data repositories using Handles and other identifiers are not supported by Make 
 |                     | MDC citations |                  |
 +---------------------+---------------+------------------+
 
-This being said, the Dataverse Platform usage logging can still generate logs and process those logs with Counter Processor to create json that details usage on a dataset level. Dataverse installations can ingest this locally generated json.
+This being said, the Dataverse software usage logging can still generate logs and process those logs with Counter Processor to create json that details usage on a dataset level. Dataverse installations can ingest this locally generated json.
 
 When editing the ``counter-processor-config.yaml`` file mentioned below, make sure that the ``upload_to_hub`` boolean is set to ``False``.
 
@@ -127,9 +127,9 @@ Soon we will be setting up a cron job to run nightly but we start with a single 
 Populate Views and Downloads Nightly
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Running ``main.py`` to create the SUSHI JSON file and the subsequent calling of the Dataverse Platform API to process it should be added as a cron job.
+Running ``main.py`` to create the SUSHI JSON file and the subsequent calling of the Dataverse software API to process it should be added as a cron job.
 
-The Dataverse Platform provides example scripts that run the steps to process new accesses and uploads and update your Dataverse installation's database (`counter_daily.sh</_static/util/counter_daily.sh>`) and to retrieve citations for all Datasets from DataCite (`counter_weekly.sh</_static/util/counter_weekly.sh>`). These scripts should be configured for your environment and can be run manually or as cron jobs.
+The Dataverse software provides example scripts that run the steps to process new accesses and uploads and update your Dataverse installation's database (`counter_daily.sh</_static/util/counter_daily.sh>`) and to retrieve citations for all Datasets from DataCite (`counter_weekly.sh</_static/util/counter_weekly.sh>`). These scripts should be configured for your environment and can be run manually or as cron jobs.
 
 Sending Usage Metrics to the DataCite Hub
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -164,7 +164,7 @@ Citations will be retrieved for each published dataset and recorded in the your 
 
 For how to get the citations out of your Dataverse installation, see "Retrieving Citations for a Dataset" under :ref:`Dataset Metrics <dataset-metrics-api>` in the :doc:`/api/native-api` section of the API Guide.
   
-Please note that while the Dataverse Platform has a metadata field for "Related Dataset" this information is not currently sent as a citation to Crossref.
+Please note that while the Dataverse software has a metadata field for "Related Dataset" this information is not currently sent as a citation to Crossref.
 
 Retrieving Make Data Count Metrics from the DataCite Hub
 --------------------------------------------------------
@@ -180,7 +180,7 @@ The following metrics can be downloaded directly from the DataCite hub (see http
 Retrieving Make Data Count Metrics from a Dataverse Installation
 ----------------------------------------------------------------
 
-The Dataverse Platform API endpoints for retrieving Make Data Count metrics are described below under :ref:`Dataset Metrics <dataset-metrics-api>` in the :doc:`/api/native-api` section of the API Guide.
+The Dataverse software API endpoints for retrieving Make Data Count metrics are described below under :ref:`Dataset Metrics <dataset-metrics-api>` in the :doc:`/api/native-api` section of the API Guide.
 
 Please note that it is also possible to retrieve metrics from the DataCite hub itself via https://api.datacite.org
 
