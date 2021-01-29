@@ -25,7 +25,7 @@ correct versions of the required third party R packages.
 setup described in the "Prerequisites" portion of the Installation
 Guide. Meaning that once completed, it installs everything needed to
 run TwoRavens, PLUS all the libraries and components required to
-ingest RData files, export as RData, and use Data Explorer.**
+ingest RData files and export as RData.**
 
 
 
