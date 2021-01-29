@@ -1,5 +1,5 @@
-Managing Datasets and Dataverses
-================================
+Managing Datasets and Dataverse Collections
+===========================================
 
 .. contents:: |toctitle|
 	:local:

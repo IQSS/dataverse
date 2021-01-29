@@ -52,8 +52,8 @@ Saved Search is currently an experimental feature only available to superusers. 
 Using Data
 ==========
 
-View Dataverses + Datasets
---------------------------
+View Dataverse Collections + Datasets
+-------------------------------------
 
 After performing a search and finding the Dataverse collection or dataset you are looking for, click on the name of the Dataverse collection or dataset or on the thumbnail image to be taken to the page for that Dataverse collection or dataset. Once on a Dataverse collection page, you can view the Dataverse collections, datasets, and files within that Dataverse collection.
 

@@ -199,7 +199,7 @@ Featured Dataverse Collection
 
 Featured Dataverse collections is a way to display sub Dataverse collections in your Dataverse collection that you want to feature for people to easily see when they visit your Dataverse collection. 
 
-Click on Featured Dataverses and a pop up will appear. Select which sub Dataverse collections you would like to have appear. 
+Click on Featured Dataverse Collections and a pop up will appear. Select which Dataverse subcollections you would like to have appear. 
 
 Note: Featured Dataverse collections can only be used with published Dataverse collections.
 
