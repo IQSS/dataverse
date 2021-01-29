@@ -162,9 +162,6 @@ public class EjbDataverseEngine {
     DatasetVersionServiceBean datasetVersionService;
 
     @EJB
-    MapLayerMetadataServiceBean mapLayerMetadata;
-
-    @EJB
     DataCaptureModuleServiceBean dataCaptureModule;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -563,11 +560,6 @@ public class EjbDataverseEngine {
                 @Override
                 public WorkflowServiceBean workflows() {
                     return workflowService;
-                }
-
-                @Override
-                public MapLayerMetadataServiceBean mapLayerMetadata() {
-                    return mapLayerMetadata;
                 }
 
                 @Override
