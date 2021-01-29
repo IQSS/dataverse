@@ -541,6 +541,7 @@ dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploa
 dataverse.files.<id>.min-part-size           <?>                 Multipart direct uploads will occur for files larger than this. Optional.  ``1024**3``
 dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.         (none)
 dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                            ``dataverse``
+dataverse.files.<id>.proxy-url               <?>                 URL of a proxy protecting the S3 store. Optional.                          (none)
 dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                    ``false``
 dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                           ``false``
 dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                         ``true``
@@ -559,6 +560,11 @@ Reported Working S3-Compatible Storage
   Set ``dataverse.files.<id>.payload-signing=true`` and ``dataverse.files.<id>.chunked-encoding=false`` to use Surf Object
   Store.
 
+Note that the ``dataverse.files.<id>.proxy-url`` setting can be used in installations where the object store is proxied, but it should be considered an advanced option that will require significant expertise to properly configure. 
+For direct uploads and downloads, Dataverse redirects to the proxy-url but presigns the urls based on the ``dataverse.files.<id>.custom-endpoint-url``.
+Additional configuration (appropriate CORS settings, proxy caching/timeout configuration, and proxy settings to pass headers to/from S3 and to avoid adding additional headers) will also be needed to enable use of a proxy with direct upload and download.
+For Amazon AWS, see comments in the edu.harvard.iq.dataverse.dataaccess.S3AccessIO class about support for AWS's bucket-specific DNS names.
+ 
 **HINT:** If you are successfully using an S3 storage implementation not yet listed above, please feel free to
 `open an issue at Github <https://github.com/IQSS/dataverse/issues/new>`_ and describe your setup.
 We will be glad to add it here.
@@ -768,7 +774,7 @@ Once you have created the analytics file, run this curl command to add it to you
 Tracking Button Clicks
 ++++++++++++++++++++++
 
-The basic analytics configuration above tracks page navigation. However, it does not capture potentially interesting events, such as those from users clicking buttons on pages, that do not result in a new page opening. In Dataverse, these events include file downloads, requesting access to restricted data, exporting metadata, social media sharing, requesting citation text, launching external tools or WorldMap, contacting authors, and launching computations.
+The basic analytics configuration above tracks page navigation. However, it does not capture potentially interesting events, such as those from users clicking buttons on pages, that do not result in a new page opening. In Dataverse, these events include file downloads, requesting access to restricted data, exporting metadata, social media sharing, requesting citation text, launching external tools, contacting authors, and launching computations.
 
 Both Google and Matomo provide the optional capability to track such events and Dataverse has added CSS style classes (btn-compute, btn-contact, btn-download, btn-explore, btn-export, btn-preview, btn-request, btn-share, and downloadCitation) to it's HTML to facilitate it.
 
@@ -1751,20 +1757,6 @@ The ``:TwoRavensUrl`` option is no longer valid. See :doc:`r-rapache-tworavens` 
 +++++++++++++++++++++
 
 The ``:TwoRavensTabularView`` option is no longer valid. See :doc:`r-rapache-tworavens` and the :doc:`/admin/external-tools` section of the Admin Guide.
-
-:GeoconnectCreateEditMaps
-+++++++++++++++++++++++++
-
-Set ``GeoconnectCreateEditMaps`` to true to allow the user to create maps using Geoconnect. This boolean enables the map configure tool option for a data file and the ingest to create a shape file.
-
-``curl -X PUT -d true http://localhost:8080/api/admin/settings/:GeoconnectCreateEditMaps``
-
-:GeoconnectViewMaps
-+++++++++++++++++++
-
-Set ``GeoconnectViewMaps`` to true to allow a user to view existing maps. This boolean enables the map explore tool option for a data file.
-
-``curl -X PUT -d true http://localhost:8080/api/admin/settings/:GeoconnectViewMaps``
 
 .. _:DatasetPublishPopupCustomText:
 

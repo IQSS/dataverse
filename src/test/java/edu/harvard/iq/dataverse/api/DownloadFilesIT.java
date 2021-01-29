@@ -2,8 +2,10 @@ package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
+import com.jayway.restassured.response.Headers;
 import com.jayway.restassured.response.Response;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -13,6 +15,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -365,6 +368,86 @@ public class DownloadFilesIT {
 
         // By passing format=original we get the original version, Stata (.dta) in this case.
         Assert.assertEquals(new HashSet<>(Arrays.asList("50by1000.dta", "MANIFEST.TXT")), gatherFilenames(downloadFiles2.getBody().asInputStream()));
+    }
+
+    /**
+     * Download a file with a UTF-8 filename with a space.
+     */
+    @Test
+    public void downloadFilenameUtf8() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
+
+        // Put a filename with an en-dash ("MY READ–ME.md") into a zip file.
+        StringBuilder sb = new StringBuilder();
+        sb.append("This is my README.");
+        Path pathtoTempDir = Paths.get(Files.createTempDirectory(null).toString());
+        String pathToZipFile = pathtoTempDir + File.separator + "test.zip";
+        File f = new File(pathToZipFile);
+        ZipOutputStream out = new ZipOutputStream(new FileOutputStream(f));
+        ZipEntry e = new ZipEntry("MY READ–ME.md");
+        out.putNextEntry(e);
+        byte[] data = sb.toString().getBytes();
+        out.write(data, 0, data.length);
+        out.closeEntry();
+        out.close();
+
+        // We upload via SWORD (as a zip) because the native API gives this error:
+        // "Constraint violation found in FileMetadata. File Name cannot contain any
+        // of the following characters: / : * ? " < > | ; # . The invalid value is "READ?ME.md"."
+        // This error probably has something to do with the way REST Assured sends the filename
+        // to the native API. The en-dash is turned into question mark, which is disallowed.
+        Response uploadViaSword = UtilIT.uploadZipFileViaSword(datasetPid, pathToZipFile, apiToken);
+        uploadViaSword.prettyPrint();
+        uploadViaSword.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Response getDatasetJson = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJson.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        int fileId = JsonPath.from(getDatasetJson.getBody().asString()).getInt("data.latestVersion.files[0].dataFile.id");
+
+        // Download the file individually and assert READ–ME.md has an en-dash.
+        Response downloadFile = UtilIT.downloadFile(new Integer(fileId), apiToken);
+        downloadFile.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        Headers headers = downloadFile.getHeaders();
+        // In "MY READ–ME.md" below the space is %20 and the en-dash ("–") is "%E2%80%93" (e2 80 93 in hex).
+        Assert.assertEquals("attachment; filename=\"MY%20READ%E2%80%93ME.md\"", headers.getValue("Content-disposition"));
+        Assert.assertEquals("text/markdown; name=\"MY%20READ%E2%80%93ME.md\";charset=UTF-8", headers.getValue("Content-Type"));
+
+        // Download all files as a zip and assert "MY READ–ME.md" has an en-dash.
+        Response downloadFiles = UtilIT.downloadFiles(datasetPid, apiToken);
+        downloadFiles.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        HashSet<String> filenamesFound = gatherFilenames(downloadFiles.getBody().asInputStream());
+
+        // Note that a MANIFEST.TXT file is added.
+        // "MY READ–ME.md" (with an en-dash) is correctly extracted from the downloaded zip
+        HashSet<String> expectedFiles = new HashSet<>(Arrays.asList("MANIFEST.TXT", "MY READ–ME.md"));
+        Assert.assertEquals(expectedFiles, filenamesFound);
     }
 
     private HashSet<String> gatherFilenames(InputStream inputStream) throws IOException {

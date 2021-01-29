@@ -205,6 +205,14 @@ public class ConfirmEmailServiceBean {
         }
         return confirmEmailData;
     }
+    
+    public boolean hasActiveVerificationToken(AuthenticatedUser au) {
+        if (findSingleConfirmEmailDataByUser(au) == null){
+            return false;
+        }
+        return !findSingleConfirmEmailDataByUser(au).isExpired();
+    }
+
 
     public List<ConfirmEmailData> findAllConfirmEmailData() {
         TypedQuery<ConfirmEmailData> typedQuery = em.createNamedQuery("ConfirmEmailData.findAll", ConfirmEmailData.class);

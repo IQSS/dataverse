@@ -220,9 +220,8 @@
     <!-- END: Request Access Options -->
     
     <!-- Explore Options -->
-    <ui:fragment rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata) and not empty exploreTools or (worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata))}">
+    <ui:fragment rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata) and not empty exploreTools}">
         <!--exploreTools is set as a ui:param by the file and dataset pages-->
-        <!--Note that "WorldMap Explore" is not an explore tool (external tool)-->
         <li class="dropdown-header">#{bundle['dataset.accessBtn.header.explore']} <span class="glyphicon glyphicon-equalizer"/></li>
         <!-- externalTools -->
         <ui:repeat var="tool" value="#{exploreTools}">
@@ -246,26 +245,6 @@
             </li>
         </ui:repeat>
         <!-- END: externalTools -->
-        <!-- WorldMap -->
-        <li jsf:rendered="#{worldMapPermissionHelper.canUserSeeExploreWorldMapButtonFromPage(fileMetadata)}">
-            <h:commandLink rendered="#{!downloadPopupRequired}"
-                           styleClass="btn-explore #{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
-                           disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
-                           action="#{fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fileMetadata )}" 
-                           target="_blank" rel="noopener">
-                #{bundle['file.mapData.worldMap']}
-            </h:commandLink>
-            <p:commandLink rendered="#{downloadPopupRequired}"
-                           styleClass="btn-explore #{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
-                           disabled="#{fileMetadata.dataFile.ingestInProgress or lockedFromDownload}"
-                           process="@this"
-                           action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'worldMap' )}"
-                           update="@widgetVar(downloadPopup)"
-                           oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                #{bundle['file.mapData.worldMap']}
-            </p:commandLink>
-        </li>
-        <!-- END: WorldMap -->
     </ui:fragment>
     <!-- Explore Options -->
 
