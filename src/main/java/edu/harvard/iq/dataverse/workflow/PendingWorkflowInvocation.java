@@ -51,6 +51,8 @@ public class PendingWorkflowInvocation implements Serializable {
     String ipAddress;
     int typeOrdinal;
     boolean datasetExternallyReleased;
+    
+    long lockId;
 
     /** Empty constructor for JPA */
     public PendingWorkflowInvocation(){
@@ -68,13 +70,13 @@ public class PendingWorkflowInvocation implements Serializable {
         localData = new HashMap<>(result.getData());
         typeOrdinal = ctxt.getType().ordinal();
         datasetExternallyReleased=ctxt.getDatasetExternallyReleased();
+        lockId=ctxt.getLockId();
     }
     
     public WorkflowContext reCreateContext(RoleAssigneeServiceBean roleAssignees) {
         DataverseRequest aRequest = new DataverseRequest((User)roleAssignees.getRoleAssignee(userId), IpAddress.valueOf(ipAddress));
         final WorkflowContext workflowContext = new WorkflowContext(aRequest, dataset, nextVersionNumber, 
-                nextMinorVersionNumber, WorkflowContext.TriggerType.values()[typeOrdinal], null, null, datasetExternallyReleased);
-        workflowContext.setInvocationId(invocationId);
+                nextMinorVersionNumber, WorkflowContext.TriggerType.values()[typeOrdinal], null, null, datasetExternallyReleased, invocationId, lockId);
         return workflowContext;
     }
     
@@ -156,5 +158,12 @@ public class PendingWorkflowInvocation implements Serializable {
 
     public void setTypeOrdinal(int typeOrdinal) {
         this.typeOrdinal = typeOrdinal;
+    }
+    
+    public long getLockId() {
+        return lockId;
+    }
+    public void setLockId(long lockId) {
+        this.lockId = lockId;
     }
 }

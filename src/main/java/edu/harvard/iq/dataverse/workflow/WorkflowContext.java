@@ -31,6 +31,7 @@ public class WorkflowContext {
     private final ApiToken apiToken;
     private final boolean datasetExternallyReleased;
     private Map<String, Object> settings;
+    private long lockId;
     
     private String invocationId = UUID.randomUUID().toString();
 
@@ -42,11 +43,11 @@ public class WorkflowContext {
     }
     public WorkflowContext(DataverseRequest request, Dataset dataset, long nextVersionNumber, 
             long nextMinorVersionNumber, TriggerType type, Map<String, Object> settings, ApiToken apiToken, boolean datasetExternallyReleased) {
-        this(request, dataset, nextVersionNumber,nextMinorVersionNumber, type, settings, apiToken, datasetExternallyReleased, null);
+        this(request, dataset, nextVersionNumber,nextMinorVersionNumber, type, settings, apiToken, datasetExternallyReleased, null, null);
     }
 
     public WorkflowContext(DataverseRequest request, Dataset dataset, long nextVersionNumber, 
-                            long nextMinorVersionNumber, TriggerType type, Map<String, Object> settings, ApiToken apiToken, boolean datasetExternallyReleased, String invocationId) {
+                            long nextMinorVersionNumber, TriggerType type, Map<String, Object> settings, ApiToken apiToken, boolean datasetExternallyReleased, String invocationId, Long lockId) {
         this.request = request;
         this.dataset = dataset;
         this.nextVersionNumber = nextVersionNumber;
@@ -55,9 +56,11 @@ public class WorkflowContext {
         this.settings = settings;
         this.apiToken = apiToken;
         this.datasetExternallyReleased = datasetExternallyReleased;
+        //If null, we'll keel the randomly generated one
         if(invocationId!=null) {
             setInvocationId(invocationId);
         }
+        this.setLockId(lockId);
     }
 
     public Dataset getDataset() {
@@ -102,6 +105,12 @@ public class WorkflowContext {
 
     public boolean getDatasetExternallyReleased() {
        return datasetExternallyReleased;
+    }
+    public long getLockId() {
+        return lockId;
+    }
+    public void setLockId(long lockId) {
+        this.lockId = lockId;
     }
     
 }

@@ -89,6 +89,7 @@ public abstract class AbstractApiBean {
     public static final String STATUS_ERROR = "ERROR";
     public static final String STATUS_OK = "OK";
     public static final String STATUS_WF_IN_PROGRESS = "WORKFLOW_IN_PROGRESS";
+    public static final String DATAVERSE_WORKFLOW_HEADER_NAME = "X-Dataverse-invocationID";
 
     /**
      * Utility class to convey a proper error response using Java's exceptions.
@@ -309,6 +310,13 @@ public abstract class AbstractApiBean {
                 
         return headerParamApiKey!=null ? headerParamApiKey : queryParamApiKey;
     }
+    
+    protected String getRequestWorkflowKey() {
+        String headerParamWFKey = httpRequest.getHeader(DATAVERSE_WORKFLOW_HEADER_NAME);
+        String queryParamWFKey = httpRequest.getParameter("invocationId");
+                
+        return headerParamWFKey!=null ? headerParamWFKey : queryParamWFKey;
+    }
 
     /* ========= *\
      *  Finders  *
@@ -344,14 +352,15 @@ public abstract class AbstractApiBean {
      */
     protected User findUserOrDie() throws WrappedResponse {
         final String requestApiKey = getRequestApiKey();
-        if (requestApiKey == null) {
+        final String requestWFKey = getRequestWorkflowKey();
+        if (requestApiKey == null && requestWFKey == null) {
             return GuestUser.get();
         }
         PrivateUrlUser privateUrlUser = privateUrlSvc.getPrivateUrlUserFromToken(requestApiKey);
         if (privateUrlUser != null) {
             return privateUrlUser;
         }
-        return findAuthenticatedUserOrDie(requestApiKey);
+        return findAuthenticatedUserOrDie(requestApiKey, requestWFKey);
     }
 
     /**
@@ -367,18 +376,32 @@ public abstract class AbstractApiBean {
      * @throws edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse in case said user is not found.
      */
     protected AuthenticatedUser findAuthenticatedUserOrDie() throws WrappedResponse {
-        return findAuthenticatedUserOrDie(getRequestApiKey());
+        return findAuthenticatedUserOrDie(getRequestApiKey(), getRequestWorkflowKey());
     }
 
 
-    private AuthenticatedUser findAuthenticatedUserOrDie( String key ) throws WrappedResponse {
-        AuthenticatedUser authUser = authSvc.lookupUser(key);
-        if ( authUser != null ) {
-            authUser = userSvc.updateLastApiUseTime(authUser);
+    private AuthenticatedUser findAuthenticatedUserOrDie( String key, String wfid ) throws WrappedResponse {
+        if (key != null) {
+            AuthenticatedUser authUser = authSvc.lookupUser(key);
 
-            return authUser;
+            if (authUser != null) {
+                authUser = userSvc.updateLastApiUseTime(authUser);
+
+                return authUser;
+            }
+            else {
+                throw new WrappedResponse(badApiKey(key));
+            }
+        } else if (wfid != null) {
+            AuthenticatedUser authUser = authSvc.lookupUserForWorkflow(wfid);
+            if (authUser != null) {
+                return authUser;
+            } else {
+                throw new WrappedResponse(badWFKey(wfid));
+            }
         }
-        throw new WrappedResponse( badApiKey(key) );
+        //Just send info about the apiKey - workflow users will learn about invocationId elsewhere
+        throw new WrappedResponse(badApiKey(null));
     }
 
     protected Dataverse findDataverseOrDie( String dvIdtf ) throws WrappedResponse {
@@ -728,9 +751,14 @@ public abstract class AbstractApiBean {
     }
     
     protected Response badApiKey( String apiKey ) {
-        return error(Status.UNAUTHORIZED, (apiKey != null ) ? "Bad api key " : "Please provide a key query parameter (?key=XXX) or via the HTTP header " + DATAVERSE_KEY_HEADER_NAME );
+        return error(Status.UNAUTHORIZED, (apiKey != null ) ? "Bad api key " : "Please provide a key query parameter (?key=XXX) or via the HTTP header " + DATAVERSE_KEY_HEADER_NAME);
     }
 
+    protected Response badWFKey( String wfId ) {
+        String message = (wfId != null ) ? "Bad workflow invocationId " : "Please provide an invocationId query parameter (?invocationId=XXX) or via the HTTP header " + DATAVERSE_WORKFLOW_HEADER_NAME;
+        return error(Status.UNAUTHORIZED, message );
+    }
+    
     protected Response permissionError( PermissionException pe ) {
         return permissionError( pe.getMessage() );
     }

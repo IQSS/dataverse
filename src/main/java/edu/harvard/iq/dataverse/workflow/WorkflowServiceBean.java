@@ -10,8 +10,8 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.RemoveLockCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.internalspi.InternalWorkflowStepSP;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
@@ -20,7 +20,6 @@ import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +34,6 @@ import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 /**
@@ -60,6 +58,9 @@ public class WorkflowServiceBean {
 
     @EJB
     RoleAssigneeServiceBean roleAssignees;
+    
+    @EJB 
+    SystemConfig systemConfig;
 
     @EJB
     EjbDataverseEngine engine;
@@ -269,7 +270,7 @@ public class WorkflowServiceBean {
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     void lockDataset( WorkflowContext ctxt ) throws CommandException {
-        final DatasetLock datasetLock = new DatasetLock(DatasetLock.Reason.Workflow, ctxt.getRequest().getAuthenticatedUser());
+        DatasetLock datasetLock = new DatasetLock(DatasetLock.Reason.Workflow, ctxt.getRequest().getAuthenticatedUser());
         /* Note that this method directly adds a lock to the database rather than adding it via 
          * engine.submit(new AddLockCommand(ctxt.getRequest(), ctxt.getDataset(), datasetLock));
          * which would update the dataset's list of locks, etc. 
@@ -278,7 +279,8 @@ public class WorkflowServiceBean {
          * database. 
          */
         datasetLock.setDataset(ctxt.getDataset());
-        em.persist(datasetLock);
+        datasetLock = em.merge(datasetLock);
+        ctxt.setLockId(datasetLock.getId());
         em.flush();
     }
     
@@ -292,7 +294,7 @@ public class WorkflowServiceBean {
         lockCounter.setParameter("datasetId", ctxt.getDataset().getId());
         List<DatasetLock> locks = lockCounter.getResultList();
         for(DatasetLock lock: locks) {
-        	if(lock.getReason() == DatasetLock.Reason.Workflow) {
+        	if(lock.getReason() == DatasetLock.Reason.Workflow && lock.getId()==ctxt.getLockId()) {
                 logger.fine("Removing lock");
         		em.remove(lock);
         	}
@@ -316,6 +318,30 @@ public class WorkflowServiceBean {
             try {
         if ( ctxt.getType() == TriggerType.PrePublishDataset ) {
                 unlockDataset(ctxt);
+                
+                //Now lock for FinalizePublication - this block mirrors that in PublishDatasetCommand
+                AuthenticatedUser user = ctxt.getRequest().getAuthenticatedUser();
+                DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
+                lock.setDataset(ctxt.getDataset());
+                String currentGlobalIdProtocol = settings.getValueForKey(SettingsServiceBean.Key.Protocol, "");
+                String currentGlobalAuthority= settings.getValueForKey(SettingsServiceBean.Key.Authority, "");
+                String dataFilePIDFormat = settings.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+                boolean registerGlobalIdsForFiles = 
+                        (currentGlobalIdProtocol.equals(ctxt.getDataset().getProtocol()) || dataFilePIDFormat.equals("INDEPENDENT")) 
+                        && systemConfig.isFilePIDsEnabled();
+                if ( registerGlobalIdsForFiles ){
+                    registerGlobalIdsForFiles = currentGlobalAuthority.equals( ctxt.getDataset().getAuthority() );
+                }
+                
+                boolean validatePhysicalFiles = systemConfig.isDatafileValidationOnPublishEnabled();
+                String info = "Publishing the dataset; "; 
+                info += registerGlobalIdsForFiles ? "Registering PIDs for Datafiles; " : "";
+                info += validatePhysicalFiles ? "Validating Datafiles Asynchronously" : "";
+                lock.setInfo(info);
+                datasets.addDatasetLock(ctxt.getDataset(), lock);
+                //Refreshing merges the dataset
+                ctxt = refresh(ctxt);
+                //Then call Finalize
                 engine.submit(new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getRequest(), ctxt.getDatasetExternallyReleased()));
             } else {
                 logger.fine("Removing workflow lock");
@@ -431,7 +457,7 @@ public class WorkflowServiceBean {
     	 */
         WorkflowContext newCtxt =new WorkflowContext( ctxt.getRequest(), 
                 em.merge(ctxt.getDataset()), ctxt.getNextVersionNumber(), 
-                ctxt.getNextMinorVersionNumber(), ctxt.getType(), settings, apiToken, ctxt.getDatasetExternallyReleased(), ctxt.getInvocationId());
+                ctxt.getNextMinorVersionNumber(), ctxt.getType(), settings, apiToken, ctxt.getDatasetExternallyReleased(), ctxt.getInvocationId(), ctxt.getLockId());
         return newCtxt;
     }
 
