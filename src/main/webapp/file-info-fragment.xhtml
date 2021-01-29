@@ -71,10 +71,13 @@
                 </div>
                 <!-- CHECKSUM -->
                 <div class="checksum-block" jsf:rendered="#{!fileMetadata.dataFile.tabularData and !(empty fileMetadata.dataFile.checksumValue)}">
-                    #{fileMetadata.dataFile.checksumType}: <span class="#{!editDatafilesPage ? 'checksum-truncate' : ''}"
+                    #{fileMetadata.dataFile.checksumType}: 
+                    <span class="sr-only #{!editDatafilesPage ? 'checksum-truncate' : ''}"
                                   data-clipboard-action="copy"
                                   data-clipboard-text="#{fileMetadata.dataFile.checksumValue}"
                                   title="#{bundle['file.metaData.checksum.copy']} #{fileMetadata.dataFile.checksumValue}">#{fileMetadata.dataFile.checksumValue}</span>
+                    <span class="glyphicon glyphicon-copy btn-copy" data-clipboard-action="copy"
+                                  data-clipboard-text="#{fileMetadata.dataFile.checksumValue}" title="#{bundle['file.metaData.checksum.copy']} #{fileMetadata.dataFile.checksumValue}"></span>
                 </div>
                 <!-- TABULAR VARIABLES, OBSERVATIONS + UNF -->
                 <div class="unf-block" jsf:rendered="#{fileMetadata.dataFile.tabularData}">

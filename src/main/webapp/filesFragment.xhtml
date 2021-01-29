@@ -101,10 +101,10 @@
                             <f:passThroughAttribute name="aria-labelledby" value="searchLabel"/>
                         </p:inputText>
                         <p:watermark for="searchFiles" value="#{bundle['file.search.placeholder']}"/>
-                        <p:remoteCommand name="submitsearch" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"/>
+                        <p:remoteCommand name="submitsearch" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" oncomplete="bind_bsui_components();" partialSubmit="true"/>
 
                         <span class="input-group-btn">
-                            <p:commandLink styleClass="btn btn-default" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
+                            <p:commandLink styleClass="btn btn-default" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" oncomplete="bind_bsui_components();" partialSubmit="true">
                                 <span class="glyphicon glyphicon-search"></span> #{bundle['dataverse.search.btn.find']}
                             </p:commandLink>
                         </span>
@@ -320,14 +320,14 @@
                         </h:outputFormat>
                         <ui:fragment rendered="#{DatasetPage.selectedFiles.size() lt DatasetPage.workingVersion.fileMetadatas.size()}">
                             &#160;
-                            <p:commandLink action="#{DatasetPage.selectAllFiles}" update="@form">
+                            <p:commandLink action="#{DatasetPage.selectAllFiles}" update="@form" oncomplete="bind_bsui_components();">
                                 <h:outputFormat value="#{bundle['file.selectAllFiles']}">
                                     <f:param value="#{DatasetPage.fileMetadatasSearch.size()}"/>
                                 </h:outputFormat>
                             </p:commandLink>
                         </ui:fragment>
                         &#160;
-                        <p:commandLink value="#{bundle['file.clearSelection']}" action="#{DatasetPage.clearSelection}" update="@form"/>
+                        <p:commandLink value="#{bundle['file.clearSelection']}" action="#{DatasetPage.clearSelection}" update="@form" oncomplete="bind_bsui_components();"/>
                     </p>
                 </div>
             </div>

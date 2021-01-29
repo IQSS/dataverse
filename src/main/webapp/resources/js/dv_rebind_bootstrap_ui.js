@@ -45,7 +45,7 @@ function bind_bsui_components(){
     }
     
     // clipboard.js copy btn
-    var clipboard = new ClipboardJS('button.btn-copy, span.checksum-truncate');
+    var clipboard = new ClipboardJS('button.btn-copy, span.btn-copy, span.checksum-truncate');
     
     clipboard.on('success', function (e) {
         // DEV TOOL DEBUG
@@ -171,6 +171,7 @@ function sharrre(){
  */
 function checksumTruncate(){
     $('span.checksum-truncate').each(function () {
+        $(this).toggleClass('sr-only').toggleClass('visisble');
         var checksumText = $(this).text();
         if (checksumText.length > 25) {
             // COUNT ":" IN UNF VERSION LABEL
@@ -187,10 +188,6 @@ function checksumTruncate(){
                 $(this).text(checksumText.substr(0, 3) + '...' + checksumText.substr((checksumText.length - 3), checksumText.length));
             }
         }
-        // ADD CLIPBOARD ICON
-        $(this).append(' <span class="glyphicon glyphicon-copy"></span>');
-        
-        // COPY TO CLIPBOARD MOVE TO bind_bsui_components() ABOVE
     });
 }
 
