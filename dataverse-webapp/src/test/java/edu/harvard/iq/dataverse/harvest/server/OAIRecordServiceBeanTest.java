@@ -3,33 +3,56 @@ package edu.harvard.iq.dataverse.harvest.server;
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.persistence.harvest.OAIRecord;
+import edu.harvard.iq.dataverse.persistence.harvest.OAIRecordRepository;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.persistence.EntityManager;
+
+import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.Optional;
 import java.util.logging.Logger;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OAIRecordServiceBeanTest {
 
+    private Logger logger = Logger.getLogger(OAIRecordServiceBeanTest.class.getCanonicalName());
+    
     @InjectMocks
     private OAIRecordServiceBean oaiRecordServiceBean;
 
     @Mock
+    private OAIRecordRepository oaiRecordRepository;
+    
+    @Mock
+    private DatasetRepository datasetRepository;
+    
+    @Mock
     private EntityManager entityManager;
+    
+    @Captor
+    private ArgumentCaptor<OAIRecord> oaiRecordCaptor;
 
     private static final long OAI_RECORD_UPDATE_TIME = 123456;
     private static final long DATASET_METADATA_CHANGE_TIME = 1234567;
@@ -48,131 +71,173 @@ class OAIRecordServiceBeanTest {
     // -------------------- TESTS --------------------
 
     @Test
-    public void updateOaiRecordForDataset_ForUpdatedGuestbook() {
+    public void updateOaiRecords_ForUpdatedGuestbook() {
         //given
         Dataset dataset = setupDatasetData();
+        when(datasetRepository.findById(dataset.getId())).thenReturn(Optional.of(dataset));
 
-        HashMap<String, OAIRecord> oaiRecords = new HashMap<>();
-        OAIRecord oaiRecord = setupOaiRecord(oaiRecords);
+        OAIRecord oaiRecord = setupOaiRecord();
+        when(oaiRecordRepository.findBySetName("setName")).thenReturn(Lists.newArrayList(oaiRecord));
 
         //when
-        oaiRecordServiceBean.updateOaiRecordForDataset(dataset,"setName", oaiRecords, Logger.getGlobal());
+        oaiRecordServiceBean.updateOaiRecords("setName", Lists.newArrayList(dataset.getId()), logger);
 
         //then
         Assert.assertEquals(utcClock.instant(), oaiRecord.getLastUpdateTime().toInstant());
-        Assert.assertEquals(0, oaiRecords.size());
+        Assert.assertFalse(oaiRecord.isRemoved());
 
     }
 
     @Test
-    public void updateOaiRecordForDataset_ForUpdatedRealeseTime() {
+    public void updateOaiRecords_ForUpdatedRealeseTime() {
         //given
         Dataset dataset = setupDatasetData();
         DatasetVersion releasedVersion = dataset.getReleasedVersion();
         dataset.setLastChangeForExporterTime(null);
         releasedVersion.setReleaseTime(Date.from(Instant.ofEpochMilli(DATASET_VERSION_UPDATED_RELEASE_TIME)));
+        when(datasetRepository.findById(dataset.getId())).thenReturn(Optional.of(dataset));
 
-        HashMap<String, OAIRecord> oaiRecords = new HashMap<>();
-        OAIRecord oaiRecord = setupOaiRecord(oaiRecords);
+        OAIRecord oaiRecord = setupOaiRecord();
+        when(oaiRecordRepository.findBySetName("setName")).thenReturn(Lists.newArrayList(oaiRecord));
 
         //when
-        oaiRecordServiceBean.updateOaiRecordForDataset(dataset,"setName", oaiRecords, Logger.getGlobal());
+        oaiRecordServiceBean.updateOaiRecords("setName", Lists.newArrayList(dataset.getId()), logger);
 
         //then
         Assert.assertEquals(utcClock.instant(), oaiRecord.getLastUpdateTime().toInstant());
-        Assert.assertEquals(0, oaiRecords.size());
+        Assert.assertFalse(oaiRecord.isRemoved());
 
     }
 
     @Test
-    public void updateOaiRecordForDataset_WithoutUpdates() {
+    public void updateOaiRecords_WithoutUpdates() {
         //given
         Dataset dataset = setupDatasetData();
         DatasetVersion releasedVersion = dataset.getReleasedVersion();
         dataset.setLastChangeForExporterTime(null);
         releasedVersion.setReleaseTime(Date.from(Instant.ofEpochMilli(DATASET_VERSION_OLDER_RELEASE_TIME)));
+        when(datasetRepository.findById(dataset.getId())).thenReturn(Optional.of(dataset));
 
-        HashMap<String, OAIRecord> oaiRecords = new HashMap<>();
-        OAIRecord oaiRecord = setupOaiRecord(oaiRecords);
+        OAIRecord oaiRecord = setupOaiRecord();
         oaiRecord.setRemoved(false);
+        when(oaiRecordRepository.findBySetName("setName")).thenReturn(Lists.newArrayList(oaiRecord));
 
         //when
-        oaiRecordServiceBean.updateOaiRecordForDataset(dataset,"setName", oaiRecords, Logger.getGlobal());
+        oaiRecordServiceBean.updateOaiRecords("setName", Lists.newArrayList(dataset.getId()), logger);
 
         //then
         Assert.assertEquals(Instant.ofEpochMilli(OAI_RECORD_UPDATE_TIME), oaiRecord.getLastUpdateTime().toInstant());
-        Assert.assertEquals(0, oaiRecords.size());
+        Assert.assertFalse(oaiRecord.isRemoved());
 
     }
 
     @Test
-    public void updateOaiRecordForDataset_WithoutUpdates_EmbargoExpired() {
+    public void updateOaiRecords_WithoutUpdates_EmbargoExpired() {
         //given
         Clock presentTime = Clock.fixed(Instant.now(), ZoneId.of("UTC"));
         oaiRecordServiceBean.setSystemClock(presentTime);
 
         Dataset dataset = setupDatasetData();
-        dataset.setLastChangeForExporterTime(Date.from(presentTime.instant().minus(1, ChronoUnit.DAYS)));
-        dataset.setEmbargoDate(Date.from(dataset.getLastChangeForExporterTime().get().toInstant().plus(12, ChronoUnit.HOURS)));
+        dataset.setEmbargoDate(Date.from(presentTime.instant().minus(12, ChronoUnit.HOURS)));
+        when(datasetRepository.findById(dataset.getId())).thenReturn(Optional.of(dataset));
 
-        HashMap<String, OAIRecord> oaiRecords = new HashMap<>();
-        OAIRecord oaiRecord = setupOaiRecord(oaiRecords);
+        OAIRecord oaiRecord = setupOaiRecord();
+        oaiRecord.setLastUpdateTime(Date.from(presentTime.instant().minus(1, ChronoUnit.DAYS)));
         oaiRecord.setRemoved(false);
+        when(oaiRecordRepository.findBySetName("setName")).thenReturn(Lists.newArrayList(oaiRecord));
 
         //when
-        oaiRecordServiceBean.updateOaiRecordForDataset(dataset,"setName", oaiRecords, Logger.getGlobal());
+        oaiRecordServiceBean.updateOaiRecords("setName", Lists.newArrayList(dataset.getId()), logger);
 
         //then
         Assert.assertEquals(presentTime.instant(), oaiRecord.getLastUpdateTime().toInstant());
-        Assert.assertEquals(0, oaiRecords.size());
+        Assert.assertFalse(oaiRecord.isRemoved());
 
     }
 
     @Test
-    public void updateOaiRecordForDataset_ForRemovedRecord() {
+    public void updateOaiRecords_ForRemovedOAIdRecord() {
         //given
         Dataset dataset = setupDatasetData();
+        when(datasetRepository.findById(dataset.getId())).thenReturn(Optional.of(dataset));
 
-        HashMap<String, OAIRecord> oaiRecords = new HashMap<>();
-        OAIRecord oaiRecord = setupOaiRecord(oaiRecords);
+        OAIRecord oaiRecord = setupOaiRecord();
+        when(oaiRecordRepository.findBySetName("setName")).thenReturn(Lists.newArrayList(oaiRecord));
 
         //when
-        oaiRecordServiceBean.updateOaiRecordForDataset(dataset,"setName", oaiRecords, Logger.getGlobal());
+        oaiRecordServiceBean.updateOaiRecords("setName", Lists.newArrayList(dataset.getId()), logger);
 
         //then
         Assert.assertEquals(utcClock.instant(), oaiRecord.getLastUpdateTime().toInstant());
-        Assert.assertEquals(0, oaiRecords.size());
+        Assert.assertFalse(oaiRecord.isRemoved());
 
     }
 
     @Test
-    public void updateOaiRecordForDataset_ForNullRecord() {
+    public void updateOaiRecords_ForDatasetNotPresentInOAIRecords() {
         //given
         Dataset dataset = setupDatasetData();
+        when(datasetRepository.findById(dataset.getId())).thenReturn(Optional.of(dataset));
 
         String setName = "setName";
 
         //when
-        OAIRecord persistedRecord = oaiRecordServiceBean.updateOaiRecordForDataset(dataset,
-                                                                              setName,
-                                                                              new HashMap<>(),
-                                                                              Logger.getGlobal());
+        oaiRecordServiceBean.updateOaiRecords(setName, Lists.newArrayList(dataset.getId()), logger);
 
         //then
+        verify(oaiRecordRepository).save(oaiRecordCaptor.capture());
+        
+        OAIRecord persistedRecord = oaiRecordCaptor.getValue();
         Assert.assertEquals(utcClock.instant(), persistedRecord.getLastUpdateTime().toInstant());
         Assert.assertEquals(setName, persistedRecord.getSetName());
         Assert.assertEquals("doi:nice/ID1", persistedRecord.getGlobalId());
 
     }
 
+    @Test
+    public void updateOaiRecords_ForDeaccessionedDatasetNotPresentInOAIRecords() {
+        //given
+        Dataset dataset = setupDatasetData();
+        dataset.getLatestVersion().setVersionState(VersionState.DEACCESSIONED);
+        when(datasetRepository.findById(dataset.getId())).thenReturn(Optional.of(dataset));
+
+        String setName = "setName";
+
+        //when
+        oaiRecordServiceBean.updateOaiRecords(setName, Lists.newArrayList(dataset.getId()), logger);
+
+        //then
+        verify(oaiRecordRepository, times(0)).save(any());
+    }
+
+    @Test
+    public void updateOaiRecords_ForDeaccessionedDatasetPresentInOAIRecords() {
+        //given
+        Dataset dataset = setupDatasetData();
+        dataset.getLatestVersion().setVersionState(VersionState.DEACCESSIONED);
+        when(datasetRepository.findById(dataset.getId())).thenReturn(Optional.of(dataset));
+        
+        OAIRecord oaiRecord = setupOaiRecord();
+        oaiRecord.setRemoved(false);
+        when(oaiRecordRepository.findBySetName("setName")).thenReturn(Lists.newArrayList(oaiRecord));
+
+        String setName = "setName";
+
+        //when
+        oaiRecordServiceBean.updateOaiRecords(setName, Lists.newArrayList(dataset.getId()), logger);
+
+        //then
+        Assert.assertEquals(utcClock.instant(), oaiRecord.getLastUpdateTime().toInstant());
+        Assert.assertTrue(oaiRecord.isRemoved());
+    }
+
     // -------------------- PRIVATE --------------------
 
-    private OAIRecord setupOaiRecord(HashMap<String, OAIRecord> oaiRecords) {
+    private OAIRecord setupOaiRecord() {
         OAIRecord oaiRecord = new OAIRecord();
         oaiRecord.setGlobalId("doi:nice/ID1");
         oaiRecord.setRemoved(true);
         oaiRecord.setLastUpdateTime(Date.from(Instant.ofEpochMilli(OAI_RECORD_UPDATE_TIME)));
-        oaiRecords.put("doi:nice/ID1", oaiRecord);
         return oaiRecord;
     }
 
@@ -182,6 +247,7 @@ class OAIRecordServiceBeanTest {
         datasetVersion.setReleaseTime(Date.from(Instant.ofEpochMilli(DATASET_VERSION_RELEASE_TIME)));
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
         dataset.setVersions(Lists.newArrayList(datasetVersion));
+        dataset.setPublicationDate(Timestamp.from(Instant.ofEpochMilli(DATASET_VERSION_RELEASE_TIME)));
         dataset.setLastChangeForExporterTime(Date.from(Instant.ofEpochMilli(DATASET_METADATA_CHANGE_TIME)));
         dataset.setGlobalId(new GlobalId("doi", "nice", "ID1"));
         return dataset;

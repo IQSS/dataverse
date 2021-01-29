@@ -301,22 +301,12 @@ public class Dataset extends DvObjectContainer {
         this.files = files;
     }
 
+    /**
+     * Returns true if dataset is deaccessioned.
+     * Dataset is considered as deaccessioned if all of it's versions are deaccessioned.
+     */
     public boolean isDeaccessioned() {
-        // return true, if all published versions were deaccessioned
-        boolean hasDeaccessionedVersions = false;
-        for (DatasetVersion testDsv : getVersions()) {
-            if (testDsv.isReleased()) {
-                return false;
-            }
-            // Also check for draft version
-            if (testDsv.isDraft()) {
-                return false;
-            }
-            if (testDsv.isDeaccessioned()) {
-                hasDeaccessionedVersions = true;
-            }
-        }
-        return hasDeaccessionedVersions; // since any published version would have already returned
+        return versions.stream().allMatch(version -> version.isDeaccessioned());
     }
 
     public boolean hasActiveEmbargo() {
@@ -427,6 +417,16 @@ public class Dataset extends DvObjectContainer {
         }
     }
 
+    /**
+     * Returns true if dataset contains any version with released state.
+     */
+    public boolean containsReleasedVersion() {
+        if (!isReleased()) {
+            return false;
+        }
+        return getReleasedVersion() != null;
+    }
+    
     public DatasetVersion getReleasedVersion() {
         for (DatasetVersion version : this.getVersions()) {
             if (version.isReleased()) {

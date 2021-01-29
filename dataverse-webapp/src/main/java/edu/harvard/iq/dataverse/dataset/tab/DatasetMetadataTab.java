@@ -29,7 +29,6 @@ import java.util.Map;
 public class DatasetMetadataTab implements Serializable {
 
     private PermissionsWrapper permissionsWrapper;
-    private DataverseRequestServiceBean dvRequestService;
     private ExportService exportService;
     private SystemConfig systemConfig;
     private DatasetFieldsInitializer datasetFieldsInitializer;
@@ -51,7 +50,6 @@ public class DatasetMetadataTab implements Serializable {
                               SystemConfig systemConfig,
                               DatasetFieldsInitializer datasetVersionUI) {
         this.permissionsWrapper = permissionsWrapper;
-        this.dvRequestService = dvRequestService;
         this.exportService = exportService;
         this.systemConfig = systemConfig;
         this.datasetFieldsInitializer = datasetVersionUI;
@@ -85,10 +83,15 @@ public class DatasetMetadataTab implements Serializable {
         this.metadataBlocks = DatasetFieldUtil.groupByBlockAndType(datasetFields);
     }
 
-    public boolean canUpdateDataset() {
-        return permissionsWrapper.canUpdateDataset(dvRequestService.getDataverseRequest(), this.dataset);
+    public boolean showEditMetadataButton() {
+        return permissionsWrapper.canCurrentUserUpdateDataset(dataset) && !dataset.isDeaccessioned();
+    }
+    
+    public boolean showExportButton() {
+        return dataset.containsReleasedVersion();
     }
 
+    
     /**
      * Extracts exporters display name and redirect url.
      */

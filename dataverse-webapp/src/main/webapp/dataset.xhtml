@@ -301,9 +301,7 @@
                                     </p:commandLink>
     
                                     <!-- Edit Button -->
-                                    <ui:fragment rendered="#{DatasetPage.sessionUserAuthenticated
-                                                                                      and DatasetPage.canUpdateDataset()
-                                                                                      and !DatasetPage.dataset.deaccessioned}">
+                                    <ui:fragment rendered="#{DatasetPage.showEditDropdownButton()}">
                                         <button type="button" id="editDataSet"
                                                 class="btn btn-default btn-access dropdown-toggle #{DatasetPage.lockedFromEdits ? 'disabled' : ''}"
                                                 data-toggle="dropdown">

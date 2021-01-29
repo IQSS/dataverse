@@ -148,11 +148,11 @@ public class OAISetServiceBean implements java.io.Serializable {
         exportOaiSet(oaiSet);
     }
 
-    public void exportOaiSet(OAISet oaiSet) {
+    private void exportOaiSet(OAISet oaiSet) {
         exportOaiSet(oaiSet, logger);
     }
 
-    public void exportOaiSet(OAISet oaiSet, Logger exportLogger) {
+    private void exportOaiSet(OAISet oaiSet, Logger exportLogger) {
         OAISet managedSet = find(oaiSet.getId());
 
         String query = managedSet.getDefinition();
@@ -170,7 +170,7 @@ public class OAISetServiceBean implements java.io.Serializable {
                 datasetIds = datasetDao.findAllLocalDatasetIds();
             }
         } catch (OaiSetException ose) {
-            datasetIds = null;
+            throw new RuntimeException("Unable to retrieve dataset ids", ose);
         }
 
         // We still DO want to update the set, when the search query does not 
@@ -178,7 +178,7 @@ public class OAISetServiceBean implements java.io.Serializable {
         // they will be properly marked as "deleted"! -- L.A. 4.5
         //if (datasetIds != null && !datasetIds.isEmpty()) {
         exportLogger.info("Calling OAI Record Service to re-export " + datasetIds.size() + " datasets.");
-        oaiRecordService.updateOaiRecords(managedSet.getSpec(), datasetIds, new Date(), true, exportLogger);
+        oaiRecordService.updateOaiRecords(managedSet.getSpec(), datasetIds, exportLogger);
         //}
         managedSet.setUpdateInProgress(false);
 
@@ -222,14 +222,7 @@ public class OAISetServiceBean implements java.io.Serializable {
     public int validateDefinitionQuery(String query) throws OaiSetException {
 
         List<Long> resultIds = expandSetQuery(query);
-        //logger.fine("Datasets found: "+StringUtils.join(resultIds, ","));
-
-        if (resultIds != null) {
-            //logger.fine("returning "+resultIds.size());
-            return resultIds.size();
-        }
-
-        return 0;
+        return resultIds.size();
     }
 
     /**

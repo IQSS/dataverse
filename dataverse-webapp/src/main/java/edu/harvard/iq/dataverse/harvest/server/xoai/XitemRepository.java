@@ -44,8 +44,6 @@ public class XitemRepository implements ItemRepository {
         this.datasetDao = datasetDao;
     }
 
-    private List<Xitem> list = new ArrayList<Xitem>();
-
 
     @Override
     public Item getItem(String identifier) throws IdDoesNotExistException, OAIException {

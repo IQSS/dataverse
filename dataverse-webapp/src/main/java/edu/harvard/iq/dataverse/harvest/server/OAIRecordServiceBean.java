@@ -1,13 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.harvest.server;
 
-import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
 import edu.harvard.iq.dataverse.persistence.harvest.OAIRecord;
+import edu.harvard.iq.dataverse.persistence.harvest.OAIRecordRepository;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -16,15 +12,17 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
+
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 
+import static java.util.stream.Collectors.toMap;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 
 /**
@@ -36,30 +34,27 @@ import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 @Stateless
 public class OAIRecordServiceBean implements java.io.Serializable {
 
+    private static final Logger logger = Logger.getLogger(OAIRecordServiceBean.class.getCanonicalName());
+
+
     @EJB
-    DatasetDao datasetDao;
+    private DatasetRepository datasetRepository;
+
+    @EJB
+    private OAIRecordRepository oaiRecordRepository;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     EntityManager em;
 
     private Clock systemClock = Clock.systemDefaultZone();
 
-    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean");
-
     @TransactionAttribute(REQUIRES_NEW)
-    public void updateOaiRecords(String setName, List<Long> datasetIds, Date updateTime, boolean doExport, Logger setUpdateLogger) {
+    public void updateOaiRecords(String setName, List<Long> datasetIds, Logger setUpdateLogger) {
 
         // create Map of OaiRecords
-        List<OAIRecord> oaiRecords = findOaiRecordsBySetName(setName);
-        Map<String, OAIRecord> recordMap = new HashMap<>();
-        if (oaiRecords != null) {
-            for (OAIRecord record : oaiRecords) {
-                // look for duplicates here? delete?
-                recordMap.put(record.getGlobalId(), record);
-            }
-        } else {
-            setUpdateLogger.fine("Null returned - no records found.");
-        }
+        Map<String, OAIRecord> recordMap = oaiRecordRepository.findBySetName(setName)
+                                                .stream()
+                                                .collect(toMap(OAIRecord::getGlobalId, record -> record));
 
         if (!recordMap.isEmpty()) {
             setUpdateLogger.fine("Found " + recordMap.size() + " existing records");
@@ -67,56 +62,58 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             setUpdateLogger.fine("No records in the set yet.");
         }
 
-        if (datasetIds != null) {
-            for (Long datasetId : datasetIds) {
-                setUpdateLogger.fine("processing dataset id=" + datasetId);
-                Dataset dataset = datasetDao.find(datasetId);
-                if (dataset == null) {
-                    setUpdateLogger.fine("failed to find dataset!");
-                } else if (dataset.isReleased() && !dataset.isDeaccessioned()) {
-                    // This means this is a published dataset
-                    setUpdateLogger.fine("found published dataset.");
+        for (Long datasetId : datasetIds) {
+            setUpdateLogger.fine("processing dataset id=" + datasetId);
 
-                    updateOaiRecordForDataset(dataset, setName, recordMap, setUpdateLogger);
-                }
-            }
+            Optional<Dataset> datasetWithReleasedVersion = datasetRepository
+                                            .findById(datasetId)
+                                            .filter(Dataset::containsReleasedVersion);
+
+            datasetWithReleasedVersion.ifPresent(dataset -> {
+                    setUpdateLogger.fine("found published dataset.");
+                    OAIRecord record = recordMap.remove(dataset.getGlobalIdString());
+                    
+                    if (record == null) {
+                        createOaiRecordForDataset(dataset, setName, setUpdateLogger);
+                    } else {
+                        updateOaiRecordForDataset(dataset, record, setUpdateLogger);
+                    }
+
+                });
         }
 
         // anything left in the map should be marked as removed!
-        markOaiRecordsAsRemoved(recordMap.values(), updateTime, setUpdateLogger);
+        markOaiRecordsAsRemoved(recordMap.values(), setUpdateLogger);
 
     }
 
+    private OAIRecord createOaiRecordForDataset(Dataset dataset, String setName, Logger setUpdateLogger) {
+        setUpdateLogger.info("creating a new OAI Record for " + dataset.getGlobalIdString());
+        OAIRecord record = new OAIRecord(setName, dataset.getGlobalIdString(), Date.from(Instant.now(systemClock)));
+        return oaiRecordRepository.save(record);
+    }
 
     /**
-     * This method updates -  creates/refreshes/un-marks-as-deleted - one OAI
-     * record at a time. It does so inside its own transaction, to ensure that
-     * the changes take place immediately.
+     * This method updates - /refreshes/un-marks-as-deleted - one OAI
+     * record at a time.
      */
-    public OAIRecord updateOaiRecordForDataset(Dataset dataset, String setName, Map<String, OAIRecord> recordMap, Logger setUpdateLogger) {
+    private void updateOaiRecordForDataset(Dataset dataset, OAIRecord record, Logger setUpdateLogger) {
 
-        OAIRecord record = recordMap.get(dataset.getGlobalIdString());
-        if (record == null) {
-            setUpdateLogger.info("creating a new OAI Record for " + dataset.getGlobalIdString());
-            record = new OAIRecord(setName, dataset.getGlobalIdString(), Date.from(Instant.now(systemClock)));
-            em.persist(record);
-        } else {
-            if (record.isRemoved()) {
-                setUpdateLogger.info("\"un-deleting\" an existing OAI Record for " + dataset.getGlobalIdString());
-                record.setRemoved(false);
-                record.setLastUpdateTime(Date.from(Instant.now(systemClock)));
-            } else if (isDatasetUpdated(dataset, record)) {
-                setUpdateLogger.info("updating the timestamp on an existing record.");
+        if (record.isRemoved()) {
+            setUpdateLogger.info("\"un-deleting\" an existing OAI Record for " + dataset.getGlobalIdString());
+            record.setRemoved(false);
+            record.setLastUpdateTime(Date.from(Instant.now(systemClock)));
+        } else if (isDatasetUpdated(dataset, record)) {
+            setUpdateLogger.info("updating the timestamp on an existing record.");
 
-                record.setLastUpdateTime(Date.from(Instant.now(systemClock)));
-            }
-
-            recordMap.remove(record.getGlobalId());
+            record.setLastUpdateTime(Date.from(Instant.now(systemClock)));
         }
-        return record;
+
     }
 
-    public void markOaiRecordsAsRemoved(Collection<OAIRecord> records, Date updateTime, Logger setUpdateLogger) {
+    private void markOaiRecordsAsRemoved(Collection<OAIRecord> records, Logger setUpdateLogger) {
+        Date updateTime = Date.from(Instant.now(systemClock));
+
         for (OAIRecord oaiRecord : records) {
             if (!oaiRecord.isRemoved()) {
                 setUpdateLogger.fine("marking OAI record " + oaiRecord.getGlobalId() + " as removed");
@@ -127,29 +124,6 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             }
         }
 
-    }
-
-    public OAIRecord findOAIRecordBySetNameandGlobalId(String setName, String globalId) {
-        OAIRecord oaiRecord = null;
-
-        String queryString = "SELECT object(h) from OAIRecord h where h.globalId = :globalId";
-        queryString += setName != null ? " and h.setName = :setName" : ""; // and h.setName is null";
-
-        logger.fine("findOAIRecordBySetNameandGlobalId; query: " + queryString + "; globalId: " + globalId + "; setName: " + setName);
-
-
-        TypedQuery query = em.createQuery(queryString, OAIRecord.class).setParameter("globalId", globalId);
-        if (setName != null) {
-            query.setParameter("setName", setName);
-        }
-
-        try {
-            oaiRecord = (OAIRecord) query.setMaxResults(1).getSingleResult();
-        } catch (javax.persistence.NoResultException e) {
-            // Do nothing, just return null.
-        }
-        logger.fine("returning oai record.");
-        return oaiRecord;
     }
 
     public List<OAIRecord> findOaiRecordsByGlobalId(String globalId) {
@@ -230,12 +204,7 @@ public class OAIRecordServiceBean implements java.io.Serializable {
             query.setParameter("until", until, TemporalType.TIMESTAMP);
         }
 
-        try {
-            return query.getResultList();
-        } catch (Exception ex) {
-            logger.fine("Caught exception; returning null.");
-            return null;
-        }
+        return query.getResultList();
     }
 
     // This method is to only get the records NOT marked as "deleted":

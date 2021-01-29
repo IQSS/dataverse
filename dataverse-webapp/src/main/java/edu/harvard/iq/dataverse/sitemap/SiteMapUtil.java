@@ -103,14 +103,11 @@ public class SiteMapUtil {
         }
 
         for (Dataset dataset : datasets) {
-            if (!dataset.isReleased()) {
-                continue;
-            }
             if (dataset.isHarvested()) {
                 continue;
             }
-            // The deaccessioned check is last because it has to iterate through dataset versions.
-            if (dataset.isDeaccessioned()) {
+            // The released version check is last because it has to iterate through dataset versions.
+            if (!dataset.containsReleasedVersion()) {
                 continue;
             }
             Element url = document.createElement("url");

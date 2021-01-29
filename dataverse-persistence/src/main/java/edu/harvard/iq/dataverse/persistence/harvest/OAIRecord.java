@@ -19,6 +19,8 @@
  */
 package edu.harvard.iq.dataverse.persistence.harvest;
 
+import edu.harvard.iq.dataverse.persistence.JpaEntity;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -34,7 +36,7 @@ import java.util.Date;
  * @author Gustavo Durand
  */
 @Entity
-public class OAIRecord implements Serializable {
+public class OAIRecord implements Serializable, JpaEntity<Long> {
 
     private static final long serialVersionUID = 1L;
     @Id

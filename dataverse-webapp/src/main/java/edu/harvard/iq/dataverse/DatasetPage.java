@@ -10,8 +10,6 @@ import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.dataset.difference.DatasetFileTermDifferenceItem;
 import edu.harvard.iq.dataverse.dataset.difference.LicenseDifferenceFinder;
-import edu.harvard.iq.dataverse.dataset.tab.DatasetFilesTab;
-import edu.harvard.iq.dataverse.dataset.tab.DatasetMetadataTab;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -72,8 +70,6 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -82,8 +78,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 /**
  * @author gdurand
@@ -125,10 +119,6 @@ public class DatasetPage implements java.io.Serializable {
     ThumbnailServiceWrapper thumbnailServiceWrapper;
     @Inject
     private ExportService exportService;
-    @Inject
-    private DatasetMetadataTab metadataTab;
-    @Inject
-    private DatasetFilesTab datasetFilesTab;
     @Inject
     private DatasetService datasetService;
     @Inject
@@ -249,10 +239,15 @@ public class DatasetPage implements java.io.Serializable {
 
     }
 
+    public boolean showEditDropdownButton() {
+        return permissionsWrapper.canCurrentUserUpdateDataset(dataset) && !dataset.isDeaccessioned();
+    }
+
     // Another convenience method - to cache Update Permission on the dataset:
     public boolean canUpdateDataset() {
-        return permissionsWrapper.canUpdateDataset(dvRequestService.getDataverseRequest(), this.dataset);
+        return permissionsWrapper.canCurrentUserUpdateDataset(dataset);
     }
+
 
     public boolean canPublishDataverse() {
         return permissionsWrapper.canIssuePublishDataverseCommand(dataset.getOwner());

@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.sitemap;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
@@ -64,6 +65,7 @@ public class SiteMapUtilTest {
         published.setGlobalId(new GlobalId(publishedPid));
         published.setPublicationDate(new Timestamp(new Date().getTime()));
         published.setModificationTime(new Timestamp(new Date().getTime()));
+        published.getLatestVersion().setVersionState(VersionState.RELEASED);
         datasets.add(published);
 
         Dataset unpublished = new Dataset();
