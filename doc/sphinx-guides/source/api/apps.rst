@@ -16,7 +16,7 @@ Data Explorer
 
 Data Explorer is a GUI which lists the variables in a tabular data file allowing searching, charting and cross tabulation analysis.
 
-https://github.com/scholarsportal/Dataverse-Data-Explorer
+https://github.com/scholarsportal/Dataverse-Data-Explorer-v2
 
 Data Curation Tool
 ~~~~~~~~~~~~~~~~~~
@@ -64,13 +64,6 @@ OSF
 OSF allows you to view, download, and upload files to and from a Dataverse dataset from an Open Science Framework (OSF) project.
 
 https://github.com/CenterForOpenScience/osf.io/tree/develop/addons/dataverse
-
-Geoconnect
-~~~~~~~~~~
-
-Geoconnect allows Dataverse files to be visualized and explored on `WorldMap <http://worldmap.harvard.edu>`_. Read more about it in the :doc:`/user/data-exploration/worldmap` section of the User Guide.
-
-https://github.com/IQSS/geoconnect
 
 dataverse-metrics
 ~~~~~~~~~~~~~~~~~

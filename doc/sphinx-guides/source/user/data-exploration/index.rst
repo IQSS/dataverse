@@ -13,4 +13,3 @@ Contents:
 .. toctree::
 
    tworavens
-   worldmap

@@ -58,7 +58,6 @@ import java.util.Base64;
  */
 public class ImageThumbConverter {
     public static String THUMBNAIL_SUFFIX = "thumb";
-    public static String WORLDMAP_IMAGE_SUFFIX = "img";
     public static String THUMBNAIL_MIME_TYPE = "image/png";
 
     public static int DEFAULT_CARDIMAGE_SIZE = 48;
@@ -118,8 +117,6 @@ public class ImageThumbConverter {
             return generateImageThumbnail(storageIO, size);
         } else if (file.getContentType().equalsIgnoreCase("application/pdf")) {
             return generatePDFThumbnail(storageIO, size);
-        } else if (file.getContentType().equalsIgnoreCase("application/zipped-shapefile") || (file.isTabularData() && file.hasGeospatialTag())) {
-            return generateWorldMapThumbnail(storageIO, size);
         }
 
         return false;
@@ -127,7 +124,7 @@ public class ImageThumbConverter {
     }
 
     // Note that this method works on ALL file types for which thumbnail 
-    // generation is supported - image/*, pdf, worldmap and geo-tagged tabular; 
+    // generation is supported - image/*, pdf; 
     // not just on images! The type differentiation is handled inside 
     // isThumbnailAvailable(); if the thumbnail is not yet cached, that 
     // method will attempt to generate and cache it. And once it's cached, 
@@ -279,52 +276,6 @@ public class ImageThumbConverter {
         } catch (IOException ioex) {
             logger.warning("caught IOException trying to open an input stream for " + storageIO.getDataFile().getStorageIdentifier() + ioex);
             return false;
-        }
-        
-    }
-
-    /*
-     * Note that the "WorldMapThumbnail" generator does the exact same thing as the 
-     * "regular image" thumbnail generator. 
-     * The only difference is that the image generator uses the main file as 
-     * as the source; and the one for the worldmap uses an auxiliary file 
-     * with the ".img" extension (or the swift, etc. equivalent). This file is 
-     * produced and dropped into the Dataset directory (Swift container, etc.)
-     * the first time the user actually runs WorldMap on the main file. 
-     * Also note that it works the exact same way for tabular-mapped-as-worldmap
-     * files as well. 
-     */
-    private static boolean generateWorldMapThumbnail(StorageIO<DataFile> storageIO, int size) {
-
-        InputStream worldMapImageInputStream = null;
-
-        try {
-            storageIO.open();
-
-            Channel worldMapImageChannel = storageIO.openAuxChannel(WORLDMAP_IMAGE_SUFFIX);
-            if (worldMapImageChannel == null) {
-                logger.warning("Could not open channel for aux ." + WORLDMAP_IMAGE_SUFFIX + " object; (" + size + ")");
-                return false;
-            }
-            worldMapImageInputStream = Channels.newInputStream((ReadableByteChannel) worldMapImageChannel);
-
-            long worldMapImageSize = storageIO.getAuxObjectSize(WORLDMAP_IMAGE_SUFFIX);
-
-            if (isImageOverSizeLimit(worldMapImageSize)) {
-                logger.fine("WorldMap image too large - skipping");
-                worldMapImageInputStream.close();
-                return false;
-            }
-            return generateImageThumbnailFromInputStream(storageIO, size, worldMapImageInputStream);
-        } catch (FileNotFoundException fnfe) {
-            logger.fine("No .img file for this worldmap file yet; giving up. Original Error: " + fnfe);
-            return false;
-
-        } catch (IOException ioex) {
-            logger.warning("caught IOException trying to open an input stream for worldmap .img file (" + storageIO.getDataFile().getStorageIdentifier() + "). Original Error: " + ioex);
-            return false;
-        } finally {
-        	IOUtils.closeQuietly(worldMapImageInputStream);
         }
         
     }
@@ -489,8 +440,6 @@ public class ImageThumbConverter {
                 generated = generateImageThumbnail(storageIO, size);
             } else if (file.getContentType().equalsIgnoreCase("application/pdf")) {
                 generated = generatePDFThumbnail(storageIO, size);
-            } else if (file.getContentType().equalsIgnoreCase("application/zipped-shapefile") || (file.isTabularData() && file.hasGeospatialTag())) {
-                generated = generateWorldMapThumbnail(storageIO, size);
             }
 
             if (generated) {

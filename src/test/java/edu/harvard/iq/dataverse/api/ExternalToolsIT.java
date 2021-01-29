@@ -376,7 +376,7 @@ public class ExternalToolsIT {
         job.add("types", Json.createArrayBuilder().add("explore"));
         job.add("scope", "file");
         job.add("contentType", "text/tab-separated-values");
-        job.add("toolUrl", "https://scholarsportal.github.io/Dataverse-Data-Explorer/");
+        job.add("toolUrl", "https://scholarsportal.github.io/Dataverse-Data-Explorer-v2/");
         job.add("toolParameters", Json.createObjectBuilder()
                 .add("queryParameters", Json.createArrayBuilder()
                         .add(Json.createObjectBuilder()

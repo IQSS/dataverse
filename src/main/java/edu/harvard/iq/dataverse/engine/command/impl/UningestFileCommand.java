@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.MapLayerMetadata;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -165,19 +164,6 @@ public class UningestFileCommand extends AbstractVoidCommand  {
             ctxt.datasetVersion().fixMissingUnf(dv.getId().toString(), true);
         }
 
-        MapLayerMetadata mapLayerMetadata = ctxt.mapLayerMetadata().findMetadataByDatafile(uningest);
-        if (mapLayerMetadata != null) {
-            try {
-                String id = getUser().getIdentifier();
-                id = id.startsWith("@") ? id.substring(1) : id;
-                AuthenticatedUser authenticatedUser = ctxt.authentication().getAuthenticatedUser(id);
-                ctxt.mapLayerMetadata().deleteMapLayerFromWorldMap(uningest, authenticatedUser);
-            } catch (Exception e) {
-                logger.warning("Unable to delete WorldMap file - may not have existed. Data File id: " + uningest.getId());
-            }
-            ctxt.mapLayerMetadata().deleteMapLayerMetadataObject(mapLayerMetadata, getUser());
-        }
-        
         try{
             dataAccess.deleteAllAuxObjects();
         } catch (IOException e){
