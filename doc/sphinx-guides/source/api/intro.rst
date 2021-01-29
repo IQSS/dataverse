@@ -198,7 +198,6 @@ Please note that some APIs are only documented in other guides that are more sui
   - :doc:`/admin/metadatacustomization`  
   - :doc:`/admin/metadataexport`
   - :doc:`/admin/make-data-count`
-  - :doc:`/admin/geoconnect-worldmap`
   - :doc:`/admin/solr-search-index`
 
 - Installation Guide

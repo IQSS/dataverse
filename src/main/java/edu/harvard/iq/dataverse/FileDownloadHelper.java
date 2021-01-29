@@ -143,14 +143,6 @@ public class FileDownloadHelper implements java.io.Serializable {
             fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
     }
 
-    public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
-         
-        guestbookResponse.setDownloadtype("WorldMap");
-        String retVal = fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fmd);
-        PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
-        return retVal;
-    }
-
      /**
       * Writes a guestbook entry for either popup scenario: guestbook or terms.
       */
@@ -197,12 +189,6 @@ public class FileDownloadHelper implements java.io.Serializable {
     /**
      *  WARNING: Before calling this, make sure the user has download
      *  permission for the file!!  (See DatasetPage.canDownloadFile())
-     * 
-     * Should there be a Explore WorldMap Button for this file?
-     *   See table in: https://github.com/IQSS/dataverse/issues/1618
-     * 
-     *  (1) Does the file have MapLayerMetadata?
-     *  (2) Are the proper settings in place
      * 
      * @param  fileMetadata
      * @return boolean

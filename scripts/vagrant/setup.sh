@@ -1,15 +1,16 @@
 #!/bin/bash
 echo "Installing dependencies for Dataverse"
 
+# wget seems to be missing in box 'bento/centos-8.2'
+dnf install -qy wget
+
 # python3 and psycopg2 for the Dataverse installer
 dnf install -qy python3 python3-psycopg2
 
-# Add JQ (TODO: just install this from EPEL?)
+# JQ
 echo "Installing jq for the setup scripts"
-wget -q http://stedolan.github.io/jq/download/linux64/jq
-chmod +x jq
-# this is where EPEL puts it
-sudo mv jq /usr/bin/jq
+dnf install -qy epel-release
+dnf install -qy jq
 
 echo "Adding Shibboleth yum repo"
 cp /dataverse/conf/vagrant/etc/yum.repos.d/shibboleth.repo /etc/yum.repos.d
@@ -17,16 +18,25 @@ cp /dataverse/conf/vagrant/etc/yum.repos.d/shibboleth.repo /etc/yum.repos.d
 # to use Vagrant (and maybe PageKite) to test Shibboleth.
 #yum install -y shibboleth shibboleth-embedded-ds
 
-# java configuration et al
-dnf install -qy java-1.8.0-openjdk-headless maven httpd mod_ssl unzip
-alternatives --set java /usr/lib/jvm/jre-1.8.0-openjdk/bin/java
-# do we need javac? the symlink is tied to package version...
-# /etc/alternatives/javac -> /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.262.b10-0.el8_2.x86_64/bin/javac
-#alternatives --set javac /usr/lib/jvm/java-1.8.0-openjdk.x86_64/bin/javac
+# java configuration et alia
+dnf install -qy java-11-openjdk-devel httpd mod_ssl unzip
+alternatives --set java /usr/lib/jvm/jre-11-openjdk/bin/java
 java -version
-#javac -version
+
+# maven included in centos8 requires 1.8.0 - download binary instead
+# current version is 3.6.3 - requires newer jacoco.pom.xml
+wget -q https://www-us.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+tar xfz apache-maven-3.6.3-bin.tar.gz
+mkdir /opt/maven
+mv apache-maven-3.6.3/* /opt/maven/
+echo "export JAVA_HOME=/usr/lib/jvm/jre-openjdk" > /etc/profile.d/maven.sh
+echo "export M2_HOME=/opt/maven" >> /etc/profile.d/maven.sh
+echo "export MAVEN_HOME=/opt/maven" >> /etc/profile.d/maven.sh
+echo "export PATH=/opt/maven/bin:${PATH}" >> /etc/profile.d/maven.sh
+chmod 0755 /etc/profile.d/maven.sh
 
 # disable centos8 postgresql module and install postgresql10-server
+# note: postgresql10 because 9.6 isn't backwards compatible with python3-psycopg2
 dnf -qy module disable postgresql
 dnf install -qy https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 dnf install -qy postgresql10-server

@@ -71,19 +71,7 @@ public class MailUtilTest {
         userNotification.setType(UserNotification.Type.REJECTFILEACCESS);
         assertEquals("LibraScholar: Your request for access to a restricted file has been rejected", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null));
     }
-    
-    @Test
-    public void testSubjectMapLayerUpdated() {
-        userNotification.setType(UserNotification.Type.MAPLAYERUPDATED);
-        assertEquals("LibraScholar: WorldMap layer added to dataset", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null));
-    }
-    
-    @Test
-    public void testSubjectMapLayerDeleteFailed() {
-        userNotification.setType(UserNotification.Type.MAPLAYERDELETEFAILED);
-        assertEquals("LibraScholar: Failed to delete WorldMap layer", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null));
-    }
-    
+
     @Test
     public void testSubjectCreateDataset() {
         userNotification.setType(UserNotification.Type.CREATEDS);

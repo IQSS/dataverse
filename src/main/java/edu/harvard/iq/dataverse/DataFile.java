@@ -7,7 +7,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
-import edu.harvard.iq.dataverse.api.WorldMapRelatedData;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
@@ -19,7 +18,6 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import edu.harvard.iq.dataverse.util.StringUtil;
-import edu.harvard.iq.dataverse.worldmapauth.WorldMapToken;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
@@ -217,14 +215,7 @@ public class DataFile extends DvObject implements Comparable {
     public void setGuestbookResponses(List<GuestbookResponse> guestbookResponses) {
         this.guestbookResponses = guestbookResponses;
     }
-    
-    // The WorldMap LayerMetadata and AuthToken are here to facilitate a
-    // clean cascade delete when the DataFile is deleted:
-    @OneToOne(mappedBy="dataFile", orphanRemoval = true, cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private MapLayerMetadata mapLayerMetadata;    
-    @OneToMany(mappedBy="dataFile", orphanRemoval = true, cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private List<WorldMapToken> worldMapTokens;
-    
+
     private char ingestStatus = INGEST_STATUS_NONE; 
     
     @OneToOne(mappedBy = "thumbnailFile")
@@ -725,21 +716,7 @@ public class DataFile extends DvObject implements Comparable {
     public void setAsThumbnailForDataset(Dataset dataset) {
         thumbnailForDataset = dataset;
     }
-    
-    /**
-     * URL to use with the WorldMapRelatedData API
-     * Used within dataset.xhtml
-     * 
-     * @param dataverseUserID
-     * @return URL for "Map It" functionality
-     */
-    public String getMapItURL(Long dataverseUserID){
-        if (dataverseUserID==null){
-            return null;
-        }
-        return WorldMapRelatedData.getMapItURL(this.getId(), dataverseUserID);
-    }
-        
+
     /*
         8/10/2014 - Using the current "open access" url
     */
