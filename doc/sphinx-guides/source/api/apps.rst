@@ -16,7 +16,7 @@ Data Explorer
 
 Data Explorer is a GUI which lists the variables in a tabular data file allowing searching, charting and cross tabulation analysis.
 
-https://github.com/scholarsportal/Dataverse-Data-Explorer
+https://github.com/scholarsportal/Dataverse-Data-Explorer-v2
 
 Data Curation Tool
 ~~~~~~~~~~~~~~~~~~
