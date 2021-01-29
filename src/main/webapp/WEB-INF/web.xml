@@ -97,10 +97,6 @@
         <servlet-class>edu.harvard.iq.dataverse.CitationServlet</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>Homepage Servlet</servlet-name>
-        <servlet-class>edu.harvard.iq.dataverse.HomepageServlet</servlet-class>
-    </servlet>
-    <servlet>
         <servlet-name>HomepageServlet</servlet-name>
         <servlet-class>edu.harvard.iq.dataverse.HomepageServlet</servlet-class>
     </servlet>
