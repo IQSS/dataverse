@@ -104,6 +104,8 @@ public class DataFileServiceBean implements java.io.Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
+    private DataAccess dataAccess = DataAccess.dataAccess();
+
 
     public DataFile find(Object pk) {
         return em.find(DataFile.class, pk);
@@ -599,7 +601,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         dataFile.setStorageIdentifier(generateStorageIdentifier());
     }
 
-    public String generateStorageIdentifier() {
+    private String generateStorageIdentifier() {
 
         UUID uid = UUID.randomUUID();
 
@@ -1128,7 +1130,7 @@ public class DataFileServiceBean implements java.io.Serializable {
      *  longer exists in the database, before proceeding to
      *  delete the physical file)
      */
-    public void finalizeFileDelete(Long dataFileId, String storageLocation, DataAccess dataAccess) throws IOException {
+    public void finalizeFileDelete(Long dataFileId, String storageLocation) throws IOException {
         // Verify that the DataFile no longer exists: 
         if (find(dataFileId) != null) {
             throw new IOException("Attempted to permanently delete a physical file still associated with an existing DvObject "
@@ -1143,7 +1145,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             String storageLocation = storageLocations.get(dataFileId);
 
             try {
-                finalizeFileDelete(dataFileId, storageLocation, new DataAccess());
+                finalizeFileDelete(dataFileId, storageLocation);
             } catch (IOException ioex) {
                 logger.warn("Failed to delete the physical file associated with the deleted datafile id="
                                        + dataFileId + ", storage location: " + storageLocation, ioex);
@@ -1207,7 +1209,7 @@ public class DataFileServiceBean implements java.io.Serializable {
 
     public String getPhysicalFileToDelete(DataFile dataFile) {
         try {
-            StorageIO<DataFile> storageIO = new DataAccess().getStorageIO(dataFile);
+            StorageIO<DataFile> storageIO = dataAccess.getStorageIO(dataFile);
             return storageIO.getStorageLocation();
 
         } catch (IOException ioex) {

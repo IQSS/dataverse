@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.datasetutility;
 
 import com.google.common.base.Preconditions;
@@ -10,7 +5,6 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -34,8 +28,6 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -121,7 +113,6 @@ public class AddReplaceFileHelper {
     // -----------------------------------
     // Instance variables derived from other input
     // -----------------------------------
-    private User user;
     private DatasetVersion workingVersion;
     private DatasetVersion clone;
     List<DataFile> initialFileList;
@@ -182,7 +173,6 @@ public class AddReplaceFileHelper {
         // Initiate instance vars
         this.dataset = null;
         this.dvRequest = dvRequest;
-        this.user = dvRequest.getUser();
 
     }
 
@@ -1126,7 +1116,7 @@ public class AddReplaceFileHelper {
         }
 
         int nFiles = finalFileList.size();
-        finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList, new DataAccess());
+        finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList);
 
         if (nFiles != finalFileList.size()) {
             if (nFiles == 1) {

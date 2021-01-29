@@ -27,8 +27,6 @@ import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -65,12 +63,6 @@ public class DDIExportServiceBean {
     @EJB
     VariableServiceBean variableService;
 
-    @EJB
-    IngestServiceBean ingestService;
-
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
-
     /*
      * Constants used by the worker methods:
      */
@@ -98,13 +90,8 @@ public class DDIExportServiceBean {
     /*
      * Internal service objects:
      */
-    private XMLOutputFactory xmlOutputFactory = null;
+    private XMLOutputFactory xmlOutputFactory = javax.xml.stream.XMLOutputFactory.newInstance();
 
-    public void ejbCreate() {
-        // initialize lists/service classes:
-
-        xmlOutputFactory = javax.xml.stream.XMLOutputFactory.newInstance();
-    }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void exportDataVariable(Long varId, OutputStream os, String partialExclude, String partialInclude) {
@@ -466,8 +453,7 @@ public class DDIExportServiceBean {
 
     private void calculateFrequencies(DataFile df, List<DataVariable> vars) {
         try {
-            DataConverter dc = new DataConverter();
-            File tabFile = DataConverter.downloadFromStorageIO(new DataAccess().getStorageIO(df));
+            File tabFile = DataConverter.downloadFromStorageIO(DataAccess.dataAccess().getStorageIO(df));
 
             IngestServiceBean.produceFrequencies(tabFile, vars);
 

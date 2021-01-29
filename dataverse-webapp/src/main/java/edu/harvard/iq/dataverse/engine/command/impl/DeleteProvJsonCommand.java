@@ -35,7 +35,7 @@ public class DeleteProvJsonCommand extends AbstractCommand<DataFile> {
         final String provJsonExtension = "prov-json.json";
 
         try {
-            StorageIO<DataFile> dataAccess = new DataAccess().getStorageIO(dataFile);
+            StorageIO<DataFile> dataAccess = ctxt.dataAccess().getStorageIO(dataFile);
             dataAccess.deleteAuxObject(provJsonExtension);
             logger.info("provenance json delete passed io step");
         } catch (NoSuchFileException nf) {

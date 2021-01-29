@@ -21,8 +21,10 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.DataverseTextMessageServiceBean;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.datafile.FileDownloadServiceBean;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnailService;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.dataverse.template.TemplateDao;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -62,6 +64,11 @@ public class TestCommandContext implements CommandContext {
 
     @Override
     public DataverseDao dataverses() {
+        return null;
+    }
+
+    @Override
+    public DataAccess dataAccess() {
         return null;
     }
 
@@ -262,6 +269,11 @@ public class TestCommandContext implements CommandContext {
 
     @Override
     public DataverseTextMessageServiceBean dataverseTextMessages() {
+        return null;
+    }
+
+    @Override
+    public DatasetThumbnailService datasetThumailService() {
         return null;
     }
 }

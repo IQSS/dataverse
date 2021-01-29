@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnailService;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
@@ -74,6 +74,9 @@ public class DatasetDao implements java.io.Serializable {
 
     @EJB
     private DatasetRepository datasetRepository;
+
+    @EJB
+    private DatasetThumbnailService datasetThumbnailService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
@@ -450,7 +453,7 @@ public class DatasetDao implements java.io.Serializable {
             logger.fine("In setNonDatasetFileAsThumbnail but inputStream is null! Returning null.");
             return null;
         }
-        dataset = DatasetUtil.persistDatasetLogoToStorageAndCreateThumbnail(dataset, inputStream, new DataAccess());
+        dataset = datasetThumbnailService.persistDatasetLogoToStorageAndCreateThumbnail(dataset, inputStream);
         dataset.setThumbnailFile(null);
         dataset.setUseGenericThumbnail(false);
         return merge(dataset);
@@ -465,7 +468,7 @@ public class DatasetDao implements java.io.Serializable {
             logger.fine("In setDatasetFileAsThumbnail but dataset is null! Returning null.");
             return null;
         }
-        DatasetUtil.deleteDatasetLogo(dataset, new DataAccess());
+        datasetThumbnailService.deleteDatasetLogo(dataset);
         dataset.setThumbnailFile(datasetFileThumbnailToSwitchTo);
         dataset.setUseGenericThumbnail(false);
         return merge(dataset);
@@ -476,7 +479,7 @@ public class DatasetDao implements java.io.Serializable {
             logger.fine("In removeDatasetThumbnail but dataset is null! Returning null.");
             return null;
         }
-        DatasetUtil.deleteDatasetLogo(dataset, new DataAccess());
+        datasetThumbnailService.deleteDatasetLogo(dataset);
         dataset.setThumbnailFile(null);
         dataset.setUseGenericThumbnail(true);
         return merge(dataset);

@@ -1,12 +1,10 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
@@ -48,7 +46,7 @@ public class PersistProvJsonCommand extends AbstractCommand<DataFile> {
         // "prov-json.json" looks a little redundand but the standard is called PROV-JSON and it's nice to see .json on disk.
         final String provJsonExtension = "prov-json.json";
         try {
-            StorageIO<DataFile> storageIO = new DataAccess().getStorageIO(dataFile);
+            StorageIO<DataFile> storageIO = ctxt.dataAccess().getStorageIO(dataFile);
             InputStream inputStream = new ByteArrayInputStream(jsonInput.getBytes(StandardCharsets.UTF_8.name()));
             storageIO.saveInputStreamAsAux(inputStream, provJsonExtension);
         } catch (IOException ex) {

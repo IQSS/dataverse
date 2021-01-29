@@ -38,6 +38,8 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
 
     @Inject
     private DataConverter dataConverter;
+    
+    private DataAccess dataAccess = DataAccess.dataAccess();
 
     @Override
     public boolean isWriteable(Class<?> clazz, Type type, Annotation[] annotation, MediaType mediaType) {
@@ -56,7 +58,7 @@ public class BundleDownloadInstanceWriter implements MessageBodyWriter<BundleDow
         try {
             if (di.getDownloadInfo() != null && di.getDownloadInfo().getDataFile() != null) {
                 DataFile sf = di.getDownloadInfo().getDataFile();
-                StorageIO<DataFile> accessObject = new DataAccess().getStorageIO(sf);
+                StorageIO<DataFile> accessObject = dataAccess.getStorageIO(sf);
 
                 accessObject.open();
 

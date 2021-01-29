@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.datafile.file.exception.FileReplaceException;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
@@ -18,6 +17,7 @@ import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -210,6 +210,6 @@ public class ReplaceFileHandler implements Serializable {
     }
 
     private List<DataFile> integrateFileWithDataset(DataFile newFile, DatasetVersion editableDatasetDraft) {
-        return ingestService.saveAndAddFilesToDataset(editableDatasetDraft, Lists.newArrayList(newFile), new DataAccess());
+        return ingestService.saveAndAddFilesToDataset(editableDatasetDraft, Lists.newArrayList(newFile));
     }
 }

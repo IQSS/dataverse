@@ -141,6 +141,8 @@ public class IngestServiceBean {
 
     @Inject
     private SettingsServiceBean settingsService;
+    
+    private DataAccess dataAccess = DataAccess.dataAccess();
 
     @Resource(mappedName = "jms/DataverseIngest")
     Queue queue;
@@ -161,7 +163,7 @@ public class IngestServiceBean {
     // DataFileCategory objects, if any were already assigned to the files). 
     // It must be called before we attempt to permanently save the files in 
     // the database by calling the Save command on the dataset and/or version. 
-    public List<DataFile> saveAndAddFilesToDataset(DatasetVersion version, List<DataFile> newFiles, DataAccess dataAccess) {
+    public List<DataFile> saveAndAddFilesToDataset(DatasetVersion version, List<DataFile> newFiles) {
         List<DataFile> ret = new ArrayList<>();
 
         if (newFiles != null && newFiles.size() > 0) {
@@ -741,7 +743,7 @@ public class IngestServiceBean {
         StorageIO<DataFile> storageIO = null;
 
         try {
-            storageIO = new DataAccess().getStorageIO(dataFile);
+            storageIO = dataAccess.getStorageIO(dataFile);
             storageIO.open();
 
             if (storageIO.isLocalFile()) {
@@ -943,21 +945,21 @@ public class IngestServiceBean {
                 try {
                     /* Start of save as backup */
 
-                    StorageIO<DataFile> dataAccess = new DataAccess().getStorageIO(dataFile);
-                    dataAccess.open();
+                    StorageIO<DataFile> tabularStorageIO = dataAccess.getStorageIO(dataFile);
+                    tabularStorageIO.open();
 
                     // and we want to save the original of the ingested file: 
                     try {
-                        dataAccess.backupAsAux(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
+                        tabularStorageIO.backupAsAux(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
                         logger.fine("Saved the ingested original as a backup aux file " + FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
                     } catch (IOException iox) {
                         logger.warning("Failed to save the ingested original! " + iox.getMessage());
                     }
 
                     // Replace contents of the file with the tab-delimited data produced:
-                    dataAccess.savePath(Paths.get(tabFile.getAbsolutePath()));
+                    tabularStorageIO.savePath(Paths.get(tabFile.getAbsolutePath()));
                     // Reset the file size: 
-                    dataFile.setFilesize(dataAccess.getSize());
+                    dataFile.setFilesize(tabularStorageIO.getSize());
 
                     // delete the temp tab-file:
                     tabFile.delete();
@@ -967,6 +969,7 @@ public class IngestServiceBean {
                     // this probably means that an error occurred while saving the file to the file system
                     logger.warning(
                             "Failed to save the tabular file produced by the ingest (resetting the ingested DataFile back to its original state)");
+                    logger.log(Level.WARNING, "Failed to save the tabular file produced by the ingest (resetting the ingested DataFile back to its original state)", e);
 
                     dataFile = fileService.find(datafile_id);
 
@@ -1668,7 +1671,7 @@ public class IngestServiceBean {
                 boolean tempFileRequired = false;
 
                 try {
-                    storageIO = new DataAccess().getStorageIO(dataFile);
+                    storageIO = dataAccess.getStorageIO(dataFile);
                     storageIO.open();
 
 
@@ -1762,7 +1765,7 @@ public class IngestServiceBean {
                 StorageIO<DataFile> storageIO;
 
                 try {
-                    storageIO = new DataAccess().getStorageIO(dataFile);
+                    storageIO = dataAccess.getStorageIO(dataFile);
                     storageIO.open();
                     savedOriginalFileSize = storageIO.getAuxObjectSize(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
 

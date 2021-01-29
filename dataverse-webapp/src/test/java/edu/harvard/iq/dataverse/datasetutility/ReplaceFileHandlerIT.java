@@ -138,7 +138,7 @@ public class ReplaceFileHandlerIT extends WebappArquillianDeployment {
 
         Assert.assertEquals(dbDataset.getFiles().get(0).getId(), dbDataset.getFiles().get(0).getRootDataFileId());
 
-        StorageIO<DataFile> newFileStorageIO = new DataAccess().getStorageIO(dbDataset.getFiles().get(1));
+        StorageIO<DataFile> newFileStorageIO = DataAccess.dataAccess().getStorageIO(dbDataset.getFiles().get(1));
         newFileStorageIO.open();
         byte[] newFileContent = IOUtils.toByteArray(newFileStorageIO.getInputStream());
         Assert.assertArrayEquals(bytes, newFileContent);

@@ -29,7 +29,7 @@ import edu.harvard.iq.dataverse.datafile.FileIntegrityChecker;
 import edu.harvard.iq.dataverse.datafile.FileService;
 import edu.harvard.iq.dataverse.datafile.pojo.FilesIntegrityReport;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
-import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnailService;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -134,6 +134,9 @@ public class Admin extends AbstractApiBean {
 
     @Inject
     private ConsentApiService consentApiService;
+
+    @Inject
+    private DatasetThumbnailService datasetThumbnailService;
 
     // Make the session available
     @Inject
@@ -1075,9 +1078,9 @@ public class Admin extends AbstractApiBean {
             return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
         }
         JsonObjectBuilder data = Json.createObjectBuilder();
-        DatasetThumbnail datasetThumbnail = DatasetUtil.getThumbnail(dataset);
+        DatasetThumbnail datasetThumbnail = datasetThumbnailService.getThumbnail(dataset);
         data.add("isUseGenericThumbnail", dataset.isUseGenericThumbnail());
-        data.add("datasetLogoPresent", DatasetUtil.isDatasetLogoPresent(dataset, new DataAccess()));
+        data.add("datasetLogoPresent", datasetThumbnailService.isDatasetLogoPresent(dataset));
         if (datasetThumbnail != null) {
             data.add("datasetThumbnailBase64image", datasetThumbnail.getBase64image());
             DataFile dataFile = datasetThumbnail.getDataFile();
@@ -1268,7 +1271,7 @@ public class Admin extends AbstractApiBean {
                         logger.fine(rehashed + ": Datafile: " + df.getFileMetadata().getLabel() + ", "
                                             + df.getIdentifier());
                         // verify hash and calc new one to replace it
-                        StorageIO<DataFile> storage = new DataAccess().getStorageIO(df);
+                        StorageIO<DataFile> storage = DataAccess.dataAccess().getStorageIO(df);
                         storage.open(DataAccessOption.READ_ACCESS);
                         if (!df.isTabularData()) {
                             in = storage.getInputStream();

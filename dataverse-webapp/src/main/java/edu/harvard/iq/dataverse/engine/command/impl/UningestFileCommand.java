@@ -6,7 +6,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.common.files.extension.FileExtension;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -27,6 +26,7 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 
 import javax.persistence.Query;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.logging.Logger;
@@ -60,16 +60,16 @@ public class UningestFileCommand extends AbstractVoidCommand {
             throw new IllegalCommandException("UningestFileCommand called on a non-tabular data file (id=" + uningest.getId() + ")", this);
         }
 
-        StorageIO<DataFile> dataAccess = null;
+        StorageIO<DataFile> storageIO = null;
         // size of the stored original:
         Long storedOriginalFileSize;
 
         // Try to open the main storageIO for the file; look up the AUX file for 
         // the saved original and check its size:
         try {
-            dataAccess = new DataAccess().getStorageIO(uningest);
-            dataAccess.open();
-            storedOriginalFileSize = dataAccess.getAuxObjectSize(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
+            storageIO = ctxt.dataAccess().getStorageIO(uningest);
+            storageIO.open();
+            storedOriginalFileSize = storageIO.getAuxObjectSize(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
         } catch (IOException ioex) {
             String errorMessage = "Failed to open StorageIO for " + uningest.getStorageIdentifier() + " attempting to revert tabular ingest" + " aborting. (";
             if (ioex.getMessage() != null) {
@@ -89,7 +89,7 @@ public class UningestFileCommand extends AbstractVoidCommand {
         // -- L.A. May 2018
 
         try {
-            dataAccess.revertBackupAsAux(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
+            storageIO.revertBackupAsAux(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
         } catch (IOException ioex) {
             String errorMessage = "Failed to revert backup as Aux for " + uningest.getStorageIdentifier() + " attempting to revert tabular ingest" + " aborting. (";
             if (ioex.getMessage() != null) {
@@ -172,7 +172,7 @@ public class UningestFileCommand extends AbstractVoidCommand {
         }
 
         try {
-            dataAccess.deleteAllAuxObjects();
+            storageIO.deleteAllAuxObjects();
         } catch (IOException e) {
             logger.warning("Io Exception deleting all aux objects : " + uningest.getId());
         }

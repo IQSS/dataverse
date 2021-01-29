@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.datafile.file.ReplaceFileHandler;
 import edu.harvard.iq.dataverse.datafile.file.exception.FileReplaceException;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -55,7 +54,7 @@ public class ReplaceFileHandlerTest {
     public void setUp() {
 
         when(dataverseRequestServiceBean.getDataverseRequest()).thenReturn(new DataverseRequest(new AuthenticatedUser(), new IPv4Address(111)));
-        when(ingestService.saveAndAddFilesToDataset(any(DatasetVersion.class), any(), any(DataAccess.class)))
+        when(ingestService.saveAndAddFilesToDataset(any(DatasetVersion.class), any()))
                 .thenReturn(Lists.newArrayList(new DataFile()));
 
         replaceFileHandler = new ReplaceFileHandler(ingestService, dataFileServiceBean, ejbDataverseEngine, dataverseRequestServiceBean);

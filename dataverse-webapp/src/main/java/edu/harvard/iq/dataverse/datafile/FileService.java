@@ -164,7 +164,7 @@ public class FileService {
         String fileStorageLocation = dataFileService.getPhysicalFileToDelete(fileToDelete);
 
         if (fileStorageLocation != null) {
-            Try.run(() -> dataFileService.finalizeFileDelete(fileToDelete.getId(), fileStorageLocation, new DataAccess()))
+            Try.run(() -> dataFileService.finalizeFileDelete(fileToDelete.getId(), fileStorageLocation))
                     .onFailure(throwable -> logger.warn("Failed to delete the physical file associated with the deleted datafile id="
                                                                    + fileToDelete.getId() + ", storage location: " + fileStorageLocation));
         } else {

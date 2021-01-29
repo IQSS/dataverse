@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
-import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -73,7 +72,7 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
                     throw new CommandException("Could not find file based on id supplied: " + dataFileIdSupplied + ".", this);
                 }
                 Dataset ds1 = ctxt.datasets().setDatasetFileAsThumbnail(dataset, datasetFileThumbnailToSwitchTo);
-                DatasetThumbnail datasetThumbnail = DatasetUtil.getThumbnail(ds1);
+                DatasetThumbnail datasetThumbnail = ctxt.datasetThumailService().getThumbnail(ds1);
                 if (datasetThumbnail != null) {
                     DataFile dataFile = datasetThumbnail.getDataFile();
                     if (dataFile != null) {
@@ -110,14 +109,14 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
                 Dataset datasetWithNewThumbnail = ctxt.datasets().setNonDatasetFileAsThumbnail(dataset, fileAsStream);
                 IOUtils.closeQuietly(fileAsStream);
                 if (datasetWithNewThumbnail != null) {
-                    return DatasetUtil.getThumbnail(datasetWithNewThumbnail);
+                    return ctxt.datasetThumailService().getThumbnail(datasetWithNewThumbnail);
                 } else {
                     return null;
                 }
 
             case removeThumbnail:
                 Dataset ds2 = ctxt.datasets().removeDatasetThumbnail(dataset);
-                DatasetThumbnail datasetThumbnail2 = DatasetUtil.getThumbnail(ds2);
+                DatasetThumbnail datasetThumbnail2 = ctxt.datasetThumailService().getThumbnail(ds2);
                 if (datasetThumbnail2 == null) {
                     return null;
                 } else {

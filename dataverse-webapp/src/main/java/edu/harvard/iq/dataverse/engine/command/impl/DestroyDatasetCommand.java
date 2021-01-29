@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -23,8 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static edu.harvard.iq.dataverse.dataset.DatasetUtil.deleteDatasetLogo;
 
 /**
  * Same as {@link DeleteDatasetCommand}, but does not stop if the dataset is
@@ -78,7 +75,7 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         }
 
         //also, lets delete the uploaded thumbnails!
-        deleteDatasetLogo(doomed, new DataAccess());
+        ctxt.datasetThumailService().deleteDatasetLogo(doomed);
 
 
         // ASSIGNMENTS

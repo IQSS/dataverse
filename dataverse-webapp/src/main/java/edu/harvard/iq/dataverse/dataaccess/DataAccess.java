@@ -35,6 +35,14 @@ public class DataAccess {
 
     private static final DataAccess INSTANCE = new DataAccess();
 
+    private S3ClientFactory s3ClientFactory;
+    
+    // -------------------- CONSTRUCTORS --------------------
+    
+    private DataAccess() {
+        this.s3ClientFactory = new S3ClientFactory();
+    }
+    
     // -------------------- LOGIC --------------------
 
     public static DataAccess dataAccess() {
@@ -57,7 +65,7 @@ public class DataAccess {
                 || (!dvObject.getStorageIdentifier().matches("^[a-z][a-z0-9]*://.*"))) {
             return new FileAccessIO<>(dvObject, SystemConfig.getFilesDirectoryStatic());
         } else if (dvObject.getStorageIdentifier().startsWith("s3://")) {
-            return new S3AccessIO<>(dvObject);
+            return new S3AccessIO<>(dvObject, s3ClientFactory.getClient());
         } else if (dvObject.getStorageIdentifier().startsWith("tmp://")) {
             throw new IOException("DataAccess IO attempted on a temporary file that hasn't been permanently saved yet.");
         }
@@ -73,7 +81,7 @@ public class DataAccess {
         if (storageLocation.startsWith("file://")) {
             return new FileAccessIO(storageLocation.substring(7), SystemConfig.getFilesDirectoryStatic());
         } else if (storageLocation.startsWith("s3://")) {
-            return new S3AccessIO<>(storageLocation.substring(5));
+            return new S3AccessIO<>(storageLocation.substring(5), s3ClientFactory.getClient());
         }
 
         throw new IOException("getDirectStorageIO: Unsupported storage method.");
@@ -108,7 +116,7 @@ public class DataAccess {
         if (driverIdentifier.equals("file")) {
             storageIO = new FileAccessIO<>(dvObject, SystemConfig.getFilesDirectoryStatic());
         } else if (driverIdentifier.equals("s3")) {
-            storageIO = new S3AccessIO<>(dvObject);
+            storageIO = new S3AccessIO<>(dvObject, s3ClientFactory.getClient());
         } else {
             throw new IOException("createDataAccessObject: Unsupported storage method " + driverIdentifier);
         }

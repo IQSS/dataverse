@@ -51,11 +51,9 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.ContentHandler;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.inject.Inject;
@@ -118,6 +116,8 @@ public class IndexServiceBean {
     @Inject
     private SolrClient solrServer;
 
+    private DataAccess dataAccess;
+
     public static final String solrDocIdentifierDataverse = "dataverse_";
     public static final String solrDocIdentifierFile = "datafile_";
     public static final String solrDocIdentifierDataset = "dataset_";
@@ -127,13 +127,6 @@ public class IndexServiceBean {
     private static final String groupPrefix = "group_";
     private static final String groupPerUserPrefix = "group_user";
     public static final String HARVESTED = "Harvested";
-    private String rootDataverseName;
-    private Dataverse rootDataverseCached;
-
-    @PostConstruct
-    public void init() {
-        rootDataverseName = findRootDataverseCached().getName();
-    }
 
     @TransactionAttribute(REQUIRES_NEW)
     public Future<String> indexDataverseInNewTransaction(Dataverse dataverse) {
@@ -147,7 +140,7 @@ public class IndexServiceBean {
             logger.info(msg);
             return new AsyncResult<>(msg);
         }
-        Dataverse rootDataverse = findRootDataverseCached();
+        Dataverse rootDataverse = findRootDataverse();
         if (rootDataverse == null) {
             String msg = "Could not find root dataverse and the root dataverse should not be indexed. Returning.";
             return new AsyncResult<>(msg);
@@ -637,7 +630,7 @@ public class IndexServiceBean {
         Collection<SolrInputDocument> docs = new ArrayList<>();
         List<String> dataversePathSegmentsAccumulator = new ArrayList<>();
         List<String> dataverseSegments = new ArrayList<>();
-        rootDataverseName = findRootDataverseCached().getName();
+        String rootDataverseName = findRootDataverse().getName();
         try {
             dataverseSegments = findPathSegments(dataset.getOwner(), dataversePathSegmentsAccumulator);
         } catch (Exception ex) {
@@ -915,7 +908,7 @@ public class IndexServiceBean {
                             InputStream instream = null;
                             ContentHandler textHandler = null;
                             try {
-                                accessObject = new DataAccess().getStorageIO(fileMetadata.getDataFile());
+                                accessObject = dataAccess.getStorageIO(fileMetadata.getDataFile());
                                 if (accessObject != null) {
                                     accessObject.open();
                                     // If the size is >max, we don't use the stream. However, for S3, the stream is
@@ -1181,7 +1174,7 @@ public class IndexServiceBean {
     }
 
     public List<String> findPathSegments(Dataverse dataverse, List<String> segments) {
-        Dataverse rootDataverse = findRootDataverseCached();
+        Dataverse rootDataverse = findRootDataverse();
         if (!dataverse.equals(rootDataverse)) {
             // important when creating root dataverse
             if (dataverse.getOwner() != null) {
@@ -1344,43 +1337,8 @@ public class IndexServiceBean {
         return result.toString();
     }
 
-    private Dataverse findRootDataverseCached() {
-        if (true) {
-            /**
-             * @todo Is the code below working at all? We don't want the root
-             * dataverse to be indexed into Solr. Specifically, we don't want a
-             * dataverse "card" to show up while browsing.
-             *
-             * Let's just find the root dataverse and be done with it. We'll
-             * figure out the caching later.
-             */
-            try {
-                Dataverse rootDataverse = dataverseDao.findRootDataverse();
-                return rootDataverse;
-            } catch (EJBException ex) {
-                logger.info("caught " + ex);
-                Throwable cause = ex.getCause();
-                while (cause.getCause() != null) {
-                    logger.info("caused by... " + cause);
-                    cause = cause.getCause();
-                }
-                return null;
-            }
-        }
-
-        /**
-         * @todo Why isn't this code working?
-         */
-        if (rootDataverseCached != null) {
-            return rootDataverseCached;
-        } else {
-            rootDataverseCached = dataverseDao.findRootDataverse();
-            if (rootDataverseCached != null) {
-                return rootDataverseCached;
-            } else {
-                throw new RuntimeException("unable to determine root dataverse");
-            }
-        }
+    private Dataverse findRootDataverse() {
+        return dataverseDao.findRootDataverse();
     }
 
     private String getDesiredCardState(Map<DatasetVersion.VersionState, Boolean> desiredCards) {

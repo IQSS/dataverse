@@ -7,15 +7,13 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldUtil;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldsByType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import org.apache.commons.io.IOUtils;
 
+import javax.ejb.Stateless;
 import javax.imageio.ImageIO;
+
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -30,23 +28,23 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.logging.Logger;
 
-public class DatasetUtil {
+@Stateless
+public class DatasetThumbnailService {
 
-    private static final Logger logger = Logger.getLogger(DatasetUtil.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(DatasetThumbnailService.class.getCanonicalName());
     public static String datasetLogoFilenameFinal = "dataset_logo_original";
     public static String datasetLogoThumbnail = "dataset_logo";
     public static String thumb48addedByImageThumbConverter = ".thumb48";
+    
+    private DataAccess dataAccess = DataAccess.dataAccess();
 
-    public static List<DatasetThumbnail> getThumbnailCandidates(Dataset dataset,
-                                                                boolean considerDatasetLogoAsCandidate,
-                                                                DataAccess dataAccess) {
+    
+    
+    public List<DatasetThumbnail> getThumbnailCandidates(Dataset dataset,
+                                                                boolean considerDatasetLogoAsCandidate) {
         List<DatasetThumbnail> thumbnails = new ArrayList<>();
         if (dataset == null) {
             return thumbnails;
@@ -112,7 +110,7 @@ public class DatasetUtil {
      * @param datasetVersion
      * @return
      */
-    public static DatasetThumbnail getThumbnail(Dataset dataset, DatasetVersion datasetVersion, DataAccess dataAccess) {
+    public DatasetThumbnail getThumbnail(Dataset dataset, DatasetVersion datasetVersion) {
         if (dataset == null) {
             return null;
         }
@@ -182,14 +180,14 @@ public class DatasetUtil {
         }
     }
 
-    public static DatasetThumbnail getThumbnail(Dataset dataset) {
+    public DatasetThumbnail getThumbnail(Dataset dataset) {
         if (dataset == null) {
             return null;
         }
-        return getThumbnail(dataset, null, new DataAccess());
+        return getThumbnail(dataset, null);
     }
 
-    public static boolean deleteDatasetLogo(Dataset dataset, DataAccess dataAccess) {
+    public boolean deleteDatasetLogo(Dataset dataset) {
         if (dataset == null) {
             return false;
         }
@@ -230,7 +228,7 @@ public class DatasetUtil {
      * @param datasetVersion
      * @return
      */
-    public static DataFile attemptToAutomaticallySelectThumbnailFromDataFiles(Dataset dataset, DatasetVersion datasetVersion) {
+    public DataFile attemptToAutomaticallySelectThumbnailFromDataFiles(Dataset dataset, DatasetVersion datasetVersion) {
         if (dataset == null) {
             return null;
         }
@@ -265,7 +263,7 @@ public class DatasetUtil {
         return null;
     }
 
-    public static Dataset persistDatasetLogoToStorageAndCreateThumbnail(Dataset dataset, InputStream inputStream, DataAccess dataAccess) {
+    public Dataset persistDatasetLogoToStorageAndCreateThumbnail(Dataset dataset, InputStream inputStream) {
         if (dataset == null) {
             return null;
         }
@@ -355,11 +353,11 @@ public class DatasetUtil {
         return dataset;
     }
 
-    public static InputStream getThumbnailAsInputStream(Dataset dataset) {
+    public InputStream getThumbnailAsInputStream(Dataset dataset) {
         if (dataset == null) {
             return null;
         }
-        DatasetThumbnail datasetThumbnail = DatasetUtil.getThumbnail(dataset);
+        DatasetThumbnail datasetThumbnail = getThumbnail(dataset);
         if (datasetThumbnail == null) {
             return null;
         } else {
@@ -381,7 +379,7 @@ public class DatasetUtil {
      * file that is uploaded. Rather, we delete it after first creating at least
      * one thumbnail from it.
      */
-    public static boolean isDatasetLogoPresent(Dataset dataset, DataAccess dataAccess) {
+    public boolean isDatasetLogoPresent(Dataset dataset) {
         if (dataset == null) {
             return false;
         }
@@ -394,25 +392,6 @@ public class DatasetUtil {
         } catch (IOException ioex) {
         }
         return false;
-    }
-
-    public static List<DatasetFieldsByType> getDatasetSummaryFields(DatasetVersion datasetVersion, List<String> customFieldList) {
-
-        Map<String, DatasetFieldsByType> allFieldsByType = DatasetFieldUtil.groupByType(datasetVersion.getFlatDatasetFields())
-                .stream()
-                .collect(HashMap::new,
-                        (map, fieldsByType) -> map.put(fieldsByType.getDatasetFieldType().getName(), fieldsByType),
-                        (map1, map2) -> map1.putAll(map2));
-
-        List<DatasetFieldsByType> datasetFieldsByTypes = new ArrayList<>();
-        
-        for (String summaryField: customFieldList) {
-            if (allFieldsByType.containsKey(summaryField)) {
-                datasetFieldsByTypes.add(allFieldsByType.get(summaryField));
-            }
-        }
-
-        return datasetFieldsByTypes;
     }
 
 }

@@ -3,9 +3,7 @@ package edu.harvard.iq.dataverse.dataaccess;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
-import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
@@ -48,7 +46,6 @@ import java.net.URLEncoder;
 import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -75,38 +72,15 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     private static final String MD5_METADATA_KEY = "MD5";
 
-    public S3AccessIO() {
-        this((T) null);
-    }
-    
-    public S3AccessIO(T dvObject) {
-        super(dvObject);
+
+    public S3AccessIO(String storageLocation, AmazonS3 s3client) {
+        super((T) null);
         this.setIsLocalFile(false);
-
-        try {
-            // get a standard client, using the standard way of configuration the credentials, etc.
-            AmazonS3ClientBuilder s3CB = AmazonS3ClientBuilder.standard();
-            // if the admin has set a system property (see below) we use this endpoint URL instead of the standard ones.
-            if (!s3CEUrl.isEmpty()) {
-                s3CB.setEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3CEUrl, s3CERegion));
-            }
-            // some custom S3 implementations require "PathStyleAccess" as they us a path, not a subdomain. default = false
-            s3CB.withPathStyleAccessEnabled(s3pathStyleAccess);
-            // let's build the client :-)
-            s3 = s3CB.build();
-        } catch (Exception e) {
-            throw new AmazonClientException(
-                    "Cannot instantiate a S3 client; check your AWS credentials and region",
-                    e);
-        }
-    }
-
-    public S3AccessIO(String storageLocation) {
-        this((T) null);
 
         // TODO: validate the storage location supplied
         bucketName = storageLocation.substring(0, storageLocation.indexOf('/'));
         key = storageLocation.substring(storageLocation.indexOf('/') + 1);
+        this.s3 = s3client;
     }
 
     public S3AccessIO(T dvObject, @NotNull AmazonS3 s3client) {
@@ -119,29 +93,13 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     private final static long S3_MULTIPART_UPLOAD_THRESHOLD = 100 * 1024 * 1024;
 
     private AmazonS3 s3 = null;
-    /**
-     * Pass in a URL pointing to your S3 compatible storage.
-     * For possible values see https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/client/builder/AwsClientBuilder.EndpointConfiguration.html
-     */
-    private String s3CEUrl = System.getProperty("dataverse.files.s3-custom-endpoint-url", "");
-    /**
-     * Pass in a region to use for SigV4 signing of requests.
-     * Defaults to "dataverse" as it is not relevant for custom S3 implementations.
-     */
-    private String s3CERegion = System.getProperty("dataverse.files.s3-custom-endpoint-region", "dataverse");
-    /**
-     * Pass in a boolean value if path style access should be used within the S3 client.
-     * Anything but case-insensitive "true" will lead to value of false, which is default value, too.
-     */
-    private boolean s3pathStyleAccess = Boolean.parseBoolean(System.getProperty("dataverse.files.s3-path-style-access", "false"));
+
+
     private String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
     private String key;
 
     @Override
     public void open(DataAccessOption... options) throws IOException {
-        if (s3 == null) {
-            throw new IOException("ERROR: s3 not initialised. ");
-        }
 
         try {
             if (bucketName == null || !s3.doesBucketExist(bucketName)) {
@@ -256,9 +214,14 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException("DvObject type other than datafile is not yet supported");
         }
 
+        boolean shouldCompareMd5 = true;
+
         DataFile dataFile = (DataFile)dvObject;
+        if (ChecksumType.MD5.equals(dataFile.getChecksumType()) || dataFile.getDataTable() != null) {
+            shouldCompareMd5 = false;
+        }
         
-        if (ChecksumType.MD5.equals(dataFile.getChecksumType())) {
+        if (shouldCompareMd5) {
             putFileToS3(fileSystemPath.toFile(), key, dataFile.getChecksumValue());
         } else {
             putFileToS3(fileSystemPath.toFile(), key, null);
@@ -540,10 +503,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     @Override
-    public boolean exists() {
+    public boolean exists() throws IOException {
         String destinationKey = null;
         if (dvObject instanceof DataFile) {
-            destinationKey = key;
+            destinationKey = getMainFileKey();
         } else {
             logger.warning("Trying to check if a path exists is only supported for a data file.");
         }
@@ -761,7 +724,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             Upload s3Upload = s3Transfer.upload(putRequest);
             s3Upload.waitForCompletion();
             if (!verifyUploadedFile(putRequest))  {
-                s3.deleteObject(bucketName, key);
+                s3.deleteObject(putRequest.getBucketName(), putRequest.getKey());
                 throw new IOException("File storage error - checsums before and after put are not identical");
             }
         } catch (InterruptedException e) {

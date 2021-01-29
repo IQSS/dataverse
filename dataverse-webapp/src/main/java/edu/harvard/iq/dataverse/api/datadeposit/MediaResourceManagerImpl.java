@@ -66,10 +66,6 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     SwordAuth swordAuth;
     @Inject
     private UrlManagerServiceBean urlManagerServiceBean;
-    @Inject
-    private TermsOfUseFactory termsOfUseFactory;
-    @Inject
-    private TermsOfUseFormMapper termsOfUseFormMapper;
 
     private HttpServletRequest httpRequest;
 
@@ -197,7 +193,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                                     // longer exists in the database, before proceeding to 
                                     // delete the physical file)
                                     try {
-                                        dataFileService.finalizeFileDelete(fileIdLong, deleteStorageLocation, new DataAccess());
+                                        dataFileService.finalizeFileDelete(fileIdLong, deleteStorageLocation);
                                     } catch (IOException ioex) {
                                         logger.warning("Failed to delete the physical file associated with the deleted datafile id="
                                                                + fileIdLong + ", storage location: " + deleteStorageLocation);
@@ -339,7 +335,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + violation.getMessage() + " The invalid value was \"" + violation.getInvalidValue() + "\".");
                 } else {
 
-                    ingestService.saveAndAddFilesToDataset(editVersion, dataFiles, new DataAccess());
+                    ingestService.saveAndAddFilesToDataset(editVersion, dataFiles);
 
                 }
             } else {

@@ -98,108 +98,104 @@ public class DataFileZipper {
 
         boolean createManifest = fileManifest != null;
 
-        StorageIO<DataFile> accessObject = new DataAccess().getStorageIO(dataFile);
+        StorageIO<DataFile> accessObject = DataAccess.dataAccess().getStorageIO(dataFile);
 
-        if (accessObject != null) {
-            Boolean gotOriginal = false;
-            if (getOriginal) {
-                StoredOriginalFile sof = new StoredOriginalFile();
-                StorageIO<DataFile> tempAccessObject = StoredOriginalFile.retreive(accessObject);
-                if (null != tempAccessObject) { //If there is an original, use it
-                    gotOriginal = true;
-                    accessObject = tempAccessObject;
-                }
+        Boolean gotOriginal = false;
+        if (getOriginal) {
+            StorageIO<DataFile> tempAccessObject = StoredOriginalFile.retreive(accessObject);
+            if (null != tempAccessObject) { //If there is an original, use it
+                gotOriginal = true;
+                accessObject = tempAccessObject;
             }
-            if (!gotOriginal) { //if we didn't get this from sof.retreive we have to open it
-                accessObject.open();
-            }
-
-            long byteSize = 0;
-
-            String fileName = accessObject.getFileName();
-            String mimeType = accessObject.getMimeType();
-            if (mimeType == null || mimeType.equals("")) {
-                mimeType = "application/octet-stream";
-            }
-
-            //if (sizeTotal + fileSize < sizeLimit) {
-            Boolean Success = true;
-
-            InputStream instream = accessObject.getInputStream();
-            if (instream == null) {
-                if (createManifest) {
-                    addToManifest(fileName
-                                          + " (" + mimeType
-                                          + ") COULD NOT be downloaded because an I/O error has occured. \r\n");
-                }
-
-                Success = false;
-            } else {
-                // If any of the files have non-empty DirectoryLabels we'll 
-                // use them to re-create the folders in the Zipped bundle:
-                String folderName = dataFile.getFileMetadata().getDirectoryLabel();
-                if (folderName != null) {
-                    // If any of the saved folder names start with with slashes,
-                    // we want to remove them: 
-                    // (i.e., ///foo/bar will become foo/bar)
-                    while (folderName.startsWith("/")) {
-                        folderName = folderName.substring(1);
-                    }
-                    if (!"".equals(folderName)) {
-                        if (!zippedFolders.contains(folderName)) {
-                            ZipEntry d = new ZipEntry(folderName + "/");
-                            zipOutputStream.putNextEntry(d);
-                            zipOutputStream.closeEntry();
-                            zippedFolders.add(folderName);
-                        }
-                        fileName = folderName + "/" + fileName;
-                    }
-                }
-
-                String zipEntryName = checkZipEntryName(fileName);
-
-                ZipEntry e = new ZipEntry(zipEntryName);
-                logger.fine("created new zip entry for " + zipEntryName);
-
-                zipOutputStream.putNextEntry(e);
-
-                // before writing out any bytes from the input stream, flush
-                // any extra content, such as the variable header for the 
-                // subsettable files:
-                String varHeaderLine = accessObject.getVarHeader();
-                if (varHeaderLine != null) {
-                    zipOutputStream.write(varHeaderLine.getBytes());
-                    byteSize += (varHeaderLine.getBytes().length);
-                }
-
-                byte[] data = new byte[8192];
-
-                int i = 0;
-                while ((i = instream.read(data)) > 0) {
-                    zipOutputStream.write(data, 0, i);
-                    logger.fine("wrote " + i + " bytes;");
-
-                    byteSize += i;
-                    zipOutputStream.flush();
-                }
-                instream.close();
-                zipOutputStream.closeEntry();
-                logger.fine("closed zip entry for " + zipEntryName);
-
-                if (createManifest) {
-                    addToManifest(zipEntryName + " (" + mimeType + ") " + byteSize + " bytes.\r\n");
-                }
-
-                if (byteSize > 0) {
-                    zippedFilesList.add(dataFile.getId());
-                }
-            }
-            //} else if (createManifest) {
-            //    addToManifest(fileName + " (" + mimeType + ") " + " skipped because the total size of the download bundle exceeded the limit of " + sizeLimit + " bytes.\r\n");
-            //}
-            return byteSize;
         }
-        return 0L;
+        if (!gotOriginal) { //if we didn't get this from sof.retreive we have to open it
+            accessObject.open();
+        }
+
+        long byteSize = 0;
+
+        String fileName = accessObject.getFileName();
+        String mimeType = accessObject.getMimeType();
+        if (mimeType == null || mimeType.equals("")) {
+            mimeType = "application/octet-stream";
+        }
+
+        //if (sizeTotal + fileSize < sizeLimit) {
+        Boolean Success = true;
+
+        InputStream instream = accessObject.getInputStream();
+        if (instream == null) {
+            if (createManifest) {
+                addToManifest(fileName
+                                      + " (" + mimeType
+                                      + ") COULD NOT be downloaded because an I/O error has occured. \r\n");
+            }
+
+            Success = false;
+        } else {
+            // If any of the files have non-empty DirectoryLabels we'll 
+            // use them to re-create the folders in the Zipped bundle:
+            String folderName = dataFile.getFileMetadata().getDirectoryLabel();
+            if (folderName != null) {
+                // If any of the saved folder names start with with slashes,
+                // we want to remove them: 
+                // (i.e., ///foo/bar will become foo/bar)
+                while (folderName.startsWith("/")) {
+                    folderName = folderName.substring(1);
+                }
+                if (!"".equals(folderName)) {
+                    if (!zippedFolders.contains(folderName)) {
+                        ZipEntry d = new ZipEntry(folderName + "/");
+                        zipOutputStream.putNextEntry(d);
+                        zipOutputStream.closeEntry();
+                        zippedFolders.add(folderName);
+                    }
+                    fileName = folderName + "/" + fileName;
+                }
+            }
+
+            String zipEntryName = checkZipEntryName(fileName);
+
+            ZipEntry e = new ZipEntry(zipEntryName);
+            logger.fine("created new zip entry for " + zipEntryName);
+
+            zipOutputStream.putNextEntry(e);
+
+            // before writing out any bytes from the input stream, flush
+            // any extra content, such as the variable header for the 
+            // subsettable files:
+            String varHeaderLine = accessObject.getVarHeader();
+            if (varHeaderLine != null) {
+                zipOutputStream.write(varHeaderLine.getBytes());
+                byteSize += (varHeaderLine.getBytes().length);
+            }
+
+            byte[] data = new byte[8192];
+
+            int i = 0;
+            while ((i = instream.read(data)) > 0) {
+                zipOutputStream.write(data, 0, i);
+                logger.fine("wrote " + i + " bytes;");
+
+                byteSize += i;
+                zipOutputStream.flush();
+            }
+            instream.close();
+            zipOutputStream.closeEntry();
+            logger.fine("closed zip entry for " + zipEntryName);
+
+            if (createManifest) {
+                addToManifest(zipEntryName + " (" + mimeType + ") " + byteSize + " bytes.\r\n");
+            }
+
+            if (byteSize > 0) {
+                zippedFilesList.add(dataFile.getId());
+            }
+        }
+        //} else if (createManifest) {
+        //    addToManifest(fileName + " (" + mimeType + ") " + " skipped because the total size of the download bundle exceeded the limit of " + sizeLimit + " bytes.\r\n");
+        //}
+        return byteSize;
     }
 
     public void finalizeZipStream() throws IOException {

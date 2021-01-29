@@ -1,11 +1,9 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -33,8 +31,6 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
     private static final Logger logger = Logger.getLogger(AbstractCreateDatasetCommand.class.getCanonicalName());
 
     private final boolean registrationRequired;
-
-    private DataAccess dataAccess = new DataAccess();
 
     public AbstractCreateDatasetCommand(Dataset theDataset, DataverseRequest aRequest) {
         this(theDataset, aRequest, false);
@@ -101,7 +97,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         }
         if (theDataset.getStorageIdentifier() == null) {
             try {
-                dataAccess.createNewStorageIO(theDataset, "placeholder");
+                ctxt.dataAccess().createNewStorageIO(theDataset, "placeholder");
             } catch (IOException ioex) {
                 // if setting the storage identifier through createNewStorageIO fails, dataset creation
                 // does not have to fail. we just set the storage id to a default -SF
@@ -151,10 +147,6 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
             logger.fine("Done with rsync request.");
         }*/
         return theDataset;
-    }
-
-    public void setDataAccess(DataAccess dataAccess) {
-        this.dataAccess = dataAccess;
     }
 
     @Override

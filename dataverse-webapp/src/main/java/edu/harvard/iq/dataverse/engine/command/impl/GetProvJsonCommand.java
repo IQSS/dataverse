@@ -1,12 +1,10 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
@@ -14,6 +12,7 @@ import edu.harvard.iq.dataverse.persistence.user.Permission;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Logger;
@@ -36,8 +35,8 @@ public class GetProvJsonCommand extends AbstractCommand<JsonObject> {
         final String provJsonExtension = "prov-json.json";
 
         try {
-            StorageIO<DataFile> dataAccess = new DataAccess().getStorageIO(dataFile);
-            InputStream inputStream = dataAccess.getAuxFileAsInputStream(provJsonExtension);
+            StorageIO<DataFile> storageIO = ctxt.dataAccess().getStorageIO(dataFile);
+            InputStream inputStream = storageIO.getAuxFileAsInputStream(provJsonExtension);
             JsonObject jsonObject = null;
             if (null != inputStream) {
                 JsonReader jsonReader = Json.createReader(inputStream);

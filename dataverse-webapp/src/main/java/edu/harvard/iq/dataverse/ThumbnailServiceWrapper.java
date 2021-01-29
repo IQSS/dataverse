@@ -24,8 +24,8 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
-import static edu.harvard.iq.dataverse.dataset.DatasetUtil.datasetLogoThumbnail;
-import static edu.harvard.iq.dataverse.dataset.DatasetUtil.thumb48addedByImageThumbConverter;
+import static edu.harvard.iq.dataverse.dataset.DatasetThumbnailService.datasetLogoThumbnail;
+import static edu.harvard.iq.dataverse.dataset.DatasetThumbnailService.thumb48addedByImageThumbConverter;
 
 /**
  * @author Leonid Andreev
@@ -180,10 +180,11 @@ public class ThumbnailServiceWrapper implements java.io.Serializable {
 
         Long versionId = result.getDatasetVersionId();
 
-        return getDatasetCardImageAsBase64Url(dataset, versionId, result.isPublishedState(), new DataAccess());
+        return getDatasetCardImageAsBase64Url(dataset, versionId, result.isPublishedState());
     }
 
-    public String getDatasetCardImageAsBase64Url(Dataset dataset, Long versionId, boolean autoselect, DataAccess dataAccess) {
+    public String getDatasetCardImageAsBase64Url(Dataset dataset, Long versionId, boolean autoselect) {
+        
         Long datasetId = dataset.getId();
         if (datasetId != null) {
             if (this.dvobjectThumbnailsMap.containsKey(datasetId)) {
@@ -209,7 +210,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable {
 
         StorageIO<Dataset> storageIO = null;
         try {
-            storageIO = dataAccess.getStorageIO(dataset);
+            storageIO = DataAccess.dataAccess().getStorageIO(dataset);
         } catch (IOException e) {
             e.printStackTrace();
         }

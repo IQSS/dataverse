@@ -106,7 +106,7 @@ public class DatasetService {
             provPopupFragmentBean.saveStageProvFreeformToLatestVersion();
         }
 
-        List<DataFile> savedFiles = ingestService.saveAndAddFilesToDataset(dataset.getEditVersion(), newFiles, new DataAccess());
+        List<DataFile> savedFiles = ingestService.saveAndAddFilesToDataset(dataset.getEditVersion(), newFiles);
 
         int notSavedFilesCount = newFiles.size() - savedFiles.size();
 

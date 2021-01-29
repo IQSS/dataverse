@@ -57,6 +57,8 @@ public class MapLayerMetadataServiceBean {
     @EJB
     WorldMapTokenServiceBean tokenServiceBean;
 
+    private DataAccess dataAccess = DataAccess.dataAccess();
+
     private static final Logger logger = Logger.getLogger(MapLayerMetadataServiceBean.class.getCanonicalName());
 
     private static final String GEOCONNECT_MAP_DELETE_API = "/tabular/delete-map-no-ui/";
@@ -182,7 +184,7 @@ public class MapLayerMetadataServiceBean {
 
 
         try {
-            StorageIO<DataFile> storageIO = new DataAccess().getStorageIO(dataFile);
+            StorageIO<DataFile> storageIO = dataAccess.getStorageIO(dataFile);
 
             storageIO.open();
             List<String> cachedObjectsTags = storageIO.listAuxObjects();
@@ -246,14 +248,14 @@ public class MapLayerMetadataServiceBean {
         imageUrl = imageUrl.replace("https:", "http:");
         logger.info("Attempt to retrieve map image: " + imageUrl);
 
-        StorageIO<DataFile> dataAccess = null;
+        StorageIO<DataFile> storageIO = null;
         try {
-            dataAccess = new DataAccess().getStorageIO(mapLayerMetadata.getDataFile());
+            storageIO = dataAccess.getStorageIO(mapLayerMetadata.getDataFile());
         } catch (IOException ioEx) {
             dataAccess = null;
         }
 
-        if (dataAccess == null) {
+        if (storageIO == null) {
             logger.warning("Failed to open Access IO on DataFile " + mapLayerMetadata.getDataFile().getId());
             return false;
         }
@@ -278,7 +280,7 @@ public class MapLayerMetadataServiceBean {
         }
 
         try {
-            dataAccess.saveInputStreamAsAux(is, "img");
+            storageIO.saveInputStreamAsAux(is, "img");
         } catch (IOException ioex) {
             logger.warning("Failed to save WorldMap-generated image; " + ioex.getMessage());
             return false;

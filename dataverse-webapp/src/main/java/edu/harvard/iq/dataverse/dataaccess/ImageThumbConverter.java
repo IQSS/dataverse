@@ -73,7 +73,7 @@ public class ImageThumbConverter {
 
         try {
 
-            StorageIO<DataFile> storageIO = new DataAccess().getStorageIO(file);
+            StorageIO<DataFile> storageIO = DataAccess.dataAccess().getStorageIO(file);
             return isThumbnailAvailable(storageIO, size);
         } catch (IOException ioEx) {
             return false;
@@ -438,7 +438,7 @@ public class ImageThumbConverter {
         StorageIO<DataFile> storageIO = null;
 
         try {
-            storageIO = new DataAccess().getStorageIO(file);
+            storageIO = DataAccess.dataAccess().getStorageIO(file);
         } catch (Exception ioEx) {
             logger.fine("Caught an exception while trying to obtain a thumbnail as Base64 string - could not open StorageIO on the datafile.");
             return null;

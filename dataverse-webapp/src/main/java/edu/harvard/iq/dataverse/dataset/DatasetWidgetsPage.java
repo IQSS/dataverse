@@ -46,6 +46,9 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     @Inject
     private DatasetService datasetService;
 
+    @Inject
+    private DatasetThumbnailService datasetThumbnailService;
+
     private Long datasetId;
     private Dataset dataset;
     private List<DatasetThumbnail> datasetThumbnails;
@@ -80,8 +83,8 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         }
 
 
-        datasetThumbnails = DatasetUtil.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate, new DataAccess());
-        datasetThumbnail = DatasetUtil.getThumbnail(dataset);
+        datasetThumbnails = datasetThumbnailService.getThumbnailCandidates(dataset, considerDatasetLogoAsCandidate);
+        datasetThumbnail = datasetThumbnailService.getThumbnail(dataset);
         if (datasetThumbnail != null) {
             DataFile dataFile = datasetThumbnail.getDataFile();
             if (dataFile != null) {

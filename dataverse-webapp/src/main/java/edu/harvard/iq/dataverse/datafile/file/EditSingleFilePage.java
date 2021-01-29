@@ -10,7 +10,7 @@ import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.datafile.page.FileDownloadHelper;
 import edu.harvard.iq.dataverse.dataset.DatasetService;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
-import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnailService;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFileTag;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
@@ -50,6 +50,7 @@ public class EditSingleFilePage implements java.io.Serializable {
     private FileDownloadHelper fileDownloadHelper;
     private ProvPopupFragmentBean provPopupFragmentBean;
     private SingleFileFacade singleFileFacade;
+    private DatasetThumbnailService datasetThumnailService;
 
     private Dataset dataset = new Dataset();
     private String editedFileIdString = null;
@@ -73,7 +74,7 @@ public class EditSingleFilePage implements java.io.Serializable {
                               SettingsServiceBean settingsService,
                               DataverseRequestServiceBean dvRequestService, PermissionsWrapper permissionsWrapper,
                               FileDownloadHelper fileDownloadHelper, ProvPopupFragmentBean provPopupFragmentBean,
-                              SingleFileFacade singleFileFacade) {
+                              SingleFileFacade singleFileFacade, DatasetThumbnailService datasetThumbnailService) {
         this.datasetService = datasetService;
         this.datasetDao = datasetDao;
         this.datafileService = datafileService;
@@ -84,6 +85,7 @@ public class EditSingleFilePage implements java.io.Serializable {
         this.fileDownloadHelper = fileDownloadHelper;
         this.provPopupFragmentBean = provPopupFragmentBean;
         this.singleFileFacade = singleFileFacade;
+        this.datasetThumnailService = datasetThumbnailService;
     }
 
     // -------------------- GETTERS --------------------
@@ -268,7 +270,7 @@ public class EditSingleFilePage implements java.io.Serializable {
     }
 
     public boolean isThumbnailIsFromDatasetLogoRatherThanDatafile() {
-        DatasetThumbnail datasetThumbnail = DatasetUtil.getThumbnail(dataset);
+        DatasetThumbnail datasetThumbnail = datasetThumnailService.getThumbnail(dataset);
         return datasetThumbnail != null && !datasetThumbnail.isFromDataFile();
     }
 

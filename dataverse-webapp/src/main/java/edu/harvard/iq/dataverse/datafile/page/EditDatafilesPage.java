@@ -8,14 +8,13 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datafile.FileService;
 import edu.harvard.iq.dataverse.datafile.pojo.RsyncInfo;
 import edu.harvard.iq.dataverse.dataset.DatasetService;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
-import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnailService;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
@@ -149,6 +148,9 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     @Inject
     private FileService fileService;
+
+    @Inject
+    private DatasetThumbnailService datasetThumbnailService;
 
     private Dataset dataset = new Dataset();
 
@@ -672,7 +674,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
 
             // Try to save the NEW files permanently: 
-            List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles, new DataAccess());
+            List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles);
 
             // reset the working list of fileMetadatas, as to only include the ones
             // that have been added to the version successfully: 
@@ -1586,7 +1588,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public boolean isThumbnailIsFromDatasetLogoRatherThanDatafile() {
-        DatasetThumbnail datasetThumbnail = DatasetUtil.getThumbnail(dataset);
+        DatasetThumbnail datasetThumbnail = datasetThumbnailService.getThumbnail(dataset);
         return datasetThumbnail != null && !datasetThumbnail.isFromDataFile();
     }
 

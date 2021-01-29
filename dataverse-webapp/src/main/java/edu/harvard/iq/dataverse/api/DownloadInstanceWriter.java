@@ -53,6 +53,8 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
     @Inject
     private WholeDatasetDownloadLogger datasetDownloadLogger;
 
+    private DataAccess dataAccess = DataAccess.dataAccess();
+
     @Override
     public boolean isWriteable(Class<?> clazz, Type type, Annotation[] annotation, MediaType mediaType) {
         return clazz == DownloadInstance.class;
@@ -69,7 +71,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
         if (di.getDownloadInfo() != null && di.getDownloadInfo().getDataFile() != null) {
 
             DataFile dataFile = di.getDownloadInfo().getDataFile();
-            StorageIO<DataFile> storageIO = new DataAccess().getStorageIO(dataFile);
+            StorageIO<DataFile> storageIO = dataAccess.getStorageIO(dataFile);
             boolean checkForWholeDatasetDownload = false;
 
             if (storageIO != null) {

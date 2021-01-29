@@ -20,7 +20,7 @@ import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.datafile.FileService;
 import edu.harvard.iq.dataverse.dataset.DatasetService;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
-import edu.harvard.iq.dataverse.dataset.DatasetUtil;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnailService;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
 import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
@@ -210,6 +210,9 @@ public class Datasets extends AbstractApiBean {
 
     @Inject
     private FileService fileServiceBean;
+
+    @Inject
+    private DatasetThumbnailService datasetThumbnailService;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -1231,9 +1234,8 @@ public class Datasets extends AbstractApiBean {
             }
             JsonArrayBuilder data = Json.createArrayBuilder();
             boolean considerDatasetLogoAsCandidate = true;
-            for (DatasetThumbnail datasetThumbnail : DatasetUtil.getThumbnailCandidates(dataset,
-                                                                                        considerDatasetLogoAsCandidate,
-                                                                                        new DataAccess())) {
+            for (DatasetThumbnail datasetThumbnail : datasetThumbnailService.getThumbnailCandidates(dataset,
+                                                                                        considerDatasetLogoAsCandidate)) {
                 JsonObjectBuilder candidate = Json.createObjectBuilder();
                 String base64image = datasetThumbnail.getBase64image();
                 if (base64image != null) {
@@ -1258,7 +1260,7 @@ public class Datasets extends AbstractApiBean {
     public Response getDatasetThumbnail(@PathParam("id") String idSupplied) {
         try {
             Dataset dataset = findDatasetOrDie(idSupplied);
-            InputStream is = DatasetUtil.getThumbnailAsInputStream(dataset);
+            InputStream is = datasetThumbnailService.getThumbnailAsInputStream(dataset);
             if (is == null) {
                 return notFound("Thumbnail not available");
             }

@@ -71,12 +71,12 @@ import java.util.logging.Logger;
 
 @Stateless
 public class RemoteDataFrameService {
+    private static Logger logger = Logger.getLogger(RemoteDataFrameService.class.getPackage().getName());
 
     @Inject
     private SettingsServiceBean settingsService;
-
-    private static Logger logger = Logger.getLogger(RemoteDataFrameService.class.getPackage().getName());
-
+    
+    private DataAccess dataAccess = DataAccess.dataAccess();
 
     private static String RWRKSP_FILE_PREFIX = "dataverseDataFrame_";
 
@@ -105,12 +105,9 @@ public class RemoteDataFrameService {
         RSERVE_PORT = settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.RservePort);
     }
 
-    public String generateRandomPID() {
-        return RandomStringUtils.randomNumeric(6);
-    }
+    public Map<String, String> directConvert(File originalFile, String fmt) {
 
-    public Map<String, String> directConvert(File originalFile, String fmt, String pid) {
-
+        String pid = generateRandomPID();
 
         Map<String, String> result = new HashMap<>();
         try {
@@ -178,8 +175,10 @@ public class RemoteDataFrameService {
      * TODO: replace this Map with a dedicated RJobResult object; -- L.A. 4.0 alpha 1
      */
 
-    public Map<String, String> execute(RJobRequest jobRequest, String pid) {
+    public Map<String, String> execute(RJobRequest jobRequest) {
         logger.fine("RemoteDataFrameService: execute() starts here.");
+
+        String pid = generateRandomPID();
 
         String tempFileNameIn = generateTempFileNameIn(pid);
 
@@ -528,10 +527,11 @@ public class RemoteDataFrameService {
     }
 
 
-    public File runDataPreprocessing(DataFile dataFile, String pid) {
+    public File runDataPreprocessing(DataFile dataFile) {
         if (!dataFile.isTabularData()) {
             return null;
         }
+        String pid = generateRandomPID();
 
         String tempFileNameIn = generateTempFileNameIn(pid);
         String tempFileNameOut = generateTempFileNameOut(pid);
@@ -552,7 +552,7 @@ public class RemoteDataFrameService {
 
             // send the tabular data file to the Rserve side:
 
-            StorageIO<DataFile> accessObject = new DataAccess().getStorageIO(dataFile);
+            StorageIO<DataFile> accessObject = dataAccess.getStorageIO(dataFile);
 
             accessObject.open();
             InputStream is = accessObject.getInputStream();
@@ -766,6 +766,10 @@ public class RemoteDataFrameService {
             logger.warning(String.format("RDATAFileReader: (readLocalResource) resource stream from path \"%s\" was invalid", path));
         }
         return resourceAsString;
+    }
+
+    private String generateRandomPID() {
+        return RandomStringUtils.randomNumeric(6);
     }
 
     private String generateTempFileNameIn(String pid) {
