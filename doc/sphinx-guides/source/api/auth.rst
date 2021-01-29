@@ -21,6 +21,8 @@ Anyone who has your API Token can add and delete data as you so you should treat
 Passing Your API Token as an HTTP Header (Preferred) or a Query Parameter
 -------------------------------------------------------------------------
 
+Note: The SWORD API uses a different way of passing the API token. Please see :ref:`sword-auth` for details.
+
 See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
 
 There are two ways to pass your API token to Dataverse APIs. The preferred method is to send the token in the ``X-Dataverse-key`` HTTP header, as in the following curl example.
