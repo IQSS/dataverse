@@ -1,7 +1,7 @@
 Dashboard
 =========
 
-The Dataverse Platform offers a dashboard of administrative tools for superusers only. If you are a logged-in superuser, you can access it by clicking your username in the navbar, and then clicking "Dashboard" from the dropdown. You can verify that you are a superuser by checking the color of your username in the navbar. If it's red, you have the right permissions to use the Dashboard. Superusers can give other users the superuser status via :doc:`user-administration`.
+The Dataverse software offers a dashboard of administrative tools for superusers only. If you are a logged-in superuser, you can access it by clicking your username in the navbar, and then clicking "Dashboard" from the dropdown. You can verify that you are a superuser by checking the color of your username in the navbar. If it's red, you have the right permissions to use the Dashboard. Superusers can give other users the superuser status via :doc:`user-administration`.
 
 .. contents:: Contents:
 	:local:
@@ -22,7 +22,7 @@ This dashboard tool allows you to define sets of local datasets to make availabl
 Metadata Export
 ---------------
 
-This part of the Dashboard is simply a reminder message that metadata export happens through the Dataverse Platform API. See the :doc:`metadataexport` section and the :doc:`/api/native-api` section of the API Guide for more details.
+This part of the Dashboard is simply a reminder message that metadata export happens through the Dataverse software API. See the :doc:`metadataexport` section and the :doc:`/api/native-api` section of the API Guide for more details.
 
 Users
 -----

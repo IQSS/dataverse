@@ -4,7 +4,7 @@ Search API
 .. contents:: |toctitle|
     :local:
 
-The Search API supports the same searching, sorting, and faceting operations as the Dataverse Platform's web interface.
+The Search API supports the same searching, sorting, and faceting operations as the Dataverse software's web interface.
 
 To search unpublished content, you must pass in an API token as described in the :doc:`auth` section.
 

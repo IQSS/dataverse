@@ -1,9 +1,9 @@
 Apps
 ====
 
-The introduction of Dataverse Platform APIs has fostered the development of a variety of software applications that are listed in the :doc:`/admin/integrations`, :doc:`/admin/external-tools`, and :doc:`/admin/reporting-tools-and-queries` sections of the Admin Guide.
+The introduction of Dataverse software APIs has fostered the development of a variety of software applications that are listed in the :doc:`/admin/integrations`, :doc:`/admin/external-tools`, and :doc:`/admin/reporting-tools-and-queries` sections of the Admin Guide.
 
-The apps below are open source and demonstrate how to use Dataverse Platform APIs. Some of these apps are built on :doc:`/api/client-libraries` that are available for Dataverse Platform APIs in Python, Javascript, R, and Java.
+The apps below are open source and demonstrate how to use Dataverse software APIs. Some of these apps are built on :doc:`/api/client-libraries` that are available for Dataverse software APIs in Python, Javascript, R, and Java.
 
 .. contents:: |toctitle|
 	:local:
@@ -42,7 +42,7 @@ https://github.com/IQSS/TwoRavens
 Python
 ------
 
-Please note that there are multiple Python modules for Dataverse Platform APIs listed in the :doc:`client-libraries` section.
+Please note that there are multiple Python modules for Dataverse software APIs listed in the :doc:`client-libraries` section.
 
 dataverse-sample-data
 ~~~~~~~~~~~~~~~~~~~~~
@@ -97,12 +97,12 @@ https://github.com/jupyter/repo2docker/blob/master/repo2docker/contentproviders/
 Java
 ----
 
-Please note that there is a Java library for Dataverse Platform APIs listed in the :doc:`client-libraries` section.
+Please note that there is a Java library for Dataverse software APIs listed in the :doc:`client-libraries` section.
 
 DVUploader
 ~~~~~~~~~~
 
-The open-source DVUploader tool is a stand-alone command-line Java application that uses the Dataverse Platform API to upload files to a specified Dataset. Files can be specified by name, or the DVUploader can upload all files in a directory or recursively from a directory tree. The DVUploader can also verify that uploaded files match their local sources by comparing the local and remote fixity checksums. Source code, release 1.0.0- jar file, and documentation are available on GitHub. DVUploader's creation was supported by the Texas Digital Library.
+The open-source DVUploader tool is a stand-alone command-line Java application that uses the Dataverse software API to upload files to a specified Dataset. Files can be specified by name, or the DVUploader can upload all files in a directory or recursively from a directory tree. The DVUploader can also verify that uploaded files match their local sources by comparing the local and remote fixity checksums. Source code, release 1.0.0- jar file, and documentation are available on GitHub. DVUploader's creation was supported by the Texas Digital Library.
 
 https://github.com/IQSS/dataverse-uploader
 
