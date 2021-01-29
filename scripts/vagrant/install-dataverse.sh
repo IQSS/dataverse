@@ -9,7 +9,7 @@ if [ ! -f $WAR ]; then
   echo "no war file found... building"
   #echo "Installing nss on CentOS 6 to avoid java.security.KeyException while building war file: https://github.com/IQSS/dataverse/issues/2744"
   #yum install -y nss
-  su $SUDO_USER -s /bin/sh -c "cd /dataverse && mvn -q package"
+  su $SUDO_USER -s /bin/sh -c "cd /dataverse && source /etc/profile.d/maven.sh && mvn -q package"
 fi
 cd /dataverse/scripts/installer
 

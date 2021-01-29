@@ -85,13 +85,6 @@ TwoRavens is a web application for tabular data exploration and statistical anal
 
 For installation instructions, see the :doc:`external-tools` section.
 
-WorldMap
-++++++++
-
-WorldMap helps researchers visualize and explore geospatial data by creating maps.
-
-For installation instructions, see :doc:`geoconnect-worldmap`.
-
 Compute Button
 ++++++++++++++
 

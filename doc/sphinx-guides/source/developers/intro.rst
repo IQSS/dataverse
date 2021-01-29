@@ -64,7 +64,6 @@ As a developer, you also may be interested in these projects related to Datavers
 - dataverse-metrics - aggregate and visualize metrics for installations of Dataverse around the world: https://github.com/IQSS/dataverse-metrics
 - Configuration management scripts - Ansible, Puppet, etc.: See :ref:`advanced` section in the Installation Guide.
 - :doc:`/developers/unf/index` (Java) -  a Universal Numerical Fingerprint: https://github.com/IQSS/UNF
-- GeoConnect (Python) - create a map by uploading files to Dataverse: https://github.com/IQSS/geoconnect
 - `DataTags <https://github.com/IQSS/DataTags>`_ (Java and Scala) - tag datasets with privacy levels: https://github.com/IQSS/DataTags
 - `TwoRavens <http://2ra.vn>`_ (Javascript) - a `d3.js <http://d3js.org>`_ interface for exploring data and running Zelig models: https://github.com/IQSS/TwoRavens
 - `Zelig <http://zeligproject.org>`_ (R) - run statistical models on files uploaded to Dataverse: https://github.com/IQSS/Zelig
