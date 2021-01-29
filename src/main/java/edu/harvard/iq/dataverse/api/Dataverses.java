@@ -61,6 +61,8 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
+
+import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import java.io.StringReader;
@@ -84,6 +86,7 @@ import javax.json.JsonValue.ValueType;
 import javax.json.stream.JsonParsingException;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -393,7 +396,6 @@ public class Dataverses extends AbstractApiBean {
         }
     }
     
-<<<<<<< HEAD
     @POST
     @Path("{identifier}/datasets/:startmigration")
     @Consumes("application/json-ld")
@@ -447,8 +449,6 @@ public class Dataverses extends AbstractApiBean {
         }
     }
     
-=======
->>>>>>> refs/heads/IQSS/6497-semantic_api
     private Dataset parseDataset(String datasetJson) throws WrappedResponse {
         try (StringReader rdr = new StringReader(datasetJson)) {
             return jsonParser().parseDataset(Json.createReader(rdr).readObject());
