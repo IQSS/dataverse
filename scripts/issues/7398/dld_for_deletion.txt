@@ -1,0 +1,19 @@
+-- these queries will show you the linked objects that will get deleted
+
+-- datasets
+select dld.dataset_id, dvo.owner_id, dld.linkingdataverse_id, 
+dvld.dataverse_id, dvld.linkingdataverse_id  
+from datasetlinkingdataverse dld, dvobject dvo, dataverselinkingdataverse dvld
+where dld.dataset_id = dvo.id
+and dld.linkingdataverse_id = dvld.linkingdataverse_id
+and dvo.owner_id = dvld.dataverse_id
+order by dld.linkingdataverse_id;
+
+-- dataverses
+select dld.dataverse_id, dvo.owner_id, dld.linkingdataverse_id, 
+dvld.dataverse_id, dvld.linkingdataverse_id  
+from dataverselinkingdataverse dld, dvobject dvo, dataverselinkingdataverse dvld
+where dld.dataverse_id = dvo.id
+and dld.linkingdataverse_id = dvld.linkingdataverse_id
+and dvo.owner_id = dvld.dataverse_id
+order by dld.linkingdataverse_id;

@@ -895,8 +895,7 @@ public class Datasets extends AbstractApiBean {
 			String valdationErrors = validateDatasetFieldValues(fields);
 
 			if (!valdationErrors.isEmpty()) {
-				logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + valdationErrors,
-						valdationErrors);
+                logger.log(Level.SEVERE, "Semantic error parsing dataset update Json: " + valdationErrors, valdationErrors);
 				return error(Response.Status.BAD_REQUEST, "Error parsing dataset update: " + valdationErrors);
 			}
 
@@ -943,8 +942,7 @@ public class Datasets extends AbstractApiBean {
 									}
 									dsf.setControlledVocabularyValues(priorCVV);
 								} else {
-									dsf.setSingleControlledVocabularyValue(
-											updateField.getSingleControlledVocabularyValue());
+                                    dsf.setSingleControlledVocabularyValue(updateField.getSingleControlledVocabularyValue());
 								}
 							} else {
 								if (!updateField.getDatasetFieldType().isCompound()) {
@@ -960,8 +958,7 @@ public class Datasets extends AbstractApiBean {
 									}
 								} else {
 									for (DatasetFieldCompoundValue dfcv : updateField.getDatasetFieldCompoundValues()) {
-										if (!dsf.getCompoundDisplayValue()
-												.contains(updateField.getCompoundDisplayValue())) {
+                                        if (!dsf.getCompoundDisplayValue().contains(updateField.getCompoundDisplayValue())) {
 											dfcv.setParentDatasetField(dsf);
 											dsf.setDatasetVersion(dsv);
 											dsf.getDatasetFieldCompoundValues().add(dfcv);

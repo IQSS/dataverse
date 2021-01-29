@@ -89,7 +89,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import javax.faces.model.SelectItem;
 import java.util.logging.Level;
-import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
@@ -185,8 +184,6 @@ public class DatasetPage implements java.io.Serializable {
     @EJB
     UserNotificationServiceBean userNotificationService;
     @EJB
-    MapLayerMetadataServiceBean mapLayerMetadataService;
-    @EJB
     BuiltinUserServiceBean builtinUserService;
     @EJB
     DataverseFieldTypeInputLevelServiceBean dataverseFieldTypeInputLevelService;
@@ -224,8 +221,6 @@ public class DatasetPage implements java.io.Serializable {
     PermissionsWrapper permissionsWrapper;
     @Inject
     FileDownloadHelper fileDownloadHelper;
-    @Inject
-    WorldMapPermissionHelper worldMapPermissionHelper;
     @Inject
     ThumbnailServiceWrapper thumbnailServiceWrapper;
     @Inject
@@ -1359,8 +1354,6 @@ public class DatasetPage implements java.io.Serializable {
         this.noDVsRemaining = noDVsRemaining;
     }
 
-    private final Map<Long, MapLayerMetadata> mapLayerMetadataLookup = new HashMap<>();
-
     private GuestbookResponse guestbookResponse;
     private Guestbook selectedGuestbook;
 
@@ -1665,16 +1658,8 @@ public class DatasetPage implements java.io.Serializable {
             Use the DatasetFieldType id's which are the Map's keys
          --------------------------------------------------------- */
         List<Long> idList = new ArrayList<>(mapDatasetFields.keySet());
-        List<String> idStringList = new ArrayList<String>();
-        for(Long id: idList) {
-        	idStringList.add(id.toString());
-        }
-        logger.fine(String.join(",",idStringList));
-        
         List<DataverseFieldTypeInputLevel> dsFieldTypeInputLevels = dataverseFieldTypeInputLevelService.findByDataverseIdAndDatasetFieldTypeIdList(dvIdForInputLevel, idList);
-        if(dsFieldTypeInputLevels == null) {
-        	logger.fine("dsFieldTypeInputLevels is null for ds: " + this.getId());
-        } else {
+        
         /* ---------------------------------------------------------
             Iterate through List of DataverseFieldTypeInputLevel objects
             Call "setInclude" on its related DatasetField object
@@ -1690,11 +1675,8 @@ public class DatasetPage implements java.io.Serializable {
                     // remove from hash                
                     mapDatasetFields.remove(oneDSFieldTypeInputLevel.getDatasetFieldType().getId());    
                 }
-            } else {
-            	logger.fine("oneDSFieldTypeInputLevel is null");
             }
         }  // end: updateDatasetFieldInputLevels
-        }
         
         /* ---------------------------------------------------------
             Iterate through any DatasetField objects remaining in the hash
@@ -1727,78 +1709,10 @@ public class DatasetPage implements java.io.Serializable {
         return fm.getDataFile().isShapefileType();
     }
 
-    /*
-     Check if the FileMetadata.dataFile has an associated MapLayerMetadata object
-    
-     The MapLayerMetadata objects have been fetched at page inception by "loadMapLayerMetadataLookup()" 
-     */
-    public boolean hasMapLayerMetadata(FileMetadata fm) {
-        if (fm == null) {
-            return false;
-        }
-        if (fm.getDataFile() == null) {
-            return false;
-        }
-        return doesDataFileHaveMapLayerMetadata(fm.getDataFile());
-    }
-
-    /**
-     * Check if a DataFile has an associated MapLayerMetadata object
-     *
-     * The MapLayerMetadata objects have been fetched at page inception by
-     * "loadMapLayerMetadataLookup()"
-     */
-    private boolean doesDataFileHaveMapLayerMetadata(DataFile df) {
-        if (df == null) {
-            return false;
-        }
-        if (df.getId() == null) {
-            return false;
-        }
-        return this.mapLayerMetadataLookup.containsKey(df.getId());
-    }
-
-    /**
-     * Using a DataFile id, retrieve an associated MapLayerMetadata object
-     *
-     * The MapLayerMetadata objects have been fetched at page inception by
-     * "loadMapLayerMetadataLookup()"
-     */
-    public MapLayerMetadata getMapLayerMetadata(DataFile df) {
-        if (df == null) {
-            return null;
-        }
-        return this.mapLayerMetadataLookup.get(df.getId());
-    }
-
     private void msg(String s){
         // System.out.println(s);
     }
 
-    /**
-     * Create a hashmap consisting of { DataFile.id : MapLayerMetadata object}
-     *
-     * Very few DataFiles will have associated MapLayerMetadata objects so only
-     * use 1 query to get them
-     */
-    private void loadMapLayerMetadataLookup() {
-        if (this.dataset == null) {
-        }
-        if (this.dataset.getId() == null) {
-            return;
-        }
-        List<MapLayerMetadata> mapLayerMetadataList = mapLayerMetadataService.getMapLayerMetadataForDataset(this.dataset);
-        if (mapLayerMetadataList == null) {
-            return;
-        }
-        for (MapLayerMetadata layer_metadata : mapLayerMetadataList) {
-            mapLayerMetadataLookup.put(layer_metadata.getDataFile().getId(), layer_metadata);
-        }
-
-    }// A DataFile may have a related MapLayerMetadata object
-
-    
-    
     private List<FileMetadata> displayFileMetadata;
 
     public List<FileMetadata> getDisplayFileMetadata() {
@@ -1978,8 +1892,6 @@ public class DatasetPage implements java.io.Serializable {
                 //setReleasedVersionTabList(resetReleasedVersionTabList());
                 //SEK - lazymodel may be needed for datascroller in future release
                 // lazyModel = new LazyFileMetadataDataModel(workingVersion.getId(), datafileService );
-                // populate MapLayerMetadata
-                this.loadMapLayerMetadataLookup();  // A DataFile may have a related MapLayerMetadata object
                 this.guestbookResponse = guestbookResponseService.initGuestbookResponseForFragment(workingVersion, null, session);
                 logger.fine("Checking if rsync support is enabled.");
                 if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsWrapper.getValueForKey(SettingsServiceBean.Key.UploadMethods))
@@ -2411,27 +2323,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         readOnly = false;
     }
-    
-    public void testSelectedFilesForMapData(){
-        setSelectedFilesHasMapLayer(false); 
-        for (FileMetadata fmd : selectedFiles){
-            if(worldMapPermissionHelper.hasMapLayerMetadata(fmd)){
-                setSelectedFilesHasMapLayer(true);
-                return; //only need one for warning message
-            }
-        }
-    }
-    
-    private boolean selectedFilesHasMapLayer;
 
-    public boolean isSelectedFilesHasMapLayer() {
-        return selectedFilesHasMapLayer;
-    }
-
-    public void setSelectedFilesHasMapLayer(boolean selectedFilesHasMapLayer) {
-        this.selectedFilesHasMapLayer = selectedFilesHasMapLayer;
-    }
-    
     private Integer chunkSize = 25;
 
     public Integer getChunkSize() {
@@ -2644,18 +2536,6 @@ public class DatasetPage implements java.io.Serializable {
         
         dvIn.setArchiveNote(getDeaccessionForwardURLFor());
         return dvIn;
-    }
-    
-    public boolean isMapLayerToBeDeletedOnPublish(){
-
-        for (FileMetadata fmd : workingVersion.getFileMetadatas()){
-             if (worldMapPermissionHelper.hasMapLayerMetadata(fmd)){
-                 if (fmd.isRestricted() || fmd.isRestrictedUI()){
-                        return true;
-                 }
-             }
-        }      
-        return false;
     }
 
     private String releaseDataset(boolean minor) {
@@ -5251,15 +5131,6 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setGuestbookResponseService(GuestbookResponseServiceBean guestbookResponseService) {
         this.guestbookResponseService = guestbookResponseService;
-    }
-    
-       
-    public WorldMapPermissionHelper getWorldMapPermissionHelper() {
-        return worldMapPermissionHelper;
-    }
-
-    public void setWorldMapPermissionHelper(WorldMapPermissionHelper worldMapPermissionHelper) {
-        this.worldMapPermissionHelper = worldMapPermissionHelper;
     }
 
     /**
