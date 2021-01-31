@@ -454,13 +454,16 @@ public class AuthenticationServiceBean {
     public AuthenticatedUser lookupUserForWorkflow( String wfId ) {
         try {
             PendingWorkflowInvocation pwfi = em.find(PendingWorkflowInvocation.class, wfId);
-            if(pwfi == null) {
+            if (pwfi == null) {
                 return null;
             }
-            return getAuthenticatedUser(pwfi.getUserId());            
+            if (pwfi.getUserId().startsWith(AuthenticatedUser.IDENTIFIER_PREFIX)) {
+                return getAuthenticatedUser(pwfi.getUserId().substring(AuthenticatedUser.IDENTIFIER_PREFIX.length()));
+            }
         } catch (NoResultException ex) {
             return null;
         }
+        return null;
     }
     
     /*
