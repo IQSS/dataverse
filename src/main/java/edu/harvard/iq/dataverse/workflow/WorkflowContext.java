@@ -31,7 +31,7 @@ public class WorkflowContext {
     private final ApiToken apiToken;
     private final boolean datasetExternallyReleased;
     private Map<String, Object> settings;
-    private long lockId;
+    private long lockId = -1;
     
     private String invocationId = UUID.randomUUID().toString();
 
@@ -60,7 +60,9 @@ public class WorkflowContext {
         if(invocationId!=null) {
             setInvocationId(invocationId);
         }
-        this.setLockId(lockId);
+        if(lockId != null) {
+          this.setLockId(lockId);
+        }
     }
 
     public Dataset getDataset() {
