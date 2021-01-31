@@ -279,9 +279,10 @@ public class WorkflowServiceBean {
          * database. 
          */
         datasetLock.setDataset(ctxt.getDataset());
-        datasetLock = em.merge(datasetLock);
-        ctxt.setLockId(datasetLock.getId());
+        em.persist(datasetLock);
+        //flush creates the id
         em.flush();
+        ctxt.setLockId(datasetLock.getId());
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
