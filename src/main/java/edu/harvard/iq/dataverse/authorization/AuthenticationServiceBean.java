@@ -451,7 +451,7 @@ public class AuthenticationServiceBean {
         return tkn.getAuthenticatedUser();
     }
     
-    public AuthenticatedUser lookupUserForWorkflow( String wfId ) {
+    public AuthenticatedUser lookupUserForWorkflowInvocationID(String wfId) {
         try {
             PendingWorkflowInvocation pwfi = em.find(PendingWorkflowInvocation.class, wfId);
             if (pwfi == null) {

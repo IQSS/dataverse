@@ -135,7 +135,7 @@ public class DataverseRequest {
                 }
             }
             
-            String headerParamWFKey = aHttpServletRequest.getHeader(AbstractApiBean.DATAVERSE_WORKFLOW_HEADER_NAME);
+            String headerParamWFKey = aHttpServletRequest.getHeader(AbstractApiBean.DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME);
             String queryParamWFKey = aHttpServletRequest.getParameter("invocationId");
                     
             invocationId = headerParamWFKey!=null ? headerParamWFKey : queryParamWFKey;
