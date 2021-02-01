@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
@@ -229,6 +230,9 @@ public class Datasets extends AbstractApiBean {
     
     @Inject
     DataverseRequestServiceBean dvRequestService;
+
+    @Inject
+    DatasetPage datasetPage;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -2346,7 +2350,20 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         }
 
         //------------------------------------
-        // (2a) Make sure dataset does not have package file
+        // (2a) Add lock to the dataset page
+        // --------------------------------------
+
+        String lockInfoMessage = "Globus Upload API is running ";
+        DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.GlobusUpload,
+                  ((AuthenticatedUser) authUser).getId() , lockInfoMessage);
+        if (lock != null) {
+            dataset.addLock(lock);
+        } else {
+            logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
+        }
+
+        //------------------------------------
+        // (2b) Make sure dataset does not have package file
         // --------------------------------------
 
         for (DatasetVersion dv : dataset.getVersions()) {
@@ -2555,6 +2572,16 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                     }
                 }
             }// End of adding files
+
+
+            DatasetLock dcmLock = dataset.getLockFor(DatasetLock.Reason.GlobusUpload);
+            if (dcmLock == null) {
+                logger.log(Level.WARNING, "Dataset not locked for Globus upload");
+            } else {
+                logger.log(Level.INFO, "Dataset remove locked for Globus upload");
+                datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.GlobusUpload);
+                //dataset.removeLock(dcmLock);
+            }
 
             try {
                 Command<Dataset> cmd;
