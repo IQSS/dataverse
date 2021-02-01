@@ -34,8 +34,8 @@
                                 <p:watermark for="searchFiles" value="#{bundle['dashboard.list_users.searchTerm.watermark']}"/>
                                 <p:remoteCommand name="submitsearch" action="#{DashboardUsersPage.runUserSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"/>
                                 <span class="input-group-btn">
-                                    <p:commandLink styleClass="btn btn-default" action="#{DashboardUsersPage.runUserSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
-                                        <span class="glyphicon glyphicon-search"></span> #{bundle['dataverse.search.btn.find']}
+                                    <p:commandLink title="#{bundle['dataverse.search.btn.find']}" styleClass="btn btn-default bootstrap-button-tooltip" action="#{DashboardUsersPage.runUserSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
+                                        <span class="glyphicon glyphicon-search no-text"/>
                                     </p:commandLink>
                                 </span>
                             </div>
