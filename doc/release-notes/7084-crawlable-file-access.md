@@ -2,9 +2,11 @@
 
 ### A new file access API
 
-A new api offers *crawlable* access view of the folders and files within a datset::
+A new api offers *crawlable* access view of the folders and files within a datset:
 
+```
   /api/datasets/<dataset id>/versions/<version id>/fileaccess[?folder=<subfolder name>]
+```
 
 will output a simple html listing, based on the standard Apache
 directory index, with Access API download links for individual files,
