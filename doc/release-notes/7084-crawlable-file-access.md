@@ -13,7 +13,7 @@ directory index, with Access API download links for individual files,
 and recursive calls to the API above for sub-folders. (See the
 documentation entry in the guides for more information).
 
-Using this API, ``wget -recursive`` (or similar crawling client) can
+Using this API, ``wget --recursive`` (or similar crawling client) can
 be used to download all the files in a dataset, preserving the file
 names and folder structure; without having to use the download-as-zip
 API. In addition to being faster (zippig is a relatively
