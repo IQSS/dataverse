@@ -783,8 +783,92 @@ List Files in a Dataset
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
-
+ 
   curl https://demo.dataverse.org/api/datasets/24/versions/1.0/files
+
+File Access Tree View in a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+|CORS| Lists all the file metadata, for the given dataset and version:
+
+.. code-block:: bash
+
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+  export VERSION=1.0
+
+  curl $SERVER_URL/api/datasets/$ID/versions/$VERSION/fileaccess
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+ 
+  curl https://demo.dataverse.org/api/datasets/24/versions/1.0/fileaccess
+
+Optional parameters:
+
+* ``folder`` Specifies a subfolder within the dataset.
+  
+This API outputs a simple html listing, based on the standard Apache
+directory index, with Access API download links for individual files,
+and recursive calls to the API above for sub-folders.
+
+Using this API, ``wget -recursive`` (or similar crawling client) can
+be used to download all the files in a dataset, preserving the file
+names and folder structure; without having to use the download-as-zip
+API. In addition to being faster (zippig is a relatively
+resource-intensive operastion on the server side), this process can be
+restarted if interrupted (with ``wget --continue`` or equivalent) -
+unlike zipped multi-file downloads that always have to start from the
+beginning.
+
+On a system that uses S3 with download redirects, the individual file
+downloads will be handled by S3 directly, without having to be proxied
+through the Dataverse application.
+
+For example, if you have a dataset version with 2 files, one with the folder named "subfolder":
+
+.. |image1| image:: ./img/dataset_page_files_view.png
+
+or, as viewed as a tree on the dataset page:
+
+.. |image2| image:: ./img/dataset_page_tree_view.png
+
+The fileaccess API for the top-level folder view output will be as follows:
+
+.. |image3| image:: ./img/index_view_top.png
+
+with the underlying html source:
+
+.. code-block:: html
+   <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+   <html><head><title>Index of folder /</title></head>
+   <body><h1>Index of folder / in dataset doi:XXX/YY/ZZZZ</h1>
+   <table>
+   <tr><th>Name</th><th>Last Modified</th><th>Size</th><th>Description</th></tr>
+   <tr><th colspan="4"><hr></th></tr>
+   <tr><td><a href="/api/datasets/NNNN/versions/MM/fileaccess?folder=subfolder">subfolder/</a></td><td align="right"> - </td><td align="right"> - </td><td align="right">&nbsp;</td></tr>
+   <tr><td><a href="/api/access/datafile/KKKK">testfile.txt</a></td><td align="right">13-January-2021 22:35</td><td align="right">19 B</td><td align="right">&nbsp;</td></tr>
+   </table></body></html>
+
+The ``/fileaccess?folder=subfolder`` link above will produce the following view:
+
+.. |image4| image:: ./img/index_view_subfolder.png
+
+with the html source as follows:
+
+.. code-block:: html
+   <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+   <html><head><title>Index of folder /subfolder</title></head>
+   <body><h1>Index of folder /subfolder in dataset doi:XXX/YY/ZZZZ</h1>
+   <table>
+   <tr><th>Name</th><th>Last Modified</th><th>Size</th><th>Description</th></tr>
+   <tr><th colspan="4"><hr></th></tr>
+   <tr><td><a href="/api/access/datafile/LLLL">50by1000.tab</a></td><td align="right">11-January-2021 09:31</td><td align="right">102.5 KB</td><td align="right">&nbsp;</td></tr>
+   </table></body></html>
+
+
+
 
 List All Metadata Blocks for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
