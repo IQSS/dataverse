@@ -816,8 +816,8 @@ and recursive calls to the API above for sub-folders.
 Using this API, ``wget -recursive`` (or similar crawling client) can
 be used to download all the files in a dataset, preserving the file
 names and folder structure; without having to use the download-as-zip
-API. In addition to being faster (zippig is a relatively
-resource-intensive operastion on the server side), this process can be
+API. In addition to being faster (zipping is a relatively
+resource-intensive operation on the server side), this process can be
 restarted if interrupted (with ``wget --continue`` or equivalent) -
 unlike zipped multi-file downloads that always have to start from the
 beginning.
