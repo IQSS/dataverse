@@ -841,15 +841,16 @@ The fileaccess API for the top-level folder view output will be as follows:
 with the underlying html source:
 
 .. code-block:: html
-   <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
-   <html><head><title>Index of folder /</title></head>
-   <body><h1>Index of folder / in dataset doi:XXX/YY/ZZZZ</h1>
-   <table>
-   <tr><th>Name</th><th>Last Modified</th><th>Size</th><th>Description</th></tr>
-   <tr><th colspan="4"><hr></th></tr>
-   <tr><td><a href="/api/datasets/NNNN/versions/MM/fileaccess?folder=subfolder">subfolder/</a></td><td align="right"> - </td><td align="right"> - </td><td align="right">&nbsp;</td></tr>
-   <tr><td><a href="/api/access/datafile/KKKK">testfile.txt</a></td><td align="right">13-January-2021 22:35</td><td align="right">19 B</td><td align="right">&nbsp;</td></tr>
-   </table></body></html>
+
+    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+    <html><head><title>Index of folder /</title></head>
+    <body><h1>Index of folder / in dataset doi:XXX/YY/ZZZZ</h1>
+    <table>
+    <tr><th>Name</th><th>Last Modified</th><th>Size</th><th>Description</th></tr>
+    <tr><th colspan="4"><hr></th></tr>
+    <tr><td><a href="/api/datasets/NNNN/versions/MM/fileaccess?folder=subfolder">subfolder/</a></td><td align="right"> - </td><td align="right"> - </td><td align="right">&nbsp;</td></tr>
+    <tr><td><a href="/api/access/datafile/KKKK">testfile.txt</a></td><td align="right">13-January-2021 22:35</td><td align="right">19 B</td><td align="right">&nbsp;</td></tr>
+    </table></body></html>
 
 The ``/fileaccess?folder=subfolder`` link above will produce the following view:
 
@@ -858,14 +859,15 @@ The ``/fileaccess?folder=subfolder`` link above will produce the following view:
 with the html source as follows:
 
 .. code-block:: html
-   <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
-   <html><head><title>Index of folder /subfolder</title></head>
-   <body><h1>Index of folder /subfolder in dataset doi:XXX/YY/ZZZZ</h1>
-   <table>
-   <tr><th>Name</th><th>Last Modified</th><th>Size</th><th>Description</th></tr>
-   <tr><th colspan="4"><hr></th></tr>
-   <tr><td><a href="/api/access/datafile/LLLL">50by1000.tab</a></td><td align="right">11-January-2021 09:31</td><td align="right">102.5 KB</td><td align="right">&nbsp;</td></tr>
-   </table></body></html>
+
+    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+    <html><head><title>Index of folder /subfolder</title></head>
+    <body><h1>Index of folder /subfolder in dataset doi:XXX/YY/ZZZZ</h1>
+    <table>
+    <tr><th>Name</th><th>Last Modified</th><th>Size</th><th>Description</th></tr>
+    <tr><th colspan="4"><hr></th></tr>
+    <tr><td><a href="/api/access/datafile/LLLL">50by1000.tab</a></td><td align="right">11-January-2021 09:31</td><td align="right">102.5 KB</td><td align="right">&nbsp;</td></tr>
+    </table></body></html>
 
 
 
