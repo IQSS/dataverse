@@ -2,7 +2,7 @@
 .. _guides_versions:
 
 Dataverse Software Documentation Versions
-================================
+=========================================
 
 This list provides a way to refer to the documentation for previous versions of the Dataverse software. In order to learn more about the updates delivered from one version to another, visit the `Releases <https://github.com/IQSS/dataverse/releases>`__ page in our GitHub repo.
 

@@ -5,7 +5,7 @@ Managing Harvesting Server and Sets
   :local:
 
 Your Dataverse Installation as an OAI server
--------------------------------
+--------------------------------------------
 
 As a harvesting *server*, your Dataverse installation can make some of the local dataset metadata available to remote harvesting clients. These can be
 other Dataverse installations, or any other clients that support OAI-PMH

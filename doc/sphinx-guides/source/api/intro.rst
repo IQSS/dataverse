@@ -1,7 +1,7 @@
 Introduction
 ============
 
-The Dataverse software APIs allow users to accomplish many tasks such as...
+The Dataverse Software APIs allow users to accomplish many tasks such as...
 
 - creating datasets
 - uploading files
@@ -140,7 +140,7 @@ One of the primary purposes for Dataverse software APIs in the first place is to
 
 |Start| Good starting points are the three sections above to get a sense of third-party software that already integrates with the Dataverse software, followed by the :doc:`getting-started` section.
 
-Developers of Dataverse software API Client Libraries 
+Developers of Dataverse Software API Client Libraries 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 A client library helps developers using a specific programming language such as Python, Javascript, R, or Java interact with Dataverse software APIs in a manner that is idiomatic for their language. For example, a Python programmer may want to
@@ -224,10 +224,10 @@ See :doc:`faq`.
 Getting Help
 ------------
 
-Dataverse software API questions are on topic in all the usual places:
+Dataverse Software API questions are on topic in all the usual places:
 
 - The dataverse-community Google Group: https://groups.google.com/forum/#!forum/dataverse-community
-- Dataverse Project community calls: https://dataverse.org/community-calls
+- The Dataverse Project community calls: https://dataverse.org/community-calls
 - The Dataverse Project chat room: http://chat.dataverse.org 
 - The Dataverse Project ticketing system: support@dataverse.org
 

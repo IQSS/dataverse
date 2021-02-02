@@ -49,7 +49,7 @@ Backward incompatible changes
 
 For better security than in DVN 3.x, usernames and passwords are no longer accepted. The use of an API token is required.
 
-Differences in Dataverse software 4 from DVN 3.x lead to a few minor backward incompatible changes in the Dataverse software implementation of SWORD, which are listed below. Old ``v1`` URLs should continue to work but the ``Service Document`` will contain a deprecation warning and responses will contain ``v1.1`` URLs. See also :ref:`known-issues`.
+Differences in Dataverse Software 4 from DVN 3.x lead to a few minor backward incompatible changes in the Dataverse software implementation of SWORD, which are listed below. Old ``v1`` URLs should continue to work but the ``Service Document`` will contain a deprecation warning and responses will contain ``v1.1`` URLs. See also :ref:`known-issues`.
 
 - Newly required fields when creating/editing datasets for compliance with the `Joint Declaration for Data Citation principles <http://thedata.org/blog/joint-declaration-data-citation-principles-and-dataverse>`_.
 

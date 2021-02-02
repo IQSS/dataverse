@@ -99,7 +99,7 @@ rsync is typically used for synchronizing files and directories between two diff
 File Upload Script
 ~~~~~~~~~~~~~~~~~~
 
-An rsync-enabled Dataverse installation has a file upload process that differs from the traditional browser-based upload process you may be used to. In order to transfer your data the to Dataverse installation's storage, you will need to complete the following steps:
+An rsync-enabled Dataverse installation has a file upload process that differs from the traditional browser-based upload process you may be used to. In order to transfer your data to the Dataverse installation's storage, you will need to complete the following steps:
 
 1. Create your dataset. In rsync-enabled Dataverse installations, you cannot upload files until the dataset creation process is complete. After you hit "Save Dataset" on the Dataset Creation page, you will be taken to the page for your dataset.
 

@@ -51,7 +51,7 @@ Fork https://github.com/IQSS/dataverse and then clone your fork like this:
 ``git clone git@github.com:[YOUR GITHUB USERNAME]/dataverse.git``
 
 Build the Dataverse Software War File
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you installed Netbeans, follow these steps:
 

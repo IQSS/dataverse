@@ -510,7 +510,7 @@ edited:**
 
 2. ``hostname="localhost:8080";``
 
-   changed to point to the Dataverse installation app, from which TwoRavens will be obtaining the metadata and data files. (don't forget to change 8080 to the correct port number!)
+   changed to point to the Dataverse installation, from which TwoRavens will be obtaining the metadata and data files. (don't forget to change 8080 to the correct port number!)
 
 3. ``var rappURL = "http://0.0.0.0:8000/custom/";``
 
