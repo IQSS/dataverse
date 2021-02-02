@@ -81,13 +81,15 @@ public class JSONLDUtil {
         DatasetVersion dsv = new DatasetVersion();
 
         JsonObject jsonld = decontextualizeJsonLD(jsonLDBody);
+        if(migrating) {
         Optional<GlobalId> maybePid = GlobalId.parse(jsonld.getString("@id"));
-        if (maybePid.isPresent()) {
+          if (maybePid.isPresent()) {
             ds.setGlobalId(maybePid.get());
-        } else {
+          } else {
             // unparsable PID passed. Terminate.
             throw new BadRequestException("Cannot parse the @id '" + jsonld.getString("@id")
                     + "'. Make sure it is in valid form - see Dataverse Native API documentation.");
+          }
         }
 
         dsv = updateDatasetVersionMDFromJsonLD(dsv, jsonld, metadataBlockSvc, datasetFieldSvc, append, migrating);
@@ -97,16 +99,18 @@ public class JSONLDUtil {
         versions.add(dsv);
 
         ds.setVersions(versions);
-        if (jsonld.containsKey(JsonLDTerm.schemaOrg("dateModified").getUrl())) {
-            String dateString = jsonld.getString(JsonLDTerm.schemaOrg("dateModified").getUrl());
-            LocalDateTime dateTime = getDateTimeFrom(dateString);
-            ds.setModificationTime(Timestamp.valueOf(dateTime));
-        }
-        try {
-            logger.fine("Output dsv: " + new OREMap(dsv, false).getOREMap().toString());
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        if (migrating) {
+            if (jsonld.containsKey(JsonLDTerm.schemaOrg("dateModified").getUrl())) {
+                String dateString = jsonld.getString(JsonLDTerm.schemaOrg("dateModified").getUrl());
+                LocalDateTime dateTime = getDateTimeFrom(dateString);
+                ds.setModificationTime(Timestamp.valueOf(dateTime));
+            }
+            try {
+                logger.fine("Output dsv: " + new OREMap(dsv, false).getOREMap().toString());
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
         return ds;
     }
