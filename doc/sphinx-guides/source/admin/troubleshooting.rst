@@ -29,7 +29,7 @@ During an attempt to publish a dataset, the validation will stop after encounter
 The following are two real life examples of problems that have resulted in corrupted datafiles during normal operation of a Dataverse installation: 
 
 1. Botched file deletes - while a datafile is in DRAFT, attempting to delete it from the dataset involves deleting both the ``DataFile`` database table entry, and the physical file. (Deleting a datafile from a *published* version merely removes it from the future versions - but keeps the file in the dataset). The problem we've observed in the early versions of the Dataverse Software was a *partially successful* delete, where the database transaction would fail (for whatever reason), but only after the physical file had already been deleted from the filesystem. Thus resulting in a datafile entry remaining in the dataset, but with the corresponding physical file missing. We believe we have addressed the issue that was making this condition possible, so it shouldn't happen again - but there may be a datafile in this state in your database. Assuming the user's intent was in fact to delete the file, the easiest solution is simply to confirm it and purge the datafile entity from the database. Otherwise the file needs to be restored from backups, or obtained from the user and copied back into storage. 
-2. Another issue we've observed: a failed tabular data ingest that leaves the datafile un-ingested, BUT with the physical file already replaced by the generated tab-delimited version of the data. This datafile will fail the validation because the checksum in the database matches the file in the original format (Stata, SPSS, etc.) as uploaded by the user. To fix: luckily, this is easily reversable, since the uploaded original should be saved in your storage, with the .orig extension. Simply swapping the .orig copy with the main file associated with the datafile will fix it. Similarly, we believe this condition should not happen again in Dataverse Software versions 4.20+, but you may have some legacy cases on your server. 
+2. Another issue we've observed: a failed tabular data ingest that leaves the datafile un-ingested, BUT with the physical file already replaced by the generated tab-delimited version of the data. This datafile will fail the validation because the checksum in the database matches the file in the original format (Stata, SPSS, etc.) as uploaded by the user. To fix: luckily, this is easily reversible, since the uploaded original should be saved in your storage, with the .orig extension. Simply swapping the .orig copy with the main file associated with the datafile will fix it. Similarly, we believe this condition should not happen again in Dataverse Software 4.20+, but you may have some legacy cases on your server. 
 
 Someone Created Spam Datasets and I Need to Delete Them
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -125,8 +125,8 @@ followed by an Exception stack trace with these lines in it:
 :fixedwidthplain:`Exception Description: Could not deserialize object from byte array` ...
 
 
-... you should reach out by opening an issue. In the good ol' days of running Dataverse Software version 4 running on Glassfish 4, this
-was a hint for an unsupported JDBC driver. In Dataverse Software version 5 this would be a new regression and its cause would need to be
+... you should reach out by opening an issue. In the good ol' days of running Dataverse Software 4.x running on Glassfish 4, this
+was a hint for an unsupported JDBC driver. In Dataverse Software 5.x this would be a new regression and its cause would need to be
 investigated.
 
 

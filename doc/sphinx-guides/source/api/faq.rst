@@ -56,7 +56,7 @@ Where is the Comprehensive List of All API Functionality?
 
 There are so many Dataverse Software APIs that a single page in this guide would probably be overwhelming. See :ref:`list-of-dataverse-apis` for links to various pages.
 
-It is possible to get a complete list of API functionality in Swagger/OpenAPI format if you deploy Dataverse Software version 5+. For details, see https://github.com/IQSS/dataverse/issues/5794
+It is possible to get a complete list of API functionality in Swagger/OpenAPI format if you deploy Dataverse Software 5.x. For details, see https://github.com/IQSS/dataverse/issues/5794
 
 Is There a Changelog of API Functionality That Has Been Added Over Time?
 ------------------------------------------------------------------------

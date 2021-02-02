@@ -536,7 +536,7 @@ To get a clean environment in Vagrant, you'll be running ``vagrant destroy``. In
 Editing TSV files
 ~~~~~~~~~~~~~~~~~
 
-Early in Dataverse Software version 4 development, metadata blocks were edited in the Google spreadsheet mentioned above and then exported in TSV format. This worked fine when there was only one person editing the Google spreadsheet but now that contributions are coming in from all over, the TSV files are edited directly. We are somewhat painfully aware that another format such as XML might make more sense these days. Please see https://github.com/IQSS/dataverse/issues/4451 for a discussion of non-TSV formats.
+Early in Dataverse Software 4.0 development, metadata blocks were edited in the Google spreadsheet mentioned above and then exported in TSV format. This worked fine when there was only one person editing the Google spreadsheet but now that contributions are coming in from all over, the TSV files are edited directly. We are somewhat painfully aware that another format such as XML might make more sense these days. Please see https://github.com/IQSS/dataverse/issues/4451 for a discussion of non-TSV formats.
 
 Please note that metadata fields share a common namespace so they must be unique. The following curl command will print list of metadata fields already available in the system:
 
@@ -682,7 +682,7 @@ Footnotes
    duplicated. See "Editing TSV files" for how to check for duplication.
 
 .. [5]
-   "displayoncreate" was "showabovefold" in Dataverse Software versions before 4.3.1 (see
+   "displayoncreate" was "showabovefold" in Dataverse Software ``<=4.3.1`` (see
    `#3073 <https://github.com/IQSS/dataverse/issues/3073>`__) but parsing is
    done based on column order rather than name so this only matters to the
    person reading the TSV file.

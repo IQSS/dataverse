@@ -57,7 +57,7 @@ main Application Server. (The system running the service needs to have
 access to the database as well as to the storage filesystem, and/or S3
 bucket).
 
-Please consult the scripts/zipdownload/README.md in the Dataverse Software version 5 source tree for more information. 
+Please consult the scripts/zipdownload/README.md in the Dataverse Software 5.0+ source tree for more information. 
 
 To install: You can follow the instructions in the file above to build
 ``ZipDownloadService-v1.0.0.jar``. It will also be available, pre-built as part of the Dataverse 5.0 software release on GitHub. Copy it, together with the shell

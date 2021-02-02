@@ -17,7 +17,7 @@ application.  The `TwoRavens GitHub repository
 
 For now, the Dataverse Project team will continue providing 
 installation and integration support. We have created a new (as
-of Dataverse Software v.4.6.1) version of the installer scripts and updated this guide. We have tried to improve and simplify the
+of Dataverse Software 4.6.1) version of the installer scripts and updated this guide. We have tried to improve and simplify the
 installation process, particularly the difficult process of installing
 correct versions of the required third party R packages.
 

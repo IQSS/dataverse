@@ -15,7 +15,7 @@ The parameters and JSON response are partly inspired by the `GitHub Search API <
 .. _CORS: https://www.w3.org/TR/cors/
 
 
-Please note that in Dataverse Software version 4.3 and older the "citation" field wrapped the persistent ID URL in an ``<a>`` tag but this has been changed to plaintext. If you want the old value with HTML in it, a new field called "citationHtml" can be used.
+Please note that in Dataverse Software 4.3 and older the "citation" field wrapped the persistent ID URL in an ``<a>`` tag but this has been changed to plaintext. If you want the old value with HTML in it, a new field called "citationHtml" can be used.
 
 
 Parameters

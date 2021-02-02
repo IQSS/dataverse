@@ -1432,7 +1432,7 @@ By default the footer says "Copyright © [YYYY]" but you can add text after the 
 :DoiProvider
 ++++++++++++
 
-As of this writing "DataCite" and "EZID" are the only valid options for production installations. Developers using version 4.10 and above are welcome to use the keyword "FAKE" to configure a non-production installation with an non-resolving, in-code provider, which will basically short-circuit the DOI publishing process. ``:DoiProvider`` is only needed if you are using DOI.
+As of this writing "DataCite" and "EZID" are the only valid options for production installations. Developers using Dataverse Software 4.10+ are welcome to use the keyword "FAKE" to configure a non-production installation with an non-resolving, in-code provider, which will basically short-circuit the DOI publishing process. ``:DoiProvider`` is only needed if you are using DOI.
 
 ``curl -X PUT -d DataCite http://localhost:8080/api/admin/settings/:DoiProvider``
 
@@ -1531,7 +1531,7 @@ If you don't want to register file-based PIDs for your installation, set:
 
 ``curl -X PUT -d 'false' http://localhost:8080/api/admin/settings/:FilePIDsEnabled``
 
-Note: File-level PID registration was added in 4.9; it could not be disabled until version 4.9.3.
+Note: File-level PID registration was added in Dataverse Software 4.9; it could not be disabled until Dataverse Software 4.9.3.
 
 .. _:IndependentHandleService:
 
@@ -1787,7 +1787,7 @@ Set ``SearchHighlightFragmentSize`` to override the default value of 100 from ht
 :ScrubMigrationData
 +++++++++++++++++++
 
-Allow for migration of non-conformant data (especially dates) from DVN 3.x to Dataverse Software version 4.
+Allow for migration of non-conformant data (especially dates) from Dataverse Software 3.x to Dataverse Software 4.x
 
 :MinutesUntilConfirmEmailTokenExpires
 +++++++++++++++++++++++++++++++++++++

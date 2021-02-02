@@ -157,7 +157,7 @@ Note: If you need to assign a role to ALL user accounts in a Dataverse installat
 Dataset Templates
 -------------------
 
-Templates are useful when you have several datasets that have the same information in multiple metadata fields that you would prefer not to have to keep manually typing in, or if you want to use a custom set of Terms of Use and Access for multiple datasets in a Dataverse collection. In Dataverse Software version 4.0, templates are created at the Dataverse collection level, can be deleted (so it does not show for future datasets), set to default (not required), or can be copied so you do not have to start over when creating a new template with similar metadata from another template. When a template is deleted, it does not impact the datasets that have used the template already.
+Templates are useful when you have several datasets that have the same information in multiple metadata fields that you would prefer not to have to keep manually typing in, or if you want to use a custom set of Terms of Use and Access for multiple datasets in a Dataverse collection. In Dataverse Software 4.0+, templates are created at the Dataverse collection level, can be deleted (so it does not show for future datasets), set to default (not required), or can be copied so you do not have to start over when creating a new template with similar metadata from another template. When a template is deleted, it does not impact the datasets that have used the template already.
 
 How do you create a template? 
 

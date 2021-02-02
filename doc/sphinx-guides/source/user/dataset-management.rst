@@ -144,7 +144,7 @@ DVUploader is a community-developed tool, and its creation was primarily support
 Duplicate Files
 ---------------
 
-Beginning with Dataverse Software version 5.0, the way a Dataverse installation handles duplicate files (filename and checksums) is changing to be more flexible. Specifically:
+Beginning with Dataverse Software 5.0, the way a Dataverse installation handles duplicate files (filename and checksums) is changing to be more flexible. Specifically:
 
 - Files with the same checksum can be included in a dataset, even if the files are in the same directory.
 - Files with the same filename can be included in a dataset as long as the files are in different directories.

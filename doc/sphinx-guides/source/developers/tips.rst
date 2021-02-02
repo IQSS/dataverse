@@ -110,7 +110,7 @@ There are four steps to this process:
 
 1. Build the war file: ``mvn package``
 2. Check which version of the Dataverse Software is deployed: ``./asadmin list-applications``
-3. Undeploy the Dataverse Software application (if necessary): ``./asadmin undeploy dataverse-VERSION``
+3. Undeploy the Dataverse Software (if necessary): ``./asadmin undeploy dataverse-VERSION``
 4. Copy the war file to the server (if necessary)
 5. Deploy the new code: ``./asadmin deploy /path/to/dataverse-VERSION.war``
 
