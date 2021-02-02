@@ -10,7 +10,7 @@ body {
 }
 body.widget-view {margin-bottom:44px;}
 body .ui-widget {font-size: inherit;}
-body .ui-widget .ui-widget-content:not(.ui-tabs, .ui-tabs-panel, .ui-datatable-data, .ui-tree) :not(.ui-dialog-titlebar, .ui-dialog-content, .dropdown-menu, .label-default){background: none;}
+body .ui-widget .ui-widget-content:not(.ui-tabs, .ui-tabs-panel, .ui-datatable-data, .ui-datatable-even, .ui-datatable-odd, .ui-tree) :not(.ui-dialog-titlebar, .ui-dialog-content, .dropdown-menu, .label-default){background: none;}
 .ui-widget-content a {color: #4b75ff;}
 .ui-datalist-item .ui-widget-content td > a { font-size: 18px !important;}
 .ui-widget-content a:hover, .ui-widget-content a:focus {color: #337ab7;}
@@ -806,7 +806,8 @@ div[id$="filesTable"] .col-file-thumb div.thumbnail-block span.file-thumbnail-pr
 div[id$="filesTable"] .col-file-thumb div.thumbnail-block div.file-icon-restricted-block {display:block;position:absolute;bottom:-4px;right:-1px;}
 div[id$="filesTable"] .file-metadata-block {-webkit-flex: 1 100%;
 	-moz-flex: 1 100%;
-	-ms-flex: 1 100%; flex: 1 100%;}
+	-ms-flex: 1 100%; flex: 1 100%;
+	word-break:break-word;}
 div[id$="filesTable"] div.file-tags-block {padding-bottom:2px;}
 div[id$="filesTable"] div.file-tags-block a.ui-commandlink {font-size:12px;}
 div[id$="filesTable"] div.file-tags-block span.label {display:inline-block;}
@@ -934,6 +935,12 @@ div.dvnDifferanceTable .versionValue {
 div.manageTable.ui-datatable div.ui-datatable-tablewrapper, div.manageTable.ui-datatable td.col-manage-action {overflow:visible;}
 div[id$="filesTable"].ui-datatable thead th.col-file-action, div[id$="filesTable"].ui-datatable tbody td.col-file-action {overflow:visible !important;}
 thead.ui-datatable-scrollable-theadclone {display:none}
+
+@media(min-width:992px){
+    div[id$="filesTable"].ui-datatable thead th.col-file-action {
+        width:320px;
+    }
+}
 
 /* FILE */
 #file-preview-icon-block > #border-block {/*border:1px solid #DDD;border-radius:4px; padding: 10px;*/}
