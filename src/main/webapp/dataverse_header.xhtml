@@ -59,8 +59,8 @@
                                     <div class="input-group">
                                         <input id="navbarsearch" type="text" class="form-control" size="28" value="" placeholder="#{bundle['header.search.title']}" aria-labelledby="searchNavLabel"/>
                                         <span class="input-group-btn">
-                                            <button type="submit" class="btn btn-default" onclick="window.location='/dataverse/#{dataverseServiceBean.findRootDataverse().alias}&#63;q=' + document.getElementById('navbarsearch').value;return false;">
-                                                <span class="glyphicon glyphicon-search"/> #{bundle.find}
+                                            <button type="submit" title="#{bundle.find}" class="btn btn-default bootstrap-button-tooltip" onclick="window.location='/dataverse/#{dataverseServiceBean.findRootDataverse().alias}&#63;q=' + document.getElementById('navbarsearch').value;return false;">
+                                                <span class="glyphicon glyphicon-search no-text"/>
                                             </button>
                                         </span>
                                     </div>

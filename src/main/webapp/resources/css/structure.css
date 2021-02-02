@@ -935,6 +935,8 @@ span.ui-autocomplete input.ui-autocomplete-input {width:100%;}
 .ui-autocomplete input {padding:6px 12px; margin:0;}
 
 /* Overwrite Bootstrap */
+.btn, .input-group-btn {white-space: normal !important;}
+
 @media print {
     a[href]:after {
       content: none;
