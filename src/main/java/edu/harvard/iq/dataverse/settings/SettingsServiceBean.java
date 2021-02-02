@@ -192,6 +192,8 @@ public class SettingsServiceBean {
         /** Optionally override http://guides.dataverse.org . */
         GuidesBaseUrl,
 
+        CVMConf,
+
         /**
          * A link to an installation of https://github.com/IQSS/miniverse or
          * some other metrics app.
