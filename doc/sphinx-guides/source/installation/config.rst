@@ -1368,7 +1368,7 @@ The key required to create users via API as documented at :doc:`/api/native-api`
 :SearchApiRequiresToken
 +++++++++++++++++++++++
 
-In Dataverse Software version 4.7 and lower, the :doc:`/api/search` required an API token, but as of Dataverse Software version 4.7.1 this is no longer the case. If you prefer the old behavior of requiring API tokens to use the Search API, set ``:SearchApiRequiresToken`` to ``true``.
+In Dataverse Software 4.7 and lower, the :doc:`/api/search` required an API token, but as of Dataverse Software 4.7.1 this is no longer the case. If you prefer the old behavior of requiring API tokens to use the Search API, set ``:SearchApiRequiresToken`` to ``true``.
 
 ``curl -X PUT -d true http://localhost:8080/api/admin/settings/:SearchApiRequiresToken``
 
@@ -2178,7 +2178,7 @@ If you don’t want date facets to be sorted chronologically, set:
 :CustomZipDownloadServiceUrl
 ++++++++++++++++++++++++++++
 
-The location of the "Standalone Zipper" service. If this option is specified, the Dataverse installation will be redirecing bulk/mutli-file zip download requests to that location, instead of serving them internally. See the "Advanced" section of the Installation guide for information on how to install the external zipper. (This is still an experimental feature, as of v5.0).
+The location of the "Standalone Zipper" service. If this option is specified, the Dataverse installation will be redirecing bulk/mutli-file zip download requests to that location, instead of serving them internally. See the "Advanced" section of the Installation guide for information on how to install the external zipper. (This is still an experimental feature, as of Dataverse Software 5.0).
 
 To enable redirects to the zipper installed on the same server as the main Dataverse Software application: 
 
