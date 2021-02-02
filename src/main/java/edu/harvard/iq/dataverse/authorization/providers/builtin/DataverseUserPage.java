@@ -170,7 +170,6 @@ public class DataverseUserPage implements java.io.Serializable {
             switch (selectTab) {
                 case "accountInfo":
                     activeIndex = 0;
-                    // activeIndex = 3;
                     break;
                 case "dataRelatedToMe":
                     mydatapage.init();
@@ -180,10 +179,6 @@ public class DataverseUserPage implements java.io.Serializable {
                     activeIndex = 2;
                     displayNotification();
                     break;
-
-                // case "groupsRoles":
-                // activeIndex = 2;
-                // break;
                 case "apiTokenTab":
                     activeIndex = 3;
                     break;
