@@ -104,8 +104,8 @@ Each of the three main sections own sets of properties:
 | dataverseAlias        | If specified, this    | Free text. For an     |
 |                       | metadata block will   | example, see          |
 |                       | be available only to  | custom_hbgdki.tsv.    |
-|                       | the Dataverse         |
-|                       | collection            |
+|                       | the Dataverse         |                       |
+|                       | collection            |                       |
 |                       | designated here by    |                       |
 |                       | its alias and to      |                       |
 |                       | children of that      |                       |
@@ -256,7 +256,7 @@ Each of the three main sections own sets of properties:
 |                       | Facets" when you edit |                        |
 |                       | "General Information" |                        |
 |                       | for a Dataverse       |                        |
-|                       |collection.            |                        |
+|                       | collection.           |                        |
 |                       | Setting this value to |                        |
 |                       | TRUE generally makes  |                        |
 |                       | sense for enumerated  |                        |
