@@ -1542,7 +1542,7 @@ public class FilesIT {
         assertEquals(expectedLinkAhrefTopFolder, htmlCrawlLinkAhref);
 
         
-        // ... with the folder name "subfolder" specified: 
+        // ... and with the folder name "subfolder" specified: 
         // (should result in being shown one access link to the file above, no folders)
         fileAccessResponse = UtilIT.getCrawlableFileAccess(datasetId.toString(), folderName, apiToken);
         fileAccessResponse.then().assertThat().statusCode(OK.getStatusCode()).contentType("text/html");
@@ -1559,9 +1559,6 @@ public class FilesIT {
         //msgt("html crawl link href: "+htmlCrawlLinkAhref);
         assertEquals(expectedLinkAhrefSubFolder, htmlCrawlLinkAhref);
 
-        
-        // TODO : add more testing functionality
-        // (this is a placeholder)
     }
     
     private void msg(String m){

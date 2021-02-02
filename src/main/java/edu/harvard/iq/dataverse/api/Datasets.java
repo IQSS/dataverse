@@ -469,7 +469,6 @@ public class Datasets extends AbstractApiBean {
     
     @GET
     @Path("{id}/versions/{versionId}/fileaccess")
-    @Produces("text/html")
     public Response getFileAccessFolderView(@PathParam("id") String datasetId, @PathParam("versionId") String versionId, @QueryParam("folder") String folderName, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
 
         folderName = folderName == null ? "" : folderName; 

@@ -1953,7 +1953,7 @@ public class FileUtil implements java.io.Serializable  {
             String localFolder = fileMetadata.getDirectoryLabel() == null ? "" : fileMetadata.getDirectoryLabel(); 
             
             if (folderName.equals(localFolder)) {
-                String accessUrl = fileMetadata.getDataFile().getMapItFileDownloadURL(apiLocation);
+                String accessUrl = getFileAccessUrl(fileMetadata, apiLocation, false);
                 sb.append(formatFileListEntryHtml(fileMetadata, accessUrl));
                 sb.append("\n");
 
@@ -1970,7 +1970,7 @@ public class FileUtil implements java.io.Serializable  {
         
         return formatTable(sb.toString());
     }
-    
+        
     private static String formatFolderListingTableHeaderHtml() {
         
         StringBuilder sb = new StringBuilder();
@@ -2011,6 +2011,16 @@ public class FileUtil implements java.io.Serializable  {
         sb.append(formatTableCellAlignRight("&nbsp;"));
         
         return formatTableRow(sb.toString());
+    }
+    
+    private static String getFileAccessUrl(FileMetadata fileMetadata, String apiLocation, boolean original) {
+        String fileId = fileMetadata.getDataFile().getId().toString();
+        
+        if (StringUtil.nonEmpty(fileMetadata.getDirectoryLabel())) {
+            fileId = fileMetadata.getDirectoryLabel().concat("/").concat(fileId);
+        }
+        
+        return apiLocation + "/api/access/datafile/" + fileId + (original ? "?format=original" : ""); 
     }
     
     private static String getFolderAccessUrl(DatasetVersion version, String currentFolder, String subFolder, String apiLocation) {
