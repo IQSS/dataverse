@@ -517,7 +517,7 @@ public class Datasets extends AbstractApiBean {
             DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
             String dataverseSiteUrl = systemConfig.getDataverseSiteUrl();
             String anchor = dataverseSiteUrl + "/dataset.xhtml?persistentId=" + dsv.getDataset().getPersistentURL();
-            String signpostingConf = settingsService.getValueForKey(SettingsServiceBean.Key.SignpostingConf, "");
+            String signpostingConf = settingsService.getValueForKey(SettingsServiceBean.Key.SignpostingConf, BundleUtil.getStringFromBundle("signposting.configuration.SignpostingConf"));
             if (signpostingConf.isEmpty()) return notFound("Configuration key for signposting is empty [SignpostingConf]");
             if (dsv.getId() == null) return notFound("Dataset not found: Id is empty");
             return okLinkset(JsonPrinter.jsonLinkset(new SignpostingResources(systemConfig, dsv, signpostingConf)));
