@@ -2,7 +2,7 @@
 Deployment
 ==========
 
-Developers often only deploy the Dataverse software to their :doc:`dev-environment` but it can be useful to deploy the Dataverse software to cloud services such as Amazon Web Services (AWS).
+Developers often only deploy the Dataverse Software to their :doc:`dev-environment` but it can be useful to deploy the Dataverse Software to cloud services such as Amazon Web Services (AWS).
 
 .. contents:: |toctitle|
 	:local:
@@ -111,7 +111,7 @@ Migrating Datafiles from Local Storage to S3
 
 A number of pilot Dataverse installations start on local storage, then administrators are tasked with migrating datafiles into S3 or similar object stores. The files may be copied with a command-line utility such as `s3cmd<https://s3tools.org/s3cmd>`. You will want to retain the local file hierarchy, keeping the authority (for example: 10.5072) at the bucket "root."
 
-The below example queries may assist with updating dataset and datafile locations in the Dataverse installation's PostgresQL database. Depending on the initial version of the Dataverse software and subsequent upgrade path, Datafile storage identifiers may or may not include a ``file://`` prefix, so you'll want to catch both cases.
+The below example queries may assist with updating dataset and datafile locations in the Dataverse installation's PostgresQL database. Depending on the initial version of the Dataverse Software and subsequent upgrade path, Datafile storage identifiers may or may not include a ``file://`` prefix, so you'll want to catch both cases.
 
 To Update Dataset Location to S3, Assuming a ``file://`` Prefix
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

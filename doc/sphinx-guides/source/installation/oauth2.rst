@@ -11,7 +11,7 @@ As explained under "Auth Modes" in the :doc:`config` section, OAuth2 is one of t
 
 `OAuth2 <https://oauth.net/2/>`_ is an authentication protocol that allows systems to share user data, while letting the users control what data is being shared. When you see buttons stating "login with Google" or "login through Facebook", OAuth2 is probably involved. For the purposes of this section, we will shorten "OAuth2" to just "OAuth." OAuth can be compared and contrasted with :doc:`shibboleth`.
 
-The Dataverse software supports four OAuth providers: `ORCID <http://orcid.org>`_, `Microsoft Azure Active Directory (AD) <https://docs.microsoft.com/azure/active-directory/>`_, `GitHub <https://github.com>`_, and `Google <https://console.developers.google.com>`_.
+The Dataverse Software supports four OAuth providers: `ORCID <http://orcid.org>`_, `Microsoft Azure Active Directory (AD) <https://docs.microsoft.com/azure/active-directory/>`_, `GitHub <https://github.com>`_, and `Google <https://console.developers.google.com>`_.
 
 In addition :doc:`oidc` are supported, using a standard based on OAuth2.
 
@@ -28,7 +28,7 @@ Obtain Client ID and Client Secret
 
 Before OAuth providers will release information about their users (first name, last name, etc.) to your Dataverse installation, you must request a "Client ID" and "Client Secret" from them. In many cases you can use providers' automated system to request these credentials, but if not, contact the provider for assistance.
 
-URLs to help you request a Client ID and Client Secret from the providers supported by the Dataverse software are provided below.  For all of these providers, it's a good idea to request the Client ID and Client secret using a generic account, perhaps the one that's associated with the ``:SystemEmail`` you've configured for your Dataverse installation, rather than your own personal Microsoft Azure AD, ORCID, GitHub, or Google account:
+URLs to help you request a Client ID and Client Secret from the providers supported by the Dataverse Software are provided below.  For all of these providers, it's a good idea to request the Client ID and Client secret using a generic account, perhaps the one that's associated with the ``:SystemEmail`` you've configured for your Dataverse installation, rather than your own personal Microsoft Azure AD, ORCID, GitHub, or Google account:
 
 - ORCID: https://orcid.org/content/register-client-application-0
 - Microsoft: https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-protocols-oauth-code

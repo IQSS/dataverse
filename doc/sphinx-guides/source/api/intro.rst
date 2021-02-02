@@ -10,7 +10,7 @@ The Dataverse Software APIs allow users to accomplish many tasks such as...
 
 ... all without using the Dataverse installation's web interface.
 
-APIs open the door for integrations between the Dataverse software and other software. For a list, see the :doc:`/admin/integrations` section of the Admin Guide.
+APIs open the door for integrations between the Dataverse Software and other software. For a list, see the :doc:`/admin/integrations` section of the Admin Guide.
 
 .. contents:: |toctitle|
     :local:
@@ -18,7 +18,7 @@ APIs open the door for integrations between the Dataverse software and other sof
 What is an API?
 ---------------
 
-API stands for "Application Programming Interface" and an example is the Dataverse software's "file upload" API. In the diagram below, we can see that while users can click a button within Dataverse installation's web interface to upload a file, there are many other ways to get files into a Dataverse installation, all using an API that allows for uploading of files.
+API stands for "Application Programming Interface" and an example is the Dataverse Software's "file upload" API. In the diagram below, we can see that while users can click a button within Dataverse installation's web interface to upload a file, there are many other ways to get files into a Dataverse installation, all using an API that allows for uploading of files.
 
 .. graphviz::
 
@@ -72,7 +72,7 @@ The diagram above shows only a few examples of software using a specific API but
 
 .. _types-of-api-users:
 
-Types of Dataverse software API Users
+Types of Dataverse Software API Users
 -------------------------------------
 
 This guide is intended to serve multiple audiences but pointers various sections of the guide are provided below based on the type of API user you are.
@@ -104,7 +104,7 @@ Power users may be researchers or curators who are comfortable with automating p
 Support Teams and Superusers
 ++++++++++++++++++++++++++++
 
-Support teams that answer questions about their Dataverse installation should familiarize themselves with the :doc:`getting-started` section to get a sense of common tasks that researchers and curators might be trying to accomplish by using Dataverse software APIs.
+Support teams that answer questions about their Dataverse installation should familiarize themselves with the :doc:`getting-started` section to get a sense of common tasks that researchers and curators might be trying to accomplish by using Dataverse Software APIs.
 
 Superusers of a Dataverse installation have access a superuser dashboard described in the :doc:`/admin/dashboard` section of the Admin Guide but some operations can only be done via API.
 
@@ -113,7 +113,7 @@ Superusers of a Dataverse installation have access a superuser dashboard describ
 Sysadmins
 +++++++++
 
-Sysadmins often write scripts to automate tasks and Dataverse software APIs make this possible. Sysadmins have control over the server that the Dataverse installation is running on and may be called upon to execute API commands that are limited to "localhost" (the server itself) for security reasons.
+Sysadmins often write scripts to automate tasks and Dataverse Software APIs make this possible. Sysadmins have control over the server that the Dataverse installation is running on and may be called upon to execute API commands that are limited to "localhost" (the server itself) for security reasons.
 
 |Start| A good starting point for sysadmins is "Blocking API Endpoints" in the :doc:`/installation/config` section of the Installation Guide, followed by the :doc:`getting-started` section of this guide, followed by the :doc:`/admin/troubleshooting` section of the Admin Guide.
 
@@ -132,18 +132,18 @@ The Dataverse Project loves contributors! Depending on your interests and skills
 Developers of Integrations, External Tools, and Apps
 ++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-One of the primary purposes for Dataverse software APIs in the first place is to enable integrations with third party software. Integrations are listed in the following places:
+One of the primary purposes for Dataverse Software APIs in the first place is to enable integrations with third party software. Integrations are listed in the following places:
 
 - The :doc:`/admin/integrations` section of the Admin Guide.
 - The :doc:`/api/external-tools` section this guide.
 - The :doc:`apps` section of this guide.
 
-|Start| Good starting points are the three sections above to get a sense of third-party software that already integrates with the Dataverse software, followed by the :doc:`getting-started` section.
+|Start| Good starting points are the three sections above to get a sense of third-party software that already integrates with the Dataverse Software, followed by the :doc:`getting-started` section.
 
 Developers of Dataverse Software API Client Libraries 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-A client library helps developers using a specific programming language such as Python, Javascript, R, or Java interact with Dataverse software APIs in a manner that is idiomatic for their language. For example, a Python programmer may want to
+A client library helps developers using a specific programming language such as Python, Javascript, R, or Java interact with Dataverse Software APIs in a manner that is idiomatic for their language. For example, a Python programmer may want to
 
 |Start| A good starting point is the :doc:`client-libraries` section, followed by the :doc:`getting-started` section.
 
@@ -207,7 +207,7 @@ Please note that some APIs are only documented in other guides that are more sui
 Client Libraries
 ~~~~~~~~~~~~~~~~
 
-See :doc:`client-libraries` for how to use Dataverse software APIs from Python, R, Java, and Javascript.
+See :doc:`client-libraries` for how to use Dataverse Software APIs from Python, R, Java, and Javascript.
 
 Examples
 ~~~~~~~~

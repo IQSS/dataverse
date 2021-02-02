@@ -10,7 +10,7 @@ Welcome! `The Dataverse Project <http://dataverse.org>`_ is an `open source <htt
 Intended Audience
 -----------------
 
-This guide is intended primarily for developers who want to work on the main Dataverse software code base at https://github.com/IQSS/dataverse but see "Related Projects" below for other code you can work on!
+This guide is intended primarily for developers who want to work on the main Dataverse Software code base at https://github.com/IQSS/dataverse but see "Related Projects" below for other code you can work on!
 
 To get started, you'll want to set up your :doc:`dev-environment` and make sure you understand the branching strategy described in the :doc:`version-control` section and how to make a pull request. :doc:`testing` is expected. Opinions about :doc:`coding-style` are welcome!
 
@@ -24,7 +24,7 @@ If you have any questions at all, please reach out to other developers via the c
 Core Technologies
 -----------------
 
-The Dataverse software is a `Jakarta EE <https://en.wikipedia.org/wiki/Jakarta_EE>`_ application that is compiled into a WAR file and deployed to an application server (app server) which is configured to work with a relational database (PostgreSQL) and a search engine (Solr).
+The Dataverse Software is a `Jakarta EE <https://en.wikipedia.org/wiki/Jakarta_EE>`_ application that is compiled into a WAR file and deployed to an application server (app server) which is configured to work with a relational database (PostgreSQL) and a search engine (Solr).
 
 We make use of a variety of Jakarta EE technologies such as JPA, JAX-RS, JMS, and JSF. The front end is built using PrimeFaces and Bootstrap.
 
@@ -33,7 +33,7 @@ In addition, we start to adopt parts of Eclipse MicroProfile, namely `MicroProfi
 Roadmap
 -------
 
-For the Dataverse software development roadmap, please see https://www.iq.harvard.edu/roadmap-dataverse-project
+For the Dataverse Software development roadmap, please see https://www.iq.harvard.edu/roadmap-dataverse-project
 
 Kanban Board
 ------------

@@ -82,4 +82,4 @@ We have been unable to get Windows Subsystem for Linux (WSL) to work. We tried f
 Discussion and Feedback
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-For more discussion of Windows support for Dataverse software development see our community list thread `"Do you want to develop on Windows?" <https://groups.google.com/d/msg/dataverse-community/Hs9j5rIxqPI/-q54751aAgAJ>`_ We would be happy to incorporate feedback from Windows developers into this page. The :doc:`documentation` section describes how.
+For more discussion of Windows support for Dataverse Software development see our community list thread `"Do you want to develop on Windows?" <https://groups.google.com/d/msg/dataverse-community/Hs9j5rIxqPI/-q54751aAgAJ>`_ We would be happy to incorporate feedback from Windows developers into this page. The :doc:`documentation` section describes how.

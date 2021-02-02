@@ -7,7 +7,7 @@ Shibboleth
 Introduction
 ------------
 
-By configuring and enabling Shibboleth support in your Dataverse installation, your users will be able to log in using the identity system managed by their institution ("single sign on", or at least "single password") rather than having to create yet another password local to your Dataverse installation. Typically, users know their login system by some sort of internal branding such as "HarvardKey" or "Touchstone" (MIT) but within the Dataverse software application, the Shibboleth feature is known as :ref:`institutional-log-in` as explained to end users in the :doc:`/user/account` section of the User Guide.
+By configuring and enabling Shibboleth support in your Dataverse installation, your users will be able to log in using the identity system managed by their institution ("single sign on", or at least "single password") rather than having to create yet another password local to your Dataverse installation. Typically, users know their login system by some sort of internal branding such as "HarvardKey" or "Touchstone" (MIT) but within the Dataverse Software application, the Shibboleth feature is known as :ref:`institutional-log-in` as explained to end users in the :doc:`/user/account` section of the User Guide.
 
 Shibboleth is an implementation of the `Security Assertion Markup Language (SAML) <https://en.wikipedia.org/wiki/Security_Assertion_Markup_Language>`_ protocol which is similar in spirit to systems used by many webapps that allow you to log in via Google, Facebook, or Twitter.
 
@@ -21,7 +21,7 @@ We assume you've already gone through a basic installation as described in the :
 System Requirements
 ~~~~~~~~~~~~~~~~~~~
 
-Support for Shibboleth in the Dataverse software is built on the popular `"mod_shib" Apache module, "shibd" daemon <https://shibboleth.net/products/service-provider.html>`_, and the `Embedded Discovery Service (EDS) <https://shibboleth.net/products/embedded-discovery-service.html>`_ Javascript library, all of which are distributed by the `Shibboleth Consortium <https://shibboleth.net>`_. EDS is bundled with the Dataverse software, but ``mod_shib`` and ``shibd`` must be installed and configured per below.
+Support for Shibboleth in the Dataverse Software is built on the popular `"mod_shib" Apache module, "shibd" daemon <https://shibboleth.net/products/service-provider.html>`_, and the `Embedded Discovery Service (EDS) <https://shibboleth.net/products/embedded-discovery-service.html>`_ Javascript library, all of which are distributed by the `Shibboleth Consortium <https://shibboleth.net>`_. EDS is bundled with the Dataverse Software, but ``mod_shib`` and ``shibd`` must be installed and configured per below.
 
 Only Red Hat Enterprise Linux (RHEL) and derivatives such as CentOS have been tested (x86_64 versions) by the Dataverse Project team. See https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPLinuxInstall for details and note that (according to that page) as of this writing Ubuntu and Debian are not offically supported by the Shibboleth project.
 
@@ -166,7 +166,7 @@ Specific Identity Provider(s)
 
 When configuring the ``MetadataProvider`` section of ``shibboleth2.xml`` you should consider if your users will all come from the same Identity Provider (IdP) or not.
 
-Most Dataverse installations will probably only want to authenticate users via Shibboleth using their home institution's Identity Provider (IdP).  The configuration above in ``shibboleth2.xml`` looks for the metadata for the Identity Providers (IdPs) in a file at ``/etc/shibboleth/dataverse-idp-metadata.xml``.  You can download a :download:`sample dataverse-idp-metadata.xml file <../_static/installation/files/etc/shibboleth/dataverse-idp-metadata.xml>` and that includes the SAMLtest IdP from https://samltest.id but you will want to edit this file to include the metadata from the Identity Provider you care about. The identity people at your institution will be able to provide you with this metadata and they will very likely ask for a list of attributes that the Dataverse software requires, which are listed at :ref:`shibboleth-attributes`.
+Most Dataverse installations will probably only want to authenticate users via Shibboleth using their home institution's Identity Provider (IdP).  The configuration above in ``shibboleth2.xml`` looks for the metadata for the Identity Providers (IdPs) in a file at ``/etc/shibboleth/dataverse-idp-metadata.xml``.  You can download a :download:`sample dataverse-idp-metadata.xml file <../_static/installation/files/etc/shibboleth/dataverse-idp-metadata.xml>` and that includes the SAMLtest IdP from https://samltest.id but you will want to edit this file to include the metadata from the Identity Provider you care about. The identity people at your institution will be able to provide you with this metadata and they will very likely ask for a list of attributes that the Dataverse Software requires, which are listed at :ref:`shibboleth-attributes`.
 
 Identity Federation
 ^^^^^^^^^^^^^^^^^^^
@@ -431,7 +431,7 @@ Per above, you now need to tell the user to use the password reset feature to se
 Institution-Wide Shibboleth Groups
 ----------------------------------
 
-The Dataverse software allows you to optionally define "institution-wide Shibboleth groups" based on the the entityID of the Identity Provider (IdP) used to authenticate. For example, an "institution-wide Shibboleth group" with ``https://samltest.id/saml/idp`` as the IdP would include everyone who logs in via the SAMLtest IdP mentioned above.
+The Dataverse Software allows you to optionally define "institution-wide Shibboleth groups" based on the the entityID of the Identity Provider (IdP) used to authenticate. For example, an "institution-wide Shibboleth group" with ``https://samltest.id/saml/idp`` as the IdP would include everyone who logs in via the SAMLtest IdP mentioned above.
 
 To create an institution-wide Shibboleth groups, create a JSON file like :download:`shibGroupSAMLtest.json<../_static/installation/files/etc/shibboleth/shibGroupSAMLtest.json>` as below and issue this curl command:
 

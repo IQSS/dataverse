@@ -11,12 +11,12 @@ What is an API?
 
 See "What is an API?" in the :doc:`intro` section.
 
-What Are Common Use Cases for Dataverse software APIs?
+What Are Common Use Cases for Dataverse Software APIs?
 ----------------------------------------------------------
 
 See the :doc:`getting-started` section for common use cases for researchers and curators. Other types of API users should find starting points at :ref:`types-of-api-users`.
 
-Where Can I Find Examples of Using Dataverse software APIs?
+Where Can I Find Examples of Using Dataverse Software APIs?
 -----------------------------------------------------------
 
 See the :doc:`getting-started` section links to examples using curl.
@@ -26,7 +26,7 @@ For examples in Javascript, Python, R, and Java, and PHP, see the :doc:`apps` an
 When Should I Use the Native API vs. the SWORD API?
 ---------------------------------------------------
 
-The :doc:`sword` is based on a standard, works fine, and is fully supported, but much more development effort has been going into the :doc:`native-api`, which is not based on a standard. It is specific to the Dataverse software.
+The :doc:`sword` is based on a standard, works fine, and is fully supported, but much more development effort has been going into the :doc:`native-api`, which is not based on a standard. It is specific to the Dataverse Software.
 
 SWORD uses XML. The Native API uses JSON.
 
@@ -54,7 +54,7 @@ Note that when multiple query parameters are used (such as ``persistentId`` and 
 Where is the Comprehensive List of All API Functionality?
 ---------------------------------------------------------
 
-There are so many Dataverse software APIs that a single page in this guide would probably be overwhelming. See :ref:`list-of-dataverse-apis` for links to various pages.
+There are so many Dataverse Software APIs that a single page in this guide would probably be overwhelming. See :ref:`list-of-dataverse-apis` for links to various pages.
 
 It is possible to get a complete list of API functionality in Swagger/OpenAPI format if you deploy Dataverse Software version 5+. For details, see https://github.com/IQSS/dataverse/issues/5794
 

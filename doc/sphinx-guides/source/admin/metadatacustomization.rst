@@ -1,7 +1,7 @@
 Metadata Customization
 ======================
 
-The Dataverse software has a flexible data-driven metadata system powered by "metadata blocks" that are listed in the :doc:`/user/appendix` section of the User Guide. In this section we explain the customization options.
+The Dataverse Software has a flexible data-driven metadata system powered by "metadata blocks" that are listed in the :doc:`/user/appendix` section of the User Guide. In this section we explain the customization options.
 
 .. contents:: |toctitle|
 	:local:
@@ -23,11 +23,11 @@ Much more customization of metadata is possible, but this is an advanced topic s
 
 -  Changing how saved metadata values are displayed in the UI
 
-Generally speaking it is safer to create your own custom metadata block rather than editing metadata blocks that ship with the Dataverse software, because changes to these blocks may be made in future releases. If you'd like to make improvements to any of the metadata blocks shipped with the  Dataverse software, please open an issue at https://github.com/IQSS/dataverse/issues so it can be discussed before a pull request is made. Please note that the metadata blocks shipped with the Dataverse software are based on standards (e.g. DDI for social science) and you can learn more about these standards in the :doc:`/user/appendix` section of the User Guide. If you have developed your own custom metadata block that you think may be of interest to the Dataverse community, please create an issue and consider making a pull request as described in the :doc:`/developers/version-control` section of the Developer Guide.
+Generally speaking it is safer to create your own custom metadata block rather than editing metadata blocks that ship with the Dataverse Software, because changes to these blocks may be made in future releases. If you'd like to make improvements to any of the metadata blocks shipped with the  Dataverse Software, please open an issue at https://github.com/IQSS/dataverse/issues so it can be discussed before a pull request is made. Please note that the metadata blocks shipped with the Dataverse Software are based on standards (e.g. DDI for social science) and you can learn more about these standards in the :doc:`/user/appendix` section of the User Guide. If you have developed your own custom metadata block that you think may be of interest to the Dataverse community, please create an issue and consider making a pull request as described in the :doc:`/developers/version-control` section of the Developer Guide.
 
-In current versions of the Dataverse software, custom metadata are no longer defined as individual
+In current versions of the Dataverse Software, custom metadata are no longer defined as individual
 fields, as they were in Dataverse Network (DVN) 3.x, but in metadata blocks.
-The Dataverse software now ships with a citation metadata block, which includes
+The Dataverse Software now ships with a citation metadata block, which includes
 mandatory fields needed for assigning persistent IDs to datasets, and
 domain specific metadata blocks. For a complete list, see the
 :doc:`/user/appendix` section of the User Guide.
@@ -37,7 +37,7 @@ tab-separated value (TSV). [1]_\ :sup:`,`\  [2]_ While it is technically
 possible to define more than one metadata block in a TSV file, it is
 good organizational practice to define only one in each file.
 
-The metadata block TSVs shipped with the Dataverse software are in `/tree/develop/scripts/api/data/metadatablocks
+The metadata block TSVs shipped with the Dataverse Software are in `/tree/develop/scripts/api/data/metadatablocks
 <https://github.com/IQSS/dataverse/tree/develop/scripts/api/data/metadatablocks>`__ and the corresponding ResourceBundle property files `/tree/develop/src/main/java <https://github.com/IQSS/dataverse/tree/develop/src/main/java>`__ of the Dataverse Software GitHub repo. Human-readable copies are available in `this Google Sheets
 document <https://docs.google.com/spreadsheets/d/13HP-jI_cwLDHBetn9UKTREPJ_F4iHdAvhjmlvmYdSSw/edit#gid=0>`__ but they tend to get out of sync with the TSV files, which should be considered authoritative. The Dataverse Software installation process operates on the TSVs, not the Google spreadsheet.
 
@@ -409,7 +409,7 @@ FieldType definitions
 |                                   | be entered into this field.       |
 +-----------------------------------+-----------------------------------+
 | textbox                           | Any text may be entered. For      |
-|                                   | input, the Dataverse software     |
+|                                   | input, the Dataverse Software     |
 |                                   | presents a                        |
 |                                   | multi-line area that accepts      |
 |                                   | newlines. While any HTML is       |

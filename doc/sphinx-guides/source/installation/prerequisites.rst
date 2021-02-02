@@ -4,7 +4,7 @@
 Prerequisites
 =============
 
-Before running the Dataverse software installation script, you must install and configure Linux, Java, Payara, PostgreSQL, Solr, and jq. The other software listed below is optional but can provide useful features.
+Before running the Dataverse Software installation script, you must install and configure Linux, Java, Payara, PostgreSQL, Solr, and jq. The other software listed below is optional but can provide useful features.
 
 After following all the steps below, you can proceed to the :doc:`installation-main` section.
 
@@ -19,12 +19,12 @@ We assume you plan to run your Dataverse installation on Linux and we recommend 
 Java
 ----
 
-The Dataverse software requires Java SE 11 (or higher).
+The Dataverse Software requires Java SE 11 (or higher).
 
 Installing Java
 ===============
 
-The Dataverse software should run fine with only the Java Runtime Environment (JRE) installed, but installing the Java Development Kit (JDK) is recommended so that useful tools for troubleshooting production environments are available. We recommend using Oracle JDK or OpenJDK.
+The Dataverse Software should run fine with only the Java Runtime Environment (JRE) installed, but installing the Java Development Kit (JDK) is recommended so that useful tools for troubleshooting production environments are available. We recommend using Oracle JDK or OpenJDK.
 
 The Oracle JDK can be downloaded from http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
@@ -49,7 +49,7 @@ Payara 5.2020.6 is recommended. Newer versions might work fine, regular updates 
 Installing Payara
 =================
 
-**Note:** The Dataverse software installer need not be run as root, and it is recommended that Payara not run as root either. We suggest the creation of a "dataverse" service account for this purpose::
+**Note:** The Dataverse Software installer need not be run as root, and it is recommended that Payara not run as root either. We suggest the creation of a "dataverse" service account for this purpose::
 
 	# useradd dataverse
 
@@ -78,13 +78,13 @@ This recommendation comes from http://www.c2b2.co.uk/middleware-blog/glassfish-4
 Launching Payara on System Boot
 ===============================
 
-The Dataverse software installation script will start Payara if necessary, but you may find the following scripts helpful to launch Payara start automatically on boot. They were originally written for Glassfish but have been adjusted for Payara.
+The Dataverse Software installation script will start Payara if necessary, but you may find the following scripts helpful to launch Payara start automatically on boot. They were originally written for Glassfish but have been adjusted for Payara.
 
 - This :download:`Systemd file<../_static/installation/files/etc/systemd/payara.service>` may be serve as a reference for systems using Systemd (such as RHEL/CentOS 7 or Ubuntu 16+)
 - This :download:`init script<../_static/installation/files/etc/init.d/payara.init.service>` may be useful for RHEL/CentOS 6 or Ubuntu >= 14 if you're using a Payara service account, or
 - This :download:`Payara init script <../_static/installation/files/etc/init.d/payara.init.root>` may be helpful if you're just going to run Payara as root (not recommended).
 
-It is not necessary for Payara to be running before you execute the Dataverse software installation script; it will start Payara for you.
+It is not necessary for Payara to be running before you execute the Dataverse Software installation script; it will start Payara for you.
 
 Please note that you must run Payara in an English locale. If you are using something like ``LANG=de_DE.UTF-8``, ingest of tabular data will fail with the message "RoundRoutines:decimal separator no in right place".
 
@@ -116,7 +116,7 @@ The above steps are specific to RHEL/CentOS 7. For RHEL/CentOS 8 you must instal
 	# systemctl start postgresql-10
 	# systemctl enable postgresql-10
 
-Note that the Dataverse software installer includes its own Postgres JDBC driver. If you choose to install the newest version of Postgres (12 as of this writing), you may need to grab a current JDBC driver from https://jdbc.postgresql.org/download.html before launching the install script.
+Note that the Dataverse Software installer includes its own Postgres JDBC driver. If you choose to install the newest version of Postgres (12 as of this writing), you may need to grab a current JDBC driver from https://jdbc.postgresql.org/download.html before launching the install script.
 
 Configuring Database Access for the Dataverse Installation (and the Dataverse Software Installer)
 =================================================================================================
@@ -131,7 +131,7 @@ Configuring Database Access for the Dataverse Installation (and the Dataverse So
   Once you are done with the prerequisites and run the installer script (documented here: :doc:`installation-main`) it will ask you to enter the address of the Postgres server. Simply accept the default value ``127.0.0.1`` there.
 
 
-- The Dataverse software installer script will need to connect to PostgreSQL **as the admin user**, in order to create and set up the database that the Dataverse installation will be using. If for whatever reason it is failing to connect (for example, if you don't know/remember what your Postgres admin password is), you may choose to temporarily disable all the access restrictions on localhost connections, by changing the above line to::
+- The Dataverse Software installer script will need to connect to PostgreSQL **as the admin user**, in order to create and set up the database that the Dataverse installation will be using. If for whatever reason it is failing to connect (for example, if you don't know/remember what your Postgres admin password is), you may choose to temporarily disable all the access restrictions on localhost connections, by changing the above line to::
 
   	host all all 127.0.0.1/32 trust
 
@@ -161,12 +161,12 @@ Configuring Database Access for the Dataverse Installation (and the Dataverse So
 Solr
 ----
 
-The Dataverse software search index is powered by Solr.
+The Dataverse Software search index is powered by Solr.
 
 Supported Versions
 ==================
 
-The Dataverse software has been tested with Solr version 7.7.2. Future releases in the 7.x series are likely to be compatible; however, this cannot be confirmed until they are officially tested. Major releases above 7.x (e.g. 8.x) are not supported.
+The Dataverse Software has been tested with Solr version 7.7.2. Future releases in the 7.x series are likely to be compatible; however, this cannot be confirmed until they are officially tested. Major releases above 7.x (e.g. 8.x) are not supported.
 
 Installing Solr
 ===============
@@ -262,7 +262,7 @@ jq
 Installing jq
 =============
 
-``jq`` is a command line tool for parsing JSON output that is used by the Dataverse software installation script. It is available in the EPEL repository::
+``jq`` is a command line tool for parsing JSON output that is used by the Dataverse Software installation script. It is available in the EPEL repository::
 
 	# yum install epel-release
 	# yum install jq
@@ -277,7 +277,7 @@ or you may install it manually::
 ImageMagick
 -----------
 
-The Dataverse software uses `ImageMagick <https://www.imagemagick.org>`_ to generate thumbnail previews of PDF files. This is an optional component, meaning that if you don't have ImageMagick installed, there will be no thumbnails for PDF files, in the search results and on the dataset pages; but everything else will be working. (Thumbnail previews for non-PDF image files are generated using standard Java libraries and do not require any special installation steps).
+The Dataverse Software uses `ImageMagick <https://www.imagemagick.org>`_ to generate thumbnail previews of PDF files. This is an optional component, meaning that if you don't have ImageMagick installed, there will be no thumbnails for PDF files, in the search results and on the dataset pages; but everything else will be working. (Thumbnail previews for non-PDF image files are generated using standard Java libraries and do not require any special installation steps).
 
 Installing and configuring ImageMagick
 ======================================
@@ -300,12 +300,12 @@ If the installed location of the convert executable is different from ``/usr/bin
 R
 -
 
-The Dataverse software uses `R <https://https://cran.r-project.org/>`_ to handle
+The Dataverse Software uses `R <https://https://cran.r-project.org/>`_ to handle
 tabular data files. The instructions below describe a **minimal** R
 installation. It will allow you to ingest R (.RData) files as tabular
 data and to export tabular data as .RData files.  R can be considered an optional component, meaning
 that if you don't have R installed, you will still be able to run and
-use the Dataverse software - but the functionality specific to tabular data
+use the Dataverse Software - but the functionality specific to tabular data
 mentioned above will not be available to your users.  **Note** that if
 you choose to also install `TwoRavens
 <https://github.com/IQSS/TwoRavens>`_, it will require some extra R
@@ -367,7 +367,7 @@ Install them following the normal R package installation procedures. For example
 Rserve
 ======
 
-The Dataverse software uses `Rserve <https://rforge.net/Rserve/>`_ to communicate
+The Dataverse Software uses `Rserve <https://rforge.net/Rserve/>`_ to communicate
 to R. Rserve is installed as a library package, as described in the
 step above. It runs as a daemon process on the server, accepting
 network connections on a dedicated port. This requires some extra

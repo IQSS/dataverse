@@ -32,7 +32,7 @@ Other use cases and combinations
 - Using your custom identity management solution might be a workaround when you seek for LDAP support, but
   don't want to go for services like Microsoft Azure AD et al.
 - You want to enable users to login in multiple different ways but appear as one account to the Dataverse installation. This is
-  currently not possible within the Dataverse software itself, but hosting an IDM and attaching the Dataverse installation solves it.
+  currently not possible within the Dataverse Software itself, but hosting an IDM and attaching the Dataverse installation solves it.
 - You want to use the `eduGain Federation <https://edugain.org>`_ or other well known SAML federations, but don't want
   to deploy Shibboleth as your service provider. Using an IDM solution in front easily allows you to use them
   without hassle.
@@ -47,7 +47,7 @@ How to use
 Just like with :doc:`oauth2` you need to obtain a *Client ID* and a *Client Secret* from your provider(s).
 
 .. note::
-  The Dataverse software does not support `OpenID Connect Dynamic Registration <https://openid.net/specs/openid-connect-registration-1_0.html>`_.
+  The Dataverse Software does not support `OpenID Connect Dynamic Registration <https://openid.net/specs/openid-connect-registration-1_0.html>`_.
   You need to apply for credentials out-of-band.
 
 The Dataverse installation will discover all necessary metadata for a given provider on its own (this is `part of the standard
@@ -85,5 +85,5 @@ configuration option. For details, see :doc:`config`.
 
 .. hint::
    In contrast to our :doc:`oauth2`, you can use multiple providers by creating distinct configurations enabled by
-   the same technology and without modifying the Dataverse software code base (standards for the win!).
+   the same technology and without modifying the Dataverse Software code base (standards for the win!).
 

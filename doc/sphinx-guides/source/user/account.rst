@@ -171,14 +171,14 @@ API Token
 What APIs Are and Why They Are Useful
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-API stands for "Application Programming Interface" and the Dataverse software APIs allow you to take advantage of integrations with other software that may have been set up by admins of your Dataverse installation. See the :doc:`/admin/external-tools` and :doc:`/admin/integrations` sections of the Admin Guide for examples of software that is commonly integrated with a Dataverse installation.
+API stands for "Application Programming Interface" and the Dataverse Software APIs allow you to take advantage of integrations with other software that may have been set up by admins of your Dataverse installation. See the :doc:`/admin/external-tools` and :doc:`/admin/integrations` sections of the Admin Guide for examples of software that is commonly integrated with a Dataverse installation.
 
 Additionally, if you are willing to write a little code (or find someone to write it for you), APIs provide a way to automate parts of your workflow. See the :doc:`/api/getting-started` section of the API Guide for details.
 
 How Your API Token Is Like a Password
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In many cases, such as when depositing data, an API Token is required to interact with Dataverse software APIs. The word "token" indicates a series of letters and numbers such as ``c6527048-5bdc-48b0-a1d5-ed1b62c8113b``. Anyone who has your API Token can add and delete data as you so you should treat it with the same care as a password.
+In many cases, such as when depositing data, an API Token is required to interact with Dataverse Software APIs. The word "token" indicates a series of letters and numbers such as ``c6527048-5bdc-48b0-a1d5-ed1b62c8113b``. Anyone who has your API Token can add and delete data as you so you should treat it with the same care as a password.
 
 How to Create Your API Token
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -193,7 +193,7 @@ If your API Token becomes compromised or has expired, click on your account name
 Additional Information about API Tokens and Dataverse Software APIs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The Dataverse software APIs are documented in the :doc:`/api/index` but the following sections may be of particular interest:
+The Dataverse Software APIs are documented in the :doc:`/api/index` but the following sections may be of particular interest:
 
 - :doc:`/api/getting-started`
 - :doc:`/api/auth`

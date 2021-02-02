@@ -69,7 +69,7 @@ Dataverse collections must be referenced by database object ID. If you have dire
 
 ``select id from dataverse where alias='datavarsealias';``
 
-should work, or you may click the Dataverse software's "Edit" menu and look for dataverseId= in the URLs produced by the drop-down. Then, to re-index:
+should work, or you may click the Dataverse Software's "Edit" menu and look for dataverseId= in the URLs produced by the drop-down. Then, to re-index:
 
 ``curl http://localhost:8080/api/admin/index/dataverses/135``
 

@@ -11,7 +11,7 @@ This includes features like support for SWORD-API, S3 storage and many others.
 Besides the code that glues together the single pieces, any developer needs to describe used dependencies for the
 Maven-based build system. As is familiar to any Maven user, this happens inside the "Project Object Model" (POM) living in
 ``pom.xml`` at the root of the project repository. Recursive and convergent dependency resolution makes dependency
-management with Maven very easy. But sometimes, in projects with many complex dependencies like the Dataverse software, you have
+management with Maven very easy. But sometimes, in projects with many complex dependencies like the Dataverse Software, you have
 to help Maven make the right choices.
 
 Terms

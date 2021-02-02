@@ -11,7 +11,7 @@ The Dataverse Project uses git for version control and GitHub for hosting. On th
 Where to Find the Dataverse Software Code
 -----------------------------------------
 
-The main Dataverse software code at https://github.com/IQSS/dataverse but as explained in the :doc:`intro` section under "Related Projects", there are many other code bases you can hack on if you wish!
+The main Dataverse Software code at https://github.com/IQSS/dataverse but as explained in the :doc:`intro` section under "Related Projects", there are many other code bases you can hack on if you wish!
 
 Branching Strategy
 ------------------
@@ -19,7 +19,7 @@ Branching Strategy
 Goals
 ~~~~~
 
-The goals of the Dataverse software branching strategy are:
+The goals of the Dataverse Software branching strategy are:
 
 - allow for concurrent development
 - only ship stable code
@@ -32,7 +32,7 @@ Branches
 The "master" Branch
 *******************
 
-The "`master <https://github.com/IQSS/dataverse/tree/master>`_" branch represents released versions of the Dataverse software. As mentioned in the :doc:`making-releases` section, at release time we update the master branch to include all the code for that release. Commits are never made directly to master. Rather, master is updated only when we merge code into it from the "develop" branch.
+The "`master <https://github.com/IQSS/dataverse/tree/master>`_" branch represents released versions of the Dataverse Software. As mentioned in the :doc:`making-releases` section, at release time we update the master branch to include all the code for that release. Commits are never made directly to master. Rather, master is updated only when we merge code into it from the "develop" branch.
 
 The "develop" Branch
 ********************
@@ -60,7 +60,7 @@ Find or Create a GitHub Issue
 
 For guidance on which issue to work on, please ask! Also, see https://github.com/IQSS/dataverse/blob/develop/CONTRIBUTING.md
 
-Let's say you want to tackle https://github.com/IQSS/dataverse/issues/3728 which points out a typo in a page of the Dataverse software's documentation.
+Let's say you want to tackle https://github.com/IQSS/dataverse/issues/3728 which points out a typo in a page of the Dataverse Software's documentation.
 
 If you tell us your GitHub username we are happy to add you to the "read only" team at https://github.com/orgs/IQSS/teams/dataverse-readonly/members so that we can assign the issue to you while you're working on it. You can also tell us if you'd like to be added to the `Dataverse Community Contributors spreadsheet <https://docs.google.com/spreadsheets/d/1o9DD-MQ0WkrYaEFTD5rF_NtyL8aUISgURsAXSL7Budk/edit?usp=sharing>`_.
 
@@ -77,7 +77,7 @@ Making a commit (or several commits) to that branch. Ideally the first line of y
 Push Your Branch to GitHub
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Push your feature branch to your fork of the Dataverse software. Your git command may look something like ``git push origin 3728-doc-apipolicy-fix``.
+Push your feature branch to your fork of the Dataverse Software. Your git command may look something like ``git push origin 3728-doc-apipolicy-fix``.
 
 Make a Pull Request
 ~~~~~~~~~~~~~~~~~~~
@@ -98,8 +98,8 @@ Summary of Git commands
 
 This section provides sequences of Git commands for two scenarios:
 
-* preparing the first request, when the IQSS Dataverse software repository and the forked repository are identical
-* creating an additional request after some time, when the IQSS Dataverse software repository is ahead of the forked repository
+* preparing the first request, when the IQSS Dataverse Software repository and the forked repository are identical
+* creating an additional request after some time, when the IQSS Dataverse Software repository is ahead of the forked repository
 
 In the examples we use 123-COOL-FEATURE as the name of the feature branch, and https://github.com/YOUR_NAME/dataverse.git as your forked repository's URL. In practice modify both accordingly.
 
@@ -169,7 +169,7 @@ If you'd like to resolve the merge conflicts yourself, here are some steps to do
 
 **In Netbeans:**
 
-4. Click Window -> Favorites and open your local Dataverse software project folder in the Favorites panel.
+4. Click Window -> Favorites and open your local Dataverse Software project folder in the Favorites panel.
 5. In this file browser, you can follow the red cylinder icon to find files with merge conflicts.
 6. Double click the red merge conflicted file.
 7. Right click on the red tab for that file and select Git -> Resolve Conflicts.

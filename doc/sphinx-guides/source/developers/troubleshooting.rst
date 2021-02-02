@@ -2,7 +2,7 @@
 Troubleshooting
 ===============
 
-Over in the :doc:`dev-environment` section we described the "happy path" of when everything goes right as you set up your Dataverse software development environment. Here are some common problems and solutions for when things go wrong.
+Over in the :doc:`dev-environment` section we described the "happy path" of when everything goes right as you set up your Dataverse Software development environment. Here are some common problems and solutions for when things go wrong.
 
 .. contents:: |toctitle|
 	:local:
@@ -50,7 +50,7 @@ Most of the other defaults can safely be left as is. **Default Sender Address** 
 
 If your user credentials for the SMTP server require a password, you'll need to configure some **Additional Properties** at the bottom.
 
-**IMPORTANT:** Before continuing, it's highly recommended that your Default User account does NOT use a password you share with other accounts, as one of the additional properties includes entering the Default User's password (without concealing it on screen). For smtp.gmail.com you can safely use an `app password <https://support.google.com/accounts/answer/185833?hl=en>`_ or create an extra Gmail account for use with your Dataverse software development environment.
+**IMPORTANT:** Before continuing, it's highly recommended that your Default User account does NOT use a password you share with other accounts, as one of the additional properties includes entering the Default User's password (without concealing it on screen). For smtp.gmail.com you can safely use an `app password <https://support.google.com/accounts/answer/185833?hl=en>`_ or create an extra Gmail account for use with your Dataverse Software development environment.
 
 Authenticating yourself to a Mail Host can be tricky. As an example, we'll walk through setting up our JavaMail Session to use smtp.gmail.com as a host by way of SSL on port 465. Use the Add Property button to generate a blank property for each name/value pair.
 
@@ -74,7 +74,7 @@ The mail session can also be set from command line. To use this method, you will
 - Delete: ``./asadmin delete-javamail-resource mail/MyMailSession``
 - Create (remove brackets and replace the variables inside): ``./asadmin create-javamail-resource --mailhost [smtp.gmail.com] --mailuser [test\@test\.com] --fromaddress [test\@test\.com] --property mail.smtp.auth=[true]:mail.smtp.password=[password]:mail.smtp.port=[465]:mail.smtp.socketFactory.port=[465]:mail.smtp.socketFactory.fallback=[false]:mail.smtp.socketFactory.class=[javax.net.ssl.SSLSocketFactory] mail/notifyMailSession``
 
-These properties can be tailored to your own preferred mail service, but if all else fails these settings work fine with Dataverse software development environments for your localhost.
+These properties can be tailored to your own preferred mail service, but if all else fails these settings work fine with Dataverse Software development environments for your localhost.
 
 + If you're seeing a "Relay access denied" error in your app server logs when the Dataverse installation attempts to send an email, double check your user/password credentials for the Mail Host you're using.
 + If you're seeing a "Connection refused" / similar error upon email sending, try another port.

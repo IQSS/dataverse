@@ -71,7 +71,7 @@ This is all you need. You should now be able to build HTML/pdf documentation fro
 Using Sphinx
 ~~~~~~~~~~~~
 
-First, you will need to make a fork of the Dataverse software repository in GitHub. Then, you will need to make a clone of your fork so you can manipulate the files outside GitHub.
+First, you will need to make a fork of the Dataverse Software repository in GitHub. Then, you will need to make a clone of your fork so you can manipulate the files outside GitHub.
 
 To edit the existing documentation:
 

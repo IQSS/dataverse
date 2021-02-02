@@ -30,7 +30,7 @@ With Maven installed you can run ``mvn package`` and ``mvn test`` from the comma
 Vagrant
 +++++++
 
-Vagrant allows you to spin up a virtual machine running the Dataverse software on your development workstation. You'll need to install Vagrant from https://www.vagrantup.com and VirtualBox from https://www.virtualbox.org.
+Vagrant allows you to spin up a virtual machine running the Dataverse Software on your development workstation. You'll need to install Vagrant from https://www.vagrantup.com and VirtualBox from https://www.virtualbox.org.
 
 We assume you have already cloned the repo from https://github.com/IQSS/dataverse as explained in the :doc:`/developers/dev-environment` section.
 
@@ -160,7 +160,7 @@ jmap allows you to look at the contents of the java heap. It can be used to crea
 will output a list of all classes, sorted by the number of instances of each individual class, with the size in bytes. 
 This can be very useful when looking for memory leaks in the application. Another useful tool is ``jstat``, that can be used in combination with ``jmap`` to monitor the effectiveness of garbage collection in reclaiming allocated memory. 
 
-In the example script below we stress running Dataverse software applicatione with GET requests to a specific page in a Dataverse installation, use ``jmap`` to see how many Dataverse collection, Dataset and DataFile class object get allocated, then run ``jstat`` to see how the numbers are affected by both "Young Generation" and "Full" garbage collection runs (``YGC`` and ``FGC`` respectively):
+In the example script below we stress running Dataverse Software applicatione with GET requests to a specific page in a Dataverse installation, use ``jmap`` to see how many Dataverse collection, Dataset and DataFile class object get allocated, then run ``jstat`` to see how the numbers are affected by both "Young Generation" and "Full" garbage collection runs (``YGC`` and ``FGC`` respectively):
 
 (This is script is provided **as an example only**! You will have to experiment and expand it to suit any specific needs and any specific problem you may be trying to diagnose, and this is just to give an idea of how to go about it)
 

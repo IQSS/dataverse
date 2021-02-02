@@ -1,7 +1,7 @@
 Getting Started with APIs
 =========================
 
-If you are a researcher or curator who wants to automate parts of your workflow, this section should help you get started. The :doc:`intro` section lists resources for other groups who may be interested in Dataverse software APIs such as developers of integrations and support teams.
+If you are a researcher or curator who wants to automate parts of your workflow, this section should help you get started. The :doc:`intro` section lists resources for other groups who may be interested in Dataverse Software APIs such as developers of integrations and support teams.
 
 .. contents:: |toctitle|
     :local:
@@ -16,7 +16,7 @@ If you would rather have full control over your own test server, deployments to 
 Getting an API Token
 --------------------
 
-Many Dataverse software APIs require an API token.
+Many Dataverse Software APIs require an API token.
 
 Once you have identified a server to test with, create an account, click on your name, and get your API token. For more details, see the :doc:`auth` section.
 
@@ -147,7 +147,7 @@ In addition to the tasks listed above, your Dataverse installation supports many
 
 See :ref:`list-of-dataverse-apis` and :ref:`types-of-api-users` to get oriented.
 
-If you're looking for some inspiration for how you can use the Dataverse software APIs, there are open source projects that integrate with the Dataverse software listed in the :doc:`apps` section.
+If you're looking for some inspiration for how you can use the Dataverse Software APIs, there are open source projects that integrate with the Dataverse Software listed in the :doc:`apps` section.
 
 Getting Help
 -------------

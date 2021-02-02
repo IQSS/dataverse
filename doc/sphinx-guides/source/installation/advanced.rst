@@ -42,7 +42,7 @@ Optional Components
 Standalone "Zipper" Service Tool
 ++++++++++++++++++++++++++++++++
 
-As of Dataverse software v5.0 we offer an experimental optimization for the multi-file, download-as-zip functionality. If this option
+As of Dataverse Software v5.0 we offer an experimental optimization for the multi-file, download-as-zip functionality. If this option
 (``:CustomZipDownloadServiceUrl``) is enabled, instead of enforcing
 the size limit on multi-file zipped downloads (as normally specified
 by the option ``:ZipDownloadLimit``), we attempt to serve all the
@@ -57,7 +57,7 @@ main Application Server. (The system running the service needs to have
 access to the database as well as to the storage filesystem, and/or S3
 bucket).
 
-Please consult the scripts/zipdownload/README.md in the Dataverse software version 5 source tree for more information. 
+Please consult the scripts/zipdownload/README.md in the Dataverse Software version 5 source tree for more information. 
 
 To install: You can follow the instructions in the file above to build
 ``ZipDownloadService-v1.0.0.jar``. It will also be available, pre-built as part of the Dataverse 5.0 software release on GitHub. Copy it, together with the shell

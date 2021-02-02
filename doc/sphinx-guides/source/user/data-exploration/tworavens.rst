@@ -9,7 +9,7 @@ TwoRavens: Tabular Data Exploration
 Exploring and Analyzing Tabular files in a Dataverse Installation
 =================================================================
 
-TwoRavens Data Exploration and Analysis Tool is a statistical data exploration application integrated with the Dataverse software, which allows the user to run statistical models, view summary statistics, create and download subsets of variable vectors and more.
+TwoRavens Data Exploration and Analysis Tool is a statistical data exploration application integrated with the Dataverse Software, which allows the user to run statistical models, view summary statistics, create and download subsets of variable vectors and more.
 
 Tabular files can have external explore tools such as TwoRavens configured, which are linked from the file actions and open in a new window.
 

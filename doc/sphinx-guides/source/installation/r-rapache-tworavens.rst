@@ -17,7 +17,7 @@ application.  The `TwoRavens GitHub repository
 
 For now, the Dataverse Project team will continue providing 
 installation and integration support. We have created a new (as
-of Dataverse software v.4.6.1) version of the installer scripts and updated this guide. We have tried to improve and simplify the
+of Dataverse Software v.4.6.1) version of the installer scripts and updated this guide. We have tried to improve and simplify the
 installation process, particularly the difficult process of installing
 correct versions of the required third party R packages.
 
@@ -62,17 +62,17 @@ that the browser application can talk to R over HTTP.
 See the :ref:`advanced` section of :doc:`prep` for an example of running various components on more than one server.
 
 TwoRavens will need to obtain some tabular-data-specific metadata from 
-the Dataverse installation -- the DDI fragment that describes the variables and some pre-processed summary statistics for the data vectors. In order to produce the latter, the Dataverse software application also needs to be able to execute some R code on the server. Instead of 
-``rApache``, the Dataverse software uses `Rserve <https://rforge.net/Rserve/>`_ to 
+the Dataverse installation -- the DDI fragment that describes the variables and some pre-processed summary statistics for the data vectors. In order to produce the latter, the Dataverse Software application also needs to be able to execute some R code on the server. Instead of 
+``rApache``, the Dataverse Software uses `Rserve <https://rforge.net/Rserve/>`_ to 
 communicate to R. Rserve is installed as a "contributor" R package. It runs as a 
 daemon process on the server, accepting network connections on a dedicated port. 
-The Dataverse software supplies an :fixedwidthplain:`init.d`-style startup file for the 
+The Dataverse Software supplies an :fixedwidthplain:`init.d`-style startup file for the 
 daemon. The R setup in step ``2.`` will set it up so that the daemon gets started
 automatically when the system boots. 
 
 When a user requests to run 
 a statistical model on a data file, TwoRavens will instruct the R code on the 
-server to download the file **directly from the Dataverse software application**. Access 
+server to download the file **directly from the Dataverse Software application**. Access 
 URLs need to be configured for this to work properly (this is done by the TwoRavens 
 installer script in step ``3.``)  
 
@@ -210,7 +210,7 @@ Depending on how your system was originally set up, you may end up needing to in
 2. Install Extra R Packages
 +++++++++++++++++++++++++++
 
-We provide a shell script (``r-setup.sh``) that will try to install all the needed packages. **Note:** the script is now part of the TwoRavens distribution (it **used to be** in the Dataverse software source tree). 
+We provide a shell script (``r-setup.sh``) that will try to install all the needed packages. **Note:** the script is now part of the TwoRavens distribution (it **used to be** in the Dataverse Software source tree). 
 
 
 The script will attempt to download the packages from CRAN (or a mirror), so the system must have access to the Internet.
@@ -292,7 +292,7 @@ Please note the default values above. The installer assumes
 - the default ports for Apache (80) and the app server that is serving your Dataverse installation (8080); 
 - ``http`` (not ``https``!) for both . 
 
-This configuration is recommended if you are simply trying out/testing Dataverse software
+This configuration is recommended if you are simply trying out/testing Dataverse Software
 and TwoRavens. Accept all the defaults, and you should have a working installation 
 in no time.
 
@@ -336,7 +336,7 @@ Compare the two files. **It is important that the two copies are identical**.
         find . -name '*.prep' | while read file; do /bin/rm $file; done
 
 *(Yes, this is a HACK! We are working on finding a better way to ensure this compatibility between 
-TwoRavens and the Dataverse software!)*
+TwoRavens and the Dataverse Software!)*
 
 e. Enable TwoRavens in a Dataverse Installation
 -----------------------------------------------
@@ -354,7 +354,7 @@ Once enabled, TwoRavens will display as an explore tool option for tabular data 
 f. Perform a quick test of TwoRavens functionality
 --------------------------------------------------
 
-Ingest the dummy data file ``50by1000.dta`` (supplied in the Dataverse software source tree in ``dataverse/scripts/search/data/tabular``). If successfully ingested as tabular data, 
+Ingest the dummy data file ``50by1000.dta`` (supplied in the Dataverse Software source tree in ``dataverse/scripts/search/data/tabular``). If successfully ingested as tabular data, 
 the file should appear on the Dataset page as follows: 
 
 |tworavens_test_file_ingested|
@@ -449,7 +449,7 @@ values (and assume you are running both the Dataverse installation and TwoRavens
 the same host).
 
 This configuration is the easiest to set up if you are simply
-trying out/testing the Dataverse software and TwoRavens integration. Accept all the
+trying out/testing the Dataverse Software and TwoRavens integration. Accept all the
 defaults, and you should have a working installation in no
 time. However, if you are planning to use this installation to
 actually serve data to real users, you will most likely want to run your Dataverse installation on a standard port; and to use ``HTTPS``. It is definitely possible to configure 

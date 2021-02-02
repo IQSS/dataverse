@@ -10,7 +10,7 @@ Welcome! Thanks for installing `The Dataverse Project <http://dataverse.org>`_!
 Quick Links
 -----------
 
-If you are installing the Dataverse software for the first time, please proceed to the :doc:`prep` section.
+If you are installing the Dataverse Software for the first time, please proceed to the :doc:`prep` section.
 
 Jump ahead to :doc:`config` or :doc:`upgrading` for an existing Dataverse installation.
 
@@ -24,9 +24,9 @@ Sysadmins are expected to be comfortable using standard Linux commands, issuing 
 Related Guides
 --------------
 
-Many "admin" functions can be performed by Dataverse installation users themselves (non-superusers) as documented in the :doc:`/user/index` and that guide is a good introduction to the features of the Dataverse software from an end user perspective.
+Many "admin" functions can be performed by Dataverse installation users themselves (non-superusers) as documented in the :doc:`/user/index` and that guide is a good introduction to the features of the Dataverse Software from an end user perspective.
 
-If you are a sysadmin who likes to code, you may find the :doc:`/api/index` useful, and you may want to consider improving the installation script or hacking on the community-lead configuration management options mentioned in the :doc:`prep` section. If you **really** like to code and want to help with the Dataverse software code, please check out the :doc:`/developers/index`!
+If you are a sysadmin who likes to code, you may find the :doc:`/api/index` useful, and you may want to consider improving the installation script or hacking on the community-lead configuration management options mentioned in the :doc:`prep` section. If you **really** like to code and want to help with the Dataverse Software code, please check out the :doc:`/developers/index`!
 
 .. _support:
 

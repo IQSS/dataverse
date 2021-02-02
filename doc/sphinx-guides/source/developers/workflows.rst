@@ -1,7 +1,7 @@
 Workflows
 ================
 
-The Dataverse software has a flexible workflow mechanism that can be used to trigger actions before and after Dataset publication.
+The Dataverse Software has a flexible workflow mechanism that can be used to trigger actions before and after Dataset publication.
 
 .. contents:: |toctitle|
         :local:
@@ -10,18 +10,18 @@ The Dataverse software has a flexible workflow mechanism that can be used to tri
 Introduction
 ------------
 
-The Dataverse software can perform two sequences of actions when datasets are published: one prior to publishing (marked by a ``PrePublishDataset`` trigger), and one after the publication has succeeded (``PostPublishDataset``). The pre-publish workflow is useful for having an external system prepare a dataset for being publicly accessed (a possibly lengthy activity that requires moving files around, uploading videos to a streaming server, etc.), or to start an approval process. A post-publish workflow might be used for sending notifications about the newly published dataset.
+The Dataverse Software can perform two sequences of actions when datasets are published: one prior to publishing (marked by a ``PrePublishDataset`` trigger), and one after the publication has succeeded (``PostPublishDataset``). The pre-publish workflow is useful for having an external system prepare a dataset for being publicly accessed (a possibly lengthy activity that requires moving files around, uploading videos to a streaming server, etc.), or to start an approval process. A post-publish workflow might be used for sending notifications about the newly published dataset.
 
-Workflow steps are created using *step providers*. The Dataverse software ships with an internal step provider that offers some basic functionality, and with the ability to load 3rd party step providers. This allows installations to implement functionality they need without changing the Dataverse software source code.
+Workflow steps are created using *step providers*. The Dataverse Software ships with an internal step provider that offers some basic functionality, and with the ability to load 3rd party step providers. This allows installations to implement functionality they need without changing the Dataverse Software source code.
 
-Steps can be internal (say, writing some data to the log) or external. External steps involve the Dataverse software sending a request to an external system, and waiting for the system to reply. The wait period is arbitrary, and so allows the external system unbounded operation time. This is useful, e.g., for steps that require human intervention, such as manual approval of a dataset publication.
+Steps can be internal (say, writing some data to the log) or external. External steps involve the Dataverse Software sending a request to an external system, and waiting for the system to reply. The wait period is arbitrary, and so allows the external system unbounded operation time. This is useful, e.g., for steps that require human intervention, such as manual approval of a dataset publication.
 
 The external system reports the step result back to the Dataverse installation, by sending a HTTP ``POST`` command to ``api/workflows/{invocation-id}`` with Content-Type: text/plain. The body of the request is passed to the paused step for further processing.
 
 If a step in a workflow fails, the Dataverse installation makes an effort to roll back all the steps that preceded it. Some actions, such as writing to the log, cannot be rolled back. If such an action has a public external effect (e.g. send an EMail to a mailing list) it is advisable to put it in the post-release workflow.
 
 .. tip::
-  For invoking external systems using a REST api, the Dataverse software's internal step
+  For invoking external systems using a REST api, the Dataverse Software's internal step
   provider offers a step for sending and receiving customizable HTTP requests.
   It's called *http/sr*, and is detailed below.
 
@@ -38,7 +38,7 @@ In order to prevent unauthorized resuming of workflows, the Dataverse installati
 Available Steps
 ~~~~~~~~~~~~~~~
 
-The Dataverse software has an internal step provider, whose id is ``:internal``. It offers the following steps:
+The Dataverse Software has an internal step provider, whose id is ``:internal``. It offers the following steps:
 
 log
 +++

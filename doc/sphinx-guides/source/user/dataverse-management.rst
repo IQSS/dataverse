@@ -27,7 +27,7 @@ Creating a Dataverse collection is easy but first you must be a registered user 
     * **Description**: Provide a description of this Dataverse collection. This will display on the landing page of your Dataverse collection and in the search result list. The description field supports certain HTML tags, if you'd like to format your text (<a>, <b>, <blockquote>, <br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>, <strong>, <strike>, <u>, <ul>).
 #. **Choose the sets of Metadata Fields for datasets in this Dataverse collection**:
     * By default the metadata elements will be from the host Dataverse collection that this new Dataverse collection is created in.
-    * The Dataverse software offers metadata standards for multiple domains. To learn more about the metadata standards in the Dataverse software please check out the :doc:`/user/appendix`.
+    * The Dataverse Software offers metadata standards for multiple domains. To learn more about the metadata standards in the Dataverse Software please check out the :doc:`/user/appendix`.
     * Metadata fields can be hidden, or selected as required or optional.
     * Selected metadata elements are also used to pick which metadata fields you would like to use for creating :ref:`Dataset Templates <dataset-templates>`: after you finish creating your Dataverse collection.
 #. **Choose which metadata fields will be used as browse/search facets on your Dataverse collection**:
@@ -157,7 +157,7 @@ Note: If you need to assign a role to ALL user accounts in a Dataverse installat
 Dataset Templates
 -------------------
 
-Templates are useful when you have several datasets that have the same information in multiple metadata fields that you would prefer not to have to keep manually typing in, or if you want to use a custom set of Terms of Use and Access for multiple datasets in a Dataverse collection. In Dataverse software version 4.0, templates are created at the Dataverse collection level, can be deleted (so it does not show for future datasets), set to default (not required), or can be copied so you do not have to start over when creating a new template with similar metadata from another template. When a template is deleted, it does not impact the datasets that have used the template already.
+Templates are useful when you have several datasets that have the same information in multiple metadata fields that you would prefer not to have to keep manually typing in, or if you want to use a custom set of Terms of Use and Access for multiple datasets in a Dataverse collection. In Dataverse Software version 4.0, templates are created at the Dataverse collection level, can be deleted (so it does not show for future datasets), set to default (not required), or can be copied so you do not have to start over when creating a new template with similar metadata from another template. When a template is deleted, it does not impact the datasets that have used the template already.
 
 How do you create a template? 
 

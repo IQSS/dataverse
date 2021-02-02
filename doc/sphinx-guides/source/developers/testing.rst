@@ -113,7 +113,7 @@ Generally speaking, unit tests have been flagged as non-essential because they a
 Integration Tests
 -----------------
 
-Unit tests are fantastic for low level testing of logic but aren't especially real-world-applicable because they do not exercise the Dataverse software as it runs in production with a database and other runtime dependencies. We test in-depth by also writing integration tests to exercise a running system.
+Unit tests are fantastic for low level testing of logic but aren't especially real-world-applicable because they do not exercise the Dataverse Software as it runs in production with a database and other runtime dependencies. We test in-depth by also writing integration tests to exercise a running system.
 
 Unfortunately, the term "integration tests" can mean different things to
 different people. For our purposes, an integration test can have two flavors:
@@ -173,16 +173,16 @@ Alternatively, you can run tests against the app server running on your laptop b
 Getting Set Up to Run REST Assured Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Unit tests are run automatically on every build, but dev environments and servers require special setup to run REST Assured tests. In short, the Dataverse software needs to be placed into an insecure mode that allows arbitrary users and datasets to be created and destroyed. This differs greatly from the out-of-the-box behavior of the Dataverse software, which we strive to keep secure for sysadmins installing the software for their institutions in a production environment.
+Unit tests are run automatically on every build, but dev environments and servers require special setup to run REST Assured tests. In short, the Dataverse Software needs to be placed into an insecure mode that allows arbitrary users and datasets to be created and destroyed. This differs greatly from the out-of-the-box behavior of the Dataverse Software, which we strive to keep secure for sysadmins installing the software for their institutions in a production environment.
 
-The :doc:`dev-environment` section currently refers developers here for advice on getting set up to run REST Assured tests, but we'd like to add some sort of "dev" flag to the installer to put the Dataverse software in "insecure" mode, with lots of scary warnings that this dev mode should not be used in production.
+The :doc:`dev-environment` section currently refers developers here for advice on getting set up to run REST Assured tests, but we'd like to add some sort of "dev" flag to the installer to put the Dataverse Software in "insecure" mode, with lots of scary warnings that this dev mode should not be used in production.
 
 The instructions below assume a relatively static dev environment on a Mac. There is a newer "all in one" Docker-based approach documented in the :doc:`/developers/containers` section under "Docker" that you may like to play with as well.
 
 The Burrito Key
 ^^^^^^^^^^^^^^^
 
-For reasons that have been lost to the mists of time, the Dataverse software really wants you to to have a burrito. Specifically, if you're trying to run REST Assured tests and see the error "Dataverse config issue: No API key defined for built in user management", you must run the following curl command (or make an equivalent change to your database):
+For reasons that have been lost to the mists of time, the Dataverse Software really wants you to to have a burrito. Specifically, if you're trying to run REST Assured tests and see the error "Dataverse config issue: No API key defined for built in user management", you must run the following curl command (or make an equivalent change to your database):
 
 ``curl -X PUT -d 'burrito' http://localhost:8080/api/admin/settings/BuiltinUsers.KEY``
 
@@ -458,7 +458,7 @@ Accessibility Policy
 
 The Dataverse Project aims to improve the user experience for those with disabilities, and are in the process of following the recommendations of the `Harvard University Digital Accessibility Policy <https://accessibility.huit.harvard.edu/digital-accessibility-policy>`__,  which use the Worldwide Web Consortium’s Web Content Accessibility Guidelines version 2.1, Level AA Conformance (WCAG 2.1 Level AA) as the standard.
 
-To report an accessibility issue with the Dataverse software, you can create a new issue in our GitHub repo at: https://github.com/IQSS/dataverse/issues/
+To report an accessibility issue with the Dataverse Software, you can create a new issue in our GitHub repo at: https://github.com/IQSS/dataverse/issues/
 
 Accessibility Tools
 ~~~~~~~~~~~~~~~~~~~

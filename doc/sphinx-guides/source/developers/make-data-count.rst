@@ -9,7 +9,7 @@ Support for Make Data Count is a feature of the Dataverse Software that is descr
 Architecture
 ------------
 
-There are many components involved in the Dataverse software's architecture for Make Data Count as shown in the diagram below.
+There are many components involved in the Dataverse Software's architecture for Make Data Count as shown in the diagram below.
 
 |makedatacount_components|
 
@@ -28,7 +28,7 @@ To insert a citation you could insert a row like below, changing "72" in the exa
 Full Setup
 ~~~~~~~~~~
 
-The recommended way to work on the Make Data Count feature is to spin up an EC2 instance that has both the Dataverse software and Counter Processor installed. Go to the :doc:`deployment` page for details on how to spin up an EC2 instance and make sure that your Ansible file is configured to install Counter Processor before running the "create" script.
+The recommended way to work on the Make Data Count feature is to spin up an EC2 instance that has both the Dataverse Software and Counter Processor installed. Go to the :doc:`deployment` page for details on how to spin up an EC2 instance and make sure that your Ansible file is configured to install Counter Processor before running the "create" script.
 
 (Alternatively, you can try installing Counter Processor in Vagrant. :download:`setup-counter-processor.sh <../../../../scripts/vagrant/setup-counter-processor.sh>` might help you get it installed.)
 

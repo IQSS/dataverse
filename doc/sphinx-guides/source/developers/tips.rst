@@ -10,9 +10,9 @@ If you just followed the steps in :doc:`dev-environment` for the first time, you
 Iterating on Code and Redeploying
 ---------------------------------
 
-When you followed the steps in the :doc:`dev-environment` section, the war file was deployed to Payara by the Dataverse software installation script. That's fine but once you're ready to make a change to the code you will need to get comfortable with undeploying and redeploying code (a war file) to Payara.
+When you followed the steps in the :doc:`dev-environment` section, the war file was deployed to Payara by the Dataverse Software installation script. That's fine but once you're ready to make a change to the code you will need to get comfortable with undeploying and redeploying code (a war file) to Payara.
 
-It's certainly possible to manage deployment and undeployment of the war file via the command line using the ``asadmin`` command that ships with Payara (that's what the Dataverse software installation script uses and the steps are documented below), but we recommend getting set up with an IDE such as Netbeans to manage deployment for you.
+It's certainly possible to manage deployment and undeployment of the war file via the command line using the ``asadmin`` command that ships with Payara (that's what the Dataverse Software installation script uses and the steps are documented below), but we recommend getting set up with an IDE such as Netbeans to manage deployment for you.
 
 Undeploy the war File from the Dataverse Software Installation Script
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -109,8 +109,8 @@ For the ``asadmin`` commands below, we assume you have already changed directori
 There are four steps to this process:
 
 1. Build the war file: ``mvn package``
-2. Check which version of the Dataverse software is deployed: ``./asadmin list-applications``
-3. Undeploy the Dataverse software application (if necessary): ``./asadmin undeploy dataverse-VERSION``
+2. Check which version of the Dataverse Software is deployed: ``./asadmin list-applications``
+3. Undeploy the Dataverse Software application (if necessary): ``./asadmin undeploy dataverse-VERSION``
 4. Copy the war file to the server (if necessary)
 5. Deploy the new code: ``./asadmin deploy /path/to/dataverse-VERSION.war``
 
@@ -128,7 +128,7 @@ Solr
 ----
 
 .. TODO: This section should be moved into a dedicated guide about Solr for developers. It should be extended with
-         information about the way Solr is used within the Dataverse software, ideally explaining concepts and links to upstream docs.
+         information about the way Solr is used within the Dataverse Software, ideally explaining concepts and links to upstream docs.
 
 Once some Dataverse collections, datasets, and files have been created and indexed, you can experiment with searches directly from Solr at http://localhost:8983/solr/#/collection1/query and look at the JSON output of searches, such as this wildcard search: http://localhost:8983/solr/collection1/select?q=*%3A*&wt=json&indent=true . You can also get JSON output of static fields Solr knows about: http://localhost:8983/solr/collection1/schema/fields
 

@@ -10,7 +10,7 @@ These instructions are purposefully opinionated and terse to help you get your d
 Quick Start
 -----------
 
-The quickest way to get the Dataverse software running is to use Vagrant as described in the :doc:`tools` section, but for day to day development work, we recommended the following setup.
+The quickest way to get the Dataverse Software running is to use Vagrant as described in the :doc:`tools` section, but for day to day development work, we recommended the following setup.
 
 Set Up Dependencies
 -------------------
@@ -25,7 +25,7 @@ Windows is not well supported, unfortunately, but Vagrant and Minishift environm
 Install Java
 ~~~~~~~~~~~~
 
-The Dataverse software requires Java 11.
+The Dataverse Software requires Java 11.
 
 We suggest downloading OpenJDK from https://adoptopenjdk.net
 
@@ -36,7 +36,7 @@ Install Netbeans or Maven
 
 NetBeans IDE is recommended, and can be downloaded from http://netbeans.org . Developers may use any editor or IDE. We recommend NetBeans because it is free, works cross platform, has good support for Jakarta EE projects, and includes a required build tool, Maven.
 
-Below we describe how to build the Dataverse software war file with Netbeans but if you prefer to use only Maven, you can find installation instructions in the :doc:`tools` section.
+Below we describe how to build the Dataverse Software war file with Netbeans but if you prefer to use only Maven, you can find installation instructions in the :doc:`tools` section.
 
 Install Homebrew (Mac Only)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -55,7 +55,7 @@ Build the Dataverse Software War File
 
 If you installed Netbeans, follow these steps:
 
-- Launch Netbeans and click "File" and then "Open Project". Navigate to where you put the Dataverse software code and double-click "Dataverse" to open the project.
+- Launch Netbeans and click "File" and then "Open Project". Navigate to where you put the Dataverse Software code and double-click "Dataverse" to open the project.
 - If you see "resolve project problems," go ahead and let Netbeans try to resolve them. This will probably including downloading dependencies, which can take a while.
 - Allow Netbeans to install nb-javac (required for Java 8 and below).
 - Select "Dataverse" under Projects and click "Run" in the menu and then "Build Project (Dataverse)". Check back for "BUILD SUCCESS" at the end.
@@ -158,7 +158,7 @@ To install Solr, execute the following commands:
 Run the Dataverse Software Installer Script
 -------------------------------------------
 
-Navigate to the directory where you cloned the Dataverse software git repo change directories to the ``scripts/installer`` directory like this:
+Navigate to the directory where you cloned the Dataverse Software git repo change directories to the ``scripts/installer`` directory like this:
 
 ``cd scripts/installer``
 
