@@ -44,15 +44,50 @@ function bind_bsui_components(){
         handleResizeDialog(dialog_id);
     }
     
-    // clipboard.js copy btn
-    var clipboard = new ClipboardJS('button.btn-copy, span.btn-copy, span.checksum-truncate');
     
-    clipboard.on('success', function (e) {
-        // DEV TOOL DEBUG
-        // console.log(e);
-    });
-    clipboard.on('error', function (e) {
-        console.log(e);
+    // TO-DO...
+    // 
+    // MOVE ALL THIS TO ITS OWN FUNCTION
+    
+    // clipboard.js copy btn
+    $('button.btn-copy, span.checksum-truncate, span.btn-copy').on('click', function () {
+        
+        
+        // WHY CLICK TWICE???
+        // INITIALIZE PLUGIN DOCUMENT.ON
+        // https://stackoverflow.com/a/9984269
+        
+        // alert("Click <" + $(this).attr("class") + ">");
+        
+        
+        // pass selector to clipboard
+        var clipboard = new ClipboardJS(this);
+        
+        clipboard.on('success', (e)=> {
+            // DEV TOOL DEBUG
+            console.log(e);
+            
+            // check which selector was clicked
+            // swap icon for success ok
+            if ($(this).hasClass('btn-copy')) {
+                $(this).removeClass('glyphicon-copy').addClass('glyphicon-ok text-success');
+                // then swap icon back to clipboard
+                // https://stackoverflow.com/a/54270499
+                setTimeout(()=> { // use arrow function
+                    $(this).removeClass('glyphicon-ok text-success').addClass('glyphicon-copy')
+                }, 2000);
+            }
+            else {
+                $(this).next('.btn-copy').removeClass('glyphicon-copy').addClass('glyphicon-ok text-success');
+                setTimeout(()=> {
+                    $(this).next('.btn-copy').removeClass('glyphicon-ok text-success').addClass('glyphicon-copy')
+                }, 2000);
+            }
+            
+        });
+        clipboard.on('error', (e)=> {
+            console.log(e);
+        });
     });
 }
 

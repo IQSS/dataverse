@@ -83,11 +83,13 @@
                 <div class="unf-block" jsf:rendered="#{fileMetadata.dataFile.tabularData}">
                     <h:outputText id="fileNumVars" value="#{fileMetadata.dataFile.dataTable.varQuantity} #{bundle['file.metaData.dataFile.dataTab.variables']}, "/>
                     <h:outputText id="fileNumObs" value="#{fileMetadata.dataFile.dataTable.caseQuantity} #{bundle['file.metaData.dataFile.dataTab.observations']}"/>
-                    <span style="display:block;" jsf:id="fileUNF" class="#{!editDatafilesPage ? 'checksum-truncate' : ''}"
+                    <span jsf:id="fileUNF" class="sr-only #{!editDatafilesPage ? 'checksum-truncate' : ''}"
                                   jsf:rendered="#{!(empty fileMetadata.dataFile.unf)}"
                                   data-clipboard-action="copy"
                                   data-clipboard-text="#{fileMetadata.dataFile.unf}"
                                   title="#{bundle['file.metaData.checksum.copy']} #{fileMetadata.dataFile.unf}">#{fileMetadata.dataFile.unf}</span>
+                    <span class="glyphicon glyphicon-copy btn-copy" jsf:rendered="#{!(empty fileMetadata.dataFile.unf)}" data-clipboard-action="copy"
+                                  data-clipboard-text="#{fileMetadata.dataFile.unf}" title="#{bundle['file.metaData.checksum.copy']} #{fileMetadata.dataFile.unf}"></span>
                 </div>
             </div>
             <div class="fileDescription small" jsf:rendered="#{!(empty fileMetadata.description)}">
