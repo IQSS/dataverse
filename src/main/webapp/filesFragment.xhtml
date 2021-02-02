@@ -78,21 +78,6 @@
                                 <span class="glyphicon glyphicon-copy"></span> #{bundle['file.copy']}
                             </button>
                         </span>
-                        <script>
-                            //<![CDATA[
-                            $(document).ready(function () {
-                                // clipboard.js > cloud storage copy btn
-                                var clipboard = new Clipboard('button.btn-copy');
-
-                                clipboard.on('success', function (e) {
-                                    console.log(e);
-                                });
-                                clipboard.on('error', function (e) {
-                                    console.log(e);
-                                });
-                            });
-                            //]]>
-                        </script>
                     </div>
                 </div>
             </div>
@@ -112,8 +97,8 @@
                         <p:remoteCommand name="submitsearch" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"/>
 
                         <span class="input-group-btn">
-                            <p:commandLink styleClass="btn btn-default" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
-                                <span class="glyphicon glyphicon-search"></span> #{bundle['dataverse.search.btn.find']}
+                            <p:commandLink title="#{bundle['dataverse.search.btn.find']}" styleClass="btn btn-default bootstrap-button-tooltip" action="#{DatasetPage.updateFileSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
+                                <span class="glyphicon glyphicon-search no-text"/>
                             </p:commandLink>
                         </span>
                     </div>
