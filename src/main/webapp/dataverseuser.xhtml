@@ -480,7 +480,7 @@
                                     <f:param value="&lt;/a&gt;"/>
                                 </h:outputFormat>
                             </p>
-                            <div class="metadata-container margin-bottom-half" jsf:rendered="${ApiTokenPage.apiTokenExpiration != ''}">
+                            <div class="metadata-container margin-bottom-half" jsf:rendered="#{ApiTokenPage.apiTokenExpiration != ''}">
                                 <table class="metadata">
                                     <tbody>
                                         <tr>
@@ -505,7 +505,7 @@
                             </div>
                             <div id="apiToken" class="highlight hidden">
                                 <pre>
-                                    <code class="language-html" data-lang="html">${ApiTokenPage.apiToken}</code>
+                                    <code class="language-html" data-lang="html">#{ApiTokenPage.apiToken}</code>
                                 </pre>
                             </div>
                             <!--Script removes "hidden" class from div containing API token to stop javascript browser exploits-->
@@ -521,10 +521,13 @@
                                 //]]>
                             </script>
                             <div class="btn-toolbar" role="toolbar">
+                                <button class="btn btn-default btn-copy" data-clipboard-action="copy" data-clipboard-target="#apiToken code" type="button" jsf:rendered="#{ApiTokenPage.checkForApiToken() and !ApiTokenPage.tokenIsExpired()}">
+                                    #{bundle['copyClipboard']}
+                                </button>
                                 <button class="btn btn-default" jsf:action="#{ApiTokenPage.generate()}">
                                     #{ApiTokenPage.checkForApiToken() ? bundle['apitoken.regenerateBtn'] : bundle['apitoken.generateBtn']}
                                 </button>
-                                <button class="btn btn-default" jsf:action="#{ApiTokenPage.revoke()}" jsf:rendered="${ApiTokenPage.apiTokenExpiration != ''}">
+                                <button class="btn btn-default" jsf:action="#{ApiTokenPage.revoke()}" jsf:rendered="#{ApiTokenPage.apiTokenExpiration != ''}">
                                     #{bundle['apitoken.revokeBtn']}
                                 </button>
                             </div>
