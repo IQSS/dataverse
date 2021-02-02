@@ -469,7 +469,9 @@ public class Datasets extends AbstractApiBean {
     
     @GET
     @Path("{id}/versions/{versionId}/fileaccess")
-    public Response getFileAccessFolderView(@PathParam("id") String datasetId, @PathParam("versionId") String versionId, @QueryParam("folder") String folderName, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
+    @Produces("text/html")
+    //public Response getFileAccessFolderView(@PathParam("id") String datasetId, @PathParam("versionId") String versionId, @PathParam("name") String name, @QueryParam("folder") String folderName, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
+    public Response getFileAccessFolderView(@PathParam("id") String datasetId, @PathParam("versionId") String versionId, @QueryParam("folder") String folderName, @QueryParam("original") Boolean originals, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
 
         folderName = folderName == null ? "" : folderName; 
         
@@ -480,14 +482,13 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-               
-        String output = FileUtil.formatFolderListingHtml(folderName, version, "");
+        
+        String output = FileUtil.formatFolderListingHtml(folderName, version, "", originals != null && originals);
         return Response.ok()
                 .entity(output)
                 //.type("application/html").
                 .build();
     }
-    
     
     @GET
     @Path("{id}/versions/{versionId}/metadata")

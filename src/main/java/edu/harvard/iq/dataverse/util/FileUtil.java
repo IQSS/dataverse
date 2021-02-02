@@ -1928,7 +1928,7 @@ public class FileUtil implements java.io.Serializable  {
         return false;
     }
     
-    public static String formatFolderListingHtml(String folderName, DatasetVersion version, String apiLocation) {
+    public static String formatFolderListingHtml(String folderName, DatasetVersion version, String apiLocation, boolean originals) {
         String title = formatTitle("Index of folder /" + folderName);
         List<FileMetadata> fileMetadatas = version.getFileMetadatasFolderListing(folderName);
         String persistentId = version.getDataset().getGlobalId().asString();
@@ -1937,14 +1937,14 @@ public class FileUtil implements java.io.Serializable  {
         
         sb.append(HtmlFormatUtil.formatTag("Index of folder /" + folderName + " in dataset " + persistentId, HTML_H1));
         sb.append("\n");
-        sb.append(formatFolderListingTableHtml(folderName, fileMetadatas, apiLocation));
+        sb.append(formatFolderListingTableHtml(folderName, fileMetadatas, apiLocation, originals));
         
         String body = sb.toString();
                 
         return formatDoc(title, body);
     }
     
-    private static String formatFolderListingTableHtml(String folderName, List<FileMetadata> fileMetadatas, String apiLocation) {
+    private static String formatFolderListingTableHtml(String folderName, List<FileMetadata> fileMetadatas, String apiLocation, boolean originals) {
         StringBuilder sb = new StringBuilder(); 
         
         sb.append(formatFolderListingTableHeaderHtml());
@@ -1953,7 +1953,7 @@ public class FileUtil implements java.io.Serializable  {
             String localFolder = fileMetadata.getDirectoryLabel() == null ? "" : fileMetadata.getDirectoryLabel(); 
             
             if (folderName.equals(localFolder)) {
-                String accessUrl = getFileAccessUrl(fileMetadata, apiLocation, false);
+                String accessUrl = getFileAccessUrl(fileMetadata, apiLocation, originals);
                 sb.append(formatFileListEntryHtml(fileMetadata, accessUrl));
                 sb.append("\n");
 
@@ -1962,7 +1962,7 @@ public class FileUtil implements java.io.Serializable  {
                 if (subFolder.indexOf('/') > 0) {
                     subFolder = subFolder.substring(0, subFolder.indexOf('/'));
                 }
-                String folderAccessUrl = getFolderAccessUrl(fileMetadata.getDatasetVersion(), folderName, subFolder, apiLocation);
+                String folderAccessUrl = getFolderAccessUrl(fileMetadata.getDatasetVersion(), folderName, subFolder, apiLocation, originals);
                 sb.append(formatFileListFolderHtml(subFolder, folderAccessUrl));
                 sb.append("\n");
             }
@@ -2020,10 +2020,12 @@ public class FileUtil implements java.io.Serializable  {
             fileId = fileMetadata.getDirectoryLabel().concat("/").concat(fileId);
         }
         
-        return apiLocation + "/api/access/datafile/" + fileId + (original ? "?format=original" : ""); 
+        String formatArg = fileMetadata.getDataFile().isTabularData() && original ? "?format=original" : ""; 
+        
+        return apiLocation + "/api/access/datafile/" + fileId + formatArg; 
     }
     
-    private static String getFolderAccessUrl(DatasetVersion version, String currentFolder, String subFolder, String apiLocation) {
+    private static String getFolderAccessUrl(DatasetVersion version, String currentFolder, String subFolder, String apiLocation, boolean originals) {
         String datasetId = version.getDataset().getId().toString();
         String versionTag = version.getFriendlyVersionNumber();
         versionTag = versionTag.replace("DRAFT", ":draft");
@@ -2031,7 +2033,10 @@ public class FileUtil implements java.io.Serializable  {
             subFolder = currentFolder + "/" + subFolder;
         }
         
-        return apiLocation + "/api/datasets/" + datasetId + "/versions/" + versionTag + "/fileaccess?folder=" + subFolder;
+        return apiLocation + "/api/datasets/" + datasetId + 
+                "/versions/" + versionTag + 
+                "/fileaccess?folder=" + subFolder + 
+                (originals ? "&original=true" : "");
     }
 
 }
