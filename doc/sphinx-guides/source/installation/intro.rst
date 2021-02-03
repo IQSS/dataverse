@@ -2,7 +2,7 @@
 Introduction
 ============
 
-Welcome! Thanks for installing `Dataverse <http://dataverse.org>`_!
+Welcome! Thanks for installing `The Dataverse Project <http://dataverse.org>`_!
 
 .. contents:: |toctitle|
 	:local:
@@ -10,30 +10,30 @@ Welcome! Thanks for installing `Dataverse <http://dataverse.org>`_!
 Quick Links
 -----------
 
-If you are installing Dataverse for the first time, please proceed to the :doc:`prep` section.
+If you are installing the Dataverse Software for the first time, please proceed to the :doc:`prep` section.
 
 Jump ahead to :doc:`config` or :doc:`upgrading` for an existing Dataverse installation.
 
 Intended Audience
 -----------------
 
-This guide is intended primarily for sysadmins who are installing, configuring, and upgrading Dataverse. 
+This guide is intended primarily for sysadmins who are installing, configuring, and upgrading a Dataverse installation. 
 
 Sysadmins are expected to be comfortable using standard Linux commands, issuing ``curl`` commands, and running SQL scripts.
 
 Related Guides
 --------------
 
-Many "admin" functions can be performed by Dataverse users themselves (non-superusers) as documented in the :doc:`/user/index` and that guide is a good introduction to the features of Dataverse from an end user perspective.
+Many "admin" functions can be performed by Dataverse installation users themselves (non-superusers) as documented in the :doc:`/user/index` and that guide is a good introduction to the features of the Dataverse Software from an end user perspective.
 
-If you are a sysadmin who likes to code, you may find the :doc:`/api/index` useful, and you may want to consider improving the installation script or hacking on the community-lead configuration management options mentioned in the :doc:`prep` section. If you **really** like to code and want to help with the Dataverse code, please check out the :doc:`/developers/index`!
+If you are a sysadmin who likes to code, you may find the :doc:`/api/index` useful, and you may want to consider improving the installation script or hacking on the community-lead configuration management options mentioned in the :doc:`prep` section. If you **really** like to code and want to help with the Dataverse Software code, please check out the :doc:`/developers/index`!
 
 .. _support:
 
 Getting Help
 ------------
 
-To get help installing or configuring Dataverse, please try one or more of:
+To get help installing or configuring a Dataverse installation, please try one or more of:
 
 - posting to the `dataverse-community <https://groups.google.com/forum/#!forum/dataverse-community>`_ Google Group.
 - asking at http://chat.dataverse.org (#dataverse on the freenode IRC network)
