@@ -168,16 +168,20 @@ public class DataverseUserPage implements java.io.Serializable {
             notificationsList = userNotificationService.findByUser(currentUser.getId());
             
             switch (selectTab) {
-                case "accountInfo":
-                    activeIndex = 0;
+                case "notifications":
+                    activeIndex = 1;
+                    displayNotification();
                     break;
                 case "dataRelatedToMe":
                     mydatapage.init();
-                    activeIndex = 1;
-                    break;    
-                case "notifications":
+                    activeIndex = 0;
+                    break;
+                // case "groupsRoles":
+                // activeIndex = 2;
+                // break;
+                case "accountInfo":
                     activeIndex = 2;
-                    displayNotification();
+                    // activeIndex = 3;
                     break;
                 case "apiTokenTab":
                     activeIndex = 3;

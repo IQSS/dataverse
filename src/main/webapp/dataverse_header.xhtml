@@ -132,12 +132,6 @@
                                 <ul class="dropdown-menu">
                                     <li tabindex="-1">
                                         <h:outputLink value="/dataverseuser.xhtml">
-                                            <f:param name="selectTab" value="accountInfo" />
-                                            <h:outputText value="#{bundle['header.accountInfo']}" />
-                                        </h:outputLink>
-                                    </li>
-                                    <li tabindex="-1">
-                                        <h:outputLink value="/dataverseuser.xhtml">
                                             <f:param name="selectTab" value="dataRelatedToMe" />
                                             <h:outputText value="#{bundle['header.user.selectTab.dataRelated']}" />
                                         </h:outputLink>
@@ -158,6 +152,12 @@
                                             </h:outputLink>
                                         </li>
                                     </ui:remove>
+                                    <li tabindex="-1">
+                                        <h:outputLink value="/dataverseuser.xhtml">
+                                            <f:param name="selectTab" value="accountInfo" />
+                                            <h:outputText value="#{bundle['header.accountInfo']}" />
+                                        </h:outputLink>
+                                    </li>
                                     <li tabindex="-1">
                                         <h:outputLink value="/dataverseuser.xhtml">
                                             <f:param name="selectTab" value="apiTokenTab" />
