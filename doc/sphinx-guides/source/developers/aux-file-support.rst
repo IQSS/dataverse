@@ -1,7 +1,7 @@
 Auxiliary File Support
 ======================
 
-Auxiliary file support is experimental. Auxiliary files in Dataverse are being added to support depositing and downloading differentially private metadata, as part of the OpenDP project (OpenDP.io). In future versions, this approach may become more broadly used and supported. 
+Auxiliary file support is experimental. Auxiliary files in the Dataverse Software are being added to support depositing and downloading differentially private metadata, as part of the OpenDP project (OpenDP.io). In future versions, this approach may become more broadly used and supported. 
 
 Adding an Auxiliary File to a Datafile
 --------------------------------------
