@@ -4,7 +4,7 @@ Consuming Configuration
 .. contents:: |toctitle|
 	:local:
 
-Dataverse uses different types of configuration:
+The Dataverse Software uses different types of configuration:
 
 1. JVM system properties
 2. Simple database value settings
@@ -25,11 +25,11 @@ Developers have accessed the simple properties via
 3. ``SystemConfig.xxx()`` for specially treated settings, maybe mixed from 1 and 2 and other sources.
 4. ``SettingsWrapper``, reading from 2 and 3 for use in frontend pages based on JSF
 
-As of Dataverse 5.3, we start to streamline our efforts into using a more consistent approach, also bringing joy and
+As of Dataverse Software 5.3, we start to streamline our efforts into using a more consistent approach, also bringing joy and
 happiness to all the system administrators out there. This will be done by adopting the use of
 `MicroProfile Config <https://github.com/eclipse/microprofile-config>`_ over time.
 
-So far we streamlined configuration of these Dataverse parts:
+So far we streamlined configuration of these Dataverse Software parts:
 
 - ✅ Database Connection
 
@@ -54,7 +54,7 @@ System administrators benefit from:
 
 - Lots of database settings have been introduced in the past, but should be more easily configurable and not rely on a
   database connection.
-- Running Dataverse in containers gets much easier when configuration can be provisioned in a
+- Running a Dataverse installation in containers gets much easier when configuration can be provisioned in a
   streamlined fashion, mitigating the need for scripting glue and distinguishing between setting types.
 - Classic installations have a profit, too: we can enable using a single config file, e.g. living in
   ``/etc/dataverse/config.properties``.
