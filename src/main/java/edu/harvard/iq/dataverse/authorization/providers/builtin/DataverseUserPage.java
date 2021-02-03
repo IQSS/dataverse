@@ -176,17 +176,14 @@ public class DataverseUserPage implements java.io.Serializable {
                     mydatapage.init();
                     activeIndex = 0;
                     break;
-                // case "groupsRoles":
-                // activeIndex = 2;
-                // break;
                 case "accountInfo":
                     activeIndex = 2;
-                    // activeIndex = 3;
                     break;
                 case "apiTokenTab":
                     activeIndex = 3;
                     break;
                 default:
+                    //TODO: Do we need to call mydatapage.init(); here too?
                     activeIndex = 0;
                     break;
             }
