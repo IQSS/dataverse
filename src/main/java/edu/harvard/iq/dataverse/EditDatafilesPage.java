@@ -1678,11 +1678,12 @@ public class EditDatafilesPage implements java.io.Serializable {
                     setLabelForDeleteFilesPopup();
                     PrimeFaces.current().ajax().update("datasetForm:fileAlreadyExistsPopup");
                     PrimeFaces.current().executeScript("PF('fileAlreadyExistsPopup').show();");
+                } else {
+                    //adding back warnings in non-replace situations
+                    FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), uploadWarningMessage));                   
                 }
                 
 
-                //taking this out for now based on design feedback 7/8/2020
-               // FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), uploadWarningMessage));
 
             } else if (uploadSuccessMessage != null) {
                 FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.file.uploadWorked"), uploadSuccessMessage));
