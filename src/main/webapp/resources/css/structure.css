@@ -417,7 +417,7 @@ div.ui-datatable-header > .button-block, .button-block.tab-header, #actionButton
 th.col-file-action.text-right {text-align: right;}
 form.btn-form {display:inline-block;}
 .button-block button, .button-block a.btn, .button-block input.btn, .button-block div.btn-group, .button-block .button-container,
-.button-block span.btn.ui-state-disabled, .button-block span.btn.disabled {margin-right:1em;}
+.button-block span.btn.ui-state-disabled, .button-block span.btn.disabled {margin-right:5px;}
 
 .btn.btn-default.btn-access {background-image:none;}
 .btn.btn-default.btn-access:focus, .btn.btn-default.btn-access:hover,.btn.btn-default.btn-access:active {background-image:none;}
@@ -1084,8 +1084,13 @@ span.ui-autocomplete input.ui-autocomplete-input {width:100%;}
 }
 
 #datasetForm .qdr-sort {
-	max-width: 250px;
+	max-width: 255px;
 	float: right;
+	padding-right:21px;
+}
+
+#datasetForm .qdr-sort .btn-group {
+	padding-top: 4px;
 }
 
 #datasetForm .qdr-group-by {
