@@ -38,57 +38,14 @@ function bind_bsui_components(){
     // Custom Popover with HTML content
     popoverHTML();
     
+    // clipboard.js click to copy
+    clickCopyClipboard();
+    
     // Dialog Listener For Calling handleResizeDialog
     PrimeFaces.widget.Dialog.prototype.postShow = function() {
         var dialog_id = this.jq.attr('id').split(/[:]+/).pop();
         handleResizeDialog(dialog_id);
     }
-    
-    
-    // TO-DO...
-    // 
-    // MOVE ALL THIS TO ITS OWN FUNCTION
-    
-    // clipboard.js copy btn
-    $('button.btn-copy, span.checksum-truncate, span.btn-copy').on('click', function () {
-        
-        
-        // WHY CLICK TWICE???
-        // INITIALIZE PLUGIN DOCUMENT.ON
-        // https://stackoverflow.com/a/9984269
-        
-        // alert("Click <" + $(this).attr("class") + ">");
-        
-        
-        // pass selector to clipboard
-        var clipboard = new ClipboardJS(this);
-        
-        clipboard.on('success', (e)=> {
-            // DEV TOOL DEBUG
-            console.log(e);
-            
-            // check which selector was clicked
-            // swap icon for success ok
-            if ($(this).hasClass('btn-copy')) {
-                $(this).removeClass('glyphicon-copy').addClass('glyphicon-ok text-success');
-                // then swap icon back to clipboard
-                // https://stackoverflow.com/a/54270499
-                setTimeout(()=> { // use arrow function
-                    $(this).removeClass('glyphicon-ok text-success').addClass('glyphicon-copy')
-                }, 2000);
-            }
-            else {
-                $(this).next('.btn-copy').removeClass('glyphicon-copy').addClass('glyphicon-ok text-success');
-                setTimeout(()=> {
-                    $(this).next('.btn-copy').removeClass('glyphicon-ok text-success').addClass('glyphicon-copy')
-                }, 2000);
-            }
-            
-        });
-        clipboard.on('error', (e)=> {
-            console.log(e);
-        });
-    });
 }
 
 function bind_tooltip_popover(){
@@ -202,27 +159,63 @@ function sharrre(){
 }
     
 /*
- * Truncate file checksums + click to copy
+ * Truncate file checksums
  */
 function checksumTruncate(){
     $('span.checksum-truncate').each(function () {
         $(this).toggleClass('sr-only').toggleClass('visisble');
         var checksumText = $(this).text();
-        if (checksumText.length > 25) {
-            // COUNT ":" IN UNF VERSION LABEL
-            var labelIndex = checksumText.indexOf(':');
+        var checksumLength = checksumText.length;
+        if (checksumLength > 25) {
+            // COUNT " " IN TYPE LABEL, UNF HAS NONE
+            var prefixCount = (checksumText.match(/ /g) || []).length;
+            
+            // INDEX OF LAST ":" IN TYPE LABEL, UNF HAS MORE THAN ONE
+            var labelIndex = checksumText.lastIndexOf(':');
+            
             // COUNT "=" IN UNF SUFFIX
             var suffixCount = (checksumText.match(/=/g) || []).length;
             
             // TRUNCATE MIDDLE W/ "..." + FIRST/LAST 3 CHARACTERS
-            // CHECK IF UNF LABEL
-            if (labelIndex > 0) {
-                $(this).text(checksumText.substr(0, (labelIndex + 3) + 3) + '...' + checksumText.substr((checksumText.length - suffixCount - 3), checksumText.length));
+            // CHECK IF UNF LABEL, LESS THAN ONE " "
+            if (prefixCount < 0) {
+                $(this).text(checksumText.substr(0,(labelIndex + 3)) + '...' + checksumText.substr((checksumLength - suffixCount - 3),checksumLength));
             }
             else {
-                $(this).text(checksumText.substr(0, 3) + '...' + checksumText.substr((checksumText.length - 3), checksumText.length));
+                $(this).text(checksumText.substr(0,(labelIndex + 5)) + '...' + checksumText.substr((checksumLength - suffixCount - 3),checksumLength));
             }
         }
+    });
+}
+
+function clickCopyClipboard(){
+    // clipboard.js click to copy
+    // pass selector to clipboard
+    var clipboard = new ClipboardJS('button.btn-copy, span.checksum-truncate, span.btn-copy');
+
+    clipboard.on('success', (e)=> {
+        // DEV TOOL DEBUG
+        // console.log(e);
+
+        // check which selector was clicked
+        // swap icon for success ok
+        if ($(e.trigger).hasClass('btn-copy')) {
+            $(e.trigger).removeClass('glyphicon-copy').addClass('glyphicon-ok text-success');
+            // then swap icon back to clipboard
+            // https://stackoverflow.com/a/54270499
+            setTimeout(()=> { // use arrow function
+                $(e.trigger).removeClass('glyphicon-ok text-success').addClass('glyphicon-copy')
+            }, 2000);
+        }
+        else {
+            $(e.trigger).next('.btn-copy').removeClass('glyphicon-copy').addClass('glyphicon-ok text-success');
+            setTimeout(()=> {
+                $(e.trigger).next('.btn-copy').removeClass('glyphicon-ok text-success').addClass('glyphicon-copy')
+            }, 2000);
+        }
+    });
+    clipboard.on('error', (e)=> {
+        console.log(e);
     });
 }
 

@@ -49,7 +49,7 @@
                  style="margin-right:1px;" tableStyle="min-width:100%;width:auto;"
                  value="#{DatasetPage.fileMetadatasSearch}"
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
-                 selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
+                 rowSelectMode="checkbox" selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
                  rendered="#{DatasetPage.fileDisplayTable and (DatasetPage.workingVersion != null)}"
                  emptyMessage="#{DatasetPage.workingVersion.fileMetadatas.size() == 0 ? bundle['file.notFound.tip'] : bundle['file.notFound.search']}">
         <p:ajax event="page" listener="#{DatasetPage.fileListingPaginatorListener}" update="filesTable" process="@this"  oncomplete="refreshPaginator(),rebindCommand()"  immediate="true"/>

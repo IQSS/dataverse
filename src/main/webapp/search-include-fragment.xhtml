@@ -612,12 +612,12 @@
                             <h:outputText value="#{result.filetype}" rendered="#{empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity) and result.fileTypeHighlightSnippet == null}"/>
                             <h:outputText value="#{result.fileTypeHighlightSnippet}" rendered="#{empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity) and result.fileTypeHighlightSnippet != null}" escape="false"/>
                             <h:outputText value=" - #{SearchIncludeFragment.dataFileSizeDisplay(result.entity)}" rendered="#{!result.harvested}"/>
-                            <h:outputText value=" - #{result.fileChecksumType}: " rendered="#{!result.harvested and !SearchIncludeFragment.isTabular(result.entity) and !(empty result.fileChecksumValue)}"/>
+                            <h:outputText value=" - " rendered="#{!result.harvested and !SearchIncludeFragment.isTabular(result.entity) and !(empty result.fileChecksumValue)}"/>
                             <span class="checksum-block" jsf:rendered="#{!result.harvested and !SearchIncludeFragment.isTabular(result.entity) and !(empty result.fileChecksumValue)}">
                                 <span class="sr-only checksum-truncate" style="margin-right:3px;"
                                           data-clipboard-action="copy"
                                           data-clipboard-text="#{result.fileChecksumValue}"
-                                          title="#{bundle['file.metaData.checksum.copy']} #{result.fileChecksumValue}">#{result.fileChecksumValue}</span>
+                                          title="#{bundle['file.metaData.checksum.copy']} #{result.fileChecksumValue}">#{result.fileChecksumType}: #{result.fileChecksumValue}</span>
                                 <span class="glyphicon glyphicon-copy btn-copy"
                                         data-clipboard-action="copy"
                                         data-clipboard-text="#{result.fileChecksumValue}" title="#{bundle['file.metaData.checksum.copy']} #{result.fileChecksumValue}"></span>

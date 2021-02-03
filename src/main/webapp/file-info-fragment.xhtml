@@ -71,19 +71,18 @@
                 </div>
                 <!-- CHECKSUM -->
                 <div class="checksum-block" jsf:rendered="#{!fileMetadata.dataFile.tabularData and !(empty fileMetadata.dataFile.checksumValue)}">
-                    #{fileMetadata.dataFile.checksumType}: 
-                    <span class="sr-only #{!editDatafilesPage ? 'checksum-truncate' : ''}"
+                    <span class="sr-only #{!editDatafilesPage ? 'checksum-truncate' : ''}" style="margin-right:3px;"
                                   data-clipboard-action="copy"
                                   data-clipboard-text="#{fileMetadata.dataFile.checksumValue}"
-                                  title="#{bundle['file.metaData.checksum.copy']} #{fileMetadata.dataFile.checksumValue}">#{fileMetadata.dataFile.checksumValue}</span>
+                                  title="#{bundle['file.metaData.checksum.copy']} #{fileMetadata.dataFile.checksumValue}">#{fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue}</span>
                     <span class="glyphicon glyphicon-copy btn-copy" data-clipboard-action="copy"
                                   data-clipboard-text="#{fileMetadata.dataFile.checksumValue}" title="#{bundle['file.metaData.checksum.copy']} #{fileMetadata.dataFile.checksumValue}"></span>
                 </div>
                 <!-- TABULAR VARIABLES, OBSERVATIONS + UNF -->
                 <div class="unf-block" jsf:rendered="#{fileMetadata.dataFile.tabularData}">
                     <h:outputText id="fileNumVars" value="#{fileMetadata.dataFile.dataTable.varQuantity} #{bundle['file.metaData.dataFile.dataTab.variables']}, "/>
-                    <h:outputText id="fileNumObs" value="#{fileMetadata.dataFile.dataTable.caseQuantity} #{bundle['file.metaData.dataFile.dataTab.observations']}"/>
-                    <span jsf:id="fileUNF" class="sr-only #{!editDatafilesPage ? 'checksum-truncate' : ''}"
+                    <h:outputText id="fileNumObs" value="#{fileMetadata.dataFile.dataTable.caseQuantity} #{bundle['file.metaData.dataFile.dataTab.observations']} "/>
+                    <span jsf:id="fileUNF" class="sr-only #{!editDatafilesPage ? 'checksum-truncate' : ''}" style="margin-right:3px;"
                                   jsf:rendered="#{!(empty fileMetadata.dataFile.unf)}"
                                   data-clipboard-action="copy"
                                   data-clipboard-text="#{fileMetadata.dataFile.unf}"
