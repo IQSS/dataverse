@@ -132,7 +132,7 @@ public class DataverseUserPage implements java.io.Serializable {
     private Long dataverseId;
     private List<UserNotification> notificationsList;
     private int activeIndex;
-    private String selectTab = "somedata";
+    private String selectTab = "dataRelatedToMe";
     UIInput usernameField;
 
     
