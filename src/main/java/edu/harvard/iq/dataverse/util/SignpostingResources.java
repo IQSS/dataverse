@@ -3,32 +3,23 @@ package edu.harvard.iq.dataverse.util;
 /**
  * Eko Indarto, DANS
  * Vic Ding, DANS
- *
+ * <p>
  * This file prepares the resources used in Signposting
- *
+ * <p>
  * It requires correspondence configuration to function well.
  * The configuration key used is SignpostingConf.
  * It is a json structure shown below
- *
+ * <p>
  * useDefaultFileType is an on/off switch during linkset creating time, it controls whether the default type is
  * used, which is always Dataset
- * {
- *   "indetifier-schema": {"ORCID":"https://orcid.org/", "ISNI":"https://isni.org/isni/", "ScopusID":"https://www.scopus.com/authid/detail.uri?authorId="},
- *   "license": {"CC0":"https://creativecommons.org/licenses/by/4.0/", "MIT": "https://url", "APACHE":"https://url"},
- *   "cite-as": {"doi":"https://citation.crosscite.org/format?style=bibtex&doi=", "type":"application/vnd.datacite.datacite+json"},
- *   "useDefaultFileType": true,
- *   "defaultFileTypeValue": "https://schema.org/Dataset"
- * }
- *
+ * <p>
  * The configuration can be modified during run time by the administrator.
- *
  */
+
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -48,13 +39,14 @@ public class SignpostingResources {
     private static final Logger logger = Logger.getLogger(SignpostingResources.class.getCanonicalName());
     SystemConfig systemConfig;
     DatasetVersion workingDatasetVersion;
-    JsonObject idschemaJsonObj;
     JsonObject licJsonObj;
-    JsonObject citeAsJsonObj;
+    JsonObject describedByJsonObj;
     Boolean useDefaultFileType;
     String defaultFileTypeValue;
+    int maxAuthors = 5;
+    int maxItems = 5;
 
-    public SignpostingResources(SystemConfig systemConfig, DatasetVersion workingDatasetVersion, String jsonSetting){
+    public SignpostingResources(SystemConfig systemConfig, DatasetVersion workingDatasetVersion, String jsonSetting) {
         this.systemConfig = systemConfig;
         this.workingDatasetVersion = workingDatasetVersion;
         if (jsonSetting == null) {
@@ -63,11 +55,12 @@ public class SignpostingResources {
         JsonReader jsonReader = Json.createReader(new StringReader(jsonSetting));
         JsonObject spJsonSetting = jsonReader.readObject();
         jsonReader.close();
-        idschemaJsonObj = spJsonSetting.getJsonObject("indetifier-schema");
         licJsonObj = spJsonSetting.getJsonObject("license");
-        citeAsJsonObj = spJsonSetting.getJsonObject("cite-as");
+        describedByJsonObj = spJsonSetting.getJsonObject("describedby");
         useDefaultFileType = spJsonSetting.getBoolean("useDefaultFileType", true);
         defaultFileTypeValue = spJsonSetting.getString("defaultFileTypeValue", "https://schema.org/Dataset");
+        maxAuthors = spJsonSetting.getInt("maxAuthors");
+        maxItems = spJsonSetting.getInt("maxItems");
     }
 
     /**
@@ -81,28 +74,30 @@ public class SignpostingResources {
      *
      * For example:
      *      if author has VIAF
-    *       Link: <http://viaf.org/viaf/:id/>; rel="author"
+     *       Link: <http://viaf.org/viaf/:id/>; rel="author"
      *
      * @param datasetAuthors
      * @return
      */
     private String getIdentifierSchema(List<DatasetAuthor> datasetAuthors) {
-        StringBuilder sb = new StringBuilder();
+        String singleAuthorString = "";
         String identifierSchema = "";
 
-        for (DatasetAuthor da:datasetAuthors){
-            if (da.getIdValue() != null && !da.getIdValue().isEmpty()) {
-                sb.append("<").
-                        append(idschemaJsonObj.getString(da.getIdType())).
-                        append(da.getIdValue()).
-                        append(">;rel=\"author\"");
-                if (identifierSchema == "") {
-                    identifierSchema = sb.toString();
-                } else {
-                    identifierSchema = String.join(",", identifierSchema, sb.toString());
-                }
+        for (DatasetAuthor da : datasetAuthors) {
+            logger.info(String.format(
+                    "idtype: %s; idvalue: %s, affiliation: %s; identifierUrl: %s",
+                    da.getIdType(),
+                    da.getIdValue(),
+                    da.getAffiliation(),
+                    da.getIdentifierAsUrl()
+            ));
+            if (da.getIdentifierAsUrl() != null && !da.getIdentifierAsUrl().trim().isEmpty()) {
+                singleAuthorString = "<" + da.getIdentifierAsUrl() + ">;rel=\"author\"";
+                identifierSchema = String.join(",", identifierSchema, singleAuthorString);
             }
         }
+
+        logger.info(String.format("identifierSchema: %s", identifierSchema));
         return identifierSchema;
     }
 
@@ -111,7 +106,7 @@ public class SignpostingResources {
      *
      * @return comma delimited string
      */
-    public String getLinks(){
+    public String getLinks() {
         List<String> valueList = new LinkedList<>();
         Dataset ds = workingDatasetVersion.getDataset();
 
@@ -125,8 +120,8 @@ public class SignpostingResources {
             valueList.add(citeAs);
         }
 
-        String describedby = "<" + citeAsJsonObj.getString(ds.getProtocol()) + ds.getAuthority() + "/"
-                + ds.getIdentifier() + ">;rel=\"describedby\"" + "; type=\""+ citeAsJsonObj.getString("type") + "\"";
+        String describedby = "<" + describedByJsonObj.getString(ds.getProtocol()) + ds.getAuthority() + "/"
+                + ds.getIdentifier() + ">;rel=\"describedby\"" + ";type=\"" + describedByJsonObj.getString("type") + "\"";
         describedby += ",<" + systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=schema.org&persistentId="
                 + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() + ">;rel=\"describedby\"" + ";type=\"application/json+ld\"";
         valueList.add(describedby);
@@ -136,7 +131,7 @@ public class SignpostingResources {
 
         // TODO: support only CC0 now, should add flexible license support when flex-terms is ready
         String license = "";
-        if (workingDatasetVersion.getTermsOfUseAndAccess().getLicense() == TermsOfUseAndAccess.License.CC0){
+        if (workingDatasetVersion.getTermsOfUseAndAccess().getLicense() == TermsOfUseAndAccess.License.CC0) {
             // On the current Dataverse, only None and CC0. In the signposting protocol: cardinality is 1
             license = "<https://creativecommons.org/publicdomain/zero/1.0/>;rel=\"license\"";
             valueList.add(license);
@@ -151,31 +146,40 @@ public class SignpostingResources {
         return String.join(", ", valueList);
     }
 
-    private JsonArrayBuilder getIdentifiersSchema(List<DatasetAuthor> datasetAuthors){
+    private JsonArrayBuilder getIdentifiersSchema(List<DatasetAuthor> datasetAuthors) {
+        if (datasetAuthors.size() > maxAuthors) return null;
         JsonArrayBuilder authors = Json.createArrayBuilder();
-        for (DatasetAuthor da:datasetAuthors){
-            if (da.getIdValue() != null && !da.getIdValue().isEmpty()) {
-                authors.add(jsonObjectBuilder().add("href", idschemaJsonObj.getString(da.getIdType())  + da.getIdValue()));
+        Boolean returnNull = true;
+        for (DatasetAuthor da : datasetAuthors) {
+            if (da.getIdentifierAsUrl() != null && !da.getIdentifierAsUrl().trim().isEmpty()) {
+                authors.add(jsonObjectBuilder().add("href", da.getIdentifierAsUrl()));
+                returnNull = false;
             }
         }
-        return authors;
+        return returnNull ? null : authors;
+    }
+
+    private JsonArrayBuilder getJsonItems(List<FileMetadata> fms) {
+        if (fms.size() > maxItems) return null;
+        JsonArrayBuilder items = Json.createArrayBuilder();
+        for (FileMetadata fm : fms) {
+            DataFile df = fm.getDataFile();
+            items.add(jsonObjectBuilder().add("href", getPublicDownloadUrl(df)).add("type", df.getContentType()));
+        }
+
+        return items;
     }
 
     public JsonArrayBuilder getJsonLinkset() {
         Dataset ds = workingDatasetVersion.getDataset();
-        String landingPage = systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() ;
+        String landingPage = systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier();
         JsonArrayBuilder authors = getIdentifiersSchema(workingDatasetVersion.getDatasetAuthors());
 
-        JsonArrayBuilder items = Json.createArrayBuilder();
-
         List<FileMetadata> fms = workingDatasetVersion.getFileMetadatas();
-        for (FileMetadata fm:fms){
-            DataFile df = fm.getDataFile();
-            items.add(jsonObjectBuilder().add("href", getPublicDownloadUrl(df)).add("type",df.getContentType()));
-        }
+        JsonArrayBuilder items = getJsonItems(fms);
 
         String license = "";
-        if (workingDatasetVersion.getTermsOfUseAndAccess().getLicense() == TermsOfUseAndAccess.License.CC0){
+        if (workingDatasetVersion.getTermsOfUseAndAccess().getLicense() == TermsOfUseAndAccess.License.CC0) {
             license = licJsonObj.getString(TermsOfUseAndAccess.License.CC0.name());
         }
 
@@ -183,10 +187,10 @@ public class SignpostingResources {
         mediaTypes.add(
                 jsonObjectBuilder().add(
                         "href",
-                        citeAsJsonObj.getJsonObject(ds.getProtocol() + ds.getAuthority() + "/" + ds.getIdentifier())
+                        ds.getProtocol() + ds.getAuthority() + "/" + ds.getIdentifier()
                 ).add(
                         "type",
-                        citeAsJsonObj.getString("type")
+                        describedByJsonObj.getString("type")
                 )
         );
 
@@ -199,35 +203,45 @@ public class SignpostingResources {
                         "application/json+ld"
                 )
         );
-        JsonArrayBuilder linkset = Json.createArrayBuilder();
+        JsonArrayBuilder linksetJsonObj = Json.createArrayBuilder();
         JsonObjectBuilder mandatory = jsonObjectBuilder()
                 .add("anchor", landingPage)
                 .add("cite-as", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", ds.getPersistentURL())))
-                .add("type", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", "https://schema.org/AboutPage")))
-                .add("author", authors)
-                .add("license", jsonObjectBuilder().add("href", license))
-                .add("item", items).add("describedby", mediaTypes);
-        linkset.add(mandatory);
+                .add("type", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", "https://schema.org/AboutPage")));
+
+        if (authors != null) {
+            mandatory.add("author", authors);
+        }
+        if (license != null && !license.trim().isEmpty()) {
+            mandatory.add("license", jsonObjectBuilder().add("href", license));
+        }
+        if (!mediaTypes.toString().trim().isEmpty()) {
+            mandatory.add("describedby", mediaTypes);
+        }
+        if (items != null) {
+            mandatory.add("item", items);
+        }
+        linksetJsonObj.add(mandatory);
 
         if (useDefaultFileType) {
-            for (FileMetadata fm:fms){
+            for (FileMetadata fm : fms) {
                 DataFile df = fm.getDataFile();
                 JsonObjectBuilder itemAnchor = jsonObjectBuilder().add("anchor", getPublicDownloadUrl(df));
                 itemAnchor.add("collection", Json.createArrayBuilder().add(jsonObjectBuilder()
                         .add("href", landingPage)).add(jsonObjectBuilder().add("type", defaultFileTypeValue)));
-                linkset.add(itemAnchor);
+                linksetJsonObj.add(itemAnchor);
             }
         } else {
-            for (FileMetadata fm:fms){
+            for (FileMetadata fm : fms) {
                 DataFile df = fm.getDataFile();
                 JsonObjectBuilder itemAnchor = jsonObjectBuilder().add("anchor", getPublicDownloadUrl(df));
                 itemAnchor.add("collection", Json.createArrayBuilder().add(jsonObjectBuilder()
                         .add("href", landingPage)));
-                linkset.add(itemAnchor);
+                linksetJsonObj.add(itemAnchor);
             }
         }
 
-        return linkset;
+        return linksetJsonObj;
     }
 
 
@@ -249,7 +263,7 @@ public class SignpostingResources {
             }
 
             //if its a public install, lets just give users the permanent URL!
-            if (systemConfig.isPublicInstall()){
+            if (systemConfig.isPublicInstall()) {
                 fileDownloadUrl = swiftIO.getRemoteUrl();
             } else {
                 //TODO: if a user has access to this file, they should be given the swift url
