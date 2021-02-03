@@ -1,21 +1,20 @@
 package edu.harvard.iq.dataverse.util;
 
-/**
- * Eko Indarto, DANS
- * Vic Ding, DANS
- * <p>
- * This file prepares the resources used in Signposting
- * <p>
- * It requires correspondence configuration to function well.
- * The configuration key used is SignpostingConf.
- * It is a json structure shown below
- * <p>
- * useDefaultFileType is an on/off switch during linkset creating time, it controls whether the default type is
- * used, which is always Dataset
- * <p>
- * The configuration can be modified during run time by the administrator.
- */
+/*
+  Eko Indarto, DANS
+  Vic Ding, DANS
 
+  This file prepares the resources used in Signposting
+
+  It requires correspondence configuration to function well.
+  The configuration key used is SignpostingConf.
+  It is a json structure shown below
+
+  useDefaultFileType is an on/off switch during linkset creating time, it controls whether the default type is
+  used, which is always Dataset
+
+  The configuration can be modified during run time by the administrator.
+ */
 
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
@@ -43,8 +42,8 @@ public class SignpostingResources {
     JsonObject describedByJsonObj;
     Boolean useDefaultFileType;
     String defaultFileTypeValue;
-    int maxAuthors = 5;
-    int maxItems = 5;
+    int maxAuthors;
+    int maxItems;
 
     public SignpostingResources(SystemConfig systemConfig, DatasetVersion workingDatasetVersion, String jsonSetting) {
         this.systemConfig = systemConfig;
@@ -59,28 +58,22 @@ public class SignpostingResources {
         describedByJsonObj = spJsonSetting.getJsonObject("describedby");
         useDefaultFileType = spJsonSetting.getBoolean("useDefaultFileType", true);
         defaultFileTypeValue = spJsonSetting.getString("defaultFileTypeValue", "https://schema.org/Dataset");
-        maxAuthors = spJsonSetting.getInt("maxAuthors");
-        maxItems = spJsonSetting.getInt("maxItems");
+        maxAuthors = spJsonSetting.getInt("maxAuthors", 5);
+        maxItems = spJsonSetting.getInt("maxItems", 5);
     }
 
     /**
      * Get identifier schema for each author
-     *
-     * Author may have identifiers from different providers
-     * ORCID: the url format is https://orcid.org/:id
-     * ISNI: the url format is https://isni.org/isni/:id
-     * ScopusID: the url format is https://www.scopus.com/authid/detail.uri?authorId=:id
-     * VIAF: the url format is http://viaf.org/viaf/:id
-     *
+     * <p>
      * For example:
-     *      if author has VIAF
-     *       Link: <http://viaf.org/viaf/:id/>; rel="author"
+     * if author has VIAF
+     * Link: <http://viaf.org/viaf/:id/>; rel="author"
      *
-     * @param datasetAuthors
-     * @return
+     * @param datasetAuthors list of all DatasetAuthor object
+     * @return all the non empty author links in a string
      */
     private String getIdentifierSchema(List<DatasetAuthor> datasetAuthors) {
-        String singleAuthorString = "";
+        String singleAuthorString;
         String identifierSchema = "";
 
         for (DatasetAuthor da : datasetAuthors) {
@@ -130,7 +123,7 @@ public class SignpostingResources {
         valueList.add(type);
 
         // TODO: support only CC0 now, should add flexible license support when flex-terms is ready
-        String license = "";
+        String license;
         if (workingDatasetVersion.getTermsOfUseAndAccess().getLicense() == TermsOfUseAndAccess.License.CC0) {
             // On the current Dataverse, only None and CC0. In the signposting protocol: cardinality is 1
             license = "<https://creativecommons.org/publicdomain/zero/1.0/>;rel=\"license\"";
@@ -149,7 +142,7 @@ public class SignpostingResources {
     private JsonArrayBuilder getIdentifiersSchema(List<DatasetAuthor> datasetAuthors) {
         if (datasetAuthors.size() > maxAuthors) return null;
         JsonArrayBuilder authors = Json.createArrayBuilder();
-        Boolean returnNull = true;
+        boolean returnNull = true;
         for (DatasetAuthor da : datasetAuthors) {
             if (da.getIdentifierAsUrl() != null && !da.getIdentifierAsUrl().trim().isEmpty()) {
                 authors.add(jsonObjectBuilder().add("href", da.getIdentifierAsUrl()));
@@ -254,7 +247,7 @@ public class SignpostingResources {
         }
 
         if (storageIO instanceof SwiftAccessIO) {
-            String fileDownloadUrl = null;
+            String fileDownloadUrl;
             SwiftAccessIO<DataFile> swiftIO = (SwiftAccessIO<DataFile>) storageIO;
             try {
                 swiftIO.open();
