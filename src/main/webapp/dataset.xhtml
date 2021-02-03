@@ -460,7 +460,6 @@
                                                 </h:outputFormat>
                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                         data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.views.tip']}"></span>
-                                                </span>
                                             </div>
                                             <!-- Make Data Count downloads -->
                                             <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountDisplayEnabled}">
@@ -475,7 +474,8 @@
                                                         </h:outputFormat>
                                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                             data-toggle="tooltip" data-placement="auto top" data-original-title="#{bundle['metrics.dataset.downloads.premakedatacount.tip']}">
-                                                    </span>)
+                                                        </span>)
+                                                    </span>
                                             </div>
                                             <!-- Make Data Count citations (DOIs only, not Handles) -->
                                             <div class="metrics-count-block" jsf:rendered="#{settingsWrapper.makeDataCountDisplayEnabled and settingsWrapper.doiInstallation}">
