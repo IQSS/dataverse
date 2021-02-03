@@ -97,11 +97,6 @@
         <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
-    <servlet>
-        <servlet-name>Push Servlet</servlet-name>
-        <servlet-class>org.primefaces.push.PushServlet</servlet-class>
-        <async-supported>true</async-supported>
-    </servlet>
     <!-- Map these files with JSF -->
     <servlet>
         <servlet-name>OAIServlet</servlet-name>
@@ -127,23 +122,10 @@
     <servlet-mapping>
         <servlet-name>Faces Servlet</servlet-name>
         <url-pattern>/faces/*</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>Faces Servlet</servlet-name>
         <url-pattern>*.jsf</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>Faces Servlet</servlet-name>
         <url-pattern>*.faces</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>Faces Servlet</servlet-name>
         <url-pattern>*.xhtml</url-pattern>
         <url-pattern>/javax.faces.resource/*</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>Push Servlet</servlet-name>
-        <url-pattern>/primepush/*</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>OAIServlet</servlet-name>
@@ -203,9 +185,6 @@
     <servlet-mapping>
         <servlet-name>edu.harvard.iq.dataverse.api.datadeposit.SWORDv2ServiceDocumentServlet</servlet-name>
         <url-pattern>/dvn/api/data-deposit/v1/swordv2/service-document/*</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>edu.harvard.iq.dataverse.api.datadeposit.SWORDv2ServiceDocumentServlet</servlet-name>
         <url-pattern>/dvn/api/data-deposit/v1.1/swordv2/service-document/*</url-pattern>
     </servlet-mapping>
     <context-param>
@@ -223,9 +202,6 @@
     <servlet-mapping>
         <servlet-name>edu.harvard.iq.dataverse.api.datadeposit.SWORDv2CollectionServlet</servlet-name>
         <url-pattern>/dvn/api/data-deposit/v1/swordv2/collection/*</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>edu.harvard.iq.dataverse.api.datadeposit.SWORDv2CollectionServlet</servlet-name>
         <url-pattern>/dvn/api/data-deposit/v1.1/swordv2/collection/*</url-pattern>
     </servlet-mapping>
     <context-param>
@@ -239,9 +215,6 @@
     <servlet-mapping>
         <servlet-name>edu.harvard.iq.dataverse.api.datadeposit.SWORDv2MediaResourceServlet</servlet-name>
         <url-pattern>/dvn/api/data-deposit/v1/swordv2/edit-media/*</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>edu.harvard.iq.dataverse.api.datadeposit.SWORDv2MediaResourceServlet</servlet-name>
         <url-pattern>/dvn/api/data-deposit/v1.1/swordv2/edit-media/*</url-pattern>
     </servlet-mapping>
     <context-param>
@@ -255,9 +228,6 @@
     <servlet-mapping>
         <servlet-name>edu.harvard.iq.dataverse.api.datadeposit.SWORDv2StatementServlet</servlet-name>
         <url-pattern>/dvn/api/data-deposit/v1/swordv2/statement/*</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>edu.harvard.iq.dataverse.api.datadeposit.SWORDv2StatementServlet</servlet-name>
         <url-pattern>/dvn/api/data-deposit/v1.1/swordv2/statement/*</url-pattern>
     </servlet-mapping>
     <context-param>
@@ -271,9 +241,6 @@
     <servlet-mapping>
         <servlet-name>edu.harvard.iq.dataverse.api.datadeposit.SWORDv2ContainerServlet</servlet-name>
         <url-pattern>/dvn/api/data-deposit/v1/swordv2/edit/*</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>edu.harvard.iq.dataverse.api.datadeposit.SWORDv2ContainerServlet</servlet-name>
         <url-pattern>/dvn/api/data-deposit/v1.1/swordv2/edit/*</url-pattern>
     </servlet-mapping>
     <!-- END Data Deposit API (SWORD v2) -->

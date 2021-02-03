@@ -35,9 +35,7 @@
         <div class="col-sm-4 text-right col-manage-action" jsf:rendered="#{!widgetWrapper.widgetView}">
             <div class="button-block pull-right">
                 <!-- ADD DATA -->
-                <o:importFunctions type="edu.harvard.iq.dataverse.persistence.group.AuthenticatedUsers" />
-                <ui:fragment rendered="#{!dataverseSession.user.authenticated and (permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand')
-                                         or permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateNewDatasetCommand'))}">
+                <ui:fragment rendered="#{!dataverseSession.user.authenticated and SearchIncludeFragment.couldCreateDatasetOrDataverseIfWasAuthenticated()}">
                     <button type="button" class="btn btn-default btn-access" onclick="PF('addData_popup').show()">
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"/> #{bundle['dataverse.results.btn.addData']}
                     </button>

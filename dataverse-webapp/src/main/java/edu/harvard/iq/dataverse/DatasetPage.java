@@ -275,7 +275,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public boolean canViewUnpublishedDataset() {
-        return permissionsWrapper.canViewUnpublishedDataset(dvRequestService.getDataverseRequest(), dataset);
+        return permissionsWrapper.canViewUnpublishedDataset(dataset);
     }
 
     /*
@@ -1214,7 +1214,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public boolean isUserUnderEmbargo() {
-        return dataset.hasActiveEmbargo() && !permissionsWrapper.canViewUnpublishedDataset(dvRequestService.getDataverseRequest(), dataset);
+        return dataset.hasActiveEmbargo() && !permissionsWrapper.canViewUnpublishedDataset(dataset);
     }
 
     public boolean isUserAbleToSetOrUpdateEmbargo() {

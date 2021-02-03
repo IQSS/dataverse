@@ -240,7 +240,7 @@ public class DatasetFilesTab implements Serializable {
     }
 
     private List<FileMetadata> getAccessibleFilesMetadata() {
-        if (permissionsWrapper.canViewUnpublishedDataset(dvRequestService.getDataverseRequest(), dataset)) {
+        if (permissionsWrapper.canViewUnpublishedDataset(dataset)) {
             return workingVersion.getAllFilesMetadataSorted();
         } else {
             return workingVersion.getOnlyFilesMetadataNotUnderEmbargoSorted();
@@ -444,7 +444,7 @@ public class DatasetFilesTab implements Serializable {
 
     // Another convenience method - to cache Update Permission on the dataset: 
     public boolean canUpdateDataset() {
-        return permissionsWrapper.canUpdateDataset(dvRequestService.getDataverseRequest(), this.dataset);
+        return permissionsWrapper.canCurrentUserUpdateDataset(dataset);
     }
 
     public void updateMultipleFileOptionFlags () {

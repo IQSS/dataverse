@@ -331,7 +331,7 @@ public class CreateEditDataversePage implements Serializable {
 
     private String setupViewForDataverseEdit() {
         dataverse = dataverseDao.find(dataverseId);
-        if (!permissionService.on(dataverse).has(Permission.EditDataverse)) {
+        if (!permissionsWrapper.canIssueUpdateDataverseCommand(dataverse)) {
             return permissionsWrapper.notAuthorized();
         }
 
@@ -347,7 +347,7 @@ public class CreateEditDataversePage implements Serializable {
 
         if (dataverse.getOwner() == null) {
             return permissionsWrapper.notFound();
-        } else if (!permissionService.on(dataverse.getOwner()).has(Permission.AddDataverse)) {
+        } else if (!permissionsWrapper.canIssueCreateDataverseCommand(dataverse.getOwner())) {
             return permissionsWrapper.notAuthorized();
         }
 

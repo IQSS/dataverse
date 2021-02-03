@@ -65,19 +65,6 @@ public class CommandHelper {
         return requiredPerms == null || requiredPerms.isAllPermissionsRequired();
     }
 
-    /**
-     * Given a command, returns the set of permissions needed to be able to
-     * execute it. Needed permissions are specified by annotating the command's
-     * class with the {@link RequiredPermissions} annotation.
-     *
-     * @param c The command
-     * @return Set of permissions, or {@code null} if the command's class was
-     * not annotated.
-     */
-    public Map<String, Set<Permission>> permissionsRequired(Command c) {
-        return permissionsRequired(c.getClass());
-    }
-
     private Set<Permission> asPermissionSet(Permission[] permissionArray) {
         return (permissionArray.length == 0) ? EnumSet.noneOf(Permission.class)
                 : (permissionArray.length == 1) ? EnumSet.of(permissionArray[0])

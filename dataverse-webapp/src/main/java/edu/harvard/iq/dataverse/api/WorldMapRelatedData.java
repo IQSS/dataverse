@@ -219,7 +219,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         }
 
         // Does this user have permission to edit metadata for this file?    
-        if (!permissionService.request(createDataverseRequest(dvUser)).on(dfile.getOwner()).has(Permission.EditDataset)) {
+        if (!permissionService.requestOn(createDataverseRequest(dvUser), dfile.getOwner()).has(Permission.EditDataset)) {
             String errMsg = "The user does not have permission to edit metadata for this file.";
             return error(Response.Status.FORBIDDEN, errMsg);
         }
@@ -573,7 +573,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         }
 
         // check permissions!
-        if (!permissionService.request(createDataverseRequest(dvUser)).on(dfile.getOwner()).has(Permission.EditDataset)) {
+        if (!permissionService.requestOn(createDataverseRequest(dvUser), dfile.getOwner()).has(Permission.EditDataset)) {
             String errMsg = "The user does not have permission to edit metadata for this file. (MapLayerMetadata)";
             return error(Response.Status.FORBIDDEN, errMsg);
         }

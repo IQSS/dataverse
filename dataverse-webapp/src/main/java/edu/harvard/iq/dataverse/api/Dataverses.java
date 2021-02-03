@@ -490,8 +490,8 @@ public class Dataverses extends AbstractApiBean {
     public Response getMetadataRoot(@PathParam("identifier") String dvIdtf) {
         return response(req -> {
             final Dataverse dataverse = findDataverseOrDie(dvIdtf);
-            if (permissionSvc.request(req)
-                    .on(dataverse)
+            if (permissionSvc
+                    .requestOn(req, dataverse)
                     .has(Permission.EditDataverse)) {
                 return ok(dataverse.isMetadataBlockRoot());
             } else {

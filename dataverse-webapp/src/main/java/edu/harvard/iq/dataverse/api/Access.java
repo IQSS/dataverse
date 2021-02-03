@@ -1290,21 +1290,17 @@ public class Access extends AbstractApiBean {
          */
 
         if (session != null) {
-            if (session.getUser() != null) {
-                if (session.getUser().isAuthenticated()) {
-                    user = session.getUser();
-                } else {
-                    logger.fine("User associated with the session is not an authenticated user.");
-                    if (session.getUser() instanceof PrivateUrlUser) {
-                        logger.fine("User associated with the session is a PrivateUrlUser user.");
-                        user = session.getUser();
-                    }
-                    if (session.getUser() instanceof GuestUser) {
-                        logger.fine("User associated with the session is indeed a guest user.");
-                    }
-                }
+            if (session.getUser().isAuthenticated()) {
+                user = session.getUser();
             } else {
-                logger.fine("No user associated with the session.");
+                logger.fine("User associated with the session is not an authenticated user.");
+                if (session.getUser() instanceof PrivateUrlUser) {
+                    logger.fine("User associated with the session is a PrivateUrlUser user.");
+                    user = session.getUser();
+                }
+                if (session.getUser() instanceof GuestUser) {
+                    logger.fine("User associated with the session is indeed a guest user.");
+                }
             }
         } else {
             logger.fine("Session is null.");
@@ -1354,10 +1350,7 @@ public class Access extends AbstractApiBean {
             boolean hasAccessToRestrictedBySession = false;
             boolean hasAccessToRestrictedByToken = false;
 
-            if (permissionService.on(df).has(Permission.DownloadFile)) {
-                // Note: PermissionServiceBean.on(Datafile df) will obtain the
-                // User from the Session object, just like in the code fragment
-                // above. That's why it's not passed along as an argument.
+            if (session != null && permissionService.requestOn(createDataverseRequest(session.getUser()), df).has(Permission.DownloadFile)) {
                 hasAccessToRestrictedBySession = true;
             } else if (apiTokenUser.isPresent() && permissionService.requestOn(createDataverseRequest(apiTokenUser.get()), df).has(Permission.DownloadFile)) {
                 hasAccessToRestrictedByToken = true;
@@ -1383,7 +1376,7 @@ public class Access extends AbstractApiBean {
                     // session user that has the permission on the file, and the API token 
                     // user with the ViewUnpublished permission, or vice versa!
                     if (hasAccessToRestrictedBySession) {
-                        if (permissionService.on(df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
+                        if (permissionService.requestOn(createDataverseRequest(session.getUser()), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
                             if (user != null) {
                                 logger.log(Level.FINE, "Session-based auth: user {0} is granted access to the restricted, unpublished datafile.", user.getIdentifier());
                             } else {

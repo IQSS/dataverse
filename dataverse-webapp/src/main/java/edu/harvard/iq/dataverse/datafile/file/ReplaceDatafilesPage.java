@@ -390,7 +390,7 @@ public class ReplaceDatafilesPage implements Serializable {
             return permissionsWrapper.notFound();
         }
 
-        if (!permissionService.on(dataset).has(Permission.EditDataset)) {
+        if (!permissionsWrapper.canCurrentUserUpdateDataset(dataset)) {
             return permissionsWrapper.notAuthorized();
         }
 

@@ -62,7 +62,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
 
     private final Map<Long, Boolean> fileMetadataWorldMapExplore = new HashMap<>(); // { FileMetadata.id : Boolean } 
     private Map<Long, MapLayerMetadata> mapLayerMetadataLookup = null;
-    private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
+    private final Map<Permission, Boolean> datasetPermissionMap = new HashMap<>();
 
 
     public WorldMapPermissionHelper() {
@@ -565,13 +565,11 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
             return false;
         }
 
-        String permName = permissionToCheck.getHumanName();
-
         // Has this check already been done? 
         // 
-        if (this.datasetPermissionMap.containsKey(permName)) {
+        if (this.datasetPermissionMap.containsKey(permissionToCheck)) {
             // Yes, return previous answer
-            return this.datasetPermissionMap.get(permName);
+            return this.datasetPermissionMap.get(permissionToCheck);
         }
 
         // Check the permission
@@ -580,7 +578,7 @@ public class WorldMapPermissionHelper implements java.io.Serializable {
         boolean hasPermission = this.permissionService.userOn(this.session.getUser(), objectToCheck).has(permissionToCheck);
 
         // Save the permission
-        this.datasetPermissionMap.put(permName, hasPermission);
+        this.datasetPermissionMap.put(permissionToCheck, hasPermission);
 
         // return true/false
         return hasPermission;

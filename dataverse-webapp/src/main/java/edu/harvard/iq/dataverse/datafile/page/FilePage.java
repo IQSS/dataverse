@@ -150,7 +150,7 @@ public class FilePage implements java.io.Serializable {
                 return permissionsWrapper.notFound();
             }
 
-            if (!permissionsWrapper.canViewUnpublishedDataset(dvRequestService.getDataverseRequest(), file.getOwner()) &&
+            if (!permissionsWrapper.canViewUnpublishedDataset(file.getOwner()) &&
                     file.getOwner().hasActiveEmbargo()) {
                 return permissionsWrapper.notAuthorized();
             }
@@ -207,7 +207,7 @@ public class FilePage implements java.io.Serializable {
     }
 
     private boolean canViewUnpublishedDataset() {
-        return permissionsWrapper.canViewUnpublishedDataset(dvRequestService.getDataverseRequest(), fileMetadata.getDatasetVersion().getDataset());
+        return permissionsWrapper.canViewUnpublishedDataset(fileMetadata.getDatasetVersion().getDataset());
     }
 
 
@@ -359,7 +359,7 @@ public class FilePage implements java.io.Serializable {
         for (DatasetVersion versionLoop : fileMetadata.getDatasetVersion().getDataset().getVersions()) {
             boolean foundFmd = false;
 
-            if (versionLoop.isReleased() || versionLoop.isDeaccessioned() || permissionService.on(fileMetadata.getDatasetVersion().getDataset()).has(Permission.ViewUnpublishedDataset)) {
+            if (versionLoop.isReleased() || versionLoop.isDeaccessioned() || permissionsWrapper.canViewUnpublishedDataset(fileMetadata.getDatasetVersion().getDataset())) {
                 for (DataFile df : allfiles) {
                     FileMetadata fmd = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(versionLoop.getId(), df.getId());
                     if (fmd != null) {
@@ -522,7 +522,7 @@ public class FilePage implements java.io.Serializable {
 
 
     public boolean canUpdateDataset() {
-        return permissionsWrapper.canUpdateDataset(dvRequestService.getDataverseRequest(), this.file.getOwner());
+        return permissionsWrapper.canCurrentUserUpdateDataset(file.getOwner());
     }
 
     public int getSelectedTabIndex() {

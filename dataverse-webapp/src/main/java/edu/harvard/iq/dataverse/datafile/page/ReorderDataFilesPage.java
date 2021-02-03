@@ -1,12 +1,10 @@
 package edu.harvard.iq.dataverse.datafile.page;
 
 import edu.harvard.iq.dataverse.DatasetDao;
-import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.persistence.user.Permission;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import org.primefaces.event.ReorderEvent;
@@ -27,8 +25,6 @@ public class ReorderDataFilesPage implements java.io.Serializable {
     private DatasetDao datasetDao;
     @EJB
     private DatasetVersionServiceBean datasetVersionService;
-    @EJB
-    private PermissionServiceBean permissionService;
     @Inject
     private PermissionsWrapper permissionsWrapper;
 
@@ -53,7 +49,7 @@ public class ReorderDataFilesPage implements java.io.Serializable {
 
         fileMetadatas = fetchedDatasetVersion.get().getAllFilesMetadataSorted();
 
-        if (!permissionService.on(datasetVersion.getDataset()).has(Permission.EditDataset)) {
+        if (!permissionsWrapper.canCurrentUserUpdateDataset(datasetVersion.getDataset())) {
             return permissionsWrapper.notAuthorized();
         }
 

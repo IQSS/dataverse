@@ -1,12 +1,9 @@
 package edu.harvard.iq.dataverse.dataset;
 
 import edu.harvard.iq.dataverse.DatasetDao;
-import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -36,9 +33,6 @@ public class DatasetWidgetsPage implements java.io.Serializable {
 
     @EJB
     DatasetDao datasetDao;
-
-    @Inject
-    DataverseRequestServiceBean dvRequestService;
 
     @Inject
     private PermissionsWrapper permissionsWrapper;
@@ -75,10 +69,10 @@ public class DatasetWidgetsPage implements java.io.Serializable {
          * UpdateDatasetThumbnailCommand since it's really the only update you
          * can do from this page.
          */
-        if (!permissionsWrapper.canIssueCommand(dataset, UpdateDatasetVersionCommand.class)) {
+        if (!permissionsWrapper.canCurrentUserUpdateDataset(dataset)) {
             return permissionsWrapper.notAuthorized();
         }
-        if (datasetDao.isInReview(dataset) && !permissionsWrapper.canUpdateAndPublishDataset(dvRequestService.getDataverseRequest(), dataset)) {
+        if (datasetDao.isInReview(dataset) && !permissionsWrapper.canUpdateAndPublishDataset(dataset)) {
             return permissionsWrapper.notAuthorized();
         }
 

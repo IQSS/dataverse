@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
@@ -36,7 +35,7 @@ public class ListVersionsCommand extends AbstractCommand<List<DatasetVersion>> {
     public List<DatasetVersion> execute(CommandContext ctxt)  {
         List<DatasetVersion> outputList = new LinkedList<>();
         for (DatasetVersion dsv : ds.getVersions()) {
-            if (dsv.isReleased() || ctxt.permissions().request(getRequest()).on(ds).has(Permission.EditDataset)) {
+            if (dsv.isReleased() || ctxt.permissions().requestOn(getRequest(), ds).has(Permission.EditDataset)) {
                 outputList.add(dsv);
             }
         }

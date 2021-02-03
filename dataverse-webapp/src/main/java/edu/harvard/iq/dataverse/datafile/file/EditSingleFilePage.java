@@ -3,8 +3,6 @@ package edu.harvard.iq.dataverse.datafile.file;
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetDao;
-import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
-import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.datafile.page.FileDownloadHelper;
@@ -16,7 +14,6 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataFileTag;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -24,7 +21,6 @@ import io.vavr.control.Try;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import javax.faces.view.ViewScoped;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -43,9 +39,7 @@ public class EditSingleFilePage implements java.io.Serializable {
     private DatasetDao datasetDao;
     private DatasetService datasetService;
     private DataFileServiceBean datafileService;
-    private PermissionServiceBean permissionService;
     private SettingsServiceBean settingsService;
-    private DataverseRequestServiceBean dvRequestService;
     private PermissionsWrapper permissionsWrapper;
     private FileDownloadHelper fileDownloadHelper;
     private ProvPopupFragmentBean provPopupFragmentBean;
@@ -70,17 +64,15 @@ public class EditSingleFilePage implements java.io.Serializable {
 
     @Inject
     public EditSingleFilePage(DatasetDao datasetDao, DatasetService datasetService,
-                              DataFileServiceBean datafileService, PermissionServiceBean permissionService,
+                              DataFileServiceBean datafileService,
                               SettingsServiceBean settingsService,
-                              DataverseRequestServiceBean dvRequestService, PermissionsWrapper permissionsWrapper,
+                              PermissionsWrapper permissionsWrapper,
                               FileDownloadHelper fileDownloadHelper, ProvPopupFragmentBean provPopupFragmentBean,
                               SingleFileFacade singleFileFacade, DatasetThumbnailService datasetThumbnailService) {
         this.datasetService = datasetService;
         this.datasetDao = datasetDao;
         this.datafileService = datafileService;
-        this.permissionService = permissionService;
         this.settingsService = settingsService;
-        this.dvRequestService = dvRequestService;
         this.permissionsWrapper = permissionsWrapper;
         this.fileDownloadHelper = fileDownloadHelper;
         this.provPopupFragmentBean = provPopupFragmentBean;
@@ -173,10 +165,10 @@ public class EditSingleFilePage implements java.io.Serializable {
 
         // Check if they have permission to modify this dataset:
 
-        if (!permissionService.on(dataset).has(Permission.EditDataset)) {
+        if (!permissionsWrapper.canCurrentUserUpdateDataset(dataset)) {
             return permissionsWrapper.notAuthorized();
         }
-        if (datasetDao.isInReview(dataset) && !permissionsWrapper.canUpdateAndPublishDataset(dvRequestService.getDataverseRequest(), dataset)) {
+        if (datasetDao.isInReview(dataset) && !permissionsWrapper.canUpdateAndPublishDataset(dataset)) {
             return permissionsWrapper.notAuthorized();
         }
 

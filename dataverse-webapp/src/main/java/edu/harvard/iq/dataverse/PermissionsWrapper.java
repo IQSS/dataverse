@@ -11,10 +11,10 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.persistence.DvObject;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
-import edu.harvard.iq.dataverse.persistence.user.User;
 import javax.faces.view.ViewScoped;
 
 import javax.ejb.EJB;
@@ -35,16 +35,13 @@ public class PermissionsWrapper implements java.io.Serializable {
     PermissionServiceBean permissionService;
 
     @Inject
-    DataverseSession session;
-
-    @Inject
     DataverseRequestServiceBean dvRequestService;
 
     private final Map<Long, Map<Class<? extends Command<?>>, Boolean>> commandMap = new HashMap<>();
 
     // Maps for caching permissions lookup results:
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { DvObject.id : Boolean }
-    private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
+    private final Map<Permission, Boolean> datasetPermissionMap = new HashMap<>();
 
     /**
      * Check if the current Dataset can Issue Commands
@@ -62,7 +59,7 @@ public class PermissionsWrapper implements java.io.Serializable {
         }
 
         if (commandMap.containsKey(dvo.getId())) {
-            Map<Class<? extends Command<?>>, Boolean> dvoCommandMap = this.commandMap.get(dvo.getId());
+            Map<Class<? extends Command<?>>, Boolean> dvoCommandMap = commandMap.get(dvo.getId());
             if (dvoCommandMap.containsKey(command)) {
                 return dvoCommandMap.get(command);
             } else {
@@ -109,7 +106,7 @@ public class PermissionsWrapper implements java.io.Serializable {
     }
 
     public boolean canEditDataverseTextMessagesAndBanners(Long dataverseId) {
-        return permissionService.isUserCanEditDataverseTextMessagesAndBanners(dataverseId);
+        return permissionService.isUserCanEditDataverseTextMessagesAndBanners(dvRequestService.getDataverseRequest().getUser(), dataverseId);
     }
 
     public boolean canManagePermissions(DvObject dvo) {
@@ -117,47 +114,37 @@ public class PermissionsWrapper implements java.io.Serializable {
             return false;
         }
 
-        User u = session.getUser();
         return dvo instanceof Dataverse
-                ? canManageDataversePermissions(u, (Dataverse) dvo)
-                : canManageDatasetOrMinorDatasetPermissions(u, (Dataset) dvo);
+                ? canManageDataversePermissions((Dataverse) dvo)
+                : canManageDatasetOrMinorDatasetPermissions((Dataset) dvo);
     }
 
-    public boolean canManageDataversePermissions(User u, Dataverse dv) {
+    public boolean canManageDataversePermissions(Dataverse dv) {
         if (dv == null || (dv.getId() == null)) {
-            return false;
-        }
-        if (u == null) {
             return false;
         }
         return permissionService.requestOn(dvRequestService.getDataverseRequest(), dv).has(Permission.ManageDataversePermissions);
     }
 
-    public boolean canManageDatasetOrMinorDatasetPermissions(User u, Dataset ds) {
+    public boolean canManageDatasetOrMinorDatasetPermissions(Dataset ds) {
         if (ds == null || (ds.getId() == null)) {
-            return false;
-        }
-        if (u == null) {
             return false;
         }
         return permissionService.requestOn(dvRequestService.getDataverseRequest(), ds).has(Permission.ManageDatasetPermissions) ||
                 permissionService.requestOn(dvRequestService.getDataverseRequest(), ds).has(Permission.ManageMinorDatasetPermissions);
     }
 
-    public boolean canViewUnpublishedDataset(DataverseRequest dr, Dataset dataset) {
-        return doesSessionUserHaveDataSetPermission(dr, dataset, Permission.ViewUnpublishedDataset);
+    public boolean canViewUnpublishedDataset(Dataset dataset) {
+        return doesSessionUserHaveDataSetPermission(dvRequestService.getDataverseRequest(), dataset, Permission.ViewUnpublishedDataset);
     }
 
-    public boolean canUpdateDataset(DataverseRequest dr, Dataset dataset) {
-        return doesSessionUserHaveDataSetPermission(dr, dataset, Permission.EditDataset);
-    }
     public boolean canCurrentUserUpdateDataset(Dataset dataset) {
         DataverseRequest dataverseRequest = dvRequestService.getDataverseRequest();
         return doesSessionUserHaveDataSetPermission(dataverseRequest, dataset, Permission.EditDataset);
     }
 
-    public boolean canUpdateAndPublishDataset(DataverseRequest dr, Dataset dataset) {
-        return canUpdateDataset(dr, dataset) && canIssuePublishDatasetCommand(dataset);
+    public boolean canUpdateAndPublishDataset(Dataset dataset) {
+        return canCurrentUserUpdateDataset(dataset) && canIssuePublishDatasetCommand(dataset);
     }
 
     /**
@@ -171,25 +158,23 @@ public class PermissionsWrapper implements java.io.Serializable {
      * @param permissionToCheck
      * @return
      */
-    public boolean doesSessionUserHaveDataSetPermission(DataverseRequest req, Dataset dataset, Permission permissionToCheck) {
+    private boolean doesSessionUserHaveDataSetPermission(DataverseRequest req, Dataset dataset, Permission permissionToCheck) {
         if (permissionToCheck == null) {
             return false;
         }
 
-        String permName = permissionToCheck.getHumanName();
-
         // Has this check already been done? 
         // 
-        if (this.datasetPermissionMap.containsKey(permName)) {
+        if (datasetPermissionMap.containsKey(permissionToCheck)) {
             // Yes, return previous answer
-            return this.datasetPermissionMap.get(permName);
+            return datasetPermissionMap.get(permissionToCheck);
         }
 
         // Check the permission
-        boolean hasPermission = this.permissionService.requestOn(req, dataset).has(permissionToCheck);
+        boolean hasPermission = permissionService.requestOn(req, dataset).has(permissionToCheck);
 
         // Save the permission
-        this.datasetPermissionMap.put(permName, hasPermission);
+        datasetPermissionMap.put(permissionToCheck, hasPermission);
 
         // return true/false
         return hasPermission;
@@ -198,34 +183,34 @@ public class PermissionsWrapper implements java.io.Serializable {
     /**
      * Does this dvoObject have "Permission.DownloadFile"?
      *
-     * @param dvo
+     * @param datafile
      * @return
      */
-    public boolean hasDownloadFilePermission(DvObject dvo) {
+    public boolean hasDownloadFilePermission(DataFile datafile) {
 
-        if ((dvo == null) || (dvo.getId() == null)) {
+        if ((datafile == null) || (datafile.getId() == null)) {
             return false;
         }
 
         // Has this check already been done? Check the hash
         //
-        if (this.fileDownloadPermissionMap.containsKey(dvo.getId())) {
+        if (fileDownloadPermissionMap.containsKey(datafile.getId())) {
             // Yes, return previous answer
-            return this.fileDownloadPermissionMap.get(dvo.getId());
+            return fileDownloadPermissionMap.get(datafile.getId());
         }
 
         // Check permissions
         //
-        if (permissionService.on(dvo).has(Permission.DownloadFile)) {
+        if (permissionService.requestOn(dvRequestService.getDataverseRequest(), datafile).has(Permission.DownloadFile)) {
 
             // Yes, has permission, store result
-            fileDownloadPermissionMap.put(dvo.getId(), true);
+            fileDownloadPermissionMap.put(datafile.getId(), true);
             return true;
 
         } else {
 
             // No permission, store result
-            fileDownloadPermissionMap.put(dvo.getId(), false);
+            fileDownloadPermissionMap.put(datafile.getId(), false);
             return false;
         }
     }

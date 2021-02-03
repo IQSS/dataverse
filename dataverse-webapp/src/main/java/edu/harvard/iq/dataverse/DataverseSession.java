@@ -1,9 +1,7 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.PermissionServiceBean.StaticPermissionQuery;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.persistence.ActionLogRecord;
-import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -28,9 +26,6 @@ import java.util.logging.Logger;
 @Named
 @SessionScoped
 public class DataverseSession implements Serializable {
-
-    @EJB
-    PermissionServiceBean permissionsService;
 
     @EJB
     ActionLogServiceBean logSvc;
@@ -109,10 +104,6 @@ public class DataverseSession implements Serializable {
                 && !localeCode.equals(FacesContext.getCurrentInstance().getViewRoot().getLocale().getLanguage())) {
             FacesContext.getCurrentInstance().getViewRoot().setLocale(new Locale(localeCode));
         }
-    }
-
-    public StaticPermissionQuery on(Dataverse d) {
-        return permissionsService.userOn(user, d);
     }
 
     // -------------------- PRIVATE --------------------

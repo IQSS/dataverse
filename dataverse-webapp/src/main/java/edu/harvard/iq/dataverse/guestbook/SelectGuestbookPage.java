@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.guestbook;
 
 import edu.harvard.iq.dataverse.DatasetDao;
-import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -27,7 +26,6 @@ public class SelectGuestbookPage implements java.io.Serializable {
 
     private DatasetDao datasetDao;
     private PermissionsWrapper permissionsWrapper;
-    private DataverseRequestServiceBean dvRequestService;
     private SelectGuestBookService selectGuestBookService;
 
     private String persistentId;
@@ -35,7 +33,6 @@ public class SelectGuestbookPage implements java.io.Serializable {
 
     private Dataset dataset;
     private Guestbook selectedGuestbook;
-    private Guestbook guestbookBeforeChanges;
     private List<Guestbook> availableGuestbooks;
 
     // -------------------- CONSTRUCTORS --------------------
@@ -45,11 +42,9 @@ public class SelectGuestbookPage implements java.io.Serializable {
 
     @Inject
     public SelectGuestbookPage(DatasetDao datasetDao, PermissionsWrapper permissionsWrapper,
-                               DataverseRequestServiceBean dvRequestService,
                                SelectGuestBookService selectGuestBookService) {
         this.datasetDao = datasetDao;
         this.permissionsWrapper = permissionsWrapper;
-        this.dvRequestService = dvRequestService;
         this.selectGuestBookService = selectGuestBookService;
     }
 
@@ -87,11 +82,10 @@ public class SelectGuestbookPage implements java.io.Serializable {
         }
 
         // Check permisisons
-        if (!permissionsWrapper.canUpdateDataset(dvRequestService.getDataverseRequest(), dataset)) {
+        if (!permissionsWrapper.canCurrentUserUpdateDataset(dataset)) {
             return permissionsWrapper.notAuthorized();
         }
-        if (datasetDao.isInReview(dataset) && !permissionsWrapper.canUpdateAndPublishDataset(dvRequestService.getDataverseRequest(),
-                                                                                             dataset)) {
+        if (datasetDao.isInReview(dataset) && !permissionsWrapper.canUpdateAndPublishDataset(dataset)) {
             return permissionsWrapper.notAuthorized();
         }
 

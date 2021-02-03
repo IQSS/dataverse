@@ -32,7 +32,7 @@
         <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.dataset']}" class="col-sm-1 text-center">
             <ui:fragment rendered="#{versionTab.datasetVersion != FilePage.fileMetadata.datasetVersion }">
                 <ui:fragment rendered="#{versionTab.datasetVersion.released or ((versionTab.datasetVersion.deaccessioned or versionTab.datasetVersion.draft)
-                                     and permissionServiceBean.on(versionTab.datasetVersion.dataset).has('ViewUnpublishedDataset'))}">
+                                     and FilePage.canViewUnpublishedDataset())}">
                     <h:outputLink rendered="#{!(versionTab.datasetVersion.released or versionTab.datasetVersion.deaccessioned) and versionTab.dataFile != null }"
                                   value="/file.xhtml?fileId=#{versionTab.dataFile.id}&#38;version=#{versionTab.datasetVersion.versionState}" styleClass="ui-commandlink ui-widget">
                         <h:outputText value="#{versionTab.datasetVersion.versionState}" />
@@ -47,7 +47,7 @@
                                   value="#{versionTab.datasetVersion.versionNumber}.#{versionTab.datasetVersion.minorVersionNumber}" />
                 </ui:fragment>
                 <h:outputText rendered="#{versionTab.datasetVersion.deaccessioned
-                                     and !permissionServiceBean.on(versionTab.datasetVersion.dataset).has('ViewUnpublishedDataset')}"
+                                     and !FilePage.canViewUnpublishedDataset()}"
                               value="#{versionTab.datasetVersion.versionNumber}.#{versionTab.datasetVersion.minorVersionNumber}" />
             </ui:fragment>
             <ui:fragment rendered="#{versionTab.datasetVersion == FilePage.fileMetadata.datasetVersion }">

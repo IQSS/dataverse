@@ -7,12 +7,16 @@ import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.ThumbnailServiceWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.persistence.group.AuthenticatedUsers;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
 import edu.harvard.iq.dataverse.search.query.SearchForTypes;
 import edu.harvard.iq.dataverse.search.query.SearchObjectType;
@@ -65,6 +69,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
     private DatasetFieldServiceBean datasetFieldService;
     @Inject
     private DataverseRequestServiceBean dataverseRequestService;
+    @Inject
+    private PermissionServiceBean permissionService;
 
     private String query;
     private List<String> filterQueries = new ArrayList<>();
@@ -965,4 +971,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     }
 
+    public boolean couldCreateDatasetOrDataverseIfWasAuthenticated() throws ClassNotFoundException {
+        return permissionService.userOn(AuthenticatedUsers.get(), dataverse).has(Permission.AddDataverse)
+                || permissionService.userOn(AuthenticatedUsers.get(), dataverse).has(Permission.AddDataset);
+    }
 }

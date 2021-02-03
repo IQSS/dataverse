@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.GroupUtil;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
@@ -21,18 +22,16 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.group.Group;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
-import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.persistence.user.User;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -62,7 +61,6 @@ import static java.util.stream.Collectors.toList;
  * @author michael
  */
 @Stateless
-@Named
 public class PermissionServiceBean {
 
     private static final Logger logger = Logger.getLogger(PermissionServiceBean.class.getName());
@@ -74,9 +72,6 @@ public class PermissionServiceBean {
 
     @EJB
     BuiltinUserServiceBean userService;
-
-    @EJB
-    AuthenticationServiceBean authenticationService;
 
     @EJB
     DataverseRoleServiceBean roleService;
@@ -99,11 +94,8 @@ public class PermissionServiceBean {
     @EJB
     DataverseRoleServiceBean dataverseRoleServiceBean;
 
-    @Inject
-    DataverseSession session;
-
-    @Inject
-    DataverseRequestServiceBean dvRequestService;
+    @EJB
+    SystemConfig systemConfig;
 
     /**
      * A request-level permission query (e.g includes IP ras).
@@ -113,13 +105,9 @@ public class PermissionServiceBean {
         final DvObject subject;
         final DataverseRequest request;
 
-        public RequestPermissionQuery(DvObject subject, DataverseRequest request) {
+        private RequestPermissionQuery(DvObject subject, DataverseRequest request) {
             this.subject = subject;
             this.request = request;
-        }
-
-        public Set<Permission> get() {
-            return permissionsFor(request, subject);
         }
 
         public boolean has(Permission p) {
@@ -140,10 +128,6 @@ public class PermissionServiceBean {
                 return true;
             }
             return hasPermissionsFor(request, subject, p);
-        }
-
-        public RequestPermissionQuery on(DvObject dvo) {
-            return new RequestPermissionQuery(dvo, request);
         }
 
         /**
@@ -202,32 +186,6 @@ public class PermissionServiceBean {
             this.user = user;
         }
 
-        public StaticPermissionQuery user(RoleAssignee anotherUser) {
-            return new StaticPermissionQuery(anotherUser, subject);
-        }
-
-        /**
-         * "Fast and loose" query mechanism, allowing to pass the command class
-         * name, does not take request-level permissions into account. Command
-         * is assumed to live in
-         * {@code edu.harvard.iq.dataverse.engine.command.impl.}
-         *
-         * @param commandName
-         * @return {@code true} iff the user has the permissions required by the
-         * command on the object.
-         * @throws ClassNotFoundException
-         * @deprecated Use DynamicPermissionQuery instead
-         */
-        @Deprecated
-        public boolean canIssueCommand(String commandName) throws ClassNotFoundException {
-            return isUserAllowedOn(user,
-                                   (Class<? extends Command>) Class.forName("edu.harvard.iq.dataverse.engine.command.impl." + commandName), subject);
-        }
-        
-        public Set<Permission> get() {
-            return permissionsFor(user, subject);
-        }
-
         public boolean has(Permission p) {
             return hasPermissionsFor(user, subject, EnumSet.of(p));
         }
@@ -256,7 +214,7 @@ public class PermissionServiceBean {
      * @param includeReleased include released dataverses and datasets without checking permissions
      * @return list of {@code dvo} children over which {@code req} has at least {@code required} permissions.
      */
-    public List<DvObject> whichChildrenHasPermissionsFor(DataverseRequest req, DvObjectContainer dvo, Set<Permission> required, boolean includeReleased) {
+    private List<DvObject> whichChildrenHasPermissionsFor(DataverseRequest req, DvObjectContainer dvo, Set<Permission> required, boolean includeReleased) {
         List<DvObject> children = dvObjectServiceBean.findByOwnerId(dvo.getId());
         User user = req.getUser();
 
@@ -310,20 +268,13 @@ public class PermissionServiceBean {
 
     }
 
-    // Convenience versions of the method above:  
-    // Same as above - but defaults to relying on permissions only 
-    // (i.e., does not automatically return released dataverses and datasets)
-    public List<DvObject> whichChildrenHasPermissionsFor(DataverseRequest req, DvObjectContainer dvo, Set<Permission> required) {
-        return whichChildrenHasPermissionsFor(req, dvo, required, false);
-    }
-
     // A shortcut for calling the method above, with the assumption that all the
     // released dataverses and datasets should be included: 
     public List<DvObject> whichChildrenHasPermissionsForOrReleased(DataverseRequest req, DvObjectContainer dvo, Set<Permission> required) {
         return whichChildrenHasPermissionsFor(req, dvo, required, true);
     }
 
-    public boolean hasPermissionsFor(DataverseRequest req, DvObject dvo, Set<Permission> required) {
+    private boolean hasPermissionsFor(DataverseRequest req, DvObject dvo, Set<Permission> required) {
         User user = req.getUser();
         if (user.isSuperuser()) {
             return true;
@@ -340,7 +291,7 @@ public class PermissionServiceBean {
         return hasGroupPermissionsFor(ras, dvo, required);
     }
 
-    public boolean hasPermissionsFor(RoleAssignee ra, DvObject dvo, Set<Permission> required) {
+    private boolean hasPermissionsFor(RoleAssignee ra, DvObject dvo, Set<Permission> required) {
         if (ra instanceof User) {
             User user = (User) ra;
             if (user.isSuperuser()) {
@@ -391,32 +342,6 @@ public class PermissionServiceBean {
         addGroupPermissionsFor(ras, dvo, permissions);
 
         if (!req.getUser().isAuthenticated()) {
-            permissions.removeAll(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY);
-        }
-        return permissions;
-    }
-
-    /**
-     * Returns the set of permission a user/group has over a dataverse object.
-     * This method takes into consideration group memberships as well, but does
-     * not look into request-level ras.
-     *
-     * @param ra  The role assignee.
-     * @param dvo The {@link DvObject} on which the user wants to operate
-     * @return the set of permissions {@code ra} has over {@code dvo}.
-     */
-    public Set<Permission> permissionsFor(RoleAssignee ra, DvObject dvo) {
-        if (ra instanceof AuthenticatedUser && ((AuthenticatedUser) ra).isSuperuser()) {
-            return EnumSet.allOf(Permission.class);
-        }
-
-        Set<Permission> permissions = getInferredPermissions(dvo);
-
-        Set<RoleAssignee> ras = new HashSet<>(groupService.groupsFor(ra, dvo));
-        ras.add(ra);
-        addGroupPermissionsFor(ras, dvo, permissions);
-
-        if ((ra instanceof User) && (!((User) ra).isAuthenticated())) {
             permissions.removeAll(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY);
         }
         return permissions;
@@ -488,7 +413,7 @@ public class PermissionServiceBean {
         return new HashSet<>(roleService.directRoleAssignments(ras, permAncestors));
     }
 
-    public Set<DvObject> getPermissionAncestors(DvObject d) {
+    private Set<DvObject> getPermissionAncestors(DvObject d) {
         Set<DvObject> ancestors = new HashSet<>();
         while (d != null) {
             ancestors.add(d);
@@ -499,25 +424,6 @@ public class PermissionServiceBean {
             }
         }
         return ancestors;
-    }
-
-    /**
-     * For commands with no named dvObjects, this allows a quick check whether a
-     * user can issue the command on the dataverse or not.
-     *
-     * @param u
-     * @param commandClass
-     * @param dvo
-     * @return
-     * @see #isUserAllowedOn(edu.harvard.iq.dataverse.persistence.user.RoleAssignee,
-     * edu.harvard.iq.dataverse.engine.command.Command,
-     * edu.harvard.iq.dataverse.persistence.DvObject)
-     * @deprecated As commands have dynamic permissions now, it is not enough to
-     * look at the static permissions anymore.
-     */
-    public boolean isUserAllowedOn(RoleAssignee u, Class<? extends Command> commandClass, DvObject dvo) {
-        Map<String, Set<Permission>> required = CH.permissionsRequired(commandClass);
-        return isUserAllowedOn(u, required, dvo);
     }
 
     public boolean isUserAllowedOn(RoleAssignee u, Command<?> command, DvObject dvo) {
@@ -543,25 +449,11 @@ public class PermissionServiceBean {
         return new StaticPermissionQuery(u, d);
     }
 
-    public RequestPermissionQuery on(DvObject d) {
-        if (d == null) {
-            throw new IllegalArgumentException("Cannot query permissions on a null DvObject");
-        }
-        if (d.getId() == null) {
-            throw new IllegalArgumentException("Cannot query permissions on a DvObject with a null id.");
-        }
-        return requestOn(dvRequestService.getDataverseRequest(), d);
-    }
-
     public RequestPermissionQuery requestOn(DataverseRequest req, DvObject dvo) {
         if (dvo.getId() == null) {
             throw new IllegalArgumentException("Cannot query permissions on a DvObject with a null id.");
         }
         return new RequestPermissionQuery(dvo, req);
-    }
-
-    public RequestPermissionQuery request(DataverseRequest req) {
-        return new RequestPermissionQuery(null, req);
     }
 
     /**
@@ -616,109 +508,6 @@ public class PermissionServiceBean {
         });
 
         return distinctUsers;
-    }
-
-    public List<Long> getDvObjectsUserHasRoleOn(User user) {
-        return getDvObjectIdsUserHasRoleOn(user, null, null, false);
-    }
-
-    public List<Long> getDvObjectIdsUserHasRoleOn(User user, List<DataverseRole> roles) {
-        return getDvObjectIdsUserHasRoleOn(user, roles, null, false);
-    }
-
-    /*
-    Method takes in a user and optional list of roles and dvobject type
-    queries the role assigment table filtering by optional roles and dv
-    returns dvobject ids
-     */
-    private String getRolesClause(List<DataverseRole> roles) {
-        StringBuilder roleStringBld = new StringBuilder();
-        if (roles != null && !roles.isEmpty()) {
-            roleStringBld.append(" and role_id in (");
-            boolean first = true;
-            for (DataverseRole role : roles) {
-                if (!first) {
-                    roleStringBld.append(",");
-                }
-                roleStringBld.append(role.getId());
-                first = false;
-            }
-            roleStringBld.append(")");
-        }
-        return roleStringBld.toString();
-    }
-
-    private String getTypesClause(List<String> types) {
-        boolean firstType = true;
-        StringBuilder typeStringBld = new StringBuilder();
-        if (types != null && !types.isEmpty()) {
-            typeStringBld.append(" dtype in (");
-            for (String type : types) {
-                if (!firstType) {
-                    typeStringBld.append(",");
-                }
-                typeStringBld.append("'").append(type).append("'");
-            }
-            typeStringBld.append(") and ");
-        }
-        return typeStringBld.toString();
-    }
-
-    public List<Long> getDvObjectIdsUserHasRoleOn(User user, List<DataverseRole> roles, List<String> types, boolean indirect) {
-
-        String roleString = getRolesClause(roles);
-        String typeString = getTypesClause(types);
-
-        Query nativeQuery = em.createNativeQuery("SELECT id FROM dvobject WHERE "
-                                                         + typeString + " id in (select definitionpoint_id from roleassignment where assigneeidentifier in ('" + user.getIdentifier() + "') "
-                                                         + roleString + ");");
-        List<Integer> dataverseIdsToCheck = nativeQuery.getResultList();
-        List<Long> dataversesUserHasPermissionOn = new LinkedList<>();
-        String indirectParentIds = "";
-        Boolean indirectFirst = true;
-        for (int dvIdAsInt : dataverseIdsToCheck) {
-            dataversesUserHasPermissionOn.add(Long.valueOf(dvIdAsInt));
-            if (indirect) {
-                if (indirectFirst) {
-                    indirectParentIds = "(" + dvIdAsInt;
-                    indirectFirst = false;
-                } else {
-                    indirectParentIds += ", " + dvIdAsInt;
-                }
-            }
-        }
-
-        // Get child datasets and files
-        if (indirect) {
-            indirectParentIds += ") ";
-            Query nativeQueryIndirect = em.createNativeQuery("SELECT id FROM dvobject WHERE "
-                                                                     + " owner_id in " + indirectParentIds + " and dType = 'Dataset'; ");
-
-            List<Integer> childDatasetIds = nativeQueryIndirect.getResultList();
-
-            String indirectDatasetParentIds = "";
-            Boolean indirectFileFirst = true;
-            for (int dvIdAsInt : childDatasetIds) {
-                dataversesUserHasPermissionOn.add(Long.valueOf(dvIdAsInt));
-                if (indirect) {
-                    if (indirectFileFirst) {
-                        indirectDatasetParentIds = "(" + dvIdAsInt;
-                        indirectFileFirst = false;
-                    } else {
-                        indirectDatasetParentIds += ", " + dvIdAsInt;
-                    }
-                }
-            }
-            Query nativeQueryFileIndirect = em.createNativeQuery("SELECT id FROM dvobject WHERE "
-                                                                         + " owner_id in " + indirectDatasetParentIds + " and dType = 'DataFile'; ");
-
-            List<Integer> childFileIds = nativeQueryFileIndirect.getResultList();
-
-            for (int dvIdAsInt : childFileIds) {
-                dataversesUserHasPermissionOn.add(Long.valueOf(dvIdAsInt));
-            }
-        }
-        return dataversesUserHasPermissionOn;
     }
 
     public boolean checkEditDatasetLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
@@ -784,8 +573,7 @@ public class PermissionServiceBean {
         return userAdminRole.isPresent();
     }
 
-    public boolean isUserCanEditDataverseTextMessagesAndBanners(Long dataverseId) {
-        User user = session.getUser();
+    public boolean isUserCanEditDataverseTextMessagesAndBanners(User user, Long dataverseId) {
 
         if (dataverseId == null) {
             return false;

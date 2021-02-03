@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.dataverse;
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseLinkingDao;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.FeaturedDataverseServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
@@ -67,6 +68,8 @@ public class DataversePage implements java.io.Serializable {
     private DataverseService dataverseService;
     @Inject
     private SavedSearchService savedSearchService;
+    @Inject
+    private DataverseRequestServiceBean dataverseRequestService;
 
     private Dataverse dataverse;
     private String dataverseAlias;
@@ -137,7 +140,8 @@ public class DataversePage implements java.io.Serializable {
         if (dataverse == null) {
             return permissionsWrapper.notFound();
         }
-        if (!dataverse.isReleased() && !permissionService.on(dataverse).has(Permission.ViewUnpublishedDataverse)) {
+        if (!dataverse.isReleased() && !permissionService.requestOn(dataverseRequestService.getDataverseRequest(), dataverse)
+                                                         .has(Permission.ViewUnpublishedDataverse)) {
             return permissionsWrapper.notAuthorized();
         }
 

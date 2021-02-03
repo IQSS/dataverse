@@ -1,17 +1,18 @@
 package edu.harvard.iq.dataverse.dataset.tab;
 
-import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.VersionSummaryDTO;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.dataset.difference.DatasetVersionDifference;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.persistence.user.Permission;
 import org.primefaces.PrimeFaces;
 
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,8 +24,8 @@ public class DatasetVersionsTab implements Serializable {
     @EJB
     private DatasetVersionServiceBean datasetVersionService;
     
-    @EJB
-    private PermissionServiceBean permissionService;
+    @Inject
+    private PermissionsWrapper permissionsWrapper;
 
     private Dataset dataset;
     private List<DatasetVersion> datasetVersions = new ArrayList<>();
@@ -130,7 +131,7 @@ public class DatasetVersionsTab implements Serializable {
     }
 
     private boolean canShowVersion(DatasetVersion datasetVersion) {
-        if (datasetVersion.isDraft() && !permissionService.on(dataset).has(Permission.ViewUnpublishedDataset)) {
+        if (datasetVersion.isDraft() && !permissionsWrapper.canViewUnpublishedDataset(dataset)) {
             return false;
         }
         return true;
@@ -138,7 +139,7 @@ public class DatasetVersionsTab implements Serializable {
 
     private boolean canShowLinkToDatasetVersion(DatasetVersion datasetVersion) {
         if (datasetVersion.isDeaccessioned() || datasetVersion.isDraft()) {
-            return permissionService.on(dataset).has(Permission.ViewUnpublishedDataset);
+            return permissionsWrapper.canViewUnpublishedDataset(dataset);
         }
         return true;
     }

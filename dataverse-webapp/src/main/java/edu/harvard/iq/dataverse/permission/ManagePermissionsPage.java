@@ -118,7 +118,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
         // for dataFiles, check the perms on its owning dataset
         DvObject checkPermissionsdvObject = dvObject instanceof DataFile ? dvObject.getOwner() : dvObject;
 
-        if (!isAllowedToManageDataverseOrDataset(checkPermissionsdvObject)) {
+        if (!permissionsWrapper.canManagePermissions(checkPermissionsdvObject)) {
             return permissionsWrapper.notAuthorized();
         }
 
@@ -126,7 +126,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
             Dataset dataset = dvObject instanceof Dataset ? (Dataset) dvObject : ((DataFile) dvObject).getOwner();
             if (datasetDao.isInReview(dataset)
                     && !(permissionsWrapper.canIssuePublishDatasetCommand(dataset)
-                    && permissionsWrapper.canManageDatasetOrMinorDatasetPermissions(dvRequestService.getDataverseRequest().getUser(), dataset))) {
+                    && permissionsWrapper.canManageDatasetOrMinorDatasetPermissions(dataset))) {
                 return permissionsWrapper.notAuthorized();
             }
         }
@@ -137,13 +137,6 @@ public class ManagePermissionsPage implements java.io.Serializable {
         }
         roleAssignments = initRoleAssignments();
         return "";
-    }
-
-    private boolean isAllowedToManageDataverseOrDataset(DvObject checkPermissionsdvObject) {
-        return (checkPermissionsdvObject instanceof Dataverse &&
-                permissionService.on(checkPermissionsdvObject).has(Permission.ManageDataversePermissions)) ||
-                permissionService.on(checkPermissionsdvObject).has(Permission.ManageDatasetPermissions) ||
-                permissionService.on(checkPermissionsdvObject).has(Permission.ManageMinorDatasetPermissions);
     }
 
     /*
