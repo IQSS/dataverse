@@ -1935,12 +1935,16 @@ public class FileUtil implements java.io.Serializable  {
         
         StringBuilder sb = new StringBuilder();
         
-        sb.append(HtmlFormatUtil.formatTag("Index of folder /" + folderName + " in dataset " + persistentId, HTML_H1));
+        String versionTag = version.getFriendlyVersionNumber();
+        versionTag = "DRAFT".equals(versionTag) ? "Draft Version" : "v. " + versionTag;
+        sb.append(HtmlFormatUtil.formatTag("Index of folder /" + folderName + 
+                " in dataset " + persistentId + 
+                " (" + versionTag + ")", HTML_H1));
         sb.append("\n");
         sb.append(formatFolderListingTableHtml(folderName, fileMetadatas, apiLocation, originals));
         
         String body = sb.toString();
-                
+                 
         return formatDoc(title, body);
     }
     
@@ -2034,8 +2038,8 @@ public class FileUtil implements java.io.Serializable  {
         }
         
         return apiLocation + "/api/datasets/" + datasetId + 
-                "/versions/" + versionTag + 
-                "/fileaccess?folder=" + subFolder + 
+                "/dirindex/?version=" + versionTag + "&" +
+                "folder=" + subFolder + 
                 (originals ? "&original=true" : "");
     }
 
