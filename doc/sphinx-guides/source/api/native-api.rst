@@ -786,34 +786,26 @@ The fully expanded example above (without environment variables) looks like this
  
   curl https://demo.dataverse.org/api/datasets/24/versions/1.0/files
 
-File Access Tree View in a Dataset
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+View Dataset Files and Folders as a Directory Index
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Lists all the file metadata, for the given dataset and version:
-
-.. code-block:: bash
-
-  export SERVER_URL=https://demo.dataverse.org
-  export ID=24
-  export VERSION=1.0
-
-  curl $SERVER_URL/api/datasets/$ID/versions/$VERSION/fileaccess
-
-The fully expanded example above (without environment variables) looks like this:
+|CORS| Provides a *crawlable* view of files and folders within the given dataset and version:
 
 .. code-block:: bash
- 
-  curl https://demo.dataverse.org/api/datasets/24/versions/1.0/fileaccess
+
+  curl $SERVER_URL/api/datasets/$ID/dirindex
 
 Optional parameters:
 
-* ``folder`` Specifies a subfolder within the dataset.
+* ``folder`` - A subfolder within the dataset (default: top-level view of the dataset)
+* ``version`` - Specifies the version (default: latest published version)
+* ``original=true`` - Download original versions of ingested tabular files. 
   
 This API outputs a simple html listing, based on the standard Apache
 directory index, with Access API download links for individual files,
 and recursive calls to the API above for sub-folders.
 
-Using this API, ``wget -recursive`` (or similar crawling client) can
+Using this API, ``wget --recursive`` (or similar crawling client) can
 be used to download all the files in a dataset, preserving the file
 names and folder structure; without having to use the download-as-zip
 API. In addition to being faster (zipping is a relatively
@@ -834,7 +826,7 @@ or, as viewed as a tree on the dataset page:
 
 .. |image2| image:: ./img/dataset_page_tree_view.png
 
-The fileaccess API for the top-level folder view output will be as follows:
+The output of the API for the top-level folder (``/api/datasets/{dataset}/dirindex/``) will be as follows:
 
 .. |image3| image:: ./img/index_view_top.png
 
@@ -844,15 +836,15 @@ with the underlying html source:
 
     <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
     <html><head><title>Index of folder /</title></head>
-    <body><h1>Index of folder / in dataset doi:XXX/YY/ZZZZ</h1>
+    <body><h1>Index of folder / in dataset doi:XXX/YY/ZZZZ (v. MM)</h1>
     <table>
     <tr><th>Name</th><th>Last Modified</th><th>Size</th><th>Description</th></tr>
     <tr><th colspan="4"><hr></th></tr>
-    <tr><td><a href="/api/datasets/NNNN/versions/MM/fileaccess?folder=subfolder">subfolder/</a></td><td align="right"> - </td><td align="right"> - </td><td align="right">&nbsp;</td></tr>
+    <tr><td><a href="/api/datasets/NNNN/dirindex?folder=subfolder">subfolder/</a></td><td align="right"> - </td><td align="right"> - </td><td align="right">&nbsp;</td></tr>
     <tr><td><a href="/api/access/datafile/KKKK">testfile.txt</a></td><td align="right">13-January-2021 22:35</td><td align="right">19 B</td><td align="right">&nbsp;</td></tr>
     </table></body></html>
 
-The ``/fileaccess?folder=subfolder`` link above will produce the following view:
+The ``/dirindex?folder=subfolder`` link above will produce the following view:
 
 .. |image4| image:: ./img/index_view_subfolder.png
 
@@ -862,16 +854,23 @@ with the html source as follows:
 
     <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
     <html><head><title>Index of folder /subfolder</title></head>
-    <body><h1>Index of folder /subfolder in dataset doi:XXX/YY/ZZZZ</h1>
+    <body><h1>Index of folder /subfolder in dataset doi:XXX/YY/ZZZZ (v. MM)</h1>
     <table>
     <tr><th>Name</th><th>Last Modified</th><th>Size</th><th>Description</th></tr>
     <tr><th colspan="4"><hr></th></tr>
-    <tr><td><a href="/api/access/datafile/LLLL">50by1000.tab</a></td><td align="right">11-January-2021 09:31</td><td align="right">102.5 KB</td><td align="right">&nbsp;</td></tr>
+    <tr><td><a href="/api/access/datafile/subfolder/LLLL">50by1000.tab</a></td><td align="right">11-January-2021 09:31</td><td align="right">102.5 KB</td><td align="right">&nbsp;</td></tr>
     </table></body></html>
 
+An example of a ``wget`` command line for crawling ("recursive downloading") of the files and folders in a dataset: 
 
+.. code-block:: bash
 
+  wget -r -nH --cut-dirs=3 --content-disposition https://demo.dataverse.org/api/datasets/24/dirindex
 
+.. note:: In addition to the files and folders in the dataset, the command line above will also save the directory index of each folder, in a separate folder "dirindex".
+
+.. note:: When running in recursive mode ``wget`` respects the "Robot Exclusion Standard" rules, as specified in the ``robots.txt``. If a Dataverse installation is running with a restrictive robot access rules, they may need to be adjusted to allow recursive downloading via using this API. 
+   
 List All Metadata Blocks for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
