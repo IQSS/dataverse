@@ -5,7 +5,7 @@
 A new api offers *crawlable* access view of the folders and files within a datset:
 
 ```
-  /api/datasets/<dataset id>/versions/<version id>/fileaccess[?folder=<subfolder name>]
+  /api/datasets/<dataset id>/dirindex
 ```
 
 will output a simple html listing, based on the standard Apache
