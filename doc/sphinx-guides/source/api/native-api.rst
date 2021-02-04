@@ -840,7 +840,7 @@ with the underlying html source:
     <table>
     <tr><th>Name</th><th>Last Modified</th><th>Size</th><th>Description</th></tr>
     <tr><th colspan="4"><hr></th></tr>
-    <tr><td><a href="/api/datasets/NNNN/dirindex?folder=subfolder">subfolder/</a></td><td align="right"> - </td><td align="right"> - </td><td align="right">&nbsp;</td></tr>
+    <tr><td><a href="/api/datasets/NNNN/dirindex/?folder=subfolder">subfolder/</a></td><td align="right"> - </td><td align="right"> - </td><td align="right">&nbsp;</td></tr>
     <tr><td><a href="/api/access/datafile/KKKK">testfile.txt</a></td><td align="right">13-January-2021 22:35</td><td align="right">19 B</td><td align="right">&nbsp;</td></tr>
     </table></body></html>
 
