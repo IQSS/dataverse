@@ -86,7 +86,11 @@ public class SignpostingResources {
             ));
             if (da.getIdentifierAsUrl() != null && !da.getIdentifierAsUrl().trim().isEmpty()) {
                 singleAuthorString = "<" + da.getIdentifierAsUrl() + ">;rel=\"author\"";
-                identifierSchema = String.join(",", identifierSchema, singleAuthorString);
+                if (Objects.equals(identifierSchema, "")) {
+                    identifierSchema = singleAuthorString;
+                } else {
+                    identifierSchema = String.join(",", identifierSchema, singleAuthorString);
+                }
             }
         }
 
@@ -180,7 +184,8 @@ public class SignpostingResources {
         mediaTypes.add(
                 jsonObjectBuilder().add(
                         "href",
-                        ds.getProtocol() + ds.getAuthority() + "/" + ds.getIdentifier()
+                        describedByJsonObj.getString(ds.getProtocol()) + ds.getAuthority() + "/"
+                                + ds.getIdentifier()
                 ).add(
                         "type",
                         describedByJsonObj.getString("type")
