@@ -646,9 +646,9 @@ public class UtilIT {
     static Response getCrawlableFileAccess(String datasetId, String folderName, String apiToken) {
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken);
-        String apiPath = "/api/datasets/" + datasetId + "/versions/:draft/fileaccess";
+        String apiPath = "/api/datasets/" + datasetId + "/dirindex?version=:draft";
         if (StringUtil.nonEmpty(folderName)) {
-            apiPath = apiPath.concat("?folder="+folderName);
+            apiPath = apiPath.concat("&folder="+folderName);
         }
         return requestSpecification.get(apiPath);
     }

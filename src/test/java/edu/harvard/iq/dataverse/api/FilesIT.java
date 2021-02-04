@@ -1470,8 +1470,7 @@ public class FilesIT {
     }
     
     /*
-        First test for the new "crawlable file access" API 
-        (#7084; work in progress)
+        First test for the new "crawlable file access" API (#7084)
     */    
     @Test
     public void test_CrawlableAccessToDatasetFiles() {
@@ -1514,16 +1513,16 @@ public class FilesIT {
         // maybe upload a few more files, in more folders, 
         // and try an actual recursive crawl of a full tree - ?
                 
-        // Make some calls to the "/fileaccess API:
+        // Make some calls to the "/dirindex API:
         // (note that this API outputs HTML!)
         
         // Expected values in the output: 
         String expectedTitleTopFolder = "Index of folder /";
         String expectedLinkTopFolder = folderName + "/";
-        String expectedLinkAhrefTopFolder = "/api/datasets/"+datasetId+"/versions/:draft/fileaccess?folder=subfolder";
+        String expectedLinkAhrefTopFolder = "/api/datasets/"+datasetId+"/dirindex/?version=:draft&folder=subfolder";
         
         String expectedTitleSubFolder = "Index of folder /" + folderName;
-        String expectedLinkAhrefSubFolder = "/api/access/datafile/" + dataFileId;
+        String expectedLinkAhrefSubFolder = "/api/access/datafile/" + folderName + "/" + dataFileId;
         
         // ... with no folder specified: 
         // (with just the one file above, this should show one folder only - "subfolder", and no files)
