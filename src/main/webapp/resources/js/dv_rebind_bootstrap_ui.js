@@ -186,6 +186,9 @@ function checksumTruncate(){
             }
         }
     });
+    $('span.checksum-tooltip').on('inserted.bs.tooltip', function () {
+        $("body div.tooltip-inner").css("word-break", "break-all");
+    });
 }
 
 function clickCopyClipboard(){
