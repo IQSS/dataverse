@@ -805,7 +805,7 @@ This API outputs a simple html listing, based on the standard Apache
 directory index, with Access API download links for individual files,
 and recursive calls to the API above for sub-folders.
 
-Using this API, ``wget --recursive`` (or similar crawling client) can
+Using this API, ``wget --recursive`` (or a similar crawling client) can
 be used to download all the files in a dataset, preserving the file
 names and folder structure; without having to use the download-as-zip
 API. In addition to being faster (zipping is a relatively
