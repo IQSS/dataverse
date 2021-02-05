@@ -1,5 +1,5 @@
 ALTER TABLE pendingworkflowinvocation
-ADD COLUMN IF NOT EXISTS lock_id bigint,
+ADD COLUMN IF NOT EXISTS lock_id bigint;
       
 DO $$
 BEGIN
