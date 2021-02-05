@@ -10,6 +10,8 @@ import edu.harvard.iq.dataverse.workflow.step.Pending;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.persistence.CascadeType;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -165,7 +167,7 @@ public class PendingWorkflowInvocation implements Serializable {
     public DatasetLock getLock() {
         return lock;
     }
-    public void setLockId(DatasetLock lock) {
+    public void setLock(DatasetLock lock) {
         this.lock = lock;
     }
 }
