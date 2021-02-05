@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlockDao;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.S3PackageImporter;
+import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.api.dto.SubmitForReviewDataDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
@@ -281,6 +282,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("{id}")
     public Response deleteDataset(@PathParam("id") String id) {
         // Internally, "DeleteDatasetCommand" simply redirects to "DeleteDatasetVersionCommand"
@@ -332,6 +334,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("{id}/destroy")
     public Response destroyDataset(@PathParam("id") String id) {
 
@@ -365,6 +368,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("{id}/versions/{versionId}")
     public Response deleteDraftVersion(@PathParam("id") String id, @PathParam("versionId") String versionId) {
         if (!":draft".equals(versionId)) {
@@ -402,6 +406,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("{datasetId}/deleteLink/{linkedDataverseId}")
     public Response deleteDatasetLinkingDataverse(@PathParam("datasetId") String datasetId, @PathParam("linkedDataverseId") String linkedDataverseId) {
         boolean index = true;
@@ -416,6 +421,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @PUT
+    @ApiWriteOperation
     @Path("{id}/citationdate")
     public Response setCitationDate(@PathParam("id") String id, String dsfTypeName) {
         return response(req -> {
@@ -438,6 +444,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("{id}/citationdate")
     public Response useDefaultCitationDate(@PathParam("id") String id) {
         return response(req -> {
@@ -515,6 +522,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Path("/modifyRegistrationAll")
     public Response updateDatasetTargetURLAll() {
         return response(req -> {
@@ -530,6 +538,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Path("{id}/modifyRegistrationMetadata")
     public Response updateDatasetPIDMetadata(@PathParam("id") String id) {
 
@@ -553,6 +562,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @GET
+    @ApiWriteOperation
     @Path("/modifyRegistrationPIDMetadataAll")
     public Response updateDatasetPIDMetadataAll() {
         return response(req -> {
@@ -568,6 +578,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @PUT
+    @ApiWriteOperation
     @Path("{id}/versions/{versionId}")
     public Response updateDraftVersion(String jsonBody, @PathParam("id") String id, @PathParam("versionId") String versionId) {
 
@@ -619,6 +630,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @PUT
+    @ApiWriteOperation
     @Path("{id}/deleteMetadata")
     public Response deleteVersionMetadata(String jsonBody, @PathParam("id") String id) throws WrappedResponse {
 
@@ -628,6 +640,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @PUT
+    @ApiWriteOperation
     @Path("{id}/setEmbargo")
     public Response setEmbargoDate(@PathParam("id") String id, @QueryParam("date") String date) {
         try {
@@ -661,6 +674,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @PUT
+    @ApiWriteOperation
     @Path("{id}/liftEmbargo")
     public Response liftEmbargoDate(@PathParam("id") String id) {
         try {
@@ -800,6 +814,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @PUT
+    @ApiWriteOperation
     @Path("{id}/editMetadata")
     public Response editVersionMetadata(String jsonBody, @PathParam("id") String id, @QueryParam("replace") Boolean replace) throws WrappedResponse {
 
@@ -962,6 +977,7 @@ public class Datasets extends AbstractApiBean {
      * @deprecated This was shipped as a GET but should have been a POST, see https://github.com/IQSS/dataverse/issues/2431
      */
     @GET
+    @ApiWriteOperation
     @Path("{id}/actions/:publish")
     @Deprecated
     public Response publishDataseUsingGetDeprecated(@PathParam("id") String id, @QueryParam("type") String type) {
@@ -970,6 +986,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Path("{id}/actions/:publish")
     public Response publishDataset(@PathParam("id") String id, @QueryParam("type") String type) {
         try {
@@ -1077,6 +1094,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Path("{id}/move/{targetDataverseAlias}")
     public Response moveDataset(@PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias, @QueryParam("forceMove") Boolean force) {
         try {
@@ -1097,6 +1115,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @PUT
+    @ApiWriteOperation
     @Path("{linkedDatasetId}/link/{linkingDataverseAlias}")
     public Response linkDataset(@PathParam("linkedDatasetId") String linkedDatasetId, @PathParam("linkingDataverseAlias") String linkingDataverseAlias) {
         try {
@@ -1148,6 +1167,7 @@ public class Datasets extends AbstractApiBean {
      * hard coded.
      */
     @POST
+    @ApiWriteOperation
     @Path("{identifier}/assignments")
     public Response createAssignment(String userOrGroup, @PathParam("identifier") String id, @QueryParam("key") String apiKey) {
         boolean apiTestingOnly = true;
@@ -1194,6 +1214,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Path("{id}/privateUrl")
     public Response createPrivateUrl(@PathParam("id") String idSupplied) {
         return response(req ->
@@ -1202,6 +1223,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("{id}/privateUrl")
     public Response deletePrivateUrl(@PathParam("id") String idSupplied) {
         return response(req -> {
@@ -1272,6 +1294,7 @@ public class Datasets extends AbstractApiBean {
 
     // TODO: Rather than only supporting looking up files by their database IDs (dataFileIdSupplied), consider supporting persistent identifiers.
     @POST
+    @ApiWriteOperation
     @Path("{id}/thumbnail/{dataFileId}")
     public Response setDataFileAsThumbnail(@PathParam("id") String idSupplied, @PathParam("dataFileId") long dataFileIdSupplied) {
         try {
@@ -1289,6 +1312,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Path("{id}/thumbnail")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response uploadDatasetLogo(@PathParam("id") String idSupplied, @FormDataParam("file") InputStream inputStream
@@ -1308,6 +1332,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("{id}/thumbnail")
     public Response removeDatasetLogo(@PathParam("id") String idSupplied) {
         try {
@@ -1325,6 +1350,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @GET
+    @ApiWriteOperation
     @Path("{identifier}/dataCaptureModule/rsync")
     public Response getRsync(@PathParam("identifier") String id) {
         //TODO - does it make sense to switch this to dataset identifier for consistency with the rest of the DCM APIs?
@@ -1373,6 +1399,7 @@ public class Datasets extends AbstractApiBean {
      * -MAD 4.9.1
      */
     @POST
+    @ApiWriteOperation
     @Path("{identifier}/dataCaptureModule/checksumValidation")
     public Response receiveChecksumValidationResults(@PathParam("identifier") String id, JsonObject jsonFromDcm) {
         logger.log(Level.FINE, "jsonFromDcm: {0}", jsonFromDcm);
@@ -1505,6 +1532,7 @@ public class Datasets extends AbstractApiBean {
 
 
     @POST
+    @ApiWriteOperation
     @Path("{id}/submitForReview")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response submitForReview(@PathParam("id") String idSupplied, SubmitForReviewDataDTO submitForReviewData) {
@@ -1528,6 +1556,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Path("{id}/returnToAuthor")
     public Response returnToAuthor(@PathParam("id") String idSupplied, String jsonBody) {
 
@@ -1570,6 +1599,7 @@ public class Datasets extends AbstractApiBean {
      * @return
      */
     @POST
+    @ApiWriteOperation
     @Path("{id}/add")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response addFileToDataset(@PathParam("id") String idSupplied,
@@ -1812,6 +1842,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("{identifier}/locks")
     public Response deleteLocks(@PathParam("identifier") String id, @QueryParam("type") DatasetLock.Reason lockType) {
 
@@ -1862,6 +1893,7 @@ public class Datasets extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Path("{identifier}/lock/{type}")
     public Response lockDataset(@PathParam("identifier") String id, @PathParam("type") DatasetLock.Reason lockType) {
         return response(req -> {

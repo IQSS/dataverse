@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.api.dto.ExplicitGroupDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
@@ -121,12 +122,14 @@ public class Dataverses extends AbstractApiBean {
     ImportServiceBean importService;
 
     @POST
+    @ApiWriteOperation
     public Response addRoot(String body) {
         logger.info("Creating root dataverse");
         return addDataverse(body, "");
     }
 
     @POST
+    @ApiWriteOperation
     @Path("{identifier}")
     public Response addDataverse(String body, @PathParam("identifier") String parentIdtf) {
 
@@ -209,6 +212,7 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Path("{identifier}/datasets")
     public Response createDataset(String jsonBody, @PathParam("identifier") String parentIdtf) {
         try {
@@ -245,6 +249,7 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Path("{identifier}/datasets/:import")
     public Response importDataset(String jsonBody, @PathParam("identifier") String parentIdtf, @QueryParam("pid") String pidParam, @QueryParam("release") String releaseParam) {
         try {
@@ -321,6 +326,7 @@ public class Dataverses extends AbstractApiBean {
 
     // TODO decide if I merge importddi with import just below (xml and json on same api, instead of 2 api)
     @POST
+    @ApiWriteOperation
     @Path("{identifier}/datasets/:importddi")
     public Response importDatasetDdi(String xml, @PathParam("identifier") String parentIdtf, @QueryParam("pid") String pidParam, @QueryParam("release") String releaseParam) throws ImportException {
         try {
@@ -418,6 +424,7 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("{linkingDataverseId}/deleteLink/{linkedDataverseId}")
     public Response deleteDataverseLinkingDataverse(@PathParam("linkingDataverseId") String linkingDataverseId, @PathParam("linkedDataverseId") String linkedDataverseId) {
         boolean index = true;
@@ -448,6 +455,7 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Path("{identifier}/metadatablocks")
     @Produces(MediaType.APPLICATION_JSON)
     public Response setMetadataBlocks(@PathParam("identifier") String dvIdtf, String blockIds) {
@@ -501,6 +509,7 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Path("{identifier}/metadatablocks/:isRoot")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.WILDCARD)
@@ -509,6 +518,7 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @PUT
+    @ApiWriteOperation
     @Path("{identifier}/metadatablocks/isRoot")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.WILDCARD)
@@ -542,6 +552,7 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Path("{identifier}/facets")
     @Produces(MediaType.APPLICATION_JSON)
     /**
@@ -625,6 +636,7 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Path("{identifier}/roles")
     public Response createRole(RoleDTO roleDto, @PathParam("identifier") String dvIdtf) {
         return response(req -> ok(json(execCommand(new CreateRoleCommand(roleDto.asRole(),
@@ -643,96 +655,8 @@ public class Dataverses extends AbstractApiBean {
         ));
     }
 
-    /**
-     * This code for setting a dataverse logo via API was started when initially
-     * investigating https://github.com/IQSS/dataverse/issues/3559 but it isn't
-     * finished so it's commented out. See also * "No functionality should be
-     * GUI-only. Make all functionality reachable via the API" at
-     * https://github.com/IQSS/dataverse/issues/3440
-     */
-//    File tempDir;
-//
-//    private void createTempDir(Dataverse editDv) {
-//        try {
-//            File tempRoot = java.nio.file.Files.createDirectories(Paths.get("../docroot/logos/temp")).toFile();
-//            tempDir = java.nio.file.Files.createTempDirectory(tempRoot.toPath(), editDv.getId().toString()).toFile();
-//        } catch (IOException e) {
-//            throw new RuntimeException("Error creating temp directory", e); // improve error handling
-//        }
-//    }
-//
-//    private DataverseTheme initDataverseTheme(Dataverse editDv) {
-//        DataverseTheme dvt = new DataverseTheme();
-//        dvt.setLinkColor(DEFAULT_LINK_COLOR);
-//        dvt.setLogoBackgroundColor(DEFAULT_LOGO_BACKGROUND_COLOR);
-//        dvt.setBackgroundColor(DEFAULT_BACKGROUND_COLOR);
-//        dvt.setTextColor(DEFAULT_TEXT_COLOR);
-//        dvt.setDataverse(editDv);
-//        return dvt;
-//    }
-//
-//    @PUT
-//    @Path("{identifier}/logo")
-//    @Consumes(MediaType.MULTIPART_FORM_DATA)
-//    public Response setDataverseLogo(@PathParam("identifier") String dvIdtf,
-//            @FormDataParam("file") InputStream fileInputStream,
-//            @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
-//            @QueryParam("key") String apiKey) {
-//        boolean disabled = true;
-//        if (disabled) {
-//            return error(Status.FORBIDDEN, "Setting the dataverse logo via API needs more work.");
-//        }
-//        try {
-//            final DataverseRequest req = createDataverseRequest(findUserOrDie());
-//            final Dataverse editDv = findDataverseOrDie(dvIdtf);
-//
-//            logger.finer("entering fileUpload");
-//            if (tempDir == null) {
-//                createTempDir(editDv);
-//                logger.finer("created tempDir");
-//            }
-//            File uploadedFile;
-//            try {
-//                String fileName = contentDispositionHeader.getFileName();
-//
-//                uploadedFile = new File(tempDir, fileName);
-//                if (!uploadedFile.exists()) {
-//                    uploadedFile.createNewFile();
-//                }
-//                logger.finer("created file");
-//                File file = null;
-//                file = FileUtil.inputStreamToFile(fileInputStream);
-//                if (file.length() > systemConfig.getUploadLogoSizeLimit()) {
-//                    return error(Response.Status.BAD_REQUEST, "File is larger than maximum size: " + systemConfig.getUploadLogoSizeLimit() + ".");
-//                }
-//                java.nio.file.Files.copy(fileInputStream, uploadedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-//                logger.finer("copied inputstream to file");
-//                editDv.setDataverseTheme(initDataverseTheme(editDv));
-//                editDv.getDataverseTheme().setLogo(fileName);
-//
-//            } catch (IOException e) {
-//                logger.finer("caught IOException");
-//                logger.throwing("ThemeWidgetFragment", "handleImageFileUpload", e);
-//                throw new RuntimeException("Error uploading logo file", e); // improve error handling
-//            }
-//            // If needed, set the default values for the logo
-//            if (editDv.getDataverseTheme().getLogoFormat() == null) {
-//                editDv.getDataverseTheme().setLogoFormat(DataverseTheme.ImageFormat.SQUARE);
-//            }
-//            logger.finer("end handelImageFileUpload");
-//            UpdateDataverseThemeCommand cmd = new UpdateDataverseThemeCommand(editDv, uploadedFile, req);
-//            Dataverse saved = execCommand(cmd);
-//
-//            /**
-//             * @todo delete the temp file:
-//             * docroot/logos/temp/1148114212463761832421/cc0.png
-//             */
-//            return ok("logo uploaded: " + saved.getDataverseTheme().getLogo());
-//        } catch (WrappedResponse ex) {
-//            return error(Status.BAD_REQUEST, "problem uploading logo: " + ex);
-//        }
-//    }
     @POST
+    @ApiWriteOperation
     @Path("{identifier}/assignments")
     public Response createAssignment(RoleAssignmentDTO ra, @PathParam("identifier") String dvIdtf, @QueryParam("key") String apiKey) {
 
@@ -772,6 +696,7 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("{identifier}/assignments/{id}")
     public Response deleteAssignment(@PathParam("id") long assignmentId, @PathParam("identifier") String dvIdtf) {
         RoleAssignment ra = em.find(RoleAssignment.class, assignmentId);
@@ -791,6 +716,7 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Path("{identifier}/actions/:publish")
     public Response publishDataverse(@PathParam("identifier") String dvIdtf) {
         try {
@@ -804,6 +730,7 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Path("{identifier}/groups/")
     public Response createExplicitGroup(ExplicitGroupDTO dto, @PathParam("identifier") String dvIdtf) {
         return response(req -> {
@@ -837,6 +764,7 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @PUT
+    @ApiWriteOperation
     @Path("{identifier}/groups/{aliasInOwner}")
     public Response updateGroup(ExplicitGroupDTO groupDto,
                                 @PathParam("identifier") String dvIdtf,
@@ -849,6 +777,7 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @PUT
+    @ApiWriteOperation
     @Path("{identifier}/defaultContributorRole/{roleAlias}")
     public Response updateDefaultContributorRole(
             @PathParam("identifier") String dvIdtf,
@@ -901,6 +830,7 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("{identifier}/groups/{aliasInOwner}")
     public Response deleteGroup(@PathParam("identifier") String dvIdtf,
                                 @PathParam("aliasInOwner") String grpAliasInOwner) {
@@ -914,6 +844,7 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Path("{identifier}/groups/{aliasInOwner}/roleAssignees")
     @Consumes("application/json")
     public Response addRoleAssingees(List<String> roleAssingeeIdentifiers,
@@ -929,6 +860,7 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @PUT
+    @ApiWriteOperation
     @Path("{identifier}/groups/{aliasInOwner}/roleAssignees/{roleAssigneeIdentifier: .*}")
     public Response addRoleAssingee(@PathParam("identifier") String dvIdtf,
                                     @PathParam("aliasInOwner") String grpAliasInOwner,
@@ -937,6 +869,7 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("{identifier}/groups/{aliasInOwner}/roleAssignees/{roleAssigneeIdentifier: .*}")
     public Response deleteRoleAssingee(@PathParam("identifier") String dvIdtf,
                                        @PathParam("aliasInOwner") String grpAliasInOwner,
@@ -998,6 +931,7 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Path("{id}/move/{targetDataverseAlias}")
     public Response moveDataverse(@PathParam("id") String id,
                     @PathParam("targetDataverseAlias") String targetDataverseAlias, 
@@ -1019,6 +953,7 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @PUT
+    @ApiWriteOperation
     @Path("{linkedDataverseAlias}/link/{linkingDataverseAlias}")
     public Response linkDataverse(@PathParam("linkedDataverseAlias") String linkedDataverseAlias, @PathParam("linkingDataverseAlias") String linkingDataverseAlias) {
         try {

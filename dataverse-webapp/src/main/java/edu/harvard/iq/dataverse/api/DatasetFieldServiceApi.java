@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.ControlledVocabularyValueServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.MetadataBlockDao;
+import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.common.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.persistence.ActionLogRecord;
@@ -238,6 +239,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Consumes("text/tab-separated-values")
     @Path("load")
     public Response loadDatasetFields(File file) {

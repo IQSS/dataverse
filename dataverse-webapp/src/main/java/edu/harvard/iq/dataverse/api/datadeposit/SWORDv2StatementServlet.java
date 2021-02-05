@@ -13,7 +13,10 @@ import java.io.IOException;
 public class SWORDv2StatementServlet extends SwordServlet {
 
     @Inject
-    StatementManagerImpl statementManagerImpl;
+    private StatementManagerImpl statementManagerImpl;
+    @Inject
+    private SwordConfigurationFactory swordConfigurationFactory;
+    
     private StatementManager sm;
     private StatementAPI statementApi;
 
@@ -25,7 +28,7 @@ public class SWORDv2StatementServlet extends SwordServlet {
         this.sm = statementManagerImpl;
 
         // initialise the underlying servlet processor
-        this.statementApi = new StatementAPI(this.sm, this.config);
+        this.statementApi = new StatementAPI(this.sm, swordConfigurationFactory.createSwordConfiguration());
     }
 
     @Override

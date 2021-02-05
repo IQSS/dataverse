@@ -13,13 +13,10 @@ import java.util.concurrent.locks.ReentrantLock;
 public class SWORDv2MediaResourceServlet extends SwordServlet {
 
     @Inject
-    MediaResourceManagerImpl mediaResourceManagerImpl;
-    /**
-     * @todo Should we inject this in all the SWORDv2 Servlets? Added here so
-     * that we can inject SettingsServiceBean in SwordConfigurationImpl.
-     */
+    private MediaResourceManagerImpl mediaResourceManagerImpl;
+
     @Inject
-    SwordConfigurationFactory swordConfigurationFactory;
+    private SwordConfigurationFactory swordConfigurationFactory;
 
     protected MediaResourceAPI api;
 

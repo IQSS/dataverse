@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataverseDao;
+import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateHarvestingClientCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetHarvestingClientCommand;
@@ -143,6 +144,7 @@ public class HarvestingClients extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Path("{nickName}")
     public Response createHarvestingClient(String jsonBody, @PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
 
@@ -180,6 +182,7 @@ public class HarvestingClients extends AbstractApiBean {
     }
 
     @PUT
+    @ApiWriteOperation
     @Path("{nickName}")
     public Response modifyHarvestingClient(String jsonBody, @PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
         HarvestingClient harvestingClient = null;
@@ -229,6 +232,7 @@ public class HarvestingClients extends AbstractApiBean {
 
     // This POST starts a new harvesting run:
     @POST
+    @ApiWriteOperation
     @Path("{nickName}/run")
     public Response startHarvestingJob(@PathParam("nickName") String clientNickname, @QueryParam("key") String apiKey) throws IOException {
 

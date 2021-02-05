@@ -39,4 +39,14 @@ public class SwordUtil {
         return swordError;
     }
 
+    /**
+     * Ensures the truth of an expression.
+     * 
+     * @throws SwordError - if expression is false
+     */
+    public static void checkState(boolean expression, String errorUri, String message) throws SwordError {
+        if (!expression) {
+            throw new SwordError(errorUri, message);
+        }
+    }
 }

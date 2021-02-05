@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.persistence.group.IpAddress;
 import edu.harvard.iq.dataverse.persistence.group.IpAddressRange;
 import edu.harvard.iq.dataverse.persistence.group.IpGroup;
@@ -32,6 +33,7 @@ public class Workflows extends AbstractApiBean {
     private long lastWhitelistUpdate = 0;
 
     @POST
+    @ApiWriteOperation
     @Path("{invocationId}")
     public Response resumeWorkflow(@PathParam("invocationId") String invocationId, String body) {
         String remoteAddrStr = httpRequest.getRemoteAddr();

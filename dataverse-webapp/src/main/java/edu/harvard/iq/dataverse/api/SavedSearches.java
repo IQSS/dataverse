@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -91,6 +92,7 @@ public class SavedSearches extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     public Response add(JsonObject body) {
 
         if (body == null) {
@@ -174,6 +176,7 @@ public class SavedSearches extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("{id}")
     public Response delete(@PathParam("id") long doomedId) {
         boolean disabled = true;
@@ -193,6 +196,7 @@ public class SavedSearches extends AbstractApiBean {
     }
 
     @PUT
+    @ApiWriteOperation
     @Path("makelinks/all")
     public Response makeLinksForAllSavedSearches(@QueryParam("debug") boolean debug) {
         JsonObjectBuilder makeLinksResponse;
@@ -207,6 +211,7 @@ public class SavedSearches extends AbstractApiBean {
     }
 
     @PUT
+    @ApiWriteOperation
     @Path("makelinks/{id}")
     public Response makeLinksForSingleSavedSearch(@PathParam("id") long savedSearchIdToLookUp, @QueryParam("debug") boolean debug) {
         SavedSearch savedSearchToMakeLinksFor = savedSearchSvc.find(savedSearchIdToLookUp);

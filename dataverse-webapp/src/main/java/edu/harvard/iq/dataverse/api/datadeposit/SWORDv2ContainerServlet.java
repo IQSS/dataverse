@@ -15,9 +15,12 @@ import java.util.concurrent.locks.ReentrantLock;
 public class SWORDv2ContainerServlet extends SwordServlet {
 
     @Inject
-    ContainerManagerImpl containerManagerImpl;
+    private ContainerManagerImpl containerManagerImpl;
     @Inject
-    StatementManagerImpl statementManagerImpl;
+    private StatementManagerImpl statementManagerImpl;
+    @Inject
+    private SwordConfigurationFactory swordConfigurationFactory;
+
     private ContainerManager cm;
     private ContainerAPI api;
     private StatementManager sm;
@@ -35,7 +38,7 @@ public class SWORDv2ContainerServlet extends SwordServlet {
         this.sm = statementManagerImpl;
 
         // initialise the underlying servlet processor
-        this.api = new ContainerAPI(this.cm, this.sm, this.config);
+        this.api = new ContainerAPI(this.cm, this.sm, swordConfigurationFactory.createSwordConfiguration());
     }
 
     @Override

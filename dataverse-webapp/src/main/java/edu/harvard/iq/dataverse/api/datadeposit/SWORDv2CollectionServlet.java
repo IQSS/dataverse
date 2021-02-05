@@ -13,9 +13,12 @@ import java.util.concurrent.locks.ReentrantLock;
 public class SWORDv2CollectionServlet extends SwordServlet {
 
     @Inject
-    CollectionDepositManagerImpl collectionDepositManagerImpl;
+    private CollectionDepositManagerImpl collectionDepositManagerImpl;
     @Inject
-    CollectionListManagerImpl collectionListManagerImpl;
+    private CollectionListManagerImpl collectionListManagerImpl;
+    @Inject
+    private SwordConfigurationFactory swordConfigurationFactory;
+
     protected CollectionAPI api;
 
     private final ReentrantLock lock = new ReentrantLock();
@@ -23,7 +26,7 @@ public class SWORDv2CollectionServlet extends SwordServlet {
     @Override
     public void init() throws ServletException {
         super.init();
-        this.api = new CollectionAPI(collectionListManagerImpl, collectionDepositManagerImpl, this.config);
+        this.api = new CollectionAPI(collectionListManagerImpl, collectionDepositManagerImpl, swordConfigurationFactory.createSwordConfiguration());
     }
 
     @Override

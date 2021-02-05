@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.MetadataBlockDao;
+import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.api.imports.ImportException;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
@@ -43,6 +44,7 @@ public class BatchImport extends AbstractApiBean {
     BatchServiceBean batchService;
 
     @GET
+    @ApiWriteOperation
     @Path("harvest")
     public Response harvest(@QueryParam("path") String fileDir, @QueryParam("dv") String parentIdtf, @QueryParam("createDV") Boolean createDV, @QueryParam("key") String apiKey) throws IOException {
         return startBatchJob(fileDir, parentIdtf, apiKey, ImportType.HARVEST, createDV);
@@ -58,6 +60,7 @@ public class BatchImport extends AbstractApiBean {
      * @return import status (including id of the dataset created)
      */
     @POST
+    @ApiWriteOperation
     @Path("import")
     public Response postImport(String body, @QueryParam("dv") String parentIdtf, @QueryParam("key") String apiKey) {
 
@@ -95,6 +98,7 @@ public class BatchImport extends AbstractApiBean {
      * @return import status (including id's of the datasets created)
      */
     @GET
+    @ApiWriteOperation
     @Path("import")
     public Response getImport(@QueryParam("path") String fileDir, @QueryParam("dv") String parentIdtf, @QueryParam("createDV") Boolean createDV, @QueryParam("key") String apiKey) {
 

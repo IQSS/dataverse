@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider;
 import edu.harvard.iq.dataverse.persistence.group.IpGroup;
@@ -55,6 +56,7 @@ public class Groups extends AbstractApiBean {
      * that group from being created.
      */
     @POST
+    @ApiWriteOperation
     @Path("ip")
     public Response postIpGroup(JsonObject dto) {
         try {
@@ -82,6 +84,7 @@ public class Groups extends AbstractApiBean {
      * that group from being created.
      */
     @PUT
+    @ApiWriteOperation
     @Path("ip/{groupName}")
     public Response putIpGroups(@PathParam("groupName") String groupName, JsonObject dto) {
         try {
@@ -124,6 +127,7 @@ public class Groups extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("ip/{groupIdtf}")
     public Response deleteIpGroup(@PathParam("groupIdtf") String groupIdtf) {
         IpGroup grp;
@@ -166,6 +170,7 @@ public class Groups extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Path("shib")
     public Response createShibGroup(JsonObject shibGroupInput) {
         String expectedNameKey = "name";
@@ -193,6 +198,7 @@ public class Groups extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("shib/{primaryKey}")
     public Response deleteShibGroup(@PathParam("primaryKey") String id) {
         ShibGroup doomed = shibGroupPrv.get(id);

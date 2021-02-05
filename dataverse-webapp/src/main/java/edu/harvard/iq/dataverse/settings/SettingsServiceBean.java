@@ -572,7 +572,15 @@ public class SettingsServiceBean {
         AntivirusScannerSocketPort,
         AntivirusScannerSocketTimeout,
 
-        FilesIntegrityCheckTimerExpression
+        FilesIntegrityCheckTimerExpression,
+        
+        /**
+         * If true then instance will run in readonly mode.
+         * Installation in readonly mode will have functionality
+         * limited to operations that will not modify database and
+         * storage state.
+         */
+        ReadonlyMode,
         ;
 
 

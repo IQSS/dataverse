@@ -26,8 +26,8 @@ public class MetadataBlocks extends AbstractApiBean {
         return allowCors(ok(metadataBlockSvc.listMetadataBlocks().stream().map(brief::json).collect(toJsonArray())));
     }
 
-    @Path("{identifier}")
     @GET
+    @Path("{identifier}")
     public Response getBlock(@PathParam("identifier") String idtf) {
         MetadataBlock b = findMetadataBlock(idtf);
 

@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
+import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.dataset.EmbargoAccessService;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.files.extension.FileExtension;
@@ -903,6 +904,7 @@ public class Access extends AbstractApiBean {
      * @author sekmiller
      */
     @PUT
+    @ApiWriteOperation
     @Path("{id}/allowAccessRequest")
     public Response allowAccessRequest(@PathParam("id") String datasetToAllowAccessId, String requestStr) {
 
@@ -947,6 +949,7 @@ public class Access extends AbstractApiBean {
      * @author sekmiller
      */
     @PUT
+    @ApiWriteOperation
     @Path("/datafile/{id}/requestAccess")
     public Response requestFileAccess(@PathParam("id") String fileToRequestAccessId, @Context HttpHeaders headers) {
 
@@ -1051,6 +1054,7 @@ public class Access extends AbstractApiBean {
      * @author sekmiller
      */
     @PUT
+    @ApiWriteOperation
     @Path("/datafile/{id}/grantAccess/{identifier}")
     public Response grantFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @Context HttpHeaders headers) {
 
@@ -1110,6 +1114,7 @@ public class Access extends AbstractApiBean {
      * @author sekmiller
      */
     @DELETE
+    @ApiWriteOperation
     @Path("/datafile/{id}/revokeAccess/{identifier}")
     public Response revokeFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @Context HttpHeaders headers) {
 
@@ -1173,6 +1178,7 @@ public class Access extends AbstractApiBean {
      * @author sekmiller
      */
     @PUT
+    @ApiWriteOperation
     @Path("/datafile/{id}/rejectAccess/{identifier}")
     public Response rejectFileAccess(@PathParam("id") String fileToRequestAccessId, @PathParam("identifier") String identifier, @Context HttpHeaders headers) {
 

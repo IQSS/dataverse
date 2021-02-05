@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
@@ -83,6 +84,7 @@ public class Files extends AbstractApiBean {
      * @return
      */
     @POST
+    @ApiWriteOperation
     @Path("{id}/replace")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response replaceFileInDataset(
@@ -222,6 +224,7 @@ public class Files extends AbstractApiBean {
     // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
     // TODO: Rename this start with "delete" rather than "get".
     @DELETE
+    @ApiWriteOperation
     @Path("{id}/map")
     public Response getMapLayerMetadatas(@PathParam("id") Long idSupplied) {
         DataverseRequest dataverseRequest = null;
@@ -243,8 +246,9 @@ public class Files extends AbstractApiBean {
         }
     }
 
-    @Path("{id}/uningest")
     @POST
+    @ApiWriteOperation
+    @Path("{id}/uningest")
     public Response uningestDatafile(@PathParam("id") String id) {
 
         DataFile dataFile;
@@ -280,8 +284,9 @@ public class Files extends AbstractApiBean {
     // a datafile that's already ingested as Tabular; for example, to address a 
     // bug that has been found in an ingest plugin. 
 
-    @Path("{id}/reingest")
     @POST
+    @ApiWriteOperation
+    @Path("{id}/reingest")
     public Response reingest(@PathParam("id") String id) {
 
         AuthenticatedUser u;

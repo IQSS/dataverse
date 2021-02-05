@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.locality.StorageSiteUtil;
 import edu.harvard.iq.dataverse.persistence.StorageSite;
 
@@ -43,6 +44,7 @@ public class StorageSites extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     public Response addSite(JsonObject jsonObject) {
         StorageSite toPersist = null;
         try {
@@ -65,6 +67,7 @@ public class StorageSites extends AbstractApiBean {
     }
 
     @PUT
+    @ApiWriteOperation
     @Path("{id}/primaryStorage")
     public Response setPrimary(@PathParam("id") long id, String input) {
         StorageSite toModify = storageSiteSvc.find(id);
@@ -84,6 +87,7 @@ public class StorageSites extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("{id}")
     public Response delete(@PathParam("id") long id) {
         boolean deleted = storageSiteSvc.delete(id);

@@ -23,6 +23,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
+import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.engine.command.exception.NoDatasetFilesException;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
@@ -64,6 +65,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
 
 
     @POST
+    @ApiWriteOperation
     public Response addWorkflow(JsonObject jsonWorkflow) {
         JsonParser jp = new JsonParser();
         try {
@@ -83,8 +85,9 @@ public class WorkflowsAdmin extends AbstractApiBean {
                 .collect(toJsonArray()));
     }
 
-    @Path("default/{triggerType}")
     @PUT
+    @ApiWriteOperation
+    @Path("default/{triggerType}")
     public Response setDefault(@PathParam("triggerType") String triggerType, String identifier) {
         try {
             long idtf = Long.parseLong(identifier.trim());
@@ -103,8 +106,8 @@ public class WorkflowsAdmin extends AbstractApiBean {
         }
     }
 
-    @Path("default/")
     @GET
+    @Path("default/")
     public Response listDefaults() {
         JsonObjectBuilder bld = Json.createObjectBuilder();
         for (TriggerType tp : TriggerType.values()) {
@@ -116,8 +119,8 @@ public class WorkflowsAdmin extends AbstractApiBean {
         return ok(bld);
     }
 
-    @Path("default/{triggerType}")
     @GET
+    @Path("default/{triggerType}")
     public Response getDefault(@PathParam("triggerType") String triggerType) {
         try {
             return workflows.getDefaultWorkflow(TriggerType.valueOf(triggerType))
@@ -128,8 +131,9 @@ public class WorkflowsAdmin extends AbstractApiBean {
         }
     }
 
-    @Path("default/{triggerType}")
     @DELETE
+    @ApiWriteOperation
+    @Path("default/{triggerType}")
     public Response deleteDefault(@PathParam("triggerType") String triggerType) {
         try {
             workflows.setDefaultWorkflowId(TriggerType.valueOf(triggerType), null);
@@ -139,8 +143,8 @@ public class WorkflowsAdmin extends AbstractApiBean {
         }
     }
 
-    @Path("/{identifier}")
     @GET
+    @Path("/{identifier}")
     public Response getWorkflow(@PathParam("identifier") String identifier) {
         try {
             long idtf = Long.parseLong(identifier);
@@ -152,8 +156,9 @@ public class WorkflowsAdmin extends AbstractApiBean {
         }
     }
 
-    @Path("/{id}")
     @DELETE
+    @ApiWriteOperation
+    @Path("/{id}")
     public Response deleteWorkflow(@PathParam("id") String id) {
         try {
             long idtf = Long.parseLong(id);
@@ -178,14 +183,15 @@ public class WorkflowsAdmin extends AbstractApiBean {
         }
     }
 
-    @Path("/ip-whitelist")
     @GET
+    @Path("/ip-whitelist")
     public Response getIpWhitelist() {
         return ok(settingsSvc.get(IP_WHITELIST_KEY));
     }
 
-    @Path("/ip-whitelist")
     @PUT
+    @ApiWriteOperation
+    @Path("/ip-whitelist")
     public Response setIpWhitelist(String body) {
         String ipList = body.trim();
         String[] ips = ipList.split(";");
@@ -206,14 +212,16 @@ public class WorkflowsAdmin extends AbstractApiBean {
 
     }
 
-    @Path("/ip-whitelist")
     @DELETE
+    @ApiWriteOperation
+    @Path("/ip-whitelist")
     public Response deleteIpWhitelist() {
         settingsSvc.delete(IP_WHITELIST_KEY);
         return ok("Restored whitelist to default (127.0.0.1;::1)");
     }
 
     @POST
+    @ApiWriteOperation
     @Path("rerun")
     public Response rerunWorkflow(@QueryParam("type") String type) {
         try {
@@ -257,6 +265,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Path("{id}/rerun")
     public Response rerunWorkflow(@PathParam("id") String id, @QueryParam("version") String version) {
         try {

@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DatasetDao;
+import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.persistence.harvest.OAISet;
 
@@ -35,6 +36,7 @@ public class Metadata extends AbstractApiBean {
      * the UI.
      */
     @PUT
+    @ApiWriteOperation
     @Path("/exportOAI/{specname}")
     public Response exportOaiSet(@PathParam("specname") String spec) {
         // assuming this belongs here (because it's a metadata export), but open to moving it elsewhere

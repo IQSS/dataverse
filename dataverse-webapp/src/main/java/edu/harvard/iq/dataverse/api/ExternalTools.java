@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.persistence.ActionLogRecord;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
@@ -30,6 +31,7 @@ public class ExternalTools extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     public Response addExternalTool(String manifest) {
         try {
             ExternalTool externalTool = ExternalToolServiceBean.parseAddExternalToolManifest(manifest);

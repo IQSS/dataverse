@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteRoleCommand;
@@ -39,6 +40,7 @@ public class Roles extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("{id}")
     public Response deleteRole(@PathParam("id") Long id) {
         return response(req -> {
@@ -48,6 +50,7 @@ public class Roles extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     public Response createNewRole(RoleDTO roleDto,
                                   @QueryParam("dvo") String dvoIdtf) {
         return response(req -> ok(json(execCommand(

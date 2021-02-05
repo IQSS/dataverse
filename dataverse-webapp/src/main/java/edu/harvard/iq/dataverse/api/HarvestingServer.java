@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.persistence.harvest.OAISet;
@@ -105,6 +106,7 @@ public class HarvestingServer extends AbstractApiBean {
      * "description":$optional_set_description,"definition":$set_search_query_string}.
      */
     @POST
+    @ApiWriteOperation
     @Path("{specname}")
     public Response createOaiSet(String jsonBody, @PathParam("specname") String spec, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
         /*
@@ -170,6 +172,7 @@ public class HarvestingServer extends AbstractApiBean {
     }
 
     @PUT
+    @ApiWriteOperation
     @Path("{nickName}")
     public Response modifyOaiSet(String jsonBody, @PathParam("specname") String spec, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
         // TODO:
@@ -178,6 +181,7 @@ public class HarvestingServer extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("{specname}")
     public Response deleteOaiSet(@PathParam("specname") String spec, @QueryParam("key") String apiKey) {
         OAISet set = null;

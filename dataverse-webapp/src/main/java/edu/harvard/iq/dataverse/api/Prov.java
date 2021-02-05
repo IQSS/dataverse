@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonCommand;
@@ -43,6 +44,7 @@ public class Prov extends AbstractApiBean {
      * Provenance JSON methods
      **/
     @POST
+    @ApiWriteOperation
     @Path("{id}/prov-json")
     @Consumes("application/json")
     public Response addProvJson(String body, @PathParam("id") String idSupplied, @QueryParam("entityName") String entityName) {
@@ -82,6 +84,7 @@ public class Prov extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("{id}/prov-json")
     public Response deleteProvJson(String body, @PathParam("id") String idSupplied) {
         if (!settingsSvc.isTrueForKey(SettingsServiceBean.Key.ProvCollectionEnabled)) {
@@ -103,6 +106,7 @@ public class Prov extends AbstractApiBean {
      * Provenance FreeForm methods
      **/
     @POST
+    @ApiWriteOperation
     @Path("{id}/prov-freeform")
     @Consumes("application/json")
     public Response addProvFreeForm(String body, @PathParam("id") String idSupplied) {

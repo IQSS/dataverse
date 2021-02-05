@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.abdera.parser.ParseException;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.CollectionDepositManager;
@@ -59,12 +60,15 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
     SwordServiceBean swordService;
     @Inject
     SettingsServiceBean settingsService;
+    @Inject
+    private SystemConfig systemConfig;
 
     private HttpServletRequest request;
 
     @Override
     public DepositReceipt createNew(String collectionUri, Deposit deposit, AuthCredentials authCredentials, SwordConfiguration config)
             throws SwordError, SwordServerException, SwordAuthException {
+        SwordUtil.checkState(!systemConfig.isReadonlyMode(), UriRegistry.ERROR_BAD_REQUEST, "Repository is running in readonly mode");
 
         AuthenticatedUser user = swordAuth.auth(authCredentials);
         DataverseRequest dvReq = new DataverseRequest(user, request);

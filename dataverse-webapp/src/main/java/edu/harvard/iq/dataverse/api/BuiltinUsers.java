@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
@@ -100,6 +101,7 @@ public class BuiltinUsers extends AbstractApiBean {
      * @return
      */
     @POST
+    @ApiWriteOperation
     @Path("{password}/{key}")
     public Response create(BuiltinUser user, @PathParam("password") String password, @PathParam("key") String key) {
         return internalSave(user, password, key);

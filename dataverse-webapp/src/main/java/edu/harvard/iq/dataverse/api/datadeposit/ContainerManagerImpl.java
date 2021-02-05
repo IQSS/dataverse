@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.abdera.parser.ParseException;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.ContainerManager;
@@ -68,8 +69,11 @@ public class ContainerManagerImpl implements ContainerManager {
     SwordAuth swordAuth;
     @Inject
     private UrlManagerServiceBean urlManagerServiceBean;
+    @Inject
+    private SystemConfig systemConfig;
     @EJB
     SwordServiceBean swordService;
+
     private HttpServletRequest httpRequest;
 
     @Override
@@ -114,6 +118,8 @@ public class ContainerManagerImpl implements ContainerManager {
 
     @Override
     public DepositReceipt replaceMetadata(String uri, Deposit deposit, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordError, SwordServerException, SwordAuthException {
+        SwordUtil.checkState(!systemConfig.isReadonlyMode(), UriRegistry.ERROR_BAD_REQUEST, "Repository is running in readonly mode");
+
         AuthenticatedUser user = swordAuth.auth(authCredentials);
         DataverseRequest dvReq = new DataverseRequest(user, httpRequest);
         logger.fine("replaceMetadata called with url: " + uri);
@@ -203,6 +209,8 @@ public class ContainerManagerImpl implements ContainerManager {
     @Override
     public void deleteContainer(String uri, AuthCredentials authCredentials, SwordConfiguration sc) throws SwordError,
             SwordServerException, SwordAuthException {
+        SwordUtil.checkState(!systemConfig.isReadonlyMode(), UriRegistry.ERROR_BAD_REQUEST, "Repository is running in readonly mode");
+
         AuthenticatedUser user = swordAuth.auth(authCredentials);
         DataverseRequest dvRequest = new DataverseRequest(user, httpRequest);
         logger.fine("deleteContainer called with url: " + uri);
@@ -320,6 +328,8 @@ public class ContainerManagerImpl implements ContainerManager {
 
     @Override
     public DepositReceipt useHeaders(String uri, Deposit deposit, AuthCredentials authCredentials, SwordConfiguration swordConfiguration) throws SwordError, SwordServerException, SwordAuthException {
+        SwordUtil.checkState(!systemConfig.isReadonlyMode(), UriRegistry.ERROR_BAD_REQUEST, "Repository is running in readonly mode");
+
         logger.fine("uri was " + uri);
         logger.fine("isInProgress:" + deposit.isInProgress());
         AuthenticatedUser user = swordAuth.auth(authCredentials);

@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.UserServiceBean;
+import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
@@ -194,8 +195,9 @@ public class Admin extends AbstractApiBean {
                           .getResultList().stream().map(r -> json(r)).collect(toJsonArray()));
     }
 
-    @Path("authenticationProviders")
     @POST
+    @ApiWriteOperation
+    @Path("authenticationProviders")
     public Response addProvider(AuthenticationProviderRow row) {
         try {
             AuthenticationProviderRow managed = em.find(AuthenticationProviderRow.class, row.getId());
@@ -225,12 +227,14 @@ public class Admin extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Path("authenticationProviders/{id}/:enabled")
     public Response enableAuthenticationProvider_deprecated(@PathParam("id") String id, String body) {
         return enableAuthenticationProvider(id, body);
     }
 
     @PUT
+    @ApiWriteOperation
     @Path("authenticationProviders/{id}/enabled")
     @Produces("application/json")
     public Response enableAuthenticationProvider(@PathParam("id") String id, String body) {
@@ -290,6 +294,7 @@ public class Admin extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("authenticationProviders/{id}/")
     public Response deleteAuthenticationProvider(@PathParam("id") String id) {
         authSvc.deregisterProvider(id);
@@ -315,6 +320,7 @@ public class Admin extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("authenticatedUsers/{identifier}/")
     public Response deleteAuthenticatedUser(@PathParam("identifier") String identifier) {
         AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
@@ -326,6 +332,7 @@ public class Admin extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Path("publishDataverseAsCreator/{id}")
     public Response publishDataverseAsCreator(@PathParam("id") long id) {
         try {
@@ -393,6 +400,7 @@ public class Admin extends AbstractApiBean {
      * @todo Add way more error checking. Only the happy path is tested by AdminIT.
      */
     @POST
+    @ApiWriteOperation
     @Path("authenticatedUsers")
     public Response createAuthenicatedUser(JsonObject jsonObject) {
         logger.fine("JSON in: " + jsonObject);
@@ -426,6 +434,7 @@ public class Admin extends AbstractApiBean {
      * Shib-specfic one.
      */
     @PUT
+    @ApiWriteOperation
     @Path("authenticatedUsers/id/{id}/convertShibToBuiltIn")
     @Deprecated
     public Response convertShibUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
@@ -463,6 +472,7 @@ public class Admin extends AbstractApiBean {
     }
 
     @PUT
+    @ApiWriteOperation
     @Path("authenticatedUsers/id/{id}/convertRemoteToBuiltIn")
     public Response convertOAuthUserToBuiltin(@PathParam("id") Long id, String newEmailAddress) {
         try {
@@ -503,8 +513,9 @@ public class Admin extends AbstractApiBean {
      * This is used in testing via AdminIT.java but we don't expect sysadmins to use
      * this.
      */
-    @Path("authenticatedUsers/convert/builtin2shib")
     @PUT
+    @ApiWriteOperation
+    @Path("authenticatedUsers/convert/builtin2shib")
     public Response builtin2shib(String content) {
         logger.info("entering builtin2shib...");
         try {
@@ -649,8 +660,9 @@ public class Admin extends AbstractApiBean {
      * This is used in testing via AdminIT.java but we don't expect sysadmins to use
      * this.
      */
-    @Path("authenticatedUsers/convert/builtin2oauth")
     @PUT
+    @ApiWriteOperation
+    @Path("authenticatedUsers/convert/builtin2oauth")
     public Response builtin2oauth(String content) {
         logger.info("entering builtin2oauth...");
         try {
@@ -800,6 +812,7 @@ public class Admin extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("authenticatedUsers/id/{id}/")
     public Response deleteAuthenticatedUserById(@PathParam("id") Long id) {
         AuthenticatedUser user = authSvc.findByID(id);
@@ -810,8 +823,9 @@ public class Admin extends AbstractApiBean {
         return error(Response.Status.BAD_REQUEST, "User " + id + " not found.");
     }
 
-    @Path("roles")
     @POST
+    @ApiWriteOperation
+    @Path("roles")
     public Response createNewBuiltinRole(RoleDTO roleDto) {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "createBuiltInRole")
                 .setInfo(roleDto.getAlias() + ":" + roleDto.getDescription());
@@ -826,8 +840,8 @@ public class Admin extends AbstractApiBean {
         }
     }
 
-    @Path("roles")
     @GET
+    @Path("roles")
     public Response listBuiltinRoles() {
         try {
             return ok(rolesToJson(rolesSvc.findBuiltinRoles()));
@@ -836,8 +850,9 @@ public class Admin extends AbstractApiBean {
         }
     }
 
-    @Path("superuser/{identifier}")
     @POST
+    @ApiWriteOperation
+    @Path("superuser/{identifier}")
     public Response toggleSuperuser(@PathParam("identifier") String identifier) {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "toggleSuperuser")
                 .setInfo(identifier);
@@ -857,8 +872,8 @@ public class Admin extends AbstractApiBean {
         }
     }
 
-    @Path("validate")
     @GET
+    @Path("validate")
     public Response validate() {
         String msg = "UNKNOWN";
         try {
@@ -887,8 +902,8 @@ public class Admin extends AbstractApiBean {
         return ok(msg);
     }
 
-    @Path("assignments/assignees/{raIdtf: .*}")
     @GET
+    @Path("assignments/assignees/{raIdtf: .*}")
     public Response getAssignmentsFor(@PathParam("raIdtf") String raIdtf) {
 
         JsonArrayBuilder arr = Json.createArrayBuilder();
@@ -903,8 +918,8 @@ public class Admin extends AbstractApiBean {
      * @param userId The database id of an AuthenticatedUser.
      * @return The confirm email token.
      */
-    @Path("confirmEmail/{userId}")
     @GET
+    @Path("confirmEmail/{userId}")
     public Response getConfirmEmailToken(@PathParam("userId") long userId) {
         AuthenticatedUser user = authSvc.findByID(userId);
         if (user != null) {
@@ -921,8 +936,9 @@ public class Admin extends AbstractApiBean {
      *
      * @param userId The database id of an AuthenticatedUser.
      */
-    @Path("confirmEmail/{userId}")
     @POST
+    @ApiWriteOperation
+    @Path("confirmEmail/{userId}")
     public Response startConfirmEmailProcess(@PathParam("userId") long userId) {
         AuthenticatedUser user = authSvc.findByID(userId);
         if (user != null) {
@@ -943,8 +959,9 @@ public class Admin extends AbstractApiBean {
      * This method is used by an integration test in UsersIT.java to exercise bug
      * https://github.com/IQSS/dataverse/issues/3287 . Not for use by users!
      */
-    @Path("convertUserFromBcryptToSha1")
     @POST
+    @ApiWriteOperation
+    @Path("convertUserFromBcryptToSha1")
     public Response convertUserFromBcryptToSha1(String json) {
         JsonReader jsonReader = Json.createReader(new StringReader(json));
         JsonObject object = jsonReader.readObject();
@@ -957,8 +974,8 @@ public class Admin extends AbstractApiBean {
 
     }
 
-    @Path("permissions/{dvo}")
     @GET
+    @Path("permissions/{dvo}")
     public Response findPermissonsOn(@PathParam("dvo") String dvo) {
         try {
             DvObject dvObj = findDvo(dvo);
@@ -981,23 +998,24 @@ public class Admin extends AbstractApiBean {
         }
     }
 
-    @Path("assignee/{idtf}")
     @GET
+    @Path("assignee/{idtf}")
     public Response findRoleAssignee(@PathParam("idtf") String idtf) {
         RoleAssignee ra = roleAssigneeSvc.getRoleAssignee(idtf);
         return (ra == null) ? notFound("Role Assignee '" + idtf + "' not found.") : ok(json(ra.getDisplayInfo()));
     }
 
-    @Path("datasets/integrity/{datasetVersionId}/fixmissingunf")
     @POST
+    @ApiWriteOperation
+    @Path("datasets/integrity/{datasetVersionId}/fixmissingunf")
     public Response fixUnf(@PathParam("datasetVersionId") String datasetVersionId,
                            @QueryParam("forceRecalculate") boolean forceRecalculate) {
         JsonObjectBuilder info = datasetVersionSvc.fixMissingUnf(datasetVersionId, forceRecalculate);
         return ok(info);
     }
 
-    @Path("datafiles/integrity/fixmissingoriginaltypes")
     @GET
+    @Path("datafiles/integrity/fixmissingoriginaltypes")
     public Response fixMissingOriginalTypes() {
         JsonObjectBuilder info = Json.createObjectBuilder();
 
@@ -1019,8 +1037,8 @@ public class Admin extends AbstractApiBean {
         return ok(info);
     }
 
-    @Path("datafiles/integrity/fixmissingoriginalsizes")
     @GET
+    @Path("datafiles/integrity/fixmissingoriginalsizes")
     public Response fixMissingOriginalSizes(@QueryParam("limit") Integer limit) {
         JsonObjectBuilder info = Json.createObjectBuilder();
 
@@ -1047,8 +1065,8 @@ public class Admin extends AbstractApiBean {
         return ok(info);
     }
 
-    @Path("datafiles/integrity/check")
     @GET
+    @Path("datafiles/integrity/check")
     public Response checkDatafilesIntegrity() {
         try {
             AuthenticatedUser authenticatedUser = findAuthenticatedUserOrDie();
@@ -1102,8 +1120,9 @@ public class Admin extends AbstractApiBean {
      * @param password The password
      * @return A response with the validation result.
      */
-    @Path("validatePassword")
     @POST
+    @ApiWriteOperation
+    @Path("validatePassword")
     public Response validatePassword(String password) {
 
         final List<String> errors = passwordValidatorService.validate(password, new Date(), false);
@@ -1119,6 +1138,7 @@ public class Admin extends AbstractApiBean {
     }
 
     @POST
+    @ApiWriteOperation
     @Path("{id}/reregisterHDLToPID")
     public Response reregisterHdlToPID(@PathParam("id") String id) {
         logger.info("Starting to reregister  " + id + " Dataset Id. (from hdl to doi)" + new Date());
@@ -1381,6 +1401,7 @@ public class Admin extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("/clearMetricsCache")
     public Response clearMetricsCache() {
         em.createNativeQuery("DELETE FROM metric").executeUpdate();
@@ -1388,6 +1409,7 @@ public class Admin extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("/clearMetricsCache/{name}")
     public Response clearMetricsCacheByName(@PathParam("name") String name) {
         Query deleteQuery = em.createNativeQuery("DELETE FROM metric where metricname = ?");
@@ -1443,8 +1465,9 @@ public class Admin extends AbstractApiBean {
                 .getOrElse(() -> error(Status.NOT_FOUND, BundleUtil.getStringFromBundle("consent.api.consentsAlias.failure.noConsents", alias)));
     }
 
-    @Path("/consents/{alias}")
     @PUT
+    @ApiWriteOperation
+    @Path("/consents/{alias}")
     public Response editConsent(@PathParam("alias") String alias, String json) {
         Option<Consent> consent = consentApiService.fetchConsent(alias);
 
@@ -1471,8 +1494,9 @@ public class Admin extends AbstractApiBean {
         return ok(BundleUtil.getStringFromBundle("consent.api.consentsAlias.success.consentEdited"));
     }
 
-    @Path("/consents")
     @POST
+    @ApiWriteOperation
+    @Path("/consents")
     public Response createConsent(String json) {
         Try<ConsentApiDto> createdConsent = Try.of(() -> new ObjectMapper().readValue(json, ConsentApiDto.class));
 
