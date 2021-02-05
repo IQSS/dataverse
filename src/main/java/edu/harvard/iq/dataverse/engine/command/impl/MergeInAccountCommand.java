@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
@@ -185,8 +186,8 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         ctxt.em().remove(consumedAUL);
         ctxt.em().remove(consumedAU);
         BuiltinUser consumedBuiltinUser = ctxt.builtinUsers().findByUserName(consumedAU.getUserIdentifier());
-        if (consumedBuiltinUser != null){
-            ctxt.em().remove(consumedBuiltinUser); 
+        if (consumedBuiltinUser != null) {
+            ctxt.builtinUsers().removeUser(consumedBuiltinUser.getUserName());
         }
         
         

@@ -30,8 +30,10 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailData;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
+import edu.harvard.iq.dataverse.engine.command.impl.RevokeAllRolesCommand;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
+import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
@@ -120,7 +122,10 @@ public class AuthenticationServiceBean {
     
     @EJB 
     ExplicitGroupServiceBean explicitGroupService;
-        
+
+    @EJB
+    SavedSearchServiceBean savedSearchService;
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
         
@@ -193,7 +198,7 @@ public class AuthenticationServiceBean {
      * 
      * Before calling this method, make sure you've deleted all the stuff tied
      * to the user, including stuff they've created, role assignments, group
-     * assignments, etc.
+     * assignments, etc. See the "removeAuthentictedUserItems" (sic) method.
      * 
      * Longer term, the intention is to have a "disableAuthenticatedUser"
      * method/command. See https://github.com/IQSS/dataverse/issues/2419
@@ -215,6 +220,7 @@ public class AuthenticationServiceBean {
                 em.remove(confirmEmailData);
             }
             userNotificationService.findByUser(user.getId()).forEach(userNotificationService::delete);
+            em.createNativeQuery("delete from OAuth2TokenData where user_id =" + user.getId()).executeUpdate();
             
             AuthenticationProvider prv = lookupProvider(user);
             if ( prv != null && prv.isUserDeletionAllowed() ) {
@@ -478,6 +484,10 @@ public class AuthenticationServiceBean {
         if (!datasetVersionService.getDatasetVersionUsersByAuthenticatedUser(au).isEmpty()) {
             reasons.add(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.versionUser"));
         }
+
+        if (!savedSearchService.findByAuthenticatedUser(au).isEmpty()) {
+            reasons.add(BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.savedSearches"));
+        }
         
         if (!reasons.isEmpty()) {
             retVal = BundleUtil.getStringFromBundle("admin.api.deleteUser.failure.prefix", Arrays.asList(au.getIdentifier()));
@@ -517,7 +527,6 @@ public class AuthenticationServiceBean {
        em.createNativeQuery("delete from fileaccessrequests where authenticated_user_id  = "+au.getId()).executeUpdate();
         
     }
-    
     
     public AuthenticatedUser save( AuthenticatedUser user ) {
         em.persist(user);

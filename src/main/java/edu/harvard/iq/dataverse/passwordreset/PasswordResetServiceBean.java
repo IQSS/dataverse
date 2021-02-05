@@ -186,6 +186,12 @@ public class PasswordResetServiceBean {
         return numDeleted;
     }
 
+    public void deleteResetDataByDataverseUser(BuiltinUser user) {
+        TypedQuery<PasswordResetData> typedQuery = em.createNamedQuery("PasswordResetData.deleteByUser", PasswordResetData.class);
+        typedQuery.setParameter("user", user);
+        int numRowsAffected = typedQuery.executeUpdate();
+    }
+
     public PasswordChangeAttemptResponse attemptPasswordReset(BuiltinUser user, String newPassword, String token) {
 
         final String messageSummarySuccess = "Password Reset Successfully";

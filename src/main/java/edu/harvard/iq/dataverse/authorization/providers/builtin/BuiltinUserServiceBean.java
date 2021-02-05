@@ -79,6 +79,8 @@ public class BuiltinUserServiceBean {
     public void removeUser( String userName ) {
         final BuiltinUser user = findByUserName(userName);
         if ( user != null ) {
+            // TODO: Consider adding a cascade delete instead.
+            passwordResetService.deleteResetDataByDataverseUser(user);
             em.remove(user);
         }
     }
