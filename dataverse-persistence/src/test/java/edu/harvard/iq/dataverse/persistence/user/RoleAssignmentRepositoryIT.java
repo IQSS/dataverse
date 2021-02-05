@@ -5,7 +5,7 @@ import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
 import org.junit.Test;
 
 import javax.inject.Inject;
-
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
@@ -29,7 +29,21 @@ public class RoleAssignmentRepositoryIT extends PersistenceArquillianDeployment 
                 roleAssignments.stream().map(RoleAssignment::getId).collect(toList()),
                 containsInAnyOrder(5L, 32L, 33L));
     }
-    
+
+    @Test
+    public void findByDefinitionPointIds() {
+        // given
+        ArrayList<Long> definitionPointIds = Lists.newArrayList(1L, 19L, 51L);
+
+        // when
+        List<RoleAssignment> roleAssignments = roleAssignmentRepository.findByDefinitionPointIds(definitionPointIds);
+
+        // then
+        assertThat(
+                roleAssignments.stream().map(RoleAssignment::getId).collect(toList()),
+                containsInAnyOrder(5L, 7L, 29L, 32L, 33L));
+    }
+
     @Test
     public void findByAssigneeIdentifier() {
         // when

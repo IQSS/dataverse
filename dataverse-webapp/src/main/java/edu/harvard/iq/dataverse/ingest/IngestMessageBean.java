@@ -105,7 +105,7 @@ public class IngestMessageBean implements MessageListener {
                             errorReport.setErrorKey(IngestError.DB_FAIL);
                             errorReport.setDataFile(datafile);
                             datafile.setIngestReport(errorReport);
-                            datafile.setDataTables(null);
+                            datafile.setDataTable(null);
 
                             logger.info("trying to save datafile and the failed ingest report, id=" + datafile_id);
                             datafile = datafileService.save(datafile);

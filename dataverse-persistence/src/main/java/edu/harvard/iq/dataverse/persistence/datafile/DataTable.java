@@ -10,8 +10,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import java.io.Serializable;
@@ -69,8 +69,8 @@ public class DataTable implements Serializable {
     /*
      * DataFile that stores the data for this DataTable
      */
-    @ManyToOne
-    @JoinColumn(nullable = false)
+    @OneToOne
+    @JoinColumn(name = "datafile_id", nullable = false)
     private DataFile dataFile;
 
     /*

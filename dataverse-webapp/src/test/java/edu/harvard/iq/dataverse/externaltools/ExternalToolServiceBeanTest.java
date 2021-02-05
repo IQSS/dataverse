@@ -35,9 +35,7 @@ public class ExternalToolServiceBeanTest {
         List<FileMetadata> fmdl = new ArrayList<FileMetadata>();
         fmdl.add(fmd);
         dataFile.setFileMetadatas(fmdl);
-        List<DataTable> dataTables = new ArrayList<DataTable>();
-        dataTables.add(new DataTable());
-        dataFile.setDataTables(dataTables);
+        dataFile.setDataTable(new DataTable());
         ApiToken apiToken = new ApiToken();
         apiToken.setTokenString("7196b5ce-f200-4286-8809-03ffdbc255d7");
         ExternalTool.Type type = ExternalTool.Type.EXPLORE;

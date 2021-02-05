@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.persistence.user;
 import edu.harvard.iq.dataverse.persistence.JpaRepository;
 
 import javax.ejb.Singleton;
-
 import java.util.List;
 
 @Singleton
@@ -20,6 +19,12 @@ public class RoleAssignmentRepository extends JpaRepository<Long, RoleAssignment
     public List<RoleAssignment> findByDefinitionPointId(long definitionPointId) {
         return em.createQuery("SELECT r FROM RoleAssignment r WHERE r.definitionPoint.id=:definitionPointId", RoleAssignment.class)
                 .setParameter("definitionPointId", definitionPointId)
+                .getResultList();
+    }
+
+    public List<RoleAssignment> findByDefinitionPointIds(List<Long> definitionPointIds) {
+        return em.createQuery("SELECT r FROM RoleAssignment r WHERE r.definitionPoint.id IN :definitionPointIds", RoleAssignment.class)
+                .setParameter("definitionPointIds", definitionPointIds)
                 .getResultList();
     }
 

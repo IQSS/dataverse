@@ -177,8 +177,8 @@ public class DataFile extends DvObject implements Comparable {
         associated with them:
     */
 
-    @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
-    private List<DataTable> dataTables;
+    @OneToOne(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private DataTable dataTable;
 
     @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<IngestReport> ingestReports;
@@ -234,30 +234,12 @@ public class DataFile extends DvObject implements Comparable {
         return false;
     }
 
-    public List<DataTable> getDataTables() {
-        return dataTables;
-    }
-
-    public void setDataTables(List<DataTable> dataTables) {
-        this.dataTables = dataTables;
-    }
-
     public DataTable getDataTable() {
-        if (getDataTables() != null && getDataTables().size() > 0) {
-            return getDataTables().get(0);
-        } else {
-            return null;
-        }
+        return dataTable;
     }
 
     public void setDataTable(DataTable dt) {
-        if (this.getDataTables() == null) {
-            this.setDataTables(new ArrayList<>());
-        } else {
-            this.getDataTables().clear();
-        }
-
-        this.getDataTables().add(dt);
+        dataTable = dt;
     }
 
     public List<DataFileTag> getTags() {
@@ -338,7 +320,7 @@ public class DataFile extends DvObject implements Comparable {
     }
 
     public boolean isTabularData() {
-        return getDataTables() != null && getDataTables().size() > 0;
+        return dataTable != null;
     }
 
     public String getOriginalFileFormat() {

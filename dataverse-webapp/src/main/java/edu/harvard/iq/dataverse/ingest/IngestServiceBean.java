@@ -98,7 +98,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -998,7 +997,7 @@ public class IngestServiceBean {
     }
 
     private void restoreIngestedDataFile(DataFile dataFile, TabularDataIngest tabDataIngest, long originalSize, String originalFileName, String originalContentType) {
-        dataFile.setDataTables(null);
+        dataFile.setDataTable(null);
         if (tabDataIngest != null && tabDataIngest.getDataTable() != null) {
             tabDataIngest.getDataTable().setDataFile(null);
         }

@@ -20,10 +20,10 @@ import javax.ejb.Stateless;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.persistence.EntityNotFoundException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -163,15 +163,15 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
     }
 
     public Set<RoleAssignment> rolesAssignments(DvObject dv) {
-        Set<RoleAssignment> ras = new HashSet<>();
+        LinkedList<Long> dvOwnerIds = new LinkedList<>();
+        dvOwnerIds.add(dv.getId());
+
         while (!dv.isEffectivelyPermissionRoot()) {
-            ras.addAll(roleAssignmentRepository.findByDefinitionPointId(dv.getId()));
             dv = dv.getOwner();
+            dvOwnerIds.add(dv.getId());
         }
 
-        ras.addAll(roleAssignmentRepository.findByDefinitionPointId(dv.getId()));
-
-        return ras;
+        return new HashSet<>(roleAssignmentRepository.findByDefinitionPointIds(dvOwnerIds));
     }
 
     /**
