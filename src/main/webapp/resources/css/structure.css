@@ -14,8 +14,8 @@ body .ui-widget {font-size: inherit;}
 .ui-widget-content a:hover, .ui-widget-content a:focus {color: #23527C;}
 
 /* -------- TEMPLATE -------- */
-/* TODO FIX DROPDOWN MENU LAYERED UNDER FOOTER */
-#content {padding-bottom:0px;}
+/* STICKY FOOTER VS DROPDOWN MENU POSITION + Z-INDEX */
+#content {position:relative; z-index:50;}
 .panelgridHeaderTable {width:100%;}
 .panelgridHeaderTable .ui-widget-content, .panelgridHeaderTable .ui-widget-content > td {border:0; background:none;}
 .panelgridHeaderTable .ui-widget-content > td:last-child table {margin-left:auto;}
@@ -63,7 +63,7 @@ body .ui-widget {font-size: inherit;}
 #status-alert {margin-top:0; margin-bottom:0;}
 #status-alert div.alert {border:0; box-shadow:none;}
 
-#footer {position:absolute; z-index:-1; bottom:0; width:100%; height:60px; padding-bottom:100px; color:#808080;}
+#footer {position:absolute; bottom:0; width:100%; height:60px; padding-bottom:100px; color:#808080;}
 #footer.widget-view {position:fixed; left:0; bottom:0; margin:0; padding:4px 0 0 0; min-height:44px; height:auto; background:#fff;}
 #footer .poweredbylogo {text-align:right;}
 #footer .poweredbylogo span {font-size:.85em;margin-right:.3em;}
