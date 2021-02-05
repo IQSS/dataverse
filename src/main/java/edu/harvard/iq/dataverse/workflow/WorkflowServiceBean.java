@@ -282,7 +282,7 @@ public class WorkflowServiceBean {
         em.persist(datasetLock);
         //flush creates the id
         em.flush();
-        ctxt.setLockId(datasetLock.getId());
+        ctxt.setLock(datasetLock);
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -295,7 +295,7 @@ public class WorkflowServiceBean {
         lockCounter.setParameter("datasetId", ctxt.getDataset().getId());
         List<DatasetLock> locks = lockCounter.getResultList();
         for(DatasetLock lock: locks) {
-        	if(lock.getReason() == DatasetLock.Reason.Workflow && lock.getId()==ctxt.getLockId()) {
+        	if(lock.getReason() == DatasetLock.Reason.Workflow && lock==ctxt.getLock()) {
                 logger.fine("Removing lock");
         		em.remove(lock);
         	}
@@ -458,7 +458,7 @@ public class WorkflowServiceBean {
     	 */
         WorkflowContext newCtxt =new WorkflowContext( ctxt.getRequest(), 
                 em.merge(ctxt.getDataset()), ctxt.getNextVersionNumber(), 
-                ctxt.getNextMinorVersionNumber(), ctxt.getType(), settings, apiToken, ctxt.getDatasetExternallyReleased(), ctxt.getInvocationId(), ctxt.getLockId());
+                ctxt.getNextMinorVersionNumber(), ctxt.getType(), settings, apiToken, ctxt.getDatasetExternallyReleased(), ctxt.getInvocationId(), ctxt.getLock());
         return newCtxt;
     }
 

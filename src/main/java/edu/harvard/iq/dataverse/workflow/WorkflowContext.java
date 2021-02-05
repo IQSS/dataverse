@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.workflow;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
@@ -31,7 +32,7 @@ public class WorkflowContext {
     private final ApiToken apiToken;
     private final boolean datasetExternallyReleased;
     private Map<String, Object> settings;
-    private long lockId = -1;
+    private DatasetLock lock = null;
     
     private String invocationId = UUID.randomUUID().toString();
 
@@ -47,7 +48,7 @@ public class WorkflowContext {
     }
 
     public WorkflowContext(DataverseRequest request, Dataset dataset, long nextVersionNumber, 
-                            long nextMinorVersionNumber, TriggerType type, Map<String, Object> settings, ApiToken apiToken, boolean datasetExternallyReleased, String invocationId, Long lockId) {
+                            long nextMinorVersionNumber, TriggerType type, Map<String, Object> settings, ApiToken apiToken, boolean datasetExternallyReleased, String invocationId, DatasetLock lock) {
         this.request = request;
         this.dataset = dataset;
         this.nextVersionNumber = nextVersionNumber;
@@ -60,8 +61,8 @@ public class WorkflowContext {
         if(invocationId!=null) {
             setInvocationId(invocationId);
         }
-        if(lockId != null) {
-          this.setLockId(lockId);
+        if(lock != null) {
+          this.setLock(lock);
         }
     }
 
@@ -108,11 +109,11 @@ public class WorkflowContext {
     public boolean getDatasetExternallyReleased() {
        return datasetExternallyReleased;
     }
-    public long getLockId() {
-        return lockId;
+    public DatasetLock getLock() {
+        return lock;
     }
-    public void setLockId(long lockId) {
-        this.lockId = lockId;
+    public void setLock(DatasetLock lock) {
+        this.lock = lock;
     }
     
 }
