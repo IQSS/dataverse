@@ -2994,7 +2994,7 @@ Deletes an ``AuthenticatedUser`` whose ``id``  is passed. ::
 
     DELETE http://$SERVER/api/admin/authenticatedUsers/id/$id
     
-Note: If the user has performed certain actions such as creating or contributing to a Dataset or downloading a file they cannot be deleted. If a user cannot be deleted due to performing certain actions, you can choose to :ref:`disable a user<disable-a-user>`.
+Note: If the user has performed certain actions such as creating or contributing to a Dataset or downloading a file they cannot be deleted. If a user cannot be deleted for this reason, you can choose to :ref:`disable a user<disable-a-user>`.
     
 .. _disable-a-user:
 
@@ -3022,7 +3022,6 @@ Disabling a user with this endpoint will:
 Disabling a user with this endpoint will keep:
 
 - The user's contributions to datasets, including dataset creation, file uploads, publishing, submitting for review, and returning to author.
-- Any Dataverse Collections where the user is the sole administrator
 - The user's access to datafiles in the Dataverse installation, including guestbook records and acceptance of terms of use.
 - The user's account information (specifically name, email, affiliation, and position)
 
@@ -3037,15 +3036,18 @@ In some cases, due to privacy laws or other organizational policies, it may be r
 
 Note: Before going through these steps, please note that you will be permanently losing:
 
-- The user's contributions to datasets, including dataset creation, file uploads, publishing, submitting for review, and returning to author. This will all be marked as "Anonymous User" in your Dataverse installation, and it will not be possible to track who made changes as part of the archival record.
-- Records of the user's access to datafiles in the Dataverse installation, including guestbook records and acceptance of terms of use. This could potentially introduce issues where it is no longer possible for data curators and owners to follow up with those who have accessed data on the application, which may be a legal requirement or data sharing agreement. It will be up to the Dataverse installation administrators to determine which datasets the user has accessed to determine if anonymization is feasible in these situations.    
+- The user's contributions to datasets, including dataset creation, file uploads, publishing, submitting for review, and returning to author. This will all be marked as "Anonymous User" in your Dataverse installation, and it will not be possible to track who made changes as part of the archival record.   
 - The user's account information (specifically name, email, affiliation, and position). This will make it impossible to follow up with the user being deleted. You may find that you need to contact a user about a security breach or something else in the future, and you will not able to do so. 
+
+You will not lose:
+
+- Email, First Name, and Last Name in Guestbook records.
 
 To anonymize a user in your Dataverse installation:
 
-- Create a user called "Anonymous User"
+- Create a user called "Anonymous User". This is a one-time step.
 - Use the :ref:`merge-accounts-label` functionality to merge the user you wish to anonymize INTO the Anonymous User
-- Remove All Roles from the Anonymous User, either through the Dashboard or the :ref:`Remove Role Assignments <remove-role-assignments>` API.
+- Disable the user using the :ref:`disable a user<disable-a-user>` API.
 
 Once you've created the Anonymous User once, you will not need to create it again.
 
