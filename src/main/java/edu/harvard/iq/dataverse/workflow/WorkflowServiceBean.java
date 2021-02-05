@@ -31,8 +31,6 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -99,21 +97,9 @@ public class WorkflowServiceBean {
      * @throws CommandException If the dataset could not be locked.
      */
     @Asynchronous
-    public void start(Workflow wf, WorkflowContext ctxt, FacesContext facesCtxt) throws CommandException {
+    public void start(Workflow wf, WorkflowContext ctxt) throws CommandException {
         ctxt = refresh(ctxt, retrieveRequestedSettings( wf.getRequiredSettings()), getCurrentApiToken(ctxt.getRequest().getAuthenticatedUser()));
         lockDataset(ctxt);
-        if (facesCtxt != null) {
-            try {
-                facesCtxt.addMessage(null, new FacesMessage("Starting Workflow"));
-            } catch (Throwable t) {
-                logger.warning(t.getLocalizedMessage());
-                logger.warning(t.getClass().toString());
-
-                t.printStackTrace();
-            }
-        } else {
-            logger.warning("FacesCtxt was null");
-        }
         forward(wf, ctxt);
     }
     
