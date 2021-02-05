@@ -13,7 +13,8 @@ Python
 
 There are two Python modules for interacting with Dataverse APIs.
 
-`pyDataverse <https://github.com/AUSSDA/pyDataverse>`_ had its initial release in 2019 and can be installed with ``pip install pyDataverse``. The module is developed by `Stefan Kasberger <http://stefankasberger.at>`_ from `AUSSDA - The Austrian Social Science Data Archive <https://aussda.at>`_.  
+`pyDataverse <https://github.com/gdcc/pyDataverse>`_ helps with the Dataverse API's and data types (Dataverse, Dataset, Datafile). It's intention is to help with data migrations, DevOps activities like testing and configuration and to build services upon.
+The module is developed by `Stefan Kasberger <http://stefankasberger.at>`_ from `AUSSDA - The Austrian Social Science Data Archive <https://aussda.at>`_.  
 
 `dataverse-client-python <https://github.com/IQSS/dataverse-client-python>`_ had its initial release in 2015. `Robert Liebowitz <https://github.com/rliebz>`_ created this library while at the `Center for Open Science (COS) <https://centerforopenscience.org>`_ and the COS uses it to integrate the `Open Science Framework (OSF) <https://osf.io>`_ with Dataverse via an add-on which itself is open source and listed on the :doc:`/api/apps` page.
 
