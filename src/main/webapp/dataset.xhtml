@@ -158,7 +158,7 @@
                                                                 </p:commandLink>
                                                             </li>
                                                             <!-- DOWNLOAD ORIGINAL BUTTON (TABULAR FILES PRESENT) -->
-                                                            <li jsf:rendered="#{DatasetPage.versionHasTabular}">
+                                                            <li jsf:rendered="#{DatasetPage.versionHasTabular and DatasetPage.sizeOfDatasetOrig != '0 B' }">
                                                                 <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadOriginal()}" styleClass="btn-download">
                                                                     #{bundle.downloadOriginal}
                                                                     <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
