@@ -1,8 +1,5 @@
 package edu.harvard.iq.dataverse.persistence.datafile.license;
 
-import edu.harvard.iq.dataverse.persistence.datafile.license.License;
-import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -11,7 +8,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import java.io.Serializable;
 
 /**
@@ -42,9 +38,6 @@ public class FileTermsOfUse implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(mappedBy = "termsOfUse")
-    private FileMetadata fileMetadata;
-
     @ManyToOne
     private License license;
 
@@ -61,14 +54,6 @@ public class FileTermsOfUse implements Serializable {
 
     public Long getId() {
         return id;
-    }
-
-    /**
-     * Returns file metadata associated with this
-     * terms of use
-     */
-    public FileMetadata getFileMetadata() {
-        return fileMetadata;
     }
 
     /**
@@ -121,7 +106,6 @@ public class FileTermsOfUse implements Serializable {
 
     public FileTermsOfUse createCopy() {
         FileTermsOfUse copy = new FileTermsOfUse();
-        copy.setFileMetadata(getFileMetadata());
         copy.setLicense(getLicense());
         copy.setAllRightsReserved(isAllRightsReserved());
         copy.setRestrictType(getRestrictType());
@@ -133,10 +117,6 @@ public class FileTermsOfUse implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public void setFileMetadata(FileMetadata fileMetadata) {
-        this.fileMetadata = fileMetadata;
     }
 
     public void setLicense(License license) {

@@ -18,6 +18,8 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.guestbook.GuestbookResponse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import org.eclipse.persistence.annotations.BatchFetch;
+import org.eclipse.persistence.annotations.BatchFetchType;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.json.Json;
@@ -178,12 +180,14 @@ public class DataFile extends DvObject implements Comparable {
     */
 
     @OneToOne(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @BatchFetch(BatchFetchType.JOIN)
     private DataTable dataTable;
 
     @OneToMany(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<IngestReport> ingestReports;
 
     @OneToOne(mappedBy = "dataFile", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @BatchFetch(BatchFetchType.JOIN)
     private IngestRequest ingestRequest;
 
     @OneToMany(mappedBy = "dataFile", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
@@ -206,6 +210,7 @@ public class DataFile extends DvObject implements Comparable {
     private char ingestStatus = INGEST_STATUS_NONE;
 
     @OneToOne(mappedBy = "thumbnailFile")
+    @BatchFetch(BatchFetchType.JOIN)
     private Dataset thumbnailForDataset;
 
     public DataFile() {

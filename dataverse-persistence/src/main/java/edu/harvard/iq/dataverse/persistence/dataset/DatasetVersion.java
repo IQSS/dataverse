@@ -580,7 +580,6 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
 
             FileTermsOfUse termsOfUse = fm.getTermsOfUse();
             FileTermsOfUse clonedTermsOfUse = termsOfUse.createCopy();
-            clonedTermsOfUse.setFileMetadata(newFm);
             newFm.setTermsOfUse(clonedTermsOfUse);
 
             dsv.getFileMetadatas().add(newFm);

@@ -1695,7 +1695,6 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         FileTermsOfUse termsOfUse = termsOfUseFactory.createTermsOfUse();
         fmd.setTermsOfUse(termsOfUse);
-        termsOfUse.setFileMetadata(fmd);
 
         fmd.setTermsOfUseForm(termsOfUseFormMapper.mapToForm(termsOfUse));
 

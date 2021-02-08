@@ -246,7 +246,6 @@ public class LicenseDifferenceFinderTest {
         termsOfUse.setLicense(license);
 
         fileMetadata.setTermsOfUse(termsOfUse);
-        termsOfUse.setFileMetadata(fileMetadata);
 
         return termsOfUse;
     }
@@ -256,7 +255,6 @@ public class LicenseDifferenceFinderTest {
         termsOfUse.setRestrictType(restrictType);
 
         fileMetadata.setTermsOfUse(termsOfUse);
-        termsOfUse.setFileMetadata(fileMetadata);
 
         return termsOfUse;
     }

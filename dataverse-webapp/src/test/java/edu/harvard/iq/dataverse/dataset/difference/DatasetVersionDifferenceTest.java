@@ -621,7 +621,6 @@ public class DatasetVersionDifferenceTest {
         termsOfUse.setLicense(license);
 
         fileMetadata.setTermsOfUse(termsOfUse);
-        termsOfUse.setFileMetadata(fileMetadata);
 
         return termsOfUse;
     }
@@ -631,7 +630,6 @@ public class DatasetVersionDifferenceTest {
         termsOfUse.setRestrictType(restrictType);
 
         fileMetadata.setTermsOfUse(termsOfUse);
-        termsOfUse.setFileMetadata(fileMetadata);
 
         return termsOfUse;
     }

@@ -12,6 +12,8 @@ import edu.harvard.iq.dataverse.persistence.datafile.license.TermsOfUseForm;
 import edu.harvard.iq.dataverse.persistence.dataset.DataCitation;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.persistence.annotations.BatchFetch;
+import org.eclipse.persistence.annotations.BatchFetchType;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.json.Json;
@@ -19,7 +21,6 @@ import javax.json.JsonArrayBuilder;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -77,6 +78,7 @@ public class FileMetadata implements JpaEntity<Long>, Serializable {
 
     @ManyToOne
     @JoinColumn(nullable = false)
+    @BatchFetch(BatchFetchType.JOIN)
     private DataFile dataFile;
 
     /**
@@ -89,8 +91,9 @@ public class FileMetadata implements JpaEntity<Long>, Serializable {
 
     private int displayOrder;
 
-    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
     @JoinColumn(nullable = false, name = "termsofuse_id")
+    @BatchFetch(BatchFetchType.JOIN)
     private FileTermsOfUse termsOfUse;
 
     /**
@@ -109,7 +112,6 @@ public class FileMetadata implements JpaEntity<Long>, Serializable {
         fmd.setDisplayOrder(getDisplayOrder());
 
         FileTermsOfUse termsOfUseCopy = getTermsOfUse().createCopy();
-        termsOfUseCopy.setFileMetadata(fmd);
         fmd.setTermsOfUse(termsOfUseCopy);
 
         return fmd;

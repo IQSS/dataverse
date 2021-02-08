@@ -128,7 +128,7 @@ public final class DatasetVersionDifference {
                         changedFileMetadata.add(new FileMetadataDiff(fmdo, fmdn));
                     }
                     if (!areFileTermsEqual(fmdo.getTermsOfUse(), fmdn.getTermsOfUse())) {
-                        changedFileTerms.add(new TermsOfUseDiff(fmdo.getTermsOfUse(), fmdn.getTermsOfUse()));
+                        changedFileTerms.add(new TermsOfUseDiff(fmdo.getTermsOfUse(), fmdn.getTermsOfUse(), fmdo.getDataFile()));
                     }
 
                     break;
@@ -676,7 +676,7 @@ public final class DatasetVersionDifference {
         for (TermsOfUseDiff changedTermsPair : changedFileTerms) {
             FileTermsOfUse originalTerms = changedTermsPair.getOldValue();
             FileTermsOfUse newTerms = changedTermsPair.getNewValue();
-            DataFile dataFile = originalTerms.getFileMetadata().getDataFile();
+            DataFile dataFile = changedTermsPair.getOriginalFile();
 
             datasetFileTermsDiffList.add(new DatasetFileTermDifferenceItem(
                     new FileSummary(dataFile.getId().toString(),

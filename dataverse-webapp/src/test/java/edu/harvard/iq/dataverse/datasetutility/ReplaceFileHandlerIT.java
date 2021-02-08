@@ -159,7 +159,6 @@ public class ReplaceFileHandlerIT extends WebappArquillianDeployment {
         FileTermsOfUse termsOfUse = new FileTermsOfUse();
         termsOfUse.setLicense(licenseDAO.findFirstActive());
         fmd.setTermsOfUse(termsOfUse);
-        termsOfUse.setFileMetadata(fmd);
         fmd.setDataFile(savedFile);
         savedFile.getFileMetadatas().add(fmd);
 

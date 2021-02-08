@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.dataset.difference;
 
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 
@@ -11,10 +12,21 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
  */
 public class TermsOfUseDiff extends ItemDiff<FileTermsOfUse> {
 
+    private final DataFile originalFile;
+
     // -------------------- CONSTRUCTORS --------------------
     
-    public TermsOfUseDiff(FileTermsOfUse oldValue, FileTermsOfUse newValue) {
+    public TermsOfUseDiff(FileTermsOfUse oldValue, FileTermsOfUse newValue, DataFile originalFile) {
         super(oldValue, newValue);
+        this.originalFile = originalFile;
     }
-    
+
+    // -------------------- GETTERS --------------------
+
+    /**
+     * Returns original data containing information about file.
+     */
+    public DataFile getOriginalFile() {
+        return originalFile;
+    }
 }
