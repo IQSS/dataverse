@@ -30,11 +30,11 @@ With Maven installed you can run ``mvn package`` and ``mvn test`` from the comma
 Vagrant
 +++++++
 
-Vagrant allows you to spin up a virtual machine running Dataverse on your development workstation. You'll need to install Vagrant from https://www.vagrantup.com and VirtualBox from https://www.virtualbox.org.
+Vagrant allows you to spin up a virtual machine running the Dataverse Software on your development workstation. You'll need to install Vagrant from https://www.vagrantup.com and VirtualBox from https://www.virtualbox.org.
 
 We assume you have already cloned the repo from https://github.com/IQSS/dataverse as explained in the :doc:`/developers/dev-environment` section.
 
-From the root of the git repo (where the ``Vagrantfile`` is), run ``vagrant up`` and eventually you should be able to reach an installation of Dataverse at http://localhost:8888 (the ``forwarded_port`` indicated in the ``Vagrantfile``).
+From the root of the git repo (where the ``Vagrantfile`` is), run ``vagrant up`` and eventually you should be able to reach a Dataverse installation at http://localhost:8888 (the ``forwarded_port`` indicated in the ``Vagrantfile``).
 
 Please note that running ``vagrant up`` for the first time should run the ``downloads/download.sh`` script for you to download required software such as an app server, Solr, etc. However, these dependencies change over time so it's a place to look if ``vagrant up`` was working but later fails.
 
@@ -73,7 +73,7 @@ The first time you run ``./pagekite.py`` a file at ``~/.pagekite.rc`` will be
 created. You can edit this file to configure PageKite to serve up port 8080
 (the default app server HTTP port) or the port of your choosing.
 
-According to https://pagekite.net/support/free-for-foss/ PageKite (very generously!) offers free accounts to developers writing software the meets http://opensource.org/docs/definition.php such as Dataverse.
+According to https://pagekite.net/support/free-for-foss/ PageKite (very generously!) offers free accounts to developers writing software the meets http://opensource.org/docs/definition.php such as the Dataverse Project.
 
 MSV
 +++
@@ -160,7 +160,7 @@ jmap allows you to look at the contents of the java heap. It can be used to crea
 will output a list of all classes, sorted by the number of instances of each individual class, with the size in bytes. 
 This can be very useful when looking for memory leaks in the application. Another useful tool is ``jstat``, that can be used in combination with ``jmap`` to monitor the effectiveness of garbage collection in reclaiming allocated memory. 
 
-In the example script below we stress running Dataverse applicatione with GET requests to a specific dataverse page, use ``jmap`` to see how many Dataverse, Dataset and DataFile class object get allocated, then run ``jstat`` to see how the numbers are affected by both "Young Generation" and "Full" garbage collection runs (``YGC`` and ``FGC`` respectively):
+In the example script below we stress running Dataverse Software applicatione with GET requests to a specific page in a Dataverse installation, use ``jmap`` to see how many Dataverse collection, Dataset and DataFile class object get allocated, then run ``jstat`` to see how the numbers are affected by both "Young Generation" and "Full" garbage collection runs (``YGC`` and ``FGC`` respectively):
 
 (This is script is provided **as an example only**! You will have to experiment and expand it to suit any specific needs and any specific problem you may be trying to diagnose, and this is just to give an idea of how to go about it)
 
@@ -173,7 +173,7 @@ In the example script below we stress running Dataverse applicatione with GET re
 
    while :
    do  
-       # Access the dataverse xxx 10 times in a row: 
+       # Access the Dataverse collection xxx 10 times in a row: 
        for ((i = 0; i < 10; i++))
        do 
        	  # hide the output, standard and stderr:
@@ -186,7 +186,7 @@ In the example script below we stress running Dataverse applicatione with GET re
 
        jmap -histo $id > /tmp/jmap.histo.out
 
-       # grep the output for Dataverse, Dataset and DataFile classes: 
+       # grep the output for Dataverse Collection, Dataset and DataFile classes: 
        grep '\.Dataverse$' /tmp/jmap.histo.out
        grep '\.Dataset$' /tmp/jmap.histo.out
        grep '\.DataFile$' /tmp/jmap.histo.out
@@ -237,7 +237,7 @@ The script above will run until you stop it, and will output something like:
 
 How to analyze the output, what to look for: 
 
-First, look at the numbers in the jmap output. In the example above, you can immediately see, after the first three iterations, that every 10 dataverse page loads results in the increase of the number of Dataset classes by 160. I.e., each page load leaves 16 of these on the heap. We can also see that each of the 10 page load cycles increased the heap by roughly 3GB; that each cycle resulted in a couple of YG (young generation) garbage collections, and in the old generation allocation being almost 70% full. These numbers in the example are clearly quite high and are an indication of some problematic memory allocation by the dataverse page - if this is the result of something you have added to the page, you probably would want to investigate and fix it. However, overly generous memory use **is not the same as a leak** necessarily. What you want to see now is how much of this allocation can be reclaimed by "Full GC". If all of it gets freed by ``FGC``, it is not the end of the world (even though you do not want your system to spend too much time running ``FGC``; it costs CPU cycles, and actually freezes the application while it's in progress!). It is however a **really** serious problem, if you determine that a growing portion of the old. gen. memory (``"O"`` in the ``jmap`` output) is not getting freed, even by ``FGC``. This *is* a real leak now, i.e. something is leaving behind some objects that are still referenced and thus off limits to garbage collector. So look for the lines where the ``FGC`` counter is incremented. For example, the first ``FGC`` in the example output above: 
+First, look at the numbers in the jmap output. In the example above, you can immediately see, after the first three iterations, that every 10 Dataverse installation page loads results in the increase of the number of Dataset classes by 160. I.e., each page load leaves 16 of these on the heap. We can also see that each of the 10 page load cycles increased the heap by roughly 3GB; that each cycle resulted in a couple of YG (young generation) garbage collections, and in the old generation allocation being almost 70% full. These numbers in the example are clearly quite high and are an indication of some problematic memory allocation by the Dataverse installation page - if this is the result of something you have added to the page, you probably would want to investigate and fix it. However, overly generous memory use **is not the same as a leak** necessarily. What you want to see now is how much of this allocation can be reclaimed by "Full GC". If all of it gets freed by ``FGC``, it is not the end of the world (even though you do not want your system to spend too much time running ``FGC``; it costs CPU cycles, and actually freezes the application while it's in progress!). It is however a **really** serious problem, if you determine that a growing portion of the old. gen. memory (``"O"`` in the ``jmap`` output) is not getting freed, even by ``FGC``. This *is* a real leak now, i.e. something is leaving behind some objects that are still referenced and thus off limits to garbage collector. So look for the lines where the ``FGC`` counter is incremented. For example, the first ``FGC`` in the example output above: 
 
 .. code-block:: none
 
@@ -257,7 +257,7 @@ First, look at the numbers in the jmap output. In the example above, you can imm
 	0.00 100.00  71.95  20.12      ?     22   25.034     1    4.455   29.489
 	Wed Aug 14 23:21:40 EDT 2019
 
-We can see that the first ``FGC`` resulted in reducing the ``"O"`` by almost 7GB, from 15GB down to 8GB (from 88% to 20% full). The number of Dataset classes has not budged at all - it has grown by the same 160 objects as before (very suspicious!). To complicate matters, ``FGC`` does not **guarantee** to free everything that can be freed - it will balance how much the system needs memory vs. how much it is willing to spend in terms of CPU cycles performing GC (remember, the application freezes while ``FGC`` is running!). So you should not assume that the "20% full" number above means that you have 20% of your stack already wasted and unrecoverable. Instead, look for the next **minium** value of ``"O"``; then for the next, etc. Now compare these consecutive miniums. With the above test (this is an output of a real experiment, a particularly memory-hungry feature added to the dataverse page), the minimums sequence (of old. gen. usage, in %) was looking as follows: 
+We can see that the first ``FGC`` resulted in reducing the ``"O"`` by almost 7GB, from 15GB down to 8GB (from 88% to 20% full). The number of Dataset classes has not budged at all - it has grown by the same 160 objects as before (very suspicious!). To complicate matters, ``FGC`` does not **guarantee** to free everything that can be freed - it will balance how much the system needs memory vs. how much it is willing to spend in terms of CPU cycles performing GC (remember, the application freezes while ``FGC`` is running!). So you should not assume that the "20% full" number above means that you have 20% of your stack already wasted and unrecoverable. Instead, look for the next **minium** value of ``"O"``; then for the next, etc. Now compare these consecutive miniums. With the above test (this is an output of a real experiment, a particularly memory-hungry feature added to the Dataverse installation page), the minimums sequence (of old. gen. usage, in %) was looking as follows: 
 
 
 .. code-block:: none
