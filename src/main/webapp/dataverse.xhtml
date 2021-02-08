@@ -580,17 +580,13 @@
                                     </div>
                                     <div id="featuredDataversesList" class="owl-carousel owl-theme">
                                         <ui:repeat value="#{DataversePage.carouselFeaturedDataverses}" var="dv" varStatus="status">
-                                            <div class="item">
-                                                <div style="vertical-align:middle;">
-                                                    <c:set var="dvFeatUrl" value="/dataverse/#{dv.alias}"/>
-                                                    <a href="#{widgetWrapper.wrapURL(dvFeatUrl)}" title="#{dv.name}">
-                                                        <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}" alt="#{of:format1(bundle['alt.logo'], dv.name)}" jsf:rendered="#{!empty dv.dataverseTheme.logo}"/>
-                                                        <span class="icon-dataverse" jsf:rendered="#{empty dv.dataverseTheme.logo}"></span>
-                                                    </a>
-                                                    <a href="#{widgetWrapper.wrapURL(dvFeatUrl)}" title="#{dv.name}">
-                                                        <h:outputText value="#{dv.name}"/>
-                                                    </a>
-                                                </div>
+                                            <div class="item" style="vertical-align:middle;">
+                                                <c:set var="dvFeatUrl" value="/dataverse/#{dv.alias}"/>
+                                                <a href="#{widgetWrapper.wrapURL(dvFeatUrl)}">
+                                                    <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}" alt="#{of:format1(bundle['alt.logo'], dv.name)}" jsf:rendered="#{!empty dv.dataverseTheme.logo}"/>
+                                                    <span class="icon-dataverse" jsf:rendered="#{empty dv.dataverseTheme.logo}"></span>
+                                                    <h:outputText styleClass="show" value="#{dv.name}"/>
+                                                </a>
                                             </div>
                                         </ui:repeat>
                                     </div>
