@@ -14,8 +14,6 @@ body .ui-widget {font-size: inherit;}
 .ui-widget-content a:hover, .ui-widget-content a:focus {color: #23527C;}
 
 /* -------- TEMPLATE -------- */
-/* STICKY FOOTER VS DROPDOWN MENU POSITION + Z-INDEX */
-/*#content {position:relative;}*/
 .panelgridHeaderTable {width:100%;}
 .panelgridHeaderTable .ui-widget-content, .panelgridHeaderTable .ui-widget-content > td {border:0; background:none;}
 .panelgridHeaderTable .ui-widget-content > td:last-child table {margin-left:auto;}
