@@ -4,7 +4,10 @@
 # You may obtain a copy of the License at
 # http://www.apache.org/licenses/LICENSE-2.0
 
-FROM payara/server-full:@payara.version@
+# THIS FILE IS TO BE USED WITH MAVEN DOCKER BUILD:
+# mvn -Pcontainer clean package docker:build
+
+FROM payara/server-full:@payara.version@-jdk11
 LABEL maintainer="FDM FZJ <forschungsdaten@fz-juelich.de>"
 
 ENV DATA_DIR=/data\
