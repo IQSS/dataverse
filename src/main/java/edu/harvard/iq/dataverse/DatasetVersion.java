@@ -870,7 +870,7 @@ public class DatasetVersion implements Serializable {
                             datasetAuthor.setAffiliation(subField);
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdType)){
-                             datasetAuthor.setIdType(subField.getDisplayValue());
+                             datasetAuthor.setIdType(subField.getRawValue());
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdValue)){
                             datasetAuthor.setIdValue(subField.getDisplayValue());
@@ -898,7 +898,7 @@ public class DatasetVersion implements Serializable {
                             contributorName = subField.getDisplayValue();
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.contributorType)) {
-                            contributorType = subField.getDisplayValue();
+                            contributorType = subField.getRawValue();
                         }
                     }
                     //SEK 02/12/2019 move outside loop to prevent contrib type to carry over to next contributor
