@@ -25,7 +25,7 @@ public class JSONExporter implements Exporter {
 
     @Override
     public String getProviderName() {
-        return ExporterType.JSON.toString();
+        return ExporterType.JSON.getPrefix();
     }
 
     @Override

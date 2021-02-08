@@ -26,7 +26,7 @@ public class OpenAireExporter implements Exporter {
 
     @Override
     public String getProviderName() {
-        return ExporterType.OPENAIRE.toString();
+        return ExporterType.OPENAIRE.getPrefix();
     }
 
     @Override

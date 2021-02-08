@@ -46,7 +46,7 @@ public class DDIExporter implements Exporter {
 
     @Override
     public String getProviderName() {
-        return ExporterType.DDI.toString();
+        return ExporterType.DDI.getPrefix();
     }
 
     @Override

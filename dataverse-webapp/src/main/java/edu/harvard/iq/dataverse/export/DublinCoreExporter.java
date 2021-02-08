@@ -40,7 +40,7 @@ public class DublinCoreExporter implements Exporter {
 
     @Override
     public String getProviderName() {
-        return ExporterType.DUBLINCORE.name();
+        return ExporterType.DUBLINCORE.getPrefix();
     }
 
     @Override

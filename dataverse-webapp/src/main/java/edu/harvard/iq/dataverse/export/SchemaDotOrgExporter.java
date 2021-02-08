@@ -83,7 +83,7 @@ public class SchemaDotOrgExporter implements Exporter {
 
     @Override
     public String getProviderName() {
-        return ExporterType.SCHEMADOTORG.toString();
+        return ExporterType.SCHEMADOTORG.getPrefix();
     }
 
     @Override

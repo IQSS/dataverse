@@ -15,7 +15,6 @@ import edu.harvard.iq.dataverse.api.dto.SubmitForReviewDataDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import edu.harvard.iq.dataverse.common.BundleUtil;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.datafile.FileService;
@@ -244,10 +243,10 @@ public class Datasets extends AbstractApiBean {
         });
     }
 
-    // TODO: 
-    // This API call should, ideally, call findUserOrDie() and the GetDatasetCommand 
+    // TODO:
+    // This API call should, ideally, call findUserOrDie() and the GetDatasetCommand
     // to obtain the dataset that we are trying to export - which would handle
-    // Auth in the process... For now, Auth isn't necessary - since export ONLY 
+    // Auth in the process... For now, Auth isn't necessary - since export ONLY
     // WORKS on published datasets, which are open to the world. -- L.A. 4.5
 
     @GET
@@ -255,7 +254,7 @@ public class Datasets extends AbstractApiBean {
     @Produces({"application/xml", "application/json"})
     public Response exportDataset(@QueryParam("persistentId") String persistentId, @QueryParam("exporter") String exporter) {
 
-        Optional<ExporterType> exporterConstant = ExporterType.fromString(exporter);
+        Optional<ExporterType> exporterConstant = ExporterType.fromPrefix(exporter);
 
         if (!exporterConstant.isPresent()) {
             return error(Response.Status.BAD_REQUEST, exporter + " is not a valid exporter");
@@ -287,12 +286,12 @@ public class Datasets extends AbstractApiBean {
     public Response deleteDataset(@PathParam("id") String id) {
         // Internally, "DeleteDatasetCommand" simply redirects to "DeleteDatasetVersionCommand"
         // (and there's a comment that says "TODO: remove this command")
-        // do we need an exposed API call for it? 
-        // And DeleteDatasetVersionCommand further redirects to DestroyDatasetCommand, 
-        // if the dataset only has 1 version... In other words, the functionality 
+        // do we need an exposed API call for it?
+        // And DeleteDatasetVersionCommand further redirects to DestroyDatasetCommand,
+        // if the dataset only has 1 version... In other words, the functionality
         // currently provided by this API is covered between the "deleteDraftVersion" and
-        // "destroyDataset" API calls.  
-        // (The logic below follows the current implementation of the underlying 
+        // "destroyDataset" API calls.
+        // (The logic below follows the current implementation of the underlying
         // commands!)
 
         return response(req -> {
@@ -314,16 +313,16 @@ public class Datasets extends AbstractApiBean {
                 }
             }
 
-            // Gather the locations of the physical files that will need to be 
+            // Gather the locations of the physical files that will need to be
             // deleted once the destroy command execution has been finalized:
             Map<Long, String> deleteStorageLocations = fileService.getPhysicalFilesToDelete(doomedVersion, destroy);
 
             execCommand(new DeleteDatasetCommand(req, findDatasetOrDie(id)));
 
-            // If we have gotten this far, the destroy command has succeeded, 
+            // If we have gotten this far, the destroy command has succeeded,
             // so we can finalize it by permanently deleting the physical files:
-            // (DataFileService will double-check that the datafiles no 
-            // longer exist in the database, before attempting to delete 
+            // (DataFileService will double-check that the datafiles no
+            // longer exist in the database, before attempting to delete
             // the physical files)
             if (!deleteStorageLocations.isEmpty()) {
                 fileService.finalizeFileDeletes(deleteStorageLocations);
@@ -348,16 +347,16 @@ public class Datasets extends AbstractApiBean {
                                                 "Destroy can only be called by superusers."));
             }
 
-            // Gather the locations of the physical files that will need to be 
+            // Gather the locations of the physical files that will need to be
             // deleted once the destroy command execution has been finalized:
             Map<Long, String> deleteStorageLocations = fileService.getPhysicalFilesToDelete(doomed);
 
             execCommand(new DestroyDatasetCommand(doomed, req));
 
-            // If we have gotten this far, the destroy command has succeeded, 
+            // If we have gotten this far, the destroy command has succeeded,
             // so we can finalize permanently deleting the physical files:
-            // (DataFileService will double-check that the datafiles no 
-            // longer exist in the database, before attempting to delete 
+            // (DataFileService will double-check that the datafiles no
+            // longer exist in the database, before attempting to delete
             // the physical files)
             if (!deleteStorageLocations.isEmpty()) {
                 fileService.finalizeFileDeletes(deleteStorageLocations);
@@ -383,19 +382,19 @@ public class Datasets extends AbstractApiBean {
                 throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, "This is NOT a DRAFT version"));
             }
 
-            // Gather the locations of the physical files that will need to be 
+            // Gather the locations of the physical files that will need to be
             // deleted once the destroy command execution has been finalized:
 
             Map<Long, String> deleteStorageLocations = fileService.getPhysicalFilesToDelete(doomed);
 
             execCommand(new DeleteDatasetVersionCommand(req, dataset));
 
-            // If we have gotten this far, the delete command has succeeded - 
-            // by either deleting the Draft version of a published dataset, 
-            // or destroying an unpublished one. 
+            // If we have gotten this far, the delete command has succeeded -
+            // by either deleting the Draft version of a published dataset,
+            // or destroying an unpublished one.
             // This means we can finalize permanently deleting the physical files:
-            // (DataFileService will double-check that the datafiles no 
-            // longer exist in the database, before attempting to delete 
+            // (DataFileService will double-check that the datafiles no
+            // longer exist in the database, before attempting to delete
             // the physical files)
             if (!deleteStorageLocations.isEmpty()) {
                 fileService.finalizeFileDeletes(deleteStorageLocations);
@@ -1663,7 +1662,7 @@ public class Datasets extends AbstractApiBean {
         } catch (IOException e) {
             return error(Response.Status.BAD_REQUEST, e.getMessage());
         }
-            
+
 
         // -------------------------------------
         // (3) Get the file name and content type

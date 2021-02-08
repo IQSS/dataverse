@@ -1,112 +1,100 @@
 package edu.harvard.iq.dataverse.export.openaire;
 
-import edu.harvard.iq.dataverse.export.ExporterType;
 import edu.harvard.iq.dataverse.export.OpenAireExporter;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-public class OpenAireExporterTest {
+class OpenAireExporterTest {
 
-    private final OpenAireExporter openAireExporter;
+    OpenAireExporter instance;
 
-    public OpenAireExporterTest() {
-
-        openAireExporter = new OpenAireExporter(true);
+    @BeforeEach
+    void setUp() {
+        instance = new OpenAireExporter(true);
     }
 
-    /**
-     * Test of getProviderName method, of class OpenAireExporter.
-     */
+    // -------------------- TESTS --------------------
+
     @Test
-    public void testGetProviderName() {
-        System.out.println("getProviderName");
-        OpenAireExporter instance = new OpenAireExporter(true);
+    void testGetProviderName() {
+
+        // when
         String result = instance.getProviderName();
-        assertEquals(ExporterType.OPENAIRE.toString(), result);
+
+        // then
+        assertEquals("oai_datacite", result);
     }
 
-    /**
-     * Test of getDisplayName method, of class OpenAireExporter.
-     */
     @Test
-    public void testGetDisplayName() {
-        System.out.println("getDisplayName");
-        OpenAireExporter instance = new OpenAireExporter(true);
-        String expResult = "OpenAIRE";
+    void testGetDisplayName() {
+
+        // when
         String result = instance.getDisplayName();
-        assertEquals(expResult, result);
+
+        // then
+        assertEquals("OpenAIRE", result);
     }
 
-    /**
-     * Test of isXMLFormat method, of class OpenAireExporter.
-     */
     @Test
-    public void testIsXMLFormat() {
-        System.out.println("isXMLFormat");
-        OpenAireExporter instance = new OpenAireExporter(true);
-        Boolean expResult = true;
+    void testIsXMLFormat() {
+
+        // when
         Boolean result = instance.isXMLFormat();
-        assertEquals(expResult, result);
+
+        // then
+        assertTrue(result);
     }
 
-    /**
-     * Test of isHarvestable method, of class OpenAireExporter.
-     */
     @Test
-    public void testIsHarvestable() {
-        System.out.println("isHarvestable");
-        OpenAireExporter instance = new OpenAireExporter(true);
-        Boolean expResult = true;
+    void testIsHarvestable() {
+
+        // when
         Boolean result = instance.isHarvestable();
-        assertEquals(expResult, result);
+
+        // then
+        assertTrue(result);
     }
 
-    /**
-     * Test of isAvailableToUsers method, of class OpenAireExporter.
-     */
     @Test
-    public void testIsAvailableToUsers() {
-        System.out.println("isAvailableToUsers");
-        OpenAireExporter instance = new OpenAireExporter(true);
-        Boolean expResult = true;
+    void testIsAvailableToUsers() {
+
+        // when
         Boolean result = instance.isAvailableToUsers();
-        assertEquals(expResult, result);
+
+        // then
+        assertTrue(result);
     }
 
-    /**
-     * Test of getXMLNameSpace method, of class OpenAireExporter.
-     */
     @Test
-    public void testGetXMLNameSpace() throws Exception {
-        System.out.println("getXMLNameSpace");
-        OpenAireExporter instance = new OpenAireExporter(true);
-        String expResult = "http://datacite.org/schema/kernel-4";
+    void testGetXMLNameSpace() {
+
+        // when
         String result = instance.getXMLNameSpace();
-        assertEquals(expResult, result);
+
+        // then
+        assertEquals("http://datacite.org/schema/kernel-4", result);
     }
 
-    /**
-     * Test of getXMLSchemaLocation method, of class OpenAireExporter.
-     */
     @Test
-    public void testGetXMLSchemaLocation() throws Exception {
-        System.out.println("getXMLSchemaLocation");
-        OpenAireExporter instance = new OpenAireExporter(true);
-        String expResult = "http://schema.datacite.org/meta/kernel-4.1/metadata.xsd";
+    void testGetXMLSchemaLocation() {
+
+        // when
         String result = instance.getXMLSchemaLocation();
-        assertEquals(expResult, result);
+
+        // then
+        assertEquals("http://schema.datacite.org/meta/kernel-4.1/metadata.xsd", result);
     }
 
-    /**
-     * Test of getXMLSchemaVersion method, of class OpenAireExporter.
-     */
     @Test
-    public void testGetXMLSchemaVersion() throws Exception {
-        System.out.println("getXMLSchemaVersion");
-        OpenAireExporter instance = new OpenAireExporter(true);
-        String expResult = "4.1";
+    void testGetXMLSchemaVersion() {
+
+        // when
         String result = instance.getXMLSchemaVersion();
-        assertEquals(expResult, result);
+
+        // then
+        assertEquals("4.1", result);
     }
 }
