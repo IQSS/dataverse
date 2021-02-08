@@ -60,8 +60,7 @@ public class SuperUserPage implements java.io.Serializable {
         if (user.isSuperuser()) {
             long numPartitions = 1;
             long partitionId = 0;
-            boolean previewOnly = false;
-            indexAllFuture = indexAllService.indexAllOrSubset(numPartitions, partitionId, false, previewOnly);
+            indexAllFuture = indexAllService.indexAllOrSubsetAsync(numPartitions, partitionId, false);
             indexAllStatus = "Index all started...";
         } else {
             indexAllStatus = "Only a superuser can run index all";

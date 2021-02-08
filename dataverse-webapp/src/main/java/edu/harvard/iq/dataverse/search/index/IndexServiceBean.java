@@ -243,7 +243,9 @@ public class IndexServiceBean {
             return new AsyncResult<>(status);
         }
 
-        dvObjectService.updateContentIndexTime(dataverse);
+        if (!systemConfig.isReadonlyMode()) {
+            dvObjectService.updateContentIndexTime(dataverse);
+        }
         IndexResponse indexResponse = solrIndexService.indexPermissionsForOneDvObject(dataverse);
         String msg = "indexed dataverse " + dataverse.getId() + ":" + dataverse.getAlias() + ". Response from permission indexing: " + indexResponse.getMessage();
         return new AsyncResult<>(msg);
@@ -1091,15 +1093,9 @@ public class IndexServiceBean {
         }
 
         Long dsId = dataset.getId();
-        /// Dataset updatedDataset =
-        /// (Dataset)dvObjectService.updateContentIndexTime(dataset);
-        /// updatedDataset = null;
-        // instead of making a call to dvObjectService, let's try and
-        // modify the index time stamp using the local EntityManager:
-        DvObject dvObjectToModify = em.find(DvObject.class, dsId);
-        dvObjectToModify.setIndexTime(new Timestamp(new Date().getTime()));
-        dvObjectToModify = em.merge(dvObjectToModify);
-        dvObjectToModify = null;
+        if (!systemConfig.isReadonlyMode()) {
+            dvObjectService.updateContentIndexTime(dataset);
+        }
 
         // return "indexed dataset " + dataset.getId() + " as " + solrDocId +
         // "\nindexFilesResults for " + solrDocId + ":" + fileInfo.toString();

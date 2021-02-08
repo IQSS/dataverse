@@ -44,7 +44,7 @@ public class IndexBatchServiceBean {
     SystemConfig systemConfig;
 
     @Asynchronous
-    public Future<JsonObjectBuilder> indexAllOrSubset(long numPartitions, long partitionId, boolean skipIndexed, boolean previewOnly) {
+    public Future<JsonObjectBuilder> indexAllOrSubsetAsync(long numPartitions, long partitionId, boolean skipIndexed) {
         JsonObjectBuilder response = Json.createObjectBuilder();
         Future<String> responseFromIndexAllOrSubset = indexAllOrSubset(numPartitions, partitionId, skipIndexed);
         String status = "indexAllOrSubset has begun";
@@ -81,42 +81,14 @@ public class IndexBatchServiceBean {
         return response;
     }
 
-    public Future<String> indexAllOrSubset(long numPartitions, long partitionId, boolean skipIndexed) {
+    private Future<String> indexAllOrSubset(long numPartitions, long partitionId, boolean skipIndexed) {
         long indexAllTimeBegin = System.currentTimeMillis();
         String status;
-
-        String resultOfClearingIndexTimes;
-        /**
-         * @todo Should we allow sysadmins to request that the Solr index and
-         * related timestamps in the database be cleared as part of "index all"?
-         * If so, we can make this boolean a parameter that's passed into this
-         * method. A method to do this clearing has been added as a separate API
-         * endpoint.
-         */
-        boolean clearSolrAndTimestamps = false;
-        /**
-         * We only allow clearing of Solr and database index timestamps if we
-         * are operating on the entire index ("index all") and if we are not
-         * running in "continue" mode.
-         */
-        if (numPartitions == 1 && !skipIndexed && clearSolrAndTimestamps) {
-            logger.info("attempting to delete all Solr documents before a complete re-index");
-            try {
-                JsonObject response = solrIndexService.deleteAllFromSolrAndResetIndexTimes().build();
-                String message = response.getString(SolrIndexServiceBean.messageString);
-                int numRowsCleared = response.getInt(SolrIndexServiceBean.numRowsClearedByClearAllIndexTimes);
-                resultOfClearingIndexTimes = message + " Database rows from which index timestamps were cleared: " + numRowsCleared;
-            } catch (SolrServerException | IOException ex) {
-                resultOfClearingIndexTimes = "Solr index and database timestamps were not cleared: " + ex;
-            }
-        } else {
-            resultOfClearingIndexTimes = "Solr index was not cleared before indexing.";
-        }
 
         // List<Dataverse> dataverses = dataverseDao.findAllOrSubset(numPartitions, partitionId, skipIndexed);
         // Note: no support for "partitions" in this experimental branch. 
         // The method below returns the ids of all the unindexed dataverses.
-        List<Long> dataverseIds = dataverseIds = dataverseDao.findDataverseIdsForIndexing(skipIndexed);
+        List<Long> dataverseIds = dataverseDao.findDataverseIdsForIndexing(skipIndexed);
 
         int dataverseIndexCount = 0;
         int dataverseFailureCount = 0;
@@ -127,7 +99,6 @@ public class IndexBatchServiceBean {
                 Dataverse dataverse = dataverseDao.find(id);
                 logger.info("indexing dataverse " + dataverseIndexCount + " of " + dataverseIds.size() + " (id=" + id + ", persistentId=" + dataverse.getAlias() + ")");
                 Future<String> result = indexService.indexDataverseInNewTransaction(dataverse);
-                dataverse = null;
             } catch (Exception e) {
                 //We want to keep running even after an exception so throw some more info into the log
                 dataverseFailureCount++;
@@ -158,7 +129,7 @@ public class IndexBatchServiceBean {
             String failureMessage = "There were index failures. " + dataverseFailureCount + " dataverse(s) and " + datasetFailureCount + " dataset(s) failed to index. Please check the log for more information.";
             logger.info(failureMessage);
         }
-        status = dataverseIndexCount + " dataverses and " + datasetIndexCount + " datasets indexed. " + timeElapsed + ". " + resultOfClearingIndexTimes + "\n";
+        status = dataverseIndexCount + " dataverses and " + datasetIndexCount + " datasets indexed. " + timeElapsed + ". Solr index was not cleared before indexing.\n";
         logger.info(status);
         return new AsyncResult<>(status);
     }

@@ -173,7 +173,7 @@ public class Index extends AbstractApiBean {
              * @todo How can we expose the String returned from "index all" via
              * the API?
              */
-            Future<JsonObjectBuilder> indexAllFuture = indexAllService.indexAllOrSubset(numPartitions, partitionIdToProcess, skipIndexed, previewOnly);
+            Future<JsonObjectBuilder> indexAllFuture = indexAllService.indexAllOrSubsetAsync(numPartitions, partitionIdToProcess, skipIndexed);
             JsonObject workloadPreview = preview.build().getJsonObject("previewOfPartitionWorkload");
             int dataverseCount = workloadPreview.getInt("dataverseCount");
             int datasetCount = workloadPreview.getInt("datasetCount");

@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.search.SearchUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.UpdateResponse;
@@ -39,6 +40,8 @@ public class SolrIndexServiceBean {
     private PermissionsSolrDocFactory solrDocFactory;
     @Inject
     private SolrClient solrServer;
+    @Inject
+    private SystemConfig systemConfig;
 
     public static String numRowsClearedByClearAllIndexTimes = "numRowsClearedByClearAllIndexTimes";
     public static String messageString = "message";
@@ -72,7 +75,9 @@ public class SolrIndexServiceBean {
         try {
             persistToSolr(definitionPoints);
 
-            dvObjectService.updatePermissionIndexTime(affectedDvObjectIds);
+            if (!systemConfig.isReadonlyMode()) {
+                dvObjectService.updatePermissionIndexTime(affectedDvObjectIds);
+            }
 
             return new IndexResponse("Number of dvObject permissions indexed for " + definitionPoint
                     + " (is:" + affectedDvObjectIds.size());
@@ -92,7 +97,9 @@ public class SolrIndexServiceBean {
 
         try {
             persistToSolr(definitionPoints);
-            dvObjectService.updatePermissionIndexTime(dvObject.getId());
+            if (!systemConfig.isReadonlyMode()) {
+                dvObjectService.updatePermissionIndexTime(dvObject.getId());
+            }
             
             return new IndexResponse("attempted to index permissions for DvObject " + dvObject.getId() + " and update permission index time was sucessfull");
         } catch (SolrServerException | IOException ex) {
@@ -109,7 +116,9 @@ public class SolrIndexServiceBean {
         try {
             persistToSolr(definitionPoints);
             
-            dvObjectService.updatePermissionIndexTime(affectedDvObjectIds);
+            if (!systemConfig.isReadonlyMode()) {
+                dvObjectService.updatePermissionIndexTime(affectedDvObjectIds);
+            }
             return new IndexResponse("indexed all permissions");
         } catch (SolrServerException | IOException ex) {
             return new IndexResponse("problem indexing");
@@ -159,7 +168,10 @@ public class SolrIndexServiceBean {
         logger.info("attempting to delete all Solr documents before a complete re-index");
         solrServer.deleteByQuery("*:*");
         solrServer.commit();
-        int numRowsAffected = dvObjectService.clearAllIndexTimes();
+        int numRowsAffected = 0;
+        if (!systemConfig.isReadonlyMode()) {
+            numRowsAffected = dvObjectService.clearAllIndexTimes();
+        }
         response.add(numRowsClearedByClearAllIndexTimes, numRowsAffected);
         response.add(messageString, "Solr index and database index timestamps cleared.");
         return response;
