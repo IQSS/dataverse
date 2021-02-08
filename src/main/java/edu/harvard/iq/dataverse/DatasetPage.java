@@ -1310,15 +1310,6 @@ public class DatasetPage implements java.io.Serializable {
         }
         return false;
     }
-    /* 
-       TODO/OPTIMIZATION: This is still costing us N SELECT FROM GuestbookResponse queries, 
-       where N is the number of files. This could of course be replaced by a query that'll 
-       look up all N at once... Not sure if it's worth it; especially now that N
-       will always be 10, for the initial page load. -- L.A. 4.2.1
-     */
-    public Long getGuestbookResponseCount(FileMetadata fileMetadata) {
-        return guestbookResponseService.getCountGuestbookResponsesByDataFileId(fileMetadata.getDataFile().getId());
-    }
     /**
      * Check Dataset related permissions
      * 
@@ -5107,15 +5098,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     
-    public FileDownloadHelper getFileDownloadHelper() {
-        return fileDownloadHelper;
-    }
-
-    public void setFileDownloadHelper(FileDownloadHelper fileDownloadHelper) {
-        this.fileDownloadHelper = fileDownloadHelper;
-    }
-    
-    
+    // todo: we should be able to remove - this is passed in the html pages to other fragments, but they could just access this service bean directly.
     public FileDownloadServiceBean getFileDownloadService() {
         return fileDownloadService;
     }

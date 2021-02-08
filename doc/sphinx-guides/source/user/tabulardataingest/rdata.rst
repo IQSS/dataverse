@@ -38,12 +38,12 @@ from SPSS and Stata.
 R explicitly supports Missing Values for all of the types above;
 Missing Values encoded in R vectors will be recognized and preserved
 in TAB files, counted in the generated summary statistics
-and data analysis. Please note however that the Dataverse notation for 
+and data analysis. Please note however that the Dataverse Software notation for 
 a missing value, as stored in a TAB file, is an empty string, an not "NA" as in R. 
 
 In addition to Missing Values, R recognizes "Not a Value" (NaN) and
 positive and negative infinity for floating point variables. These
-are now properly supported by the Dataverse.
+are now properly supported by the Dataverse Software.
 
 Also note, that unlike Stata, that does recognize "float" and "double"
 as distinct data types, all floating point values in R are in fact
@@ -52,13 +52,12 @@ doubles.
 R Factors 
 ---------
 
-These are ingested as "Categorical Values" in the Dataverse. 
+These are ingested as "Categorical Values" in the Dataverse installation. 
 
 One thing to keep in mind: in both Stata and SPSS, the actual value of
 a categorical variable can be both character and numeric. In R, all
 factor values are strings, even if they are string representations of
-numbers. So the values of the resulting categoricals in the Dataverse will
-always be of string type too.
+numbers. So the values of the resulting categoricals in the Dataverse installation will always be of string type too.
 
 Another thing to note is that R factors have no builtin support for
 SPSS or STATA-like descriptive labels. This is in fact potentially
@@ -67,16 +66,15 @@ in the context of a factor in R, it still refers to the "payload", or
 the data content of its value. For example, if you create a factor
 with the "labels" of *democrat*, *republican* and *undecided*, these
 strings become the actual values of the resulting vector. Once
-ingested in the Dataverse, these values will be stored in the
-tab-delimited file. The Dataverse DataVariable object representing the
-vector will be of type "Character" and have 3 VariableCategory objects
+ingested in the Dataverse installation, these values will be stored in the
+tab-delimited file. The Dataverse Software DataVariable object representing the vector will be of type "Character" and have 3 VariableCategory objects
 with the *democrat*, etc. for **both** the CategoryValue and
 CategoryLabel.  (In one of the future releases, we are planning to
 make it possible for the user to edit the CategoryLabel, using it for
 its intended purpose - as a descriptive, human-readable text text
 note).
 
-| To properly handle R vectors that are *ordered factors* Dataverse (starting with DVN 3.6) supports the concept of an "Ordered Categorical" - a categorical value where an explicit order is assigned to the list of value labels.
+| To properly handle R vectors that are *ordered factors* the Dataverse Software (starting with DVN 3.6) supports the concept of an "Ordered Categorical" - a categorical value where an explicit order is assigned to the list of value labels.
 
 Boolean values
 ---------------------
@@ -88,7 +86,7 @@ Limitations of R, as compared to SPSS and STATA.
 ------------------------------------------------
 
 Most noticeably, R lacks a standard mechanism for defining descriptive
-labels for the data frame variables.  In the Dataverse, similarly to
+labels for the data frame variables.  In the Dataverse Software, similarly to
 both Stata and SPSS, variables have distinct names and labels; with
 the latter reserved for longer, descriptive text.
 With variables ingested from R data frames the variable name will be
@@ -103,8 +101,7 @@ Similarly, R categorical values (factors) lack descriptive labels too.
 **Note:** This is potentially confusing, since R factors do
 actually have "labels".  This is a matter of terminology - an R
 factor's label is in fact the same thing as the "value" of a
-categorical variable in SPSS or Stata and Dataverse; it contains the actual
-meaningful data for the given observation. It is NOT a field reserved
+categorical variable in SPSS or Stata and the Dataverse Software; it contains the actual meaningful data for the given observation. It is NOT a field reserved
 for explanatory, human-readable text, such as the case with the
 SPSS/Stata "label". 
 
@@ -174,13 +171,12 @@ discussed in depth on R-related forums, and no attempt is made to
 summarize it all in any depth here; this is just to made you aware of
 this being a potentially complex issue!)
 
-An important thing to keep in mind, in connection with the Dataverse ingest
-of R files, is that it will **reject** an R data file with any time
+An important thing to keep in mind, in connection with the Dataverse Software ingest of R files, is that it will **reject** an R data file with any time
 values that have time zones that we can't recognize. This is done in
 order to avoid (some) of the potential issues outlined above.
 
 It is also recommended that any vectors containing time values
-ingested into the Dataverse are reviewed, and the resulting entries in the
+ingested into the Dataverse installation are reviewed, and the resulting entries in the
 TAB files are compared against the original values in the R data
 frame, to make sure they have been ingested as expected. 
 

@@ -8,7 +8,7 @@ Shibboleth and OAuth
 Shibboleth and OAuth
 --------------------
 
-If you are working on anything related to users, please keep in mind that your changes will likely affect Shibboleth and OAuth users. For some background on user accounts in Dataverse, see :ref:`auth-modes` section of Configuration in the Installation Guide.
+If you are working on anything related to users, please keep in mind that your changes will likely affect Shibboleth and OAuth users. For some background on user accounts in the Dataverse Software, see :ref:`auth-modes` section of Configuration in the Installation Guide.
 
 Rather than setting up Shibboleth on your laptop, developers are advised to simply add a value to their database to enable Shibboleth "dev mode" like this:
 
