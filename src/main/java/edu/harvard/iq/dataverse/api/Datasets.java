@@ -684,7 +684,7 @@ public class Datasets extends AbstractApiBean {
 			DatasetVersion dsv = ds.getEditVersion();
 			boolean updateDraft = ds.getLatestVersion().isDraft();
 			dsv = JSONLDUtil.deleteDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc);
-			logger.info("Updating ver");
+			logger.fine("Updating ver");
 			DatasetVersion managedVersion;
 			if (updateDraft) {
 				Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
@@ -1848,7 +1848,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 					"You are not permitted to complete file uploads with the supplied parameters.");
 		}
 		List<PartETag> eTagList = new ArrayList<PartETag>();
-        logger.info("Etags: " + partETagBody);
+        logger.fine("Etags: " + partETagBody);
 		try {
 			JsonReader jsonReader = Json.createReader(new StringReader(partETagBody));
 			JsonObject object = jsonReader.readObject();
@@ -1857,10 +1857,10 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 				eTagList.add(new PartETag(Integer.parseInt(partNo), object.getString(partNo)));
 			}
 			for(PartETag et: eTagList) {
-				logger.info("Part: " + et.getPartNumber() + " : " + et.getETag());
+				logger.fine("Part: " + et.getPartNumber() + " : " + et.getETag());
 			}
 		} catch (JsonException je) {
-			logger.info("Unable to parse eTags from: " + partETagBody);
+			logger.fine("Unable to parse eTags from: " + partETagBody);
 			throw new WrappedResponse(je, error( Response.Status.INTERNAL_SERVER_ERROR, "Could not complete multipart upload"));
 		}
 		try {

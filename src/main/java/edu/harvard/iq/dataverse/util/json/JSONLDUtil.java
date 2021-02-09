@@ -177,25 +177,8 @@ public class JSONLDUtil {
 
                     addField(dsf, valArray, dsft, datasetFieldSvc, append);
 
-                    // assemble new terms, add to existing
-                    // multivalue?
-                    // compound?
-                    // merge with existing dv metadata
-                    // dsfl.add(dsf);
                 } else {
-                    // Internal/non-metadatablock terms
-                    // Add metadata related to the Dataset/DatasetVersion
-
-                    // ("@id", id) - check is equal to existing globalID?
-                    // Add to 'md on original' ?
-                    // (JsonLDTerm.schemaOrg("version").getLabel(),
-                    // version.getFriendlyVersionNumber())
-                    // Citation metadata?
-                    // (JsonLDTerm.schemaOrg("datePublished").getLabel(),
-                    // dataset.getPublicationDateFormattedYYYYMMDD())
-                    // (JsonLDTerm.schemaOrg("name").getLabel())
-                    // (JsonLDTerm.schemaOrg("dateModified").getLabel())
-
+                    //When migrating, the publication date and version number can be set
                     if (key.equals(JsonLDTerm.schemaOrg("datePublished").getUrl())&& migrating && !append) {
                         dsv.setVersionState(VersionState.RELEASED);
                     } else if (key.equals(JsonLDTerm.schemaOrg("version").getUrl())&& migrating && !append) {
@@ -206,6 +189,7 @@ public class JSONLDUtil {
                             dsv.setMinorVersionNumber(Long.parseLong(friendlyVersion.substring(index + 1)));
                         }
                     } else if (key.equals(JsonLDTerm.schemaOrg("license").getUrl())) {
+                        //Special handling for license
                         if (!append || !isSet(terms, key)) {
                             // Mirror rules from SwordServiceBean
                             if (jsonld.containsKey(JsonLDTerm.termsOfUse.getUrl())) {
@@ -221,19 +205,19 @@ public class JSONLDUtil {
                         }
 
                     } else if (datasetTerms.contains(key)) {
+                        // Other Dataset-level TermsOfUseAndAccess
                         if (!append || !isSet(terms, key)) {
-                            // Other Dataset-level TermsOfUseAndAccess
                             setSemTerm(terms, key, jsonld.getString(key));
                         } else {
                             throw new BadRequestException(
                                     "Can't append to a single-value field that already has a value: " + key);
                         }
                     } else if (key.equals(JsonLDTerm.fileTermsOfAccess.getUrl())) {
+                        // Other DataFile-level TermsOfUseAndAccess
                         JsonObject fAccessObject = jsonld.getJsonObject(JsonLDTerm.fileTermsOfAccess.getUrl());
                         for (String fileKey : fAccessObject.keySet()) {
                             if (datafileTerms.contains(fileKey)) {
                                 if (!append || !isSet(terms, fileKey)) {
-                                    // Other DataFile-level TermsOfUseAndAccess
                                     if (fileKey.equals(JsonLDTerm.fileRequestAccess.getUrl())) {
                                         setSemTerm(terms, fileKey, fAccessObject.getBoolean(fileKey));
                                     } else {
@@ -247,6 +231,7 @@ public class JSONLDUtil {
                             }
                         }
                     } else {
+                        //Metadata block metadata fields
                         if (dsftMap.containsKey(JsonLDTerm.metadataOnOrig.getUrl())) {
                             DatasetFieldType dsft = dsftMap.get(JsonLDTerm.metadataOnOrig.getUrl());
 
@@ -287,12 +272,9 @@ public class JSONLDUtil {
                         }
                     }
                     dsv.setTermsOfUseAndAccess(terms);
-                    // move to new dataverse?
-                    // aggBuilder.add(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel(),
-                    // dataset.getDataverseContext().getDisplayName());
-
+                    // ToDo: support Dataverse location metadata? e.g. move to new dataverse?
+                    // re: JsonLDTerm.schemaOrg("includedInDataCatalog")
                 }
-
             }
         }
 
@@ -312,7 +294,7 @@ public class JSONLDUtil {
      */
     public static DatasetVersion deleteDatasetVersionMDFromJsonLD(DatasetVersion dsv, String jsonLDBody,
             MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc) {
-logger.info("deleteDatasetVersionMD");
+        logger.fine("deleteDatasetVersionMD");
         JsonObject jsonld = decontextualizeJsonLD(jsonLDBody);
         //All terms are now URIs
         //Setup dsftMap - URI to datasetFieldType map
