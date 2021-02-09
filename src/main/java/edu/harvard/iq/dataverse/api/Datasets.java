@@ -640,7 +640,7 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/metadata")
     @Produces("application/json-ld")
     public Response getVersionJsonLDMetadata(@PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
-        return getVersionJsonLDMetadata(id, ":draft", uriInfo, headers);
+        return getVersionJsonLDMetadata(id, ":latest", uriInfo, headers);
     }
             
     @PUT
@@ -678,7 +678,6 @@ public class Datasets extends AbstractApiBean {
 	@Path("{id}/metadata/delete")
 	@Consumes("application/json-ld")
 	public Response deleteMetadata(String jsonLDBody, @PathParam("id") String id) {
-        logger.info("In delteMetadata");
 		try {
 			Dataset ds = findDatasetOrDie(id);
 			DataverseRequest req = createDataverseRequest(findUserOrDie());

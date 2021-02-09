@@ -346,7 +346,7 @@ logger.info("deleteDatasetVersionMD");
 
                         // Todo - normalize object vs. array
                         JsonArray valArray = getValues(jsonld.get(key), dsft.isAllowMultiples(), dsft.getName());
-logger.info("Deleting: " + key + " : " + valArray.toString());
+                        logger.fine("Deleting: " + key + " : " + valArray.toString());
                         DatasetField dsf2 = getReplacementField(dsf, valArray);
                         if(dsf2 == null) {
                             //Exact match - remove the field
