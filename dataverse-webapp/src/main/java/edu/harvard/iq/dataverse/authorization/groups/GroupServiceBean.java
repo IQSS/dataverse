@@ -7,6 +7,8 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupsServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.impl.mail.MailDomainGroupProvider;
+import edu.harvard.iq.dataverse.authorization.groups.impl.mail.MailDomainGroupService;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -47,37 +49,20 @@ public class GroupServiceBean {
     ExplicitGroupServiceBean explicitGroupService;
     @EJB
     RoleAssigneeServiceBean roleAssigneeService;
+    @EJB
+    MailDomainGroupService mailDomainGroupService;
 
     private final Map<String, GroupProvider<?>> groupProviders = new HashMap<>();
 
     private IpGroupProvider ipGroupProvider;
     private ShibGroupProvider shibGroupProvider;
     private ExplicitGroupProvider explicitGroupProvider;
+    private MailDomainGroupProvider mailDomainGroupProvider;
 
     @EJB
     RoleAssigneeServiceBean roleAssigneeSvc;
 
-    @PostConstruct
-    public void setup() {
-        addGroupProvider(AllUsersGroupProvider.get());
-        addGroupProvider(AuthenticatedUsersProvider.get());
-        addGroupProvider(ipGroupProvider = new IpGroupProvider(ipGroupsService));
-        addGroupProvider(shibGroupProvider = new ShibGroupProvider(shibGroupService));
-        
-        List<GroupProvider<?>> providers = new ArrayList<>(groupProviders.values());
-        addGroupProvider(explicitGroupProvider = new ExplicitGroupProvider(explicitGroupService, roleAssigneeService, providers));
-        Logger.getLogger(GroupServiceBean.class.getName()).log(Level.INFO, null, "PostConstruct group service call");
-    }
-
-    public Group getGroup(String groupAlias) {
-        String[] comps = groupAlias.split(Group.PATH_SEPARATOR, 2);
-        GroupProvider gp = groupProviders.get(comps[0]);
-        if (gp == null) {
-            logger.log(Level.WARNING, "Cannot find group provider with alias {0}", comps[0]);
-            return null;
-        }
-        return gp.get(comps[1]);
-    }
+    // -------------------- GETTERS --------------------
 
     public IpGroupProvider getIpGroupProvider() {
         return ipGroupProvider;
@@ -91,6 +76,31 @@ public class GroupServiceBean {
         return explicitGroupProvider;
     }
 
+    // -------------------- LOGIC --------------------
+
+    @PostConstruct
+    public void setup() {
+        addGroupProvider(AllUsersGroupProvider.get());
+        addGroupProvider(AuthenticatedUsersProvider.get());
+        addGroupProvider(ipGroupProvider = new IpGroupProvider(ipGroupsService));
+        addGroupProvider(shibGroupProvider = new ShibGroupProvider(shibGroupService));
+        addGroupProvider(mailDomainGroupProvider = new MailDomainGroupProvider(mailDomainGroupService));
+
+        List<GroupProvider<?>> providers = new ArrayList<>(groupProviders.values());
+        addGroupProvider(explicitGroupProvider = new ExplicitGroupProvider(explicitGroupService, roleAssigneeService, providers));
+        Logger.getLogger(GroupServiceBean.class.getName()).log(Level.INFO, null, "PostConstruct group service call");
+    }
+
+    public Group getGroup(String groupAlias) {
+        String[] comps = groupAlias.split(Group.PATH_SEPARATOR, 2);
+        GroupProvider<?> gp = groupProviders.get(comps[0]);
+        if (gp == null) {
+            logger.log(Level.WARNING, "Cannot find group provider with alias {0}", comps[0]);
+            return null;
+        }
+        return gp.get(comps[1]);
+    }
+
     /**
      * Finds all the groups {@code req} is part of in {@code dvo}'s context.
      * Recurses upwards in {@link ExplicitGroup}s, as needed.
@@ -101,21 +111,17 @@ public class GroupServiceBean {
      */
     public Set<Group> groupsFor(DataverseRequest req, DvObject dvo) {
         return groupProviders.values().stream()
-                .flatMap(gp -> (Stream<Group>) gp.groupsFor(req, dvo).stream())
+                .flatMap(gp -> gp.groupsFor(req, dvo).stream())
                 .collect(toSet());
     }
 
     /**
      * All the groups a Role assignee belongs to. Does not take request-level groups
      * (such as IPGroups) into account.
-     *
-     * @param ra
-     * @param dvo
-     * @return
      */
     public Set<Group> groupsFor(RoleAssignee ra, DvObject dvo) {
         return groupProviders.values().stream()
-                .flatMap(gp -> (Stream<Group>) gp.groupsFor(ra, dvo).stream())
+                .flatMap(gp -> gp.groupsFor(ra, dvo).stream())
                 .collect(toSet());
     }
 
@@ -124,21 +130,21 @@ public class GroupServiceBean {
      * groups a Role assignee belongs to as advertised but this method comes
      * closer.
      *
-     * @param au An AuthenticatedUser.
+     * @param ra An AuthenticatedUser.
      * @return As many groups as we can find for the AuthenticatedUser.
      * @deprecated Does not look into IP Groups. Use {@link #groupsFor(edu.harvard.iq.dataverse.engine.command.DataverseRequest)}
      */
     @Deprecated
     public Set<Group> groupsFor(RoleAssignee ra) {
         return groupProviders.values().stream()
-                .flatMap(gp -> (Stream<Group>) gp.groupsFor(ra).stream())
+                .flatMap(gp -> gp.groupsFor(ra).stream())
                 .collect(toSet());
     }
 
 
     public Set<Group> groupsFor(DataverseRequest req) {
         return groupProviders.values().stream()
-                .flatMap(gp -> (Stream<Group>) gp.groupsFor(req).stream())
+                .flatMap(gp -> gp.groupsFor(req).stream())
                 .collect(toSet());
     }
 
@@ -168,23 +174,10 @@ public class GroupServiceBean {
         return out.build().distinct();
     }
 
-    private void collectGroupContent(ExplicitGroup eg, Stream.Builder<Group> out) {
-        eg.getContainedRoleAssgineeIdentifiers().stream()
-                .map(idtf -> roleAssigneeSvc.getRoleAssignee(idtf))
-                .filter(asn -> asn instanceof Group)
-                .forEach(group -> out.accept((Group) group));
-
-        eg.getContainedExplicitGroups().forEach(meg -> {
-            out.accept(meg);
-            collectGroupContent(meg, out);
-        });
-    }
-
     /**
      * Returns all the groups that are in, of are ancestors of a group in
      * the passed group collection.
      *
-     * @param groups
      * @return {@code groups} and their ancestors.
      */
     public Set<Group> collectAncestors(Collection<Group> groups) {
@@ -215,7 +208,21 @@ public class GroupServiceBean {
         return groups;
     }
 
-    private void addGroupProvider(GroupProvider gp) {
+    // -------------------- PRIVATE --------------------
+
+    private void collectGroupContent(ExplicitGroup eg, Stream.Builder<Group> out) {
+        eg.getContainedRoleAssgineeIdentifiers().stream()
+                .map(idtf -> roleAssigneeSvc.getRoleAssignee(idtf))
+                .filter(asn -> asn instanceof Group)
+                .forEach(group -> out.accept((Group) group));
+
+        eg.getContainedExplicitGroups().forEach(meg -> {
+            out.accept(meg);
+            collectGroupContent(meg, out);
+        });
+    }
+
+    private void addGroupProvider(GroupProvider<?> gp) {
         groupProviders.put(gp.getGroupProviderAlias(), gp);
     }
 }

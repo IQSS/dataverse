@@ -37,42 +37,29 @@ public abstract class PersistedGlobalGroup implements Group, Serializable {
      */
     @Column(unique = true)
     private String persistedGroupAlias;
+
     private String displayName;
     private String description;
 
     @Transient
     private String groupProviderAlias;
-    
-    public PersistedGlobalGroup() {
-    }
-    
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    public PersistedGlobalGroup() { }
+
     public PersistedGlobalGroup(String groupProviderAlias) {
         this.groupProviderAlias = groupProviderAlias;
     }
-    
-    public void setPersistedGroupAlias(String alias) {
-        this.persistedGroupAlias = alias;
-    }
 
-    public String getPersistedGroupAlias() {
-        return persistedGroupAlias;
-    }
+    // -------------------- GETTERS --------------------
 
     public Long getId() {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    @Override
-    public String getAlias() {
-        return groupProviderAlias + Group.PATH_SEPARATOR + persistedGroupAlias;
-    }
-
-    public void setDisplayName(String name) {
-        this.displayName = name;
+    public String getPersistedGroupAlias() {
+        return persistedGroupAlias;
     }
 
     @Override
@@ -85,14 +72,7 @@ public abstract class PersistedGlobalGroup implements Group, Serializable {
         return description;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    @Override
-    public RoleAssigneeDisplayInfo getDisplayInfo() {
-        return new RoleAssigneeDisplayInfo(displayName, null);
-    }
+    // -------------------- LOGIC --------------------
 
     @Override
     public String getIdentifier() {
@@ -100,9 +80,37 @@ public abstract class PersistedGlobalGroup implements Group, Serializable {
     }
 
     @Override
+    public String getAlias() {
+        return groupProviderAlias + Group.PATH_SEPARATOR + persistedGroupAlias;
+    }
+
+    @Override
+    public RoleAssigneeDisplayInfo getDisplayInfo() {
+        return new RoleAssigneeDisplayInfo(displayName, null);
+    }
+
+    // -------------------- SETTERS --------------------
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setPersistedGroupAlias(String alias) {
+        this.persistedGroupAlias = alias;
+    }
+
+    public void setDisplayName(String name) {
+        this.displayName = name;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    // -------------------- toString --------------------
+
+    @Override
     public String toString() {
         return "[PersistedGlobalGroup " + getIdentifier() + "]";
     }
-
-
 }

@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.authorization.groups.impl.explicit;
 
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
-import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.group.ExplicitGroup;
@@ -11,7 +10,6 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 import edu.harvard.iq.dataverse.persistence.user.User;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +28,7 @@ public class ExplicitGroupProvider implements GroupProvider<ExplicitGroup> {
 
     private final ExplicitGroupServiceBean explicitGroupSvc;
     private final RoleAssigneeServiceBean roleAssigneeSvc;
-    private final Map<Class<? extends Group>, GroupProvider<? extends Group>> otherGroupProviders; 
+    private final Map<Class<? extends Group>, GroupProvider<? extends Group>> otherGroupProviders;
 
     public ExplicitGroupProvider(ExplicitGroupServiceBean anExplicitGroupSvc, RoleAssigneeServiceBean aRoleAssigneeSvc,
             List<GroupProvider<?>> otherGroupProviders) {
@@ -111,14 +109,14 @@ public class ExplicitGroupProvider implements GroupProvider<ExplicitGroup> {
     RoleAssignee findRoleAssignee(String roleAssigneeIdtf) {
         return roleAssigneeSvc.getRoleAssignee(roleAssigneeIdtf);
     }
-    
-    
+
+
     @Override
     public boolean contains(DataverseRequest req, ExplicitGroup explicitGroup) {
         return containsDirectly(req, explicitGroup) || containsIndirectly(req, explicitGroup);
     }
-    
-    
+
+
     /**
      * @param req
      * @return {@code true} iff the request is contained in the group or in an included non-explicit group.
@@ -164,7 +162,7 @@ public class ExplicitGroupProvider implements GroupProvider<ExplicitGroup> {
         }
         return false;
     }
-    
+
     /**
      * Returns true if {@link DataverseRequest} is part of the given {@link Group}
      * according to other group providers

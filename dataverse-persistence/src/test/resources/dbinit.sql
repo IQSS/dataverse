@@ -41,7 +41,7 @@ INSERT INTO dataversetheme (id, backgroundcolor, linkcolor, linkurl, logo, logoa
 --- ROOT -> ownmetadatablocks ---
 INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate,
                       creator_id, createdate, modificationtime, permissionmodificationtime, indextime, permissionindextime)
-    VALUES (19, 'Dataverse', 1, false, NULL, NULL, NULL, NULL, false, NULL, 1, '2019-06-06 08:27:43.217', 
+    VALUES (19, 'Dataverse', 1, false, NULL, NULL, NULL, NULL, false, NULL, 1, '2019-06-06 08:27:43.217',
             1, '2019-06-06 08:27:17.531', '2019-06-06 08:27:43.217', '2019-06-06 08:27:17.588', NULL, NULL);
 INSERT INTO dataverse (id, alias, name, affiliation, dataversetype, description, defaultcontributorrole_id, defaulttemplate_id, facetroot, guestbookroot, metadatablockroot, permissionroot, templateroot, themeroot, allowmessagesbanners)
     VALUES (19, 'ownmetadatablocks', 'Own Metadatablock Dataverse', 'aff', 'ORGANIZATIONS_INSTITUTIONS', NULL, 6, NULL, false, false, true, true, false, true, false);
@@ -56,7 +56,7 @@ INSERT INTO dataversetheme (id, backgroundcolor, linkcolor, linkurl, logo, logoa
 --- ROOT -> unreleased ---
 INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate,
                       creator_id, createdate, modificationtime, permissionmodificationtime, indextime, permissionindextime)
-    VALUES (51, 'Dataverse', 1, false, NULL, NULL, NULL, NULL, false, NULL, 1, NULL, 
+    VALUES (51, 'Dataverse', 1, false, NULL, NULL, NULL, NULL, false, NULL, 1, NULL,
             1, '2019-08-19 13:14:48.434', '2019-08-19 13:15:02.415', '2019-08-19 13:14:48.799', NULL, NULL);
 INSERT INTO dataverse (id, alias, name, affiliation, dataversetype, description, defaultcontributorrole_id, defaulttemplate_id, facetroot, guestbookroot, metadatablockroot, permissionroot, templateroot, themeroot, allowmessagesbanners)
     VALUES (51, 'unreleased', 'Unreleased Dataverse', 'ICM UW', 'JOURNALS', 'das', 6, NULL, false, false, false, true, false, true, false);
@@ -84,7 +84,7 @@ INSERT INTO termsofuseandaccess (id, availabilitystatus, citationrequirements, c
 --- DV:ROOT -> Draft only dataset ---
 INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate,
                       creator_id, createdate, modificationtime, permissionmodificationtime, indextime, permissionindextime)
-    VALUES (66, 'Dataset', 1, false, 'doi', '10.18150', 'FK2/QTVQKL', NULL, false, 'file://10.18150/FK2/QTVQKL', NULL, NULL, 
+    VALUES (66, 'Dataset', 1, false, 'doi', '10.18150', 'FK2/QTVQKL', NULL, false, 'file://10.18150/FK2/QTVQKL', NULL, NULL,
             1, '2019-09-26 11:43:58.194', '2019-09-26 11:43:58.194', '2019-09-26 11:43:58.194', NULL, NULL);
 INSERT INTO dataset (id, fileaccessrequest, harvestidentifier, usegenericthumbnail, citationdatedatasetfieldtype_id, harvestingclient_id, guestbook_id, thumbnailfile_id)
     VALUES (66, NULL, NULL, false, NULL, NULL, NULL, NULL);
@@ -155,7 +155,7 @@ INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetf
 --- DV:ownmetadatablocks -> Dataset with Versions (last version is draft) ---
 INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate,
                       creator_id, createdate, modificationtime, permissionmodificationtime, indextime, permissionindextime)
-    VALUES (56, 'Dataset', 19, false, 'doi', '10.18150', 'FK2/MLDB99', NULL, false, 'file://10.18150/FK2/MLDB99', 2, '2019-08-22 08:22:33.1', 
+    VALUES (56, 'Dataset', 19, false, 'doi', '10.18150', 'FK2/MLDB99', NULL, false, 'file://10.18150/FK2/MLDB99', 2, '2019-08-22 08:22:33.1',
             2, '2019-08-22 08:22:33.069', '2019-09-27 12:00:43.188', '2019-08-22 08:22:33.069', NULL, NULL);
 INSERT INTO dataset (id, fileaccessrequest, harvestidentifier, usegenericthumbnail, citationdatedatasetfieldtype_id, harvestingclient_id, guestbook_id, thumbnailfile_id)
     VALUES (56, NULL, NULL, false, NULL, NULL, NULL, NULL);
@@ -172,7 +172,7 @@ INSERT INTO datasetversionuser (id, lastupdatedate, authenticateduser_id, datase
 --- DV:ownmetadatablocks -> Dataset with versions (last version is released) ---
 INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate,
                       creator_id, createdate, modificationtime, permissionmodificationtime, indextime, permissionindextime)
-    VALUES (57, 'Dataset', 19, false, 'doi', '10.18150', 'FK2/BWM3WL', NULL, false, 'file://10.18150/FK2/BWM3WL', 2, '2020-01-03 12:22:33', 
+    VALUES (57, 'Dataset', 19, false, 'doi', '10.18150', 'FK2/BWM3WL', NULL, false, 'file://10.18150/FK2/BWM3WL', 2, '2020-01-03 12:22:33',
             2, '2020-01-03 12:22:33', '2020-01-06 12:00:43', '2020-01-06 12:00:43', NULL, NULL);
 INSERT INTO dataset (id, fileaccessrequest, harvestidentifier, usegenericthumbnail, citationdatedatasetfieldtype_id, harvestingclient_id, guestbook_id, thumbnailfile_id)
     VALUES (57, NULL, NULL, false, NULL, NULL, NULL, NULL);
@@ -187,7 +187,7 @@ INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber
 --- DS:Draft with files -> testfile6.zip
 INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate,
                       creator_id, createdate, modificationtime, permissionmodificationtime, indextime, permissionindextime)
-    VALUES (53, 'DataFile', 52, false, NULL, NULL, NULL, NULL, false, '16d24989113-5834f8e1e68e', NULL, NULL, 
+    VALUES (53, 'DataFile', 52, false, NULL, NULL, NULL, NULL, false, '16d24989113-5834f8e1e68e', NULL, NULL,
             1, '2019-09-12 08:30:53.446', '2019-09-27 12:00:43.188', '2019-09-12 08:30:41.424', NULL, NULL);
 INSERT INTO datafile (id, checksumtype, checksumvalue, contenttype, filesize, ingeststatus, previousdatafileid, prov_entityname, restricted, rootdatafileid)
     VALUES (53, 'MD5', 'd9881598b92d3f87fd8a7c7eb99f84b7', 'application/zip', 19, 'A', NULL, NULL, NULL, -1);
@@ -199,7 +199,7 @@ INSERT INTO filemetadata_datafilecategory (filecategories_id, filemetadatas_id) 
 --- DS:Draft with files -> testfile1.zip
 INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate,
                       creator_id, createdate, modificationtime, permissionmodificationtime, indextime, permissionindextime)
-    VALUES (55, 'DataFile', 52, false, NULL, NULL, NULL, NULL, false, '16d24989319-2c86e28809de', NULL, NULL, 
+    VALUES (55, 'DataFile', 52, false, NULL, NULL, NULL, NULL, false, '16d24989319-2c86e28809de', NULL, NULL,
             1, '2019-09-12 08:30:53.446', '2019-09-27 12:00:43.188', '2019-09-12 08:30:41.942', NULL, NULL);
 INSERT INTO datafile (id, checksumtype, checksumvalue, contenttype, filesize, ingeststatus, previousdatafileid, prov_entityname, restricted, rootdatafileid)
     VALUES (55, 'MD5', '7ed0097d7e9ee73cf0952a1f0a07c07e', 'application/zip', 3, 'A', NULL, NULL, NULL, -1);
@@ -218,6 +218,11 @@ INSERT INTO explicitgroup_containedroleassignees (explicitgroup_id, containedrol
 INSERT INTO explicitgroup_authenticateduser (explicitgroup_id, containedauthenticatedusers_id) VALUES (1, 2);
 INSERT INTO explicitgroup_authenticateduser (explicitgroup_id, containedauthenticatedusers_id) VALUES (1, 3);
 
+-------------------- MAIL DOMAIN GROUPS --------------------
+
+INSERT INTO persistedglobalgroup(id, dtype, description, displayname, persistedgroupalias) VALUES (1, 'MailDomainGroup', '', 'Group 1', 'gr1');
+INSERT INTO persistedglobalgroup(id, dtype, description, displayname, persistedgroupalias) VALUES (2, 'MailDomainGroup', '', 'Group 2', 'gr2');
+
 -------------------- ROLE ASSIGNMENTS --------------------
 
 INSERT INTO roleassignment (id, assigneeidentifier, privateurltoken, definitionpoint_id, role_id) VALUES (5, '@dataverseAdmin', NULL, 1, 1);
@@ -229,6 +234,10 @@ INSERT INTO roleassignment (id, assigneeidentifier, privateurltoken, definitionp
 
 INSERT INTO roleassignment (id, assigneeidentifier, privateurltoken, definitionpoint_id, role_id) VALUES (32, '&explicit/1-rootgroup', NULL, 1, 7);
 INSERT INTO roleassignment (id, assigneeidentifier, privateurltoken, definitionpoint_id, role_id) VALUES (33, '@superuser', NULL, 1, 6);
+
+INSERT INTO roleassignment (id, assigneeidentifier, privateurltoken, definitionpoint_id, role_id) VALUES (101, '&mail/toDelete', NULL, 51, 1);
+INSERT INTO roleassignment (id, assigneeidentifier, privateurltoken, definitionpoint_id, role_id) VALUES (102, '&mail/toDelete', NULL, 19, 1);
+
 
 -------------------- TEMPLATES --------------------
 INSERT INTO template (id, createtime, name, usagecount, dataverse_id, termsofuseandaccess_id)

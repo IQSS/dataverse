@@ -49,4 +49,10 @@ public class RoleAssignmentRepository extends JpaRepository<Long, RoleAssignment
                 .setParameter("definitionPointIds", definitionPointIds)
                 .getResultList();
     }
+
+    public int deleteAllByAssigneeIdentifier(String identifier) {
+        return em.createNamedQuery("RoleAssignment.deleteAllByAssigneeIdentifier")
+                .setParameter("assigneeIdentifier", identifier)
+                .executeUpdate();
+    }
 }
