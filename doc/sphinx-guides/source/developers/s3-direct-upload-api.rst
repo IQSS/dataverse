@@ -4,9 +4,9 @@ Direct DataFile Upload API
 The direct Datafile Upload API is used internally to support direct upload of files to S3 storage and by tools such as the DVUploader.
 
 Direct upload involves a series of three activities:
-- Requesting initiation of a transfer from the Dataverse server
-- Use of the pre-signed URL(s) returned in that call to perform an upload/multipart-upload of the file to S3
-- A call to the Dataverse server to register the file as part of the dataset and/or to cancel the transfer
+* Requesting initiation of a transfer from the Dataverse server
+* Use of the pre-signed URL(s) returned in that call to perform an upload/multipart-upload of the file to S3
+* A call to the Dataverse server to register the file as part of the dataset and/or to cancel the transfer
 
 This API is only enabled when a Dataset is configured with a data store supporting direct S3 upload.
 Administrators should be aware that partial transfers, where a client starts uploading the file/parts of the file and does not contact the Dataverse server to complete/cancel the transfer, will result in data stored in S3 that is not referenced in Dataverse (e.g. should be considered temporary and deleted.)
@@ -60,7 +60,7 @@ Multiple URLs: when the file must be uploaded in multiple parts. The part size i
     "storageIdentifier":"s3://demo-dataverse-bucket:177883b000e-49cedef268ac"
   }
 
-In the example responses above, the URLs, which are very long, have been omitted. These URLs reference the S3 server and the specific object identifier that will be used, starting with, for example, "https://demo-dataverse-bucket.s3.amazonaws.com/10.5072/FK2FOQPJS/177883b000e-49cedef268ac?..."
+In the example responses above, the URLs, which are very long, have been omitted. These URLs reference the S3 server and the specific object identifier that will be used, starting with, for example, https://demo-dataverse-bucket.s3.amazonaws.com/10.5072/FK2FOQPJS/177883b000e-49cedef268ac?...
 
 The client must then use the URL(s) to POST the file, or if the file is larger than the specified partSize, parts of the file. 
 
@@ -82,11 +82,11 @@ Adding the Uploaded file to the Dataset
 
 Once the file exists in the s3 bucket, a final API call is needed to add it to the Dataset. This call is the same call used to upload a file to Dataverse but, rather than sending the file bytes, additional metadata is added the "jsonData" parameter. 
 jsonData normally includes information such as a file description, tags, provenance, whether the file is restricted, etc. For direct uploads, the jsonData object must also include values for:
-- "storageIdentifier" - as specified in prior calls
-- "fileName"
-- "mimeType"
-- "md5Hash"
-- "fileSize"
+* "storageIdentifier" - as specified in prior calls
+* "fileName"
+* "mimeType"
+* "md5Hash"
+* "fileSize"
 
 .. code-block:: bash
 
