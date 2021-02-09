@@ -34,4 +34,6 @@ Developer Guide
    selinux
    big-data-support
    aux-file-support
+   dataset-semantic-metadata-api
+   dataset-migration-api 
    workflows
