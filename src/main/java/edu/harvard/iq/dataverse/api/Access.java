@@ -331,6 +331,14 @@ public class Access extends AbstractApiBean {
             // So we need to identify when a service is being called and then let checkIfServiceSupportedAndSetConverter see if the required one exists
             if (key.equals("imageThumb") || key.equals("format") || key.equals("variables") || key.equals("noVarHeader")) {
                 serviceRequested = true;
+                //In the dataset file table context a user is allowed to select original as the format
+                //for download
+                // if the dataset has tabular files - it should not be applied to instances 
+                // where the file selected is not tabular see #6972
+                if("format".equals(key) && "original".equals(value) && !df.isTabularData()) {
+                    serviceRequested = false;
+                    break;
+                }
                 //Only need to check if this key is associated with a service
                 if (downloadInstance.checkIfServiceSupportedAndSetConverter(key, value)) {
                     // this automatically sets the conversion parameters in
