@@ -1,13 +1,14 @@
 Dataset Migration API
 =====================
 
-The Dataverse software includes several ways to add Datasets originally created elsewhere (not to mention Harvesting capabilities). These include the Sword API and the /dataverses/{id}/datasets/:import methods (json and ddi).
+The Dataverse software includes several ways to add Datasets originally created elsewhere (not to mention Harvesting capabilities). These include the Sword API (see the :doc:`/api/sword` guide) and the /dataverses/{id}/datasets/:import methods (json and ddi) (see the :doc:`/api/native-api` guide).
 
 This experimental migration API offers an additional option with some potential advantages:
-- metadata can be specified using the json-ld format used in the OAI-ORE metadata export
-- existing PIDs can be maintained (currently limited to the case where the PID can be managed by the Dataverse software, e.g. where the authority and shoulder match those the sfotware is configured for)
-- adding files can be done via the standard APIs, including using direct-upload to S3
-- the dataset can be published keeping the original publication date
+
+* metadata can be specified using the json-ld format used in the OAI-ORE metadata export
+* existing PIDs can be maintained (currently limited to the case where the PID can be managed by the Dataverse software, e.g. where the authority and shoulder match those the sfotware is configured for)
+* adding files can be done via the standard APIs, including using direct-upload to S3
+* the dataset can be published keeping the original publication date
 
 This API consists of 2 calls: one to create an initial Dataset version, and one to publish the version with a specified publication date. 
 These calls can be used in concert with other API calls to add files, update metadata for additional versions, etc.   
