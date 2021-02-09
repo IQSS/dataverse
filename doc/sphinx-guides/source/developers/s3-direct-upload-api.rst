@@ -4,6 +4,7 @@ Direct DataFile Upload API
 The direct Datafile Upload API is used internally to support direct upload of files to S3 storage and by tools such as the DVUploader.
 
 Direct upload involves a series of three activities:
+
 * Requesting initiation of a transfer from the Dataverse server
 * Use of the pre-signed URL(s) returned in that call to perform an upload/multipart-upload of the file to S3
 * A call to the Dataverse server to register the file as part of the dataset and/or to cancel the transfer
@@ -82,6 +83,7 @@ Adding the Uploaded file to the Dataset
 
 Once the file exists in the s3 bucket, a final API call is needed to add it to the Dataset. This call is the same call used to upload a file to Dataverse but, rather than sending the file bytes, additional metadata is added the "jsonData" parameter. 
 jsonData normally includes information such as a file description, tags, provenance, whether the file is restricted, etc. For direct uploads, the jsonData object must also include values for:
+
 * "storageIdentifier" - as specified in prior calls
 * "fileName"
 * "mimeType"
