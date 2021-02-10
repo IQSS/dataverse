@@ -1,7 +1,7 @@
 External Tools
 ==============
 
-External tools can provide additional features that are not part of Dataverse itself, such as data file previews, visualization, and curation.
+External tools can provide additional features that are not part of the Dataverse Software itself, such as data file previews, visualization, and curation.
 
 .. contents:: |toctitle|
   :local:
@@ -22,10 +22,10 @@ Inventory of External Tools
 Managing External Tools
 -----------------------
 
-Adding External Tools to Dataverse
-+++++++++++++++++++++++++++++++++++
+Adding External Tools to a Dataverse Installation
++++++++++++++++++++++++++++++++++++++++++++++++++
 
-To add an external tool to your installation of Dataverse you must first download a JSON file for that tool, which we refer to as a "manifest". It should look something like this:
+To add an external tool to your Dataverse installation you must first download a JSON file for that tool, which we refer to as a "manifest". It should look something like this:
 
 .. literalinclude:: ../_static/installation/files/root/external-tools/fabulousFileTool.json
 
@@ -37,27 +37,27 @@ Configure the tool with the curl command below, making sure to replace the ``fab
 
   curl -X POST -H 'Content-type: application/json' http://localhost:8080/api/admin/externalTools --upload-file fabulousFileTool.json 
 
-Listing All External Tools in Dataverse
-+++++++++++++++++++++++++++++++++++++++
+Listing All External Tools in a Dataverse Installation
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-To list all the external tools that are available in Dataverse:
+To list all the external tools that are available in a Dataverse installation:
 
 .. code-block:: bash
 
   curl http://localhost:8080/api/admin/externalTools
 
-Showing an External Tool in Dataverse
-+++++++++++++++++++++++++++++++++++++
+Showing an External Tool in a Dataverse Installation
+++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-To show one of the external tools that are available in Dataverse, pass its database id:
+To show one of the external tools that are available in a Dataverse installation, pass its database id:
 
 .. code-block:: bash
 
   export TOOL_ID=1
   curl http://localhost:8080/api/admin/externalTools/$TOOL_ID
 
-Removing an External Tool From Dataverse
-++++++++++++++++++++++++++++++++++++++++
+Removing an External Tool From a Dataverse Installation
++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Assuming the external tool database id is "1", remove it with the following command:
 
@@ -71,7 +71,7 @@ Assuming the external tool database id is "1", remove it with the following comm
 Testing External Tools
 ----------------------
 
-Once you have added an external tool to your installation of Dataverse, you will probably want to test it to make sure it is functioning properly.
+Once you have added an external tool to your Dataverse installation, you will probably want to test it to make sure it is functioning properly.
 
 File Level vs. Dataset Level
 ++++++++++++++++++++++++++++
@@ -114,4 +114,4 @@ Writing Your Own External Tool
 
 If you plan to write a external tool, see the :doc:`/api/external-tools` section of the API Guide.
 
-If you have an idea for an external tool, please let the Dataverse community know by posting about it on the dataverse-community mailing list: https://groups.google.com/forum/#!forum/dataverse-community
+If you have an idea for an external tool, please let the Dataverse Project community know by posting about it on the dataverse-community mailing list: https://groups.google.com/forum/#!forum/dataverse-community
