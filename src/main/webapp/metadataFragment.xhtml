@@ -210,7 +210,7 @@
                                                                 <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{subdsf.required and dsf.required}"/>
                                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                                       data-toggle="tooltip" data-placement="auto right" 
-                                                                      data-original-title="#{subdsf.datasetFieldType.localeDescription}#{subdsf.required and !dsf.required?' ('.concat(bundle['conditionalRequiredMsg.tooltip']).concat(')') : ''}"></span>
+                                                                      data-original-title="#{subdsf.datasetFieldType.localeDescription}#{subdsf.required and !dsf.required?' – '.concat(bundle['conditionalRequiredMsg.tooltip']) : ''}"></span>
                                                             </label>
                                                             <ui:fragment rendered="#{!subdsf.datasetFieldType.controlledVocabulary}">
                                                                 <ui:include src="datasetFieldForEditFragment.xhtml">
