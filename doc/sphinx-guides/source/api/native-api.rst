@@ -3009,7 +3009,7 @@ Disables an ``AuthenticatedUser`` whose ``id``  is passed. ::
 
     PUT http://$SERVER/api/admin/authenticatedUsers/disable/id/$id
     
-Note: Since the primary purpose of Dataverse is to serve as an archive and to track data accesses and the modifications of data and metadata, a simple mechanism to delete users that have performed certain actions in the system is not provided by design. 
+Note: A primary purpose of most Dataverse installations is to serve an archive. In the archival space, there are best practices around the tracking of data access and the tracking of modifications to data and metadata. In support of these key workflows, a simple mechanism to delete users that have performed edit or access actions in the system is not provided. Providing a Disable User endpoint instead of a Delete User endpoint is by design.
 
 Disabling a user with this endpoint will:
 
@@ -3022,10 +3022,8 @@ Disabling a user with this endpoint will:
 Disabling a user with this endpoint will keep:
 
 - The user's contributions to datasets, including dataset creation, file uploads, and publishing. 
-- The user's access history to datafiles in the Dataverse installation, including guestbook records and acceptance of terms of use.
+- The user's access history to datafiles in the Dataverse installation, including guestbook records.
 - The user's account information (specifically name, email, affiliation, and position)
-
-If it is determined that disabling a user is not sufficient, it is possible anonymize a user through use of the :ref:`merge-accounts-label` feature. See :ref:`Anonymize a User <disable-a-user>` for more information about this process. 
 
 List Role Assignments of a Role Assignee
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
