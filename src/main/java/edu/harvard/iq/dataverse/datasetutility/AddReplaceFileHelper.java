@@ -312,7 +312,18 @@ public class AddReplaceFileHelper{
             String newStorageIdentifier,
             InputStream newFileInputStream,
             OptionalFileParams optionalFileParams){
-        
+        return this.runAddFileByDataset(chosenDataset,newFileName,newFileContentType,newStorageIdentifier,newFileInputStream,optionalFileParams,false);
+
+    }
+
+    public boolean runAddFileByDataset(Dataset chosenDataset,
+                                       String newFileName,
+                                       String newFileContentType,
+                                       String newStorageIdentifier,
+                                       InputStream newFileInputStream,
+                                       OptionalFileParams optionalFileParams,
+                                       boolean globustype) {
+
         msgt(">> runAddFileByDatasetId");
 
         initErrorHandling();

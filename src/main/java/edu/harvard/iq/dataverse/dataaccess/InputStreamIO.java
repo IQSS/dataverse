@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse.dataaccess;
 
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.harvard.iq.dataverse.DataFile;
 import java.io.IOException;
 import java.io.InputStream;
@@ -147,6 +148,11 @@ public class InputStreamIO extends StorageIO<DataFile> {
     @Override  
     public OutputStream getOutputStream() throws IOException {
         throw new UnsupportedDataAccessOperationException("InputStreamIO: there is no output stream associated with this object.");
+    }
+
+    @Override
+    public List<S3ObjectSummary> listAuxObjects(String s) throws IOException {
+        return null;
     }
 
     @Override

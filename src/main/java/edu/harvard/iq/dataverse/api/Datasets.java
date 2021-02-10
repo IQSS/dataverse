@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
@@ -31,6 +32,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
@@ -75,6 +77,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLComman
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.globus.AccessToken;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
@@ -107,6 +110,9 @@ import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import edu.harvard.iq.dataverse.globus.AccessToken;
+import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -125,13 +131,8 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
+import javax.json.*;
+import javax.persistence.Query;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
@@ -150,6 +151,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import javax.ws.rs.core.UriInfo;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -171,6 +174,9 @@ public class Datasets extends AbstractApiBean {
     @EJB
     DataverseServiceBean dataverseService;
     
+    @EJB
+    GlobusServiceBean globusServiceBean;
+
     @EJB
     UserNotificationServiceBean userNotificationService;
     
@@ -2286,6 +2292,309 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         dataset.setStorageDriverId(null);
         datasetService.merge(dataset);
     	return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
+    }
+
+
+    @POST
+    @Path("{id}/addglobusFiles")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response addGlobusFileToDataset(@PathParam("id") String datasetId,
+                                           @FormDataParam("jsonData") String jsonData
+    )
+    {
+        JsonArrayBuilder jarr = Json.createArrayBuilder();
+
+        if (!systemConfig.isHTTPUpload()) {
+            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
+        }
+
+        // -------------------------------------
+        // (1) Get the user from the API key
+        // -------------------------------------
+        User authUser;
+        try {
+            authUser = findUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.FORBIDDEN,
+                    BundleUtil.getStringFromBundle("file.addreplace.error.auth")
+            );
+        }
+
+        // -------------------------------------
+        // (2) Get the Dataset Id
+        // -------------------------------------
+        Dataset dataset;
+
+        try {
+            dataset = findDatasetOrDie(datasetId);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+        //------------------------------------
+        // (2a) Add lock to the dataset page
+        // --------------------------------------
+
+        String lockInfoMessage = "Globus Upload API is running ";
+        DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.GlobusUpload,
+                ((AuthenticatedUser) authUser).getId() , lockInfoMessage);
+        if (lock != null) {
+            dataset.addLock(lock);
+        } else {
+            logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
+        }
+
+        //------------------------------------
+        // (2b) Make sure dataset does not have package file
+        // --------------------------------------
+
+        for (DatasetVersion dv : dataset.getVersions()) {
+            if (dv.isHasPackageFile()) {
+                return error(Response.Status.FORBIDDEN,
+                        BundleUtil.getStringFromBundle("file.api.alreadyHasPackageFile")
+                );
+            }
+        }
+
+
+        // -------------------------------------
+        // (3) Parse JsonData
+        // -------------------------------------
+
+        String taskIdentifier = null;
+
+        msgt("******* (api) jsonData 1: " + jsonData.toString());
+
+        JsonObject jsonObject = null;
+        try (StringReader rdr = new StringReader(jsonData)) {
+            jsonObject = Json.createReader(rdr).readObject();
+        } catch (Exception jpe) {
+            jpe.printStackTrace();
+            logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}");
+        }
+
+        // -------------------------------------
+        // (4) Get taskIdentifier
+        // -------------------------------------
+
+        taskIdentifier = jsonObject.getString("taskIdentifier");
+        msgt("******* (api) newTaskIdentifier: " + taskIdentifier);
+
+        // -------------------------------------
+        // (5) Wait until task completion
+        // -------------------------------------
+
+        boolean success = false;
+        boolean globustype = true;
+
+        do {
+            try {
+                String basicGlobusToken = settingsSvc.getValueForKey(SettingsServiceBean.Key.BasicGlobusToken, "");
+                basicGlobusToken = "ODA0ODBhNzEtODA5ZC00ZTJhLWExNmQtY2JkMzA1NTk0ZDdhOmQvM3NFd1BVUGY0V20ra2hkSkF3NTZMWFJPaFZSTVhnRmR3TU5qM2Q3TjA9";
+                msgt("******* (api) basicGlobusToken: " + basicGlobusToken);
+                AccessToken clientTokenUser = globusServiceBean.getClientToken(basicGlobusToken);
+
+                success = globusServiceBean.getSuccessfulTransfers(clientTokenUser, taskIdentifier);
+                msgt("******* (api) success: " + success);
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                logger.info(ex.getMessage());
+                return error(Response.Status.INTERNAL_SERVER_ERROR, "Failed to get task id");
+            }
+
+        } while (!success);
+
+
+        try
+        {
+            StorageIO<Dataset> datasetSIO = DataAccess.getStorageIO(dataset);
+
+            for (S3ObjectSummary s3ObjectSummary : datasetSIO.listAuxObjects("")) {
+
+            }
+
+            DataverseRequest dvRequest = createDataverseRequest(authUser);
+            AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(
+                    dvRequest,
+                    ingestService,
+                    datasetService,
+                    fileService,
+                    permissionSvc,
+                    commandEngine,
+                    systemConfig
+            );
+
+            // -------------------------------------
+            // (6) Parse files information from jsondata
+            //  calculate checksum
+            //  determine mimetype
+            // -------------------------------------
+
+            JsonArray filesJson = jsonObject.getJsonArray("files");
+
+
+            // Start to add the files
+            if (filesJson != null) {
+                for (JsonObject fileJson : filesJson.getValuesAs(JsonObject.class)) {
+
+                    String storageIdentifier = fileJson.getString("storageIdentifier"); //"s3://176ce6992af-208dea3661bb50"
+                    String suppliedContentType = fileJson.getString("contentType");
+                    String fileName = fileJson.getString("fileName");
+
+                    String fullPath = datasetSIO.getStorageLocation() + "/" + storageIdentifier.replace("s3://", "");
+
+                    String bucketName = System.getProperty("dataverse.files." + storageIdentifier.split(":")[0] + ".bucket-name");
+
+                    String dbstorageIdentifier = storageIdentifier.split(":")[0] + "://" + bucketName + ":" + storageIdentifier.replace("s3://", "");
+
+                    // the storageidentifier should be unique
+                    Query query = em.createQuery("select object(o) from DvObject as o where o.storageIdentifier = :storageIdentifier");
+                    query.setParameter("storageIdentifier", dbstorageIdentifier);
+
+                    if (query.getResultList().size() > 0) {
+                        JsonObjectBuilder fileoutput= Json.createObjectBuilder()
+                                .add("storageIdentifier " , storageIdentifier)
+                                .add("message " , " The datatable is not updated since the Storage Identifier already exists in dvObject. ");
+
+                        jarr.add(fileoutput);
+                    } else {
+
+                        // calculate mimeType
+                        //logger.info(" JC Step 0 Supplied type: " + fileName ) ;
+                        //logger.info(" JC Step 1 Supplied type: " + suppliedContentType ) ;
+                        String finalType = StringUtils.isBlank(suppliedContentType) ? FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT : suppliedContentType;
+                        //logger.info(" JC Step 2 finalType: " + finalType ) ;
+                        String type = FileUtil.determineFileTypeByExtension(fileName);
+                        //logger.info(" JC Step 3 type by fileextension: " + type ) ;
+                        if (!StringUtils.isBlank(type)) {
+                            //Use rules for deciding when to trust browser supplied type
+                            //if (FileUtil.useRecognizedType(finalType, type)) {
+                            finalType = type;
+                            //logger.info(" JC Step 4 type after useRecognized function : " + finalType ) ;
+                            //}
+                            logger.info("Supplied type: " + suppliedContentType + ", finalType: " + finalType);
+                        }
+
+                        JsonPatch path = Json.createPatchBuilder().add("/mimeType", finalType).build();
+                        fileJson = path.apply(fileJson);
+
+                        // calculate md5 checksum
+                        StorageIO<DvObject> dataFileStorageIO = DataAccess.getDirectStorageIO(fullPath);
+                        InputStream in = dataFileStorageIO.getInputStream();
+                        String checksumVal = FileUtil.calculateChecksum(in, DataFile.ChecksumType.MD5);
+
+                        path = Json.createPatchBuilder().add("/md5Hash", checksumVal).build();
+                        fileJson = path.apply(fileJson);
+
+                        //---------------------------------------
+                        //  Load up optional params via JSON
+                        //---------------------------------------
+
+                        OptionalFileParams optionalFileParams = null;
+                        msgt("(api) jsonData 2: " +  fileJson.toString());
+
+                        try {
+                            optionalFileParams = new OptionalFileParams(fileJson.toString());
+                        } catch (DataFileTagException ex) {
+                            return error( Response.Status.BAD_REQUEST, ex.getMessage());
+                        }
+
+                        msg("ADD!");
+
+                        //-------------------
+                        // Run "runAddFileByDatasetId"
+                        //-------------------
+                        addFileHelper.runAddFileByDataset(dataset,
+                                fileName,
+                                finalType,
+                                storageIdentifier,
+                                null,
+                                optionalFileParams,
+                                globustype);
+
+
+                        if (addFileHelper.hasError()){
+
+                            JsonObjectBuilder fileoutput= Json.createObjectBuilder()
+                                    .add("storageIdentifier " , storageIdentifier)
+                                    .add("error Code: " ,addFileHelper.getHttpErrorCode().toString())
+                                    .add("message " ,  addFileHelper.getErrorMessagesAsString("\n"));
+
+                            jarr.add(fileoutput);
+
+                        }else{
+                            String successMsg = BundleUtil.getStringFromBundle("file.addreplace.success.add");
+
+                            JsonObject successresult = addFileHelper.getSuccessResultAsJsonObjectBuilder().build();
+
+                            try {
+                                logger.fine("successMsg: " + successMsg);
+                                String duplicateWarning = addFileHelper.getDuplicateFileWarning();
+                                if (duplicateWarning != null && !duplicateWarning.isEmpty()) {
+                                    // return ok(addFileHelper.getDuplicateFileWarning(), addFileHelper.getSuccessResultAsJsonObjectBuilder());
+                                    JsonObjectBuilder fileoutput= Json.createObjectBuilder()
+                                            .add("storageIdentifier " , storageIdentifier)
+                                            .add("warning message: " ,addFileHelper.getDuplicateFileWarning())
+                                            .add("message " ,  successresult.getJsonArray("files").getJsonObject(0));
+                                    jarr.add(fileoutput);
+
+                                } else {
+                                    JsonObjectBuilder fileoutput= Json.createObjectBuilder()
+                                            .add("storageIdentifier " , storageIdentifier)
+                                            .add("message " ,  successresult.getJsonArray("files").getJsonObject(0));
+                                    jarr.add(fileoutput);
+                                }
+
+                            } catch (Exception ex) {
+                                Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
+                                return error(Response.Status.BAD_REQUEST, "NoFileException!  Serious Error! See administrator!");
+                            }
+                        }
+                    }
+                }
+            }// End of adding files
+
+
+            DatasetLock dcmLock = dataset.getLockFor(DatasetLock.Reason.GlobusUpload);
+            if (dcmLock == null) {
+                logger.log(Level.WARNING, "Dataset not locked for Globus upload");
+            } else {
+                logger.log(Level.INFO, "Dataset remove locked for Globus upload");
+                datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.GlobusUpload);
+                //dataset.removeLock(dcmLock);
+            }
+
+            try {
+                Command<Dataset> cmd;
+                cmd = new UpdateDatasetVersionCommand(dataset, dvRequest);
+                ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
+                commandEngine.submit(cmd);
+            } catch (CommandException ex) {
+                logger.log(Level.WARNING, "==== datasetId :" + dataset.getId() + "====== UpdateDatasetVersionCommand Exception  : " + ex.getMessage());
+            }
+
+            dataset = datasetService.find(dataset.getId());
+
+            List<DataFile> s= dataset.getFiles();
+            for (DataFile dataFile : s) {
+                logger.info(" ******** TEST  the datafile id is = " + dataFile.getId() + " =  " + dataFile.getDisplayName());
+            }
+
+            msg("******* pre ingest start in globus API");
+
+            ingestService.startIngestJobsForDataset(dataset, (AuthenticatedUser) authUser);
+
+            msg("******* post ingest start in globus API");
+
+        } catch (Exception e) {
+            String message = e.getMessage();
+            msgt("*******  datasetId :" + dataset.getId() + " ======= GLOBUS  CALL Exception ============== " + message);
+            e.printStackTrace();
+        }
+
+        return ok(Json.createObjectBuilder().add("Files", jarr));
+
     }
 }
 

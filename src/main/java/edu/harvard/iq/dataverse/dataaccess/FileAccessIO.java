@@ -35,6 +35,7 @@ import java.util.List;
 
 
 // Dataverse imports:
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -416,7 +417,12 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         
     }
     
-    
+    @Override
+    public List<S3ObjectSummary> listAuxObjects(String s) throws IOException {
+        return null;
+    }
+
+
     @Override
     public String getStorageLocation() {
         // For a local file, the "storage location" is a complete, absolute

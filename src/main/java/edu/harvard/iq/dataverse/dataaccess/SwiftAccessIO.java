@@ -1,4 +1,5 @@
 package edu.harvard.iq.dataverse.dataaccess;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
@@ -875,6 +876,11 @@ public class SwiftAccessIO<T extends DvObject> extends StorageIO<T> {
         return null;
      }
      
+    @Override
+    public List<S3ObjectSummary> listAuxObjects(String s) throws IOException {
+        return null;
+    }
+
     //https://gist.github.com/ishikawa/88599
     public static String toHexString(byte[] bytes) {
         Formatter formatter = new Formatter();
