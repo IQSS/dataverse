@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.datasetutility;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -117,11 +118,12 @@ public class AddReplaceFileHelper{
     // -----------------------------------
     private Dataset dataset;                    // constructor (for add, not replace)
     private DataverseRequest dvRequest;         // constructor
-    private InputStream newFileInputStream;     // step 20
-    private String newFileName;                 // step 20
-    private String newFileContentType;          // step 20
-    private String newStorageIdentifier;        // step 20
-    private String newCheckSum;        // step 20
+    private InputStream newFileInputStream;     // step 30
+    private String newFileName;                 // step 30
+    private String newFileContentType;          // step 30
+    private String newStorageIdentifier;        // step 30
+    private String newCheckSum;                 // step 30
+    private ChecksumType newCheckSumType;       //step 30
     
     // -- Optional  
     private DataFile fileToReplace;             // step 25
@@ -552,6 +554,7 @@ public class AddReplaceFileHelper{
         if(optionalFileParams != null) {
         	if(optionalFileParams.hasCheckSum()) {
         		newCheckSum = optionalFileParams.getCheckSum();
+        		newCheckSumType = optionalFileParams.getCheckSumType();
         	}
         }
 
@@ -1131,6 +1134,7 @@ public class AddReplaceFileHelper{
                     this.newFileContentType,
                     this.newStorageIdentifier,
                     this.newCheckSum,
+                    this.newCheckSumType,
                     this.systemConfig);
 
         } catch (IOException ex) {
