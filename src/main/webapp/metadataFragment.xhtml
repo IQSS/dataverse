@@ -185,13 +185,16 @@
                                         <p:autoUpdate/>
                                         <div id="metadata_#{dsf.datasetFieldType.name}" class="col-sm-3 control-label highlightBold">
                                             #{dsf.datasetFieldType.localeTitle}
-                                            <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{dsf.required}"/>
-                                            <!-- the following span shows the render logic for parents with conditionally required fields-->
-                                            <span class="glyphicon glyphicon-bell text-danger" jsf:rendered="#{!dsf.required and dsf.hasRequiredChildren}"/>                                            
+                                            <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{dsf.required}"/>                                           
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                         </div>
                                         <div class="form-group form-col-container col-sm-9 dataset-field-values">
+                                            <ui:fragment rendered="#{!dsf.required and dsf.hasRequiredChildren}">
+                                                <p class="help-block">
+                                                    <h:outputText value="#{bundle.conditionalRequiredMsg}"/>
+                                                </p>
+                                            </ui:fragment>                                            
                                             <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue" varStatus="valCount">
                                                 <div class="form-group form-col-container col-sm-9 edit-compound-field">
                                                     <!-- Sub Fields -->
@@ -204,9 +207,10 @@
                                                             </ui:fragment>
                                                             <label jsf:for="#{subdsf.datasetFieldType.fieldType == 'TEXTBOX' ? 'description' : 'inputText'}" class="control-label">
                                                                 #{subdsf.datasetFieldType.localeTitle}
-                                                                <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{subdsf.required}"/>
+                                                                <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{subdsf.required and dsf.required}"/>
                                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                                                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{subdsf.datasetFieldType.localeDescription}"></span>
+                                                                      data-toggle="tooltip" data-placement="auto right" 
+                                                                      data-original-title="#{subdsf.datasetFieldType.localeDescription}#{subdsf.required and !dsf.required?' ('.concat(bundle['conditionalRequiredMsg.tooltip']).concat(')') : ''}"></span>
                                                             </label>
                                                             <ui:fragment rendered="#{!subdsf.datasetFieldType.controlledVocabulary}">
                                                                 <ui:include src="datasetFieldForEditFragment.xhtml">
