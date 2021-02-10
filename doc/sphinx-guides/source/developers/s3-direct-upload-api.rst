@@ -78,17 +78,21 @@ If the client is unable to complete the multipart upload, it should call the abo
     curl -X DELETE "$SERVER_URL/api/datasets/mpload?..."
    
   
-Adding the Uploaded file to the Dataset 
+Adding the Uploaded file to the Dataset
 ---------------------------------------
 
 Once the file exists in the s3 bucket, a final API call is needed to add it to the Dataset. This call is the same call used to upload a file to Dataverse but, rather than sending the file bytes, additional metadata is added the "jsonData" parameter. 
 jsonData normally includes information such as a file description, tags, provenance, whether the file is restricted, etc. For direct uploads, the jsonData object must also include values for:
 
-* "storageIdentifier" - as specified in prior calls
-* "fileName"
-* "mimeType"
-* "md5Hash"
-* "fileSize"
+* "storageIdentifier" - String, as specified in prior calls
+* "fileName" - String
+* "mimeType" - String
+* "fileSize" - number of bytes
+* fixity/checksum: either:
+** "md5Hash" - String with MD5 hash value, or
+** "checksum" - Json Object with "@type" field specifying the algorithm used and "@value" field with the value from that algorithm, both Strings
+
+The allowed checksum algorithms are defined by the edu.harvard.iq.dataverse.DataFile.CheckSumType class and currently include MD5, SHA-1, SHA-256, and SHA-512
 
 .. code-block:: bash
 
