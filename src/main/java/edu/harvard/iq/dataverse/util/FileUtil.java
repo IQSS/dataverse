@@ -719,7 +719,17 @@ public class FileUtil implements java.io.Serializable  {
         return "";
     }
     
-    public static List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, String newCheckSum, SystemConfig systemConfig) throws IOException {
+    public static List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream,
+            String fileName, String suppliedContentType, String newStorageIdentifier, String newCheckSum,
+            SystemConfig systemConfig)  throws IOException {
+        ChecksumType checkSumType = DataFile.ChecksumType.MD5;
+        if (newStorageIdentifier == null) {
+            checkSumType = systemConfig.getFileFixityChecksumAlgorithm();
+        }
+        return createDataFiles(version, inputStream, fileName, suppliedContentType, newStorageIdentifier, newCheckSum, checkSumType, systemConfig);
+    }
+    
+    public static List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, String newCheckSum, ChecksumType newCheckSumType, SystemConfig systemConfig) throws IOException {
         List<DataFile> datafiles = new ArrayList<>();
 
         String warningMessage = null;
@@ -1106,12 +1116,9 @@ public class FileUtil implements java.io.Serializable  {
         if (tempFile != null) {
             newFile = tempFile.toFile();
         }
-        ChecksumType checkSumType = DataFile.ChecksumType.MD5;
-        if (newStorageIdentifier == null) {
-            checkSumType = systemConfig.getFileFixityChecksumAlgorithm();
-        }
+        
 
-        DataFile datafile = createSingleDataFile(version, newFile, newStorageIdentifier, fileName, finalType, checkSumType, newCheckSum);
+        DataFile datafile = createSingleDataFile(version, newFile, newStorageIdentifier, fileName, finalType, newCheckSumType, newCheckSum);
         File f = null;
         if (tempFile != null) {
             f = tempFile.toFile();
