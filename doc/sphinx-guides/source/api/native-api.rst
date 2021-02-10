@@ -2982,7 +2982,9 @@ Make User a SuperUser
 Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` (without the ``@`` sign) is passed. ::
 
     POST http://$SERVER/api/admin/superuser/$identifier
-    
+
+.. _delete-a-user:
+
 Delete a User
 ~~~~~~~~~~~~~
 
