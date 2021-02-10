@@ -68,7 +68,7 @@ To delete metadata for a Dataset, send a json-ld representation of the fields to
   export VERSION='1.0'
   export SERVER_URL=https://demo.dataverse.org
  
-  Example: Delete the TermsOfUseAndAccess 'restrictions' value 'No restrictions' a for the latest version using the DATASET PID
+  Example: Delete the TermsOfUseAndAccess 'restrictions' value 'No restrictions' for the latest version using the DATASET PID
 
     curl -X PUT -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/json-ld' -d '{"https://dataverse.org/schema/core#restrictions":"No restrictions"}' "$SERVER_URL/api/datasets/:persistentId/metadata/delete?persistentId=$DATASET_PID"
 
@@ -87,4 +87,3 @@ With curl, this is done by adding the following header:
 .. code-block:: bash
 
   -H 'Content-Type: application/json-ld' 
-

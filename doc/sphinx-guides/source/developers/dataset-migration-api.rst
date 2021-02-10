@@ -6,7 +6,7 @@ The Dataverse software includes several ways to add Datasets originally created 
 This experimental migration API offers an additional option with some potential advantages:
 
 * metadata can be specified using the json-ld format used in the OAI-ORE metadata export
-* existing PIDs can be maintained (currently limited to the case where the PID can be managed by the Dataverse software, e.g. where the authority and shoulder match those the sfotware is configured for)
+* existing PIDs can be maintained (currently limited to the case where the PID can be managed by the Dataverse software, e.g. where the authority and shoulder match those the software is configured for)
 * adding files can be done via the standard APIs, including using direct-upload to S3
 * the dataset can be published keeping the original publication date
 
