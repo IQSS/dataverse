@@ -732,6 +732,11 @@ public class FileUtil implements java.io.Serializable  {
     public static List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, String newCheckSum, ChecksumType newCheckSumType, SystemConfig systemConfig) throws IOException {
         List<DataFile> datafiles = new ArrayList<>();
 
+        //When there is no checksum/checksumtype being sent (normal upload, needs to be calculated), set the type to the current default
+        if(newCheckSumType == null) {
+            newCheckSumType = systemConfig.getFileFixityChecksumAlgorithm();
+        }
+
         String warningMessage = null;
 
         // save the file, in the temporary location for now: 
