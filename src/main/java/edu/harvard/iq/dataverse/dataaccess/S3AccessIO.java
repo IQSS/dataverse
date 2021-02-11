@@ -113,8 +113,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         minPartSize = getMinPartSize(driverId);
         key = storageLocation.substring(storageLocation.indexOf('/')+1);
     }
-    
-    public static String S3_IDENTIFIER_PREFIX = "s3";
 
 	//Used for tests only
     public S3AccessIO(T dvObject, DataAccessRequest req, @NotNull AmazonS3 s3client, String driverId) {

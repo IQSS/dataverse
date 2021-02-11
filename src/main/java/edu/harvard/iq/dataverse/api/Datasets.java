@@ -77,7 +77,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLComman
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
-import edu.harvard.iq.dataverse.globus.AccessToken;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
@@ -2378,7 +2377,6 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         // -------------------------------------
 
         taskIdentifier = jsonObject.getString("taskIdentifier");
-        msgt("******* (api) newTaskIdentifier: " + taskIdentifier);
 
         // -------------------------------------
         // (5) Wait until task completion
@@ -2391,11 +2389,9 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             try {
                 String basicGlobusToken = settingsSvc.getValueForKey(SettingsServiceBean.Key.BasicGlobusToken, "");
                 basicGlobusToken = "ODA0ODBhNzEtODA5ZC00ZTJhLWExNmQtY2JkMzA1NTk0ZDdhOmQvM3NFd1BVUGY0V20ra2hkSkF3NTZMWFJPaFZSTVhnRmR3TU5qM2Q3TjA9";
-                msgt("******* (api) basicGlobusToken: " + basicGlobusToken);
                 AccessToken clientTokenUser = globusServiceBean.getClientToken(basicGlobusToken);
 
                 success = globusServiceBean.getSuccessfulTransfers(clientTokenUser, taskIdentifier);
-                msgt("******* (api) success: " + success);
 
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -2433,7 +2429,6 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
             JsonArray filesJson = jsonObject.getJsonArray("files");
 
-
             // Start to add the files
             if (filesJson != null) {
                 for (JsonObject fileJson : filesJson.getValuesAs(JsonObject.class)) {
@@ -2461,20 +2456,13 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                     } else {
 
                         // calculate mimeType
-                        //logger.info(" JC Step 0 Supplied type: " + fileName ) ;
-                        //logger.info(" JC Step 1 Supplied type: " + suppliedContentType ) ;
                         String finalType = StringUtils.isBlank(suppliedContentType) ? FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT : suppliedContentType;
-                        //logger.info(" JC Step 2 finalType: " + finalType ) ;
+
                         String type = FileUtil.determineFileTypeByExtension(fileName);
-                        //logger.info(" JC Step 3 type by fileextension: " + type ) ;
+
                         if (!StringUtils.isBlank(type)) {
-                            //Use rules for deciding when to trust browser supplied type
-                            //if (FileUtil.useRecognizedType(finalType, type)) {
                             finalType = type;
-                            //logger.info(" JC Step 4 type after useRecognized function : " + finalType ) ;
-                            //}
-                            logger.info("Supplied type: " + suppliedContentType + ", finalType: " + finalType);
-                        }
+                       }
 
                         JsonPatch path = Json.createPatchBuilder().add("/mimeType", finalType).build();
                         fileJson = path.apply(fileJson);
@@ -2492,7 +2480,6 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                         //---------------------------------------
 
                         OptionalFileParams optionalFileParams = null;
-                        msgt("(api) jsonData 2: " +  fileJson.toString());
 
                         try {
                             optionalFileParams = new OptionalFileParams(fileJson.toString());
