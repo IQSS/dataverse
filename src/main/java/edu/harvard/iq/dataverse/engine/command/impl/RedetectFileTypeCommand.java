@@ -62,7 +62,8 @@ public class RedetectFileTypeCommand extends AbstractCommand<DataFile> {
             }
 
             logger.fine("target file: " + localFile);
-            String newlyDetectedContentType = FileTypeDetection.determineFileType(localFile);
+            String fileName = fileToRedetect.getLatestFileMetadata().getLabel();
+            String newlyDetectedContentType = FileTypeDetection.determineFileType(localFile, fileName);
             fileToRedetect.setContentType(newlyDetectedContentType);
         } catch (IOException ex) {
             throw new CommandException("Exception while attempting to get the bytes of the file during file type redetection: " + ex.getLocalizedMessage(), this);

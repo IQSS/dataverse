@@ -36,7 +36,7 @@ public class FileTypeDetectionTest {
     public void testDetermineFileTypeJupyterNoteboook() throws Exception {
         File file = new File("src/test/java/edu/harvard/iq/dataverse/util/irc-metrics.ipynb");
         // https://jupyter.readthedocs.io/en/latest/reference/mimetype.html
-        assertEquals("application/x-ipynb+json", FileTypeDetection.determineFileType(file));
+        assertEquals("application/x-ipynb+json", FileTypeDetection.determineFileType(file, file.getName()));
     }
 
 }
