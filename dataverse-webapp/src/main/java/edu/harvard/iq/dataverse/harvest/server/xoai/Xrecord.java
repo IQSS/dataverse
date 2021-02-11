@@ -12,8 +12,6 @@ import io.vavr.control.Either;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 import static com.lyncode.xoai.xml.XmlWriter.defaultContext;
 
@@ -83,8 +81,9 @@ public class Xrecord extends Record {
 
                 if (dataset != null && formatName != null) {
                     Either<DataverseError, String> exportedDataset =
-                            exportService.exportDatasetVersionAsString(dataset.getReleasedVersion(),
-                                                                       ExporterType.valueOf(formatName));
+                            exportService.exportDatasetVersionAsString(
+                                    dataset.getReleasedVersion(),
+                                    ExporterType.fromPrefix(formatName).orElseThrow(IllegalArgumentException::new));
 
                     if (exportedDataset.isLeft()) {
                         throw new RuntimeException(exportedDataset.getLeft().getErrorMsg());

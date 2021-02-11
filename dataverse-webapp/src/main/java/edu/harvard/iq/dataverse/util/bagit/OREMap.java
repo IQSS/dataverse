@@ -104,7 +104,7 @@ public class OREMap {
                             }
                             // which may have multiple values
                             if (!dsf.isEmpty()) {
-                                // Add context entry 
+                                // Add context entry
                                 //ToDo - also needs to recurse here?
                                 JsonLDTerm subFieldName = getTermFor(dfType, dsft);
                                 if (subFieldName.inNamespace()) {
@@ -131,12 +131,12 @@ public class OREMap {
                 }
                 // Add metadata value to aggregation, suppress array when only one value
                 JsonArray valArray = vals.build();
-                
+
                 if (!fieldsMap.containsKey(fieldName.getLabel())) {
                     fieldsMap.put(fieldName.getLabel(), Json.createArrayBuilder());
                 }
                 fieldsMap.get(fieldName.getLabel()).add((valArray.size() != 1) ? valArray : valArray.get(0));
-                
+
             }
         }
 
@@ -145,7 +145,7 @@ public class OREMap {
             aggBuilder.add(label, (valArray.size() != 1) ? valArray : valArray.get(0));
         }
 
-        
+
         // Add metadata related to the Dataset/DatasetVersion
         aggBuilder.add("@id", id)
                 .add("@type",
@@ -278,7 +278,7 @@ public class OREMap {
                 // described
                 .add("@id",
                      dataverseSiteUrl + "/api/datasets/export?exporter="
-                             + ExporterType.OAIORE.toString() + "&persistentId=" + id)
+                             + ExporterType.OAIORE.getPrefix() + "&persistentId=" + id)
                 // Add the aggregation (Dataset) itself to the map.
                 .add(JsonLDTerm.ore("describes").getLabel(),
                         aggBuilder.add(JsonLDTerm.ore("aggregates").getLabel(), aggResArrayBuilder.build())

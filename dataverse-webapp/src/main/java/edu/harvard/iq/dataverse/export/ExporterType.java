@@ -8,7 +8,7 @@ public enum ExporterType {
     DATACITE("DATACITE"),
     DCTERMS("DCTERMS"),
     DUBLINCORE("oai_dc"),
-    JSON("JSON"),
+    JSON("dataverse_json"),
     OAIDDI("oai_ddi"),
     OAIORE("OAIORE"),
     SCHEMADOTORG("SCHEMADOTORG"),
