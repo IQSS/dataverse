@@ -169,7 +169,8 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         
         if ( (getDataset().isLockedFor(DatasetLock.Reason.Workflow)&&!ctxt.permissions().isMatchingWorkflowLock(getDataset(),request.getUser().getIdentifier(),request.getWFInvocationId())) 
                 || getDataset().isLockedFor(DatasetLock.Reason.Ingest) 
-                || getDataset().isLockedFor(DatasetLock.Reason.finalizePublication)) {
+                || getDataset().isLockedFor(DatasetLock.Reason.finalizePublication)
+                || getDataset().isLockedFor(DatasetLock.Reason.EditInProgress)) {
             throw new IllegalCommandException("This dataset is locked. Reason: " 
                     + getDataset().getLocks().stream().map(l -> l.getReason().name()).collect( joining(",") )
                     + ". Please try publishing later.", this);
