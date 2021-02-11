@@ -85,6 +85,7 @@ import org.apache.commons.io.FilenameUtils;
 import com.amazonaws.AmazonServiceException;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import java.util.Arrays;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -964,13 +965,13 @@ public class FileUtil implements java.io.Serializable  {
                     // of the unzipped file.
                     logger.warning("Unzipping failed; rolling back to saving the file as is.");
                     if (warningMessage == null) {
-                        warningMessage = "Failed to unzip the file. Saving the file as is.";
+                        warningMessage = BundleUtil.getStringFromBundle("file.addreplace.warning.unzip.failed");
                     }
 
                     datafiles.clear();
                 } catch (FileExceedsMaxSizeException femsx) {
                     logger.warning("One of the unzipped files exceeds the size limit; resorting to saving the file as is. " + femsx.getMessage());
-                    warningMessage = femsx.getMessage() + "; saving the zip file as is, unzipped.";
+                    warningMessage =  BundleUtil.getStringFromBundle("file.addreplace.warning.unzip.failed.size", Arrays.asList(FileSizeChecker.bytesToHumanReadable(fileSizeLimit)));
                     datafiles.clear();
                 } finally {
                     if (unZippedIn != null) {
