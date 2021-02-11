@@ -4,7 +4,7 @@ Search API
 .. contents:: |toctitle|
     :local:
 
-The Search API supports the same searching, sorting, and faceting operations as the Dataverse web interface.
+The Search API supports the same searching, sorting, and faceting operations as the Dataverse Software's web interface.
 
 To search unpublished content, you must pass in an API token as described in the :doc:`auth` section.
 
@@ -15,7 +15,7 @@ The parameters and JSON response are partly inspired by the `GitHub Search API <
 .. _CORS: https://www.w3.org/TR/cors/
 
 
-Please note that in Dataverse 4.3 and older the "citation" field wrapped the persistent ID URL in an ``<a>`` tag but this has been changed to plaintext. If you want the old value with HTML in it, a new field called "citationHtml" can be used.
+Please note that in Dataverse Software 4.3 and older the "citation" field wrapped the persistent ID URL in an ``<a>`` tag but this has been changed to plaintext. If you want the old value with HTML in it, a new field called "citationHtml" can be used.
 
 
 Parameters
@@ -25,8 +25,8 @@ Parameters
 Name             Type     Description
 ===============  =======  ===========
 q                string   The search term or terms. Using "title:data" will search only the "title" field. "*" can be used as a wildcard either alone or adjacent to a term (i.e. "bird*"). For example, https://demo.dataverse.org/api/search?q=title:data . For a list of fields to search, please see https://github.com/IQSS/dataverse/issues/2558 (for now).
-type             string   Can be either "dataverse", "dataset", or "file". Multiple "type" parameters can be used to include multiple types (i.e. ``type=dataset&type=file``). If omitted, all types will be returned.  For example, https://demo.dataverse.org/api/search?q=*&type=dataset
-subtree          string   The identifier of the dataverse to which the search should be narrowed. The subtree of this dataverse and all its children will be searched.  Multiple "subtree" parameters can be used to include multiple Dataverses. For example, https://demo.dataverse.org/api/search?q=data&subtree=birds&subtree=cats .
+type             string   Can be either "Dataverse", "dataset", or "file". Multiple "type" parameters can be used to include multiple types (i.e. ``type=dataset&type=file``). If omitted, all types will be returned.  For example, https://demo.dataverse.org/api/search?q=*&type=dataset
+subtree          string   The identifier of the Dataverse collection to which the search should be narrowed. The subtree of this Dataverse collection and all its children will be searched.  Multiple "subtree" parameters can be used to include multiple Dataverse collections. For example, https://demo.dataverse.org/api/search?q=data&subtree=birds&subtree=cats .
 sort             string   The sort field. Supported values include "name" and "date". See example under "order".
 order            string   The order in which to sort. Can either be "asc" or "desc".  For example, https://demo.dataverse.org/api/search?q=data&sort=name&order=asc
 per_page         int      The number of results to return per request. The default is 10. The max is 1000. See :ref:`iteration example <iteration-example>`.
@@ -96,7 +96,7 @@ https://demo.dataverse.org/api/search?q=trees
                     "url":"https://demo.dataverse.org/dataverse/birds",
                     "image_url":"https://demo.dataverse.org/api/access/dvCardImage/2",
                     "identifier":"birds",
-                    "description":"A bird dataverse with some trees",
+                    "description":"A bird Dataverse collection with some trees",
                     "published_at":"2016-05-10T12:57:27Z"
                 },
                 {  
@@ -152,7 +152,7 @@ Advanced Search Examples
 
 https://demo.dataverse.org/api/search?q=finch&show_relevance=true&show_facets=true&fq=publicationDate:2016&subtree=birds
 
-In this example, ``show_relevance=true`` matches per field are shown. Available facets are shown with ``show_facets=true`` and of the facets is being used with ``fq=publicationDate:2016``. The search is being narrowed to the dataverse with the identifier "birds" with the parameter ``subtree=birds``.
+In this example, ``show_relevance=true`` matches per field are shown. Available facets are shown with ``show_facets=true`` and of the facets is being used with ``fq=publicationDate:2016``. The search is being narrowed to the Dataverse collection with the identifier "birds" with the parameter ``subtree=birds``.
 
 .. code-block:: json
 
@@ -171,13 +171,13 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
                     "url":"https://demo.dataverse.org/dataverse/finches",
                     "image_url":"https://demo.dataverse.org/api/access/dvCardImage/3",
                     "identifier":"finches",
-                    "description":"A dataverse with finches",
+                    "description":"A Dataverse collection with finches",
                     "published_at":"2016-05-10T12:57:38Z",
                     "matches":[
                         {
                             "description":{
                                 "snippets":[
-                                    "A dataverse with <span class=\"search-term-match\">finches</span>"
+                                    "A Dataverse collection with <span class=\"search-term-match\">finches</span>"
                                 ]
                             }
                         },
@@ -283,10 +283,10 @@ The above example ``fq=publicationStatus:Published`` retrieves only "RELEASED" v
                     "global_id": "doi:10.70122/FK2/GUAS41",
                     "description": "Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.",
                     "published_at": "2019-12-24T08:05:02Z",
-                    "publisher": "mdmizanur rahman Dataverse",
+                    "publisher": "mdmizanur rahman Dataverse collection",
                     "citationHtml": "Finch, Fiona, 2019, \"Darwin's Finches\", <a href=\"https://doi.org/10.70122/FK2/GUAS41\" target=\"_blank\">https://doi.org/10.70122/FK2/GUAS41</a>, Demo Dataverse, V1",
                     "identifier_of_dataverse": "rahman",
-                    "name_of_dataverse": "mdmizanur rahman Dataverse",
+                    "name_of_dataverse": "mdmizanur rahman Dataverse collection",
                     "citation": "Finch, Fiona, 2019, \"Darwin's Finches\", https://doi.org/10.70122/FK2/GUAS41, Demo Dataverse, V1",
                     "storageIdentifier": "file://10.70122/FK2/GUAS41",
                     "subjects": [
@@ -352,7 +352,7 @@ The above example ``fq=publicationStatus:Published`` retrieves only "RELEASED" v
 Date Range Search Example
 -------------------------
 
-Below is an example of searching across a date range of dataverses, datasets, and files that were published in 2018.
+Below is an example of searching across a date range of Dataverse collections, datasets, and files that were published in 2018.
 
 `https://demo.dataverse.org/api/search?q=*&per_page=1000&sort=date&order=asc&q=*&fq=dateSort:[2018-01-01T00\:00\:00Z+TO+2019-01-01T00\:00\:00Z] <https://demo.dataverse.org/api/search?q=*&per_page=1000&sort=date&order=asc&q=*&fq=dateSort:[2018-01-01T00\:00\:00Z+TO+2019-01-01T00\:00\:00Z]>`_
 

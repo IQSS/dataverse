@@ -39,7 +39,7 @@
                     <f:event type="preRenderView" listener="#{facesContext.externalContext.response.setHeader('Cache-Control', 'no-cache, no-store')}"/>
                     <o:viewParam name="editMode" value="#{DataverseUserPage.editMode}"/>
                     <f:viewParam name="redirectPage" value="#{DataverseUserPage.redirectPage}"/>
-                    <f:viewParam name="selectTab" value="#{DataverseUserPage.selectTab}"/>
+                    <o:viewParam name="selectTab" value="#{DataverseUserPage.selectTab}" default="dataRelatedToMe"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{DataverseUserPage.init}" />
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse(), (DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn'] : bundle.account))}"/>
