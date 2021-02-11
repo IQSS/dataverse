@@ -223,8 +223,9 @@ public class OptionalFileParams {
 		return mimeType;
 	}
 
-	public void setCheckSum(String checkSum) {
+	public void setCheckSum(String checkSum, ChecksumType type) {
 		this.checkSumValue = checkSum;
+		this.checkSumType = type;
 	}
 	
 	public boolean hasCheckSum() {
