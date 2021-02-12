@@ -19,6 +19,8 @@ package edu.harvard.iq.dataverse.util;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -64,7 +66,7 @@ public class SignpostingResources {
 
     /**
      * Get identifier schema for each author
-     * <p>
+     *
      * For example:
      * if author has VIAF
      * Link: <http://viaf.org/viaf/:id/>; rel="author"
