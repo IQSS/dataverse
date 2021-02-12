@@ -496,6 +496,19 @@ public class MailServiceBean implements java.io.Serializable {
                     version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner()), optionalReturnReason};
                 messageText += MessageFormat.format(pattern, paramArrayReturnedDataset);
                 return messageText;
+                
+            case WORKFLOW_SUCCESS:
+                version =  (DatasetVersion) targetObject;
+                pattern = "A workflow running on {0} (view at {1}) succeeded";
+                String[] paramArrayWorkflowSuccess = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset())};
+                messageText += MessageFormat.format(pattern, paramArrayWorkflowSuccess);
+                return messageText;
+            case WORKFLOW_FAILURE:
+                version =  (DatasetVersion) targetObject;
+                pattern = "A workflow running on {0} (view at {1}) failed";
+                String[] paramArrayWorkflowFailure = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset())};
+                messageText += MessageFormat.format(pattern, paramArrayWorkflowFailure);
+                return messageText;
             case CREATEACC:
                 String rootDataverseName = dataverseService.findRootDataverse().getName();
                 InternetAddress systemAddress = getSystemAddress();
@@ -594,6 +607,8 @@ public class MailServiceBean implements java.io.Serializable {
             case PUBLISHEDDS:
             case PUBLISHFAILED_PIDREG:
             case RETURNEDDS:
+            case WORKFLOW_SUCCESS:
+            case WORKFLOW_FAILURE:
                 return versionService.find(userNotification.getObjectId());
             case CREATEACC:
                 return userNotification.getUser();

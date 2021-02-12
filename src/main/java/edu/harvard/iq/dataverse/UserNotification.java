@@ -27,7 +27,10 @@ import javax.persistence.Transient;
 
 public class UserNotification implements Serializable {
     public enum Type {
-        ASSIGNROLE, REVOKEROLE, CREATEDV, CREATEDS, CREATEACC, SUBMITTEDDS, RETURNEDDS, PUBLISHEDDS, REQUESTFILEACCESS, GRANTFILEACCESS, REJECTFILEACCESS, FILESYSTEMIMPORT, CHECKSUMIMPORT, CHECKSUMFAIL, CONFIRMEMAIL, APIGENERATED, INGESTCOMPLETED, INGESTCOMPLETEDWITHERRORS, PUBLISHFAILED_PIDREG
+        ASSIGNROLE, REVOKEROLE, CREATEDV, CREATEDS, CREATEACC, SUBMITTEDDS, RETURNEDDS, 
+        PUBLISHEDDS, REQUESTFILEACCESS, GRANTFILEACCESS, REJECTFILEACCESS, FILESYSTEMIMPORT, 
+        CHECKSUMIMPORT, CHECKSUMFAIL, CONFIRMEMAIL, APIGENERATED, INGESTCOMPLETED, INGESTCOMPLETEDWITHERRORS, 
+        PUBLISHFAILED_PIDREG, WORKFLOW_SUCCESS, WORKFLOW_FAILURE
     };
     
     private static final long serialVersionUID = 1L;
@@ -44,6 +47,7 @@ public class UserNotification implements Serializable {
     private AuthenticatedUser requestor;
     private Timestamp sendDate;
     private boolean readNotification;
+    private boolean important; //Should be shown on the page of the associated object
     
     @Enumerated
     @Column( nullable = false )
@@ -152,5 +156,13 @@ public class UserNotification implements Serializable {
 
     public String getLocaleSendDate() {
         return DateUtil.formatDate(sendDate);
+    }
+
+    public boolean isImportant() {
+        return important;
+    }
+
+    public void setImportant(boolean important) {
+        this.important = important;
     }
 }

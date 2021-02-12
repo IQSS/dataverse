@@ -1857,6 +1857,16 @@ public class DatasetPage implements java.io.Serializable {
                 mdcLogService.logEntry(entry);
             }
 
+            List<UserNotification> notices = userNotificationService.findImportantByObject(workingVersion.getId());
+            for(UserNotification un: notices) {
+                if(un.getType()==UserNotification.Type.WORKFLOW_SUCCESS) {
+                    JsfHelper.addSuccessMessage("Workflow succeeded");
+                    
+                } else if (un.getType()==UserNotification.Type.WORKFLOW_FAILURE) {
+                    JsfHelper.addWarningMessage("Workflow failed");
+                }
+            }
+            
             if (initFull) {
                 // init the list of FileMetadatas
                 if (workingVersion.isDraft() && canUpdateDataset()) {
