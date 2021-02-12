@@ -100,7 +100,7 @@ The allowed checksum algorithms are defined by the edu.harvard.iq.dataverse.Data
   export SERVER_URL=https://demo.dataverse.org
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK27U7YBV
 
-  curl -X POST -H 'Content-Type: multipart/formm-data' "$SERVER_URL/api/datasets/:persistentId/add?persistentId=#PERSISTENT_IDENTIFIER" --upload-file jsonData.json
+  curl -X POST -H 'Content-Type: multipart/form-data' "$SERVER_URL/api/datasets/:persistentId/add?persistentId=#PERSISTENT_IDENTIFIER" --upload-file jsonData.json
   
 Note that this API call can be used independently of the others, e.g. supporting use cases in which the file already exists in S3/has been uploaded via some out-of-band method. 
 With current S3 stores the object identifier must be in the correct bucket for the store, include the PID authority/identifier of the parent dataset, and be guaranteed unique, and the supplied storage identifer must be prefaced with the Dataverse store identifier used, as with the internally generated examples above.
