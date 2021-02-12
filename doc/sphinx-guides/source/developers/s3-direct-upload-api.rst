@@ -24,7 +24,7 @@ To initiate a transfer of a file to S3, make a call to the Dataverse Server indi
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK27U7YBV
   export SIZE=1000000000
  
-  curl -H X-Dataverse-key:$API_TOKEN "$SERVER_URL/api/datasets/:persistentId/uploadurls?persistentId=$PERSISTENT_IDENTIFIER&size=$SIZE"
+  curl -H 'X-Dataverse-key:$API_TOKEN' "$SERVER_URL/api/datasets/:persistentId/uploadurls?persistentId=$PERSISTENT_IDENTIFIER&size=$SIZE"
 
 The response to this call, assuming direct uploads are enabled, will be one of two forms:
 
