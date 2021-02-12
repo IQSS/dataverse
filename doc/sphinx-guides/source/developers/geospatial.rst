@@ -5,8 +5,8 @@ Geospatial Data
 .. contents:: |toctitle|
 	:local:
 
-How Dataverse Ingests Shapefiles
---------------------------------
+How The Dataverse Software Ingests Shapefiles
+---------------------------------------------
 
 A shapefile is a set of files, often uploaded/transferred in ``.zip`` format. This set may contain up to fifteen files. A minimum of three specific files (``.shp``, ``.shx``, ``.dbf``) are needed to be a valid shapefile and a fourth file (``.prj``) is required for some applications -- or any type of meaningful visualization.
 
@@ -20,7 +20,7 @@ For ingest, four files are the minimum required:
 Ingest
 ~~~~~~
 
-When uploaded to Dataverse, the ``.zip`` is unpacked (same as all ``.zip`` files). Shapefile sets are recognized by the same base name and specific extensions. These individual files constitute a shapefile set. The first four are the minimum required (``.shp``, ``.shx``, ``.dbf``, ``.prj``)
+When uploaded to a Dataverse installation, the ``.zip`` is unpacked (same as all ``.zip`` files). Shapefile sets are recognized by the same base name and specific extensions. These individual files constitute a shapefile set. The first four are the minimum required (``.shp``, ``.shx``, ``.dbf``, ``.prj``)
 
 For example:
 
@@ -31,19 +31,19 @@ For example:
 - bicycles.sbx	(NOT required extension)
 - bicycles.sbn	(NOT required extension)
 
-Upon recognition of the four required files, Dataverse will group them as well as any other relevant files into a shapefile set. Files with these extensions will be included in the shapefile set:
+Upon recognition of the four required files, the Dataverse installation will group them as well as any other relevant files into a shapefile set. Files with these extensions will be included in the shapefile set:
 
 - Required: ``.shp``, ``.shx``, ``.dbf``, ``.prj``
 - Optional: ``.sbn``, ``.sbx``, ``.fbn``, ``.fbx``, ``.ain``, ``.aih``, ``.ixs``, ``.mxs``, ``.atx``, ``.cpg``, ``shp.xml``
 
-Then Dataverse creates a new ``.zip`` with mimetype as a shapefile. The shapefile set will persist as this new ``.zip``.
+Then the Dataverse installation creates a new ``.zip`` with mimetype as a shapefile. The shapefile set will persist as this new ``.zip``.
 
 Example
 ~~~~~~~
 
 **1a.** Original ``.zip`` contents:
 
-A file named ``bikes_and_subways.zip`` is uploaded to the Dataverse. This ``.zip`` contains the following files.
+A file named ``bikes_and_subways.zip`` is uploaded to the Dataverse installation. This ``.zip`` contains the following files.
 
 - ``bicycles.shp``  (shapefile set #1)
 - ``bicycles.shx``  (shapefile set #1)
@@ -59,9 +59,9 @@ A file named ``bikes_and_subways.zip`` is uploaded to the Dataverse. This ``.zip
 - ``subway_line.prj``  (shapefile set #2)
 - ``subway_line.dbf``  (shapefile set #2)
 
-**1b.** Dataverse unzips and re-zips files:
+**1b.** The Dataverse installation unzips and re-zips files:
 
-Upon ingest, Dataverse unpacks the file ``bikes_and_subways.zip``. Upon recognizing the shapefile sets, it groups those files together into new ``.zip`` files:
+Upon ingest, the Dataverse installation unpacks the file ``bikes_and_subways.zip``. Upon recognizing the shapefile sets, it groups those files together into new ``.zip`` files:
 
 - files making up the "bicycles" shapefile become a new ``.zip``
 - files making up the "subway_line" shapefile become a new ``.zip``
@@ -69,7 +69,7 @@ Upon ingest, Dataverse unpacks the file ``bikes_and_subways.zip``. Upon recogniz
 
 To ensure that a shapefile set remains intact, individual files such as ``bicycles.sbn`` are kept in the set -- even though they are not used for mapping.
 
-**1c.** Dataverse final file listing:
+**1c.** The Dataverse installation final file listing:
 
 - ``bicycles.zip`` (contains shapefile set #1: ``bicycles.shp``, ``bicycles.shx``, ``bicycles.prj``, ``bicycles.dbf``, ``bicycles.sbx``, ``bicycles.sbn``)
 - ``bicycles.txt``  (separate, not part of a shapefile set)

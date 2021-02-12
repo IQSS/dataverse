@@ -1678,11 +1678,12 @@ public class EditDatafilesPage implements java.io.Serializable {
                     setLabelForDeleteFilesPopup();
                     PrimeFaces.current().ajax().update("datasetForm:fileAlreadyExistsPopup");
                     PrimeFaces.current().executeScript("PF('fileAlreadyExistsPopup').show();");
+                } else {
+                    //adding back warnings in non-replace situations
+                    FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), uploadWarningMessage));                   
                 }
                 
 
-                //taking this out for now based on design feedback 7/8/2020
-               // FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), uploadWarningMessage));
 
             } else if (uploadSuccessMessage != null) {
                 FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.file.uploadWorked"), uploadSuccessMessage));
@@ -2452,20 +2453,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
         return false;
     }
-    
-    public boolean isThumbnailAvailable(FileMetadata fileMetadata) {
-        // new and optimized logic: 
-        // - check download permission here (should be cached - so it's free!)
-        // - only then ask the file service if the thumbnail is available/exists.
-        // the service itself no longer checks download permissions.  
-        if (!fileDownloadHelper.canDownloadFile(fileMetadata)) {
-            return false;
-        }
-
-        return datafileService.isThumbnailAvailable(fileMetadata.getDataFile());
-    }
-    
-
     
     private Boolean lockedFromEditsVar;
     
