@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.workflows;
 
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -22,7 +23,9 @@ public class WorkflowComment implements Serializable {
     More may be added in future releases,
     */
     public enum Type {
-        RETURN_TO_AUTHOR //, SUBMIT_FOR_REVIEW not available in this release but may be added in the future
+        RETURN_TO_AUTHOR, //, SUBMIT_FOR_REVIEW not available in this release but may be added in the future
+        WORKFLOW_SUCCESS,
+        WORKFLOW_FAILURE
     };
     
     @Id
@@ -61,6 +64,8 @@ public class WorkflowComment implements Serializable {
     @Column(nullable = false)
     private Timestamp created;
 
+    private boolean toBeShown;
+    
     // TODO: Consider support editing in the GUI some day, like GitHub issue comments (show "Edited" in the UI). We won't send a second email, however. You only get one shot to prevent spam.
 //    @Transient
 //    private Timestamp modified;
@@ -69,12 +74,11 @@ public class WorkflowComment implements Serializable {
 //    private List<UserNotification> notifications;
     public WorkflowComment(DatasetVersion version, WorkflowComment.Type type, String message, AuthenticatedUser authenticatedUser) {
         this.type = type;
-        if (this.type.equals(WorkflowComment.Type.RETURN_TO_AUTHOR)) {
-            this.datasetVersion = version;
-        }
+        this.datasetVersion = version;
         this.message = message;
         this.authenticatedUser = authenticatedUser;
         this.created = new Timestamp(new Date().getTime());
+        this.setToBeShown(true);
     }
 
     /**
@@ -121,6 +125,14 @@ public class WorkflowComment implements Serializable {
 
     public void setDatasetVersion(DatasetVersion dv) {
         datasetVersion=dv;
+    }
+
+    public boolean isToBeShown() {
+        return toBeShown;
+    }
+
+    public void setToBeShown(boolean toBeShown) {
+        this.toBeShown = toBeShown;
     }
 
 }

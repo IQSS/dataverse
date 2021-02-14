@@ -58,6 +58,8 @@ public class PendingWorkflowInvocation implements Serializable {
     @OneToOne
     DatasetLock lock;
 
+    public static final String AUTHORIZED= "authorized";
+                
     /** Empty constructor for JPA */
     public PendingWorkflowInvocation(){
         

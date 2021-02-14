@@ -54,6 +54,8 @@ import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.workflows.WorkflowComment;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -1857,13 +1859,13 @@ public class DatasetPage implements java.io.Serializable {
                 mdcLogService.logEntry(entry);
             }
 
-            List<UserNotification> notices = userNotificationService.findImportantByObject(workingVersion.getId());
-            for(UserNotification un: notices) {
-                if(un.getType()==UserNotification.Type.WORKFLOW_SUCCESS) {
-                    JsfHelper.addSuccessMessage("Workflow succeeded");
+            List<WorkflowComment> comments = workingVersion.getWorkflowComments();
+            for(WorkflowComment wfc: comments) {
+                if(wfc.getType()==WorkflowComment.Type.WORKFLOW_SUCCESS) {
+                    JsfHelper.addSuccessMessage(wfc.getMessage());
                     
-                } else if (un.getType()==UserNotification.Type.WORKFLOW_FAILURE) {
-                    JsfHelper.addWarningMessage("Workflow failed");
+                } else if (wfc.getType()==WorkflowComment.Type.WORKFLOW_FAILURE) {
+                    JsfHelper.addWarningMessage(wfc.getMessage());
                 }
             }
             

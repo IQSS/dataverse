@@ -499,13 +499,13 @@ public class MailServiceBean implements java.io.Serializable {
                 
             case WORKFLOW_SUCCESS:
                 version =  (DatasetVersion) targetObject;
-                pattern = "A workflow running on {0} (view at {1}) succeeded";
-                String[] paramArrayWorkflowSuccess = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset())};
+                pattern = BundleUtil.getStringFromBundle("notification.email.workflow.success");
+                String[] paramArrayWorkflowSuccess = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()), comment};
                 messageText += MessageFormat.format(pattern, paramArrayWorkflowSuccess);
                 return messageText;
             case WORKFLOW_FAILURE:
                 version =  (DatasetVersion) targetObject;
-                pattern = "A workflow running on {0} (view at {1}) failed";
+                pattern = BundleUtil.getStringFromBundle("notification.email.workflow.failure");
                 String[] paramArrayWorkflowFailure = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset())};
                 messageText += MessageFormat.format(pattern, paramArrayWorkflowFailure);
                 return messageText;

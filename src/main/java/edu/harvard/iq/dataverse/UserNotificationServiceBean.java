@@ -60,18 +60,6 @@ public class UserNotificationServiceBean {
         return query.getResultList();
     }
     
-    public List<UserNotification> findImportantByObject(Long id) {
-        // Note that while notifications include the db id of the object they reference,
-        // that object may be a dvobject or a datasetversion which could have colliding
-        // ids. The ambiguity is resolved as specific types of notifications always
-        // refer to the same type of object.
-        //The caller of this method needs to be aware of this and select for the types of notifications of interest.
-        
-        TypedQuery<UserNotification> query = em.createQuery("select object(o) from UserNotification as o where o.objectId =:id and o.important='true' order by o.sendDate desc", UserNotification.class);
-        query.setParameter("id", id);
-        return query.getResultList();
-    }
-    
     public Long getUnreadNotificationCountByUser(Long userId){
         if (userId == null){
             return new Long("0");

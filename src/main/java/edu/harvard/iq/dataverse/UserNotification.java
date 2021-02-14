@@ -47,7 +47,6 @@ public class UserNotification implements Serializable {
     private AuthenticatedUser requestor;
     private Timestamp sendDate;
     private boolean readNotification;
-    private boolean important; //Should be shown on the page of the associated object
     
     @Enumerated
     @Column( nullable = false )
@@ -158,11 +157,4 @@ public class UserNotification implements Serializable {
         return DateUtil.formatDate(sendDate);
     }
 
-    public boolean isImportant() {
-        return important;
-    }
-
-    public void setImportant(boolean important) {
-        this.important = important;
-    }
 }

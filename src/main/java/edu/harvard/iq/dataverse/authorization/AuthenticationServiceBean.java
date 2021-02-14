@@ -458,7 +458,11 @@ public class AuthenticationServiceBean {
                 return null;
             }
             if (pwfi.getUserId().startsWith(AuthenticatedUser.IDENTIFIER_PREFIX)) {
-                return getAuthenticatedUser(pwfi.getUserId().substring(AuthenticatedUser.IDENTIFIER_PREFIX.length()));
+                if (pwfi.getLocalData().containsKey(PendingWorkflowInvocation.AUTHORIZED)
+                        && Boolean.parseBoolean(pwfi.getLocalData().get(PendingWorkflowInvocation.AUTHORIZED))) {
+                    return getAuthenticatedUser(
+                            pwfi.getUserId().substring(AuthenticatedUser.IDENTIFIER_PREFIX.length()));
+                }
             }
         } catch (NoResultException ex) {
             return null;
