@@ -104,10 +104,6 @@
                         </div>
                     </div>
 
-                    <p:panel rendered="#{DataverseUserPage.editMode == 'FORGOT'}">
-                        <h:outputText value="#{bundle['user.lostPasswdTip']}" />
-                    </p:panel>
-
                     <p:tabView id="dataRelatedToMeView" activeIndex="#{DataverseUserPage.activeIndex}" dynamic="true" rendered="#{empty DataverseUserPage.editMode}">
                         <p:ajax event="tabChange" listener="#{DataverseUserPage.onTabChange}" update="@all"  />
                         <p:tab id="myData" title="#{bundle['user.dataRelatedToMe']}">
@@ -360,7 +356,7 @@
                                             </ui:fragment>
                                             <h:outputText value="#{item.localeSendDate}" styleClass="text-muted small"/>
                                         </div>
-                                        <div class="notification-item-cell">
+                                        <div class="notification-item-cell" jsf:rendered="#{DataverseUserPage.canRemoveNotifications()}">
                                             <p:commandLink title="#{bundle.removeNotification}" styleClass="bootstrap-button-tooltip"
                                                            action="#{DataverseUserPage.remove(item.id)}" update="@form"
                                                            >
@@ -373,7 +369,7 @@
                         </p:tab>
                         <p:tab id="accountInfo" title="#{bundle['header.user.selectTab.accountInfo']}">
                             <div class="form-horizontal" jsf:rendered="#{!empty DataverseUserPage.currentUser}">
-                                <div class="form-group" jsf:rendered="#{not DataverseUserPage.accountDetailsEditable}">
+                                <div class="form-group" jsf:rendered="#{DataverseUserPage.showShibAccountMigrateHelpMessage()}">
                                     <div class="col-sm-12">
                                         <p class="help-block">
                                             <h:outputText value="#{bundle['user.isShibUser']}" />
@@ -390,7 +386,7 @@
                                         </p>
                                     </div>
                                 </div>
-                                <div class="form-group" jsf:rendered="#{DataverseUserPage.userAuthProvider.OAuthProvider}">
+                                <div class="form-group" jsf:rendered="#{DataverseUserPage.showOAuthAccountMigrateHelpMessage()}">
                                     <div class="col-sm-12">
                                         <p class="help-block">
                                             <h:outputFormat value="#{bundle['user.helpOAuthBeforeLink']} ">

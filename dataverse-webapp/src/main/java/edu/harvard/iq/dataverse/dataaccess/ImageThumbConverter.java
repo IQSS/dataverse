@@ -21,11 +21,15 @@ package edu.harvard.iq.dataverse.dataaccess;
 
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.io.IOUtils;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
+import javax.inject.Inject;
+
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -51,25 +55,29 @@ import java.util.logging.Logger;
 /**
  * @author Leonid Andreev
  */
+@ApplicationScoped
 public class ImageThumbConverter {
-    public static String THUMBNAIL_SUFFIX = "thumb";
-    public static String WORLDMAP_IMAGE_SUFFIX = "img";
-    public static String THUMBNAIL_MIME_TYPE = "image/png";
-
-    public static int DEFAULT_CARDIMAGE_SIZE = 48;
-    public static int DEFAULT_THUMBNAIL_SIZE = 64;
-    public static int DEFAULT_PREVIEW_SIZE = 400;
-
     private static final Logger logger = Logger.getLogger(ImageThumbConverter.class.getCanonicalName());
 
+    public static final String THUMBNAIL_SUFFIX = "thumb";
+    public static final  String WORLDMAP_IMAGE_SUFFIX = "img";
+    public static final  String THUMBNAIL_MIME_TYPE = "image/png";
+
+    public static final int DEFAULT_CARDIMAGE_SIZE = 48;
+    public static final int DEFAULT_THUMBNAIL_SIZE = 64;
+    public static final int DEFAULT_PREVIEW_SIZE = 400;
+
+    @Inject
+    private SystemConfig systemConfig;
+    
     public ImageThumbConverter() {
     }
 
-    public static boolean isThumbnailAvailable(DataFile file) {
+    public boolean isThumbnailAvailable(DataFile file) {
         return isThumbnailAvailable(file, DEFAULT_THUMBNAIL_SIZE);
     }
 
-    public static boolean isThumbnailAvailable(DataFile file, int size) {
+    public boolean isThumbnailAvailable(DataFile file, int size) {
 
         try {
 
@@ -81,11 +89,7 @@ public class ImageThumbConverter {
 
     }
 
-    private static boolean isThumbnailAvailable(StorageIO<DataFile> storageIO, int size) {
-
-        if (storageIO == null || storageIO.getDvObject() == null) {
-            return false;
-        }
+    private boolean isThumbnailAvailable(StorageIO<DataFile> storageIO, int size) {
 
         DataFile file = storageIO.getDataFile();
 
@@ -130,7 +134,7 @@ public class ImageThumbConverter {
     // Note that this method is mainly used by the data access API methods. 
     // Whenever a page needs a thumbnail, we prefer to rely on the Base64
     // string version.
-    public static InputStreamIO getImageThumbnailAsInputStream(StorageIO<DataFile> storageIO, int size) {
+    public InputStreamIO getImageThumbnailAsInputStream(StorageIO<DataFile> storageIO, int size) {
 
         if (!isThumbnailAvailable(storageIO, size)) {
             return null;
@@ -170,7 +174,7 @@ public class ImageThumbConverter {
         }
     }
 
-    private static boolean generatePDFThumbnail(StorageIO<DataFile> storageIO, int size) {
+    private boolean generatePDFThumbnail(StorageIO<DataFile> storageIO, int size) {
         if (isPdfFileOverSizeLimit(storageIO.getDataFile().getFilesize())) {
             logger.fine("Image file too large (" + storageIO.getDataFile().getFilesize() + " bytes) - skipping");
             return false;
@@ -257,7 +261,7 @@ public class ImageThumbConverter {
         return true;
     }
 
-    private static boolean generateImageThumbnail(StorageIO<DataFile> storageIO, int size) {
+    private boolean generateImageThumbnail(StorageIO<DataFile> storageIO, int size) {
 
         if (isImageOverSizeLimit(storageIO.getDataFile().getFilesize())) {
             logger.fine("Image file too large - skipping");
@@ -285,7 +289,7 @@ public class ImageThumbConverter {
      * Also note that it works the exact same way for tabular-mapped-as-worldmap
      * files as well.
      */
-    private static boolean generateWorldMapThumbnail(StorageIO<DataFile> storageIO, int size) {
+    private boolean generateWorldMapThumbnail(StorageIO<DataFile> storageIO, int size) {
 
         InputStream worldMapImageInputStream = null;
 
@@ -322,7 +326,7 @@ public class ImageThumbConverter {
      * This is the actual workhorse method that does the rescaling of the full
      * size image:
      */
-    private static boolean generateImageThumbnailFromInputStream(StorageIO<DataFile> storageIO, int size, InputStream inputStream) {
+    private boolean generateImageThumbnailFromInputStream(StorageIO<DataFile> storageIO, int size, InputStream inputStream) {
 
         BufferedImage fullSizeImage;
 
@@ -400,7 +404,7 @@ public class ImageThumbConverter {
 
     }
 
-    private static boolean isThumbnailCached(StorageIO<DataFile> storageIO, int size) {
+    private boolean isThumbnailCached(StorageIO<DataFile> storageIO, int size) {
         boolean cached;
         try {
             cached = storageIO.isAuxObjectCached(THUMBNAIL_SUFFIX + size);
@@ -424,7 +428,7 @@ public class ImageThumbConverter {
      * "data:image/png;base64," but it is not suitable for returning a
      * downloadable image via an API call.
      */
-    public static String getImageThumbnailAsBase64(DataFile file, int size) {
+    public String getImageThumbnailAsBase64(DataFile file, int size) {
 
         logger.fine("entering getImageThumbnailAsBase64, size " + size + ", for " + file.getStorageIdentifier());
 
@@ -441,10 +445,6 @@ public class ImageThumbConverter {
             storageIO = DataAccess.dataAccess().getStorageIO(file);
         } catch (Exception ioEx) {
             logger.fine("Caught an exception while trying to obtain a thumbnail as Base64 string - could not open StorageIO on the datafile.");
-            return null;
-        }
-
-        if (storageIO == null) {
             return null;
         }
 
@@ -503,7 +503,7 @@ public class ImageThumbConverter {
 
     }
 
-    private static String getImageAsBase64FromInputStream(InputStream inputStream) { //, int thumbSize) {
+    private String getImageAsBase64FromInputStream(InputStream inputStream) { //, int thumbSize) {
         try {
             if (inputStream != null) {
 
@@ -551,7 +551,7 @@ public class ImageThumbConverter {
      * a File; it's used for generating Dataverse and Dataset thumbnails
      * from usr-uploaded images (i.e., from files not associated with datafiles)
      */
-    public static String getImageAsBase64FromFile(File imageFile) {
+    public String getImageAsBase64FromFile(File imageFile) {
         InputStream imageInputStream = null;
         try {
 
@@ -582,7 +582,7 @@ public class ImageThumbConverter {
      * datafiles, etc.
      *
      */
-    public static String generateImageThumbnailFromFile(String fileLocation, int size) {
+    public String generateImageThumbnailFromFile(String fileLocation, int size) {
 
         String thumbFileLocation = fileLocation + ".thumb" + size;
 
@@ -593,13 +593,7 @@ public class ImageThumbConverter {
 
         // if not, let's attempt to generate the thumb:
         // (but only if the size is below the limit, or there is no limit...
-        long fileSize;
-
-        try {
-            fileSize = new File(fileLocation).length();
-        } catch (Exception ex) {
-            fileSize = 0;
-        }
+        long fileSize = new File(fileLocation).length();
 
         if (isImageOverSizeLimit(fileSize)) {
             return null;
@@ -637,7 +631,7 @@ public class ImageThumbConverter {
      * Used by the DatasetWidgetsPage, to rescale the uploaded dataset logo.
      *
      */
-    public static String generateImageThumbnailFromFileAsBase64(File file, int size) {
+    public String generateImageThumbnailFromFileAsBase64(File file, int size) {
         String thumbnailFileLocation = generateImageThumbnailFromFile(file.getAbsolutePath(), size);
 
         if (thumbnailFileLocation != null) {
@@ -652,7 +646,7 @@ public class ImageThumbConverter {
     // Public version of the rescaleImage() method; it takes the location of the output
     // file as a string argument. This method is used by external utilities for 
     // rescaling the non-datafile Dataverse and Dataset logos. 
-    public static String rescaleImage(BufferedImage fullSizeImage, int width, int height, int size, String fileLocation) {
+    public String rescaleImage(BufferedImage fullSizeImage, int width, int height, int size, String fileLocation) {
         String outputLocation = fileLocation + "." + THUMBNAIL_SUFFIX + size;
         File outputFile = new File(outputLocation);
         OutputStream outputFileStream = null;
@@ -676,7 +670,7 @@ public class ImageThumbConverter {
         return outputLocation;
     }
 
-    private static void rescaleImage(BufferedImage fullSizeImage, int width, int height, int size, OutputStream outputStream) throws IOException {
+    private void rescaleImage(BufferedImage fullSizeImage, int width, int height, int size, OutputStream outputStream) throws IOException {
 
         double scaleFactor = 0.0;
         int thumbHeight = size;
@@ -752,7 +746,7 @@ public class ImageThumbConverter {
         }
     }
 
-    public static String generatePDFThumbnailFromFile(String fileLocation, int size) {
+    public String generatePDFThumbnailFromFile(String fileLocation, int size) {
         logger.fine("entering generatePDFThumb");
 
         String thumbFileLocation = fileLocation + ".thumb" + size;
@@ -762,38 +756,9 @@ public class ImageThumbConverter {
             return thumbFileLocation;
         }
 
-        // it it doesn't exist yet, let's attempt to generate it:
-        long sizeLimit = getThumbnailSizeLimitPDF();
-
-        /*
-         * sizeLimit set to -1 means that generation of thumbnails on the fly
-         * is disabled:
-         */
-        logger.fine("pdf size limit: " + sizeLimit);
-
-        if (sizeLimit < 0) {
-            logger.fine("returning null!");
+        long fileSize = new File(fileLocation).length();
+        if (isPdfFileOverSizeLimit(fileSize)) {
             return null;
-        }
-
-        /*
-         * sizeLimit set to 0 means no limit - generate thumbnails on the fly
-         * for all files, regardless of size.
-         */
-        if (sizeLimit > 0) {
-            long fileSize = 0;
-
-            try {
-                fileSize = new File(fileLocation).length();
-            } catch (Exception ex) {
-                // 
-            }
-
-            if (fileSize == 0 || fileSize > sizeLimit) {
-                logger.fine("file size: " + fileSize + ", skipping.");
-                // this file is too large, exiting.
-                return null;
-            }
         }
 
         String imageMagickExec = System.getProperty("dataverse.path.imagemagick.convert");
@@ -881,12 +846,12 @@ public class ImageThumbConverter {
         String thumbFileLocation = fileLocation + ".thumb" + size;
         return new File(thumbFileLocation).exists();
     }*/
-    private static String runImageMagick(String imageMagickExec, String fileLocation, int size, String format) {
+    private String runImageMagick(String imageMagickExec, String fileLocation, int size, String format) {
         String thumbFileLocation = fileLocation + ".thumb" + size;
         return runImageMagick(imageMagickExec, fileLocation, thumbFileLocation, size, format);
     }
 
-    private static String runImageMagick(String imageMagickExec, String fileLocation, String thumbFileLocation, int size, String format) {
+    private String runImageMagick(String imageMagickExec, String fileLocation, String thumbFileLocation, int size, String format) {
         String imageMagickCmd = null;
 
         if ("pdf".equals(format)) {
@@ -914,72 +879,31 @@ public class ImageThumbConverter {
         return null;
     }
 
-    private static boolean isImageOverSizeLimit(long fileSize) {
-        return isFileOverSizeLimit("Image", fileSize);
-    }
-
-    private static boolean isPdfFileOverSizeLimit(long fileSize) {
-        return isFileOverSizeLimit("PDF", fileSize);
-    }
-
-    private static boolean isFileOverSizeLimit(String fileType, long fileSize) {
-        long sizeLimit = getThumbnailSizeLimit(fileType);
-
-        /*
-         * sizeLimit set to -1 means that generation of thumbnails on the fly
-         * is disabled:
-         */
-        if (sizeLimit < 0) {
+    private boolean isImageOverSizeLimit(long fileSize) {
+        if (systemConfig.isThumbnailGenerationDisabledForImages()) {
             return true;
         }
-
-        /*
-         * sizeLimit set to 0 means no limit - generate thumbnails on the fly
-         * for all files, regardless of size.
-         */
-        if (sizeLimit == 0) {
+        if (systemConfig.getThumbnailSizeLimitImage() == 0) {
             return false;
         }
-
-        // this is a broken file of size 0, or
-        // this file is too large - no thumbnail:
-        return fileSize == 0 || fileSize > sizeLimit;
-
+        return fileSize == 0 || fileSize > systemConfig.getThumbnailSizeLimitImage();
     }
 
-    private static long getThumbnailSizeLimitPDF() {
-        return getThumbnailSizeLimit("PDF");
+    private boolean isPdfFileOverSizeLimit(long fileSize) {
+        if (systemConfig.isThumbnailGenerationDisabledForPDF()) {
+            return true;
+        }
+        if (systemConfig.getThumbnailSizeLimitPDF() == 0) {
+            return false;
+        }
+        return fileSize == 0 || fileSize > systemConfig.getThumbnailSizeLimitPDF();
     }
 
-    private static long getThumbnailSizeLimit(String type) {
-        String option = null;
-        if ("Image".equals(type)) {
-            option = System.getProperty("dataverse.dataAccess.thumbnail.image.limit");
-        } else if ("PDF".equals(type)) {
-            option = System.getProperty("dataverse.dataAccess.thumbnail.pdf.limit");
-        }
-        Long limit = null;
-
-        if (option != null && !option.equals("")) {
-            try {
-                limit = new Long(option);
-            } catch (NumberFormatException nfe) {
-                limit = null;
-            }
-        }
-
-        if (limit != null) {
-            return limit.longValue();
-        }
-
-        return 0;
-    }
-
-    private static boolean isImageMagickInstalled() {
+    private boolean isImageMagickInstalled() {
         return findImageMagickConvert() != null;
     }
 
-    private static String findImageMagickConvert() {
+    private String findImageMagickConvert() {
         String imageMagickExec = System.getProperty("dataverse.path.imagemagick.convert");
 
         if (imageMagickExec != null) {

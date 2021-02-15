@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJB;
@@ -62,6 +63,9 @@ public class DashboardDatamovePage implements Serializable {
 
     @Inject
     private SettingsWrapper settings;
+    
+    @Inject
+    private SystemConfig systemConfig;
 
     private boolean forceMove = false;
 
@@ -102,7 +106,7 @@ public class DashboardDatamovePage implements Serializable {
 
     public String init() {
         User user = session.getUser();
-        if (user == null || !user.isAuthenticated() || !user.isSuperuser()) {
+        if (!user.isSuperuser() || systemConfig.isReadonlyMode()) {
             return permissionsWrapper.notAuthorized();
         }
         return StringUtils.EMPTY;

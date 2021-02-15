@@ -158,9 +158,10 @@ public class Access extends AbstractApiBean {
     private FilePermissionsService filePermissionsService;
     @Inject
     private EmbargoAccessService embargoAccessService;
-
     @Inject
     private WholeDatasetDownloadLogger wholeDatasetDownloadLogger;
+    @Inject
+    private ImageThumbConverter imageThumbConverter;
 
     private static final String API_KEY_HEADER = "X-Dataverse-key";
 
@@ -697,7 +698,7 @@ public class Access extends AbstractApiBean {
                         || df.isImage()
                         || "application/zipped-shapefile".equalsIgnoreCase(df.getContentType())) {
 
-                    thumbnailDataAccess = ImageThumbConverter.getImageThumbnailAsInputStream(dataAccess, 48);
+                    thumbnailDataAccess = imageThumbConverter.getImageThumbnailAsInputStream(dataAccess, 48);
                     if (thumbnailDataAccess != null && thumbnailDataAccess.getInputStream() != null) {
                         return thumbnailDataAccess.getInputStream();
                     }
@@ -739,7 +740,7 @@ public class Access extends AbstractApiBean {
                     StorageIO<DataFile> dataAccess = DataAccess.dataAccess().getStorageIO(logoDataFile);
                     if (dataAccess != null) { // && dataAccess.isLocalFile()) {
                         dataAccess.open();
-                        thumbnailDataAccess = ImageThumbConverter.getImageThumbnailAsInputStream(dataAccess, 48);
+                        thumbnailDataAccess = imageThumbConverter.getImageThumbnailAsInputStream(dataAccess, 48);
                     }
                     if (thumbnailDataAccess != null && thumbnailDataAccess.getInputStream() != null) {
                         return thumbnailDataAccess.getInputStream();
@@ -790,7 +791,7 @@ public class Access extends AbstractApiBean {
 
                 try {
                     if (dataverseLogoFile.exists()) {
-                        logoThumbNailPath = ImageThumbConverter.generateImageThumbnailFromFile(dataverseLogoFile.getAbsolutePath(), 48);
+                        logoThumbNailPath = imageThumbConverter.generateImageThumbnailFromFile(dataverseLogoFile.getAbsolutePath(), 48);
                         if (logoThumbNailPath != null) {
                             in = new FileInputStream(logoThumbNailPath);
                         }

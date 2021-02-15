@@ -1,10 +1,7 @@
 package edu.harvard.iq.dataverse;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.GroupUtil;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -29,12 +26,15 @@ import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -45,8 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static edu.harvard.iq.dataverse.engine.command.CommandHelper.CH;
@@ -63,47 +61,46 @@ import static java.util.stream.Collectors.toList;
 @Stateless
 public class PermissionServiceBean {
 
-    private static final Logger logger = Logger.getLogger(PermissionServiceBean.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(PermissionServiceBean.class);
 
     private static final Set<Permission> PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY
             = EnumSet.copyOf(Arrays.asList(Permission.values()).stream()
                                      .filter(Permission::requiresAuthenticatedUser)
-                                     .collect(Collectors.toList()));
+                                     .collect(toList()));
+
+    private static final Set<Permission> WRITE_PERMISSIONS
+            = EnumSet.copyOf(Arrays.asList(Permission.values()).stream()
+                    .filter(Permission::isRequiresWrite)
+                    .collect(toList()));
 
     @EJB
-    BuiltinUserServiceBean userService;
+    private DataverseRoleServiceBean roleService;
 
     @EJB
-    DataverseRoleServiceBean roleService;
+    private RoleAssigneeServiceBean roleAssigneeService;
 
     @EJB
-    RoleAssigneeServiceBean roleAssigneeService;
+    private DataverseDao dataverseDao;
 
     @EJB
-    DataverseDao dataverseDao;
-
-    @EJB
-    DvObjectServiceBean dvObjectServiceBean;
+    private DvObjectServiceBean dvObjectServiceBean;
 
     @PersistenceContext
-    EntityManager em;
+    private EntityManager em;
 
     @EJB
-    GroupServiceBean groupService;
+    private GroupServiceBean groupService;
 
     @EJB
-    DataverseRoleServiceBean dataverseRoleServiceBean;
-
-    @EJB
-    SystemConfig systemConfig;
+    private SystemConfig systemConfig;
 
     /**
      * A request-level permission query (e.g includes IP ras).
      */
     public class RequestPermissionQuery {
 
-        final DvObject subject;
-        final DataverseRequest request;
+        private final DvObject subject;
+        private final DataverseRequest request;
 
         private RequestPermissionQuery(DvObject subject, DataverseRequest request) {
             this.subject = subject;
@@ -144,7 +141,7 @@ public class PermissionServiceBean {
         public boolean canIssue(Class<? extends Command> aCmdClass) {
             Map<String, Set<Permission>> required = CH.permissionsRequired(aCmdClass);
             if (required.isEmpty() || required.get("") == null) {
-                logger.fine("IsUserAllowedOn: empty-true");
+                logger.debug("IsUserAllowedOn: empty-true");
                 return true;
             } else {
                 Set<Permission> requiredPermissionSet = required.get("");
@@ -163,7 +160,7 @@ public class PermissionServiceBean {
         public boolean canIssue(Command<?> aCmd) {
             Map<String, Set<Permission>> required = aCmd.getRequiredPermissions();
             if (required.isEmpty() || required.get("") == null) {
-                logger.fine("IsUserAllowedOn: empty-true");
+                logger.debug("IsUserAllowedOn: empty-true");
                 return true;
             } else {
                 Set<Permission> requiredPermissionSet = required.get("");
@@ -178,8 +175,8 @@ public class PermissionServiceBean {
      */
     public class StaticPermissionQuery {
 
-        final DvObject subject;
-        final RoleAssignee user;
+        private final DvObject subject;
+        private final RoleAssignee user;
 
         private StaticPermissionQuery(RoleAssignee user, DvObject subject) {
             this.subject = subject;
@@ -188,10 +185,6 @@ public class PermissionServiceBean {
 
         public boolean has(Permission p) {
             return hasPermissionsFor(user, subject, EnumSet.of(p));
-        }
-
-        public boolean has(String pName) {
-            return has(Permission.valueOf(pName));
         }
 
     }
@@ -233,7 +226,7 @@ public class PermissionServiceBean {
         Set<DvObject> parents = getPermissionAncestors(dvo);
         Set<RoleAssignee> ras = new HashSet<>(groupService.groupsFor(req));
         ras.add(user);
-        List<RoleAssignment> parentsAsignments = roleService.directRoleAssignments(ras, parents);
+        List<RoleAssignment> parentsAsignments = roleService.directRoleAssignmentsByAssigneesAndDvObjects(ras, parents);
 
         for (RoleAssignment asmnt : parentsAsignments) {
             required.removeAll(asmnt.getRole().permissions());
@@ -245,7 +238,7 @@ public class PermissionServiceBean {
 
         // Looking at each child at a time now.
         // 1. Map childs to permissions
-        List<RoleAssignment> childrenAssignments = roleService.directRoleAssignments(ras,
+        List<RoleAssignment> childrenAssignments = roleService.directRoleAssignmentsByAssigneesAndDvObjects(ras,
                                                                                      includeReleased ? children.stream().filter(child ->
                                                                                                                                         (!child.isReleased())).collect(toList()) : children);
 
@@ -275,6 +268,9 @@ public class PermissionServiceBean {
     }
 
     private boolean hasPermissionsFor(DataverseRequest req, DvObject dvo, Set<Permission> required) {
+        if (systemConfig.isReadonlyMode() && required.stream().anyMatch(WRITE_PERMISSIONS::contains)) {
+            return false;
+        }
         User user = req.getUser();
         if (user.isSuperuser()) {
             return true;
@@ -292,6 +288,10 @@ public class PermissionServiceBean {
     }
 
     private boolean hasPermissionsFor(RoleAssignee ra, DvObject dvo, Set<Permission> required) {
+        if (systemConfig.isReadonlyMode() && required.stream().anyMatch(WRITE_PERMISSIONS::contains)) {
+            return false;
+        }
+
         if (ra instanceof User) {
             User user = (User) ra;
             if (user.isSuperuser()) {
@@ -331,6 +331,11 @@ public class PermissionServiceBean {
      */
     public Set<Permission> permissionsFor(DataverseRequest req, DvObject dvo) {
         if (req.getUser().isSuperuser()) {
+            if (systemConfig.isReadonlyMode()) {
+              Set<Permission> readonlyPermissions = EnumSet.allOf(Permission.class);
+              readonlyPermissions.removeAll(WRITE_PERMISSIONS);
+              return readonlyPermissions;
+            }
             return EnumSet.allOf(Permission.class);
         }
 
@@ -341,6 +346,9 @@ public class PermissionServiceBean {
         ras.add(req.getUser());
         addGroupPermissionsFor(ras, dvo, permissions);
 
+        if (systemConfig.isReadonlyMode()) {
+            permissions.removeAll(WRITE_PERMISSIONS);
+        }
         if (!req.getUser().isAuthenticated()) {
             permissions.removeAll(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY);
         }
@@ -408,36 +416,37 @@ public class PermissionServiceBean {
         return assignmentsFor(Collections.singleton(ra), d);
     }
 
-    public Set<RoleAssignment> assignmentsFor(Set<RoleAssignee> ras, DvObject d) {
+    private Set<RoleAssignment> assignmentsFor(Set<RoleAssignee> ras, DvObject d) {
         Set<DvObject> permAncestors = getPermissionAncestors(d);
-        return new HashSet<>(roleService.directRoleAssignments(ras, permAncestors));
+        return new HashSet<>(roleService.directRoleAssignmentsByAssigneesAndDvObjects(ras, permAncestors));
     }
 
     private Set<DvObject> getPermissionAncestors(DvObject d) {
         Set<DvObject> ancestors = new HashSet<>();
-        while (d != null) {
-            ancestors.add(d);
-            if (d instanceof Dataverse && d.isEffectivelyPermissionRoot()) {
+        DvObject currentDvObject = d;
+        while (currentDvObject != null) {
+            ancestors.add(currentDvObject);
+            if (currentDvObject instanceof Dataverse && currentDvObject.isEffectivelyPermissionRoot()) {
                 return ancestors;
-            } else {
-                d = d.getOwner();
             }
+            
+            currentDvObject = currentDvObject.getOwner();
         }
         return ancestors;
     }
 
-    public boolean isUserAllowedOn(RoleAssignee u, Command<?> command, DvObject dvo) {
+    public boolean isUserAllowedOn(User user, Command<?> command, DvObject dvo) {
         Map<String, Set<Permission>> required = command.getRequiredPermissions();
-        return isUserAllowedOn(u, required, dvo);
+        return isUserAllowedOn(user, required, dvo);
     }
 
-    private boolean isUserAllowedOn(RoleAssignee u, Map<String, Set<Permission>> required, DvObject dvo) {
+    private boolean isUserAllowedOn(User user, Map<String, Set<Permission>> required, DvObject dvo) {
         if (required.isEmpty() || required.get("") == null) {
-            logger.fine("IsUserAllowedOn: empty-true");
+            logger.debug("IsUserAllowedOn: empty-true");
             return true;
         } else {
             Set<Permission> requiredPermissionSet = required.get("");
-            return hasPermissionsFor(u, dvo, requiredPermissionSet);
+            return hasPermissionsFor(user, dvo, requiredPermissionSet);
         }
     }
 
@@ -473,7 +482,7 @@ public class PermissionServiceBean {
          * query?
          */
         String query = "SELECT id FROM dvobject WHERE dtype = 'Dataverse' and id in (select definitionpoint_id from roleassignment where assigneeidentifier in (" + identifiers + "));";
-        logger.log(Level.FINE, "query: {0}", query);
+        logger.debug("query: {}", query);
         Query nativeQuery = em.createNativeQuery(query);
         List<Integer> dataverseIdsToCheck = nativeQuery.getResultList();
         List<Dataverse> dataversesUserHasPermissionOn = new LinkedList<>();
@@ -564,7 +573,7 @@ public class PermissionServiceBean {
 
     public boolean isUserAdminForDataverse(User user, Dataverse dataverse) {
 
-        List<RoleAssignment> userRolesForDataverse = dataverseRoleServiceBean.directRoleAssignments(user, dataverse);
+        List<RoleAssignment> userRolesForDataverse = roleService.directRoleAssignments(user, dataverse);
 
         Optional<RoleAssignment> userAdminRole = userRolesForDataverse.stream()
                 .filter(roleAssignment -> roleAssignment.getRole().getAlias().equals(BuiltInRole.ADMIN.getAlias()))
@@ -576,6 +585,9 @@ public class PermissionServiceBean {
     public boolean isUserCanEditDataverseTextMessagesAndBanners(User user, Long dataverseId) {
 
         if (dataverseId == null) {
+            return false;
+        }
+        if (systemConfig.isReadonlyMode()) {
             return false;
         }
         Dataverse dataverse = dataverseDao.find(dataverseId);

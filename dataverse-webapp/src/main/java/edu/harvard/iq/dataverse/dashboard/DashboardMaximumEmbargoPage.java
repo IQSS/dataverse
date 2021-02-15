@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
 import javax.faces.view.ViewScoped;
@@ -23,6 +24,7 @@ public class DashboardMaximumEmbargoPage implements Serializable {
     private DataverseSession session;
     private PermissionsWrapper permissionsWrapper;
     private DataverseDao dataverseDao;
+    private SystemConfig systemConfig;
 
     private boolean isMaximumEmbargoSet;
     private int maximumEmbargoLength;
@@ -35,11 +37,13 @@ public class DashboardMaximumEmbargoPage implements Serializable {
 
     @Inject
     public DashboardMaximumEmbargoPage(SettingsServiceBean settingsService, DataverseSession session,
-                                       PermissionsWrapper permissionsWrapper, DataverseDao dataverseDao) {
+                                       PermissionsWrapper permissionsWrapper, DataverseDao dataverseDao,
+                                       SystemConfig systemConfig) {
         this.settingsService = settingsService;
         this.session = session;
         this.permissionsWrapper = permissionsWrapper;
         this.dataverseDao = dataverseDao;
+        this.systemConfig = systemConfig;
     }
 
     // -------------------- GETTERS --------------------
@@ -54,7 +58,7 @@ public class DashboardMaximumEmbargoPage implements Serializable {
 
     // -------------------- LOGIC --------------------
     public String init() {
-        if (!session.getUser().isSuperuser()) {
+        if (!session.getUser().isSuperuser() || systemConfig.isReadonlyMode()) {
             return permissionsWrapper.notAuthorized();
         }
 

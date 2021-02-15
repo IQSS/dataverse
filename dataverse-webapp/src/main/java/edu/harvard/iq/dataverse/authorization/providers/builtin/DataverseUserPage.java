@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.consent.ConsentDto;
 import edu.harvard.iq.dataverse.consent.ConsentService;
@@ -97,7 +98,7 @@ public class DataverseUserPage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DataverseUserPage.class.getCanonicalName());
 
     public enum EditMode {
-        CREATE, EDIT, CHANGE_PASSWORD, FORGOT
+        CREATE, EDIT, CHANGE_PASSWORD
     }
 
     @Inject
@@ -172,7 +173,7 @@ public class DataverseUserPage implements java.io.Serializable {
 
 
         // prevent creating a user if signup not allowed.
-        boolean signupAllowed = settingsService.isTrueForKey(SettingsServiceBean.Key.AllowSignUp);
+        boolean signupAllowed = systemConfig.isSignupAllowed();
 
         if (editMode == EditMode.CREATE && !signupAllowed) {
             return "/403.xhtml";
@@ -191,38 +192,45 @@ public class DataverseUserPage implements java.io.Serializable {
             }
         }
 
-        if (isUserAuthenticated()) {
-            setCurrentUser((AuthenticatedUser) session.getUser());
-            userAuthProvider = authenticationService.lookupProvider(currentUser);
-            notificationsList = userNotificationDao.findByUser(currentUser.getId());
-            preferredNotificationsLanguage = currentUser.getNotificationsLanguage();
-
-            switch (selectTab) {
-                case "notifications":
-                    activeIndex = 1;
-                    displayNotification();
-                    break;
-                case "dataRelatedToMe":
-                    mydatapage.init();
-                    break;
-                // case "groupsRoles":
-                // activeIndex = 2;
-                // break;
-                case "accountInfo":
-                    activeIndex = 2;
-                    // activeIndex = 3;
-                    break;
-                case "apiTokenTab":
-                    activeIndex = 3;
-                    break;
-                default:
-                    activeIndex = 0;
-                    break;
-            }
-
-        } else {
+        if (!isUserAuthenticated()) {
             return permissionsWrapper.notAuthorized();
         }
+
+        setCurrentUser((AuthenticatedUser) session.getUser());
+        userAuthProvider = authenticationService.lookupProvider(currentUser);
+        notificationsList = userNotificationDao.findByUser(currentUser.getId());
+        preferredNotificationsLanguage = currentUser.getNotificationsLanguage();
+
+        if (editMode == EditMode.EDIT && !isAccountDetailsEditable()) {
+            return permissionsWrapper.notAuthorized();
+        }
+        if (editMode == EditMode.CHANGE_PASSWORD && !isPasswordEditable()) {
+            return permissionsWrapper.notAuthorized();
+        }
+
+        switch (selectTab) {
+        case "notifications":
+            activeIndex = 1;
+            displayNotification();
+            break;
+        case "dataRelatedToMe":
+            mydatapage.init();
+            break;
+            // case "groupsRoles":
+            // activeIndex = 2;
+            // break;
+        case "accountInfo":
+            activeIndex = 2;
+            // activeIndex = 3;
+            break;
+        case "apiTokenTab":
+            activeIndex = 3;
+            break;
+        default:
+            activeIndex = 0;
+            break;
+        }
+
 
         return "";
     }
@@ -237,10 +245,6 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public void changePassword(ActionEvent e) {
         editMode = EditMode.CHANGE_PASSWORD;
-    }
-
-    public void forgotPassword(ActionEvent e) {
-        editMode = EditMode.FORGOT;
     }
 
     public void validateUserName(FacesContext context, UIComponent toValidate, Object value) {
@@ -387,9 +391,6 @@ public class DataverseUserPage implements java.io.Serializable {
                 return null;
             }
 
-            // The Authenticated User was just created via the UI, add an initial login timestamp
-            au = userService.updateLastLogin(au);
-
             // Authenticated user registered. Save the new bulitin, and log in.
             builtinUserService.save(builtinUser);
             session.setUser(au);
@@ -470,6 +471,10 @@ public class DataverseUserPage implements java.io.Serializable {
 
         editMode = null;
         return null;
+    }
+
+    public boolean canRemoveNotifications() {
+        return !systemConfig.isReadonlyMode();
     }
 
     public String remove(Long notificationId) {
@@ -585,7 +590,7 @@ public class DataverseUserPage implements java.io.Serializable {
             }
 
             userNotification.setDisplayAsRead(userNotification.isReadNotification());
-            if (userNotification.isReadNotification() == false) {
+            if (!userNotification.isReadNotification() && !systemConfig.isReadonlyMode()) {
                 userNotification.setReadNotification(true);
                 userNotificationDao.merge(userNotification);
             }
@@ -616,6 +621,9 @@ public class DataverseUserPage implements java.io.Serializable {
      * @return
      */
     public boolean showVerifyEmailButton() {
+        if (systemConfig.isReadonlyMode()) {
+            return false;
+        }
         final Timestamp emailConfirmed = currentUser.getEmailConfirmed();
         final ConfirmEmailData confirmedDate = confirmEmailService.findSingleConfirmEmailDataByUser(currentUser);
         return (!getUserAuthProvider().isEmailVerified())
@@ -656,11 +664,24 @@ public class DataverseUserPage implements java.io.Serializable {
 
 
     public boolean isPasswordEditable() {
+        if (systemConfig.isReadonlyMode()) {
+            return false;
+        }
         return getUserAuthProvider().isPasswordUpdateAllowed();
     }
 
     public boolean isAccountDetailsEditable() {
+        if (systemConfig.isReadonlyMode()) {
+            return false;
+        }
         return getUserAuthProvider().isUserInfoUpdateAllowed();
+    }
+
+    public boolean showShibAccountMigrateHelpMessage() {
+        return getUserAuthProvider() instanceof ShibAuthenticationProvider;
+    }
+    public boolean showOAuthAccountMigrateHelpMessage() {
+        return getUserAuthProvider().isOAuthProvider();
     }
 
     public AuthenticatedUserDisplayInfo getUserDisplayInfo() {

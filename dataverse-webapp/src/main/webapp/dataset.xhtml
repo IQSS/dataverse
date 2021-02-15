@@ -293,7 +293,7 @@
                                     <!-- END: Publish/Submit for Review/Return to Author Button Group -->
     
                                     <p:commandLink
-                                            rendered="#{dataverseSession.user.authenticated and !DatasetPage.workingVersion.deaccessioned and DatasetPage.dataset.released}"
+                                            rendered="#{DatasetPage.canLinkDatasetToSomeDataverse()}"
                                             type="button" styleClass="btn btn-default btn-access"
                                             oncomplete="PF('linkDatasetForm').show();"
                                             update="linkDatasetForm">
@@ -909,7 +909,7 @@
                 </p:dialog>
 
                 <p:dialog id="linkDatasetForm" styleClass="largePopUp" header="#{bundle['dataset.link']}"
-                          widgetVar="linkDatasetForm" modal="true">
+                          widgetVar="linkDatasetForm" modal="true" rendered="#{DatasetPage.canLinkDatasetToSomeDataverse()}">
                     <div class="form-horizontal">
                         <p class="help-block">
                             <h:outputFormat value="#{bundle['dataverse.link.dataset.choose']}" escape="false">
@@ -979,7 +979,8 @@
 
                 <p:remoteCommand name="linkDatasetCommand" oncomplete="PF('linkDatasetForm').hide();"
                                  update=":messagePanel  @([id$=Messages])"
-                                 actionListener="#{DatasetPage.saveLinkingDataverses}"/>
+                                 actionListener="#{DatasetPage.saveLinkingDataverses}"
+                                 rendered="#{DatasetPage.canLinkDatasetToSomeDataverse()}"/>
 
                 <p:dialog
                         id="inreview"

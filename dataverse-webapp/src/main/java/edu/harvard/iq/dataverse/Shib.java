@@ -20,7 +20,11 @@ import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.control.Option;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -41,13 +45,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.logging.Logger;
 
 @ViewScoped
 @Named("Shib")
 public class Shib implements java.io.Serializable {
 
-    private static final Logger logger = Logger.getLogger(Shib.class.getCanonicalName());
+    private static final Logger logger = LoggerFactory.getLogger(Shib.class);
 
     @Inject
     DataverseSession session;
@@ -64,6 +67,8 @@ public class Shib implements java.io.Serializable {
     UserNotificationService userNotificationService;
     @Inject
     private SettingsWrapper settingsWrapper;
+    @Inject
+    private SystemConfig systemConfig;
 
     @Inject
     private ConsentService consentService;
@@ -130,7 +135,7 @@ public class Shib implements java.io.Serializable {
         PROMPT_TO_CONVERT_EXISTING_ACCOUNT,
     }
 
-    public void init() {
+    public String init() {
         state = State.INIT;
         ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
         request = (HttpServletRequest) context.getRequest();
@@ -144,7 +149,7 @@ public class Shib implements java.io.Serializable {
          * and
          * http://shibboleth.1660669.n2.nabble.com/Why-doesn-t-Java-s-request-getAttributeNames-show-Shibboleth-attributes-tp7616427p7616591.html
          */
-        logger.fine("JkEnvVar: " + System.getenv("JkEnvVar"));
+        logger.debug("JkEnvVar: " + System.getenv("JkEnvVar"));
 
         shibService.possiblyMutateRequestInDev(request);
 
@@ -158,25 +163,25 @@ public class Shib implements java.io.Serializable {
              * All this exception handling should be handled in the new
              * ShibServiceBean so it's consistently handled by the API as well.
              */
-            return;
+            return StringUtils.EMPTY;
         }
         String shibUserIdentifier;
         try {
             shibUserIdentifier = getRequiredValueFromAssertion(ShibUtil.uniquePersistentIdentifier);
         } catch (Exception ex) {
-            return;
+            return StringUtils.EMPTY;
         }
         String firstName;
         try {
             firstName = getRequiredValueFromAssertion(ShibUtil.firstNameAttribute);
         } catch (Exception ex) {
-            return;
+            return StringUtils.EMPTY;
         }
         String lastName;
         try {
             lastName = getRequiredValueFromAssertion(ShibUtil.lastNameAttribute);
         } catch (Exception ex) {
-            return;
+            return StringUtils.EMPTY;
         }
         ShibUserNameFields shibUserNameFields = ShibUtil.findBestFirstAndLastName(firstName, lastName, null);
         if (shibUserNameFields != null) {
@@ -194,11 +199,11 @@ public class Shib implements java.io.Serializable {
             emailAddressInAssertion = getRequiredValueFromAssertion(ShibUtil.emailAttribute);
         } catch (Exception ex) {
             if (shibIdp.equals(ShibUtil.testShibIdpEntityId)) {
-                logger.info("For " + shibIdp + " (which as of this writing doesn't provide the " + ShibUtil.emailAttribute + " attribute) setting email address to value of eppn: " + shibUserIdentifier);
+                logger.debug("For " + shibIdp + " (which as of this writing doesn't provide the " + ShibUtil.emailAttribute + " attribute) setting email address to value of eppn: " + shibUserIdentifier);
                 emailAddressInAssertion = shibUserIdentifier;
             } else {
                 // forcing all other IdPs to send us an an email
-                return;
+                return StringUtils.EMPTY;
             }
         }
 
@@ -214,7 +219,7 @@ public class Shib implements java.io.Serializable {
             } else {
                 msg += BundleUtil.getStringFromBundle("shib.emailAddress.error");
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, identityProviderProblem, msg));
-                return;
+                return StringUtils.EMPTY;
             }
         } else {
             emailAddress = emailAddressInAssertion;
@@ -222,7 +227,7 @@ public class Shib implements java.io.Serializable {
 
         String usernameAssertion = getValueFromAssertion(ShibUtil.usernameAttribute);
         internalUserIdentifer = ShibUtil.generateFriendlyLookingUserIdentifer(usernameAssertion, emailAddress);
-        logger.fine("friendly looking identifer (backend will enforce uniqueness):" + internalUserIdentifer);
+        logger.debug("friendly looking identifer (backend will enforce uniqueness):" + internalUserIdentifer);
 
         String affiliation = shibService.getAffiliation(shibIdp, shibService.getDevShibAccountType());
         if (affiliation != null) {
@@ -237,9 +242,14 @@ public class Shib implements java.io.Serializable {
         AuthenticatedUser au = authSvc.lookupUser(shibAuthProvider.getId(), userPersistentId);
         if (au != null) {
             state = State.REGULAR_LOGIN_INTO_EXISTING_SHIB_ACCOUNT;
-            logger.fine("Found user based on " + userPersistentId + ". Logging in.");
-            logger.fine("Updating display info for " + au.getName());
-            authSvc.updateAuthenticatedUser(au, displayInfo);
+            logger.debug("Found user based on " + userPersistentId + ". Logging in.");
+
+            if (!systemConfig.isReadonlyMode()) {
+                logger.debug("Updating display info for " + au.getName());
+                authSvc.updateAuthenticatedUser(au, displayInfo);
+            } else {
+                logger.warn("Can't update user display info in readonlyMode");
+            }
             logInUserAndSetShibAttributes(au);
             String prettyFacesHomePageString = getPrettyFacesHomePageString(false);
             try {
@@ -251,6 +261,10 @@ public class Shib implements java.io.Serializable {
             state = State.PROMPT_TO_CREATE_NEW_ACCOUNT;
             displayNameToPersist = displayInfo.getTitle();
             emailToPersist = emailAddress;
+            
+            if (systemConfig.isReadonlyMode()) {
+                return "/403.xhtml";
+            }
             /**
              * @todo for Harvard we plan to use the value(s) from
              * eduPersonScopedAffiliation which
@@ -265,7 +279,7 @@ public class Shib implements java.io.Serializable {
              * eduPersonScopedAffiliation?
              */
 //            positionToPersist = "FIXME";
-            logger.fine("Couldn't find authenticated user based on " + userPersistentId);
+            logger.debug("Couldn't find authenticated user based on " + userPersistentId);
             visibleTermsOfUse = true;
             /**
              * Using the email address from the IdP, try to find an existing
@@ -298,8 +312,9 @@ public class Shib implements java.io.Serializable {
             consents = consentService.prepareConsentsForView(session.getLocale());
 
         }
-        logger.fine("Debug summary: " + debugSummary + " (state: " + state + ").");
-        logger.fine("redirectPage: " + redirectPage);
+        logger.debug("Debug summary: " + debugSummary + " (state: " + state + ").");
+        logger.debug("redirectPage: " + redirectPage);
+        return StringUtils.EMPTY;
     }
 
     public String confirmAndCreateAccount() {
@@ -316,7 +331,7 @@ public class Shib implements java.io.Serializable {
             logger.info("Couldn't create user " + userPersistentId + " due to exception: " + ex.getCause());
         }
         if (au != null) {
-            logger.fine("created user " + au.getIdentifier());
+            logger.debug("created user " + au.getIdentifier());
             logInUserAndSetShibAttributes(au);
             /**
              * @todo Move this to
@@ -339,7 +354,7 @@ public class Shib implements java.io.Serializable {
         ShibAuthenticationProvider shibAuthProvider = new ShibAuthenticationProvider();
         String lookupStringPerAuthProvider = userPersistentId;
         UserIdentifier userIdentifier = new UserIdentifier(lookupStringPerAuthProvider, internalUserIdentifer);
-        logger.fine("builtin username: " + builtinUsername);
+        logger.debug("builtin username: " + builtinUsername);
         AuthenticatedUser builtInUserToConvert = authSvc.canLogInAsBuiltinUser(builtinUsername, builtinPassword);
         if (builtInUserToConvert != null) {
             // TODO: Switch from authSvc.convertBuiltInToShib to authSvc.convertBuiltInUserToRemoteUser
@@ -364,7 +379,7 @@ public class Shib implements java.io.Serializable {
     private void logInUserAndSetShibAttributes(AuthenticatedUser au) {
         au.setShibIdentityProvider(shibIdp);
         session.setUser(au);
-        logger.fine("Groups for user " + au.getId() + " (" + au.getIdentifier() + "): " + getGroups(au));
+        logger.debug("Groups for user " + au.getId() + " (" + au.getIdentifier() + "): " + getGroups(au));
     }
 
     public List<String> getGroups(AuthenticatedUser au) {
@@ -397,14 +412,14 @@ public class Shib implements java.io.Serializable {
             String attributeValue = attribute.toString();
             String trimmedValue = attributeValue.trim();
             if (!trimmedValue.isEmpty()) {
-                logger.fine("The SAML assertion for \"" + key + "\" (optional) was \"" + attributeValue + "\" and was trimmed to \"" + trimmedValue + "\".");
+                logger.debug("The SAML assertion for \"" + key + "\" (optional) was \"" + attributeValue + "\" and was trimmed to \"" + trimmedValue + "\".");
                 return trimmedValue;
             } else {
-                logger.fine("The SAML assertion for \"" + key + "\" (optional) was \"" + attributeValue + "\" and was trimmed to \"" + trimmedValue + "\" (empty string). Returing null.");
+                logger.debug("The SAML assertion for \"" + key + "\" (optional) was \"" + attributeValue + "\" and was trimmed to \"" + trimmedValue + "\" (empty string). Returing null.");
                 return null;
             }
         } else {
-            logger.fine("The SAML assertion for \"" + key + "\" (optional) was null.");
+            logger.debug("The SAML assertion for \"" + key + "\" (optional) was null.");
             return null;
         }
     }
@@ -433,7 +448,7 @@ public class Shib implements java.io.Serializable {
             throw new Exception(key + " was empty");
         }
         String trimmedValue = attributeValue.trim();
-        logger.fine("The SAML assertion for \"" + key + "\" (required) was \"" + attributeValue + "\" and was trimmed to \"" + trimmedValue + "\".");
+        logger.debug("The SAML assertion for \"" + key + "\" (required) was \"" + attributeValue + "\" and was trimmed to \"" + trimmedValue + "\".");
         return trimmedValue;
     }
 

@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -116,6 +117,13 @@ public class SystemConfig {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.ReadonlyMode);
     }
 
+    public boolean isSignupAllowed() {
+        if (isReadonlyMode()) {
+            return false;
+        }
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.AllowSignUp);
+    }
+
     public String getFilesDirectory() {
         String filesDirectory = System.getProperty(SystemConfig.FILES_DIRECTORY);
         if(StringUtils.isEmpty(filesDirectory)) {
@@ -173,16 +181,17 @@ public class SystemConfig {
     // TODO: (?)
     // create sensible defaults for these things? -- 4.2.2
     public long getThumbnailSizeLimitImage() {
-        long limit = getThumbnailSizeLimit("Image");
-        return limit == 0 ? 500000 : limit;
+        return getThumbnailSizeLimit("Image");
     }
 
     public long getThumbnailSizeLimitPDF() {
-        long limit = getThumbnailSizeLimit("PDF");
-        return limit == 0 ? 500000 : limit;
+        return getThumbnailSizeLimit("PDF");
     }
 
-    public long getThumbnailSizeLimit(String type) {
+    private long getThumbnailSizeLimit(String type) {
+        if (isReadonlyMode()) {
+            return -1;
+        }
         String option = null;
 
         //get options via jvm options
@@ -192,24 +201,11 @@ public class SystemConfig {
         } else if ("PDF".equals(type)) {
             option = System.getProperty("dataverse.dataAccess.thumbnail.pdf.limit");
         }
-        Long limit = null;
 
-        if (option != null && !option.equals("")) {
-            try {
-                limit = new Long(option);
-            } catch (NumberFormatException nfe) {
-                limit = null;
-            }
-        }
-
-        if (limit != null) {
-            return limit.longValue();
-        }
-
-        return 0l;
+        return NumberUtils.toLong(option, 500_000);
     }
 
-    public boolean isThumbnailGenerationDisabledForType(String type) {
+    private boolean isThumbnailGenerationDisabledForType(String type) {
         return getThumbnailSizeLimit(type) == -1l;
     }
 

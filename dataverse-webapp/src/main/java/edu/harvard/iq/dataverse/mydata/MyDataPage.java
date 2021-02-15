@@ -50,7 +50,6 @@ public class MyDataPage implements java.io.Serializable {
     private DataverseRolePermissionHelper rolePermissionHelper;// = new DataverseRolePermissionHelper();
     private MyDataFilterParams filterParams;
     private AuthenticatedUser authUser = null;
-    private Boolean isSuperuserLoggedIn = null;
 
     private long totalUserFileCount = 0;
     private long totalUserDataverseCount = 0;
@@ -111,34 +110,8 @@ public class MyDataPage implements java.io.Serializable {
     }
 
     public boolean isSuperuser() {
+        return session.getUser().isSuperuser();
 
-        if (this.isSuperuserLoggedIn == null) {
-            this.setIsSuperUserLoggedIn();
-        }
-        return this.isSuperuserLoggedIn;
-
-    }
-
-    private void setIsSuperUserLoggedIn() {
-
-        // Is this an authenticated user?
-        //
-        if ((session.getUser() == null) || (!session.getUser().isAuthenticated())) {
-            this.isSuperuserLoggedIn = false;
-            return;
-        }
-
-        // Is this a user?
-        //
-        authUser = (AuthenticatedUser) session.getUser();
-        if (authUser == null) {
-            this.isSuperuserLoggedIn = false;
-            return;
-        }
-
-        // Is this a superuser?
-        //
-        this.isSuperuserLoggedIn = authUser.isSuperuser();
     }
 
 
@@ -147,7 +120,7 @@ public class MyDataPage implements java.io.Serializable {
 
         //msgt("----------- init() -------------");
 
-        if ((session.getUser() != null) && (session.getUser().isAuthenticated())) {
+        if (session.getUser().isAuthenticated()) {
             authUser = (AuthenticatedUser) session.getUser();
         } else {
             return permissionsWrapper.notAuthorized();

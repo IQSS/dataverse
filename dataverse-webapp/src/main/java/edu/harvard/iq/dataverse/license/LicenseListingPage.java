@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.license.dto.LocaleTextDto;
 import edu.harvard.iq.dataverse.persistence.datafile.license.License;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultStreamedContent;
@@ -51,6 +52,9 @@ public class LicenseListingPage implements Serializable {
     @Inject
     private LicenseMapper licenseMapper;
 
+    @Inject
+    private SystemConfig systemConfig;
+
     private List<LicenseDto> licenses = new ArrayList<>();
 
     private LicenseDto freshLicense;
@@ -82,7 +86,7 @@ public class LicenseListingPage implements Serializable {
 
     public String init() {
 
-        if (!session.getUser().isSuperuser()) {
+        if (!session.getUser().isSuperuser() || systemConfig.isReadonlyMode()) {
             return permissionsWrapper.notAuthorized();
         }
 

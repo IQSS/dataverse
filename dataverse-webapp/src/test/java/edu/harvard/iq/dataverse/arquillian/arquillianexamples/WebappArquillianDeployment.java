@@ -6,6 +6,8 @@ import edu.harvard.iq.dataverse.persistence.DatabaseCleaner;
 import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
 import edu.harvard.iq.dataverse.persistence.SqlScriptRunner;
 import edu.harvard.iq.dataverse.test.arquillian.ArquillianIntegrationTests;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionScheduler;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionWorker;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;

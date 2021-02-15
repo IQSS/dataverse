@@ -237,18 +237,12 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         return redirectPage + (!redirectPage.contains("?") ? "?" : "&") + "faces-redirect=true";
     }
 
-    private Boolean signupAllowed = null;
-
     private String redirectToRoot() {
         return "dataverse.xhtml?alias=" + dataverseDao.findRootDataverse().getAlias();
     }
 
     public boolean isSignupAllowed() {
-        if (signupAllowed != null) {
-            return signupAllowed;
-        }
-        signupAllowed = settingsService.isTrueForKey(SettingsServiceBean.Key.AllowSignUp);
-        return signupAllowed;
+        return systemConfig.isSignupAllowed();
     }
 
     public boolean isRootDataverseThemeDisabled(Dataverse dataverse) {

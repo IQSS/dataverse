@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.persistence.guestbook.GuestbookResponse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
+import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -208,8 +209,8 @@ public class MoveDatasetCommandTest {
                 return new PermissionServiceBean() {
 
                     @Override
-                    public boolean isUserAllowedOn(RoleAssignee roleAssignee, Command<?> command, DvObject dvObject) {
-                        AuthenticatedUser authenticatedUser = (AuthenticatedUser) roleAssignee;
+                    public boolean isUserAllowedOn(User user, Command<?> command, DvObject dvObject) {
+                        AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
                         return authenticatedUser.getFirstName().equals("Super");
                     }
                 };

@@ -293,12 +293,7 @@ public class SearchIT {
         String thumbnailUrl = RestAssured.baseURI + "/api/datasets/" + datasetId + "/thumbnail";
 
         File trees = new File("scripts/search/data/binary/trees.png");
-        String treesAsBase64 = null;
-        treesAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(trees, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-
-        if (treesAsBase64 == null) {
-            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, "Failed to generate a base64 thumbnail from the file trees.png");
-        }
+        String treesAsBase64 = "data:image/png;base64,REPLACE_WITH_THUMBNAIL_BASE64_OF_trees.png";
 
         InputStream inputStream1creator = UtilIT.getInputStreamFromUnirest(thumbnailUrl, apiToken);
         assertNotEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream1creator));
@@ -432,12 +427,7 @@ public class SearchIT {
                 .statusCode(200);
 
         File dataverseProjectLogo = new File(pathToFile);
-        String dataverseProjectLogoAsBase64 = null;
-        dataverseProjectLogoAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(dataverseProjectLogo, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-
-        if (dataverseProjectLogoAsBase64 == null) {
-            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, "Failed to generate a base64 thumbnail from the file dataverseproject.png");
-        }
+        String dataverseProjectLogoAsBase64 = "data:image/png;base64,REPLACE_WITH_THUMBNAIL_BASE64_OF_dataverseproject.png";
 
         Response switchToSecondDataFileThumbnail = UtilIT.useThumbnailFromDataFile(datasetPersistentId, dataFileId2, apiToken);
         switchToSecondDataFileThumbnail.prettyPrint();
@@ -494,11 +484,7 @@ public class SearchIT {
 
         String datasetLogo = "src/main/webapp/resources/images/cc0.png";
         File datasetLogoFile = new File(datasetLogo);
-        String datasetLogoAsBase64 = datasetLogoAsBase64 = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(datasetLogoFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-
-        if (datasetLogoAsBase64 == null) {
-            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, "Failed to generate a base64 thumbnail from the file dataverseproject.png");
-        }
+        String datasetLogoAsBase64 = "data:image/png;base64,REPLACE_WITH_THUMBNAIL_BASE64_OF_dataverseproject.png";
 
         Response overrideThumbnail = UtilIT.uploadDatasetLogo(datasetPersistentId, datasetLogo, apiToken);
         overrideThumbnail.prettyPrint();

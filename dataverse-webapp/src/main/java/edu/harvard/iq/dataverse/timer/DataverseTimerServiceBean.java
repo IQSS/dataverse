@@ -98,6 +98,10 @@ public class DataverseTimerServiceBean implements Serializable {
     public void init() {
         logger.info("PostConstruct timer check.");
 
+        if (systemConfig.isReadonlyMode()) {
+            logger.info("Timers not allowed in readonly mode");
+            return;
+        }
 
         if (systemConfig.isTimerServer()) {
             logger.info("I am the dedicated timer server. Initializing mother timer.");
@@ -137,6 +141,10 @@ public class DataverseTimerServiceBean implements Serializable {
         // We have to put all the code in a try/catch block because
         // if an exception is thrown from this method, Glassfish will automatically
         // call the method a second time. (The minimum number of re-tries for a Timer method is 1)
+        if (systemConfig.isReadonlyMode()) {
+            Logger.getLogger(DataverseTimerServiceBean.class.getName()).log(Level.WARNING, null, "handleTimeout() was called in readonly mode - skipping timeout handling");
+            return;
+        }
 
         if (!systemConfig.isTimerServer()) {
             //logger.info("I am not the timer server! - bailing out of handleTimeout()");

@@ -8,7 +8,12 @@ import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.RestrictType;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,10 +21,14 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+@ExtendWith(MockitoExtension.class)
 public class DataseThumbnailServiceTest {
 
-    private DatasetThumbnailService datasetThumbnailService = new DatasetThumbnailService();
+    @InjectMocks
+    private DatasetThumbnailService datasetThumbnailService;
     
+    @Mock
+    private ImageThumbConverter imageThumbConverter;
     
     /**
      * Test of getThumbnailCandidates method, of class DatasetUtil.
@@ -34,7 +43,6 @@ public class DataseThumbnailServiceTest {
         dataFile.setOwner(dataset);
         dataFile.setStorageIdentifier("file://src/test/resources/images/coffeeshop.png");
 
-        System.out.println(ImageThumbConverter.isThumbnailAvailable(dataFile));
         DatasetVersion version = dataset.getLatestVersion();
         List<FileMetadata> fmds = new ArrayList<>();
         fmds.add(MocksFactory.addFileMetadata(dataFile));
@@ -45,14 +53,12 @@ public class DataseThumbnailServiceTest {
     @Test
     public void testGetThumbnailNullDataset() {
         assertNull(datasetThumbnailService.getThumbnail(null));
-        assertNull(datasetThumbnailService.getThumbnail(null, null));
 
         Dataset dataset = MocksFactory.makeDataset();
         dataset.setStorageIdentifier("file://");
         dataset.setUseGenericThumbnail(true);
 
         assertNull(datasetThumbnailService.getThumbnail(dataset));
-        assertNull(datasetThumbnailService.getThumbnail(dataset, new DatasetVersion()));
     }
 
     @Test
@@ -81,14 +87,6 @@ public class DataseThumbnailServiceTest {
     public void testDeleteDatasetLogo() {
         assertEquals(false, datasetThumbnailService.deleteDatasetLogo(null));
         assertEquals(false, datasetThumbnailService.deleteDatasetLogo(new Dataset()));
-    }
-
-    /**
-     * Test of getDefaultThumbnailFile method, of class DatasetUtil.
-     */
-    @Test
-    public void testGetDefaultThumbnailFile() {
-        assertNull(datasetThumbnailService.attemptToAutomaticallySelectThumbnailFromDataFiles(null, null));
     }
 
     /**

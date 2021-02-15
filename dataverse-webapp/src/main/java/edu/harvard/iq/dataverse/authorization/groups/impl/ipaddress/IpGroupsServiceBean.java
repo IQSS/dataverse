@@ -45,9 +45,8 @@ public class IpGroupsServiceBean {
      */
     public IpGroup store(IpGroup grp) {
         ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.GlobalGroups, "ipCreate");
-        
-        alr.setInfo(grp.getIdentifier());
-        alr.setInfo(alr.getInfo() + "// " + grp.getRanges());
+
+        alr.setInfo(grp.getIdentifier() + "// " + grp.getRanges());
 
         if (grp.getId() == null) {
             if (grp.getPersistedGroupAlias() != null) {

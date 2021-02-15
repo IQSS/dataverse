@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import io.vavr.control.Option;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.ejb.EJB;
@@ -115,8 +116,11 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
      *                     <p>
      *                     * Famous last sentences etc.
      */
-    public void init() throws IOException {
+    public String init() throws IOException {
         logger.fine("init called");
+        if (systemConfig.isReadonlyMode()) {
+            return "/403.xhtml";
+        }
 
         AbstractOAuth2AuthenticationProvider.DevOAuthAccountType devMode = systemConfig.getDevOAuthAccountType();
         logger.log(Level.FINE, "devMode: {0}", devMode);
@@ -169,7 +173,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
             // e.g., someone might have directly accessed this page.
             // return to sanity be redirection to /index
             FacesContext.getCurrentInstance().getExternalContext().redirect("/");
-            return;
+            return StringUtils.EMPTY;
         }
 
         // Suggest the best email we can.
@@ -192,6 +196,8 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         authProvider = authenticationSvc.getAuthenticationProvider(newUser.getServiceId());
 
         installationName = installationConfigService.getNameOfInstallation();
+
+        return StringUtils.EMPTY;
     }
 
     public String createNewAccount() {

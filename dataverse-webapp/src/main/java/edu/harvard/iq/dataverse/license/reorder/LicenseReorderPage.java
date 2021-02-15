@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.license.dto.LicenseMapper;
 import edu.harvard.iq.dataverse.license.dto.LicenseSimpleDto;
 import edu.harvard.iq.dataverse.persistence.datafile.license.License;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import org.apache.commons.lang.StringUtils;
@@ -37,6 +38,9 @@ public class LicenseReorderPage implements Serializable {
     @Inject
     private LicenseMapper licenseMapper;
 
+    @Inject
+    private SystemConfig systemConfig;
+
     private List<LicenseSimpleDto> licenses = new ArrayList<>();
     
     private Tuple2<Integer, Integer> lastReorderFromAndTo;
@@ -60,7 +64,7 @@ public class LicenseReorderPage implements Serializable {
 
     public String init() {
 
-        if (!session.getUser().isSuperuser()) {
+        if (!session.getUser().isSuperuser() || systemConfig.isReadonlyMode()) {
             return permissionsWrapper.notAuthorized();
         }
 

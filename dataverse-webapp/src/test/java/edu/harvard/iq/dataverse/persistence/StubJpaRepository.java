@@ -30,6 +30,11 @@ public class StubJpaRepository<T extends JpaEntity<Long>> implements JpaOperatio
         return new ArrayList<>(storage.values());
     }
 
+    @Override
+    public Long countAll() {
+        return Long.valueOf(storage.size());
+    }
+
     public List<T> findAll(Predicate<T> condition) {
         return storage.values().stream()
                 .filter(condition)

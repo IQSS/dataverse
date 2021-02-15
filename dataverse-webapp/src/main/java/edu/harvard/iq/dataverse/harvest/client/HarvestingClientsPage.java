@@ -11,9 +11,9 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
-import javax.faces.view.ViewScoped;
 
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -22,6 +22,7 @@ import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
@@ -32,8 +33,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 /**
  * @author Leonid Andreev
@@ -58,6 +57,8 @@ public class HarvestingClientsPage implements java.io.Serializable {
     NavigationWrapper navigationWrapper;
     @Inject
     private HarvestingClientsService harvestingClientsService;
+    @Inject
+    private SystemConfig systemConfig;
 
     private List<HarvestingClient> configuredHarvestingClients;
     private Dataverse dataverse;
@@ -93,9 +94,7 @@ public class HarvestingClientsPage implements java.io.Serializable {
     }
 
     public String init() {
-        if (!isSessionUserAuthenticated()) {
-            return "/loginpage.xhtml" + navigationWrapper.getRedirectPage();
-        } else if (!isSuperUser()) {
+        if (!session.getUser().isSuperuser() || systemConfig.isReadonlyMode()) {
             return navigationWrapper.notAuthorized();
         }
 
@@ -971,24 +970,6 @@ public class HarvestingClientsPage implements java.io.Serializable {
 
     public void setHoursOfDaySelectItems(List<SelectItem> hoursOfDaySelectItems) {
         this.hoursOfDaySelectItems = hoursOfDaySelectItems;
-    }
-
-    public boolean isSessionUserAuthenticated() {
-
-        if (session == null) {
-            return false;
-        }
-
-        if (session.getUser() == null) {
-            return false;
-        }
-
-        return session.getUser().isAuthenticated();
-
-    }
-
-    public boolean isSuperUser() {
-        return session.getUser().isSuperuser();
     }
 
     // -------------------- PRIVATE ---------------------

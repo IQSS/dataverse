@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.userdata.UserListMaker;
 import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.control.Try;
 import javax.faces.view.ViewScoped;
 
@@ -33,7 +34,7 @@ public class DashboardUsersPage implements java.io.Serializable {
     private DataverseSession session;
     private PermissionsWrapper permissionsWrapper;
     private DashboardUsersService dashboardUsersService;
-    private SettingsServiceBean settingsService;
+    private SystemConfig systemConfig;
 
     private static final Logger logger = Logger.getLogger(DashboardUsersPage.class.getCanonicalName());
 
@@ -53,12 +54,12 @@ public class DashboardUsersPage implements java.io.Serializable {
     @Inject
     public DashboardUsersPage(UserServiceBean userService, DataverseSession session,
                               PermissionsWrapper permissionsWrapper, DashboardUsersService dashboardUsersService,
-                              SettingsServiceBean settingsService) {
+                              SettingsServiceBean settingsService, SystemConfig systemConfig) {
         this.userService = userService;
         this.session = session;
         this.permissionsWrapper = permissionsWrapper;
         this.dashboardUsersService = dashboardUsersService;
-        this.settingsService = settingsService;
+        this.systemConfig = systemConfig;
     }
 
     // -------------------- GETTERS --------------------
@@ -95,13 +96,11 @@ public class DashboardUsersPage implements java.io.Serializable {
     // -------------------- LOGIC --------------------
 
     public String init() {
-
-        if (session.getUser().isSuperuser()) {
-            userListMaker = new UserListMaker(userService);
-            runUserSearch();
-        } else {
+        if (!session.getUser().isSuperuser() || systemConfig.isReadonlyMode()) {
             return permissionsWrapper.notAuthorized();
         }
+        userListMaker = new UserListMaker(userService);
+        runUserSearch();
 
         return null;
     }
@@ -189,23 +188,6 @@ public class DashboardUsersPage implements java.io.Serializable {
      */
     public String getUserCount() {
         return NumberFormat.getInstance().format(userService.getTotalUserCount());
-    }
-
-    /**
-     * Maximum length in months for embargo on dataset.
-     *
-     * @return
-     */
-    public String getMaximumEmbargoLengthString() {
-        return NumberFormat.getInstance().format(getMaximumEmbargoLength());
-    }
-
-    public int getMaximumEmbargoLength() {
-        return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaximumEmbargoLength).intValue();
-    }
-
-    public boolean isMaximumEmbargoLengthSet() {
-        return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaximumEmbargoLength) > 0;
     }
 
     /**

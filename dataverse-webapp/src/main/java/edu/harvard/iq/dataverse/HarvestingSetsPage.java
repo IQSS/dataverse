@@ -119,9 +119,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
     }
 
     public String init() {
-        if (!isSessionUserAuthenticated()) {
-            return "/loginpage.xhtml" + navigationWrapper.getRedirectPage();
-        } else if (!isSuperUser()) {
+        if (!session.getUser().isSuperuser() || systemConfig.isReadonlyMode()) {
             return navigationWrapper.notAuthorized();
         }
 
@@ -412,20 +410,6 @@ public class HarvestingSetsPage implements java.io.Serializable {
         return PageMode.VIEW == this.pageMode;
     }
 
-    public boolean isSessionUserAuthenticated() {
-
-        if (session == null) {
-            return false;
-        }
-
-        if (session.getUser() == null) {
-            return false;
-        }
-
-        return session.getUser().isAuthenticated();
-
-    }
-
     public int getSetInfoNumOfDatasets(OAISet oaiSet) {
         if (oaiSet.isDefaultSet()) {
             return getSetInfoNumOfExported(oaiSet);
@@ -584,9 +568,5 @@ public class HarvestingSetsPage implements java.io.Serializable {
     public void runSetExport(OAISet oaiSet) {
         oaiSetService.setUpdateInProgress(oaiSet.getId());
         oaiSetService.exportOaiSetAsync(oaiSet);
-    }
-
-    public boolean isSuperUser() {
-        return session.getUser().isSuperuser();
     }
 }

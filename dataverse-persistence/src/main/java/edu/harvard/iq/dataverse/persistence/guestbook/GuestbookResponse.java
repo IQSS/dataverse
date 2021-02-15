@@ -262,7 +262,11 @@ public class GuestbookResponse implements Serializable {
 
     @Override
     public String toString() {
-        return "edu.harvard.iq.dvn.core.vdc.GuestBookResponse[ id=" + id + " ]";
+        return "GuestbookResponse [id=" + id + ", guestbook=" + guestbook + ", dataFile=" + dataFile + ", dataset="
+                + dataset + ", datasetVersion=" + datasetVersion + ", authenticatedUser=" + authenticatedUser
+                + ", customQuestionResponses=" + customQuestionResponses + ", name=" + name + ", email=" + email
+                + ", institution=" + institution + ", position=" + position + ", downloadtype=" + downloadtype
+                + ", sessionId=" + sessionId + "]";
     }
 
 }

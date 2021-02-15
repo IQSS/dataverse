@@ -16,7 +16,7 @@
                 <f:metadata>
                     <f:viewParam name="dataverseId" value="#{dashboardPage.dataverseId}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
-                    <f:viewAction action="#{LicenseListingPage.init}"/>
+                    <f:viewAction action="#{dashboardPage.init}"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseDao.findRootDataverse(), bundle['dashboard.title'])}"/>
                 </f:metadata>
                
@@ -47,7 +47,7 @@
                                             </p>
                                         </div>
                                     </div>
-                                    <div class="row text-center">
+                                    <div class="row text-center" jsf:rendered="#{!systemConfig.readonlyMode}">
                                         <div  class="col-xs-12">
                                             <p>
                                                 <a href="/harvestclients.xhtml?dataverseId=#{dataverseDao.findRootDataverse().id}" class="btn btn-primary" role="button">#{bundle['dashboard.card.harvestingclients.btn.manage']}</a>
@@ -76,7 +76,7 @@
                                             </p>
                                         </div>
                                     </div>
-                                    <div class="row text-center">
+                                    <div class="row text-center" jsf:rendered="#{!systemConfig.readonlyMode}">
                                         <div  class="col-xs-12">
                                             <p>
                                                 <a href="/harvestsets.xhtml?dataverseId=#{dataverseDao.findRootDataverse().id}" class="btn btn-primary" role="button">#{bundle['dashboard.card.harvestingserver.btn.manage']}</a>
@@ -114,7 +114,7 @@
                                             <p class="small text-muted">#{bundle['dashboard.card.users.super']}</p>
                                         </div>
                                     </div>
-                                    <div class="row text-center">
+                                    <div class="row text-center" jsf:rendered="#{!systemConfig.readonlyMode}">
                                         <div  class="col-xs-12">
                                             <p>
                                                 <a href="/dashboard-users.xhtml" class="btn btn-primary" role="button">#{bundle['dashboard.card.users.manage']}</a>
@@ -138,7 +138,7 @@
                                             <p class="small text-muted">#{bundle['dashboard.card.licenses.inactive']}</p>
                                         </div>
                                     </div>
-                                    <div class="row text-center">
+                                    <div class="row text-center" jsf:rendered="#{!systemConfig.readonlyMode}">
                                         <div class="col-xs-12">
                                             <p>
                                                 <a href="${pageContext.request.contextPath}/dashboard-licenses.xhtml"
@@ -153,20 +153,20 @@
                                 <div class="card-box">
                                     <h4 class="header-title">#{bundle['dashboard.card.maximumembargo.header']}</h4>
                                     <div class="row text-center">
-                                        <div class="col-xs-12 text-center" jsf:rendered="#{!DashboardUsersPage.isMaximumEmbargoLengthSet()}">
+                                        <div class="col-xs-12 text-center" jsf:rendered="#{!dashboardPage.isMaximumEmbargoLengthSet()}">
                                             <h:outputText value="#{bundle['dashboard.card.maximumembargo.notSet.header']}"/>
                                             <p class="small text-muted">#{bundle['dashboard.card.maximumembargo.notSet.text']}</p>
                                         </div>
-                                        <div class="col-xs-12 text-center" jsf:rendered="#{DashboardUsersPage.isMaximumEmbargoLengthSet()}">
-                                            <h:outputText value="#{DashboardUsersPage.getMaximumEmbargoLengthString()}"/>
+                                        <div class="col-xs-12 text-center" jsf:rendered="#{dashboardPage.isMaximumEmbargoLengthSet()}">
+                                            <h:outputText value="#{dashboardPage.getMaximumEmbargoLengthString()}"/>
                                             <p class="small text-muted">
                                                 <h:outputFormat value="#{bundle['dashboard.card.maximumembargo.months']}">
-                                                    <f:param value="#{DashboardUsersPage.getMaximumEmbargoLength()}" />
+                                                    <f:param value="#{dashboardPage.getMaximumEmbargoLength()}" />
                                                 </h:outputFormat>
                                             </p>
                                         </div>
                                     </div>
-                                    <div class="row text-center">
+                                    <div class="row text-center" jsf:rendered="#{!systemConfig.readonlyMode}">
                                         <div  class="col-xs-12">
                                             <p>
                                                 <a href="/dashboard-maximumembargo.xhtml" class="btn btn-primary" role="button">#{bundle['dashboard.card.maximumembargo.manage']}</a>
@@ -189,7 +189,7 @@
                                             <p class="small text-muted">#{bundle['datasets']}</p>
                                         </div>
                                     </div>
-                                    <div class="row text-center">
+                                    <div class="row text-center" jsf:rendered="#{!systemConfig.readonlyMode}">
                                         <div  class="col-xs-12">
                                             <p>
                                                 <a href="/dashboard-datamove.xhtml" class="btn btn-primary" role="button">#{bundle['dashboard.card.datamove.manage']}</a>

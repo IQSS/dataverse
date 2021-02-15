@@ -100,6 +100,8 @@ public class DataFileServiceBean implements java.io.Serializable {
     private TermsOfUseFactory termsOfUseFactory;
     @Inject
     private TermsOfUseFormMapper termsOfUseFormMapper;
+    @Inject
+    private ImageThumbConverter imageThumbConverter;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -656,12 +658,6 @@ public class DataFileServiceBean implements java.io.Serializable {
             logger.info("returning true");
             return true;
         }
-
-        // If thumbnails are not even supported for this class of files, 
-        // there's notthing to talk about:      
-        if (!FileUtil.isThumbnailSupported(file)) {
-            return false;
-        }
         
         /*
          Checking the permission here was resulting in extra queries; 
@@ -675,7 +671,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         */
 
 
-        if (ImageThumbConverter.isThumbnailAvailable(file)) {
+        if (imageThumbConverter.isThumbnailAvailable(file)) {
             file = this.find(file.getId());
             file.setPreviewImageAvailable(true);
             this.save(file);

@@ -587,7 +587,19 @@
                     
                     <p:dialog id="requestAccessPopup" styleClass="largePopUp" header="#{bundle['file.requestAccess']}"
                               widgetVar="requestAccessPopup" modal="true">
-                        <ui:include src="file-request-access-popup-fragment.xhtml" />
+                        <div jsf:rendered="#{not systemConfig.isReadonlyMode()}">
+                            <ui:include src="file-request-access-popup-fragment.xhtml" />
+                        </div>
+                        <div jsf:rendered="#{systemConfig.isReadonlyMode()}">
+                            <p class="help-block">
+                                <span class="glyphicon glyphicon-exclamation-sign text-danger"/>&#160;
+                                <h:outputText styleClass="text-danger" value="#{bundle['file.requestAccess.dialog.readonly.msg']}">
+                                </h:outputText>
+                            </p>
+                            <div class="button-block">
+                                <p:commandButton value="#{bundle.close}" onclick="PF('requestAccessPopup').hide();"/>
+                            </div>
+                        </div>
                     </p:dialog>
                     
                     <p:dialog header="#{configureFragmentBean.configurePopupTool.displayName}" widgetVar="configureToolPopup" modal="true" 

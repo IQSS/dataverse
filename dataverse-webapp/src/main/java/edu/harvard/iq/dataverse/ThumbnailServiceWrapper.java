@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import javax.faces.view.ViewScoped;
@@ -42,6 +43,10 @@ public class ThumbnailServiceWrapper implements java.io.Serializable {
     DatasetVersionServiceBean datasetVersionService;
     @EJB
     DataFileServiceBean dataFileService;
+    @Inject
+    private ImageThumbConverter imageThumbConverter;
+    @Inject
+    private SystemConfig systemConfig;
 
     private Map<Long, String> dvobjectThumbnailsMap = new HashMap<>();
     private Map<Long, DvObject> dvobjectViewMap = new HashMap<>();
@@ -65,7 +70,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable {
                 return null;
             }
 
-            String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(
+            String imageSourceBase64 = imageThumbConverter.getImageThumbnailAsBase64(
                     assignedThumbnailFile,
                     ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 
@@ -133,7 +138,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable {
                     && dataFileService.isThumbnailAvailable(dataFile)) {
 
 
-                cardImageUrl = ImageThumbConverter.getImageThumbnailAsBase64(
+                cardImageUrl = imageThumbConverter.getImageThumbnailAsBase64(
                         dataFile,
                         ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
             }
@@ -180,7 +185,8 @@ public class ThumbnailServiceWrapper implements java.io.Serializable {
 
         Long versionId = result.getDatasetVersionId();
 
-        return getDatasetCardImageAsBase64Url(dataset, versionId, result.isPublishedState());
+        boolean autoselect = result.isPublishedState() && !systemConfig.isReadonlyMode();
+        return getDatasetCardImageAsBase64Url(dataset, versionId, autoselect);
     }
 
     public String getDatasetCardImageAsBase64Url(Dataset dataset, Long versionId, boolean autoselect) {
@@ -292,7 +298,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable {
             }
 
             if (dataFileService.isThumbnailAvailable(thumbnailImageFile)) {
-                cardImageUrl = ImageThumbConverter.getImageThumbnailAsBase64(
+                cardImageUrl = imageThumbConverter.getImageThumbnailAsBase64(
                         thumbnailImageFile,
                         ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
             }

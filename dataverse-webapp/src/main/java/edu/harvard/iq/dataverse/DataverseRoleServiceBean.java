@@ -1,9 +1,6 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.RoleAssignmentSet;
 import edu.harvard.iq.dataverse.persistence.DvObject;
-import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
-import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseRepository;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
@@ -12,7 +9,6 @@ import edu.harvard.iq.dataverse.persistence.user.DataverseRoleRepository;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignmentRepository;
-import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.search.index.PermissionReindexEvent;
 
 import javax.ejb.EJB;
@@ -20,6 +16,7 @@ import javax.ejb.Stateless;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.persistence.EntityNotFoundException;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -122,44 +119,8 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
         permissionReindexEvent.fire(new PermissionReindexEvent(reindexSet));
     }
 
-    private RoleAssignmentSet roleAssignments(User user, Dataverse dv) {
-        RoleAssignmentSet retVal = new RoleAssignmentSet(user);
-        while (dv != null) {
-            retVal.add(directRoleAssignments(user, dv));
-            if (dv.isPermissionRoot()) {
-                break;
-            }
-            dv = dv.getOwner();
-        }
-        return retVal;
-    }
-
     public List<RoleAssignment> roleAssignments(Long roleId) {
         return roleAssignmentRepository.findByRoleId(roleId);
-    }
-
-    public RoleAssignmentSet assignmentsFor(final User u, final DvObject d) {
-        return d.accept(new DvObject.Visitor<RoleAssignmentSet>() {
-
-            @Override
-            public RoleAssignmentSet visit(Dataverse dv) {
-                return roleAssignments(u, dv);
-            }
-
-            @Override
-            public RoleAssignmentSet visit(Dataset ds) {
-                RoleAssignmentSet asgn = ds.getOwner().accept(this);
-                asgn.add(directRoleAssignments(u, ds));
-                return asgn;
-            }
-
-            @Override
-            public RoleAssignmentSet visit(DataFile df) {
-                RoleAssignmentSet asgn = df.getOwner().accept(this);
-                asgn.add(directRoleAssignments(u, df));
-                return asgn;
-            }
-        });
     }
 
     public Set<RoleAssignment> rolesAssignments(DvObject dv) {
@@ -203,7 +164,7 @@ public class DataverseRoleServiceBean implements java.io.Serializable {
      * edu.harvard.iq.dataverse.persistence.dataverse.Dataverse)
      */
     //public List<RoleAssignment> directRoleAssignments(@NotNull Set<? extends RoleAssignee> roleAssignees, @NotNull Collection<DvObject> dvos) {
-    public List<RoleAssignment> directRoleAssignments(Set<? extends RoleAssignee> roleAssignees, Collection<DvObject> dvos) {
+    public List<RoleAssignment> directRoleAssignmentsByAssigneesAndDvObjects(Set<? extends RoleAssignee> roleAssignees, Collection<DvObject> dvos) {
         if (dvos.isEmpty()) {
             return new ArrayList<>();
         }

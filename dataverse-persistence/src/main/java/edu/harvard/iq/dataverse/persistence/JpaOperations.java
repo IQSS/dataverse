@@ -8,6 +8,8 @@ public interface JpaOperations<ID, T extends JpaEntity<ID>> {
 
     List<T> findAll();
 
+    Long countAll();
+    
     Optional<T> findById(ID id);
 
     default T getById(ID id) {

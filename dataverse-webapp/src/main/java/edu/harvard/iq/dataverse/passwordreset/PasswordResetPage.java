@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.passwordreset;
 
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
@@ -14,6 +15,7 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
 import edu.harvard.iq.dataverse.persistence.user.PasswordResetData;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import io.vavr.control.Option;
 import org.apache.commons.lang.StringUtils;
@@ -49,6 +51,10 @@ public class PasswordResetPage implements java.io.Serializable {
     DataverseSession session;
     @Inject
     SettingsServiceBean settingsService;
+    @Inject
+    private SystemConfig systemConfig;
+    @Inject
+    private PermissionsWrapper permissionsWrapper;
 
     @EJB
     ActionLogServiceBean actionLogSvc;
@@ -95,7 +101,10 @@ public class PasswordResetPage implements java.io.Serializable {
 
     private List<String> passwordErrors;
 
-    public void init() {
+    public String init() {
+        if (systemConfig.isReadonlyMode()) {
+            return "/403.xhtml";
+        }
         if (token != null) {
             PasswordResetExecResponse passwordResetExecResponse = passwordResetService.processToken(token);
             passwordResetData = passwordResetExecResponse.getPasswordResetData();
@@ -111,6 +120,8 @@ public class PasswordResetPage implements java.io.Serializable {
                     .filter(resetData -> resetData.getReason() == PasswordResetData.Reason.UPGRADE_REQUIRED)
                     .peek(resetData -> consents = consentService.prepareConsentsForView(session.getLocale()));
         }
+        
+        return StringUtils.EMPTY;
     }
 
     public String sendPasswordResetLink() {
@@ -240,11 +251,10 @@ public class PasswordResetPage implements java.io.Serializable {
 
     public String getCustomPasswordResetAlertMessage() {
         String customPasswordResetAlertMessage = settingsService.getValueForKey(SettingsServiceBean.Key.PVCustomPasswordResetAlertMessage);
-        if (customPasswordResetAlertMessage != null && !customPasswordResetAlertMessage.isEmpty()) {
+        if (StringUtils.isNotEmpty(customPasswordResetAlertMessage)) {
             return customPasswordResetAlertMessage;
         } else {
-            String defaultPasswordResetAlertMessage = BundleUtil.getStringFromBundle("passwdReset.newPasswd.details");
-            return defaultPasswordResetAlertMessage;
+            return BundleUtil.getStringFromBundle("passwdReset.newPasswd.details");
         }
     }
 

@@ -7,6 +7,9 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.OAuth2TokenData;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.faces.view.ViewScoped;
 
 import javax.ejb.EJB;
@@ -23,8 +26,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.util.StringUtil.toOption;
 import static java.util.stream.Collectors.toList;
@@ -39,7 +40,7 @@ import static java.util.stream.Collectors.toList;
 @Named("OAuth2Page")
 public class OAuth2LoginBackingBean implements Serializable {
 
-    private static final Logger logger = Logger.getLogger(OAuth2LoginBackingBean.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(OAuth2LoginBackingBean.class);
     private static final long STATE_TIMEOUT = TimeUnit.MINUTES.toMillis(15);
     private int responseCode;
     private String responseBody;
@@ -83,7 +84,7 @@ public class OAuth2LoginBackingBean implements Serializable {
                     sb.append(line).append("\n");
                 }
                 error = new OAuth2Exception(-1, sb.toString(), "Remote system did not return an authorization code.");
-                logger.log(Level.INFO, "OAuth2Exception getting code parameter. HTTP return code: {0}. Message: {1} Message body: {2}", new Object[]{error.getHttpReturnCode(), error.getLocalizedMessage(), error.getMessageBody()});
+                logger.info("OAuth2Exception getting code parameter. HTTP return code: {}. Message: {} Message body: {}", error.getHttpReturnCode(), error.getLocalizedMessage(), error.getMessageBody());
                 return;
             }
         }
@@ -107,10 +108,15 @@ public class OAuth2LoginBackingBean implements Serializable {
             } else {
                 // login the user and redirect to HOME of intended page (if any).
                 session.setUser(dvUser);
-                final OAuth2TokenData tokenData = oauthUser.getTokenData();
-                tokenData.setUser(dvUser);
-                tokenData.setOauthProviderId(idp.getId());
-                oauth2Tokens.store(tokenData);
+                
+                if (!systemConfig.isReadonlyMode()) {
+                    final OAuth2TokenData tokenData = oauthUser.getTokenData();
+                    tokenData.setUser(dvUser);
+                    tokenData.setOauthProviderId(idp.getId());
+                    oauth2Tokens.store(tokenData);
+                } else {
+                    logger.warn("Can't store OAuth2TokenData when readonlyMode is turned on");
+                }
                 String destination = redirectPage.orElse("/");
                 HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
                 String prettyUrl = response.encodeRedirectURL(destination);
@@ -119,8 +125,8 @@ public class OAuth2LoginBackingBean implements Serializable {
 
         } catch (OAuth2Exception ex) {
             error = ex;
-            logger.log(Level.INFO, "OAuth2Exception caught. HTTP return code: {0}. Message: {1}. Message body: {2}", new Object[]{error.getHttpReturnCode(), error.getLocalizedMessage(), error.getMessageBody()});
-            Logger.getLogger(OAuth2LoginBackingBean.class.getName()).log(Level.SEVERE, null, ex);
+            logger.info("OAuth2Exception caught. HTTP return code: {}. Message: {}. Message body: {}", error.getHttpReturnCode(), error.getLocalizedMessage(), error.getMessageBody());
+            logger.error("", ex);
         }
 
     }
@@ -128,12 +134,12 @@ public class OAuth2LoginBackingBean implements Serializable {
     private AbstractOAuth2AuthenticationProvider parseState(String state) {
         String[] topFields = state.split("~", 2);
         if (topFields.length != 2) {
-            logger.log(Level.INFO, "Wrong number of fields in state string", state);
+            logger.info("Wrong number of fields in state string: {}", state);
             return null;
         }
         AbstractOAuth2AuthenticationProvider idp = authenticationSvc.getOAuth2Provider(topFields[0]);
         if (idp == null) {
-            logger.log(Level.INFO, "Can''t find IDP ''{0}''", topFields[0]);
+            logger.info("Can''t find IDP ''{}''", topFields[0]);
             return null;
         }
         String raw = StringUtil.decrypt(topFields[1], idp.clientSecret);
@@ -151,7 +157,7 @@ public class OAuth2LoginBackingBean implements Serializable {
                 return null;
             }
         } else {
-            logger.log(Level.INFO, "Invalid id field: ''{0}''", stateFields[0]);
+            logger.info("Invalid id field: ''{}''", stateFields[0]);
             return null;
         }
     }

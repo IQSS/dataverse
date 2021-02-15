@@ -269,11 +269,7 @@ public class DataversePage implements java.io.Serializable {
     }
 
     public boolean isUserCanChangeAllowMessageAndBanners() {
-        return session.getUser().isSuperuser();
-    }
-
-    public boolean isUserAdminForCurrentDataverse() {
-        return permissionService.isUserAdminForDataverse(session.getUser(), this.dataverse);
+        return dataverse.isAllowMessagesBanners() && (session.getUser().isSuperuser() || permissionService.isUserAdminForDataverse(session.getUser(), this.dataverse));
     }
 
     // -------------------- PRIVATE --------------------

@@ -301,6 +301,13 @@
     </div>
     
     <div id="dataverse-header-block">
+        <div class="alert alert-warning" jsf:rendered="#{systemConfig.isReadonlyMode()}">
+            <p class="text-block text-center" style="margin: 0 auto;">
+                <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;
+                <h:outputText value="#{bundle['header.readonlyMode.description']}"/>
+            </p>
+        </div>
+
         <ui:include src="text-messagesAndBanners.xhtml">
 
             <ui:param name="dataverse" value="#{dataverse != null ? dataverse : dataverseDao.findRootDataverse()}"/>

@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,6 +43,9 @@ public class ApiAuthorizationFilterTest {
     private UserServiceBean userService;
 
     @Mock
+    private SystemConfig systemConfig;
+
+    @Mock
     private HttpServletRequest request;
 
     @Mock
@@ -53,7 +57,7 @@ public class ApiAuthorizationFilterTest {
 
     @Before
     public void setUp() {
-        filter = new ApiAuthorizationFilter(dataverseSession, authenticationService, userService);
+        filter = new ApiAuthorizationFilter(dataverseSession, authenticationService, userService, systemConfig);
         lenient().when(request.getSession()).thenReturn(httpSession);
     }
 
@@ -89,6 +93,23 @@ public class ApiAuthorizationFilterTest {
         verify(userService, times(1)).updateLastApiUseTime(any(AuthenticatedUser.class));
         verify(dataverseSession, times(1)).setUser(any(AuthenticatedUser.class));
         verify(httpSession, times(1)).invalidate();
+    }
+
+    @Test
+    public void shouldNotUpdateLastApiUseTimeWhenLogIsByApiInReadonlyMode()
+            throws IOException, ServletException {
+        // given
+        when(dataverseSession.getUser()).thenReturn(GuestUser.get());
+        when(request.getParameter("key")).thenReturn(TOKEN);
+        when(authenticationService.lookupUser(TOKEN)).thenReturn(AUTHENTICATED_USER);
+        when(systemConfig.isReadonlyMode()).thenReturn(true);
+
+        // when
+        filter.doFilter(request, null, filterChain);
+
+        // then
+        verify(dataverseSession, times(1)).setUser(any(AuthenticatedUser.class));
+        verify(userService, never()).updateLastApiUseTime(any(AuthenticatedUser.class));
     }
 
     @Test

@@ -4,7 +4,9 @@ import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientDao;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.persistence.dataverse.DataverseRepository;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import edu.harvard.iq.dataverse.persistence.harvest.OAISet;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -17,6 +19,7 @@ import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import java.text.NumberFormat;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -39,10 +42,10 @@ public class DashboardPage implements java.io.Serializable {
     SettingsServiceBean settingsService;
 
     @Inject
-    DatasetDao datasetDao;
+    DatasetRepository datasetRepository;
 
     @Inject
-    DataverseDao dataverseDao;
+    DataverseRepository dataverseRepository;
 
 
     @Inject
@@ -64,9 +67,7 @@ public class DashboardPage implements java.io.Serializable {
     private Long dataverseId = null;
 
     public String init() {
-        if (!isSessionUserAuthenticated()) {
-            return "/loginpage.xhtml" + navigationWrapper.getRedirectPage();
-        } else if (!isSuperUser()) {
+        if (!session.getUser().isSuperuser()) {
             return navigationWrapper.notAuthorized();
         }
 
@@ -172,22 +173,21 @@ public class DashboardPage implements java.io.Serializable {
         return infoLabel;
     }
 
-    public boolean isSessionUserAuthenticated() {
-
-        if (session == null) {
-            return false;
-        }
-
-        if (session.getUser() == null) {
-            return false;
-        }
-
-        return session.getUser().isAuthenticated();
-
+    /**
+     * Maximum length in months for embargo on dataset.
+     *
+     * @return
+     */
+    public String getMaximumEmbargoLengthString() {
+        return NumberFormat.getInstance().format(getMaximumEmbargoLength());
     }
 
-    public boolean isSuperUser() {
-        return session.getUser().isSuperuser();
+    public int getMaximumEmbargoLength() {
+        return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaximumEmbargoLength).intValue();
+    }
+
+    public boolean isMaximumEmbargoLengthSet() {
+        return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaximumEmbargoLength) > 0;
     }
 
     /**
@@ -200,11 +200,11 @@ public class DashboardPage implements java.io.Serializable {
     }
 
     public Long getTotalNumberOfDatasets() {
-        return datasetDao.countDatasets();
+        return datasetRepository.countAll();
     }
 
     public Long getTotalNumberOfDataverses() {
-        return dataverseDao.countDataverses();
+        return dataverseRepository.countAll();
     }
+
 }
-    

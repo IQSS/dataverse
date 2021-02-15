@@ -73,10 +73,6 @@ public class ManagePermissionsPage implements java.io.Serializable {
     private ManagePermissionsService managePermissionsService;
 
 
-
-    @Inject
-    DataverseSession session;
-
     private DvObject dvObject;
     private Long id;
 
@@ -460,7 +456,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
     }
 
     private boolean isHasPermission(Permission manageMinorDatasetPermissions) {
-        return permissionService.userOn(this.session.getUser(), this.dvObject)
+        return permissionService.userOn(dvRequestService.getDataverseRequest().getUser(), this.dvObject)
                 .has(manageMinorDatasetPermissions);
     }
 

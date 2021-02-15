@@ -390,7 +390,9 @@ public abstract class AbstractApiBean {
     private AuthenticatedUser findAuthenticatedUserOrDie(String key) throws WrappedResponse {
         AuthenticatedUser authUser = authSvc.lookupUser(key);
         if (authUser != null) {
-            authUser = userSvc.updateLastApiUseTime(authUser);
+            if (!systemConfig.isReadonlyMode()) {
+                authUser = userSvc.updateLastApiUseTime(authUser);
+            }
 
             return authUser;
         }

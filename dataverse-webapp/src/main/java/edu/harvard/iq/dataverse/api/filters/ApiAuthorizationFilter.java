@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import javax.inject.Inject;
 import javax.servlet.Filter;
@@ -34,14 +35,17 @@ public class ApiAuthorizationFilter implements Filter {
     private DataverseSession session;
     private AuthenticationServiceBean authenticationService;
     private UserServiceBean userService;
+    private SystemConfig systemConfig;
 
     // -------------------- CONSTRUCTORS ---------------------
 
     @Inject
-    public ApiAuthorizationFilter(DataverseSession session, AuthenticationServiceBean authenticationService, UserServiceBean userService) {
+    public ApiAuthorizationFilter(DataverseSession session, AuthenticationServiceBean authenticationService, 
+                                  UserServiceBean userService, SystemConfig systemConfig) {
         this.session = session;
         this.authenticationService = authenticationService;
         this.userService = userService;
+        this.systemConfig = systemConfig;
     }
 
     // -------------------- LOGIC ---------------------
@@ -67,7 +71,9 @@ public class ApiAuthorizationFilter implements Filter {
             String token = getRequestApiKey(request);
             AuthenticatedUser user = authenticationService.lookupUser(token);
             if (user != null) {
-                user = userService.updateLastApiUseTime(user);
+                if (!systemConfig.isReadonlyMode()) {
+                    user = userService.updateLastApiUseTime(user);
+                }
                 session.setUser(user);
                 return FilterLogIn.TOKEN_LOG_IN;
             }

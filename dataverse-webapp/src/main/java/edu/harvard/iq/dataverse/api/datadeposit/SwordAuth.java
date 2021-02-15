@@ -42,11 +42,11 @@ public class SwordAuth extends AbstractApiBean {
             String msg = "User not found based on API token.";
             logger.fine(msg);
             throw new SwordAuthException(msg);
-        } else {
-
-            authenticatedUserFromToken = userSvc.updateLastApiUseTime(authenticatedUserFromToken);
-            return authenticatedUserFromToken;
         }
+        if (!systemConfig.isReadonlyMode()) {
+            authenticatedUserFromToken = userSvc.updateLastApiUseTime(authenticatedUserFromToken);
+        }
+        return authenticatedUserFromToken;
     }
 
 }

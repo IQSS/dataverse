@@ -47,6 +47,15 @@ public abstract class JpaRepository<ID, T extends JpaEntity<ID>> implements JpaO
     }
 
     @Override
+    public Long countAll() {
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaQuery<Long> query = criteriaBuilder.createQuery(Long.class);
+        query.select(criteriaBuilder.count(query.from(entityClass)));
+        
+        return em.createQuery(query).getSingleResult();
+    }
+
+    @Override
     public Optional<T> findById(ID id) {
         return ofNullable(em.find(entityClass, id));
     }

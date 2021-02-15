@@ -151,6 +151,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     @Inject
     private DatasetThumbnailService datasetThumbnailService;
 
+    @Inject
+    private ImageThumbConverter imageThumbConverter;
+
     private Dataset dataset = new Dataset();
 
     private String selectedFileIdsString = null;
@@ -1371,15 +1374,15 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         // ATTENTION! TODO: the current version of the method below may not be checking if files are already cached!
         if ("application/pdf".equals(mimeType)) {
-            imageThumbFileName = ImageThumbConverter.generatePDFThumbnailFromFile(fileSystemName, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
+            imageThumbFileName = imageThumbConverter.generatePDFThumbnailFromFile(fileSystemName, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
         } else if (mimeType != null && mimeType.startsWith("image/")) {
-            imageThumbFileName = ImageThumbConverter.generateImageThumbnailFromFile(fileSystemName, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
+            imageThumbFileName = imageThumbConverter.generateImageThumbnailFromFile(fileSystemName, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
         }
 
         if (imageThumbFileName != null) {
             File imageThumbFile = new File(imageThumbFileName);
             if (imageThumbFile.exists()) {
-                String previewAsBase64 = ImageThumbConverter.getImageAsBase64FromFile(imageThumbFile);
+                String previewAsBase64 = imageThumbConverter.getImageAsBase64FromFile(imageThumbFile);
                 if (previewAsBase64 != null) {
                     temporaryThumbnailsMap.put(fileSystemId, previewAsBase64);
                     return true;

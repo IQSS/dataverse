@@ -304,5 +304,9 @@ public class Guestbook implements Serializable {
         return Objects.equals(getId(), other.getId());
     }
 
+    @Override
+    public String toString() {
+        return "Guestbook [id=" + id + "]";
+    }
 
 }

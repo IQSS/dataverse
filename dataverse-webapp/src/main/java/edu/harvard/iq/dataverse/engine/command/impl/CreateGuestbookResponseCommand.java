@@ -11,6 +11,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.guestbook.GuestbookResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -20,6 +22,8 @@ import java.util.Date;
  */
 @RequiredPermissions({})
 public class CreateGuestbookResponseCommand extends AbstractVoidCommand {
+    private static final Logger log = LoggerFactory.getLogger(CreateGuestbookResponseCommand.class);
+
     private final GuestbookResponse response;
 
     public CreateGuestbookResponseCommand(DataverseRequest aRequest, GuestbookResponse responseIn, Dataset affectedDataset) {
@@ -31,7 +35,12 @@ public class CreateGuestbookResponseCommand extends AbstractVoidCommand {
     protected void executeImpl(CommandContext ctxt) {
         Timestamp createDate = new Timestamp(new Date().getTime());
         response.setResponseTime(createDate);
-        ctxt.responses().save(response);
+        
+        if (ctxt.systemConfig().isReadonlyMode()) {
+            log.info(response.toString());
+        } else {
+            ctxt.responses().save(response);
+        }
     }
 
 }

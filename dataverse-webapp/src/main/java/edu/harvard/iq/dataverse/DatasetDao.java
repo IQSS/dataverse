@@ -481,16 +481,6 @@ public class DatasetDao implements java.io.Serializable {
         return merge(dataset);
     }
 
-    // persist assigned thumbnail in a single one-field-update query:
-    // (the point is to avoid doing an em.merge() on an entire dataset object...)
-    public void assignDatasetThumbnailByNativeQuery(Long datasetId, Long dataFileId) {
-        try {
-            em.createNativeQuery("UPDATE dataset SET thumbnailfile_id=" + dataFileId + " WHERE id=" + datasetId).executeUpdate();
-        } catch (Exception ex) {
-            // it's ok to just ignore... 
-        }
-    }
-
     public void assignDatasetThumbnailByNativeQuery(Dataset dataset, DataFile dataFile) {
         try {
             em.createNativeQuery("UPDATE dataset SET thumbnailfile_id=" + dataFile.getId() + " WHERE id=" + dataset.getId()).executeUpdate();
@@ -502,11 +492,6 @@ public class DatasetDao implements java.io.Serializable {
     public WorkflowComment addWorkflowComment(WorkflowComment workflowComment) {
         em.persist(workflowComment);
         return workflowComment;
-    }
-
-    public Long countDatasets() {
-        TypedQuery<Long> countQuery = em.createQuery("SELECT count(ds) FROM Dataset ds", Long.class);
-        return countQuery.getSingleResult();
     }
 
     @Asynchronous

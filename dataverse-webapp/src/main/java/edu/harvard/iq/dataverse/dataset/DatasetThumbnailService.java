@@ -13,6 +13,7 @@ import org.apache.commons.io.IOUtils;
 
 import javax.ejb.Stateless;
 import javax.imageio.ImageIO;
+import javax.inject.Inject;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -39,6 +40,9 @@ public class DatasetThumbnailService {
     public static String datasetLogoThumbnail = "dataset_logo";
     public static String thumb48addedByImageThumbConverter = ".thumb48";
     
+    @Inject
+    private ImageThumbConverter imageThumbConverter;
+
     private DataAccess dataAccess = DataAccess.dataAccess();
 
     
@@ -50,21 +54,10 @@ public class DatasetThumbnailService {
             return thumbnails;
         }
         if (considerDatasetLogoAsCandidate) {
-//            Path path = Paths.get(dataset.getFileSystemDirectory() + File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
-//            if (Files.exists(path)) {
-//                logger.fine("Thumbnail created from dataset logo exists!");
-//                File file = path.toFile();
-//                try {
-//                    byte[] bytes = Files.readAllBytes(file.toPath());
-            StorageIO<Dataset> storageIO = null;
-
-            try {
-                storageIO = dataAccess.getStorageIO(dataset);
-            } catch (IOException ioex) {
-            }
 
             InputStream in = null;
             try {
+                StorageIO<Dataset> storageIO = dataAccess.getStorageIO(dataset);
                 in = storageIO.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
             } catch (Exception ioex) {
             }
@@ -87,11 +80,10 @@ public class DatasetThumbnailService {
         for (FileMetadata fileMetadata : dataset.getLatestVersion().getFileMetadatas()) {
             DataFile dataFile = fileMetadata.getDataFile();
 
-            if (dataFile != null && FileUtil.isThumbnailSupported(dataFile)
-                    && ImageThumbConverter.isThumbnailAvailable(dataFile)
+            if (dataFile != null && imageThumbConverter.isThumbnailAvailable(dataFile)
                     && fileMetadata.getTermsOfUse().getTermsOfUseType() != TermsOfUseType.RESTRICTED) {
                 String imageSourceBase64 = null;
-                imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(dataFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+                imageSourceBase64 = imageThumbConverter.getImageThumbnailAsBase64(dataFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 
                 if (imageSourceBase64 != null) {
                     DatasetThumbnail datasetThumbnail = new DatasetThumbnail(imageSourceBase64, dataFile);
@@ -110,7 +102,7 @@ public class DatasetThumbnailService {
      * @param datasetVersion
      * @return
      */
-    public DatasetThumbnail getThumbnail(Dataset dataset, DatasetVersion datasetVersion) {
+    private DatasetThumbnail getThumbnailInternal(Dataset dataset) {
         if (dataset == null) {
             return null;
         }
@@ -156,12 +148,12 @@ public class DatasetThumbnailService {
                     logger.fine("Dataset (id :" + dataset.getId() + ") does not have a thumbnail and is 'Use Generic'.");
                     return null;
                 } else {
-                    thumbnailFile = attemptToAutomaticallySelectThumbnailFromDataFiles(dataset, datasetVersion);
+                    thumbnailFile = attemptToAutomaticallySelectThumbnailFromDataFiles(dataset);
                     if (thumbnailFile == null) {
                         logger.fine("Dataset (id :" + dataset.getId() + ") does not have a thumbnail available that could be selected automatically.");
                         return null;
                     } else {
-                        String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(thumbnailFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+                        String imageSourceBase64 = imageThumbConverter.getImageThumbnailAsBase64(thumbnailFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
                         DatasetThumbnail defaultDatasetThumbnail = new DatasetThumbnail(imageSourceBase64, thumbnailFile);
                         logger.fine("thumbnailFile (id :" + thumbnailFile.getId() + ") will get thumbnail through automatic selection from DataFile id " + thumbnailFile.getId());
                         return defaultDatasetThumbnail;
@@ -171,7 +163,7 @@ public class DatasetThumbnailService {
                 logger.fine("Dataset (id :" + dataset.getId() + ") has a thumbnail the user selected but the file must have later been restricted. Returning null.");
                 return null;
             } else {
-                String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(thumbnailFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+                String imageSourceBase64 = imageThumbConverter.getImageThumbnailAsBase64(thumbnailFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
                 DatasetThumbnail userSpecifiedDatasetThumbnail = new DatasetThumbnail(imageSourceBase64, thumbnailFile);
                 logger.fine("Dataset (id :" + dataset.getId() + ")  will get thumbnail the user specified from DataFile id " + thumbnailFile.getId());
                 return userSpecifiedDatasetThumbnail;
@@ -184,7 +176,7 @@ public class DatasetThumbnailService {
         if (dataset == null) {
             return null;
         }
-        return getThumbnail(dataset, null);
+        return getThumbnailInternal(dataset);
     }
 
     public boolean deleteDatasetLogo(Dataset dataset) {
@@ -228,7 +220,7 @@ public class DatasetThumbnailService {
      * @param datasetVersion
      * @return
      */
-    public DataFile attemptToAutomaticallySelectThumbnailFromDataFiles(Dataset dataset, DatasetVersion datasetVersion) {
+    private DataFile attemptToAutomaticallySelectThumbnailFromDataFiles(Dataset dataset) {
         if (dataset == null) {
             return null;
         }
@@ -238,12 +230,7 @@ public class DatasetThumbnailService {
             return null;
         }
 
-        if (datasetVersion == null) {
-            logger.fine("getting a published version of the dataset");
-            // We want to use published files only when automatically selecting 
-            // dataset thumbnails.
-            datasetVersion = dataset.getReleasedVersion();
-        }
+        DatasetVersion datasetVersion = dataset.getReleasedVersion();
 
         // No published version? - No [auto-selected] thumbnail for you.
         if (datasetVersion == null) {
@@ -254,8 +241,7 @@ public class DatasetThumbnailService {
             DataFile testFile = fmd.getDataFile();
             // We don't want to use a restricted image file as the dedicated thumbnail:
             if (fmd.getTermsOfUse().getTermsOfUseType() != TermsOfUseType.RESTRICTED && 
-                    FileUtil.isThumbnailSupported(testFile) && 
-                    ImageThumbConverter.isThumbnailAvailable(testFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE)) {
+                    imageThumbConverter.isThumbnailAvailable(testFile, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE)) {
                 return testFile;
             }
         }
@@ -331,7 +317,7 @@ public class DatasetThumbnailService {
             logger.severe(ex.getMessage());
             return null;
         }
-        String thumbFileLocation = ImageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE, tmpFileForResize.toPath().toString());
+        String thumbFileLocation = imageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE, tmpFileForResize.toPath().toString());
         logger.fine("thumbFileLocation = " + thumbFileLocation);
         logger.fine("tmpFileLocation=" + tmpFileForResize.toPath().toString());
         //now we must save the updated thumbnail 
@@ -364,8 +350,7 @@ public class DatasetThumbnailService {
             String base64Image = datasetThumbnail.getBase64image();
             String leadingStringToRemove = FileUtil.DATA_URI_SCHEME;
             String encodedImg = base64Image.substring(leadingStringToRemove.length());
-            byte[] decodedImg = null;
-            decodedImg = Base64.getDecoder().decode(encodedImg.getBytes(StandardCharsets.UTF_8));
+            byte[] decodedImg = Base64.getDecoder().decode(encodedImg.getBytes(StandardCharsets.UTF_8));
             logger.fine("returning this many bytes for  " + "dataset id: " + dataset.getId() + ", persistentId: " + dataset.getIdentifier() + " :" + decodedImg.length);
             ByteArrayInputStream nonDefaultDatasetThumbnail = new ByteArrayInputStream(decodedImg);
             logger.fine("For dataset id " + dataset.getId() + " a thumbnail was found and is being returned.");

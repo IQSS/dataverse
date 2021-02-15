@@ -95,7 +95,10 @@ public class ActionLogRecord implements java.io.Serializable {
     public String toString() {
         return "[ActionLogRecord id:" + getId() + " type:" + getActionType()
                 + "/" + getActionSubType()
-                + " result:" + getActionResult() + "]";
+                + " result:" + getActionResult() 
+                + " userIdentifier:" + getUserIdentifier()
+                + " info:" + getInfo()
+                + "]";
     }
 
     @PrePersist

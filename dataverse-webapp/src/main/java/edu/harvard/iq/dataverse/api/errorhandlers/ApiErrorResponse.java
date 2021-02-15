@@ -2,6 +2,8 @@ package edu.harvard.iq.dataverse.api.errorhandlers;
 
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 
+import javax.ws.rs.core.Response;
+
 public class ApiErrorResponse {
 
     private String status;
@@ -45,5 +47,12 @@ public class ApiErrorResponse {
     public ApiErrorResponse withIncidentId(String incidentId) {
         this.incidentId = incidentId;
         return this;
+    }
+
+    public Response asJaxRsResponse() {
+        return Response.status(getCode())
+                .entity(this)
+                .type("application/json")
+                .build();
     }
 }

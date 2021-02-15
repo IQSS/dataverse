@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -81,6 +82,9 @@ public class DataverseDao implements java.io.Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+
+    @Inject
+    private ImageThumbConverter imageThumbConverter;
 
     public Dataverse save(Dataverse dataverse) {
 
@@ -248,9 +252,9 @@ public class DataverseDao implements java.io.Serializable {
             String logoThumbNailPath;
 
             if (dataverseLogoFile.exists()) {
-                logoThumbNailPath = ImageThumbConverter.generateImageThumbnailFromFile(dataverseLogoFile.getAbsolutePath(), 48);
+                logoThumbNailPath = imageThumbConverter.generateImageThumbnailFromFile(dataverseLogoFile.getAbsolutePath(), 48);
                 if (logoThumbNailPath != null) {
-                    return ImageThumbConverter.getImageAsBase64FromFile(new File(logoThumbNailPath));
+                    return imageThumbConverter.getImageAsBase64FromFile(new File(logoThumbNailPath));
 
                 }
             }

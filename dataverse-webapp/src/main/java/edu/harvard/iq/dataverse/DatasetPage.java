@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.datafile.FileDownloadServiceBean;
 import edu.harvard.iq.dataverse.dataset.DatasetService;
 import edu.harvard.iq.dataverse.dataset.DatasetSummaryService;
@@ -50,6 +51,7 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrlUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.control.Either;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
@@ -79,6 +81,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static edu.harvard.iq.dataverse.dataset.DatasetThumbnailService.datasetLogoThumbnail;
+import static edu.harvard.iq.dataverse.dataset.DatasetThumbnailService.thumb48addedByImageThumbConverter;
 
 /**
  * @author gdurand
@@ -128,6 +133,8 @@ public class DatasetPage implements java.io.Serializable {
     private DatasetThumbnailService datasetThumbnailService;
     @Inject
     private DatasetSummaryService datasetSummaryService;
+    @Inject
+    private SystemConfig systemConfig;
 
     private Dataset dataset = new Dataset();
 
@@ -145,6 +152,7 @@ public class DatasetPage implements java.io.Serializable {
     private boolean stateChanged = false;
     private Boolean sameTermsOfUseForAllFiles;
     private String thumbnailString = null;
+    private boolean thumbnailStringIsCached = false;
     private String returnToAuthorReason;
     private String contributorMessageToCurator;
 
@@ -160,18 +168,21 @@ public class DatasetPage implements java.io.Serializable {
         // This method gets called 30 (!) times, just to load the page!
         // - so let's cache that string the first time it's called.
 
-        if (thumbnailString != null) {
-            if ("".equals(thumbnailString)) {
-                return null;
-            }
+        if (thumbnailStringIsCached) {
             return thumbnailString;
         }
-
+        
+        if (systemConfig.isReadonlyMode()) {
+            thumbnailString = thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(dataset, workingVersion.getId(), false);
+            thumbnailStringIsCached = true;
+            return thumbnailString;
+        }
+        
         if (!readOnly) {
             DatasetThumbnail datasetThumbnail = datasetThumbnailService.getThumbnail(dataset);
             if (datasetThumbnail == null) {
-                thumbnailString = "";
-                return null;
+                thumbnailStringIsCached = true;
+                return thumbnailString;
             }
 
             if (datasetThumbnail.isFromDataFile()) {
@@ -183,16 +194,13 @@ public class DatasetPage implements java.io.Serializable {
             }
 
             thumbnailString = datasetThumbnail.getBase64image();
+            thumbnailStringIsCached = true;
+            return thumbnailString;
         } else {
             thumbnailString = thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(dataset, workingVersion.getId(), !workingVersion.isDraft());
-            if (thumbnailString == null) {
-                thumbnailString = "";
-                return null;
-            }
-
-
+            thumbnailStringIsCached = true;
+            return thumbnailString;
         }
-        return thumbnailString;
     }
 
     public void setThumbnailString(String thumbnailString) {
@@ -276,6 +284,11 @@ public class DatasetPage implements java.io.Serializable {
 
     public boolean canViewUnpublishedDataset() {
         return permissionsWrapper.canViewUnpublishedDataset(dataset);
+    }
+
+    public boolean canLinkDatasetToSomeDataverse() {
+        return !systemConfig.isReadonlyMode() && session.getUser().isAuthenticated() 
+                && workingVersion.isDeaccessioned() && dataset.isReleased();
     }
 
     /*
@@ -843,10 +856,6 @@ public class DatasetPage implements java.io.Serializable {
     private String returnToDatasetOnly() {
         dataset = datasetDao.find(dataset.getId());
         return "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + "&faces-redirect=true";
-    }
-
-    public String cancel() {
-        return returnToLatestVersion();
     }
 
     public void refreshAllLocks() {

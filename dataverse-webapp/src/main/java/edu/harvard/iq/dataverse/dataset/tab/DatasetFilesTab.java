@@ -94,6 +94,7 @@ public class DatasetFilesTab implements Serializable {
     private FileDownloadRequestHelper fileDownloadRequestHelper;
     private TermsOfUseFormMapper termsOfUseFormMapper;
     private EmbargoAccessService embargoAccess;
+    private ImageThumbConverter imageThumbConverter;
 
     private PermissionServiceBean permissionService;
     private PermissionsWrapper permissionsWrapper;
@@ -174,7 +175,8 @@ public class DatasetFilesTab implements Serializable {
                            GuestbookResponseServiceBean guestbookResponseService, EmbargoAccessService embargoAccess,
                            SettingsServiceBean settingsService, EjbDataverseEngine commandEngine,
                            ExternalToolServiceBean externalToolService, TermsOfUseFormMapper termsOfUseFormMapper,
-                           FileDownloadRequestHelper fileDownloadRequestHelper, GuestbookResponseDialog guestbookResponseDialog) {
+                           FileDownloadRequestHelper fileDownloadRequestHelper, GuestbookResponseDialog guestbookResponseDialog,
+                           ImageThumbConverter imageThumbConverter) {
         this.fileDownloadHelper = fileDownloadHelper;
         this.datafileService = datafileService;
         this.permissionService = permissionService;
@@ -190,6 +192,7 @@ public class DatasetFilesTab implements Serializable {
         this.externalToolService = externalToolService;
         this.termsOfUseFormMapper = termsOfUseFormMapper;
         this.guestbookResponseDialog = guestbookResponseDialog;
+        this.imageThumbConverter = imageThumbConverter;
     }
 
 
@@ -236,6 +239,8 @@ public class DatasetFilesTab implements Serializable {
     }
 
     public boolean isFilesTabDisplayable() {
+        assert dataset != null;
+        assert embargoAccess != null;
         return !embargoAccess.isRestrictedByEmbargo(dataset);
     }
 
@@ -369,7 +374,7 @@ public class DatasetFilesTab implements Serializable {
         }
 
 
-        String thumbnailAsBase64 = ImageThumbConverter.getImageThumbnailAsBase64(fileMetadata.getDataFile(), ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
+        String thumbnailAsBase64 = imageThumbConverter.getImageThumbnailAsBase64(fileMetadata.getDataFile(), ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
 
 
         //if (datafileService.isThumbnailAvailable(fileMetadata.getDataFile())) {
@@ -456,7 +461,7 @@ public class DatasetFilesTab implements Serializable {
         
         if (versionContainsNonDownloadableFiles) {
             fileAccessRequestMultiButtonRequired = session.getUser().isAuthenticated();
-            fileAccessRequestMultiSignUpButtonRequired = session.getUser().isAuthenticated();
+            fileAccessRequestMultiSignUpButtonRequired = !session.getUser().isAuthenticated();
         }
         
         downloadButtonAvailable = versionContainsDownloadableFiles;

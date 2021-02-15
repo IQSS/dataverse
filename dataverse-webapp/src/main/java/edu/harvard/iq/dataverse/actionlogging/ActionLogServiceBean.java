@@ -3,10 +3,14 @@ package edu.harvard.iq.dataverse.actionlogging;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import edu.harvard.iq.dataverse.persistence.ActionLogRecord;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 
@@ -18,8 +22,13 @@ import java.util.Date;
 @Stateless
 public class ActionLogServiceBean {
 
+    private static final Logger logger = LoggerFactory.getLogger(ActionLogServiceBean.class);
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+
+    @Inject
+    private SystemConfig systemConfig;
 
     /**
      * Log the record. Set default values.
@@ -31,11 +40,15 @@ public class ActionLogServiceBean {
         if (rec.getEndTime() == null) {
             rec.setEndTime(new Date());
         }
-        if (rec.getActionResult() == null
-                && rec.getActionType() != ActionLogRecord.ActionType.Command) {
+        if (rec.getActionResult() == null) {
             rec.setActionResult(ActionLogRecord.Result.OK);
         }
-        em.persist(rec);
+        
+        if (systemConfig.isReadonlyMode()) {
+            logger.info(rec.toString());
+        } else {
+            em.persist(rec);
+        }
     }
 
 }

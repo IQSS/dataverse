@@ -32,7 +32,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DatasetWidgetsPage.class.getCanonicalName());
 
     @EJB
-    DatasetDao datasetDao;
+    private DatasetDao datasetDao;
 
     @Inject
     private PermissionsWrapper permissionsWrapper;
@@ -42,6 +42,9 @@ public class DatasetWidgetsPage implements java.io.Serializable {
 
     @Inject
     private DatasetThumbnailService datasetThumbnailService;
+
+    @Inject
+    private ImageThumbConverter imageThumbConverter;
 
     private Long datasetId;
     private Dataset dataset;
@@ -129,7 +132,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
 
         thumbnailOperation = Option.of(Lazy.of(() -> datasetService.changeDatasetThumbnail(dataset, datasetFileThumbnailToSwitchTo)));
 
-        String base64image = ImageThumbConverter.getImageThumbnailAsBase64(datasetFileThumbnailToSwitchTo, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+        String base64image = imageThumbConverter.getImageThumbnailAsBase64(datasetFileThumbnailToSwitchTo, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
         datasetThumbnail = new DatasetThumbnail(base64image, datasetFileThumbnailToSwitchTo);
     }
 
@@ -160,7 +163,7 @@ public class DatasetWidgetsPage implements java.io.Serializable {
             Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, null, ex);
             return;
         }
-        String base64image = ImageThumbConverter.generateImageThumbnailFromFileAsBase64(file, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+        String base64image = imageThumbConverter.generateImageThumbnailFromFileAsBase64(file, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
         if (base64image != null) {
             datasetThumbnail = new DatasetThumbnail(base64image, datasetFileThumbnailToSwitchTo);
         } else {
