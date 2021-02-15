@@ -2296,5 +2296,73 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         datasetService.merge(dataset);
     	return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
     }
-}
 
+    @GET
+    @Path("{identifier}/timestamps")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getTimestamps(@PathParam("identifier") String id) {
+
+        Dataset dataset = null;
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+        try {
+            dataset = findDatasetOrDie(id);
+            User u = findUserOrDie();
+            Set<Permission> perms = new HashSet<Permission>();
+            perms.add(Permission.ViewUnpublishedDataset);
+            boolean canSeeDraft = permissionSvc.hasPermissionsFor(u, dataset, perms);
+            JsonObjectBuilder timestamps = Json.createObjectBuilder();
+            // Basic info if it's released
+            if (dataset.isReleased()) {
+                timestamps.add("createTime", formatter.format(dataset.getCreateDate().toLocalDateTime()));
+                if (dataset.getPublicationDate() != null) {
+                    timestamps.add("publicationTime", formatter.format(dataset.getPublicationDate().toLocalDateTime()));
+                }
+
+                if (dataset.getLastExportTime() != null) {
+                    timestamps.add("lastMetadataExportTime", formatter.format(dataset.getLastExportTime().toInstant()));
+                }
+
+                if (dataset.getMostRecentMajorVersionReleaseDate() != null) {
+                    timestamps.add("lastMajorVersionReleaseTime",
+                            formatter.format(dataset.getMostRecentMajorVersionReleaseDate().toInstant()));
+                }
+                if (dataset.getIndexTime() != null) {
+                    timestamps.add("hasStaleIndex",
+                            dataset.getIndexTime().compareTo(dataset.getModificationTime()) < 0);
+                } else {
+                    timestamps.add("hasStaleIndex", true);
+                }
+                if (dataset.getPermissionModificationTime() != null) {
+                    if (dataset.getPermissionIndexTime() != null) {
+                        timestamps.add("hasStalePermissionIndex", dataset.getPermissionIndexTime()
+                                .compareTo(dataset.getPermissionModificationTime()) < 0);
+                    } else {
+                        timestamps.add("hasStalePermissionIndex", true);
+                    }
+                }
+            }
+            // More detail if you can see a draft
+            if (canSeeDraft) {
+                timestamps.add("lastUpdateTime", formatter.format(dataset.getModificationTime().toLocalDateTime()));
+                if (dataset.getIndexTime() != null) {
+                    timestamps.add("lastIndexTime", formatter.format(dataset.getIndexTime().toLocalDateTime()));
+                }
+                if (dataset.getPermissionModificationTime() != null) {
+                    timestamps.add("lastPermissionUpdateTime",
+                            formatter.format(dataset.getPermissionModificationTime().toLocalDateTime()));
+                }
+                if (dataset.getPermissionIndexTime() != null) {
+                    timestamps.add("lastPermissionIndexTime",
+                            formatter.format(dataset.getPermissionIndexTime().toLocalDateTime()));
+                }
+                if (dataset.getGlobalIdCreateTime() != null) {
+                    timestamps.add("globalIdCreateTime", formatter.format(dataset.getGlobalIdCreateTime().toInstant()));
+                }
+
+            }
+            return ok(timestamps);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+}
