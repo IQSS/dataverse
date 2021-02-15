@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -180,19 +181,23 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
         
         final Dataset ds = ctxt.em().merge(theDataset);
-        
+        //Remove any pre-pub workflow lock (not needed as WorkflowServiceBean.workflowComplete() should already have removed it after setting the finalizePublication lock?)
+        ctxt.datasets().removeDatasetLocks(ds, DatasetLock.Reason.Workflow);
         ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
             try {
-                ctxt.workflows().start(wf, buildContext(ds, TriggerType.PostPublishDataset, datasetExternallyReleased));
+                WorkflowContext wfc = buildContext(ds, TriggerType.PostPublishDataset, datasetExternallyReleased);
+                // Set workflow lock before returning and before releasing the
+                // finalizePublication lock
+                ctxt.workflows().lockDataset(wfc);
+                ctxt.workflows().start(wf, wfc);
             } catch (CommandException ex) {
                 logger.log(Level.SEVERE, "Error invoking post-publish workflow: " + ex.getMessage(), ex);
             }
         });
-        
+
         Dataset readyDataset = ctxt.em().merge(theDataset);
         
-        // Finally, unlock the dataset:
-        ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.Workflow);
+        // Finally, unlock the dataset (leaving any post-publish workflow lock in place)
         ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.finalizePublication);
         if ( theDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
             ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.InReview);

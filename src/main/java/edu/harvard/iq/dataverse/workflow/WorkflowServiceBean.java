@@ -109,7 +109,6 @@ public class WorkflowServiceBean {
     @Asynchronous
     public void start(Workflow wf, WorkflowContext ctxt) throws CommandException {
         ctxt = refresh(ctxt, retrieveRequestedSettings( wf.getRequiredSettings()), getCurrentApiToken(ctxt.getRequest().getAuthenticatedUser()));
-        lockDataset(ctxt);
         forward(wf, ctxt);
     }
     
@@ -287,7 +286,7 @@ public class WorkflowServiceBean {
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    void lockDataset( WorkflowContext ctxt ) throws CommandException {
+    public void lockDataset( WorkflowContext ctxt ) throws CommandException {
         DatasetLock datasetLock = new DatasetLock(DatasetLock.Reason.Workflow, ctxt.getRequest().getAuthenticatedUser());
         /* Note that this method directly adds a lock to the database rather than adding it via 
          * engine.submit(new AddLockCommand(ctxt.getRequest(), ctxt.getDataset(), datasetLock));
@@ -326,8 +325,6 @@ public class WorkflowServiceBean {
         
             try {
         if ( ctxt.getType() == TriggerType.PrePublishDataset ) {
-                unlockDataset(ctxt);
-                ctxt.setLock(null);
                 ctxt = refresh(ctxt);
                 //Now lock for FinalizePublication - this block mirrors that in PublishDatasetCommand
                 AuthenticatedUser user = ctxt.getRequest().getAuthenticatedUser();
@@ -349,6 +346,8 @@ public class WorkflowServiceBean {
                 info += validatePhysicalFiles ? "Validating Datafiles Asynchronously" : "";
                 lock.setInfo(info);
                 datasets.addDatasetLock(ctxt.getDataset(), lock);
+                unlockDataset(ctxt);
+                ctxt.setLock(null); //the workflow lock
                 //Refreshing merges the dataset
                 ctxt = refresh(ctxt);
                 //Then call Finalize

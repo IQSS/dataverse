@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflow.Workflow;
+import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import java.util.Date;
 import java.util.List;
@@ -91,7 +92,11 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             // We start a workflow
             theDataset = ctxt.em().merge(theDataset);
             ctxt.em().flush();
-            ctxt.workflows().start(prePubWf.get(), buildContext(theDataset, TriggerType.PrePublishDataset, datasetExternallyReleased));
+            
+            WorkflowContext wfc = buildContext(theDataset, TriggerType.PrePublishDataset, datasetExternallyReleased);
+            //add workflow lock before returning
+            ctxt.workflows().lockDataset(wfc);
+            ctxt.workflows().start(prePubWf.get(), wfc);
             return new PublishDatasetResult(theDataset, Status.Workflow);
             
         } else{
