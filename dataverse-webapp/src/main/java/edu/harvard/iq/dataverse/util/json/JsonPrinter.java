@@ -348,9 +348,8 @@ public class JsonPrinter {
 
         bld.add("metadataBlocks", jsonByBlocks(dsv.getDatasetFields(), excludeEmailFields));
 
-        if(!dsv.getDataset().hasActiveEmbargo()) {
-            bld.add("files", jsonFileMetadatas(dsv.getFileMetadatas()));
-        }
+        bld.add("files", dsv.getDataset().hasActiveEmbargo() ? 
+                Json.createArrayBuilder() : jsonFileMetadatas(dsv.getFileMetadatas()));
 
         return bld;
     }

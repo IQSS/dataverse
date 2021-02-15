@@ -121,8 +121,6 @@ public class ExportServiceTest {
 
         //then
         Assert.assertEquals(UnitTestUtils.readFileToString("exportdata/ddi.xml"), exportedDataset.get());
-
-        System.out.println(exportedDataset.get());
     }
 
     @Test

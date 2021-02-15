@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.api.dto;
 
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**

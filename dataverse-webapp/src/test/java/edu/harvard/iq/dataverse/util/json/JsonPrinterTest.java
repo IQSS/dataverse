@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util.json;
 
+import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.common.Util;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
@@ -7,11 +8,11 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFileCategory;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFileTag;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
-import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -26,89 +27,46 @@ import org.junit.Test;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import java.text.ParseException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 public class JsonPrinterTest {
 
-    // Centralize JsonParserTest.MockDatasetFieldSvc? See also https://github.com/IQSS/dataverse/issues/3413 and https://github.com/IQSS/dataverse/issues/3777
-    JsonParserTest.MockDatasetFieldSvc datasetFieldTypeSvc = null;
+    private MetadataBlock citationBlock;
+    private DatasetFieldType contactFieldType;
+    private DatasetFieldType contactEmailFieldType;
+    private DatasetFieldType contactNameFieldType;
+    private DatasetFieldType contactAffiliationFieldType;
 
     @Before
     public void setUp() {
-        datasetFieldTypeSvc = new JsonParserTest.MockDatasetFieldSvc();
 
-        DatasetFieldType titleType = datasetFieldTypeSvc.add(new DatasetFieldType("title", FieldType.TEXTBOX, false));
-        DatasetFieldType authorType = datasetFieldTypeSvc.add(new DatasetFieldType("author", FieldType.TEXT, true));
-        Set<DatasetFieldType> authorChildTypes = new HashSet<>();
-        authorChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("authorName", FieldType.TEXT, false)));
-        authorChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("authorAffiliation", FieldType.TEXT, false)));
-        authorChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("authorIdentifier", FieldType.TEXT, false)));
-        DatasetFieldType authorIdentifierSchemeType = datasetFieldTypeSvc.add(new DatasetFieldType("authorIdentifierScheme", FieldType.TEXT, false));
-        authorIdentifierSchemeType.setAllowControlledVocabulary(true);
-        authorIdentifierSchemeType.setControlledVocabularyValues(Arrays.asList(
-                // FIXME: Why aren't these enforced? Should be ORCID, etc.
-                new ControlledVocabularyValue(1l, "foo", authorIdentifierSchemeType),
-                new ControlledVocabularyValue(2l, "bar", authorIdentifierSchemeType),
-                new ControlledVocabularyValue(3l, "baz", authorIdentifierSchemeType)
-        ));
-        authorChildTypes.add(datasetFieldTypeSvc.add(authorIdentifierSchemeType));
-        for (DatasetFieldType t : authorChildTypes) {
-            t.setParentDatasetFieldType(authorType);
+        contactFieldType = new DatasetFieldType("datasetContact", FieldType.TEXT, true);
+        contactEmailFieldType = new DatasetFieldType(DatasetFieldConstant.datasetContactEmail, FieldType.EMAIL, false);
+        contactNameFieldType = new DatasetFieldType("datasetContactName", FieldType.TEXT, false);
+        contactAffiliationFieldType = new DatasetFieldType("datasetContactAffiliation", FieldType.TEXT, false);
+        List<DatasetFieldType> contactChildrenFieldTypes = Lists.newArrayList(contactEmailFieldType, contactNameFieldType, contactAffiliationFieldType);
+        for (DatasetFieldType t : contactChildrenFieldTypes) {
+            t.setParentDatasetFieldType(contactFieldType);
         }
-        authorType.setChildDatasetFieldTypes(authorChildTypes);
-
-        DatasetFieldType datasetContactType = datasetFieldTypeSvc.add(new DatasetFieldType("datasetContact", FieldType.TEXT, true));
-        Set<DatasetFieldType> datasetContactTypes = new HashSet<>();
-        datasetContactTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType(DatasetFieldConstant.datasetContactEmail, FieldType.EMAIL, false)));
-        datasetContactTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("datasetContactName", FieldType.TEXT, false)));
-        datasetContactTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("datasetContactAffiliation", FieldType.TEXT, false)));
-        for (DatasetFieldType t : datasetContactTypes) {
-            t.setParentDatasetFieldType(datasetContactType);
-        }
-        datasetContactType.setChildDatasetFieldTypes(datasetContactTypes);
-
-        DatasetFieldType keywordType = datasetFieldTypeSvc.add(new DatasetFieldType("keyword", FieldType.TEXT, true));
-        DatasetFieldType descriptionType = datasetFieldTypeSvc.add(new DatasetFieldType("description", FieldType.TEXTBOX, false));
-
-        DatasetFieldType subjectType = datasetFieldTypeSvc.add(new DatasetFieldType("subject", FieldType.TEXT, true));
-        subjectType.setAllowControlledVocabulary(true);
-        subjectType.setControlledVocabularyValues(Arrays.asList(
-                new ControlledVocabularyValue(1l, "mgmt", subjectType),
-                new ControlledVocabularyValue(2l, "law", subjectType),
-                new ControlledVocabularyValue(3l, "cs", subjectType)
-        ));
-
-        DatasetFieldType pubIdType = datasetFieldTypeSvc.add(new DatasetFieldType("publicationIdType", FieldType.TEXT, false));
-        pubIdType.setAllowControlledVocabulary(true);
-        pubIdType.setControlledVocabularyValues(Arrays.asList(
-                new ControlledVocabularyValue(1l, "ark", pubIdType),
-                new ControlledVocabularyValue(2l, "doi", pubIdType),
-                new ControlledVocabularyValue(3l, "url", pubIdType)
-        ));
-
-        DatasetFieldType compoundSingleType = datasetFieldTypeSvc.add(new DatasetFieldType("coordinate", FieldType.TEXT, true));
-        Set<DatasetFieldType> childTypes = new HashSet<>();
-        childTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("lat", FieldType.TEXT, false)));
-        childTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("lon", FieldType.TEXT, false)));
-
-        for (DatasetFieldType t : childTypes) {
-            t.setParentDatasetFieldType(compoundSingleType);
-        }
-        compoundSingleType.setChildDatasetFieldTypes(childTypes);
+        contactFieldType.setChildDatasetFieldTypes(contactChildrenFieldTypes);
+        
+        citationBlock = new MetadataBlock();
+        citationBlock.setName("citation");
+        citationBlock.setDatasetFieldTypes(Lists.newArrayList(contactFieldType));
+        
+        contactFieldType.setMetadataBlock(citationBlock);
     }
 
     @Test
@@ -195,22 +153,18 @@ public class JsonPrinterTest {
     @Test
     public void testDatasetContactOutOfBoxNoPrivacy() {
         //given
-        MetadataBlock block = new MetadataBlock();
-        block.setName("citation");
         List<DatasetField> fields = new ArrayList<>();
         DatasetField datasetContactField = new DatasetField();
-        DatasetFieldType datasetContactDatasetFieldType = datasetFieldTypeSvc.findByName("datasetContact");
-        datasetContactDatasetFieldType.setMetadataBlock(block);
-        datasetContactField.setDatasetFieldType(datasetContactDatasetFieldType);
+        datasetContactField.setDatasetFieldType(contactFieldType);
         datasetContactField.setDatasetFieldsChildren(Arrays.asList(
-                constructPrimitive("datasetContactEmail", "foo@bar.com"),
-                constructPrimitive("datasetContactName", "Foo Bar"),
-                constructPrimitive("datasetContactAffiliation", "Bar University")
+                constructPrimitive(contactEmailFieldType, "foo@bar.com"),
+                constructPrimitive(contactNameFieldType, "Foo Bar"),
+                constructPrimitive(contactAffiliationFieldType, "Bar University")
         ));
         fields.add(datasetContactField);
 
         //when
-        JsonObject jsonObject = JsonPrinter.json(block, fields, false).build();
+        JsonObject jsonObject = JsonPrinter.json(citationBlock, fields, false).build();
         assertNotNull(jsonObject);
 
         //then
@@ -230,23 +184,19 @@ public class JsonPrinterTest {
     @Test
     public void testDatasetContactWithPrivacy() {
         //given
-        MetadataBlock block = new MetadataBlock();
-        block.setName("citation");
         List<DatasetField> fields = new ArrayList<>();
         DatasetField datasetContactField = new DatasetField();
-        DatasetFieldType datasetContactDatasetFieldType = datasetFieldTypeSvc.findByName("datasetContact");
-        datasetContactDatasetFieldType.setMetadataBlock(block);
-        datasetContactField.setDatasetFieldType(datasetContactDatasetFieldType);
+        datasetContactField.setDatasetFieldType(contactFieldType);
 
         datasetContactField.setDatasetFieldsChildren(Arrays.asList(
-                constructPrimitive("datasetContactEmail", "foo@bar.com"),
-                constructPrimitive("datasetContactName", "Foo Bar"),
-                constructPrimitive("datasetContactAffiliation", "Bar University")
+                constructPrimitive(contactEmailFieldType, "foo@bar.com"),
+                constructPrimitive(contactNameFieldType, "Foo Bar"),
+                constructPrimitive(contactAffiliationFieldType, "Bar University")
         ));
         fields.add(datasetContactField);
 
         //when
-        JsonObject jsonObject = JsonPrinter.json(block, fields, true).build();
+        JsonObject jsonObject = JsonPrinter.json(citationBlock, fields, true).build();
         assertNotNull(jsonObject);
 
         //then
@@ -322,6 +272,27 @@ public class JsonPrinterTest {
                 inactive.getBoolean("embargoActive"), is(false));
     }
 
+    @Test
+    public void shouldNotIncludeFilesWhenDatasetIsUnderEmbargo() {
+        // given
+        Dataset datasetWithActiveEmbargo = createDatasetForTests();
+        datasetWithActiveEmbargo.setEmbargoDate(Date.from(Instant.now().plus(1, ChronoUnit.DAYS)));
+        
+        FileMetadata fileMetadata = new FileMetadata();
+        fileMetadata.setLabel("file.txt");
+        
+        DatasetVersion datasetVersion = new DatasetVersion();
+        datasetVersion.setVersionState(VersionState.RELEASED);
+        datasetVersion.setDataset(datasetWithActiveEmbargo);
+        datasetVersion.addFileMetadata(new FileMetadata());
+
+        // when
+        JsonObject jsonObject = JsonPrinter.json(datasetVersion, false).build();
+
+        // then
+        assertTrue(jsonObject.getJsonArray("files").isEmpty());
+    }
+
     // -------------------- PRIVATE --------------------
 
     private Dataset createDatasetForTests() {
@@ -333,9 +304,9 @@ public class JsonPrinterTest {
         return dataset;
     }
 
-    private DatasetField constructPrimitive(String datasetFieldTypeName, String value) {
+    private DatasetField constructPrimitive(DatasetFieldType datasetFieldType, String value) {
         DatasetField retVal = new DatasetField();
-        retVal.setDatasetFieldType(datasetFieldTypeSvc.findByName(datasetFieldTypeName));
+        retVal.setDatasetFieldType(datasetFieldType);
         retVal.setFieldValue(value);
         return retVal;
     }

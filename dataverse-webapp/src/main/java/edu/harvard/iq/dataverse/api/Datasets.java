@@ -170,15 +170,6 @@ public class Datasets extends AbstractApiBean {
     AuthenticationServiceBean authenticationServiceBean;
 
     @EJB
-    DDIExportServiceBean ddiExportService;
-
-    @EJB
-    DatasetFieldServiceBean datasetfieldService;
-
-    @EJB
-    MetadataBlockDao metadataBlockService;
-
-    @EJB
     DataFileServiceBean fileService;
 
     @EJB
