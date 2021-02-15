@@ -39,19 +39,23 @@ import java.util.Date;
 public class OAIRecord implements Serializable, JpaEntity<Long> {
 
     private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    public Long getId() {
-        return id;
-    }
+    private String setName;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    private String globalId;
 
-    public OAIRecord() {
+    @Temporal(value = TemporalType.TIMESTAMP)
+    private Date lastUpdateTime;
+
+    private boolean removed;
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    protected OAIRecord() {
     }
 
     public OAIRecord(String setName, String globalId, Date lastUpdateTime) {
@@ -60,45 +64,47 @@ public class OAIRecord implements Serializable, JpaEntity<Long> {
         this.lastUpdateTime = lastUpdateTime;
     }
 
-    private String globalId;
-    private String setName;
-    @Temporal(value = TemporalType.TIMESTAMP)
-    private Date lastUpdateTime;
-    private boolean removed;
+    // -------------------- GETTERS --------------------
 
-
-    public String getGlobalId() {
-        return globalId;
-    }
-
-    public void setGlobalId(String globalId) {
-        this.globalId = globalId;
+    public Long getId() {
+        return id;
     }
 
     public String getSetName() {
         return setName;
     }
 
-    public void setSetName(String setName) {
-        this.setName = setName;
+    public String getGlobalId() {
+        return globalId;
     }
 
     public Date getLastUpdateTime() {
         return lastUpdateTime;
     }
 
-    public void setLastUpdateTime(Date lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
-    }
-
     public boolean isRemoved() {
         return removed;
+    }
+
+    // -------------------- SETTERS --------------------
+
+    public void setSetName(String setName) {
+        this.setName = setName;
+    }
+
+    public void setGlobalId(String globalId) {
+        this.globalId = globalId;
+    }
+
+    public void setLastUpdateTime(Date lastUpdateTime) {
+        this.lastUpdateTime = lastUpdateTime;
     }
 
     public void setRemoved(boolean removed) {
         this.removed = removed;
     }
 
+    // -------------------- hashCode & equals --------------------
 
     @Override
     public int hashCode() {
@@ -116,6 +122,8 @@ public class OAIRecord implements Serializable, JpaEntity<Long> {
         OAIRecord other = (OAIRecord) object;
         return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
     }
+
+    // -------------------- toString --------------------
 
     @Override
     public String toString() {

@@ -19,6 +19,8 @@
  */
 package edu.harvard.iq.dataverse.persistence.harvest;
 
+import edu.harvard.iq.dataverse.persistence.JpaEntity;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -35,27 +37,22 @@ import java.io.Serializable;
  * @author Ellen Kraffmiller
  */
 @Entity
-public class OAISet implements Serializable {
+public class OAISet implements Serializable, JpaEntity<Long> {
 
     private static final long serialVersionUID = 1L;
 
-    public OAISet() {
-    }
+    public static final String DEFAULT_SET_SPEC_NAME = "";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
+    @Version
+    private Long version;
 
     @Column(columnDefinition = "TEXT")
     private String name;
+
     @Column(columnDefinition = "TEXT", nullable = false, unique = true)
     @Size(max = 30, message = "{setspec.maxLength}")
     @Pattern.List({@Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "{dataverse.nameIllegalCharacters}")})
@@ -68,72 +65,91 @@ public class OAISet implements Serializable {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
 
-    @Version
-    private Long version;
 
     private boolean updateInProgress;
 
     private boolean deleted;
 
-    public boolean isUpdateInProgress() {
-        return this.updateInProgress;
+    // -------------------- CONSTRUCTORS --------------------
+
+    public OAISet() {
     }
 
-    public void setUpdateInProgress(boolean updateInProgress) {
-        this.updateInProgress = updateInProgress;
-    }
+    // -------------------- GETTERS --------------------
 
-    public boolean isDeleteInProgress() {
-        return this.deleted;
-    }
-
-    public void setDeleteInProgress(boolean deleteInProgress) {
-        this.deleted = deleteInProgress;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getSpec() {
-        return spec;
-    }
-
-    public void setSpec(String spec) {
-        this.spec = spec;
-    }
-
-    public String getDefinition() {
-        return definition;
-    }
-
-    public void setDefinition(String definition) {
-        this.definition = definition;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
+    public Long getId() {
+        return id;
     }
 
     public Long getVersion() {
         return version;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public String getSpec() {
+        return spec;
+    }
+
+    public String getDefinition() {
+        return definition;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public boolean isUpdateInProgress() {
+        return this.updateInProgress;
+    }
+
+    public boolean isDeleteInProgress() {
+        return this.deleted;
+    }
+
+    // -------------------- LOGIC --------------------
+
+    public boolean isDefaultSet() {
+        return DEFAULT_SET_SPEC_NAME.equals(this.spec);
+    }
+
+    // -------------------- PRIVATE --------------------
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public void setVersion(Long version) {
         this.version = version;
     }
 
-    public boolean isDefaultSet() {
-        return "".equals(this.spec);
+    public void setName(String name) {
+        this.name = name;
     }
+
+    public void setSpec(String spec) {
+        this.spec = spec;
+    }
+
+    public void setDefinition(String definition) {
+        this.definition = definition;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setUpdateInProgress(boolean updateInProgress) {
+        this.updateInProgress = updateInProgress;
+    }
+
+    public void setDeleteInProgress(boolean deleteInProgress) {
+        this.deleted = deleteInProgress;
+    }
+
+    // -------------------- hashCode & equals --------------------
 
     @Override
     public int hashCode() {
@@ -151,6 +167,8 @@ public class OAISet implements Serializable {
         OAISet other = (OAISet) object;
         return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
     }
+
+    // -------------------- toString --------------------
 
     @Override
     public String toString() {

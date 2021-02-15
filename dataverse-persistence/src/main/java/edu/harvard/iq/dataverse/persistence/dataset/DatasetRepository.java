@@ -29,4 +29,8 @@ public class DatasetRepository extends JpaRepository<Long, Dataset> {
                 .getResultList();
     }
 
+    public List<Long> findIdsByNullHarvestedFrom() {
+        return em.createQuery("SELECT o.id FROM Dataset o WHERE o.harvestedFrom IS null ORDER BY o.id", Long.class)
+                .getResultList();
+    }
 }

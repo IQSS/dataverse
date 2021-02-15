@@ -26,12 +26,10 @@ import org.apache.commons.lang.mutable.MutableBoolean;
 import org.apache.commons.lang.mutable.MutableLong;
 import org.xml.sax.SAXException;
 
-import javax.annotation.Resource;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
-import javax.ejb.Timer;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.faces.bean.ManagedBean;
@@ -66,8 +64,6 @@ public class HarvesterServiceBean {
 
     @EJB
     DatasetDao datasetDao;
-    @Resource
-    javax.ejb.TimerService timerService;
     @EJB
     DataverseTimerServiceBean dataverseTimerService;
     @EJB
@@ -116,19 +112,6 @@ public class HarvesterServiceBean {
                 dataverseTimerService.createHarvestTimer(harvestingConfig);
             }
         }
-    }
-
-    public List<HarvestTimerInfo> getHarvestTimers() {
-        ArrayList<HarvestTimerInfo> timers = new ArrayList<>();
-
-        for (Iterator it = timerService.getTimers().iterator(); it.hasNext(); ) {
-            Timer timer = (Timer) it.next();
-            if (timer.getInfo() instanceof HarvestTimerInfo) {
-                HarvestTimerInfo info = (HarvestTimerInfo) timer.getInfo();
-                timers.add(info);
-            }
-        }
-        return timers;
     }
 
     /**

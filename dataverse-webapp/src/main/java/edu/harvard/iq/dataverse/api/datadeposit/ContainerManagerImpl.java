@@ -57,8 +57,6 @@ public class ContainerManagerImpl implements ContainerManager {
     DatasetDao datasetDao;
     @EJB
     IndexServiceBean indexService;
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    EntityManager em;
     @EJB
     ImportGenericServiceBean importGenericService;
     @EJB

@@ -36,7 +36,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OAIRecordServiceBeanTest {
-
+    
     private Logger logger = Logger.getLogger(OAIRecordServiceBeanTest.class.getCanonicalName());
     
     @InjectMocks
@@ -54,6 +54,7 @@ class OAIRecordServiceBeanTest {
     @Captor
     private ArgumentCaptor<OAIRecord> oaiRecordCaptor;
 
+    private static final String SET_NAME = "setName";
     private static final long OAI_RECORD_UPDATE_TIME = 123456;
     private static final long DATASET_METADATA_CHANGE_TIME = 1234567;
     private static final long UTC_CLOCK_TIME = 12345678;
@@ -77,10 +78,10 @@ class OAIRecordServiceBeanTest {
         when(datasetRepository.findById(dataset.getId())).thenReturn(Optional.of(dataset));
 
         OAIRecord oaiRecord = setupOaiRecord();
-        when(oaiRecordRepository.findBySetName("setName")).thenReturn(Lists.newArrayList(oaiRecord));
+        when(oaiRecordRepository.findBySetName(SET_NAME)).thenReturn(Lists.newArrayList(oaiRecord));
 
         //when
-        oaiRecordServiceBean.updateOaiRecords("setName", Lists.newArrayList(dataset.getId()), logger);
+        oaiRecordServiceBean.updateOaiRecords(SET_NAME, Lists.newArrayList(dataset.getId()), logger);
 
         //then
         Assert.assertEquals(utcClock.instant(), oaiRecord.getLastUpdateTime().toInstant());
@@ -98,10 +99,10 @@ class OAIRecordServiceBeanTest {
         when(datasetRepository.findById(dataset.getId())).thenReturn(Optional.of(dataset));
 
         OAIRecord oaiRecord = setupOaiRecord();
-        when(oaiRecordRepository.findBySetName("setName")).thenReturn(Lists.newArrayList(oaiRecord));
+        when(oaiRecordRepository.findBySetName(SET_NAME)).thenReturn(Lists.newArrayList(oaiRecord));
 
         //when
-        oaiRecordServiceBean.updateOaiRecords("setName", Lists.newArrayList(dataset.getId()), logger);
+        oaiRecordServiceBean.updateOaiRecords(SET_NAME, Lists.newArrayList(dataset.getId()), logger);
 
         //then
         Assert.assertEquals(utcClock.instant(), oaiRecord.getLastUpdateTime().toInstant());
@@ -120,10 +121,10 @@ class OAIRecordServiceBeanTest {
 
         OAIRecord oaiRecord = setupOaiRecord();
         oaiRecord.setRemoved(false);
-        when(oaiRecordRepository.findBySetName("setName")).thenReturn(Lists.newArrayList(oaiRecord));
+        when(oaiRecordRepository.findBySetName(SET_NAME)).thenReturn(Lists.newArrayList(oaiRecord));
 
         //when
-        oaiRecordServiceBean.updateOaiRecords("setName", Lists.newArrayList(dataset.getId()), logger);
+        oaiRecordServiceBean.updateOaiRecords(SET_NAME, Lists.newArrayList(dataset.getId()), logger);
 
         //then
         Assert.assertEquals(Instant.ofEpochMilli(OAI_RECORD_UPDATE_TIME), oaiRecord.getLastUpdateTime().toInstant());
@@ -144,10 +145,10 @@ class OAIRecordServiceBeanTest {
         OAIRecord oaiRecord = setupOaiRecord();
         oaiRecord.setLastUpdateTime(Date.from(presentTime.instant().minus(1, ChronoUnit.DAYS)));
         oaiRecord.setRemoved(false);
-        when(oaiRecordRepository.findBySetName("setName")).thenReturn(Lists.newArrayList(oaiRecord));
+        when(oaiRecordRepository.findBySetName(SET_NAME)).thenReturn(Lists.newArrayList(oaiRecord));
 
         //when
-        oaiRecordServiceBean.updateOaiRecords("setName", Lists.newArrayList(dataset.getId()), logger);
+        oaiRecordServiceBean.updateOaiRecords(SET_NAME, Lists.newArrayList(dataset.getId()), logger);
 
         //then
         Assert.assertEquals(presentTime.instant(), oaiRecord.getLastUpdateTime().toInstant());
@@ -162,10 +163,10 @@ class OAIRecordServiceBeanTest {
         when(datasetRepository.findById(dataset.getId())).thenReturn(Optional.of(dataset));
 
         OAIRecord oaiRecord = setupOaiRecord();
-        when(oaiRecordRepository.findBySetName("setName")).thenReturn(Lists.newArrayList(oaiRecord));
+        when(oaiRecordRepository.findBySetName(SET_NAME)).thenReturn(Lists.newArrayList(oaiRecord));
 
         //when
-        oaiRecordServiceBean.updateOaiRecords("setName", Lists.newArrayList(dataset.getId()), logger);
+        oaiRecordServiceBean.updateOaiRecords(SET_NAME, Lists.newArrayList(dataset.getId()), logger);
 
         //then
         Assert.assertEquals(utcClock.instant(), oaiRecord.getLastUpdateTime().toInstant());
@@ -179,17 +180,15 @@ class OAIRecordServiceBeanTest {
         Dataset dataset = setupDatasetData();
         when(datasetRepository.findById(dataset.getId())).thenReturn(Optional.of(dataset));
 
-        String setName = "setName";
-
         //when
-        oaiRecordServiceBean.updateOaiRecords(setName, Lists.newArrayList(dataset.getId()), logger);
+        oaiRecordServiceBean.updateOaiRecords(SET_NAME, Lists.newArrayList(dataset.getId()), logger);
 
         //then
         verify(oaiRecordRepository).save(oaiRecordCaptor.capture());
         
         OAIRecord persistedRecord = oaiRecordCaptor.getValue();
         Assert.assertEquals(utcClock.instant(), persistedRecord.getLastUpdateTime().toInstant());
-        Assert.assertEquals(setName, persistedRecord.getSetName());
+        Assert.assertEquals(SET_NAME, persistedRecord.getSetName());
         Assert.assertEquals("doi:nice/ID1", persistedRecord.getGlobalId());
 
     }
@@ -201,10 +200,8 @@ class OAIRecordServiceBeanTest {
         dataset.getLatestVersion().setVersionState(VersionState.DEACCESSIONED);
         when(datasetRepository.findById(dataset.getId())).thenReturn(Optional.of(dataset));
 
-        String setName = "setName";
-
         //when
-        oaiRecordServiceBean.updateOaiRecords(setName, Lists.newArrayList(dataset.getId()), logger);
+        oaiRecordServiceBean.updateOaiRecords(SET_NAME, Lists.newArrayList(dataset.getId()), logger);
 
         //then
         verify(oaiRecordRepository, times(0)).save(any());
@@ -219,12 +216,10 @@ class OAIRecordServiceBeanTest {
         
         OAIRecord oaiRecord = setupOaiRecord();
         oaiRecord.setRemoved(false);
-        when(oaiRecordRepository.findBySetName("setName")).thenReturn(Lists.newArrayList(oaiRecord));
-
-        String setName = "setName";
+        when(oaiRecordRepository.findBySetName(SET_NAME)).thenReturn(Lists.newArrayList(oaiRecord));
 
         //when
-        oaiRecordServiceBean.updateOaiRecords(setName, Lists.newArrayList(dataset.getId()), logger);
+        oaiRecordServiceBean.updateOaiRecords(SET_NAME, Lists.newArrayList(dataset.getId()), logger);
 
         //then
         Assert.assertEquals(utcClock.instant(), oaiRecord.getLastUpdateTime().toInstant());
@@ -234,10 +229,9 @@ class OAIRecordServiceBeanTest {
     // -------------------- PRIVATE --------------------
 
     private OAIRecord setupOaiRecord() {
-        OAIRecord oaiRecord = new OAIRecord();
-        oaiRecord.setGlobalId("doi:nice/ID1");
+        OAIRecord oaiRecord = new OAIRecord(SET_NAME, "doi:nice/ID1",
+                                            Date.from(Instant.ofEpochMilli(OAI_RECORD_UPDATE_TIME)));
         oaiRecord.setRemoved(true);
-        oaiRecord.setLastUpdateTime(Date.from(Instant.ofEpochMilli(OAI_RECORD_UPDATE_TIME)));
         return oaiRecord;
     }
 
