@@ -112,6 +112,7 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -942,7 +943,7 @@ public class Datasets extends AbstractApiBean {
 
     @POST
     @Path("{id}/actions/:publish")
-    public Response publishDataset(@PathParam("id") String id, @QueryParam("type") String type) {
+    public Response publishDataset(@PathParam("id") String id, @QueryParam("type") String type, @QueryParam("assureIsIndexed") boolean mustBeIndexed) {
         try {
             if (type == null) {
                 return error(Response.Status.BAD_REQUEST, "Missing 'type' parameter (either 'major','minor', or 'updatecurrent').");
@@ -970,6 +971,9 @@ public class Datasets extends AbstractApiBean {
             }
 
             Dataset ds = findDatasetOrDie(id);
+            if(!(mustBeIndexed && (ds.getIndexTime().compareTo(ds.getModificationTime()) >= 0) && (ds.getPermissionIndexTime().compareTo(ds.getPermissionModificationTime()) >= 0))) {
+                return error(Response.Status.CONFLICT, "Dataset is awaiting indexing");
+            }
             if (updateCurrent) {
                 /*
                  * Note: The code here mirrors that in the
