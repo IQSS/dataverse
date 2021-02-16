@@ -971,8 +971,12 @@ public class Datasets extends AbstractApiBean {
             }
 
             Dataset ds = findDatasetOrDie(id);
-            if(!(mustBeIndexed && (ds.getIndexTime().compareTo(ds.getModificationTime()) >= 0) && (ds.getPermissionIndexTime().compareTo(ds.getPermissionModificationTime()) >= 0))) {
-                return error(Response.Status.CONFLICT, "Dataset is awaiting indexing");
+            if (mustbeIndexed) {
+                if ((ds.getIndexTime() == null) || (ds.getIndexTime().compareTo(ds.getModificationTime()) >= 0)
+                        || ds.getPermissionIndexTime() == null
+                        || (ds.getPermissionIndexTime().compareTo(ds.getPermissionModificationTime()) >= 0)) {
+                    return error(Response.Status.CONFLICT, "Dataset is awaiting indexing");
+                }
             }
             if (updateCurrent) {
                 /*
