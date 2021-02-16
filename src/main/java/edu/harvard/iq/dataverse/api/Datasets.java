@@ -972,9 +972,9 @@ public class Datasets extends AbstractApiBean {
 
             Dataset ds = findDatasetOrDie(id);
             if (mustbeIndexed) {
-                if ((ds.getIndexTime() == null) || (ds.getIndexTime().compareTo(ds.getModificationTime()) >= 0)
+                if ((ds.getIndexTime() == null) || (ds.getIndexTime().compareTo(ds.getModificationTime()) <= 0)
                         || ds.getPermissionIndexTime() == null
-                        || (ds.getPermissionIndexTime().compareTo(ds.getPermissionModificationTime()) >= 0)) {
+                        || (ds.getPermissionIndexTime().compareTo(ds.getPermissionModificationTime()) <= 0)) {
                     return error(Response.Status.CONFLICT, "Dataset is awaiting indexing");
                 }
             }
