@@ -2386,7 +2386,6 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         do {
             try {
                 String basicGlobusToken = settingsSvc.getValueForKey(SettingsServiceBean.Key.BasicGlobusToken, "");
-                basicGlobusToken = "ODA0ODBhNzEtODA5ZC00ZTJhLWExNmQtY2JkMzA1NTk0ZDdhOmQvM3NFd1BVUGY0V20ra2hkSkF3NTZMWFJPaFZSTVhnRmR3TU5qM2Q3TjA9";
                 AccessToken clientTokenUser = globusServiceBean.getClientToken(basicGlobusToken);
 
                 success = globusServiceBean.getSuccessfulTransfers(clientTokenUser, taskIdentifier);

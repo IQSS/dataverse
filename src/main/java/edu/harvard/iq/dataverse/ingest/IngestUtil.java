@@ -51,8 +51,6 @@ public class IngestUtil {
 
     private static final Logger logger = Logger.getLogger(IngestUtil.class.getCanonicalName());
 
-
-
     /**
      * Checks a list of new data files for duplicate names, renaming any
      * duplicates to ensure that they are unique.

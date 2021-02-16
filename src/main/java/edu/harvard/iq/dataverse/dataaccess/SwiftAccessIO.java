@@ -1,5 +1,4 @@
 package edu.harvard.iq.dataverse.dataaccess;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;

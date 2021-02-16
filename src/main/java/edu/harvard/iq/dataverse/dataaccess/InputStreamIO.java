@@ -5,7 +5,6 @@
  */
 package edu.harvard.iq.dataverse.dataaccess;
 
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.harvard.iq.dataverse.DataFile;
 import java.io.IOException;
 import java.io.InputStream;

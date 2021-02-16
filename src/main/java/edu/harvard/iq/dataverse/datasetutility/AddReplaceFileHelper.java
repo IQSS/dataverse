@@ -1536,9 +1536,7 @@ public class AddReplaceFileHelper{
         }
 
         int nFiles = finalFileList.size();
-
         finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList, fileToReplace);
-
 
         if (nFiles != finalFileList.size()) {
             if (nFiles == 1) {

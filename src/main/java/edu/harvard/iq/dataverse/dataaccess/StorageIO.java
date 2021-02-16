@@ -37,7 +37,6 @@ import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
 
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 //import org.apache.commons.httpclient.Header;
 //import org.apache.commons.httpclient.methods.GetMethod;
@@ -543,5 +542,4 @@ public abstract class StorageIO<T extends DvObject> {
 		    return true;
 		}
 	}
-
 }

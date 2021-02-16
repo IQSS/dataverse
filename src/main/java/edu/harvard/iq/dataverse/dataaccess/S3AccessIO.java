@@ -4,8 +4,6 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
@@ -877,7 +875,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             if (s != null) {
                 return s.toString();
             }
-
 
             //throw new IOException("Failed to generate temporary S3 url for "+key);
             return null;
