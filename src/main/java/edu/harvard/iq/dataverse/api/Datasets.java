@@ -938,7 +938,7 @@ public class Datasets extends AbstractApiBean {
     @Deprecated
     public Response publishDataseUsingGetDeprecated( @PathParam("id") String id, @QueryParam("type") String type ) {
         logger.info("publishDataseUsingGetDeprecated called on id " + id + ". Encourage use of POST rather than GET, which is deprecated.");
-        return publishDataset(id, type);
+        return publishDataset(id, type, false);
     }
 
     @POST
@@ -971,7 +971,7 @@ public class Datasets extends AbstractApiBean {
             }
 
             Dataset ds = findDatasetOrDie(id);
-            if (mustbeIndexed) {
+            if (mustBeIndexed) {
                 if ((ds.getIndexTime() == null) || (ds.getIndexTime().compareTo(ds.getModificationTime()) >= 0)
                         || ds.getPermissionIndexTime() == null
                         || (ds.getPermissionIndexTime().compareTo(ds.getPermissionModificationTime()) >= 0)) {
