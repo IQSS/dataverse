@@ -1534,17 +1534,10 @@ public class AddReplaceFileHelper{
             this.addErrorSevere(getBundleErr("final_file_list_empty"));                
             return false;
         }
-        
+
         int nFiles = finalFileList.size();
 
-        if (!this.isGlobusFileAddOperation()) {
-            finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList, fileToReplace);
-        }
-        else {
-            finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList, isFileReplaceOperation());
-        }
-
-
+        finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList, fileToReplace);
 
 
         if (nFiles != finalFileList.size()) {

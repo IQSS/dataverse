@@ -416,11 +416,6 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         }
         
     }
-    
-    @Override
-    public List<S3ObjectSummary> listAuxObjects(String s) throws IOException {
-        return null;
-    }
 
 
     @Override

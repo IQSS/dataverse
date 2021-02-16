@@ -639,46 +639,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     @Override
-    public List<S3ObjectSummary> listAuxObjects(String s ) throws IOException {
-        if (!this.canWrite()) {
-            open();
-        }
-        String prefix = getDestinationKey("");
-
-        List<S3ObjectSummary> ret = new ArrayList<>();
-
-        System.out.println("======= bucketname ===== "+ bucketName);
-        System.out.println("======= prefix ===== "+ prefix);
-
-        ListObjectsRequest req = new ListObjectsRequest().withBucketName(bucketName).withPrefix(prefix);
-        ObjectListing storedAuxFilesList = null;
-        try {
-            storedAuxFilesList = s3.listObjects(req);
-        } catch (SdkClientException sce) {
-            throw new IOException ("S3 listAuxObjects: failed to get a listing for "+prefix);
-        }
-        if (storedAuxFilesList == null) {
-            return ret;
-        }
-        List<S3ObjectSummary> storedAuxFilesSummary = storedAuxFilesList.getObjectSummaries();
-        try {
-            while (storedAuxFilesList.isTruncated()) {
-                logger.fine("S3 listAuxObjects: going to next page of list");
-                storedAuxFilesList = s3.listNextBatchOfObjects(storedAuxFilesList);
-                if (storedAuxFilesList != null) {
-                    storedAuxFilesSummary.addAll(storedAuxFilesList.getObjectSummaries());
-                }
-            }
-        } catch (AmazonClientException ase) {
-            //logger.warning("Caught an AmazonServiceException in S3AccessIO.listAuxObjects():    " + ase.getMessage());
-            throw new IOException("S3AccessIO: Failed to get aux objects for listing.");
-        }
-
-
-        return storedAuxFilesSummary;
-    }
-
-    @Override
     public void deleteAuxObject(String auxItemTag) throws IOException {
         if (!this.canWrite()) {
             open(DataAccessOption.WRITE_ACCESS);

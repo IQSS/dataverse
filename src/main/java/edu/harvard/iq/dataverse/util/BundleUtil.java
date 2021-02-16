@@ -56,7 +56,7 @@ public class BundleUtil {
         String stringFromBundle = null;
 
         stringFromBundle = bundle.getString(key);
-        logger.fine("string found: " + stringFromBundle);
+        //logger.fine("string found: " + stringFromBundle);
 
         if (arguments != null) {
             Object[] argArray = new String[arguments.size()];

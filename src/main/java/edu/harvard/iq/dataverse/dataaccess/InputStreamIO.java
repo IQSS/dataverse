@@ -151,11 +151,6 @@ public class InputStreamIO extends StorageIO<DataFile> {
     }
 
     @Override
-    public List<S3ObjectSummary> listAuxObjects(String s) throws IOException {
-        return null;
-    }
-
-    @Override
     public InputStream getAuxFileAsInputStream(String auxItemTag) {
         throw new UnsupportedOperationException("InputStreamIO: this method is not supported in this DataAccess driver."); 
     }

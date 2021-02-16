@@ -52,21 +52,6 @@ public class IngestUtil {
     private static final Logger logger = Logger.getLogger(IngestUtil.class.getCanonicalName());
 
 
-    public static void checkForDuplicateFileNamesFinal(DatasetVersion version, List<DataFile> newFiles) {
-
-        // Step 1: create list of existing path names from all FileMetadata in the DatasetVersion
-        // unique path name: directoryLabel + file separator + fileLabel
-        Set<String> pathNamesExisting = existingPathNamesAsSet(version);
-
-        // Step 2: check each new DataFile against the list of path names, if a duplicate create a new unique file name
-        for (Iterator<DataFile> dfIt = newFiles.iterator(); dfIt.hasNext();) {
-
-            FileMetadata fm = dfIt.next().getFileMetadata();
-
-            fm.setLabel(duplicateFilenameCheck(fm, pathNamesExisting));
-        }
-    }
-
 
     /**
      * Checks a list of new data files for duplicate names, renaming any
@@ -274,7 +259,7 @@ public class IngestUtil {
         // #6942 added proxy for existing files to a boolean set when dataset version copy is done
         for (Iterator<FileMetadata> fmIt = version.getFileMetadatas().iterator(); fmIt.hasNext();) {
             FileMetadata fm = fmIt.next();
-            if((fm.isInPriorVersion() || fm.getId() != null) && (replacedFmd==null) || (!fm.getDataFile().equals(replacedFmd.getDataFile()))) {
+                if((fm.isInPriorVersion() || fm.getId() != null) && (replacedFmd==null || !fm.getDataFile().equals(replacedFmd.getDataFile()))) {
                 String existingName = fm.getLabel();
                 String existingDir = fm.getDirectoryLabel();
 
