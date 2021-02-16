@@ -2433,7 +2433,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                     for (JsonObject fileJson : filesJson.getValuesAs(JsonObject.class)) {
 
                         String storageIdentifier = fileJson.getString("storageIdentifier"); //"s3://176ce6992af-208dea3661bb50"
-                        String suppliedContentType = fileJson.getString("contentType");
+                        //String suppliedContentType = fileJson.getString("contentType");
                         String fileName = fileJson.getString("fileName");
 
                         String fullPath = datasetSIO.getStorageLocation() + "/" + storageIdentifier.replace("s3://", "");
@@ -2455,7 +2455,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                         } else {
 
                             // calculate mimeType
-                            String finalType = StringUtils.isBlank(suppliedContentType) ? FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT : suppliedContentType;
+                            String finalType = FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT;
 
                             String type = FileUtil.determineFileTypeByExtension(fileName);
 
