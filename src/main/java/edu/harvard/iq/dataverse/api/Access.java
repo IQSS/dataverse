@@ -274,8 +274,6 @@ public class Access extends AbstractApiBean {
     @GET
     @Produces({"application/xml"})
     public DownloadInstance datafile(@PathParam("fileId") String fileId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-
-        logger.info("supplied file id: "+fileId);
         
         if (fileId.indexOf('/') > -1) {
             // This is for embedding folder names into the Access API URLs;
@@ -286,9 +284,7 @@ public class Access extends AbstractApiBean {
             // but can be safely ignored here. 
             fileId = fileId.substring(fileId.lastIndexOf('/') + 1);
         }
-        
-        logger.info("converted file id: "+fileId);
-        
+                
         DataFile df = findDataFileOrDieWrapper(fileId);
         GuestbookResponse gbr = null;
         

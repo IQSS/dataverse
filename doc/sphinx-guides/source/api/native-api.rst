@@ -793,7 +793,7 @@ View Dataset Files and Folders as a Directory Index
 
 .. code-block:: bash
 
-  curl $SERVER_URL/api/datasets/$ID/dirindex
+  curl $SERVER_URL/api/datasets/$ID/dirindex/
 
 Optional parameters:
 
@@ -844,7 +844,7 @@ with the underlying html source:
     <tr><td><a href="/api/access/datafile/KKKK">testfile.txt</a></td><td align="right">13-January-2021 22:35</td><td align="right">19 B</td><td align="right">&nbsp;</td></tr>
     </table></body></html>
 
-The ``/dirindex?folder=subfolder`` link above will produce the following view:
+The ``/dirindex/?folder=subfolder`` link above will produce the following view:
 
 .. |image4| image:: ./img/index_view_subfolder.png
 
@@ -865,12 +865,10 @@ An example of a ``wget`` command line for crawling ("recursive downloading") of 
 
 .. code-block:: bash
 
-  wget -r -nH --cut-dirs=3 --content-disposition https://demo.dataverse.org/api/datasets/24/dirindex
+  wget -r -e robots=off -nH --cut-dirs=3 --content-disposition https://demo.dataverse.org/api/datasets/24/dirindex/
 
 .. note:: In addition to the files and folders in the dataset, the command line above will also save the directory index of each folder, in a separate folder "dirindex".
 
-.. note:: When running in recursive mode ``wget`` respects the "Robot Exclusion Standard" rules, as specified in the ``robots.txt``. If a Dataverse installation is running with a restrictive robot access rules, they may need to be adjusted to allow recursive downloading via using this API. 
-   
 List All Metadata Blocks for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

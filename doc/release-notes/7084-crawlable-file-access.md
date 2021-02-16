@@ -1,11 +1,11 @@
-## Release Highlights
+ ## Release Highlights
 
 ### A new file access API
 
 A new api offers *crawlable* access view of the folders and files within a datset:
 
 ```
-  /api/datasets/<dataset id>/dirindex
+  /api/datasets/<dataset id>/dirindex/
 ```
 
 will output a simple html listing, based on the standard Apache

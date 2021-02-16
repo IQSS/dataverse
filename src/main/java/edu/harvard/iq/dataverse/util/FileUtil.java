@@ -1931,6 +1931,11 @@ public class FileUtil implements java.io.Serializable  {
     public static String formatFolderListingHtml(String folderName, DatasetVersion version, String apiLocation, boolean originals) {
         String title = formatTitle("Index of folder /" + folderName);
         List<FileMetadata> fileMetadatas = version.getFileMetadatasFolderListing(folderName);
+        
+        if (fileMetadatas == null || fileMetadatas.isEmpty()) {
+            return "";
+        }
+        
         String persistentId = version.getDataset().getGlobalId().asString();
         
         StringBuilder sb = new StringBuilder();

@@ -484,6 +484,19 @@ public class Datasets extends AbstractApiBean {
         }
         
         String output = FileUtil.formatFolderListingHtml(folderName, version, "", originals != null && originals);
+        
+        // return "NOT FOUND" if there is no such folder in the dataset version:
+        
+        if ("".equals(output)) {
+            return notFound("Folder " + folderName + " does not exist");
+        }
+        
+        
+        String indexFileName = folderName.equals("") ? ".index.html"
+                : ".index-" + folderName.replace('/', '_') + ".html";
+        response.setHeader("Content-disposition", "attachment; filename=\"" + indexFileName + "\"");
+
+        
         return Response.ok()
                 .entity(output)
                 //.type("application/html").
