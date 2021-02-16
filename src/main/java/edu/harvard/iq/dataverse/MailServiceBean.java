@@ -122,8 +122,12 @@ public class MailServiceBean implements java.io.Serializable {
 
         boolean sent = false;
         String rootDataverseName = dataverseService.findRootDataverse().getName();
-        InternetAddress systemAddress = getSystemAddress();
-        String body = messageText + BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName)));
+        InternetAddress systemAddress = getSystemAddress(); 
+        
+        String body = messageText
+                + (isHtmlContent ? BundleUtil.getStringFromBundle("notification.email.closing.html", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName)))
+                        : BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName))));
+       
         logger.fine("Sending email to " + to + ". Subject: <<<" + subject + ">>>. Body: " + body);
         try {
             MimeMessage msg = new MimeMessage(session);
@@ -440,19 +444,6 @@ public class MailServiceBean implements java.io.Serializable {
                 ));
                 logger.fine(datasetCreatedMessage);
                 return messageText += datasetCreatedMessage;
-            case MAPLAYERUPDATED:
-                version =  (DatasetVersion) targetObject;
-                pattern = BundleUtil.getStringFromBundle("notification.email.worldMap.added");
-                String[] paramArrayMapLayer = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset())};
-                messageText += MessageFormat.format(pattern, paramArrayMapLayer);
-                return messageText;
-            case MAPLAYERDELETEFAILED:
-                FileMetadata targetFileMetadata = (FileMetadata) targetObject;
-                version =  targetFileMetadata.getDatasetVersion();
-                pattern = BundleUtil.getStringFromBundle("notification.email.maplayer.deletefailed.text");
-                String[] paramArrayMapLayerDelete = {targetFileMetadata.getLabel(), getDatasetLink(version.getDataset())};
-                messageText += MessageFormat.format(pattern, paramArrayMapLayerDelete);
-                return messageText;                   
             case SUBMITTEDDS:
                 version =  (DatasetVersion) targetObject;
                 String mightHaveSubmissionComment = "";              
@@ -554,7 +545,7 @@ public class MailServiceBean implements java.io.Serializable {
 
             case INGESTCOMPLETED:
                 dataset = (Dataset) targetObject;
-
+                messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
                 String ingestedCompletedMessage = messageText + BundleUtil.getStringFromBundle("notification.ingest.completed", Arrays.asList(
                         systemConfig.getDataverseSiteUrl(),
                         dataset.getGlobalIdString(),
@@ -565,7 +556,7 @@ public class MailServiceBean implements java.io.Serializable {
                 return ingestedCompletedMessage;
             case INGESTCOMPLETEDWITHERRORS:
                 dataset = (Dataset) targetObject;
-
+                messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
                 String ingestedCompletedWithErrorsMessage = messageText + BundleUtil.getStringFromBundle("notification.ingest.completedwitherrors", Arrays.asList(
                         systemConfig.getDataverseSiteUrl(),
                         dataset.getGlobalIdString(),
@@ -598,9 +589,6 @@ public class MailServiceBean implements java.io.Serializable {
             case GRANTFILEACCESS:
             case REJECTFILEACCESS:
                 return datasetService.find(userNotification.getObjectId());
-            case MAPLAYERDELETEFAILED:
-                return dataFileService.findFileMetadata(userNotification.getObjectId());
-            case MAPLAYERUPDATED:
             case CREATEDS:
             case SUBMITTEDDS:
             case PUBLISHEDDS:

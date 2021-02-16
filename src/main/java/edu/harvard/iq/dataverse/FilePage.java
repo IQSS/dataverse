@@ -14,7 +14,6 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -123,17 +122,8 @@ public class FilePage implements java.io.Serializable {
     PermissionsWrapper permissionsWrapper;
     @Inject
     FileDownloadHelper fileDownloadHelper;
-    @Inject WorldMapPermissionHelper worldMapPermissionHelper;
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
-
-    public WorldMapPermissionHelper getWorldMapPermissionHelper() {
-        return worldMapPermissionHelper;
-    }
-
-    public void setWorldMapPermissionHelper(WorldMapPermissionHelper worldMapPermissionHelper) {
-        this.worldMapPermissionHelper = worldMapPermissionHelper;
-    }
 
     private static final Logger logger = Logger.getLogger(FilePage.class.getCanonicalName());
 
@@ -233,7 +223,7 @@ public class FilePage implements java.io.Serializable {
             configureTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.CONFIGURE, contentType);
             exploreTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.EXPLORE, contentType);
             Collections.sort(exploreTools, CompareExternalToolName);
-            toolsWithPreviews  = addMapLayerAndSortExternalTools();
+            toolsWithPreviews  = sortExternalTools();
             if(!toolsWithPreviews.isEmpty()){
                 setSelectedTool(toolsWithPreviews.get(0));                
             }
@@ -261,32 +251,12 @@ public class FilePage implements java.io.Serializable {
     public void setDatasetVersionId(Long datasetVersionId) {
         this.datasetVersionId = datasetVersionId;
     }
-    
-    private List<ExternalTool> addMapLayerAndSortExternalTools(){
-        List<ExternalTool> retList = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.PREVIEW, file.getContentType());
 
-        if(!retList.isEmpty()){
-            retList.forEach((et) -> {
-                et.setWorldMapTool(false);
-            });
-        }
-        if (file != null && worldMapPermissionHelper.getMapLayerMetadata(file) != null && worldMapPermissionHelper.getMapLayerMetadata(file).getEmbedMapLink() != null) {
-            ExternalTool wpTool = new ExternalTool();
-            wpTool.setDisplayName("World Map"); 
-            wpTool.setToolParameters("{}");
-            wpTool.setToolUrl(worldMapPermissionHelper.getMapLayerMetadata(file).getEmbedMapLink());
-            wpTool.setWorldMapTool(true);
-            retList.add(wpTool);
-        }
+    private List<ExternalTool> sortExternalTools(){
+        List<ExternalTool> retList = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.PREVIEW, file.getContentType());
         Collections.sort(retList, CompareExternalToolName);
-        
         return retList;
     }
-    
-    /*
-    worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getEmbedMapLink()
-    */
-    
 
     public boolean isDownloadPopupRequired() {  
         if(fileMetadata.getId() == null || fileMetadata.getDatasetVersion().getId() == null ){
