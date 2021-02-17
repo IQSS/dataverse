@@ -1,10 +1,10 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetPage;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
@@ -26,15 +26,13 @@ import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.globus.AccessToken;
-import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
@@ -111,7 +109,9 @@ import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
+import edu.harvard.iq.dataverse.globus.AccessToken;
+import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -130,14 +130,8 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonException;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.json.JsonPatch;
+import javax.json.*;
+import javax.persistence.Query;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
@@ -156,6 +150,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import javax.ws.rs.core.UriInfo;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -163,8 +159,6 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import com.amazonaws.services.s3.model.PartETag;
 import java.util.Map.Entry;
-import javax.persistence.Query;
-import org.apache.commons.lang.StringUtils;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -178,10 +172,10 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     DataverseServiceBean dataverseService;
-
+    
     @EJB
     GlobusServiceBean globusServiceBean;
-    
+
     @EJB
     UserNotificationServiceBean userNotificationService;
     
@@ -230,9 +224,6 @@ public class Datasets extends AbstractApiBean {
     
     @Inject
     DataverseRequestServiceBean dvRequestService;
-
-    @Inject
-    DatasetPage datasetPage;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -1741,20 +1732,16 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         // -------------------------------------
         // (1) Get the user from the API key
         // -------------------------------------
-
-        msgt("**** BEFORE STEP 1 "  );
         User authUser;
         try {
             authUser = findUserOrDie();
-            msgt("**** IN STEP 1 : "  + authUser.getIdentifier() + " : ");
         } catch (WrappedResponse ex) {
             return error(Response.Status.FORBIDDEN,
                     BundleUtil.getStringFromBundle("file.addreplace.error.auth")
                     );
         }
-
-        msgt("**** AFTER STEP 1 "  );
-        msgt("**** BEFORE STEP 2 "  );
+        
+        
         // -------------------------------------
         // (2) Get the Dataset Id
         //  
@@ -1766,7 +1753,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         } catch (WrappedResponse wr) {
             return wr.getResponse();           
         }
-        msgt("**** AFTER STEP 2 "  );
+        
         //------------------------------------
         // (2a) Make sure dataset does not have package file
         //
@@ -1832,7 +1819,6 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                                                 systemConfig);
 
 
-
         //-------------------
         // (4) Run "runAddFileByDatasetId"
         //-------------------
@@ -1841,7 +1827,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                                 newFileContentType,
                                 newStorageIdentifier,
                                 fileInputStream,
-                                optionalFileParams  );
+                                optionalFileParams);
 
 
         if (addFileHelper.hasError()){
@@ -1876,6 +1862,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     } // end: addFileToDataset
 
 
+    
     private void msg(String m){
         //System.out.println(m);
         logger.fine(m);
@@ -1890,9 +1877,6 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     
     public static <T> T handleVersion( String versionId, DsVersionHandler<T> hdl )
         throws WrappedResponse {
-
-        logger.info("**** DEBUG handleVersion "  );
-
         switch (versionId) {
             case ":latest": return hdl.handleLatest();
             case ":draft": return hdl.handleDraft();
@@ -1915,8 +1899,6 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     }
     
     private DatasetVersion getDatasetVersionOrDie( final DataverseRequest req, String versionNumber, final Dataset ds, UriInfo uriInfo, HttpHeaders headers) throws WrappedResponse {
-        logger.info("**** DEBUG getDatasetVersionOrDie "  );
-
         DatasetVersion dsv = execCommand( handleVersion(versionNumber, new DsVersionHandler<Command<DatasetVersion>>(){
 
                 @Override
@@ -2312,12 +2294,11 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     }
 
 
-
     @POST
     @Path("{id}/addglobusFiles")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response addGlobusFileToDataset(@PathParam("id") String datasetId,
-                           @FormDataParam("jsonData") String jsonData
+                                           @FormDataParam("jsonData") String jsonData
     )
     {
         JsonArrayBuilder jarr = Json.createArrayBuilder();
@@ -2333,8 +2314,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         try {
             authUser = findUserOrDie();
         } catch (WrappedResponse ex) {
-            return error(Response.Status.FORBIDDEN,
-                    BundleUtil.getStringFromBundle("file.addreplace.error.auth")
+            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("file.addreplace.error.auth")
             );
         }
 
@@ -2355,7 +2335,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
         String lockInfoMessage = "Globus Upload API is running ";
         DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.GlobusUpload,
-                  ((AuthenticatedUser) authUser).getId() , lockInfoMessage);
+                ((AuthenticatedUser) authUser).getId() , lockInfoMessage);
         if (lock != null) {
             dataset.addLock(lock);
         } else {
@@ -2368,8 +2348,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
         for (DatasetVersion dv : dataset.getVersions()) {
             if (dv.isHasPackageFile()) {
-                return error(Response.Status.FORBIDDEN,
-                        BundleUtil.getStringFromBundle("file.api.alreadyHasPackageFile")
+                return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("file.api.alreadyHasPackageFile")
                 );
             }
         }
@@ -2396,7 +2375,6 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         // -------------------------------------
 
         taskIdentifier = jsonObject.getString("taskIdentifier");
-        msgt("******* (api) newTaskIdentifier: " + taskIdentifier);
 
         // -------------------------------------
         // (5) Wait until task completion
@@ -2408,12 +2386,9 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         do {
             try {
                 String basicGlobusToken = settingsSvc.getValueForKey(SettingsServiceBean.Key.BasicGlobusToken, "");
-                basicGlobusToken = "ODA0ODBhNzEtODA5ZC00ZTJhLWExNmQtY2JkMzA1NTk0ZDdhOmQvM3NFd1BVUGY0V20ra2hkSkF3NTZMWFJPaFZSTVhnRmR3TU5qM2Q3TjA9";
-                msgt("******* (api) basicGlobusToken: " + basicGlobusToken);
                 AccessToken clientTokenUser = globusServiceBean.getClientToken(basicGlobusToken);
 
                 success = globusServiceBean.getSuccessfulTransfers(clientTokenUser, taskIdentifier);
-                msgt("******* (api) success: " + success);
 
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -2428,20 +2403,18 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         {
             StorageIO<Dataset> datasetSIO = DataAccess.getStorageIO(dataset);
 
-            for (S3ObjectSummary s3ObjectSummary : datasetSIO.listAuxObjects("")) {
-
-            }
+            List<String> cachedObjectsTags = datasetSIO.listAuxObjects();
 
             DataverseRequest dvRequest = createDataverseRequest(authUser);
             AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(
-                                                        dvRequest,
-                                                        ingestService,
-                                                        datasetService,
-                                                        fileService,
-                                                        permissionSvc,
-                                                        commandEngine,
-                                                        systemConfig
-                                                    );
+                    dvRequest,
+                    ingestService,
+                    datasetService,
+                    fileService,
+                    permissionSvc,
+                    commandEngine,
+                    systemConfig
+            );
 
             // -------------------------------------
             // (6) Parse files information from jsondata
@@ -2451,129 +2424,146 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
             JsonArray filesJson = jsonObject.getJsonArray("files");
 
+            int totalNumberofFiles = 0 ;
+            int successNumberofFiles = 0;
+            try {
+                // Start to add the files
+                if (filesJson != null) {
+                    totalNumberofFiles = filesJson.getValuesAs(JsonObject.class).size();
+                    for (JsonObject fileJson : filesJson.getValuesAs(JsonObject.class)) {
 
-            // Start to add the files
-            if (filesJson != null) {
-                for (JsonObject fileJson : filesJson.getValuesAs(JsonObject.class)) {
+                        String storageIdentifier = fileJson.getString("storageIdentifier"); //"s3://176ce6992af-208dea3661bb50"
+                        //String suppliedContentType = fileJson.getString("contentType");
+                        String fileName = fileJson.getString("fileName");
 
-                    String storageIdentifier = fileJson.getString("storageIdentifier"); //"s3://176ce6992af-208dea3661bb50"
-                    String suppliedContentType = fileJson.getString("contentType");
-                    String fileName = fileJson.getString("fileName");
+                        String fullPath = datasetSIO.getStorageLocation() + "/" + storageIdentifier.replace("s3://", "");
 
-                    String fullPath = datasetSIO.getStorageLocation() + "/" + storageIdentifier.replace("s3://", "");
+                        String bucketName = System.getProperty("dataverse.files." + storageIdentifier.split(":")[0] + ".bucket-name");
 
-                    String bucketName = System.getProperty("dataverse.files." + storageIdentifier.split(":")[0] + ".bucket-name");
+                        String dbstorageIdentifier = storageIdentifier.split(":")[0] + "://" + bucketName + ":" + storageIdentifier.replace("s3://", "");
 
-                    String dbstorageIdentifier = storageIdentifier.split(":")[0] + "://" + bucketName + ":" + storageIdentifier.replace("s3://", "");
+                        // the storageidentifier should be unique
+                        Query query = em.createQuery("select object(o) from DvObject as o where o.storageIdentifier = :storageIdentifier");
+                        query.setParameter("storageIdentifier", dbstorageIdentifier);
 
-                    // the storageidentifier should be unique
-                    Query query = em.createQuery("select object(o) from DvObject as o where o.storageIdentifier = :storageIdentifier");
-                    query.setParameter("storageIdentifier", dbstorageIdentifier);
-
-                    if (query.getResultList().size() > 0) {
-                        JsonObjectBuilder fileoutput= Json.createObjectBuilder()
-                                .add("storageIdentifier " , storageIdentifier)
-                                .add("message " , " The datatable is not updated since the Storage Identifier already exists in dvObject. ");
-
-                        jarr.add(fileoutput);
-                    } else {
-
-                        // calculate mimeType
-                        //logger.info(" JC Step 0 Supplied type: " + fileName ) ;
-                        //logger.info(" JC Step 1 Supplied type: " + suppliedContentType ) ;
-                        String finalType = StringUtils.isBlank(suppliedContentType) ? FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT : suppliedContentType;
-                        //logger.info(" JC Step 2 finalType: " + finalType ) ;
-                        String type = FileUtil.determineFileTypeByExtension(fileName);
-                        //logger.info(" JC Step 3 type by fileextension: " + type ) ;
-                        if (!StringUtils.isBlank(type)) {
-                            //Use rules for deciding when to trust browser supplied type
-                            //if (FileUtil.useRecognizedType(finalType, type)) {
-                                finalType = type;
-                                //logger.info(" JC Step 4 type after useRecognized function : " + finalType ) ;
-                            //}
-                            logger.info("Supplied type: " + suppliedContentType + ", finalType: " + finalType);
-                        }
-
-                        JsonPatch path = Json.createPatchBuilder().add("/mimeType", finalType).build();
-                        fileJson = path.apply(fileJson);
-
-                        // calculate md5 checksum
-                        StorageIO<DvObject> dataFileStorageIO = DataAccess.getDirectStorageIO(fullPath);
-                        InputStream in = dataFileStorageIO.getInputStream();
-                        String checksumVal = FileUtil.calculateChecksum(in, DataFile.ChecksumType.MD5);
-
-                        path = Json.createPatchBuilder().add("/md5Hash", checksumVal).build();
-                        fileJson = path.apply(fileJson);
-
-                        //---------------------------------------
-                        //  Load up optional params via JSON
-                        //---------------------------------------
-
-                        OptionalFileParams optionalFileParams = null;
-                        msgt("(api) jsonData 2: " +  fileJson.toString());
-
-                        try {
-                            optionalFileParams = new OptionalFileParams(fileJson.toString());
-                        } catch (DataFileTagException ex) {
-                            return error( Response.Status.BAD_REQUEST, ex.getMessage());
-                        }
-
-                        msg("ADD!");
-
-                        //-------------------
-                        // Run "runAddFileByDatasetId"
-                        //-------------------
-                        addFileHelper.runAddFileByDataset(dataset,
-                                fileName,
-                                finalType,
-                                storageIdentifier,
-                                null,
-                                optionalFileParams,
-                                globustype);
-
-
-                        if (addFileHelper.hasError()){
-
-                            JsonObjectBuilder fileoutput= Json.createObjectBuilder()
-                                    .add("storageIdentifier " , storageIdentifier)
-                                    .add("error Code: " ,addFileHelper.getHttpErrorCode().toString())
-                                    .add("message " ,  addFileHelper.getErrorMessagesAsString("\n"));
+                        if (query.getResultList().size() > 0) {
+                            JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                                    .add("storageIdentifier", storageIdentifier)
+                                    .add("message", " The datatable is not updated since the Storage Identifier already exists in dvObject. ");
 
                             jarr.add(fileoutput);
+                        } else {
 
-                        }else{
-                            String successMsg = BundleUtil.getStringFromBundle("file.addreplace.success.add");
+                            // calculate mimeType
+                            String finalType = FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT;
 
-                            JsonObject successresult = addFileHelper.getSuccessResultAsJsonObjectBuilder().build();
+                            String type = FileUtil.determineFileTypeByExtension(fileName);
 
-                            try {
-                                logger.fine("successMsg: " + successMsg);
-                                String duplicateWarning = addFileHelper.getDuplicateFileWarning();
-                                if (duplicateWarning != null && !duplicateWarning.isEmpty()) {
-                                    // return ok(addFileHelper.getDuplicateFileWarning(), addFileHelper.getSuccessResultAsJsonObjectBuilder());
-                                    JsonObjectBuilder fileoutput= Json.createObjectBuilder()
-                                            .add("storageIdentifier " , storageIdentifier)
-                                            .add("warning message: " ,addFileHelper.getDuplicateFileWarning())
-                                            .add("message " ,  successresult.getJsonArray("files").getJsonObject(0));
-                                    jarr.add(fileoutput);
+                            if (!StringUtils.isBlank(type)) {
+                                finalType = type;
+                            }
 
-                                } else {
-                                    JsonObjectBuilder fileoutput= Json.createObjectBuilder()
-                                            .add("storageIdentifier " , storageIdentifier)
-                                            .add("message " ,  successresult.getJsonArray("files").getJsonObject(0));
-                                    jarr.add(fileoutput);
+                            JsonPatch path = Json.createPatchBuilder().add("/mimeType", finalType).build();
+                            fileJson = path.apply(fileJson);
+
+                            int count = 0;
+                            // calculate md5 checksum
+                            do {
+                                try {
+
+                                    StorageIO<DvObject> dataFileStorageIO = DataAccess.getDirectStorageIO(fullPath);
+                                    InputStream in = dataFileStorageIO.getInputStream();
+                                    String checksumVal = FileUtil.calculateChecksum(in, DataFile.ChecksumType.MD5);
+
+                                    path = Json.createPatchBuilder().add("/md5Hash", checksumVal).build();
+                                    fileJson = path.apply(fileJson);
+                                    count = 3;
+                                } catch (Exception ex) {
+                                    count = count + 1;
+                                    ex.printStackTrace();
+                                    logger.info(ex.getMessage());
+                                    Thread.sleep(5000);
+                                    msgt(" ***** Try to calculate checksum again for  " + fileName);
+                                    //error(Response.Status.INTERNAL_SERVER_ERROR, "Failed to calculate checksum");
                                 }
 
-                            } catch (Exception ex) {
-                                Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
-                                return error(Response.Status.BAD_REQUEST, "NoFileException!  Serious Error! See administrator!");
+                            } while (count < 3);
+
+                            //---------------------------------------
+                            //  Load up optional params via JSON
+                            //---------------------------------------
+
+                            OptionalFileParams optionalFileParams = null;
+
+                            try {
+                                optionalFileParams = new OptionalFileParams(fileJson.toString());
+                            } catch (DataFileTagException ex) {
+                                return error(Response.Status.BAD_REQUEST, ex.getMessage());
+                            }
+
+                            msg("ADD!");
+
+                            //-------------------
+                            // Run "runAddFileByDatasetId"
+                            //-------------------
+                            addFileHelper.runAddFileByDataset(dataset,
+                                    fileName,
+                                    finalType,
+                                    storageIdentifier,
+                                    null,
+                                    optionalFileParams,
+                                    globustype);
+
+
+                            if (addFileHelper.hasError()) {
+
+                                JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                                        .add("storageIdentifier ", storageIdentifier)
+                                        .add("error Code: ", addFileHelper.getHttpErrorCode().toString())
+                                        .add("message ", addFileHelper.getErrorMessagesAsString("\n"));
+
+                                jarr.add(fileoutput);
+
+                            } else {
+                                String successMsg = BundleUtil.getStringFromBundle("file.addreplace.success.add");
+
+                                JsonObject successresult = addFileHelper.getSuccessResultAsJsonObjectBuilder().build();
+
+                                try {
+                                    logger.fine("successMsg: " + successMsg);
+                                    String duplicateWarning = addFileHelper.getDuplicateFileWarning();
+                                    if (duplicateWarning != null && !duplicateWarning.isEmpty()) {
+                                        // return ok(addFileHelper.getDuplicateFileWarning(), addFileHelper.getSuccessResultAsJsonObjectBuilder());
+                                        JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                                                .add("storageIdentifier ", storageIdentifier)
+                                                .add("warning message: ", addFileHelper.getDuplicateFileWarning())
+                                                .add("message ", successresult.getJsonArray("files").getJsonObject(0));
+                                        jarr.add(fileoutput);
+
+                                    } else {
+                                        JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                                                .add("storageIdentifier ", storageIdentifier)
+                                                .add("message ", successresult.getJsonArray("files").getJsonObject(0));
+                                        jarr.add(fileoutput);
+                                    }
+
+                                } catch (Exception ex) {
+                                    Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
+                                    return error(Response.Status.BAD_REQUEST, "NoFileException!  Serious Error! See administrator!");
+                                }
                             }
                         }
+                        successNumberofFiles = successNumberofFiles + 1;
                     }
-                }
-            }// End of adding files
+                }// End of adding files
+            }catch (Exception e )
+            {
+                Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, e);
+                return error(Response.Status.BAD_REQUEST, "NoFileException!  Serious Error! See administrator!");
+            }
 
-
+            logger.log(Level.INFO, "Total Number of Files " + totalNumberofFiles);
+            logger.log(Level.INFO, "Success Number of Files " + successNumberofFiles);
             DatasetLock dcmLock = dataset.getLockFor(DatasetLock.Reason.GlobusUpload);
             if (dcmLock == null) {
                 logger.log(Level.WARNING, "Dataset not locked for Globus upload");
@@ -2614,42 +2604,5 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         return ok(Json.createObjectBuilder().add("Files", jarr));
 
     }
-
 }
-
-
-                /*
-
-                ingestService.startIngestJobsForDataset(dataset, (AuthenticatedUser) authUser);
-
-
-
-
-                if (dvRequest2 != null) {
-                    msg("****** dvRequest2 not null");
-                    ingestService.startIngestJobsForDataset(dataset, dvRequest2.getAuthenticatedUser());
-                } else {
-                    msg("****** dvRequest2 is null");
-                    ingestService.startIngestJobsForDataset(dataset, (AuthenticatedUser) authUser);
-                }
-                */
-
-                /*
-                msg("****** JC update command completed ");
-
-                // queue the data ingest job for asynchronous execution:
-                List<DataFile> dataFiles = addFileHelper.getNewlyAddedFiles();
-                for (DataFile dataFile : dataFiles) {
-                    // refresh the copy of the DataFile:
-                    logger.info(" ******** JC  the datafile id is = " + dataFile.getId());
-                }
-
-                msg("****** JC pre ingest start");
-                String status = ingestService.startIngestJobs(dataFiles, (AuthenticatedUser) authUser);
-                msg("****** JC post ingest start");
-
-                */
-
-
-
 

@@ -87,6 +87,7 @@ import org.apache.commons.io.FilenameUtils;
 import com.amazonaws.AmazonServiceException;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import java.util.Arrays;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -688,7 +689,7 @@ public class FileUtil implements java.io.Serializable  {
         
     }
     
-    private static String checksumDigestToString(byte[] digestBytes) {
+    public static String checksumDigestToString(byte[] digestBytes) {
         StringBuilder sb = new StringBuilder("");
         for (int i = 0; i < digestBytes.length; i++) {
             sb.append(Integer.toString((digestBytes[i] & 0xff) + 0x100, 16).substring(1));
@@ -721,8 +722,23 @@ public class FileUtil implements java.io.Serializable  {
         return "";
     }
     
-    public static List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, String newCheckSum, SystemConfig systemConfig) throws IOException {
+    public static List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream,
+            String fileName, String suppliedContentType, String newStorageIdentifier, String newCheckSum,
+            SystemConfig systemConfig)  throws IOException {
+        ChecksumType checkSumType = DataFile.ChecksumType.MD5;
+        if (newStorageIdentifier == null) {
+            checkSumType = systemConfig.getFileFixityChecksumAlgorithm();
+        }
+        return createDataFiles(version, inputStream, fileName, suppliedContentType, newStorageIdentifier, newCheckSum, checkSumType, systemConfig);
+    }
+    
+    public static List<DataFile> createDataFiles(DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, String newCheckSum, ChecksumType newCheckSumType, SystemConfig systemConfig) throws IOException {
         List<DataFile> datafiles = new ArrayList<>();
+
+        //When there is no checksum/checksumtype being sent (normal upload, needs to be calculated), set the type to the current default
+        if(newCheckSumType == null) {
+            newCheckSumType = systemConfig.getFileFixityChecksumAlgorithm();
+        }
 
         String warningMessage = null;
 
@@ -966,13 +982,13 @@ public class FileUtil implements java.io.Serializable  {
                     // of the unzipped file.
                     logger.warning("Unzipping failed; rolling back to saving the file as is.");
                     if (warningMessage == null) {
-                        warningMessage = "Failed to unzip the file. Saving the file as is.";
+                        warningMessage = BundleUtil.getStringFromBundle("file.addreplace.warning.unzip.failed");
                     }
 
                     datafiles.clear();
                 } catch (FileExceedsMaxSizeException femsx) {
                     logger.warning("One of the unzipped files exceeds the size limit; resorting to saving the file as is. " + femsx.getMessage());
-                    warningMessage = femsx.getMessage() + "; saving the zip file as is, unzipped.";
+                    warningMessage =  BundleUtil.getStringFromBundle("file.addreplace.warning.unzip.failed.size", Arrays.asList(FileSizeChecker.bytesToHumanReadable(fileSizeLimit)));
                     datafiles.clear();
                 } finally {
                     if (unZippedIn != null) {
@@ -1108,12 +1124,9 @@ public class FileUtil implements java.io.Serializable  {
         if (tempFile != null) {
             newFile = tempFile.toFile();
         }
-        ChecksumType checkSumType = DataFile.ChecksumType.MD5;
-        if (newStorageIdentifier == null) {
-            checkSumType = systemConfig.getFileFixityChecksumAlgorithm();
-        }
+        
 
-        DataFile datafile = createSingleDataFile(version, newFile, newStorageIdentifier, fileName, finalType, checkSumType, newCheckSum);
+        DataFile datafile = createSingleDataFile(version, newFile, newStorageIdentifier, fileName, finalType, newCheckSumType, newCheckSum);
         File f = null;
         if (tempFile != null) {
             f = tempFile.toFile();
@@ -1554,6 +1567,21 @@ public class FileUtil implements java.io.Serializable  {
              * future to when the dataset is published to see if the file will
              * be publicly downloadable or not.
              */
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Show preview in many cases, but not when restricted.
+     *
+     * Originally, preview was limited to isPubliclyDownloadable().
+     */
+    public static boolean isPreviewAllowed(FileMetadata fileMetadata) {
+        if (fileMetadata == null) {
+            return false;
+        }
+        if (fileMetadata.isRestricted()) {
             return false;
         }
         return true;

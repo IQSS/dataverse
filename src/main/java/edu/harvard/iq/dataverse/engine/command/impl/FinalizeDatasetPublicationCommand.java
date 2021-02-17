@@ -32,6 +32,7 @@ import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import java.util.ArrayList;
 import java.util.concurrent.Future;
 import org.apache.solr.client.solrj.SolrServerException;
 
@@ -51,6 +52,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
      * mirror field from {@link PublishDatasetCommand} of same name
      */
     final boolean datasetExternallyReleased;
+    
+    List<Dataverse> dataversesToIndex = new ArrayList<>();
     
     public static final String FILE_VALIDATION_ERROR = "FILE VALIDATION ERROR";
     
@@ -188,11 +191,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         
         Dataset readyDataset = ctxt.em().merge(theDataset);
         
-        if ( readyDataset != null ) {
-            // Success! - send notification: 
-            notifyUsersDatasetPublishStatus(ctxt, theDataset, UserNotification.Type.PUBLISHEDDS);
-        }
-        
         // Finally, unlock the dataset:
         ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.Workflow);
         ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.finalizePublication);
@@ -217,12 +215,32 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
         
         try {
+            // Success! - send notification:
+            notifyUsersDatasetPublishStatus(ctxt, dataset, UserNotification.Type.PUBLISHEDDS);
+        } catch (Exception e) {
+            logger.warning("Failure to send dataset published messages for : " + dataset.getId() + " : " + e.getMessage());
+        }
+        try {
             Future<String> indexString = ctxt.index().indexDataset(dataset, true);                   
         } catch (IOException | SolrServerException e) {    
             String failureLogText = "Post-publication indexing failed. You can kick off a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
             failureLogText += "\r\n" + e.getLocalizedMessage();
             LoggingUtil.writeOnSuccessFailureLog(this, failureLogText,  dataset);
             retVal = false;
+        }
+        
+        //re-indexing dataverses that have additional subjects
+        if (!dataversesToIndex.isEmpty()){
+            for (Dataverse dv : dataversesToIndex) {
+                try {
+                    Future<String> indexString = ctxt.index().indexDataverse(dv);
+                } catch (IOException | SolrServerException e) {
+                    String failureLogText = "Post-publication indexing failed. You can kick off a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + dv.getId().toString();
+                    failureLogText += "\r\n" + e.getLocalizedMessage();
+                    LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, dataset);
+                    retVal = false;
+                } 
+            }
         }
 
         exportMetadata(dataset, ctxt.settings());
@@ -255,13 +273,13 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
      * add the dataset subjects to all parent dataverses.
      */
     private void updateParentDataversesSubjectsField(Dataset savedDataset, CommandContext ctxt) throws  SolrServerException, IOException {
+        
         for (DatasetField dsf : savedDataset.getLatestVersion().getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject)) {
                 Dataverse dv = savedDataset.getOwner();
                 while (dv != null) {
                     boolean newSubjectsAdded = false;
-                    for (ControlledVocabularyValue cvv : dsf.getControlledVocabularyValues()) {
-                    
+                    for (ControlledVocabularyValue cvv : dsf.getControlledVocabularyValues()) {                   
                         if (!dv.getDataverseSubjects().contains(cvv)) {
                             logger.fine("dv "+dv.getAlias()+" does not have subject "+cvv.getStrValue());
                             newSubjectsAdded = true;
@@ -271,10 +289,11 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                         }
                     }
                     if (newSubjectsAdded) {
-                        logger.fine("new dataverse subjects added - saving and reindexing");
+                        logger.fine("new dataverse subjects added - saving and reindexing in OnSuccess");
                         Dataverse dvWithSubjectJustAdded = ctxt.em().merge(dv);
                         ctxt.em().flush();
-                        ctxt.index().indexDataverse(dvWithSubjectJustAdded); // need to reindex to capture the new subjects
+                        //adding dv to list of those we need to re-index for new subjects
+                        dataversesToIndex.add(dvWithSubjectJustAdded);                       
                     } else {
                         logger.fine("no new subjects added to the dataverse; skipping reindexing");
                     }
@@ -389,45 +408,11 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             
             
             if (dataFile.isRestricted()) {
-                // A couple things need to happen if the file has been restricted: 
-                // 1. If there's a map layer associated with this shape file, or 
-                //    tabular-with-geo-tag file, all that map layer data (that 
-                //    includes most of the actual data in the file!) need to be
-                //    removed from WorldMap and GeoConnect, since anyone can get 
-                //    download the data from there;
-                // 2. If this (image) file has been assigned as the dedicated 
+                // If the file has been restricted: 
+                //    If this (image) file has been assigned as the dedicated 
                 //    thumbnail for the dataset, we need to remove that assignment, 
                 //    now that the file is restricted. 
-
-                // Map layer: 
-                
-                if (ctxt.mapLayerMetadata().findMetadataByDatafile(dataFile) != null) {
-                    // (We need an AuthenticatedUser in order to produce a WorldMap token!)
-                    String id = getUser().getIdentifier();
-                    id = id.startsWith("@") ? id.substring(1) : id;
-                    AuthenticatedUser authenticatedUser = ctxt.authentication().getAuthenticatedUser(id);
-                    try {
-                        ctxt.mapLayerMetadata().deleteMapLayerFromWorldMap(dataFile, authenticatedUser);
-
-                        // If that was successful, delete the layer on the Dataverse side as well:
-                        //SEK 4/20/2017                
-                        //Command to delete from Dataverse side
-                        ctxt.engine().submit(new DeleteMapLayerMetadataCommand(this.getRequest(), dataFile));
-
-                        // RP - Bit of hack, update the datafile here b/c the reference to the datafile 
-                        // is not being passed all the way up/down the chain.   
-                        //
-                        dataFile.setPreviewImageAvailable(false);
-
-                    } catch (IOException ioex) {
-                        // We are not going to treat it as a fatal condition and bail out, 
-                        // but we will send a notification to the user, warning them about
-                        // the layer still being out there, un-deleted:
-                        ctxt.notifications().sendNotification(authenticatedUser, getTimestamp(), UserNotification.Type.MAPLAYERDELETEFAILED, dataFile.getFileMetadata().getId());
-                    }
-
-                }
-                
+               
                 // Dataset thumbnail assignment: 
                 
                 if (dataFile.equals(getDataset().getThumbnailFile())) {

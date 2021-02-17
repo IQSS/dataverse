@@ -125,7 +125,7 @@ public class SettingsWrapper implements java.io.Serializable {
         if (true)
 
             if (guidesBaseUrl == null) {
-            String saneDefault = "http://guides.dataverse.org";
+            String saneDefault = "https://guides.dataverse.org";
         
             guidesBaseUrl = getValueForKey(SettingsServiceBean.Key.GuidesBaseUrl);
             if (guidesBaseUrl == null) {

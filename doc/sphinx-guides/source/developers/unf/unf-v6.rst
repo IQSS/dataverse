@@ -160,7 +160,7 @@ For example, to specify a non-default precision the parameter it is specified us
 
 Note: we do not recommend truncating character strings at fewer bytes than the default ``128`` (the ``X`` parameter). At the very least this number **must** be high enough so that the printable UNFs of individual variables or files are not truncated, when calculating combined UNFs of files or datasets, respectively. 
 
-It should also be noted that the Dataverse application never calculates UNFs with any non-default parameters. And we are not aware of anyone else actually doing so. If you are considering creating your own implementation of the UNF, it may be worth trying to create a simplified, defaults-only version first. Such an implementation would be sufficient to independently verify Dataverse-produced UNFs, among other things.
+It should also be noted that the Dataverse Software never calculates UNFs with any non-default parameters. And we are not aware of anyone else actually doing so. If you are considering creating your own implementation of the UNF, it may be worth trying to create a simplified, defaults-only version first. Such an implementation would be sufficient to independently verify Dataverse Software-produced UNFs, among other things.
 
 .. _note2:
 

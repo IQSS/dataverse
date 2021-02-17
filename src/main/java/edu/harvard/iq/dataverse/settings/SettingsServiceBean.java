@@ -218,10 +218,6 @@ public class SettingsServiceBean {
         */
         ThumbnailSizeLimitImage,
         ThumbnailSizeLimitPDF,
-        /* status message that will appear on the home page */
-        StatusMessageHeader,
-        /* full text of status message, to appear in popup */
-        StatusMessageText,
         /* return email address for system emails such as notifications */
         SystemEmail, 
         /* size limit for Tabular data file ingests */
@@ -232,20 +228,6 @@ public class SettingsServiceBean {
         SPSS/sav format, "RData" for R, etc.
         for example: :TabularIngestSizeLimit:RData */
         TabularIngestSizeLimit,
-        /**
-        Whether to allow user to create GeoConnect Maps
-        This boolean effects whether the user sees the map button on 
-        the dataset page and if the ingest will create a shape file
-        Default is false
-        */
-        GeoconnectCreateEditMaps,
-        /**
-        Whether to allow a user to view existing maps
-        This boolean effects whether a user may see the 
-        Explore World Map Button
-        Default is false;
-        */
-        GeoconnectViewMaps,
         /**
          The message added to a popup upon dataset publish
          * 

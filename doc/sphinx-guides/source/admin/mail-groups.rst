@@ -55,6 +55,32 @@ To load it into your Dataverse installation, either use a ``POST`` or ``PUT`` re
 
 ``curl -X POST -H 'Content-type: application/json' http://localhost:8080/api/admin/groups/domain --upload-file domainGroup1.json``
 
+Matching with Domains or Regular Expressions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Adding simple domain names requires exact matches of user email domains and the configured domains of a group. Although you could add multiple domains to a group, those still require exact matches. 
+
+You can also use one or multiple regular expressions instead of simple domains for a group. Those should not be mixed, although it would work. Regular expressions still require exact matches, but are much more flexible and are designed to support installation-specific use cases for group management.
+
+Some hints:
+
+- Due to their excessive CPU usage, regular expressions should be used rarely.
+- Remember to properly escape "\" in your regular expression. Both Java and JSON are a bit picky about this. E.g. a character class "\d" would have to be escaped as "\\d". Plenty of tutorials on the web explain this in more detail.
+- There is no way the Dataverse Software can detect a wrong regular expression for you. Be sure to do extensive testing, as a misconfigured group could result in privilege escalation or an unexpected influx of support contacts.
+- Remember to enable the regular expression support for a group by adding ``"regex": true``!
+
+A short example for a group using regular expressions:
+
+.. code-block:: json
+
+  {
+    "name": "Users from @example.org",
+    "alias": "exampleorg-regex",
+    "description": "Any verified user from x@example.org or x@sub.example.org will be included.",
+    "regex": true,
+    "domains": ["example\\.org", "[a-z]+\\.example\\.org"]
+  }
+
 Updating a Mail Domain Group
 ----------------------------
 

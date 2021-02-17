@@ -36,6 +36,8 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import static com.jayway.restassured.path.xml.XmlPath.from;
 import static com.jayway.restassured.RestAssured.given;
+import java.io.StringReader;
+import javax.json.JsonArray;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -1178,6 +1180,14 @@ public class UtilIT {
                 .get("/api/admin/authenticatedUsers/" + userIdentifier);
         return response;
     }
+    
+    static Response getAuthenticatedUserByToken(String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .urlEncodingEnabled(false)
+                .get("/api/users/:me");
+        return response;
+    }
 
     /**
      * Used to the test the filter Authenticated Users API endpoint
@@ -1835,40 +1845,6 @@ public class UtilIT {
         }
     }
 
-    static Response listMapLayerMetadatas() {
-        return given().get("/api/admin/geoconnect/mapLayerMetadatas");
-    }
-
-    static Response checkMapLayerMetadatas(String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .post("/api/admin/geoconnect/mapLayerMetadatas/check");
-    }
-
-    static Response checkMapLayerMetadatas(Long mapLayerMetadataId, String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .post("/api/admin/geoconnect/mapLayerMetadatas/check/" + mapLayerMetadataId);
-    }
-
-    static Response getMapFromFile(long fileId, String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/files/" + fileId + "/map");
-    }
-
-    static Response checkMapFromFile(long fileId, String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/files/" + fileId + "/map/check");
-    }
-
-    static Response deleteMapFromFile(long fileId, String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .delete("/api/files/" + fileId + "/map?key=" + apiToken);
-    }
-
     static Response getRsyncScript(String datasetPersistentId, String apiToken) {
         RequestSpecification requestSpecification = given();
         if (apiToken != null) {
@@ -2473,5 +2449,44 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .get("/api/datasets/" + datasetId + "/versions/" + version + "/downloadsize");
     }
+    
+    static Response addBannerMessage(String pathToJsonFile) {
+        String jsonIn = getDatasetJson(pathToJsonFile);
+        
+        Response addBannerMessageResponse = given()               
+                .body(jsonIn)
+                .contentType("application/json")
+                .post("/api/admin/bannerMessage");
+        return addBannerMessageResponse;
+    }
+    
+    static Response getBannerMessages() {
+        
+        Response getBannerMessagesResponse = given()               
+                .get("/api/admin/bannerMessage");
+        return getBannerMessagesResponse;
+    }
+    
+    static Response deleteBannerMessage(Long id) {
+        
+        Response deleteBannerMessageResponse = given()               
+                .delete("/api/admin/bannerMessage/"+id.toString());
+        return deleteBannerMessageResponse;
+    }
+    
+    static String getBannerMessageIdFromResponse(String getBannerMessagesResponse) {
+        StringReader rdr = new StringReader(getBannerMessagesResponse);
+        JsonObject json = Json.createReader(rdr).readObject();
+
+        for (JsonObject obj : json.getJsonArray("data").getValuesAs(JsonObject.class)) {
+            String message = obj.getString("displayValue");
+            if (message.equals("Banner Message For Deletion")) {
+                return obj.getJsonNumber("id").toString();
+            }
+        }
+
+        return "0";
+    }
+    
     
 }

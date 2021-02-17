@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.datasetutility;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -117,11 +118,12 @@ public class AddReplaceFileHelper{
     // -----------------------------------
     private Dataset dataset;                    // constructor (for add, not replace)
     private DataverseRequest dvRequest;         // constructor
-    private InputStream newFileInputStream;     // step 20
-    private String newFileName;                 // step 20
-    private String newFileContentType;          // step 20
-    private String newStorageIdentifier;        // step 20
-    private String newCheckSum;        // step 20
+    private InputStream newFileInputStream;     // step 30
+    private String newFileName;                 // step 30
+    private String newFileContentType;          // step 30
+    private String newStorageIdentifier;        // step 30
+    private String newCheckSum;                 // step 30
+    private ChecksumType newCheckSumType;       //step 30
     
     // -- Optional  
     private DataFile fileToReplace;             // step 25
@@ -312,23 +314,23 @@ public class AddReplaceFileHelper{
             String newStorageIdentifier,
             InputStream newFileInputStream,
             OptionalFileParams optionalFileParams){
-
         return this.runAddFileByDataset(chosenDataset,newFileName,newFileContentType,newStorageIdentifier,newFileInputStream,optionalFileParams,false);
 
     }
 
+    // JC STEP 1
     public boolean runAddFileByDataset(Dataset chosenDataset,
-             String newFileName,
-             String newFileContentType,
-             String newStorageIdentifier,
-             InputStream newFileInputStream,
-             OptionalFileParams optionalFileParams,
-             boolean globustype) {
+                                       String newFileName,
+                                       String newFileContentType,
+                                       String newStorageIdentifier,
+                                       InputStream newFileInputStream,
+                                       OptionalFileParams optionalFileParams,
+                                       boolean globustype) {
 
         msgt(">> runAddFileByDatasetId");
 
         initErrorHandling();
-
+        
         if(globustype) {
             this.currentOperation = GLOBUSFILE_ADD_OPERATION;
         }
@@ -339,7 +341,7 @@ public class AddReplaceFileHelper{
         if (!this.step_001_loadDataset(chosenDataset)){
             return false;
         }
-
+        
         //return this.runAddFile(this.dataset, newFileName, newFileContentType, newFileInputStream, optionalFileParams);
         return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newStorageIdentifier, newFileInputStream, optionalFileParams);
 
@@ -461,7 +463,8 @@ public class AddReplaceFileHelper{
 			InputStream newFileInputStream, OptionalFileParams optionalFileParams) {
 		return runAddReplaceFile(owner,newFileName, newFileContentType, null, newFileInputStream, optionalFileParams);
 	}
-    
+
+	// JC STEP 4
     private boolean runAddReplaceFile(Dataset owner,  
             String newFileName, String newFileContentType, 
             String newStorageIdentifier, InputStream newFileInputStream,
@@ -540,6 +543,7 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
+    // JC STEP 5
     private boolean runAddReplacePhase1(Dataset owner,  
             String newFileName, 
             String newFileContentType,
@@ -569,6 +573,7 @@ public class AddReplaceFileHelper{
         if(optionalFileParams != null) {
         	if(optionalFileParams.hasCheckSum()) {
         		newCheckSum = optionalFileParams.getCheckSum();
+        		newCheckSumType = optionalFileParams.getCheckSumType();
         	}
         }
 
@@ -710,12 +715,12 @@ public class AddReplaceFileHelper{
         }else{
             msgt("step_070_run_update_dataset_command");
             if (!this.isGlobusFileAddOperation()) {
-                if (!this.step_070_run_update_dataset_command()) {
-                    return false;
-                }
+            if (!this.step_070_run_update_dataset_command()){
+                return false;            
             }
         }
-        
+        }
+
         msgt("step_090_notifyUser");
         if (!this.step_090_notifyUser()){
             return false;            
@@ -725,8 +730,6 @@ public class AddReplaceFileHelper{
         if (!this.step_100_startIngestJobs()){
             return false;            
         }
-
-
 
         return true;
     }
@@ -790,6 +793,8 @@ public class AddReplaceFileHelper{
     /**
      * Initialize error handling vars
      */
+
+    // JC STEP 2
     private void initErrorHandling(){
 
         this.errorFound = false;
@@ -957,6 +962,8 @@ public class AddReplaceFileHelper{
     /**
      * 
      */
+
+    // JC STEP 3
     private boolean step_001_loadDataset(Dataset selectedDataset){
 
         if (this.hasError()){
@@ -1162,6 +1169,7 @@ public class AddReplaceFileHelper{
                     this.newFileContentType,
                     this.newStorageIdentifier,
                     this.newCheckSum,
+                    this.newCheckSumType,
                     this.systemConfig);
 
         } catch (IOException ex) {
@@ -1530,9 +1538,9 @@ public class AddReplaceFileHelper{
             this.addErrorSevere(getBundleErr("final_file_list_empty"));                
             return false;
         }
-        
+
         int nFiles = finalFileList.size();
-        finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList, isFileReplaceOperation());
+        finalFileList = ingestService.saveAndAddFilesToDataset(workingVersion, finalFileList, fileToReplace);
 
         if (nFiles != finalFileList.size()) {
             if (nFiles == 1) {
@@ -1929,9 +1937,9 @@ public class AddReplaceFileHelper{
         // start the ingest!
         //
         if (!this.isGlobusFileAddOperation()) {
-            ingestService.startIngestJobsForDataset(dataset, dvRequest.getAuthenticatedUser());
+        ingestService.startIngestJobsForDataset(dataset, dvRequest.getAuthenticatedUser());
         }
-        
+
         msg("post ingest start");
         return true;
     }
@@ -2020,8 +2028,7 @@ public class AddReplaceFileHelper{
     public void setDuplicateFileWarning(String duplicateFileWarning) {
         this.duplicateFileWarning = duplicateFileWarning;
     }
-
-
+    
 } // end class
   /*
     DatasetPage sequence:

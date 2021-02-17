@@ -694,7 +694,7 @@ public class GlobusServiceBean implements java.io.Serializable{
 
         return true;
     }
-
+/*
     public boolean globusFinishTransfer(Dataset dataset,  AuthenticatedUser user) throws MalformedURLException {
 
         logger.info("=====Tasklist == dataset id :" + dataset.getId());
@@ -905,5 +905,5 @@ public class GlobusServiceBean implements java.io.Serializable{
         return true;
     }
 
-
+*/
 }

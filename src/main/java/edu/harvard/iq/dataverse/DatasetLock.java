@@ -75,6 +75,9 @@ public class DatasetLock implements Serializable {
         /** Globus upload in progress */
         GlobusUpload,
         
+        /** Globus upload in progress */
+        GlobusUpload,
+
         /** Tasks handled by FinalizeDatasetPublicationCommand:
          Registering PIDs for DS and DFs and/or file validation */
         finalizePublication,

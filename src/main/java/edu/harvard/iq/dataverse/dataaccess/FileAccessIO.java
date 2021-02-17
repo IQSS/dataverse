@@ -46,8 +46,6 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 
-import com.amazonaws.services.s3.model.S3ObjectSummary;
-
 
 public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
@@ -418,11 +416,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         
     }
 
-    @Override
-    public List<S3ObjectSummary> listAuxObjects(String s) throws IOException {
-        return null;
-    }
-    
+
     @Override
     public String getStorageLocation() {
         // For a local file, the "storage location" is a complete, absolute
