@@ -35,13 +35,13 @@
     </ui:fragment>
     <ui:fragment rendered="#{displayCV and dsfv.datasetField.datasetFieldType.name==cvMgr.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[1]}">
         <div id="akmi_#{valCount.index+1}_#{cvMgr.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[1]}">
-            <p:inputText value="#{dsfv.valueForEdit}" id="cv_term_#{valCount.index+1}" tabindex="#{block.index+1}"
+            <p:inputText value="#{dsfv.valueForEdit}" id="cv_term_#{valCount.index+1}"
                          styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"/>
         </div>
     </ui:fragment>
     <ui:fragment rendered="#{displayCV and dsfv.datasetField.datasetFieldType.name==cvMgr.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[2] }">
         <div id="akmi_#{valCount.index+1}_#{cvMgr.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[2]}">
-            <p:inputText value="#{dsfv.valueForEdit}" id="cv_url_#{valCount.index+1}" tabindex="#{block.index+1}"
+            <p:inputText value="#{dsfv.valueForEdit}" id="cv_url_#{valCount.index+1}"
                          styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"/>
         </div>
         <script src="#{cvMgr.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getJsUrl()}">
