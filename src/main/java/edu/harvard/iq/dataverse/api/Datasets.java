@@ -2343,27 +2343,24 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                 }
 
                 if (dataset.getLastExportTime() != null) {
-                    timestamps.add("lastMetadataExportTime", formatter.format(dataset.getLastExportTime().toInstant().atZone(ZoneId.systemDefault())));
+                    timestamps.add("lastMetadataExportTime",
+                            formatter.format(dataset.getLastExportTime().toInstant().atZone(ZoneId.systemDefault())));
                 }
 
                 if (dataset.getMostRecentMajorVersionReleaseDate() != null) {
-                    timestamps.add("lastMajorVersionReleaseTime",
-                            formatter.format(dataset.getMostRecentMajorVersionReleaseDate().toInstant().atZone(ZoneId.systemDefault())));
+                    timestamps.add("lastMajorVersionReleaseTime", formatter.format(
+                            dataset.getMostRecentMajorVersionReleaseDate().toInstant().atZone(ZoneId.systemDefault())));
                 }
-                if (dataset.getIndexTime() != null) {
-                    timestamps.add("hasStaleIndex",
-                            dataset.getIndexTime().compareTo(dataset.getModificationTime()) < 0);
-                } else {
-                    timestamps.add("hasStaleIndex", true);
-                }
-                if (dataset.getPermissionModificationTime() != null) {
-                    if (dataset.getPermissionIndexTime() != null) {
-                        timestamps.add("hasStalePermissionIndex", dataset.getPermissionIndexTime()
-                                .compareTo(dataset.getPermissionModificationTime()) < 0);
-                    } else {
-                        timestamps.add("hasStalePermissionIndex", true);
-                    }
-                }
+                // If the modification/permissionmodification time is
+                // set and the index time is null or is before the mod time, the relevant index is stale
+                timestamps.add("hasStaleIndex",
+                        (dataset.getModificationTime() != null && (dataset.getIndexTime() == null
+                                || (dataset.getIndexTime().compareTo(dataset.getModificationTime()) <= 0))) ? true
+                                        : false);
+                timestamps.add("hasStalePermissionIndex",
+                        (dataset.getPermissionModificationTime() != null && (dataset.getIndexTime() == null
+                                || (dataset.getIndexTime().compareTo(dataset.getModificationTime()) <= 0))) ? true
+                                        : false);
             }
             // More detail if you can see a draft
             if (canSeeDraft) {
@@ -2380,7 +2377,8 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                             formatter.format(dataset.getPermissionIndexTime().toLocalDateTime()));
                 }
                 if (dataset.getGlobalIdCreateTime() != null) {
-                    timestamps.add("globalIdCreateTime", formatter.format(dataset.getGlobalIdCreateTime().toInstant().atZone(ZoneId.systemDefault())));
+                    timestamps.add("globalIdCreateTime", formatter
+                            .format(dataset.getGlobalIdCreateTime().toInstant().atZone(ZoneId.systemDefault())));
                 }
 
             }
