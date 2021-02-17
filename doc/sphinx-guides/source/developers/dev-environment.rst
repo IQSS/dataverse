@@ -10,7 +10,7 @@ These instructions are purposefully opinionated and terse to help you get your d
 Quick Start
 -----------
 
-The quickest way to get Dataverse running is to use Vagrant as described in the :doc:`tools` section, but for day to day development work, we recommended the following setup.
+The quickest way to get the Dataverse Software running is to use Vagrant as described in the :doc:`tools` section, but for day to day development work, we recommended the following setup.
 
 Set Up Dependencies
 -------------------
@@ -25,7 +25,7 @@ Windows is not well supported, unfortunately, but Vagrant and Minishift environm
 Install Java
 ~~~~~~~~~~~~
 
-Dataverse requires Java 8.
+The Dataverse Software requires Java 11.
 
 We suggest downloading OpenJDK from https://adoptopenjdk.net
 
@@ -36,29 +36,29 @@ Install Netbeans or Maven
 
 NetBeans IDE is recommended, and can be downloaded from http://netbeans.org . Developers may use any editor or IDE. We recommend NetBeans because it is free, works cross platform, has good support for Jakarta EE projects, and includes a required build tool, Maven.
 
-Below we describe how to build the Dataverse war file with Netbeans but if you prefer to use only Maven, you can find installation instructions in the :doc:`tools` section.
+Below we describe how to build the Dataverse Software war file with Netbeans but if you prefer to use only Maven, you can find installation instructions in the :doc:`tools` section.
 
 Install Homebrew (Mac Only)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 On Mac, install Homebrew to simplify the steps below: https://brew.sh
 
-Clone the Dataverse Git Repo
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Clone the Dataverse Software Git Repo
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Fork https://github.com/IQSS/dataverse and then clone your fork like this:
 
 ``git clone git@github.com:[YOUR GITHUB USERNAME]/dataverse.git``
 
-Build the Dataverse War File
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Build the Dataverse Software War File
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you installed Netbeans, follow these steps:
 
-- Launch Netbeans and click "File" and then "Open Project". Navigate to where you put the Dataverse code and double-click "dataverse" to open the project.
+- Launch Netbeans and click "File" and then "Open Project". Navigate to where you put the Dataverse Software code and double-click "Dataverse" to open the project.
 - If you see "resolve project problems," go ahead and let Netbeans try to resolve them. This will probably including downloading dependencies, which can take a while.
 - Allow Netbeans to install nb-javac (required for Java 8 and below).
-- Select "dataverse" under Projects and click "Run" in the menu and then "Build Project (dataverse)". Check back for "BUILD SUCCESS" at the end.
+- Select "Dataverse" under Projects and click "Run" in the menu and then "Build Project (Dataverse)". Check back for "BUILD SUCCESS" at the end.
 
 If you installed Maven instead of Netbeans, run ``mvn package``. Check for "BUILD SUCCESS" at the end.
 
@@ -155,10 +155,10 @@ To install Solr, execute the following commands:
 
 ``bin/solr create_core -c collection1 -d server/solr/collection1/conf``
 
-Run the Dataverse Installer Script
-----------------------------------
+Run the Dataverse Software Installer Script
+-------------------------------------------
 
-Navigate to the directory where you cloned the Dataverse git repo change directories to the ``scripts/installer`` directory like this:
+Navigate to the directory where you cloned the Dataverse Software git repo change directories to the ``scripts/installer`` directory like this:
 
 ``cd scripts/installer``
 
@@ -176,10 +176,10 @@ Finally, run the installer (see also :download:`README_python.txt <../../../../s
 
 ``python3 install.py``
 
-Verify Dataverse is Running
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Verify the Dataverse Software is Running
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-After the script has finished, you should be able to log into Dataverse with the following credentials:
+After the script has finished, you should be able to log into your Dataverse installation with the following credentials:
 
 - http://localhost:8080
 - username: dataverseAdmin
@@ -192,12 +192,12 @@ Run the following command:
 
 ``curl http://localhost:8080/api/admin/settings/:DoiProvider -X PUT -d FAKE``
 
-This will disable DOI registration by using a fake (in-code) DOI provider. Please note that this feature is only available in version >= 4.10 and that at present, the UI will give no indication that the DOIs thus minted are fake.
+This will disable DOI registration by using a fake (in-code) DOI provider. Please note that this feature is only available in Dataverse Software 4.10+ and that at present, the UI will give no indication that the DOIs thus minted are fake.
 
 Next Steps
 ----------
 
-If you can log in to Dataverse, great! If not, please see the :doc:`troubleshooting` section. For further assitance, please see "Getting Help" in the :doc:`intro` section.
+If you can log in to the Dataverse installation, great! If not, please see the :doc:`troubleshooting` section. For further assistance, please see "Getting Help" in the :doc:`intro` section.
 
 You're almost ready to start hacking on code. Now that the installer script has you up and running, you need to continue on to the :doc:`tips` section to get set up to deploy code from your IDE or the command line.
 

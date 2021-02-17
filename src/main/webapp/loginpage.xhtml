@@ -202,7 +202,7 @@
                             </div>
 
                             <div id="otherProviders" jsf:rendered="#{LoginPage.listAuthenticationProviders().size() > 1}">
-                                <h4>#{bundle['auth.providers.title']}</h4>
+                                <h3>#{bundle['auth.providers.title']}</h3>
                                 <h:form>
                                     <ui:repeat value="#{LoginPage.listAuthenticationProviders()}" var="provider">
                                         <p:commandLink rendered="#{provider.id != LoginPage.authProvider.id}" styleClass="btn btn-default" actionListener="#{LoginPage.setAuthProviderById(provider.id)}" update="login-container">

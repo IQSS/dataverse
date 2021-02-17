@@ -1,17 +1,17 @@
 .. role:: fixedwidthplain
 
-Dataverse Application Timers
-============================
+Dataverse Installation Application Timers
+=========================================
 
-Dataverse uses timers to automatically run scheduled Harvest and Metadata export jobs. 
+Your Dataverse installation uses timers to automatically run scheduled Harvest and Metadata export jobs. 
 
 .. contents:: |toctitle|
 	:local:
 
-Dedicated timer server in a Dataverse server cluster
-----------------------------------------------------
+Dedicated timer server in a Dataverse Installation server cluster
+-----------------------------------------------------------------
 
-When running a Dataverse cluster - i.e. multiple Dataverse application
+When running a Dataverse installation cluster - i.e. multiple Dataverse installation application
 servers talking to the same database - **only one** of them must act
 as the *dedicated timer server*. This is to avoid starting conflicting
 batch jobs on multiple nodes at the same time.
@@ -22,7 +22,7 @@ The following JVM option instructs the application to act as the dedicated timer
 
 ``-Ddataverse.timerServer=true``
 
-**IMPORTANT:** Note that this option is automatically set by the Dataverse installer script. That means that when **configuring a multi-server cluster**, it will be the responsibility of the installer to remove the option from the :fixedwidthplain:`domain.xml` of every node except the one intended to be the timer server.
+**IMPORTANT:** Note that this option is automatically set by the Dataverse Software installer script. That means that when **configuring a multi-server cluster**, it will be the responsibility of the installer to remove the option from the :fixedwidthplain:`domain.xml` of every node except the one intended to be the timer server.
 
 Harvesting Timers 
 -----------------
@@ -38,7 +38,7 @@ Metadata Export Timer
 
 This timer is created automatically whenever the application is deployed or restarted. There is no admin user-accessible configuration for this timer. 
 
-This timer runs a daily job that tries to export all the local, published datasets that haven't been exported yet, in all supported metadata formats, and cache the results on the filesystem. (Note that normally an export will happen automatically whenever a dataset is published. This scheduled job is there to catch any datasets for which that export did not succeed, for one reason or another). Also, since this functionality has been added in version 4.5: if you are upgrading from a previous version, none of your datasets are exported yet. So the first time this job runs, it will attempt to export them all. 
+This timer runs a daily job that tries to export all the local, published datasets that haven't been exported yet, in all supported metadata formats, and cache the results on the filesystem. (Note that normally an export will happen automatically whenever a dataset is published. This scheduled job is there to catch any datasets for which that export did not succeed, for one reason or another). Also, since this functionality has been added in Dataverse Software 4.5: if you are upgrading from a previous version, none of your datasets are exported yet. So the first time this job runs, it will attempt to export them all. 
 
 This daily job will also update all the harvestable OAI sets configured on your server, adding new and/or newly published datasets or marking deaccessioned datasets as "deleted" in the corresponding sets as needed. 
 
@@ -65,7 +65,7 @@ This job is automatically scheduled to run once a week at 12:30AM local time on 
 
 * Build and deploy the application
 
-* Alternatively, you can insert an ejb-jar.xml file into a provided dataverse war file without building the application.
+* Alternatively, you can insert an ejb-jar.xml file into a provided Dataverse Software war file without building the application.
 
   * Check if there is already an ejb-jar.xml file in the war file 
 

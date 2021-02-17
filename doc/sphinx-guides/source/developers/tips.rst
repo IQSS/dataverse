@@ -10,16 +10,16 @@ If you just followed the steps in :doc:`dev-environment` for the first time, you
 Iterating on Code and Redeploying
 ---------------------------------
 
-When you followed the steps in the :doc:`dev-environment` section, the war file was deployed to Payara by the Dataverse installation script. That's fine but once you're ready to make a change to the code you will need to get comfortable with undeploying and redeploying code (a war file) to Payara.
+When you followed the steps in the :doc:`dev-environment` section, the war file was deployed to Payara by the Dataverse Software installation script. That's fine but once you're ready to make a change to the code you will need to get comfortable with undeploying and redeploying code (a war file) to Payara.
 
-It's certainly possible to manage deployment and undeployment of the war file via the command line using the ``asadmin`` command that ships with Payara (that's what the Dataverse installation script uses and the steps are documented below), but we recommend getting set up with an IDE such as Netbeans to manage deployment for you.
+It's certainly possible to manage deployment and undeployment of the war file via the command line using the ``asadmin`` command that ships with Payara (that's what the Dataverse Software installation script uses and the steps are documented below), but we recommend getting set up with an IDE such as Netbeans to manage deployment for you.
 
-Undeploy the war File from the Dataverse Installation Script
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Undeploy the war File from the Dataverse Software Installation Script
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Because the initial deployment of the war file was done outside of Netbeans by the Dataverse installation script, it's a good idea to undeploy that war file to give Netbeans a clean slate to work with.
+Because the initial deployment of the war file was done outside of Netbeans by the Dataverse Software installation script, it's a good idea to undeploy that war file to give Netbeans a clean slate to work with.
 
-Assuming you installed Payara in ``/usr/local/payara5``, run the following ``asadmin`` command to see the version of Dataverse that the Dataverse installation script deployed:
+Assuming you installed Payara in ``/usr/local/payara5``, run the following ``asadmin`` command to see the version of the Dataverse Software that the Dataverse Software installation script deployed:
 
 ``/usr/local/payara5/bin/asadmin list-applications``
 
@@ -38,8 +38,8 @@ Please note that if you are on a Mac, Netbeans may be unable to start Payara due
 
 At this point you can manage Payara using Netbeans. Click "Window" and then "Services". Expand "Servers" and right-click Payara to stop and then start it so that it appears in the Output window. Note that you can expand "Payara" and "Applications" to see if any applications are deployed.
 
-Ensure that Dataverse Will Be Deployed to Payara
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Ensure that the Dataverse Software Will Be Deployed to Payara
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Click "Window" and then "Projects". Click "File" and then "Project Properties (dataverse)". Click "Run" and change "Server" from "No Server Selected" to your installation of Payara. Click OK.
 
@@ -81,7 +81,7 @@ For faster iteration while working on JSF pages, it is highly recommended that y
 Database Schema Exploration
 ---------------------------
 
-With over 100 tables, the Dataverse PostgreSQL database ("dvndb") can be somewhat daunting for newcomers. Here are some tips for coming up to speed. (See also the :doc:`sql-upgrade-scripts` section.)
+With over 100 tables, the Dataverse Software PostgreSQL database ("dvndb") can be somewhat daunting for newcomers. Here are some tips for coming up to speed. (See also the :doc:`sql-upgrade-scripts` section.)
 
 pgAdmin
 ~~~~~~~~
@@ -109,13 +109,13 @@ For the ``asadmin`` commands below, we assume you have already changed directori
 There are four steps to this process:
 
 1. Build the war file: ``mvn package``
-2. Check which version of Dataverse is deployed: ``./asadmin list-applications``
-3. Undeploy the Dataverse application (if necessary): ``./asadmin undeploy dataverse-VERSION``
+2. Check which version of the Dataverse Software is deployed: ``./asadmin list-applications``
+3. Undeploy the Dataverse Software (if necessary): ``./asadmin undeploy dataverse-VERSION``
 4. Copy the war file to the server (if necessary)
 5. Deploy the new code: ``./asadmin deploy /path/to/dataverse-VERSION.war``
 
-Running the Dataverse Installation Script in Non-Interactive Mode
------------------------------------------------------------------
+Running the Dataverse Software Installation Script in Non-Interactive Mode
+--------------------------------------------------------------------------
 
 Rather than running the installer in "interactive" mode, it's possible to put the values in a file. See "non-interactive mode" in the :doc:`/installation/installation-main` section of the Installation Guide.
 
@@ -128,9 +128,9 @@ Solr
 ----
 
 .. TODO: This section should be moved into a dedicated guide about Solr for developers. It should be extended with
-         information about the way Solr is used within Dataverse, ideally explaining concepts and links to upstream docs.
+         information about the way Solr is used within the Dataverse Software, ideally explaining concepts and links to upstream docs.
 
-Once some dataverses, datasets, and files have been created and indexed, you can experiment with searches directly from Solr at http://localhost:8983/solr/#/collection1/query and look at the JSON output of searches, such as this wildcard search: http://localhost:8983/solr/collection1/select?q=*%3A*&wt=json&indent=true . You can also get JSON output of static fields Solr knows about: http://localhost:8983/solr/collection1/schema/fields
+Once some Dataverse collections, datasets, and files have been created and indexed, you can experiment with searches directly from Solr at http://localhost:8983/solr/#/collection1/query and look at the JSON output of searches, such as this wildcard search: http://localhost:8983/solr/collection1/select?q=*%3A*&wt=json&indent=true . You can also get JSON output of static fields Solr knows about: http://localhost:8983/solr/collection1/schema/fields
 
 You can simply double-click "start.jar" rather that running ``java -jar start.jar`` from the command line. Figuring out how to stop Solr after double-clicking it is an exercise for the reader.
 
@@ -165,7 +165,7 @@ When you prefer manual updates, there is another script, see above: :ref:`custom
 Sample Data
 -----------
 
-You may want to populate your **non-production** installation(s) of Dataverse with sample data. You have a couple options:
+You may want to populate your **non-production** Dataverse installations with sample data. You have a couple options:
 
 - Code in https://github.com/IQSS/dataverse-sample-data (recommended). This set of sample data includes several common data types, data subsetted from production datasets in dataverse.harvard.edu, datasets with file hierarchy, and more.
 - Scripts called from ``scripts/deploy/phoenix.dataverse.org/post``.
