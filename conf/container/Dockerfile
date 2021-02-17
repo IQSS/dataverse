@@ -7,42 +7,128 @@
 # THIS FILE IS TO BE USED WITH MAVEN DOCKER BUILD:
 # mvn -Pcontainer clean package docker:build
 
-FROM payara/server-full:@payara.version@-jdk11
+# Using same base image as Solr (https://hub.docker.com/_/solr), reducing pulls
+FROM openjdk:11-jre
 LABEL maintainer="FDM FZJ <forschungsdaten@fz-juelich.de>"
+# Default payara ports to expose
+# 4848: admin console
+# 9009: debug port (JPDA)
+# 8080: http
+# 8181: https
+EXPOSE 4848 9009 8080 8181
 
-ENV DATA_DIR=/data\
-    DOCROOT_DIR=/docroot\
-    METADATA_DIR=/metadata\
-    SECRETS_DIR=/secrets\
-    DUMPS_DIR=/dumps\
-    DOMAIN_DIR=${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}\
-    JREBEL_LIB=${HOME_DIR}/jrebel/lib/libjrebel64.so\
+ENV HOME_DIR="/opt/payara"
+ENV PAYARA_DIR="${HOME_DIR}/appserver" \
+    SCRIPT_DIR="${HOME_DIR}/scripts" \
+    CONFIG_DIR="${HOME_DIR}/config" \
+    DEPLOY_DIR="${HOME_DIR}/deployments" \
+    DATA_DIR="/data" \
+    DOCROOT_DIR="/docroot" \
+    METADATA_DIR="/metadata" \
+    SECRETS_DIR="/secrets" \
+    DUMPS_DIR="/dumps" \
+    PASSWORD_FILE="${HOME_DIR}/passwordFile" \
+    ADMIN_USER="admin" \
+    ADMIN_PASSWORD="admin" \
+    DOMAIN_NAME="domain1" \
+    PAYARA_ARGS=""
+ENV PATH="${PATH}:${PAYARA_DIR}/bin" \
+    DOMAIN_DIR="${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}" \
+    JVM_ARGS="" \
+    MEM_MAX_RAM_PERCENTAGE="70.0" \
+    MEM_XSS="512k" \
+    PREBOOT_COMMANDS="${CONFIG_DIR}/pre-boot-commands.asadmin" \
+    POSTBOOT_COMMANDS="${CONFIG_DIR}/post-boot-commands.asadmin" \
+    DEPLOY_PROPS="" \
     # Make heap dumps on OOM appear in DUMPS_DIR
-    JVM_ARGS="-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=\${ENV=DUMPS_DIR}"\
+    ENABLE_DUMPS=0 \
+    JVM_DUMPS_ARGS="-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=\${ENV=DUMPS_DIR}" \
     # Documenting development options (see init_3_enabledev.sh)
-    ENABLE_JMX=0\
-    ENABLE_JDWP=0\
-    ENABLE_JREBEL=0
+    ENABLE_JMX=0 \
+    ENABLE_JDWP=0 \
+    ENABLE_JREBEL=0 \
+    JREBEL_LIB="${HOME_DIR}/jrebel/lib/libjrebel64.so"
 
-# Create basic pathes
+ARG PAYARA_VERSION="@payara.version@"
+ARG TINI_VERSION=0.19.0
+ARG ESH_VERSION=0.3.1
+ARG ESH_CHECKSUM=""
+ARG PKGS="jq imagemagick curl unzip"
+ARG ASADMIN="${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE}"
+
+### PART 1: SYSTEM ###
 USER root
-RUN mkdir -p ${DATA_DIR} ${METADATA_DIR} ${DOCROOT_DIR} ${SECRETS_DIR} ${DUMPS_DIR} && \
+WORKDIR /
+RUN true && \
+    # Download tini
+    curl -sSfL -o /tini "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini" && \
+    curl -sSfL -o /tini.sha256 "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini.sha256sum" && \
+    # Check and install tini
+    sha256sum -c /tini.sha256 && \
+    chmod +x /tini && \
+    # Create pathes
+    mkdir -p ${HOME_DIR} ${PAYARA_DIR} ${DEPLOY_DIR} ${CONFIG_DIR} ${SCRIPT_DIR} && \
+    mkdir -p ${DATA_DIR} ${METADATA_DIR} ${DOCROOT_DIR} ${SECRETS_DIR} ${DUMPS_DIR} && \
+    # Create user
+    addgroup --gid 1000 payara && \
+    adduser --system --uid 1000 --no-create-home --shell /bin/bash --home "${HOME_DIR}" --gecos "" --ingroup payara payara && \
+    echo payara:payara | chpasswd && \
+    # Set permissions
+    chown -R payara: ${HOME_DIR} && \
     chown -R payara: ${DATA_DIR} ${METADATA_DIR} ${DOCROOT_DIR} ${SECRETS_DIR} ${DUMPS_DIR}
 
-# Install prerequisites
-RUN apt-get -qq update && \
-    apt-get -qqy install jq imagemagick curl wget unzip && \
-    rm -rf /var/lib/apt/lists/*
+RUN true && \
+    # Download & check esh template script
+    curl -sSfL -o /usr/bin/esh https://raw.githubusercontent.com/jirutka/esh/v${ESH_VERSION}/esh && \
+    echo '1e0bd783f930cba13d6708b11c1ac844bbb1eddd02ac1666fc10d47eb9517bd7 /usr/bin/esh' | sha256sum -c - && \
+    chmod +x /usr/bin/esh && \
+    # Download & unzip JRebel to $JREBEL_LIB = ${HOME_DIR}/jrebel/lib/libjrebel64.so (for development use)
+    curl -sS -f -o ${HOME_DIR}/jrebel.zip http://dl.zeroturnaround.com/jrebel-stable-nosetup.zip && \
+    unzip -q "${HOME_DIR}/jrebel.zip" -d "${HOME_DIR}" && \
+    # Install packages
+    apt-get update -q && \
+    apt-get install -qqy ${PKGS} && \
+    rm -rf /var/lib/apt/lists/* "${HOME_DIR}/jrebel.zip"
 
-# Install esh template engine from Github
-RUN wget --no-verbose -O esh https://raw.githubusercontent.com/jirutka/esh/v0.3.0/esh && \
-    echo 'fe030e23fc1383780d08128eecf322257cec743b esh' | sha1sum -c - && \
-    chmod +x esh && mv esh /usr/local/bin
-
-# Install JRebel library (for development use)
+### PART 2: PAYARA ###
+# After setting up system, now configure Payara
 USER payara
-RUN wget --no-verbose -O "${HOME_DIR}/jrebel.zip" http://dl.zeroturnaround.com/jrebel-stable-nosetup.zip && \
-    unzip -q "${HOME_DIR}/jrebel.zip" -d "${HOME_DIR}"
+WORKDIR ${HOME_DIR}
+
+# Download, check and install Payara
+RUN curl -sSfL -o payara.zip "https://repo1.maven.org/maven2/fish/payara/distributions/payara/${PAYARA_VERSION}/payara-${PAYARA_VERSION}.zip" && \
+    curl -sSfL -o payara.zip.sha256 "https://repo1.maven.org/maven2/fish/payara/distributions/payara/${PAYARA_VERSION}/payara-${PAYARA_VERSION}.zip.sha256" && \
+    echo "$(cat payara.zip.sha256) payara.zip" | sha256sum -c - && \
+    unzip -q payara.zip -d ${HOME_DIR} && \
+    mv ${HOME_DIR}/payara5/* ${PAYARA_DIR}/ && \
+    rm -rf ${HOME_DIR}/payara5 payara.zip*
+
+# Copy the system (appserver level) scripts like entrypoint, etc
+COPY --chown=payara:payara maven/scripts/system ${SCRIPT_DIR}/
+
+# TODO: refactor and make production ready
+# Configure the domain to be container and production ready
+RUN true && \
+    # Set admin password
+    echo "AS_ADMIN_PASSWORD=\nAS_ADMIN_NEWPASSWORD=${ADMIN_PASSWORD}" > /tmp/password-change-file.txt && \
+    echo "AS_ADMIN_PASSWORD=${ADMIN_PASSWORD}" >> ${PASSWORD_FILE}  && \
+    asadmin --user=${ADMIN_USER} --passwordfile=/tmp/password-change-file.txt change-admin-password --domain_name=${DOMAIN_NAME} && \
+    # Start domain for configuration
+    ${ASADMIN} start-domain ${DOMAIN_NAME} && \
+    # Allow access to admin with password only
+    ${ASADMIN} enable-secure-admin && \
+    # List & delete memory settings from domain
+    for MEMORY_JVM_OPTION in $(asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} list-jvm-options | grep "Xm[sx]\|Xss"); \
+       do \
+         ${ASADMIN} delete-jvm-options $MEMORY_JVM_OPTION;\
+       done && \
+    ${ASADMIN} create-jvm-options '-XX\:+UseContainerSupport:-XX\:MaxRAMPercentage=${ENV=MEM_MAX_RAM_PERCENTAGE}:-Xss${ENV=MEM_XSS}' && \
+    ${ASADMIN} set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.logtoFile=false && \
+    ${ASADMIN} stop-domain ${DOMAIN_NAME} && \
+    rm -rf \
+        /tmp/password-change-file.txt \
+        ${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/osgi-cache \
+        ${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/logs
 
 # Make docroot of Payara reside in higher level directory for easier targeting
 # Due to IQSS/dataverse-kubernetes#177: create the generated pathes so they are
@@ -51,6 +137,7 @@ RUN rm -rf ${DOMAIN_DIR}/docroot && \
     ln -s ${DOCROOT_DIR} ${DOMAIN_DIR}/docroot && \
     mkdir -p ${DOMAIN_DIR}/generated/jsp/dataverse
 
+### PART 3: DATAVERSE INSTALLATION ###
 # Copy app and deps from assembly in proper layers
 COPY --chown=payara:payara maven/deps ${DEPLOY_DIR}/dataverse/WEB-INF/lib/
 COPY --chown=payara:payara maven/app ${DEPLOY_DIR}/dataverse/
@@ -62,5 +149,9 @@ RUN ln -s ${DEPLOY_DIR}/dataverse/supplements/jhove.conf ${PAYARA_DIR}/glassfish
     sed -i ${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/config/jhove.conf -e "s:/usr/local/payara5/glassfish/domains/domain1:${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}:g"
 
 # Copy init and application scripts
-COPY --chown=payara:payara maven/scripts ${SCRIPT_DIR}/
+COPY --chown=payara:payara maven/scripts/app ${SCRIPT_DIR}/
 RUN chmod +x ${SCRIPT_DIR}/*
+
+# Set the entrypoint
+ENTRYPOINT ["/tini", "--"]
+CMD "${SCRIPT_DIR}/entrypoint.sh"

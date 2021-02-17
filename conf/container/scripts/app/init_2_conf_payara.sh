@@ -22,7 +22,7 @@ echo "# Dataverse postboot configuration for Payara" > ${DV_POSTBOOT}
 # TODO: This is ugly and dirty. It leaves leftovers on the filesystem.
 #       It should be replaced by using proper config mechanisms sooner than later,
 #       like MicroProfile Config API.
-for alias in rserve doi db
+for alias in rserve doi
 do
   if [ -f ${SECRETS_DIR}/$alias/password ]; then
     echo "INFO: Defining password alias for $alias"
@@ -93,12 +93,15 @@ env -0 | grep -z -Ee "^(dataverse|doi)_" | while IFS='=' read -r -d '' k v; do
     echo "create-system-properties ${KEY}=${v}" >> ${DV_POSTBOOT}
 done
 
-# 4. Add the commands to the existing postboot file, but insert BEFORE deployment
+# 4. Disable phone home. Always.
+echo "disable-phone-home" >> ${DV_POSTBOOT}
+
+# 5. Enable config dir for dealing with secrets etc.
+echo "set-config-dir --directory=$SECRETS_DIR" >>  ${DV_POSTBOOT}
+
+# 6. Add the commands to the existing postboot file, but insert BEFORE deployment
 echo "$(cat ${DV_POSTBOOT} | cat - ${POSTBOOT_COMMANDS} )" > ${POSTBOOT_COMMANDS}
 echo "DEBUG: postboot contains the following commands:"
 echo "--------------------------------------------------"
 cat ${POSTBOOT_COMMANDS}
 echo "--------------------------------------------------"
-
-# 6. Disable phone home. Always.
-echo "disable-phone-home" >> ${PREBOOT_COMMANDS}
