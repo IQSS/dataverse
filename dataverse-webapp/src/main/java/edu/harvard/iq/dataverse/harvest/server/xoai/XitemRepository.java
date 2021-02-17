@@ -5,15 +5,15 @@
  */
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
-import com.lyncode.xoai.dataprovider.exceptions.IdDoesNotExistException;
-import com.lyncode.xoai.dataprovider.exceptions.OAIException;
-import com.lyncode.xoai.dataprovider.filter.ScopedFilter;
-import com.lyncode.xoai.dataprovider.handlers.results.ListItemIdentifiersResult;
-import com.lyncode.xoai.dataprovider.handlers.results.ListItemsResults;
-import com.lyncode.xoai.dataprovider.model.Item;
-import com.lyncode.xoai.dataprovider.model.ItemIdentifier;
-import com.lyncode.xoai.dataprovider.model.Set;
-import com.lyncode.xoai.dataprovider.repository.ItemRepository;
+import org.dspace.xoai.dataprovider.exceptions.IdDoesNotExistException;
+import org.dspace.xoai.dataprovider.exceptions.OAIException;
+import org.dspace.xoai.dataprovider.filter.ScopedFilter;
+import org.dspace.xoai.dataprovider.handlers.results.ListItemIdentifiersResult;
+import org.dspace.xoai.dataprovider.handlers.results.ListItemsResults;
+import org.dspace.xoai.dataprovider.model.Item;
+import org.dspace.xoai.dataprovider.model.ItemIdentifier;
+import org.dspace.xoai.dataprovider.model.Set;
+import org.dspace.xoai.dataprovider.repository.ItemRepository;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -129,7 +129,7 @@ public class XitemRepository implements ItemRepository {
             }
 
             // Run a second pass, looking for records in this set that occur
-            // in *other* sets. Then we'll add these multiple sets to the 
+            // in *other* sets. Then we'll add these multiple sets to the
             // formatted output in the header:
             addExtraSets(xoaiItems, setSpec, from, until);
 
@@ -222,12 +222,12 @@ public class XitemRepository implements ItemRepository {
             return;
         }
 
-        // Make a second pass through the list of xoaiItems already found for this set, 
+        // Make a second pass through the list of xoaiItems already found for this set,
         // and add any other sets in which this item occurs:
 
         int j = 0;
         for (int i = 0; i < xoaiItems.size(); i++) {
-            // fast-forward the second list, until we find a record with this identifier, 
+            // fast-forward the second list, until we find a record with this identifier,
             // or until we are past this record (both lists are sorted alphabetically by
             // the identifier:
             Xitem xitem = xoaiItems.get(i);

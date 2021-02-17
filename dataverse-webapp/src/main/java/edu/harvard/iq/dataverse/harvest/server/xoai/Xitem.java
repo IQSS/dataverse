@@ -5,9 +5,9 @@
  */
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
-import com.lyncode.xoai.dataprovider.model.Item;
-import com.lyncode.xoai.dataprovider.model.Set;
-import com.lyncode.xoai.model.oaipmh.About;
+import org.dspace.xoai.dataprovider.model.Item;
+import org.dspace.xoai.dataprovider.model.Set;
+import org.dspace.xoai.model.oaipmh.About;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.harvest.OAIRecord;
 import edu.harvard.iq.dataverse.util.StringUtil;

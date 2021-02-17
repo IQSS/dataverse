@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
-import com.lyncode.xoai.model.oaipmh.ResumptionToken;
+
+import org.dspace.xoai.model.oaipmh.ResumptionToken;
 
 import static com.google.common.base.Predicates.isNull;
 import static java.lang.Math.round;

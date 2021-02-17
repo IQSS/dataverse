@@ -1,19 +1,19 @@
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
-import com.lyncode.xoai.model.oaipmh.Header;
-import com.lyncode.xoai.model.oaipmh.Record;
-import com.lyncode.xoai.xml.XmlWriter;
 import edu.harvard.iq.dataverse.error.DataverseError;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.ExporterType;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import io.vavr.control.Either;
+import org.dspace.xoai.model.oaipmh.Header;
+import org.dspace.xoai.model.oaipmh.Record;
+import org.dspace.xoai.xml.XmlWriter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import static com.lyncode.xoai.xml.XmlWriter.defaultContext;
+import static org.dspace.xoai.xml.XmlWriter.defaultContext;
 
 /**
  * @author Leonid Andreev

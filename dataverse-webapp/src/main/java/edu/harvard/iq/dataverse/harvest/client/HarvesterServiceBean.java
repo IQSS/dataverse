@@ -5,7 +5,7 @@
  */
 package edu.harvard.iq.dataverse.harvest.client;
 
-import com.lyncode.xoai.model.oaipmh.Header;
+import org.dspace.xoai.model.oaipmh.Header;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
@@ -173,8 +173,8 @@ public class HarvesterServiceBean {
                 hdLogger.log(Level.INFO, "Datasets created/updated: " + harvestedDatasetIds.size() + ", datasets deleted: " + deletedIdentifiers.size() + ", datasets failed: " + failedIdentifiers.size());
 
                 // now index all the datasets we have harvested - created, modified or deleted:
-                /* (TODO: may not be needed at all. In Dataverse4, we may be able to get away with the normal 
-                    reindexing after every import. See the rest of the comments about batch indexing throughout 
+                /* (TODO: may not be needed at all. In Dataverse4, we may be able to get away with the normal
+                    reindexing after every import. See the rest of the comments about batch indexing throughout
                     this service bean)
                     if (this.processedSizeThisBatch > 0) {
                         hdLogger.log(Level.INFO, "POST HARVEST, reindexing the remaining studies.");
@@ -196,9 +196,9 @@ public class HarvesterServiceBean {
             hdLogger.log(Level.SEVERE, message);
             logException(e, hdLogger);
             hdLogger.log(Level.INFO, "HARVEST NOT COMPLETED DUE TO UNEXPECTED ERROR.");
-            // TODO: 
-            // even though this harvesting run failed, we may have had successfully 
-            // processed some number of datasets, by the time the exception was thrown. 
+            // TODO:
+            // even though this harvesting run failed, we may have had successfully
+            // processed some number of datasets, by the time the exception was thrown.
             // We should record that number too. And the number of the datasets that
             // had failed, that we may have counted.  -- L.A. 4.4
             harvestingClientService.setHarvestFailure(harvestingClientId, new Date());
@@ -268,8 +268,8 @@ public class HarvesterServiceBean {
                     //throw new IOException("Exception occured, stopping harvest");
                 }
 
-                // reindexing in batches? - this is from DVN 3; 
-                // we may not need it anymore. 
+                // reindexing in batches? - this is from DVN 3;
+                // we may not need it anymore.
                 if (processedSizeThisBatch.longValue() > INDEXING_CONTENT_BATCH_SIZE) {
 
                     hdLogger.log(Level.INFO, "REACHED CONTENT BATCH SIZE LIMIT; calling index (" + harvestedDatasetIdsThisBatch.size() + " datasets in the batch).");
@@ -313,7 +313,7 @@ public class HarvesterServiceBean {
                 if (dataset != null) {
                     hdLogger.info("Deleting dataset " + dataset.getGlobalIdString());
                     deleteHarvestedDataset(dataset, dataverseRequest, hdLogger);
-                    // TODO: 
+                    // TODO:
                     // check the status of that Delete - see if it actually succeeded
                     deletedIdentifiers.add(identifier);
                 } else {
@@ -354,7 +354,7 @@ public class HarvesterServiceBean {
         }
 
         // TODO: the message below is taken from DVN3; - figure out what it means...
-        // 
+        //
         // If we got an Error from the OAI server or an exception happened during import, then
         // set recordErrorOccurred to true (if recordErrorOccurred is being used)
         // otherwise throw an exception (if recordErrorOccurred is not used, i.e null)
@@ -371,13 +371,13 @@ public class HarvesterServiceBean {
     }
 
     private void deleteHarvestedDataset(Dataset dataset, DataverseRequest request, Logger hdLogger) {
-        // Purge all the SOLR documents associated with this client from the 
-        // index server: 
+        // Purge all the SOLR documents associated with this client from the
+        // index server:
         indexService.deleteHarvestedDocuments(dataset);
 
         try {
-            // files from harvested datasets are removed unceremoniously, 
-            // directly in the database. no need to bother calling the 
+            // files from harvested datasets are removed unceremoniously,
+            // directly in the database. no need to bother calling the
             // DeleteFileCommand on them.
             for (DataFile harvestedFile : dataset.getFiles()) {
                 DataFile merged = em.merge(harvestedFile);
@@ -392,7 +392,7 @@ public class HarvesterServiceBean {
         } catch (PermissionException ex) {
             // TODO: log the result
         } catch (CommandException ex) {
-            // TODO: log the result                    
+            // TODO: log the result
         }
 
         // TODO: log the success result
@@ -466,12 +466,12 @@ public class HarvesterServiceBean {
         } while ((e = e.getCause()) != null);
         logger.severe(fullMessage);
     }
-    
+
     /*
-     some dead code below: 
-     this functionality has been moved into OaiHandler. 
+     some dead code below:
+     this functionality has been moved into OaiHandler.
     TODO: test that harvesting is still working and remove.
-     
+
     private ServiceProvider getServiceProvider(String baseOaiUrl, Granularity oaiGranularity) {
         Context context = new Context();
 

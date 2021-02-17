@@ -1,26 +1,25 @@
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
 import com.lyncode.xml.exceptions.XmlWriteException;
-import com.lyncode.xoai.dataprovider.exceptions.BadArgumentException;
-import com.lyncode.xoai.dataprovider.exceptions.CannotDisseminateFormatException;
-import com.lyncode.xoai.dataprovider.exceptions.CannotDisseminateRecordException;
-import com.lyncode.xoai.dataprovider.exceptions.HandlerException;
-import com.lyncode.xoai.dataprovider.exceptions.IdDoesNotExistException;
-import com.lyncode.xoai.dataprovider.exceptions.NoMetadataFormatsException;
-import com.lyncode.xoai.dataprovider.exceptions.OAIException;
-import com.lyncode.xoai.dataprovider.handlers.VerbHandler;
-import com.lyncode.xoai.dataprovider.handlers.helpers.ItemHelper;
-import com.lyncode.xoai.dataprovider.model.Context;
-import com.lyncode.xoai.dataprovider.model.Item;
-import com.lyncode.xoai.dataprovider.model.MetadataFormat;
-import com.lyncode.xoai.dataprovider.model.Set;
-import com.lyncode.xoai.dataprovider.parameters.OAICompiledRequest;
-import com.lyncode.xoai.dataprovider.repository.Repository;
-import com.lyncode.xoai.model.oaipmh.GetRecord;
-import com.lyncode.xoai.model.oaipmh.Header;
-import com.lyncode.xoai.model.oaipmh.Metadata;
-import com.lyncode.xoai.xml.XSLPipeline;
-import com.lyncode.xoai.xml.XmlWriter;
+import org.dspace.xoai.dataprovider.exceptions.BadArgumentException;
+import org.dspace.xoai.dataprovider.exceptions.CannotDisseminateFormatException;
+import org.dspace.xoai.dataprovider.exceptions.HandlerException;
+import org.dspace.xoai.dataprovider.exceptions.IdDoesNotExistException;
+import org.dspace.xoai.dataprovider.exceptions.NoMetadataFormatsException;
+import org.dspace.xoai.dataprovider.exceptions.OAIException;
+import org.dspace.xoai.dataprovider.handlers.VerbHandler;
+import org.dspace.xoai.dataprovider.handlers.helpers.ItemHelper;
+import org.dspace.xoai.dataprovider.model.Context;
+import org.dspace.xoai.dataprovider.model.Item;
+import org.dspace.xoai.dataprovider.model.MetadataFormat;
+import org.dspace.xoai.dataprovider.model.Set;
+import org.dspace.xoai.dataprovider.parameters.OAICompiledRequest;
+import org.dspace.xoai.dataprovider.repository.Repository;
+import org.dspace.xoai.model.oaipmh.GetRecord;
+import org.dspace.xoai.model.oaipmh.Header;
+import org.dspace.xoai.model.oaipmh.Metadata;
+import org.dspace.xoai.xml.XSLPipeline;
+import org.dspace.xoai.xml.XmlWriter;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 
 import javax.xml.stream.XMLStreamException;
@@ -51,7 +50,7 @@ public class XgetRecordHandler extends VerbHandler<GetRecord> {
 
         if (format.hasCondition() &&
                 !format.getCondition().getFilter(getRepository().getFilterResolver()).isItemShown(item)) {
-            throw new CannotDisseminateRecordException("Format not applicable to this item");
+            throw new OAIException("Format not applicable to this item");
         }
 
 
@@ -62,7 +61,7 @@ public class XgetRecordHandler extends VerbHandler<GetRecord> {
     }
 
     private Xrecord createRecord(OAICompiledRequest parameters, Item item)
-            throws BadArgumentException, CannotDisseminateRecordException,
+            throws BadArgumentException,
             OAIException, NoMetadataFormatsException, CannotDisseminateFormatException {
         MetadataFormat format = getContext().formatForPrefix(parameters.getMetadataPrefix());
         Header header = new Header();

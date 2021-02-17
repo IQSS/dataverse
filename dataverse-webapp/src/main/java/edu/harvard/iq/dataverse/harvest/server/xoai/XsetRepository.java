@@ -5,11 +5,11 @@
  */
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
-import com.lyncode.xoai.dataprovider.handlers.results.ListSetsResult;
-import com.lyncode.xoai.dataprovider.model.Set;
-import com.lyncode.xoai.dataprovider.repository.SetRepository;
-import com.lyncode.xoai.model.xoai.Element;
-import com.lyncode.xoai.model.xoai.XOAIMetadata;
+import org.dspace.xoai.dataprovider.handlers.results.ListSetsResult;
+import org.dspace.xoai.dataprovider.model.Set;
+import org.dspace.xoai.dataprovider.repository.SetRepository;
+import org.dspace.xoai.model.xoai.Element;
+import org.dspace.xoai.model.xoai.XOAIMetadata;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.persistence.harvest.OAISet;
 

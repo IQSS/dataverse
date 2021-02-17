@@ -5,8 +5,9 @@
  */
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
-import com.lyncode.xoai.model.oaipmh.GetRecord;
+import org.dspace.xoai.model.oaipmh.GetRecord;
 import edu.harvard.iq.dataverse.export.ExportService;
+import org.dspace.xoai.model.oaipmh.Record;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -27,9 +28,15 @@ public class XgetRecord extends GetRecord {
     private static final String COMPLETE_LIST_SIZE_ATTRIBUTE = "completeListSize";
     private static final String CURSOR_ATTRIBUTE = "cursor";
 
+    private Record recordCopy;
+
+    public Record getRecord() {
+        return recordCopy;
+    }
 
     public XgetRecord(Xrecord record) {
         super(record);
+        this.recordCopy = record;
     }
 
     public void writeToStream(OutputStream outputStream, ExportService exportService, String dataverseUrl) throws IOException {

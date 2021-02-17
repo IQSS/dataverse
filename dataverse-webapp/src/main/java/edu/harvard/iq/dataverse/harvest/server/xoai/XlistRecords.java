@@ -1,10 +1,10 @@
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
 import com.lyncode.xml.exceptions.XmlWriteException;
-import com.lyncode.xoai.model.oaipmh.ListRecords;
-import com.lyncode.xoai.model.oaipmh.Record;
-import com.lyncode.xoai.model.oaipmh.ResumptionToken;
-import com.lyncode.xoai.xml.XmlWriter;
+import org.dspace.xoai.model.oaipmh.ListRecords;
+import org.dspace.xoai.model.oaipmh.Record;
+import org.dspace.xoai.model.oaipmh.ResumptionToken;
+import org.dspace.xoai.xml.XmlWriter;
 import edu.harvard.iq.dataverse.export.ExportService;
 
 import javax.xml.stream.XMLStreamException;
@@ -12,8 +12,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import static com.lyncode.xoai.model.oaipmh.Granularity.Second;
-import static com.lyncode.xoai.xml.XmlWriter.defaultContext;
+import static org.dspace.xoai.model.oaipmh.Granularity.Second;
+import static org.dspace.xoai.xml.XmlWriter.defaultContext;
 
 /**
  * @author Leonid Andreev

@@ -6,21 +6,21 @@
 package edu.harvard.iq.dataverse.harvest.server.web.servlet;
 
 import com.lyncode.xml.exceptions.XmlWriteException;
-import com.lyncode.xoai.dataprovider.builder.OAIRequestParametersBuilder;
-import com.lyncode.xoai.dataprovider.exceptions.OAIException;
-import com.lyncode.xoai.dataprovider.model.Context;
-import com.lyncode.xoai.dataprovider.model.MetadataFormat;
-import com.lyncode.xoai.dataprovider.repository.ItemRepository;
-import com.lyncode.xoai.dataprovider.repository.Repository;
-import com.lyncode.xoai.dataprovider.repository.RepositoryConfiguration;
-import com.lyncode.xoai.dataprovider.repository.SetRepository;
-import com.lyncode.xoai.model.oaipmh.DeletedRecord;
-import com.lyncode.xoai.model.oaipmh.Granularity;
-import com.lyncode.xoai.model.oaipmh.OAIPMH;
-import com.lyncode.xoai.model.oaipmh.Verb;
-import com.lyncode.xoai.services.impl.SimpleResumptionTokenFormat;
-import com.lyncode.xoai.xml.XSISchema;
-import com.lyncode.xoai.xml.XmlWriter;
+import org.dspace.xoai.dataprovider.builder.OAIRequestParametersBuilder;
+import org.dspace.xoai.dataprovider.exceptions.OAIException;
+import org.dspace.xoai.dataprovider.model.Context;
+import org.dspace.xoai.dataprovider.model.MetadataFormat;
+import org.dspace.xoai.dataprovider.repository.ItemRepository;
+import org.dspace.xoai.dataprovider.repository.Repository;
+import org.dspace.xoai.dataprovider.repository.RepositoryConfiguration;
+import org.dspace.xoai.dataprovider.repository.SetRepository;
+import org.dspace.xoai.model.oaipmh.DeletedRecord;
+import org.dspace.xoai.model.oaipmh.Granularity;
+import org.dspace.xoai.model.oaipmh.OAIPMH;
+import org.dspace.xoai.model.oaipmh.Verb;
+import org.dspace.xoai.services.impl.SimpleResumptionTokenFormat;
+import org.dspace.xoai.xml.XSISchema;
+import org.dspace.xoai.xml.XmlWriter;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.export.ExportService;
@@ -53,9 +53,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import static com.lyncode.xoai.model.oaipmh.OAIPMH.NAMESPACE_URI;
-import static com.lyncode.xoai.model.oaipmh.OAIPMH.SCHEMA_LOCATION;
-import static com.lyncode.xoai.xml.XmlWriter.defaultContext;
+import static org.dspace.xoai.model.oaipmh.OAIPMH.NAMESPACE_URI;
+import static org.dspace.xoai.model.oaipmh.OAIPMH.SCHEMA_LOCATION;
+import static org.dspace.xoai.xml.XmlWriter.defaultContext;
 
 /**
  * @author Leonid Andreev
@@ -159,8 +159,8 @@ public class OAIServlet extends HttpServlet {
     }
 
     private RepositoryConfiguration createRepositoryConfiguration() {
-        // TODO: 
-        // some of the settings below - such as the max list numbers - 
+        // TODO:
+        // some of the settings below - such as the max list numbers -
         // need to be configurable!
 
         String dataverseName = dataverseDao.findRootDataverse().getName();
@@ -330,7 +330,7 @@ public class OAIServlet extends HttpServlet {
 
     // This function produces the string representation of the top level,
     // "service" record of an OAIPMH response (i.e., the header that precedes
-    // the actual "payload" record, such as <GetRecord>, <ListIdentifiers>, 
+    // the actual "payload" record, such as <GetRecord>, <ListIdentifiers>,
     // <ListRecords>, etc.
 
     private String oaiPmhResponseToString(OAIPMH handle) {

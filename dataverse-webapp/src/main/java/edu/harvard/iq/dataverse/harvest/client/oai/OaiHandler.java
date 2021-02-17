@@ -5,17 +5,18 @@
  */
 package edu.harvard.iq.dataverse.harvest.client.oai;
 
-import com.lyncode.xoai.model.oaipmh.Granularity;
-import com.lyncode.xoai.model.oaipmh.Header;
-import com.lyncode.xoai.model.oaipmh.MetadataFormat;
-import com.lyncode.xoai.model.oaipmh.Set;
-import com.lyncode.xoai.serviceprovider.ServiceProvider;
-import com.lyncode.xoai.serviceprovider.client.HttpOAIClient;
-import com.lyncode.xoai.serviceprovider.exceptions.BadArgumentException;
-import com.lyncode.xoai.serviceprovider.exceptions.InvalidOAIResponse;
-import com.lyncode.xoai.serviceprovider.exceptions.NoSetHierarchyException;
-import com.lyncode.xoai.serviceprovider.model.Context;
-import com.lyncode.xoai.serviceprovider.parameters.ListIdentifiersParameters;
+import org.dspace.xoai.model.oaipmh.Granularity;
+import org.dspace.xoai.model.oaipmh.Header;
+import org.dspace.xoai.model.oaipmh.MetadataFormat;
+import org.dspace.xoai.model.oaipmh.Set;
+import org.dspace.xoai.serviceprovider.ServiceProvider;
+import org.dspace.xoai.serviceprovider.client.HttpOAIClient;
+import org.dspace.xoai.serviceprovider.exceptions.BadArgumentException;
+import org.dspace.xoai.serviceprovider.exceptions.IdDoesNotExistException;
+import org.dspace.xoai.serviceprovider.exceptions.InvalidOAIResponse;
+import org.dspace.xoai.serviceprovider.exceptions.NoSetHierarchyException;
+import org.dspace.xoai.serviceprovider.model.Context;
+import org.dspace.xoai.serviceprovider.parameters.ListIdentifiersParameters;
 import edu.harvard.iq.dataverse.harvest.client.FastGetRecord;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import org.apache.commons.lang.StringUtils;
@@ -161,7 +162,7 @@ public class OaiHandler implements Serializable {
             /*
             if (set.getDescriptions() != null && !set.getDescriptions().isEmpty()) {
                 Description description = set.getDescriptions().get(0);
-                
+
             }
             */
             if (!StringUtils.isEmpty(setSpec)) {
@@ -176,7 +177,7 @@ public class OaiHandler implements Serializable {
 
     }
 
-    public List<String> runListMetadataFormats() throws OaiHandlerException {
+    public List<String> runListMetadataFormats() throws OaiHandlerException, IdDoesNotExistException {
         ServiceProvider sp = getServiceProvider();
 
         Iterator<MetadataFormat> mfIter;

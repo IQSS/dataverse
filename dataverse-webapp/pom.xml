@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <artifactId>dataverse-webapp</artifactId>
     <packaging>war</packaging>
 
@@ -511,13 +511,13 @@
         <!-- a patched version I built locally. -->
         <!-- (pull requests pending - L.A. -->
         <dependency>
-            <groupId>com.lyncode</groupId>
+            <groupId>org.dspace</groupId>
             <artifactId>xoai-common</artifactId>
-            <version>4.1.0-header-patch</version>
+            <version>4.2.1-SNAPSHOT-h21</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.hamcrest</groupId>
-                    <artifactId>hamcrest-all</artifactId>
+                    <artifactId>hamcrest</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>stax</groupId>
@@ -526,9 +526,9 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.lyncode</groupId>
+            <groupId>org.dspace</groupId>
             <artifactId>xoai-data-provider</artifactId>
-            <version>4.1.0-header-patch</version>
+            <version>4.2.1-SNAPSHOT-h21</version>
             <exclusions>
                 <exclusion>
                     <groupId>log4j</groupId>
@@ -537,9 +537,9 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.lyncode</groupId>
+            <groupId>org.dspace</groupId>
             <artifactId>xoai-service-provider</artifactId>
-            <version>4.1.0-header-patch</version>
+            <version>4.2.1-SNAPSHOT-h21</version>
             <exclusions>
                 <exclusion>
                     <groupId>log4j</groupId>
@@ -631,7 +631,7 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
-        
+
         <plugins>
             <plugin>
                 <groupId>com.github.warmuuh</groupId>

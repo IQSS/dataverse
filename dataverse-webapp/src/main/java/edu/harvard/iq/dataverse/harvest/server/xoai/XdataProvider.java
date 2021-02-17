@@ -2,36 +2,36 @@ package edu.harvard.iq.dataverse.harvest.server.xoai;
 
 
 import com.lyncode.builder.Builder;
-import com.lyncode.xoai.dataprovider.exceptions.BadArgumentException;
-import com.lyncode.xoai.dataprovider.exceptions.BadResumptionToken;
-import com.lyncode.xoai.dataprovider.exceptions.DuplicateDefinitionException;
-import com.lyncode.xoai.dataprovider.exceptions.HandlerException;
-import com.lyncode.xoai.dataprovider.exceptions.IllegalVerbException;
-import com.lyncode.xoai.dataprovider.exceptions.OAIException;
-import com.lyncode.xoai.dataprovider.exceptions.UnknownParameterException;
-import com.lyncode.xoai.dataprovider.handlers.ErrorHandler;
-import com.lyncode.xoai.dataprovider.handlers.IdentifyHandler;
-import com.lyncode.xoai.dataprovider.handlers.ListIdentifiersHandler;
-import com.lyncode.xoai.dataprovider.handlers.ListMetadataFormatsHandler;
-import com.lyncode.xoai.dataprovider.handlers.ListSetsHandler;
-import com.lyncode.xoai.dataprovider.model.Context;
-import com.lyncode.xoai.dataprovider.parameters.OAICompiledRequest;
-import com.lyncode.xoai.dataprovider.parameters.OAIRequest;
-import com.lyncode.xoai.dataprovider.repository.Repository;
-import com.lyncode.xoai.exceptions.InvalidResumptionTokenException;
-import com.lyncode.xoai.model.oaipmh.OAIPMH;
-import com.lyncode.xoai.model.oaipmh.Request;
-import com.lyncode.xoai.services.api.DateProvider;
-import com.lyncode.xoai.services.impl.UTCDateProvider;
+import org.dspace.xoai.dataprovider.exceptions.BadArgumentException;
+import org.dspace.xoai.dataprovider.exceptions.BadResumptionToken;
+import org.dspace.xoai.dataprovider.exceptions.DuplicateDefinitionException;
+import org.dspace.xoai.dataprovider.exceptions.HandlerException;
+import org.dspace.xoai.dataprovider.exceptions.IllegalVerbException;
+import org.dspace.xoai.dataprovider.exceptions.OAIException;
+import org.dspace.xoai.dataprovider.exceptions.UnknownParameterException;
+import org.dspace.xoai.dataprovider.handlers.ErrorHandler;
+import org.dspace.xoai.dataprovider.handlers.IdentifyHandler;
+import org.dspace.xoai.dataprovider.handlers.ListIdentifiersHandler;
+import org.dspace.xoai.dataprovider.handlers.ListMetadataFormatsHandler;
+import org.dspace.xoai.dataprovider.handlers.ListSetsHandler;
+import org.dspace.xoai.dataprovider.model.Context;
+import org.dspace.xoai.dataprovider.parameters.OAICompiledRequest;
+import org.dspace.xoai.dataprovider.parameters.OAIRequest;
+import org.dspace.xoai.dataprovider.repository.Repository;
+import org.dspace.xoai.exceptions.InvalidResumptionTokenException;
+import org.dspace.xoai.model.oaipmh.OAIPMH;
+import org.dspace.xoai.model.oaipmh.Request;
+import org.dspace.xoai.services.api.DateProvider;
+import org.dspace.xoai.services.impl.UTCDateProvider;
 import org.apache.log4j.Logger;
 
-import static com.lyncode.xoai.dataprovider.parameters.OAIRequest.Parameter.From;
-import static com.lyncode.xoai.dataprovider.parameters.OAIRequest.Parameter.Identifier;
-import static com.lyncode.xoai.dataprovider.parameters.OAIRequest.Parameter.MetadataPrefix;
-import static com.lyncode.xoai.dataprovider.parameters.OAIRequest.Parameter.ResumptionToken;
-import static com.lyncode.xoai.dataprovider.parameters.OAIRequest.Parameter.Set;
-import static com.lyncode.xoai.dataprovider.parameters.OAIRequest.Parameter.Until;
-import static com.lyncode.xoai.dataprovider.parameters.OAIRequest.Parameter.Verb;
+import static org.dspace.xoai.dataprovider.parameters.OAIRequest.Parameter.From;
+import static org.dspace.xoai.dataprovider.parameters.OAIRequest.Parameter.Identifier;
+import static org.dspace.xoai.dataprovider.parameters.OAIRequest.Parameter.MetadataPrefix;
+import static org.dspace.xoai.dataprovider.parameters.OAIRequest.Parameter.ResumptionToken;
+import static org.dspace.xoai.dataprovider.parameters.OAIRequest.Parameter.Set;
+import static org.dspace.xoai.dataprovider.parameters.OAIRequest.Parameter.Until;
+import static org.dspace.xoai.dataprovider.parameters.OAIRequest.Parameter.Verb;
 
 /**
  * @author Leonid Andreev
