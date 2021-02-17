@@ -68,14 +68,6 @@ fi
 echo "INFO: Defining JavaMail."
 echo "create-javamail-resource --mailhost=${MAIL_SERVER} --mailuser=dataversenotify --fromaddress=${MAIL_FROMADDRESS} mail/notifyMailSession" >> ${DV_POSTBOOT}
 
-echo "INFO: defining miscellaneous configuration options."
-# AJP connector
-echo "create-network-listener --protocol=http-listener-1 --listenerport=8009 --jkenabled=true jk-connector" >> ${DV_POSTBOOT}
-# COMET support
-echo "set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled=true" >> ${DV_POSTBOOT}
-# SAX parser options
-echo "create-system-properties javax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl" >> ${DV_POSTBOOT}
-
 # 3. Domain based configuration options
 # Set Dataverse environment variables
 echo "INFO: Defining system properties for Dataverse configuration options."
@@ -93,13 +85,7 @@ env -0 | grep -z -Ee "^(dataverse|doi)_" | while IFS='=' read -r -d '' k v; do
     echo "create-system-properties ${KEY}=${v}" >> ${DV_POSTBOOT}
 done
 
-# 4. Disable phone home. Always.
-echo "disable-phone-home" >> ${DV_POSTBOOT}
-
-# 5. Enable config dir for dealing with secrets etc.
-echo "set-config-dir --directory=$SECRETS_DIR" >>  ${DV_POSTBOOT}
-
-# 6. Add the commands to the existing postboot file, but insert BEFORE deployment
+# 4. Add the commands to the existing postboot file, but insert BEFORE deployment
 echo "$(cat ${DV_POSTBOOT} | cat - ${POSTBOOT_COMMANDS} )" > ${POSTBOOT_COMMANDS}
 echo "DEBUG: postboot contains the following commands:"
 echo "--------------------------------------------------"

@@ -117,14 +117,49 @@ RUN true && \
     ${ASADMIN} start-domain ${DOMAIN_NAME} && \
     # Allow access to admin with password only
     ${ASADMIN} enable-secure-admin && \
+
+    ### CONTAINER USAGE ENABLEMENT
     # List & delete memory settings from domain
-    for MEMORY_JVM_OPTION in $(asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} list-jvm-options | grep "Xm[sx]\|Xss"); \
+    for MEMORY_JVM_OPTION in $(${ASADMIN} list-jvm-options | grep "Xm[sx]\|Xss\|NewRatio"); \
        do \
-         ${ASADMIN} delete-jvm-options $MEMORY_JVM_OPTION;\
+         ${ASADMIN} delete-jvm-options $(echo $MEMORY_JVM_OPTION | sed -e 's/:/\\:/g'); \
        done && \
     ${ASADMIN} create-jvm-options '-XX\:+UseContainerSupport:-XX\:MaxRAMPercentage=${ENV=MEM_MAX_RAM_PERCENTAGE}:-Xss${ENV=MEM_XSS}' && \
+    # Set logging to console only
     ${ASADMIN} set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.logtoFile=false && \
+
+    ### PRODUCTION READINESS
+    ${ASADMIN} create-jvm-options '-XX\:+UseG1GC:-XX\:+UseStringDeduplication:-XX\:MaxGCPauseMillis=500' && \
+    ${ASADMIN} create-jvm-options '-XX\:MetaspaceSize=256m:-XX\:MaxMetaspaceSize=2g:-XX\:+IgnoreUnrecognizedVMOptions' && \
+    # Enlarge thread pools
+    ${ASADMIN} set server-config.thread-pools.thread-pool.http-thread-pool.max-thread-pool-size="50" && \
+    ${ASADMIN} set server-config.thread-pools.thread-pool.http-thread-pool.max-queue-size="" && \
+    ${ASADMIN} set default-config.thread-pools.thread-pool.thread-pool-1.max-thread-pool-size="250" && \
+    # Enable file caching
+    ${ASADMIN} set server-config.network-config.protocols.protocol.http-listener-1.http.file-cache.enabled="true" && \
+    ${ASADMIN} set server-config.network-config.protocols.protocol.http-listener-2.http.file-cache.enabled="true" && \
+    ${ASADMIN} set default-config.network-config.protocols.protocol.http-listener-1.http.file-cache.enabled="true" && \
+    ${ASADMIN} set default-config.network-config.protocols.protocol.http-listener-2.http.file-cache.enabled="true" && \
+    # Enlarge EJB pools (cannot do this for server-config as set does not create new entries)
+    ${ASADMIN} set default-config.ejb-container.max-pool-size="128" && \
+    # Misc settings
+    ${ASADMIN} create-system-properties fish.payara.classloading.delegate="false" && \
+    ${ASADMIN} create-system-properties jersey.config.client.readTimeout="300000" && \
+    ${ASADMIN} create-system-properties jersey.config.client.connectTimeout="300000" && \
+
+    ### DATAVERSE APPLICATION SPECIFICS
+    ${ASADMIN} set-config-dir --directory=${SECRETS_DIR} && \
+    # TODO: what of the below 3 items can be deleted for container usage?
+    ${ASADMIN} create-network-listener --protocol=http-listener-1 --listenerport=8009 --jkenabled=true jk-connector && \
+    ${ASADMIN} set server-config.network-config.protocols.protocol.http-listener-1.http.comet-support-enabled=true && \
+    ${ASADMIN} create-system-properties javax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl && \
+    # Always disable phoning home...
+    ${ASADMIN} disable-phone-home && \
+
+    ### CLEANUP
+    # Stop domain
     ${ASADMIN} stop-domain ${DOMAIN_NAME} && \
+    # Delete generated files
     rm -rf \
         /tmp/password-change-file.txt \
         ${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/osgi-cache \
