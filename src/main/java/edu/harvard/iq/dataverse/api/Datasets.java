@@ -112,6 +112,7 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -972,9 +973,23 @@ public class Datasets extends AbstractApiBean {
 
             Dataset ds = findDatasetOrDie(id);
             if (mustBeIndexed) {
-                if ((ds.getIndexTime() == null) || (ds.getIndexTime().compareTo(ds.getModificationTime()) <= 0)
-                        || ds.getPermissionIndexTime() == null
-                        || (ds.getPermissionIndexTime().compareTo(ds.getPermissionModificationTime()) <= 0)) {
+                logger.fine("IT: " + ds.getIndexTime());
+                logger.fine("MT: " + ds.getModificationTime());
+                logger.fine("PIT: " + ds.getPermissionIndexTime());
+                logger.fine("PMT: " + ds.getPermissionModificationTime());
+                logger.fine("ITMT: " + (ds.getIndexTime().compareTo(ds.getModificationTime()) <= 0));
+                /*
+                 * Some calls, such as the /datasets/actions/:import* commands do not set the
+                 * modification or permission modification times. The checks here are trying to
+                 * see if indexing or permissionindexing could be pending, so they check to see
+                 * if the relevant modification time is set and if so, whether the index is also
+                 * set and if so, if it after the modification time. If the modification time is
+                 * set and the index time is null or is before the mod time, the 409/conflict
+                 * error is returned.
+                 * 
+                 */
+                if ((ds.getModificationTime()!=null && (ds.getIndexTime() == null || (ds.getIndexTime().compareTo(ds.getModificationTime()) <= 0))) ||
+                        (ds.getPermissionModificationTime()!=null && (ds.getIndexTime() == null || (ds.getIndexTime().compareTo(ds.getModificationTime()) <= 0)))) {
                     return error(Response.Status.CONFLICT, "Dataset is awaiting indexing");
                 }
             }
@@ -2315,20 +2330,25 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             perms.add(Permission.ViewUnpublishedDataset);
             boolean canSeeDraft = permissionSvc.hasPermissionsFor(u, dataset, perms);
             JsonObjectBuilder timestamps = Json.createObjectBuilder();
+            logger.fine("CSD: " + canSeeDraft);
+            logger.fine("IT: " + dataset.getIndexTime());
+            logger.fine("MT: " + dataset.getModificationTime());
+            logger.fine("PIT: " + dataset.getPermissionIndexTime());
+            logger.fine("PMT: " + dataset.getPermissionModificationTime());
             // Basic info if it's released
-            if (dataset.isReleased()) {
+            if (dataset.isReleased() || canSeeDraft) {
                 timestamps.add("createTime", formatter.format(dataset.getCreateDate().toLocalDateTime()));
                 if (dataset.getPublicationDate() != null) {
                     timestamps.add("publicationTime", formatter.format(dataset.getPublicationDate().toLocalDateTime()));
                 }
 
                 if (dataset.getLastExportTime() != null) {
-                    timestamps.add("lastMetadataExportTime", formatter.format(dataset.getLastExportTime().toInstant()));
+                    timestamps.add("lastMetadataExportTime", formatter.format(dataset.getLastExportTime().toInstant().atZone(ZoneId.systemDefault())));
                 }
 
                 if (dataset.getMostRecentMajorVersionReleaseDate() != null) {
                     timestamps.add("lastMajorVersionReleaseTime",
-                            formatter.format(dataset.getMostRecentMajorVersionReleaseDate().toInstant()));
+                            formatter.format(dataset.getMostRecentMajorVersionReleaseDate().toInstant().atZone(ZoneId.systemDefault())));
                 }
                 if (dataset.getIndexTime() != null) {
                     timestamps.add("hasStaleIndex",
@@ -2360,7 +2380,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                             formatter.format(dataset.getPermissionIndexTime().toLocalDateTime()));
                 }
                 if (dataset.getGlobalIdCreateTime() != null) {
-                    timestamps.add("globalIdCreateTime", formatter.format(dataset.getGlobalIdCreateTime().toInstant()));
+                    timestamps.add("globalIdCreateTime", formatter.format(dataset.getGlobalIdCreateTime().toInstant().atZone(ZoneId.systemDefault())));
                 }
 
             }
