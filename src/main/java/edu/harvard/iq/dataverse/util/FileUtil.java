@@ -38,6 +38,16 @@ import edu.harvard.iq.dataverse.ingest.IngestReport;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
 import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
+import edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil;
+import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatDoc;
+import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.HTML_H1;
+import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.HTML_TABLE_HDR;
+import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatTitle;
+import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatTable;
+import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatTableCell;
+import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatLink;
+import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatTableCellAlignRight;
+import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatTableRow;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -211,6 +221,8 @@ public class FileUtil implements java.io.Serializable  {
         FILE_THUMBNAIL_CLASSES.put(FILE_FACET_CLASS_UNKNOWN, FILE_THUMBNAIL_CLASS_OTHER);
         FILE_THUMBNAIL_CLASSES.put(FILE_FACET_CLASS_ARCHIVE, FILE_THUMBNAIL_CLASS_PACKAGE);
     }
+    
+    private static final String FILE_LIST_DATE_FORMAT = "d-MMMM-yyyy HH:mm";
 
     /**
      * This string can be prepended to a Base64-encoded representation of a PNG
@@ -1947,6 +1959,126 @@ public class FileUtil implements java.io.Serializable  {
         
         checksumMapNew.put(chksum, dataFile);
         return false;
+    }
+    
+    public static String formatFolderListingHtml(String folderName, DatasetVersion version, String apiLocation, boolean originals) {
+        String title = formatTitle("Index of folder /" + folderName);
+        List<FileMetadata> fileMetadatas = version.getFileMetadatasFolderListing(folderName);
+        
+        if (fileMetadatas == null || fileMetadatas.isEmpty()) {
+            return "";
+        }
+        
+        String persistentId = version.getDataset().getGlobalId().asString();
+        
+        StringBuilder sb = new StringBuilder();
+        
+        String versionTag = version.getFriendlyVersionNumber();
+        versionTag = "DRAFT".equals(versionTag) ? "Draft Version" : "v. " + versionTag;
+        sb.append(HtmlFormatUtil.formatTag("Index of folder /" + folderName + 
+                " in dataset " + persistentId + 
+                " (" + versionTag + ")", HTML_H1));
+        sb.append("\n");
+        sb.append(formatFolderListingTableHtml(folderName, fileMetadatas, apiLocation, originals));
+        
+        String body = sb.toString();
+                 
+        return formatDoc(title, body);
+    }
+    
+    private static String formatFolderListingTableHtml(String folderName, List<FileMetadata> fileMetadatas, String apiLocation, boolean originals) {
+        StringBuilder sb = new StringBuilder(); 
+        
+        sb.append(formatFolderListingTableHeaderHtml());
+        
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            String localFolder = fileMetadata.getDirectoryLabel() == null ? "" : fileMetadata.getDirectoryLabel(); 
+            
+            if (folderName.equals(localFolder)) {
+                String accessUrl = getFileAccessUrl(fileMetadata, apiLocation, originals);
+                sb.append(formatFileListEntryHtml(fileMetadata, accessUrl));
+                sb.append("\n");
+
+            } else if (localFolder.startsWith(folderName)){
+                String subFolder = "".equals(folderName) ? localFolder : localFolder.substring(folderName.length() + 1);
+                if (subFolder.indexOf('/') > 0) {
+                    subFolder = subFolder.substring(0, subFolder.indexOf('/'));
+                }
+                String folderAccessUrl = getFolderAccessUrl(fileMetadata.getDatasetVersion(), folderName, subFolder, apiLocation, originals);
+                sb.append(formatFileListFolderHtml(subFolder, folderAccessUrl));
+                sb.append("\n");
+            }
+        }
+        
+        return formatTable(sb.toString());
+    }
+        
+    private static String formatFolderListingTableHeaderHtml() {
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append(HtmlFormatUtil.formatTag("Name", HTML_TABLE_HDR));
+        sb.append(HtmlFormatUtil.formatTag("Last Modified", HTML_TABLE_HDR));
+        sb.append(HtmlFormatUtil.formatTag("Size", HTML_TABLE_HDR));
+        sb.append(HtmlFormatUtil.formatTag("Description", HTML_TABLE_HDR));
+        
+        String hdr = formatTableRow(sb.toString());
+        
+        // add a separator row (again, we want it to look just like Apache index)
+        return hdr.concat(formatTableRow(HtmlFormatUtil.formatTag("<hr>", HTML_TABLE_HDR,"colspan=\"4\""))); 
+        
+    }
+    
+    private static String formatFileListEntryHtml(FileMetadata fileMetadata, String accessUrl) {
+        StringBuilder sb = new StringBuilder(); 
+        
+        String fileName = fileMetadata.getLabel();
+        String dateString =  new SimpleDateFormat(FILE_LIST_DATE_FORMAT).format(fileMetadata.getDataFile().getCreateDate()); 
+        String sizeString = fileMetadata.getDataFile().getFriendlySize();
+        
+        sb.append(formatTableCell(formatLink(fileName, accessUrl))); 
+        sb.append(formatTableCellAlignRight(dateString));
+        sb.append(formatTableCellAlignRight(sizeString));
+        sb.append(formatTableCellAlignRight("&nbsp;"));
+        
+        return formatTableRow(sb.toString());
+    }
+    
+    private static String formatFileListFolderHtml(String folderName, String listApiUrl) {
+        
+        StringBuilder sb = new StringBuilder();
+        
+        sb.append(formatTableCell(formatLink(folderName+"/", listApiUrl)));
+        sb.append(formatTableCellAlignRight(" - "));
+        sb.append(formatTableCellAlignRight(" - "));
+        sb.append(formatTableCellAlignRight("&nbsp;"));
+        
+        return formatTableRow(sb.toString());
+    }
+    
+    private static String getFileAccessUrl(FileMetadata fileMetadata, String apiLocation, boolean original) {
+        String fileId = fileMetadata.getDataFile().getId().toString();
+        
+        if (StringUtil.nonEmpty(fileMetadata.getDirectoryLabel())) {
+            fileId = fileMetadata.getDirectoryLabel().concat("/").concat(fileId);
+        }
+        
+        String formatArg = fileMetadata.getDataFile().isTabularData() && original ? "?format=original" : ""; 
+        
+        return apiLocation + "/api/access/datafile/" + fileId + formatArg; 
+    }
+    
+    private static String getFolderAccessUrl(DatasetVersion version, String currentFolder, String subFolder, String apiLocation, boolean originals) {
+        String datasetId = version.getDataset().getId().toString();
+        String versionTag = version.getFriendlyVersionNumber();
+        versionTag = versionTag.replace("DRAFT", ":draft");
+        if (!"".equals(currentFolder)) {
+            subFolder = currentFolder + "/" + subFolder;
+        }
+        
+        return apiLocation + "/api/datasets/" + datasetId + 
+                "/dirindex/?version=" + versionTag + "&" +
+                "folder=" + subFolder + 
+                (originals ? "&original=true" : "");
     }
 
 }
