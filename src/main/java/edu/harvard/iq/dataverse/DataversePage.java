@@ -903,7 +903,7 @@ public class DataversePage implements java.io.Serializable {
 
             }
         } else {
-            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.publish.not.authorized"));            
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.release.authenticatedUsersOnly"));
         }
         return returnRedirect();
 
