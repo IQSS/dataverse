@@ -94,9 +94,12 @@
                     <div class="search-widget input-group">
                         <input id="inputDataverseSearch" class="form-control" type="text" placeholder="" onkeydown="if (event.keyCode == 13) document.getElementById('btnDataverseSearch').click();">
                         <span class="input-group-btn">
-                            <button id="btnDataverseSearch" class="btn btn-default" type="button" onclick="window.location = '/dataverse/root?q=' + document.getElementById('inputDataverseSearch').value;return false;"><span class="glyphicon glyphicon-search"></span> Find</button>
+                            <button id="btnDataverseSearch" class="btn btn-default bootstrap-button-tooltip" type="button" data-original-title="Find" onclick="window.location = '/dataverse/root?q=' + document.getElementById('inputDataverseSearch').value;return false;"><span class="glyphicon glyphicon-search"></span></button>
                         </span>
                     </div>
+                </div>
+                <div class="col-md-5 col-sm-6 col-xs-11">
+                    <p class="browse-all-data small text-muted"><a href= "/dataverse/root">VIEW ALL DATA</a> <span class="glyphicon glyphicon-chevron-right"></span></p>
                 </div>
             </div>
         </div>
