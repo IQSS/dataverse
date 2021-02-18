@@ -3079,21 +3079,41 @@ Deletes an ``AuthenticatedUser`` whose ``id``  is passed. ::
 
     DELETE http://$SERVER/api/admin/authenticatedUsers/id/$id
     
-Note: If the user has performed certain actions such as creating or contributing to a Dataset or downloading a file they cannot be deleted. If a user cannot be deleted for this reason, you can choose to :ref:`disable a user<disable-a-user>`.
-    
+Note: If the user has performed certain actions such as creating or contributing to a Dataset or downloading a file they cannot be deleted. To see where in the database these actions are stored you can use the :ref:`show-user-traces-api` API. If a user cannot be deleted for this reason, you can choose to :ref:`disable a user<disable-a-user>`.
+
 .. _disable-a-user:
 
 Disable a User
 ~~~~~~~~~~~~~~
 
-Disables an ``AuthenticatedUser`` whose ``identifier`` (without the ``@`` sign) is passed. ::
+Disables a user.
 
-    PUT http://$SERVER/api/admin/authenticatedUsers/disable/$identifier
-    
-Disables an ``AuthenticatedUser`` whose ``id``  is passed. ::
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
-    PUT http://$SERVER/api/admin/authenticatedUsers/disable/id/$id
-    
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=http://localhost:8080
+  export USERNAME=jdoe
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/admin/authenticatedUsers/$USERNAME/disable
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST http://localhost:8080/api/admin/authenticatedUsers/jdoe/disable
+
+The database ID of the user can be passed instead of the username.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=http://localhost:8080
+  export USERID=42
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/admin/authenticatedUsers/id/$USERID/disable
+
 Note: A primary purpose of most Dataverse installations is to serve an archive. In the archival space, there are best practices around the tracking of data access and the tracking of modifications to data and metadata. In support of these key workflows, a simple mechanism to delete users that have performed edit or access actions in the system is not provided. Providing a Disable User endpoint for users who have taken certain actions in the system alongside a Delete User endpoint to remove users that haven't taken certain actions in the system is by design.
 
 This is an irreversible action. There is no option to undisable a user.
@@ -3109,9 +3129,53 @@ Disabling a user with this endpoint will:
 
 Disabling a user with this endpoint will keep:
 
-- The user's contributions to datasets, including dataset creation, file uploads, and publishing. 
+- The user's contributions to datasets, including dataset creation, file uploads, and publishing.
 - The user's access history to datafiles in the Dataverse installation, including guestbook records.
 - The user's account information (specifically name, email, affiliation, and position)
+
+.. _show-user-traces-api:
+
+Show User Traces
+~~~~~~~~~~~~~~~~
+
+Show the traces that the user has left in the system, such as datasets created, guestbooks filled out, etc. This can be useful for understanding why a user cannot be deleted. A superuser API token is required.
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export USERNAME=jdoe
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET $SERVER_URL/api/users/$USERNAME/traces
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X GET https://demo.dataverse.org/api/users/jdoe/traces
+
+Remove All Roles from a User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Removes all roles from the user. This is equivalent of clicking the "Remove All Roles" button in the superuser dashboard. Note that you can preview the roles that will be removed with the :ref:`show-user-traces-api` API. A superuser API token is required.
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export USERNAME=jdoe
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/users/$USERNAME/removeRoles
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST http://localhost:8080/api/users/jdoe/removeRoles
 
 List Role Assignments of a Role Assignee
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
