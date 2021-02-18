@@ -309,7 +309,7 @@ public class AuthenticationServiceBean {
             // yay! see if we already have this user.
             AuthenticatedUser user = lookupUser(authenticationProviderId, resp.getUserId());
 
-            if (user != null){
+            if (user != null && !user.isDisabled()) {
                 user = userService.updateLastLogin(user);
             }
             
@@ -453,7 +453,13 @@ public class AuthenticationServiceBean {
             }
         }
         
-        return tkn.getAuthenticatedUser();
+        AuthenticatedUser user = tkn.getAuthenticatedUser();
+        if (!user.isDisabled()) {
+            return user;
+        } else {
+            logger.info("attempted access with token from disabled user: " + apiToken);
+            return null;
+        }
     }
     
     /*

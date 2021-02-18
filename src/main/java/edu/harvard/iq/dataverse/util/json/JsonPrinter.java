@@ -107,6 +107,8 @@ public class JsonPrinter {
             .add("lastName", authenticatedUser.getLastName())
             .add("email", authenticatedUser.getEmail())
             .add("superuser", authenticatedUser.isSuperuser())
+            .add("disabled", authenticatedUser.isDisabled())
+            .add("disabledTime", authenticatedUser.getDisabledTime())
             .add("affiliation", authenticatedUser.getAffiliation())
             .add("position", authenticatedUser.getPosition())
             .add("persistentUserId", authenticatedUser.getAuthenticatedUserLookup().getPersistentUserId())

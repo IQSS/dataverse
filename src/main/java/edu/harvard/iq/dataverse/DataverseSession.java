@@ -7,6 +7,8 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SessionUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
@@ -92,7 +94,16 @@ public class DataverseSession implements Serializable{
     }
 
     public void setUser(User aUser) {
-        
+        // We check for disabled status here in "setUser" to ensure a common user
+        // experience across Builtin, Shib, OAuth, and OIDC users.
+        // If we want a different user experience for Builtin users, we can
+        // modify getUpdateAuthenticatedUser in AuthenticationServiceBean
+        // (and probably other places).
+        if (aUser instanceof AuthenticatedUser && aUser.isDisabled()) {
+            logger.info("Login attempt by disabled user " + aUser.getIdentifier() + ".");
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("disabled.error"));
+            return;
+        }
         FacesContext context = FacesContext.getCurrentInstance();
 		// Log the login/logout and Change the session id if we're using the UI and have
 		// a session, versus an API call with no session - (i.e. /admin/submitToArchive()
@@ -210,6 +221,9 @@ public class DataverseSession implements Serializable{
     }
     
     public void configureSessionTimeout() {
+        if (user instanceof GuestUser) {
+            return;
+        }
         HttpSession httpSession = (HttpSession) FacesContext.getCurrentInstance().getExternalContext().getSession(false);
         
         if (httpSession != null) {

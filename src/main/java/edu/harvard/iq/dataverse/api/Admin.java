@@ -87,6 +87,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.MergeInAccountCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ChangeUserIdentifierCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DisableUserCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -381,9 +382,36 @@ public class Admin extends AbstractApiBean {
         return ok("AuthenticatedUser " + au.getIdentifier() + " deleted. ");
 
     }  
-    
 
-        
+    @POST
+    @Path("authenticatedUsers/{identifier}/disable")
+    public Response disableAuthenticatedUser(@PathParam("identifier") String identifier) {
+        AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
+        if (user != null) {
+            return disableAuthenticatedUser(user);
+        }
+        return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
+    }
+
+    @POST
+    @Path("authenticatedUsers/id/{id}/disable")
+    public Response disableAuthenticatedUserById(@PathParam("id") Long id) {
+        AuthenticatedUser user = authSvc.findByID(id);
+        if (user != null) {
+            return disableAuthenticatedUser(user);
+        }
+        return error(Response.Status.BAD_REQUEST, "User " + id + " not found.");
+    }
+
+    private Response disableAuthenticatedUser(AuthenticatedUser userToDisable) {
+        try {
+            execCommand(new DisableUserCommand(createDataverseRequest(findUserOrDie()), userToDisable));
+            return ok("User " + userToDisable.getIdentifier() + " disabled.");
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
 	@POST
 	@Path("publishDataverseAsCreator/{id}")
 	public Response publishDataverseAsCreator(@PathParam("id") long id) {
@@ -1686,7 +1714,7 @@ public class Admin extends AbstractApiBean {
 			// DataverseRequest and is sent to the back-end command where it is used to get
 			// the API Token which is then used to retrieve files (e.g. via S3 direct
 			// downloads) to create the Bag
-            session.setUser(au);
+            session.setUser(au); // TODO: Stop using session. Use createDataverseRequest instead.
             Dataset ds = findDatasetOrDie(dsid);
 
             DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);

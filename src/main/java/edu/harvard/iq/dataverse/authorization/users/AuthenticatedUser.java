@@ -55,7 +55,8 @@ import org.hibernate.validator.constraints.NotBlank;
     @NamedQuery( name="AuthenticatedUser.filter",
                 query="select au from AuthenticatedUser au WHERE ("
                         + "LOWER(au.userIdentifier) like LOWER(:query) OR "
-                        + "lower(concat(au.firstName,' ',au.lastName)) like lower(:query))"),
+                        + "lower(concat(au.firstName,' ',au.lastName)) like lower(:query)) "
+                        + "AND au.disabled != true"),
     @NamedQuery( name="AuthenticatedUser.findAdminUser",
                 query="select au from AuthenticatedUser au WHERE "
                         + "au.superuser = true "
@@ -113,6 +114,12 @@ public class AuthenticatedUser implements User, Serializable {
     private Cart cart;
     
     private boolean superuser;
+
+    @Column(nullable=true)
+    private boolean disabled;
+
+    @Column(nullable=true)
+    private Timestamp disabledTime;
 
     /**
      * @todo Consider storing a hash of *all* potentially interesting Shibboleth
@@ -301,6 +308,23 @@ public class AuthenticatedUser implements User, Serializable {
 
     public void setSuperuser(boolean superuser) {
         this.superuser = superuser;
+    }
+
+    @Override
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
+    }
+
+    public Timestamp getDisabledTime() {
+        return disabledTime;
+    }
+
+    public void setDisabledTime(Timestamp disabledTime) {
+        this.disabledTime = disabledTime;
     }
 
     @OneToOne(mappedBy = "authenticatedUser")

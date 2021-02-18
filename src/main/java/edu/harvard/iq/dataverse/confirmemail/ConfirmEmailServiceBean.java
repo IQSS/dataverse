@@ -169,6 +169,10 @@ public class ConfirmEmailServiceBean {
                 long nowInMilliseconds = new Date().getTime();
                 Timestamp emailConfirmed = new Timestamp(nowInMilliseconds);
                 AuthenticatedUser authenticatedUser = confirmEmailData.getAuthenticatedUser();
+                if (authenticatedUser.isDisabled()) {
+                    logger.fine("User is disabled.");
+                    return null;
+                }
                 authenticatedUser.setEmailConfirmed(emailConfirmed);
                 em.remove(confirmEmailData);
                 return goodTokenCanProceed;

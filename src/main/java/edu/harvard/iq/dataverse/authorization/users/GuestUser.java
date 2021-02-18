@@ -32,7 +32,12 @@ public class GuestUser implements User {
     public boolean isSuperuser() {
         return false;
     }
-   
+
+    @Override
+    public boolean isDisabled() {
+        return false;
+    }
+
     @Override
     public boolean equals( Object o ) {
         return (o instanceof GuestUser);

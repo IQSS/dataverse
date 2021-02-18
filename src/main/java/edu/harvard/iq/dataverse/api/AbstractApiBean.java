@@ -372,6 +372,7 @@ public abstract class AbstractApiBean {
 
 
     private AuthenticatedUser findAuthenticatedUserOrDie( String key ) throws WrappedResponse {
+        // No check for disabled user because it's done in authSvc.lookupUser.
         AuthenticatedUser authUser = authSvc.lookupUser(key);
         if ( authUser != null ) {
             authUser = userSvc.updateLastApiUseTime(authUser);

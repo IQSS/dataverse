@@ -950,6 +950,22 @@ public class UtilIT {
                 .post("api/dataverses/" + definitionPoint + "/assignments?key=" + apiToken);
     }
 
+    public static Response disableUser(String username, String apiToken) {
+//    public static Response disableUser(String username, String apiToken) {
+        Response disableUserResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+//                .post("/api/users/" + username + "/disable");
+                .post("/api/admin/authenticatedUsers/" + username + "/disable");
+        return disableUserResponse;
+    }
+
+    public static Response disableUser(Long userId, String apiToken) {
+        Response disableUserResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/admin/authenticatedUsers/id/" + userId + "/disable");
+        return disableUserResponse;
+    }
+
     public static Response deleteUser(String username) {
         Response deleteUserResponse = given()
                 .delete("/api/admin/authenticatedUsers/" + username + "/");
@@ -1188,6 +1204,7 @@ public class UtilIT {
         return response;
     }
 
+    // TODO: Consider removing apiToken since it isn't used by the API itself.
     static Response getAuthenticatedUser(String userIdentifier, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
