@@ -544,5 +544,5 @@ public abstract class StorageIO<T extends DvObject> {
 		}
 	}
 
-    public abstract List<S3ObjectSummary>listAuxObjects(String s) throws IOException;
+
 }

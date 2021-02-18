@@ -58,6 +58,17 @@
                 <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
                 #{bundle.download}
             </p:commandLink>
+            <p:commandLink rendered="#{!(fileMetadata.dataFile.tabularData)
+                              and fileMetadata.dataFile.fileGlobus and systemConfig.globusUpload}"
+                           styleClass="btn btn-default btn-download" process="@this"
+                           disabled="#{(fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
+                           action="#{fileDownloadHelper.goGlobusDownload(fileMetadata)}">
+                <f:actionListener binding="#{packagePopupFragmentBean.setFileMetadata(fileMetadata)}" />
+                <f:actionListener binding="#{fileDownloadService.writeGuestbookResponseRecord(guestbookResponse, fileMetadata, 'Download')}" />
+                <!-- package data file: -->
+                <!-- no guest book/terms of use/etc. - straight package popup -->
+                #{bundle['file.downloadFromGlobus']}
+            </p:commandLink>
         </li>
         <!-- SUBMENU LINK -->
         <ui:fragment rendered="#{fileMetadata.dataFile.tabularData}">

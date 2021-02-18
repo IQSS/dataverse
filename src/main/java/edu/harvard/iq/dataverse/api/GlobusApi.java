@@ -203,10 +203,12 @@ public class GlobusApi extends AbstractApiBean {
 
             if (filesJson != null) {
                 for (JsonObject fileJson : filesJson.getValuesAs(JsonObject.class)) {
-
+/*
                     for (S3ObjectSummary s3ObjectSummary : datasetSIO.listAuxObjects("")) {
 
                     }
+                    */
+
 
                     String storageIdentifier = fileJson.getString("storageIdentifier");
                     String suppliedContentType = fileJson.getString("contentType");
@@ -238,7 +240,8 @@ public class GlobusApi extends AbstractApiBean {
                         String type = FileUtil.determineFileTypeByExtension(fileName);
                         if (!StringUtils.isBlank(type)) {
                             //Use rules for deciding when to trust browser supplied type
-                            if (FileUtil.useRecognizedType(finalType, type)) {
+                            //if (FileUtil.useRecognizedType(finalType, type))
+                            {
                                 finalType = type;
                             }
                             logger.info("Supplied type: " + suppliedContentType + ", finalType: " + finalType);

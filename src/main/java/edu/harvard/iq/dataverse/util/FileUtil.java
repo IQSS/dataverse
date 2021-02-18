@@ -20,8 +20,6 @@
 
 package edu.harvard.iq.dataverse.util;
 
-import static edu.harvard.iq.dataverse.dataaccess.S3AccessIO.S3_IDENTIFIER_PREFIX;
-
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
@@ -1146,7 +1144,7 @@ public class FileUtil implements java.io.Serializable  {
     }   // end createDataFiles
     
 
-	public static boolean useRecognizedType(String suppliedContentType, String recognizedType) {
+	private static boolean useRecognizedType(String suppliedContentType, String recognizedType) {
 		// is it any better than the type that was supplied to us,
 		// if any?
 		// This is not as trivial a task as one might expect...
@@ -1376,17 +1374,6 @@ public class FileUtil implements java.io.Serializable  {
 		
         String bucketName = System.getProperty("dataverse.files." + driverId + ".bucket-name");
         String storageId = driverId + "://" + bucketName + ":" + dataFile.getFileMetadata().getLabel();
-        dataFile.setStorageIdentifier(storageId);
-    }
-
-    public static void generateS3PackageStorageIdentifierForGlobus(DataFile dataFile) {
-        String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
-        String storageId = null;
-        if ( dataFile.getFileMetadata().getDirectoryLabel() != null && !dataFile.getFileMetadata().getDirectoryLabel().equals("")) {
-            storageId = S3_IDENTIFIER_PREFIX + "://" + bucketName + ":" + dataFile.getFileMetadata().getDirectoryLabel() + "/" + dataFile.getFileMetadata().getLabel();
-        } else {
-            storageId = S3_IDENTIFIER_PREFIX + "://" + bucketName + ":" + dataFile.getFileMetadata().getLabel();
-        }
         dataFile.setStorageIdentifier(storageId);
     }
     
