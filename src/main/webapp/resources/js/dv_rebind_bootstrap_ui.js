@@ -29,27 +29,23 @@ function bind_bsui_components(){
     // Disabled pagination links
     disabledLinks();
     
+    // Truncate checksums
+    checksumTruncate();
+    
     // Sharrre
     sharrre();
     
     // Custom Popover with HTML content
     popoverHTML();
     
+    // clipboard.js click to copy
+    clickCopyClipboard();
+    
     // Dialog Listener For Calling handleResizeDialog
     PrimeFaces.widget.Dialog.prototype.postShow = function() {
         var dialog_id = this.jq.attr('id').split(/[:]+/).pop();
         handleResizeDialog(dialog_id);
     }
-    
-    // clipboard.js copy btn
-    var clipboard = new ClipboardJS('button.btn-copy, span.checksum-truncate');
-    
-    clipboard.on('success', function (e) {
-        console.log(e);
-    });
-    clipboard.on('error', function (e) {
-        console.log(e);
-    });
 }
 
 function bind_tooltip_popover(){
@@ -159,6 +155,70 @@ function sharrre(){
             // var sharrrecount = $('#sharrre-total').val();
             // $('#sharrre-count').prepend(sharrrecount);
         }
+    });
+}
+    
+/*
+ * Truncate file checksums
+ */
+function checksumTruncate(){
+    $('span.checksum-truncate').each(function () {
+        $(this).toggleClass('sr-only').toggleClass('visisble');
+        var checksumText = $(this).text();
+        var checksumLength = checksumText.length;
+        if (checksumLength > 25) {
+            // COUNT " " IN TYPE LABEL, UNF HAS NONE
+            var prefixCount = (checksumText.match(/ /g) || []).length;
+            
+            // INDEX OF LAST ":" IN TYPE LABEL, UNF HAS MORE THAN ONE
+            var labelIndex = checksumText.lastIndexOf(':');
+            
+            // COUNT "=" IN UNF SUFFIX
+            var suffixCount = (checksumText.match(/=/g) || []).length;
+            
+            // TRUNCATE MIDDLE W/ "..." + FIRST/LAST 3 CHARACTERS
+            // CHECK IF UNF LABEL, LESS THAN ONE " "
+            if (prefixCount < 0) {
+                $(this).text(checksumText.substr(0,(labelIndex + 3)) + '...' + checksumText.substr((checksumLength - suffixCount - 3),checksumLength));
+            }
+            else {
+                $(this).text(checksumText.substr(0,(labelIndex + 5)) + '...' + checksumText.substr((checksumLength - suffixCount - 3),checksumLength));
+            }
+        }
+    });
+    $('span.checksum-tooltip').on('inserted.bs.tooltip', function () {
+        $("body div.tooltip-inner").css("word-break", "break-all");
+    });
+}
+
+function clickCopyClipboard(){
+    // clipboard.js click to copy
+    // pass selector to clipboard
+    var clipboard = new ClipboardJS('button.btn-copy, span.checksum-truncate, span.btn-copy');
+
+    clipboard.on('success', (e)=> {
+        // DEV TOOL DEBUG
+        // console.log(e);
+
+        // check which selector was clicked
+        // swap icon for success ok
+        if ($(e.trigger).hasClass('glyphicon')) {
+            $(e.trigger).removeClass('glyphicon-copy').addClass('glyphicon-ok text-success');
+            // then swap icon back to clipboard
+            // https://stackoverflow.com/a/54270499
+            setTimeout(()=> { // use arrow function
+                $(e.trigger).removeClass('glyphicon-ok text-success').addClass('glyphicon-copy')
+            }, 2000);
+        }
+        else {
+            $(e.trigger).next('.btn-copy.glyphicon').removeClass('glyphicon-copy').addClass('glyphicon-ok text-success');
+            setTimeout(()=> {
+                $(e.trigger).next('.btn-copy.glyphicon').removeClass('glyphicon-ok text-success').addClass('glyphicon-copy')
+            }, 2000);
+        }
+    });
+    clipboard.on('error', (e)=> {
+        console.log(e);
     });
 }
 
