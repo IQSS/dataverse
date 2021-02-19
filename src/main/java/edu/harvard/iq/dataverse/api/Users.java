@@ -213,7 +213,7 @@ public class Users extends AbstractApiBean {
     @Path("{identifier}/traces")
     public Response getTraces(@PathParam("identifier") String identifier) {
         try {
-            AuthenticatedUser userToQuery = authSvc.getAuthenticatedUser(identifier); // TODO: do lookup here? What if null?
+            AuthenticatedUser userToQuery = authSvc.getAuthenticatedUser(identifier);
             JsonObjectBuilder jsonObj = execCommand(new GetUserTracesCommand(createDataverseRequest(findUserOrDie()), userToQuery));
             return ok(jsonObj);
         } catch (WrappedResponse ex) {
