@@ -28,7 +28,7 @@ Creating a Dataverse collection is easy but first you must be a registered user 
 #. **Choose the sets of Metadata Fields for datasets in this Dataverse collection**:
     * By default the metadata elements will be from the host Dataverse collection that this new Dataverse collection is created in.
     * The Dataverse Software offers metadata standards for multiple domains. To learn more about the metadata standards in the Dataverse Software please check out the :doc:`/user/appendix`.
-    * Metadata fields can be hidden, or selected as required or optional.
+    * Metadata fields can be hidden, or selected as required, optional, or conditionally required.
     * Selected metadata elements are also used to pick which metadata fields you would like to use for creating :ref:`Dataset Templates <dataset-templates>`: after you finish creating your Dataverse collection.
 #. **Choose which metadata fields will be used as browse/search facets on your Dataverse collection**:
     * These facets will allow users browsing or searching your Dataverse collection to filter its contents according to the fields you have selected. For example, if you select “Subject” as a facet, users will be able to filter your Dataverse collection’s contents by subject area.
