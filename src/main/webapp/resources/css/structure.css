@@ -10,7 +10,7 @@ body {
 }
 body.widget-view {margin-bottom:44px;}
 body .ui-widget {font-size: inherit;}
-body .ui-widget .ui-widget-content:not(.ui-tabs, .ui-tabs-panel, .ui-datatable-data, .ui-datatable-even, .ui-datatable-odd, .ui-tree) :not(.ui-dialog-titlebar, .ui-dialog-content, .dropdown-menu, .label-default){background: none;}
+body .ui-widget .ui-widget-content:not(.ui-fileupload-content, .ui-progressbar, .ui-tabs, .ui-tabs-panel, .ui-datatable-data, .ui-datatable-even, .ui-datatable-odd, .ui-tree) :not(.ui-dialog-titlebar, .ui-dialog-content, .dropdown-menu, .label-default){background: none;}
 .ui-widget-content a {color: #4b75ff;}
 .ui-datalist-item .ui-widget-content td > a { font-size: 18px !important;}
 .ui-widget-content a:hover, .ui-widget-content a:focus {color: #337ab7;}
