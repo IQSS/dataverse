@@ -58,7 +58,11 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
     
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
-        
+
+        if (consumedAU.isDisabled() && !ongoingAU.isDisabled() || !consumedAU.isDisabled() && ongoingAU.isDisabled()) {
+            throw new IllegalCommandException("User accounts can only be merged if they are either both enabled or both disabled.", this);
+        }
+
         List<RoleAssignment> baseRAList = ctxt.roleAssignees().getAssignmentsFor(ongoingAU.getIdentifier());
         List<RoleAssignment> consumedRAList = ctxt.roleAssignees().getAssignmentsFor(consumedAU.getIdentifier());
         

@@ -157,4 +157,92 @@ public class DisableUsersIT {
         disableUser.then().assertThat().statusCode(OK.getStatusCode());
     }
 
+    @Test
+    public void testMergeDisabledIntoEnabledUser() {
+
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        Response toggleSuperuser = UtilIT.makeSuperUser(superuserUsername);
+        toggleSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response createUserMergeTarget = UtilIT.createRandomUser();
+        createUserMergeTarget.prettyPrint();
+        String usernameMergeTarget = UtilIT.getUsernameFromResponse(createUserMergeTarget);
+
+        Response createUserToMerge = UtilIT.createRandomUser();
+        createUserToMerge.prettyPrint();
+        String usernameToMerge = UtilIT.getUsernameFromResponse(createUserToMerge);
+
+        Response disableUser = UtilIT.disableUser(usernameToMerge, superuserApiToken);
+        disableUser.prettyPrint();
+        disableUser.then().assertThat().statusCode(OK.getStatusCode());
+
+        // User accounts can only be merged if they are either both enabled or both disabled.
+        Response mergeAccounts = UtilIT.mergeAccounts(usernameMergeTarget, usernameToMerge, superuserApiToken);
+        mergeAccounts.prettyPrint();
+        mergeAccounts.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    public void testMergeEnabledIntoDisabledUser() {
+
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        Response toggleSuperuser = UtilIT.makeSuperUser(superuserUsername);
+        toggleSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response createUserMergeTarget = UtilIT.createRandomUser();
+        createUserMergeTarget.prettyPrint();
+        String usernameMergeTarget = UtilIT.getUsernameFromResponse(createUserMergeTarget);
+
+        Response createUserToMerge = UtilIT.createRandomUser();
+        createUserToMerge.prettyPrint();
+        String usernameToMerge = UtilIT.getUsernameFromResponse(createUserToMerge);
+
+        Response disableUser = UtilIT.disableUser(usernameMergeTarget, superuserApiToken);
+        disableUser.prettyPrint();
+        disableUser.then().assertThat().statusCode(OK.getStatusCode());
+
+        // User accounts can only be merged if they are either both enabled or both disabled.
+        Response mergeAccounts = UtilIT.mergeAccounts(usernameMergeTarget, usernameToMerge, superuserApiToken);
+        mergeAccounts.prettyPrint();
+        mergeAccounts.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    public void testMergeDisabledIntoDisabledUser() {
+
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        Response toggleSuperuser = UtilIT.makeSuperUser(superuserUsername);
+        toggleSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response createUserMergeTarget = UtilIT.createRandomUser();
+        createUserMergeTarget.prettyPrint();
+        String usernameMergeTarget = UtilIT.getUsernameFromResponse(createUserMergeTarget);
+
+        Response createUserToMerge = UtilIT.createRandomUser();
+        createUserToMerge.prettyPrint();
+        String usernameToMerge = UtilIT.getUsernameFromResponse(createUserToMerge);
+
+        Response disableUserMergeTarget = UtilIT.disableUser(usernameMergeTarget, superuserApiToken);
+        disableUserMergeTarget.prettyPrint();
+        disableUserMergeTarget.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response disableUserToMerge = UtilIT.disableUser(usernameToMerge, superuserApiToken);
+        disableUserToMerge.prettyPrint();
+        disableUserToMerge.then().assertThat().statusCode(OK.getStatusCode());
+
+        // User accounts can only be merged if they are either both enabled or both disabled.
+        Response mergeAccounts = UtilIT.mergeAccounts(usernameMergeTarget, usernameToMerge, superuserApiToken);
+        mergeAccounts.prettyPrint();
+        mergeAccounts.then().assertThat().statusCode(OK.getStatusCode());
+    }
+
 }
