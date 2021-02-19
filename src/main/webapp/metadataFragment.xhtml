@@ -90,7 +90,7 @@
     </div>
     <!-- Edit Mode -->
     <ui:fragment rendered="${(!empty editMode)}">
-        <c:set var="cvmConf" value="#{DatasetPage.getCVMConf()}"/>
+        <c:set var="cvocConf" value="#{DatasetPage.getCVocConf()}"/>
         <p:fragment id="editMetadataFragement">
         <o:importFunctions type="java.util.Collections" />
         <div class="panel-group">
@@ -211,7 +211,7 @@
                                                                 <ui:include src="datasetFieldForEditFragment.xhtml">
                                                                     <ui:param name="dsfv" value="#{subdsf.singleValue}"/>
                                                                     <ui:param name="dsfvIndex" value="0"/>
-                                                                    <ui:param name="cvMgr" value="#{cvmConf}"/>
+                                                                    <ui:param name="cvoc" value="#{cvocConf}"/>
                                                                 </ui:include>
                                                             </ui:fragment>
                                                             <!-- MOVED SELECT ONE TO dataFieldForEdit -->

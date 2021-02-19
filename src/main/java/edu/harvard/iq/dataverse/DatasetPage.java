@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -10,8 +9,8 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
@@ -21,113 +20,31 @@ import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.CuratePublishedDatasetVersionCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.DeaccessionDatasetVersionCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.DeletePrivateUrlCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.*;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlUtil;
-import edu.harvard.iq.dataverse.search.SearchFilesServiceBean;
-import edu.harvard.iq.dataverse.search.SortBy;
+import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
+import edu.harvard.iq.dataverse.search.*;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.ArchiverUtil;
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
-import edu.harvard.iq.dataverse.util.FileUtil;
-import edu.harvard.iq.dataverse.util.JsfHelper;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
-import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
-
-import edu.harvard.iq.dataverse.util.StringUtil;
-import edu.harvard.iq.dataverse.util.SystemConfig;
-
-import java.io.*;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.Collection;
-import java.util.logging.Logger;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
-import javax.faces.event.ValueChangeEvent;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-
-import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.file.UploadedFile;
-
-import javax.json.*;
-import javax.validation.ConstraintViolation;
+import edu.harvard.iq.dataverse.util.*;
 import org.apache.commons.httpclient.HttpClient;
-//import org.primefaces.context.RequestContext;
-import java.util.Arrays;
-import java.util.HashSet;
-import javax.faces.model.SelectItem;
-import java.util.logging.Level;
-import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
-import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
-import edu.harvard.iq.dataverse.externaltools.ExternalTool;
-import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
-import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
-import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
-import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
-import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
-import java.util.Collections;
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
-
-import javax.faces.event.AjaxBehaviorEvent;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.apache.commons.io.IOUtils;
-
-import org.primefaces.component.tabview.TabView;
-import org.primefaces.event.CloseEvent;
-import org.primefaces.event.TabChangeEvent;
-import org.primefaces.event.data.PageEvent;
-
-import edu.harvard.iq.dataverse.search.FacetLabel;
-import edu.harvard.iq.dataverse.search.SearchConstants;
-import edu.harvard.iq.dataverse.search.SearchFields;
-import edu.harvard.iq.dataverse.search.SearchServiceBean;
-import edu.harvard.iq.dataverse.search.SearchUtil;
-import edu.harvard.iq.dataverse.search.SolrClientService;
-import java.util.Comparator;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -135,8 +52,42 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.primefaces.PrimeFaces;
+import org.primefaces.component.tabview.TabView;
+import org.primefaces.event.CloseEvent;
+import org.primefaces.event.FileUploadEvent;
+import org.primefaces.event.TabChangeEvent;
+import org.primefaces.event.data.PageEvent;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
+import org.primefaces.model.file.UploadedFile;
+
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
+import javax.faces.event.AjaxBehaviorEvent;
+import javax.faces.event.ValueChangeEvent;
+import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.json.*;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.ConstraintViolation;
+import java.io.*;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 
 /**
  *
@@ -144,7 +95,7 @@ import org.primefaces.model.TreeNode;
  */
 @ViewScoped
 @Named("DatasetPage")
-public class DatasetPage implements java.io.Serializable {
+public class DatasetPage implements Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
 
@@ -5480,80 +5431,103 @@ public class DatasetPage implements java.io.Serializable {
         this.fileAccessRequest = fileAccessRequest;
     }
 
-    public Map<String, CVM> getCVMConf(){
-        Map <String, CVM> cvmMap = new HashMap<>();
-        String cvmSetting = settingsService.getValueForKey(SettingsServiceBean.Key.CVMConf);
-        if (cvmSetting == null || cvmSetting.isEmpty())
-            return cvmMap;
+    public Map<String, CVoc> getCVocConf(){
+        Map <String, CVoc> cvocMap = new HashMap<>();
+        String cvocSetting = settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf);
+        if (cvocSetting == null || cvocSetting.isEmpty())
+            return cvocMap;
 
-        JsonReader jsonReader = Json.createReader(new StringReader(settingsService.getValueForKey(SettingsServiceBean.Key.CVMConf)));
-        JsonArray cvmConfJsonArray = jsonReader.readArray();
+        JsonReader jsonReader = Json.createReader(new StringReader(settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf)));
+        JsonArray cvocConfJsonArray = jsonReader.readArray();
         jsonReader.close();
-        if (cvmConfJsonArray != null) {
-            for (JsonObject jo : cvmConfJsonArray.getValuesAs(JsonObject.class)) {
-                JsonArray v = jo.getJsonArray("vocabs");
-                List<String> vs = new ArrayList<>();
-                for (JsonString elm: v.getValuesAs(JsonString.class)){
-                    vs.add(elm.getString());
+        if (cvocConfJsonArray != null) {
+            for (JsonObject jo : cvocConfJsonArray.getValuesAs(JsonObject.class)) {
+                JsonArray vocabs = jo.getJsonArray("vocabs");
+                List<String> vocabsList = new ArrayList<>();
+                for (JsonString elm: vocabs.getValuesAs(JsonString.class)){
+                    vocabsList.add(elm.getString());
                 }
-                JsonArray k = jo.getJsonArray("vocab-codes");
-                List<String> ks = new ArrayList<>();
-                for (JsonString elm: k.getValuesAs(JsonString.class)){
-                    ks.add(elm.getString());
+                JsonArray vocabCodes = jo.getJsonArray("vocab-codes");
+                List<String> vocabCodesList = new ArrayList<>();
+                for (JsonString elm: vocabCodes.getValuesAs(JsonString.class)){
+                    vocabCodesList.add(elm.getString());
+                    logger.fine("cvoc - vocab-codes: " + elm.getString());
                 }
-                String cvmLang = BundleUtil.getDefaultLocale().getLanguage();//default
+                String cvocLang = BundleUtil.getDefaultLocale().getLanguage();//default
                 if (jo.containsKey("language"))
-                    cvmLang = jo.getString("language"); // in case of "language":"", "&lang=" will be send to the middleware
-                boolean cvmReadonly = false;
+                    cvocLang = jo.getString("language"); // in case of "language":"", "&lang=" will be send to the middleware
+                logger.fine("cvoc - language: " + cvocLang);
+                boolean cvocReadonly = false;
                 if (jo.containsKey("readonly") && jo.getString("readonly").toLowerCase().equals("true"))
-                    cvmReadonly = true;
-                String cvmProtocol = "skosmos";//default
+                    cvocReadonly = true;
+                logger.fine("cvoc - readonly: " + cvocReadonly);
+                String cvocProtocol = "skosmos";//default
                 if (jo.containsKey("protocol"))
-                    cvmProtocol = jo.getString("protocol");
-                String mapId = "uri" ;//default
+                    cvocProtocol = jo.getString("protocol");
+                logger.fine("cvoc - protocol: " + cvocProtocol);
+                String cvocMapId = "uri" ;//default
                 if (jo.containsKey("map-id"))
-                    mapId = jo.getString("map-id");
-                String mapQuery = "prefLabel" ;//default
+                    cvocMapId = jo.getString("map-id");
+                logger.fine("cvoc - map-id: " + cvocMapId);
+                String cvocMapQuery = "prefLabel" ;//default
                 if (jo.containsKey("map-query"))
-                    mapQuery = jo.getString("map-query");
-                CVM CVm = new CVM(jo.getString("cvm-url"), cvmLang, cvmProtocol, cvmReadonly, vs, ks
-                        , jo.getString("js-url"), mapId, mapQuery);
-                cvmMap.put(jo.getString("vocab-name"), CVm);
+                    cvocMapQuery = jo.getString("map-query");
+                logger.fine("cvoc - map-query: " + cvocMapQuery);
+                String cvocJsUrl = "http://localhost/interface.js";
+                if (jo.containsKey("js-url"))
+                    cvocJsUrl = jo.getString("js-url");
+                logger.fine("cvoc - js-url: " + cvocJsUrl);
+                String cvocTermParentUri = "";
+                if (jo.containsKey("term-parent-uri"))
+                    cvocTermParentUri = jo.getString("term-parent-uri");
+                logger.fine("cvoc - term-parent-uri: " + cvocTermParentUri);
+                String cvocUrl = "http://localhost/Skosmos";
+                if (jo.containsKey("cvoc-url"))
+                    cvocUrl = jo.getString("cvoc-url");
+                logger.fine("cvoc - cvoc-url: " + cvocUrl);
+                CVoc cvoc = new CVoc(cvocUrl, cvocLang, cvocProtocol, cvocTermParentUri, cvocReadonly, vocabsList, vocabCodesList
+                        , cvocJsUrl, cvocMapId, cvocMapQuery);
+                cvocMap.put(jo.getString("vocab-name"), cvoc);
 
             }
         }
-        return cvmMap;
+        return cvocMap;
     }
-    public class CVM {
-        String cvmUrl;
+    public class CVoc {
+        String cvocUrl;
         String language;
         String protocol;
+        String termParentUri;
         String jsUrl;
         String mapId;
         String mapQuery;
         boolean readonly;
         List<String> vocabs;
         List<String> keys;
-        public CVM(String cvmUrl, String language, String protocol, boolean readonly, List<String> vocabs, List<String> keys
-                , String jsUrl, String mapId, String mapQuery){
-            this.cvmUrl = cvmUrl;
+        public CVoc(String cvocUrl, String language, String protocol, String termParentUri, boolean readonly,
+                    List<String> vocabs, List<String> keys, String jsUrl, String mapId, String mapQuery){
+            this.cvocUrl = cvocUrl;
             this.language = language;
             this.protocol = protocol;
             this.readonly = readonly;
             this.vocabs = vocabs;
+            this.termParentUri = termParentUri;
             this.keys = keys;
             this.jsUrl = jsUrl;
             this.mapId = mapId;
             this.mapQuery = mapQuery;
         }
 
-        public String getCvmUrl() {
-            return cvmUrl;
+        public String getCVocUrl() {
+            return cvocUrl;
         }
         public String getLanguage() {
             return language;
         }
         public String getProtocol() { return protocol; }
+        public String getTermParentUri() {
+            return termParentUri;
+        }
         public boolean isReadonly() {
             return readonly;
         }
