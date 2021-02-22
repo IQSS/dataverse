@@ -289,16 +289,37 @@ Each of the three main sections own sets of properties:
 |                       | the dataset has been  |                        |
 |                       | saved.                |                        |
 +-----------------------+-----------------------+------------------------+
-| required              | Specify whether or    | TRUE (required) or     |
-|                       | not the field is      | FALSE (optional)       |
-|                       | required. This means  |                        |
-|                       | that at least one     |                        |
-|                       | instance of the field |                        |
-|                       | must be present. More |                        |
-|                       | than one field may be |                        |
-|                       | allowed, depending on |                        |
-|                       | the value of          |                        |
-|                       | allowmultiples.       |                        |
+| required              | For primitive         | For primitive          |
+|                       | fields, specify       | fields, TRUE           |
+|                       | whether or not the    | (required) or FALSE    |
+|                       | field is required.    | (optional).            |
+|                       | For compound          |                        |
+|                       | fields, also          | For compound fields:   |
+|                       | specify if one or     |                        |
+|                       | more subfields are    | \• To make one or more |
+|                       | required or           | subfields optional,    |
+|                       | conditionally         | the parent field and   |
+|                       | required. At least    | subfield(s) must be    |
+|                       | one instance of a     | FALSE (optional).      |
+|                       | required field must   |                        |
+|                       | be present. More      | \• To make one or more |
+|                       | than one instance     | subfields required,    |
+|                       | of a field may be     | the parent field and   |
+|                       | allowed, depending    | the required           |
+|                       | on the value of       | subfield(s) must be    |
+|                       | allowmultiples.       | TRUE (required).       |
+|                       |                       |                        |
+|                       |                       | \• To make one or more |
+|                       |                       | subfields              |
+|                       |                       | conditionally          |
+|                       |                       | required, make the     |
+|                       |                       | parent field FALSE     |
+|                       |                       | (optional) and make    |
+|                       |                       | TRUE (required) any    |
+|                       |                       | subfield or subfields  |
+|                       |                       | that are required if   |
+|                       |                       | any other subfields    |
+|                       |                       | are filled.            |
 +-----------------------+-----------------------+------------------------+
 | parent                | For subfields,        | \• Must not result in  |
 |                       | specify the name of   | a cyclical             |
