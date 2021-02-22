@@ -332,7 +332,6 @@
                                                                         </td>
                                                                         <td>
                                                                             <p:selectOneRadio id="OptionsRadio#{dsft.id}" value="#{dsft.requiredDV}" widgetVar="OptButton#{dsft.id}" disabled ="#{DataversePage.editInputLevel == false}" 
-                                                                                              onclick="#{DataversePage.toggleInputLevel(mdb.id, dsft.id)}"
                                                                                               rendered="#{!dsft.hasChildren and !((!dsft.hasChildren  and dsft.required) or (dsft.hasChildren and dsft.hasRequiredChildren))}" >
                                                                                 <f:selectItems value="#{dsft.optionSelectItems}"/>
                                                                             </p:selectOneRadio>
