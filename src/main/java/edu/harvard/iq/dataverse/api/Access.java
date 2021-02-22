@@ -521,10 +521,6 @@ public class Access extends AbstractApiBean {
         DownloadInfo dInfo = new DownloadInfo(df);
         boolean publiclyAvailable = false; 
 
-        if (!df.isTabularData()) {
-            throw new BadRequestException("tabular data required");
-        } 
-        
         DownloadInstance downloadInstance;
         AuxiliaryFile auxFile = null;
         
