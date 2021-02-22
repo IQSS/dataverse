@@ -421,21 +421,21 @@ public class DatasetField implements Serializable {
             
             if (this.datasetFieldType.isRequired()) {
                 required = true;
-            }
-            
-            // otherwise check if overridden at the dataverse level
-            Dataverse dv = getDataverse();
-            while (!dv.isMetadataBlockRoot()) {
-                if (dv.getOwner() == null) {
-                    break; // we are at the root; which by defintion is metadata blcok root, regarldess of the value
+            } else {
+                // otherwise check if overridden at the dataverse level
+                Dataverse dv = getDataverse();
+                while (!dv.isMetadataBlockRoot()) {
+                    if (dv.getOwner() == null) {
+                        break; // we are at the root; which by defintion is metadata blcok root, regarldess of the value
+                    }
+                    dv = dv.getOwner();
                 }
-                dv = dv.getOwner();
-            }
 
-            List<DataverseFieldTypeInputLevel> dftilListFirst = dv.getDataverseFieldTypeInputLevels();
-            for (DataverseFieldTypeInputLevel dsftil : dftilListFirst) {
-                if (dsftil.getDatasetFieldType().equals(this.datasetFieldType)) {
-                    required = dsftil.isRequired();
+                List<DataverseFieldTypeInputLevel> dftilListFirst = dv.getDataverseFieldTypeInputLevels();
+                for (DataverseFieldTypeInputLevel dsftil : dftilListFirst) {
+                    if (dsftil.getDatasetFieldType().equals(this.datasetFieldType)) {
+                        required = dsftil.isRequired();
+                    }
                 }
             }
             
