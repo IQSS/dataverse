@@ -10,7 +10,7 @@ DELETE FROM dataversefieldtypeinputlevel WHERE datasetfieldtype_id in (
 SELECT parentdatasetfieldtype_id FROM datasetfieldtype dsft);
   
 INSERT INTO dataversefieldtypeinputlevel (include,required,datasetfieldtype_id,dataverse_id)
-SELECT true, true, parentdatasetfieldtype_id, dataverse_id FROM
+SELECT DISTINCT true, true, parentdatasetfieldtype_id, dataverse_id FROM
 dataversefieldtypeinputlevel dsftil, datasetfieldtype dsft
 WHERE dsftil.datasetfieldtype_id = dsft.id
 AND parentdatasetfieldtype_id IS NOT null;
