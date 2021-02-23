@@ -1201,30 +1201,43 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public String tabularDataDisplayInfo(DataFile datafile) {
-        String ret = "";
+        String tabInfo = "";
 
         if (datafile == null) {
-            return null;
+            return "";
+        }
+
+        if (datafile.isTabularData() && datafile.getDataTable() != null) {
+            DataTable datatable = datafile.getDataTable();
+            Long varNumber = datatable.getVarQuantity();
+            Long obsNumber = datatable.getCaseQuantity();
+            if (varNumber != null && varNumber.intValue() != 0) {
+                tabInfo = tabInfo.concat(varNumber + " " + BundleUtil.getStringFromBundle("file.metaData.dataFile.dataTab.variables"));
+                if (obsNumber != null && obsNumber.intValue() != 0) {
+                    tabInfo = tabInfo.concat(", " + obsNumber + " " + BundleUtil.getStringFromBundle("file.metaData.dataFile.dataTab.observations"));
+                }
+            }
+        }
+
+        return tabInfo;
+    }
+    
+    public String tabularDataUnfDisplay(DataFile datafile) {
+        String tabUnf = "";
+
+        if (datafile == null) {
+            return "";
         }
 
         if (datafile.isTabularData() && datafile.getDataTable() != null) {
             DataTable datatable = datafile.getDataTable();
             String unf = datatable.getUnf();
-            Long varNumber = datatable.getVarQuantity();
-            Long obsNumber = datatable.getCaseQuantity();
-            if (varNumber != null && varNumber.intValue() != 0) {
-                ret = ret.concat(varNumber + " Variables");
-                if (obsNumber != null && obsNumber.intValue() != 0) {
-                    ret = ret.concat(", " + obsNumber + " Observations");
-                }
-                ret = ret.concat(" - ");
-            }
             if (unf != null && !unf.equals("")) {
-                ret = ret.concat("UNF: " + unf);
+                tabUnf = tabUnf.concat(unf);
             }
         }
 
-        return ret;
+        return tabUnf;
     }
 
     public String dataFileSizeDisplay(DataFile datafile) {
@@ -1234,20 +1247,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
         return datafile.getFriendlySize();
 
-    }
-
-    public String dataFileChecksumDisplay(DataFile datafile) {
-        if (datafile == null) {
-            return "";
-        }
-
-        if (datafile.getChecksumValue() != null && !StringUtils.isEmpty(datafile.getChecksumValue())) {
-            if (datafile.getChecksumType() != null) {
-                return " " + datafile.getChecksumType() + ": " + datafile.getChecksumValue() + " ";
-            }
-        }
-
-        return "";
     }
 
     public void setDisplayCardValues() {

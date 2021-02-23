@@ -1,14 +1,14 @@
 Metrics API
 ===========
 
-The Metrics API provides counts of downloads, datasets created, files uploaded, and more, as described below. It also includes aggregate counts of Make Data Count metrics (described in the :doc:`/admin/make-data-count` section of the Admin Guide and available per-Dataset through the :doc:`/api/native-api`). A table of all the endpoints is listed below.
+The Metrics API provides counts of downloads, datasets created, files uploaded, and more, as described below. The Dataverse Software also includes aggregate counts of Make Data Count metrics (described in the :doc:`/admin/make-data-count` section of the Admin Guide and available per-Dataset through the :doc:`/api/native-api`). A table of all the endpoints is listed below.
 
 .. contents:: |toctitle|
     :local:
 
 .. note:: |CORS| The Metrics API can be used from scripts running in web browsers, as it allows cross-origin resource sharing (CORS).
 
-.. note:: For all metrics `besides` Past Days Count (``/pastDays/$days``) - recalculated daily, and (``/toMonth/$month``) for prior months - never recalculated, the Dataverse setting ``MetricsCacheTimeoutMinutes`` defines how long the cached value will be returned by subsequent queries.
+.. note:: For all metrics `besides` Past Days Count (``/pastDays/$days``) - recalculated daily, and (``/toMonth/$month``) for prior months - never recalculated, the setting ``MetricsCacheTimeoutMinutes`` defines how long the cached value will be returned by subsequent queries.
 
 .. _CORS: https://www.w3.org/TR/cors/
 
@@ -21,7 +21,7 @@ The Metrics API includes several categories of endpoints that provide different 
 
     Form: GET https://$SERVER/api/info/metrics/$type
 
-    where ``$type`` can be set, for example, to ``dataverses``, ``datasets``, ``files`` or ``downloads``.
+    where ``$type`` can be set, for example, to ``dataverses`` (Dataverse collections), ``datasets``, ``files`` or ``downloads``.
 
     Example: ``curl https://demo.dataverse.org/api/info/metrics/downloads``
 
@@ -31,17 +31,17 @@ The Metrics API includes several categories of endpoints that provide different 
 
     Form: GET https://$SERVER/api/info/metrics/$type/toMonth/$YYYY-DD
 
-    where ``$type`` can be set, for example, to ``dataverses``, ``datasets``, ``files`` or ``downloads``.
+    where ``$type`` can be set, for example, to ``dataverses`` (Dataverse collections), ``datasets``, ``files`` or ``downloads``.
 
     Example: ``curl https://demo.dataverse.org/api/info/metrics/dataverses/toMonth/2018-01``
     
     Return: Most of these calls return a simple JSON object with a ``count`` whose value is the metric's total count. One variant, ``/api/info/metrics/datasets/bySubject/toMonth`` return aggregate metrics per Dataset Subject as a JSONArray or CSV (see Return Formats below)
 
-* Past Days - a count of various objects in dataverse for the past ``$days`` (e.g. ``30``):
+* Past Days - a count of various objects in a Dataverse installation for the past ``$days`` (e.g. ``30``):
 
     Form: GET https://$SERVER/api/info/metrics/$type/pastDays/$days
 
-    where ``$type`` can be set, for example, to ``dataverses``, ``datasets``, ``files`` or ``downloads``.
+    where ``$type`` can be set, for example, to ``dataverses`` (Dataverse collections), ``datasets``, ``files`` or ``downloads``.
 
     Example: ``curl https://demo.dataverse.org/api/info/metrics/datasets/pastDays/30``
 
@@ -51,7 +51,7 @@ The Metrics API includes several categories of endpoints that provide different 
 
     Form: GET https://$SERVER/api/info/metrics/$type/monthly
 
-    where ``$type`` can be set, for example, to ``dataverses``, ``datasets``, ``files`` or ``downloads``.
+    where ``$type`` can be set, for example, to ``dataverses`` (Dataverse collections), ``datasets``, ``files`` or ``downloads``.
 
     Example: ``curl https://demo.dataverse.org/api/info/metrics/downloads/monthly``
 
@@ -65,7 +65,7 @@ The Metrics API includes several categories of endpoints that provide different 
 
     Example: ``curl https://demo.dataverse.org/api/info/metrics/tree``
 
-    Return: A nested JSON array containing JSON objects for each Dataverse with key/values for id, ownerId, alias, depth, and name, and a JSON array containing analogous objects for Dataverses within the current one.
+    Return: A nested JSON array containing JSON objects for each Dataverse collection with key/values for id, ownerId, alias, depth, and name, and a JSON array containing analogous objects for Dataverse collections within the current one.
 
 Return Formats
 ----------------
@@ -97,9 +97,9 @@ To further tailor your metric, query parameters can be provided. On relevant end
 parentAlias
 ~~~~~~~~~~~
 
-Specifies which sub-Dataverse the metric should be collected for. Not including this parameter gathers metrics for the entire instance.
+Specifies which Dataverse sub-collection the metric should be collected for. Not including this parameter gathers metrics for the entire instance.
 
-Example: ``curl https://demo.dataverse.org/api/info/metrics/datasets/?parentAlias=abc`` would return the number of datasets in the Dataverse with alias 'abc' and in sub-Dataverses within it.
+Example: ``curl https://demo.dataverse.org/api/info/metrics/datasets/?parentAlias=abc`` would return the number of datasets in the Dataverse collection with alias 'abc' and in sub-collections within it.
 
 dataLocation
 ~~~~~~~~~~~~
@@ -127,39 +127,39 @@ The following table lists the available metrics endpoints (not including the Mak
    :header: endpoint,variables,formats,scope,limits,cached,meaning,notes
    :widths: 100, 15, 10, 20, 20, 8, 30, 70
 
-    /api/info/metrics/dataverses,count,json,dataverse subtree,published,y,as of now/total,dataverse subtree means you can get info for the instance or with ?parentAlias={alias} can optionally specify a dataverse which should be used to scope the query. 
-    /api/info/metrics/dataverses/toMonth/{yyyy-MM},count,json,dataverse subtree,published,y,cumulative up to month specified,
-    /api/info/metrics/dataverses/monthly,"date, count","json, csv",dataverse subtree,published,y,monthly cumulative  timeseries from first date of first entry to now,
-    /api/info/metrics/dataverses/pastDays/{n},count,json,dataverse subtree,published,y,aggregate count for past n days,
-    /api/info/metrics/dataverses/byCategory,"category, count","json, csv",dataverse subtree,published,y,total count per category,
-    /api/info/metrics/dataverses/bySubject,"subject, count","json, csv",dataverse subtree,all,y,total count per subject,
-    /api/info/metrics/datasets,count,json,dataverse subtree,"released, choice of all, local or remote (harvested)",y,as of now/total,released means only currently released dataset versions (not unpublished or DEACCESSIONED versions)
-    /api/info/metrics/datasets/toMonth/{yyyy-MM},count,json,dataverse subtree,"released, choice of all, local or remote (harvested)",y,cumulative up to month specified,
-    /api/info/metrics/datasets/monthly,"date, count","json, csv",dataverse subtree,"released, choice of all, local or remote (harvested)",y,monthly cumulative  timeseries from first date of first entry to now,released means only currently released dataset versions (not unpublished or DEACCESSIONED versions)
-    /api/info/metrics/datasets/pastDays/{n},count,json,dataverse subtree,"released, choice of all, local or remote (harvested)",y,aggregate count for past n days,
-    /api/info/metrics/datasets/bySubject,"subject, count","json, csv",dataverse subtree,"released, choice of all, local or remote (harvested)",y,total count per subject,
-    /api/info/metrics/datasets/bySubjecttoMonth/{yyyy-MM},"subject, count","json, csv",dataverse subtree,"released, choice of all, local or remote (harvested)",y,cumulative cont per subject up to month specified,
-    /api/info/metrics/files,count,json,dataverse subtree,in released datasets,y,as of now/total,
-    /api/info/metrics/files/toMonth/{yyyy-MM},count,json,dataverse subtree,in released datasets,y,cumulative up to month specified,
-    /api/info/metrics/files/monthly,"date, count","json, csv",dataverse subtree,in released datasets,y,monthly cumulative  timeseries from first date of first entry to now,date is the month when the first version containing the file was released (or created for harvested versions)
-    /api/info/metrics/files/pastDays/{n},count,json,dataverse subtree,in released datasets,y,aggregate count for past n days,
-    /api/info/metrics/files/byType,"mimetype, count, size","json, csv",dataverse subtree,in released datasets,y,current totals,
-    /api/info/metrics/files/byType/monthly,"date, mimetype, count, size","json, csv",dataverse subtree,in released datasets,y,monthly cumulative  timeseries from first date of first entry to now,data for a specific mimetype is only listed starting with the first month there are files of that type
-    /api/info/metrics/downloads,count,json,dataverse subtree,published,y,as of now/total,"published for downloads means 'recorded in guestbookresponse' which occurs for any files that were ever in a published version, even if that version is now DEACCESSIONED, the file isn't in a current version, etc."
-    /api/info/metrics/downloads/toMonth/{yyyy-MM},count,json,dataverse subtree,published,y,cumulative up to month specified,downloads from versions that do not have a releasetime (from older Dataverse versions) are included in this cumulative count and the total as of now (line above)
-    /api/info/metrics/downloads/pastDays/{n},count,json,dataverse subtree,published,y,aggregate count for past n days,
-    /api/info/metrics/downloads/monthly,"date, count","json, csv",dataverse subtree,published,y,monthly cumulative  timeseries from first date of first entry to now,counts from dataset versions with no releasetime (legacy from old Dataverse versions) are counted as occuring in the month prior to the first count that does have a date
-    /api/info/metrics/filedownloads,"count by id, pid","json, csv",dataverse subtree,published,y,as of now/totals,download counts per file id. PIDs are also included in output if they exist
-    /api/info/metrics/filedownloads/toMonth/{yyyy-MM},"count by id, pid","json, csv",dataverse subtree,published,y,cumulative up to month specified,download counts per file id to the specified month. PIDs are also included in output if they exist
-    /api/info/metrics/filedownloads/monthly,"date, count, id, pid","json, csv",dataverse subtree,published,y,"monthly cumulative  timeseries by file id, pid from first date of first entry to now","unique downloads per month by file (id, pid) sorted in decreasing order of counts"
-    /api/info/metrics/makeDataCount/{metric},count,json,"dataverse subtree, optionally also by {country}","published, MDC",y,count for specified {metric} as of now/total,"published means in the mdc logs which are not created for unpublished datasets, so this is filtered like downloads and includes counts from DEACCESSED, old versions. "
-    /api/info/metrics/makeDataCount/{metric}/toMonth/{yyyy-MM},count,json,"dataverse subtree, optionally also by {country}","published, MDC",y,cumulative count for specified {metric} through specified month,These metrics are also limited by the MDC start date and by MDC filtering done by counter-processor
-    /api/info/metrics/makeDataCount/{metric}/monthly,"date, count","json, csv","dataverse subtree, optionally also by {country}","published, MDC",y,monthly cumulative timeseries of counts for specified {metric},These metrics are also limited by the MDC start date and by MDC filtering done by counter-processor
-    /api/info/metrics/uniquedownloads,"pid, count",json,dataverse subtree,published,y,total count of unique users who have downloaded from the datasets in scope,The use case for this metric (uniquedownloads) is to more fairly assess which datasets are getting downloaded/used by only counting each users who downloads any file from a dataset as one count (versus downloads of multiple files or repeat downloads counting as multiple counts which adds a bias for large datasets and/or use patterns where a file is accessed repeatedly for new analyses)
-    /api/info/metrics/uniquedownloads/monthly,"date, pid, count","json, csv",dataverse subtree,published,y,monthly cumulative timeseries of unique user counts for datasets in the dataverse scope,
-    /api/info/metrics/uniquedownloads/toMonth/{yyyy-MM},"pid, count",json,dataverse subtree,published,y,cumulative count of unique users who have downloaded from the datasets in scope through specified month,
-    /api/info/metrics/filedownloads/monthly,"date, count, id, pid","json, csv",dataverse subtree,published,y,"monthly cumulative  timeseries by file id, pid from first date of first entry to now","unique downloads (as defined above) per month by file (id, pid) sorted in decreasing order of counts"
-    /api/info/metrics/uniquefiledownloads,"count by id, pid","json, csv",dataverse subtree,published,y,as of now/totals,unique download counts per file id. PIDs are also included in output if they exist
-    /api/info/metrics/uniquefiledownloads/toMonth/{yyyy-MM},"count by id, pid","json, csv",dataverse subtree,published,y,cumulative up to month specified,unique download counts per file id to the specified month. PIDs are also included in output if they exist
-    /api/info/metrics/tree,"id, ownerId, alias, depth, name, children",json,dataverse subtree,published,y,"tree of dataverses starting at the root or a specified parentAlias with their id, owner id, alias, name, a computed depth, and array of children dataverses","underlying code can also include draft dataverses, this is not currently accessible via api, depth starts at 0"
-    /api/info/metrics/tree/toMonth/{yyyy-MM},"id, ownerId, alias, depth, name, children",json,dataverse subtree,published,y,"tree of dataverses in existence as of specified date starting at the root or a specified parentAlias with their id, owner id, alias, name, a computed depth, and array of children dataverses","underlying code can also include draft dataverses, this is not currently accessible via api, depth starts at 0"
+    /api/info/metrics/dataverses,count,json,collection subtree,published,y,as of now/total,collection subtree means you can get info for the instance or with ?parentAlias={alias} can optionally specify a dataverse which should be used to scope the query. 
+    /api/info/metrics/dataverses/toMonth/{yyyy-MM},count,json,collection subtree,published,y,cumulative up to month specified,
+    /api/info/metrics/dataverses/monthly,"date, count","json, csv",collection subtree,published,y,monthly cumulative  timeseries from first date of first entry to now,
+    /api/info/metrics/dataverses/pastDays/{n},count,json,collection subtree,published,y,aggregate count for past n days,
+    /api/info/metrics/dataverses/byCategory,"category, count","json, csv",collection subtree,published,y,total count per category,
+    /api/info/metrics/dataverses/bySubject,"subject, count","json, csv",collection subtree,all,y,total count per subject,
+    /api/info/metrics/datasets,count,json,collection subtree,"released, choice of all, local or remote (harvested)",y,as of now/total,released means only currently released dataset versions (not unpublished or DEACCESSIONED versions)
+    /api/info/metrics/datasets/toMonth/{yyyy-MM},count,json,collection subtree,"released, choice of all, local or remote (harvested)",y,cumulative up to month specified,
+    /api/info/metrics/datasets/monthly,"date, count","json, csv",collection subtree,"released, choice of all, local or remote (harvested)",y,monthly cumulative  timeseries from first date of first entry to now,released means only currently released dataset versions (not unpublished or DEACCESSIONED versions)
+    /api/info/metrics/datasets/pastDays/{n},count,json,collection subtree,"released, choice of all, local or remote (harvested)",y,aggregate count for past n days,
+    /api/info/metrics/datasets/bySubject,"subject, count","json, csv",collection subtree,"released, choice of all, local or remote (harvested)",y,total count per subject,
+    /api/info/metrics/datasets/bySubjecttoMonth/{yyyy-MM},"subject, count","json, csv",collection subtree,"released, choice of all, local or remote (harvested)",y,cumulative cont per subject up to month specified,
+    /api/info/metrics/files,count,json,collection subtree,in released datasets,y,as of now/total,
+    /api/info/metrics/files/toMonth/{yyyy-MM},count,json,collection subtree,in released datasets,y,cumulative up to month specified,
+    /api/info/metrics/files/monthly,"date, count","json, csv",collection subtree,in released datasets,y,monthly cumulative  timeseries from first date of first entry to now,date is the month when the first version containing the file was released (or created for harvested versions)
+    /api/info/metrics/files/pastDays/{n},count,json,collection subtree,in released datasets,y,aggregate count for past n days,
+    /api/info/metrics/files/byType,"mimetype, count, size","json, csv",collection subtree,in released datasets,y,current totals,
+    /api/info/metrics/files/byType/monthly,"date, mimetype, count, size","json, csv",collection subtree,in released datasets,y,monthly cumulative  timeseries from first date of first entry to now,data for a specific mimetype is only listed starting with the first month there are files of that type
+    /api/info/metrics/downloads,count,json,collection subtree,published,y,as of now/total,"published for downloads means 'recorded in guestbookresponse' which occurs for any files that were ever in a published version, even if that version is now DEACCESSIONED, the file isn't in a current version, etc."
+    /api/info/metrics/downloads/toMonth/{yyyy-MM},count,json,collection subtree,published,y,cumulative up to month specified,downloads from versions that do not have a releasetime (from older Dataverse versions) are included in this cumulative count and the total as of now (line above)
+    /api/info/metrics/downloads/pastDays/{n},count,json,collection subtree,published,y,aggregate count for past n days,
+    /api/info/metrics/downloads/monthly,"date, count","json, csv",collection subtree,published,y,monthly cumulative  timeseries from first date of first entry to now,counts from dataset versions with no releasetime (legacy from old Dataverse versions) are counted as occuring in the month prior to the first count that does have a date
+    /api/info/metrics/filedownloads,"count by id, pid","json, csv",collection subtree,published,y,as of now/totals,download counts per file id. PIDs are also included in output if they exist
+    /api/info/metrics/filedownloads/toMonth/{yyyy-MM},"count by id, pid","json, csv",collection subtree,published,y,cumulative up to month specified,download counts per file id to the specified month. PIDs are also included in output if they exist
+    /api/info/metrics/filedownloads/monthly,"date, count, id, pid","json, csv",collection subtree,published,y,"monthly cumulative  timeseries by file id, pid from first date of first entry to now","unique downloads per month by file (id, pid) sorted in decreasing order of counts"
+    /api/info/metrics/makeDataCount/{metric},count,json,"collection subtree, optionally also by {country}","published, MDC",y,count for specified {metric} as of now/total,"published means in the mdc logs which are not created for unpublished datasets, so this is filtered like downloads and includes counts from DEACCESSED, old versions. "
+    /api/info/metrics/makeDataCount/{metric}/toMonth/{yyyy-MM},count,json,"collection subtree, optionally also by {country}","published, MDC",y,cumulative count for specified {metric} through specified month,These metrics are also limited by the MDC start date and by MDC filtering done by counter-processor
+    /api/info/metrics/makeDataCount/{metric}/monthly,"date, count","json, csv","collection subtree, optionally also by {country}","published, MDC",y,monthly cumulative timeseries of counts for specified {metric},These metrics are also limited by the MDC start date and by MDC filtering done by counter-processor
+    /api/info/metrics/uniquedownloads,"pid, count",json,collection subtree,published,y,total count of unique users who have downloaded from the datasets in scope,The use case for this metric (uniquedownloads) is to more fairly assess which datasets are getting downloaded/used by only counting each users who downloads any file from a dataset as one count (versus downloads of multiple files or repeat downloads counting as multiple counts which adds a bias for large datasets and/or use patterns where a file is accessed repeatedly for new analyses)
+    /api/info/metrics/uniquedownloads/monthly,"date, pid, count","json, csv",collection subtree,published,y,monthly cumulative timeseries of unique user counts for datasets in the dataverse scope,
+    /api/info/metrics/uniquedownloads/toMonth/{yyyy-MM},"pid, count",json,collection subtree,published,y,cumulative count of unique users who have downloaded from the datasets in scope through specified month,
+    /api/info/metrics/filedownloads/monthly,"date, count, id, pid","json, csv",collection subtree,published,y,"monthly cumulative  timeseries by file id, pid from first date of first entry to now","unique downloads (as defined above) per month by file (id, pid) sorted in decreasing order of counts"
+    /api/info/metrics/uniquefiledownloads,"count by id, pid","json, csv",collection subtree,published,y,as of now/totals,unique download counts per file id. PIDs are also included in output if they exist
+    /api/info/metrics/uniquefiledownloads/toMonth/{yyyy-MM},"count by id, pid","json, csv",collection subtree,published,y,cumulative up to month specified,unique download counts per file id to the specified month. PIDs are also included in output if they exist
+    /api/info/metrics/tree,"id, ownerId, alias, depth, name, children",json,collection subtree,published,y,"tree of dataverses starting at the root or a specified parentAlias with their id, owner id, alias, name, a computed depth, and array of children dataverses","underlying code can also include draft dataverses, this is not currently accessible via api, depth starts at 0"
+    /api/info/metrics/tree/toMonth/{yyyy-MM},"id, ownerId, alias, depth, name, children",json,collection subtree,published,y,"tree of dataverses in existence as of specified date starting at the root or a specified parentAlias with their id, owner id, alias, name, a computed depth, and array of children dataverses","underlying code can also include draft dataverses, this is not currently accessible via api, depth starts at 0"
