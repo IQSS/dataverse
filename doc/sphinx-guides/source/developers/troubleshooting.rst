@@ -2,7 +2,7 @@
 Troubleshooting
 ===============
 
-Over in the :doc:`dev-environment` section we described the "happy path" of when everything goes right as you set up your Dataverse development environment. Here are some common problems and solutions for when things go wrong.
+Over in the :doc:`dev-environment` section we described the "happy path" of when everything goes right as you set up your Dataverse Software development environment. Here are some common problems and solutions for when things go wrong.
 
 .. contents:: |toctitle|
 	:local:
@@ -14,7 +14,7 @@ For unknown reasons, Netbeans will sometimes change the following line under ``s
 
 ``<context-root>/</context-root>``
 
-Sometimes Netbeans will change ``/`` to ``/dataverse``. Sometimes it will delete the line entirely. Either way, you will see very strange behavior when attempting to click around Dataverse in a browser. The homepage will load but icons will be missing. Any other page will fail to load entirely and you'll see an app server error.
+Sometimes Netbeans will change ``/`` to ``/dataverse``. Sometimes it will delete the line entirely. Either way, you will see very strange behavior when attempting to click around the Dataverse installation in a browser. The homepage will load but icons will be missing. Any other page will fail to load entirely and you'll see an app server error.
 
 The solution is to put the file back to how it was before Netbeans touched it. If anyone knows of an open Netbeans bug about this, please let us know.
 
@@ -41,7 +41,7 @@ This command helps verify what host your domain is using to send mail. Even if i
 2. From the left-side panel, select **JavaMail Sessions**
 3. You should see one session named **mail/notifyMailSession** -- click on that.
 
-From this window you can modify certain fields of your Dataverse's notifyMailSession, which is the JavaMail session for outgoing system email (such as on user signup or data publication). Two of the most important fields we need are:
+From this window you can modify certain fields of your Dataverse installation's notifyMailSession, which is the JavaMail session for outgoing system email (such as on user signup or data publication). Two of the most important fields we need are:
 
 - **Mail Host:** The DNS name of the default mail server (e.g. smtp.gmail.com)
 - **Default User:** The username provided to your Mail Host when you connect to it (e.g. johndoe@gmail.com)
@@ -50,7 +50,7 @@ Most of the other defaults can safely be left as is. **Default Sender Address** 
 
 If your user credentials for the SMTP server require a password, you'll need to configure some **Additional Properties** at the bottom.
 
-**IMPORTANT:** Before continuing, it's highly recommended that your Default User account does NOT use a password you share with other accounts, as one of the additional properties includes entering the Default User's password (without concealing it on screen). For smtp.gmail.com you can safely use an `app password <https://support.google.com/accounts/answer/185833?hl=en>`_ or create an extra Gmail account for use with your Dataverse dev environment.
+**IMPORTANT:** Before continuing, it's highly recommended that your Default User account does NOT use a password you share with other accounts, as one of the additional properties includes entering the Default User's password (without concealing it on screen). For smtp.gmail.com you can safely use an `app password <https://support.google.com/accounts/answer/185833?hl=en>`_ or create an extra Gmail account for use with your Dataverse Software development environment.
 
 Authenticating yourself to a Mail Host can be tricky. As an example, we'll walk through setting up our JavaMail Session to use smtp.gmail.com as a host by way of SSL on port 465. Use the Add Property button to generate a blank property for each name/value pair.
 
@@ -74,9 +74,9 @@ The mail session can also be set from command line. To use this method, you will
 - Delete: ``./asadmin delete-javamail-resource mail/MyMailSession``
 - Create (remove brackets and replace the variables inside): ``./asadmin create-javamail-resource --mailhost [smtp.gmail.com] --mailuser [test\@test\.com] --fromaddress [test\@test\.com] --property mail.smtp.auth=[true]:mail.smtp.password=[password]:mail.smtp.port=[465]:mail.smtp.socketFactory.port=[465]:mail.smtp.socketFactory.fallback=[false]:mail.smtp.socketFactory.class=[javax.net.ssl.SSLSocketFactory] mail/notifyMailSession``
 
-These properties can be tailored to your own preferred mail service, but if all else fails these settings work fine with Dataverse development environments for your localhost.
+These properties can be tailored to your own preferred mail service, but if all else fails these settings work fine with Dataverse Software development environments for your localhost.
 
-+ If you're seeing a "Relay access denied" error in your app server logs when Dataverse attempts to send an email, double check your user/password credentials for the Mail Host you're using.
++ If you're seeing a "Relay access denied" error in your app server logs when the Dataverse installation attempts to send an email, double check your user/password credentials for the Mail Host you're using.
 + If you're seeing a "Connection refused" / similar error upon email sending, try another port.
 
 As another example, here is how to create a Mail Host via command line for Amazon SES:
@@ -97,8 +97,8 @@ A script called :download:`dev-rebuild.sh <../../../../scripts/dev/dev-rebuild.s
 - Deploys the war file located in the ``target`` directory.
 - Runs ``setup-all.sh`` in insecure mode so tests will pass.
 - Runs post-install SQL statements.
-- Publishes the root dataverse.
-- Adjusts permissions on on the root dataverse so tests will pass.
+- Publishes the root Dataverse collection.
+- Adjusts permissions on on the root Dataverse collection so tests will pass.
 
 To execute the script, make sure you have built a war file already and then ``cd`` to the root of the source tree and run ``scripts/dev/dev-rebuild.sh``. Feedback on this script is welcome!
 

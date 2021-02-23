@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.datasetutility;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.FileMetadata;
 import java.io.InputStream;
@@ -93,7 +94,7 @@ public class FileReplacePageHelper {
      * @param checkSum 
      * @param event 
      */
-    public boolean handleNativeFileUpload(InputStream inputStream, String fullStorageId, String fileName, String fileContentType, String checkSum) {
+    public boolean handleNativeFileUpload(InputStream inputStream, String fullStorageId, String fileName, String fileContentType, String checkSumValue, ChecksumType checkSumType) {
                 
         phase1Success = false;
         
@@ -111,9 +112,8 @@ public class FileReplacePageHelper {
         
         OptionalFileParams ofp = null;
         ofp = new OptionalFileParams();
-
-        if(checkSum != null) {
-        	ofp.setCheckSum(checkSum);
+        if(checkSumValue != null) {
+            ofp.setCheckSum(checkSumValue, checkSumType);
         }
         // Run 1st phase of replace
         //

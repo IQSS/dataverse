@@ -63,7 +63,8 @@
                         <h:outputFormat value="#{sendFeedbackDialog.op1} + #{sendFeedbackDialog.op2} = "/>
                         <p:inputText id="messageSum" label="Sum" size="4" value="#{sendFeedbackDialog.userSum}" converterMessage="#{bundle['contact.sum.converterMessage']}"
                                      required="#{param['DO_VALIDATION']}" requiredMessage="#{bundle['contact.sum.required']}"
-                                     validatorMessage="#{bundle['contact.sum.invalid']}" validator="#{sendFeedbackDialog.validateUserSum}">
+                                     validatorMessage="#{bundle['contact.sum.invalid']}" validator="#{sendFeedbackDialog.validateUserSum}"
+                                     title="#{bundle['contact.sum.title']}">
                             <f:convertNumber integerOnly="true" type="number"/>
                         </p:inputText>
                         <h:message for="messageSum" styleClass="bg-danger text-danger"/>

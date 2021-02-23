@@ -21,9 +21,9 @@
                         <p:watermark for="searchBasic" value="#{dataverseRedirectPage == 'dataverseuser.xhtml' ? bundle['account.search.input.watermark'] : bundle['dataverse.search.input.watermark']}"/>
 
                         <span class="input-group-btn">
-                            <p:commandLink id="searchbutton" styleClass="btn btn-default" 
+                            <p:commandLink id="searchbutton" title="#{bundle['dataverse.search.btn.find']}" styleClass="btn btn-default bootstrap-button-tooltip" 
                                            action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage, DataversePage.dataverse)}">
-                                <span class="glyphicon glyphicon-search"/> #{bundle['dataverse.search.btn.find']}
+                                <span class="glyphicon glyphicon-search no-text"/>
                             </p:commandLink>
                         </span>
 
@@ -601,24 +601,43 @@
                             </a>
                         </div>
 
-                        <div>
-                            <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard} - "/>
+                        <div class="text-muted">
+                            <h:outputText value="#{result.dateToDisplayOnCard} - "/>
                             <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.fileDatasetUrl : widgetWrapper.wrapURL(result.fileDatasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
                                 <h:outputText value="#{result.parent.get('name')}"/></a>
                         </div>
 
-                        <div>
-                            <h:outputText value="#{bundle['dataverse.results.cards.files.tabularData']}" styleClass="text-muted" rendered="#{!empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity)}"/>
-                            <h:outputText value="#{result.filetype}" styleClass="text-muted" rendered="#{empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity) and result.fileTypeHighlightSnippet == null}"/>
-                            <h:outputText value="#{result.fileTypeHighlightSnippet}" styleClass="text-muted" rendered="#{empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity) and result.fileTypeHighlightSnippet != null}" escape="false"/>
-
-                            <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.dataFileSizeDisplay(result.entity)}" rendered="#{!result.harvested}" />
-
-                            <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.dataFileChecksumDisplay(result.entity)}" rendered="#{!result.harvested and !SearchIncludeFragment.isTabular(result.entity) and !(empty SearchIncludeFragment.dataFileChecksumDisplay(result.entity))}"/>
-
-                            <!-- if this is a tabular data file, extra information, such as the numbers of variables and observations and the unf, is displayed: -->
-                            <h:outputText styleClass="text-muted" value=" - #{SearchIncludeFragment.tabularDataDisplayInfo(result.entity)}"
-                                            rendered="#{!empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity)}"/>
+                        <div class="text-muted">
+                            <h:outputText value="#{bundle['dataverse.results.cards.files.tabularData']}" rendered="#{!empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity)}"/>
+                            <h:outputText value="#{result.filetype}" rendered="#{empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity) and result.fileTypeHighlightSnippet == null}"/>
+                            <h:outputText value="#{result.fileTypeHighlightSnippet}" rendered="#{empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity) and result.fileTypeHighlightSnippet != null}" escape="false"/>
+                            <h:outputText value=" - #{SearchIncludeFragment.dataFileSizeDisplay(result.entity)}" rendered="#{!result.harvested}"/>
+                            <h:outputText value=" - " rendered="#{!result.harvested and !SearchIncludeFragment.isTabular(result.entity) and !(empty result.fileChecksumValue)}"/>
+                            <span class="checksum-block" jsf:rendered="#{!result.harvested and !SearchIncludeFragment.isTabular(result.entity) and !(empty result.fileChecksumValue)}">
+                                <span class="sr-only checksum-truncate checksum-tooltip" style="margin-right:3px;"
+                                          data-toggle="tooltip" data-placement="top" data-html="true"
+                                          data-clipboard-action="copy"
+                                          data-clipboard-text="#{result.fileChecksumValue}"
+                                          title="#{bundle['file.metaData.checksum.copy']}&lt;br/&gt;#{result.fileChecksumValue}">#{result.fileChecksumType}: #{result.fileChecksumValue}</span>
+                                <span class="glyphicon glyphicon-copy btn-copy checksum-tooltip"
+                                        data-toggle="tooltip" data-placement="top" data-html="true"
+                                        data-clipboard-action="copy"
+                                        data-clipboard-text="#{result.fileChecksumValue}" title="#{bundle['file.metaData.checksum.copy']}&lt;br/&gt;#{result.fileChecksumValue}"></span>
+                            </span>
+                            <!-- if tabular data file, display number of variables and observations, and unf -->
+                            <span class="unf-block" jsf:rendered="#{!empty SearchIncludeFragment.tabularDataDisplayInfo(result.entity)}">
+                                <h:outputText value=" - #{SearchIncludeFragment.tabularDataDisplayInfo(result.entity)}"/>
+                                <h:outputText value=" - " rendered="#{!empty SearchIncludeFragment.tabularDataUnfDisplay(result.entity)}"/>
+                                <span class="sr-only checksum-truncate checksum-tooltip" style="margin-right:3px;" jsf:rendered="#{!empty SearchIncludeFragment.tabularDataUnfDisplay(result.entity)}"
+                                          data-toggle="tooltip" data-placement="top" data-html="true"
+                                          data-clipboard-action="copy"
+                                          data-clipboard-text="#{SearchIncludeFragment.tabularDataUnfDisplay(result.entity)}"
+                                          title="#{bundle['file.metaData.checksum.copy']}&lt;br/&gt;#{SearchIncludeFragment.tabularDataUnfDisplay(result.entity)}">#{SearchIncludeFragment.tabularDataUnfDisplay(result.entity)}</span>
+                                <span class="glyphicon glyphicon-copy btn-copy checksum-tooltip" jsf:rendered="#{!empty SearchIncludeFragment.tabularDataUnfDisplay(result.entity)}"
+                                        data-toggle="tooltip" data-placement="top" data-html="true"
+                                        data-clipboard-action="copy"
+                                        data-clipboard-text="#{SearchIncludeFragment.tabularDataUnfDisplay(result.entity)}" title="#{bundle['file.metaData.checksum.copy']}&lt;br/&gt;#{SearchIncludeFragment.tabularDataUnfDisplay(result.entity)}"></span>
+                            </span>
                         </div>
 
                         <div class="file-tags-block" jsf:rendered="#{(!empty result.fileCategories) or (!empty result.tabularDataTags)}">
