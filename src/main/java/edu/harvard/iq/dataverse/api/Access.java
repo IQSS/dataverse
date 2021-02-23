@@ -68,7 +68,6 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
-import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
 
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -166,8 +165,6 @@ public class Access extends AbstractApiBean {
     PermissionServiceBean permissionService;
     @Inject
     DataverseSession session;
-    @EJB
-    WorldMapTokenServiceBean worldMapTokenServiceBean;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @EJB
@@ -273,11 +270,21 @@ public class Access extends AbstractApiBean {
     }
         
             
-    @Path("datafile/{fileId}")
+    @Path("datafile/{fileId:.+}")
     @GET
     @Produces({"application/xml"})
     public DownloadInstance datafile(@PathParam("fileId") String fileId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiToken, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-
+        
+        if (fileId.indexOf('/') > -1) {
+            // This is for embedding folder names into the Access API URLs;
+            // something like /api/access/datafile/folder/subfolder/1234
+            // instead of the normal /api/access/datafile/1234 notation. 
+            // this is supported only for recreating folders during recursive downloads - 
+            // i.e. they are embedded into the URL for the remote client like wget,
+            // but can be safely ignored here. 
+            fileId = fileId.substring(fileId.lastIndexOf('/') + 1);
+        }
+                
         DataFile df = findDataFileOrDieWrapper(fileId);
         GuestbookResponse gbr = null;
         
@@ -334,6 +341,14 @@ public class Access extends AbstractApiBean {
             // So we need to identify when a service is being called and then let checkIfServiceSupportedAndSetConverter see if the required one exists
             if (key.equals("imageThumb") || key.equals("format") || key.equals("variables") || key.equals("noVarHeader")) {
                 serviceRequested = true;
+                //In the dataset file table context a user is allowed to select original as the format
+                //for download
+                // if the dataset has tabular files - it should not be applied to instances 
+                // where the file selected is not tabular see #6972
+                if("format".equals(key) && "original".equals(value) && !df.isTabularData()) {
+                    serviceRequested = false;
+                    break;
+                }
                 //Only need to check if this key is associated with a service
                 if (downloadInstance.checkIfServiceSupportedAndSetConverter(key, value)) {
                     // this automatically sets the conversion parameters in
@@ -1697,11 +1712,6 @@ public class Access extends AbstractApiBean {
                 return true;
             }
                     
-            
-            // We don't want to return false just yet. 
-            // If all else fails, we'll want to use the special WorldMapAuth 
-            // token authentication before we give up. 
-            //return false;
         } else {
             
             // OK, this is a restricted file. 
@@ -1755,30 +1765,9 @@ public class Access extends AbstractApiBean {
                 }
             }
         } 
-        
-        
-        // And if all that failed, we'll still check if the download can be authorized based
-        // on the special WorldMap token:
 
         
-        if ((apiToken != null)&&(apiToken.length()==64)){
-            /* 
-                WorldMap token check
-                - WorldMap tokens are 64 chars in length
-            
-                - Use the worldMapTokenServiceBean to verify token 
-                    and check permissions against the requested DataFile
-            */
-            if (!(this.worldMapTokenServiceBean.isWorldMapTokenAuthorizedForDataFileDownload(apiToken, df))){
-                return false;
-            }
-            
-            // Yes! User may access file
-            //
-            logger.fine("WorldMap token-based auth: Token is valid for the requested datafile");
-            return true;
-            
-        } else if ((apiToken != null)&&(apiToken.length()!=64)) {
+        if ((apiToken != null)) {
             // Will try to obtain the user information from the API token, 
             // if supplied: 
         
@@ -1794,7 +1783,7 @@ public class Access extends AbstractApiBean {
                 return false;
             } 
             
-        if (permissionService.requestOn(createDataverseRequest(user), df).has(Permission.DownloadFile)) { 
+            if (permissionService.requestOn(createDataverseRequest(user), df).has(Permission.DownloadFile)) {
                 if (published) {
                     logger.log(Level.FINE, "API token-based auth: User {0} has rights to access the datafile.", user.getIdentifier());
                     return true; 

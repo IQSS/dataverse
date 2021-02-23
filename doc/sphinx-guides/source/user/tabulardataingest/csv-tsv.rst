@@ -7,7 +7,7 @@ CSV/TSV
 Ingest of Comma-Separated Values and Tab-Separated Values files as tabular data
 --------------------------------------------------------------------------------
 
-Dataverse will make an attempt to turn CSV and TSV files uploaded by the user into tabular data, using the `Apache CSV parser <https://commons.apache.org/proper/commons-csv/>`_. 
+The Dataverse installation will make an attempt to turn CSV and TSV files uploaded by the user into tabular data, using the `Apache CSV parser <https://commons.apache.org/proper/commons-csv/>`_. 
 
 Main formatting requirements
 -----------------------------
@@ -16,7 +16,7 @@ The first row in the document will be treated as the CSV's header, containing va
 
 Each following row must contain the same number of comma-separated values ("cells") as that header.
 
-As of the Dataverse 4.8 release, we allow ingest of CSV files with commas and line breaks within cells. A string with any number of commas and line breaks enclosed within double quotes is recognized as a single cell. Double quotes can be encoded as two double quotes in a row (``""``). 
+As of the Dataverse Software 4.8 release, we allow ingest of CSV files with commas and line breaks within cells. A string with any number of commas and line breaks enclosed within double quotes is recognized as a single cell. Double quotes can be encoded as two double quotes in a row (``""``). 
 
 For example, the following lines:
 

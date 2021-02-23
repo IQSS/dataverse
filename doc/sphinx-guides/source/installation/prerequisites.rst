@@ -4,7 +4,7 @@
 Prerequisites
 =============
 
-Before running the Dataverse installation script, you must install and configure Linux, Java, Payara, PostgreSQL, Solr, and jq. The other software listed below is optional but can provide useful features.
+Before running the Dataverse Software installation script, you must install and configure Linux, Java, Payara, PostgreSQL, Solr, and jq. The other software listed below is optional but can provide useful features.
 
 After following all the steps below, you can proceed to the :doc:`installation-main` section.
 
@@ -14,33 +14,30 @@ After following all the steps below, you can proceed to the :doc:`installation-m
 Linux
 -----
 
-We assume you plan to run Dataverse on Linux and we recommend RHEL/CentOS, which is the Linux distribution tested by the Dataverse development team. Please be aware that while el8 (RHEL/CentOS 8) is the recommended platform, the steps below were orginally written for el6 and may need to be updated (please feel free to make a pull request!).
+We assume you plan to run your Dataverse installation on Linux and we recommend RHEL/CentOS, which is the Linux distribution tested by the Dataverse Project team. Please be aware that while el8 (RHEL/CentOS 8) is the recommended platform, the steps below were orginally written for el6 and may need to be updated (please feel free to make a pull request!).
 
 Java
 ----
 
-Dataverse requires Java SE 8 (8u74/JDK 1.8.0u74 or higher).
+The Dataverse Software requires Java SE 11 (or higher).
 
 Installing Java
 ===============
 
-Dataverse should run fine with only the Java Runtime Environment (JRE) installed, but installing the Java Development Kit (JDK) is recommended so that useful tools for troubleshooting production environments are available. We recommend using Oracle JDK or OpenJDK.
+The Dataverse Software should run fine with only the Java Runtime Environment (JRE) installed, but installing the Java Development Kit (JDK) is recommended so that useful tools for troubleshooting production environments are available. We recommend using Oracle JDK or OpenJDK.
 
 The Oracle JDK can be downloaded from http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
 On a RHEL/CentOS, install OpenJDK (devel version) using yum::
 
-	# yum install java-1.8.0-openjdk-devel
+	# sudo yum install java-11-openjdk
 
-If you have multiple versions of Java installed, Java 8 should be the default when ``java`` is invoked from the command line. You can test this by running ``java -version``.
+If you have multiple versions of Java installed, Java 11 should be the default when ``java`` is invoked from the command line. You can test this by running ``java -version``.
 
-On RHEL/CentOS you can make Java 8 the default with the ``alternatives`` command, having it prompt you to select the version of Java from a list::
+On RHEL/CentOS you can make Java 11 the default with the ``alternatives`` command, having it prompt you to select the version of Java from a list::
 
         # alternatives --config java
 
-If you don't want to be prompted, here is an example of the non-interactive invocation::
-
-        # alternatives --set java /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
 
 .. _payara:
 
@@ -52,7 +49,7 @@ Payara 5.2020.6 is recommended. Newer versions might work fine, regular updates 
 Installing Payara
 =================
 
-**Note:** The Dataverse installer need not be run as root, and it is recommended that Payara not run as root either. We suggest the creation of a "dataverse" service account for this purpose::
+**Note:** The Dataverse Software installer need not be run as root, and it is recommended that Payara not run as root either. We suggest the creation of a "dataverse" service account for this purpose::
 
 	# useradd dataverse
 
@@ -81,13 +78,13 @@ This recommendation comes from http://www.c2b2.co.uk/middleware-blog/glassfish-4
 Launching Payara on System Boot
 ===============================
 
-The Dataverse installation script will start Payara if necessary, but you may find the following scripts helpful to launch Payara start automatically on boot. They were originally written for Glassfish but have been adjusted for Payara.
+The Dataverse Software installation script will start Payara if necessary, but you may find the following scripts helpful to launch Payara start automatically on boot. They were originally written for Glassfish but have been adjusted for Payara.
 
 - This :download:`Systemd file<../_static/installation/files/etc/systemd/payara.service>` may be serve as a reference for systems using Systemd (such as RHEL/CentOS 7 or Ubuntu 16+)
 - This :download:`init script<../_static/installation/files/etc/init.d/payara.init.service>` may be useful for RHEL/CentOS 6 or Ubuntu >= 14 if you're using a Payara service account, or
 - This :download:`Payara init script <../_static/installation/files/etc/init.d/payara.init.root>` may be helpful if you're just going to run Payara as root (not recommended).
 
-It is not necessary for Payara to be running before you execute the Dataverse installation script; it will start Payara for you.
+It is not necessary for Payara to be running before you execute the Dataverse Software installation script; it will start Payara for you.
 
 Please note that you must run Payara in an English locale. If you are using something like ``LANG=de_DE.UTF-8``, ingest of tabular data will fail with the message "RoundRoutines:decimal separator no in right place".
 
@@ -119,10 +116,10 @@ The above steps are specific to RHEL/CentOS 7. For RHEL/CentOS 8 you must instal
 	# systemctl start postgresql-10
 	# systemctl enable postgresql-10
 
-Note that the Dataverse installer includes its own Postgres JDBC driver. If you choose to install the newest version of Postgres (12 as of this writing), you may need to grab a current JDBC driver from https://jdbc.postgresql.org/download.html before launching the install script.
+Note that the Dataverse Software installer includes its own Postgres JDBC driver. If you choose to install the newest version of Postgres (12 as of this writing), you may need to grab a current JDBC driver from https://jdbc.postgresql.org/download.html before launching the install script.
 
-Configuring Database Access for the Dataverse Application (and the Dataverse Installer)
-=======================================================================================
+Configuring Database Access for the Dataverse Installation (and the Dataverse Software Installer)
+=================================================================================================
 
 - The application and the installer script will be connecting to PostgreSQL over TCP/IP, using password authentication. In this section we explain how to configure PostgreSQL to accept these connections.
 
@@ -134,14 +131,14 @@ Configuring Database Access for the Dataverse Application (and the Dataverse Ins
   Once you are done with the prerequisites and run the installer script (documented here: :doc:`installation-main`) it will ask you to enter the address of the Postgres server. Simply accept the default value ``127.0.0.1`` there.
 
 
-- The Dataverse installer script will need to connect to PostgreSQL **as the admin user**, in order to create and set up the database that the Dataverse will be using. If for whatever reason it is failing to connect (for example, if you don't know/remember what your Postgres admin password is), you may choose to temporarily disable all the access restrictions on localhost connections, by changing the above line to::
+- The Dataverse Software installer script will need to connect to PostgreSQL **as the admin user**, in order to create and set up the database that the Dataverse installation will be using. If for whatever reason it is failing to connect (for example, if you don't know/remember what your Postgres admin password is), you may choose to temporarily disable all the access restrictions on localhost connections, by changing the above line to::
 
   	host all all 127.0.0.1/32 trust
 
   Note that this rule opens access to the database server **via localhost only**. Still, in a production environment, this may constitute a security risk. So you will likely want to change it back to "md5" once the installer has finished.
 
 
-- If the Dataverse application is running on a different server, you will need to add a new entry to the ``pg_hba.conf`` granting it access by its network address::
+- If the Dataverse installation is running on a different server, you will need to add a new entry to the ``pg_hba.conf`` granting it access by its network address::
 
         host all all [ADDRESS]      255.255.255.255 md5
 
@@ -164,12 +161,12 @@ Configuring Database Access for the Dataverse Application (and the Dataverse Ins
 Solr
 ----
 
-The Dataverse search index is powered by Solr.
+The Dataverse Software search index is powered by Solr.
 
 Supported Versions
 ==================
 
-Dataverse has been tested with Solr version 7.7.2. Future releases in the 7.x series are likely to be compatible; however, this cannot be confirmed until they are officially tested. Major releases above 7.x (e.g. 8.x) are not supported.
+The Dataverse Software has been tested with Solr version 7.7.2. Future releases in the 7.x series are likely to be compatible; however, this cannot be confirmed until they are officially tested. Major releases above 7.x (e.g. 8.x) are not supported.
 
 Installing Solr
 ===============
@@ -194,9 +191,9 @@ You should already have a "dvinstall.zip" file that you downloaded from https://
         cp /tmp/dvinstall/schema*.xml /usr/local/solr/solr-7.7.2/server/solr/collection1/conf
         cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-7.7.2/server/solr/collection1/conf
 
-Note: Dataverse has customized Solr to boost results that come from certain indexed elements inside Dataverse, for example prioritizing results from Dataverses over Datasets. If you would like to remove this, edit your ``solrconfig.xml`` and remove the ``<str name="qf">`` element and its contents. If you have ideas about how this boosting could be improved, feel free to contact us through our Google Group https://groups.google.com/forum/#!forum/dataverse-dev .
+Note: The Dataverse Project team has customized Solr to boost results that come from certain indexed elements inside the Dataverse installation, for example prioritizing results from Dataverse collections over Datasets. If you would like to remove this, edit your ``solrconfig.xml`` and remove the ``<str name="qf">`` element and its contents. If you have ideas about how this boosting could be improved, feel free to contact us through our Google Group https://groups.google.com/forum/#!forum/dataverse-dev .
 
-Dataverse requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-7.7.2/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
+A Dataverse installation requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-7.7.2/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
 
 Solr will warn about needing to increase the number of file descriptors and max processes in a production environment but will still run with defaults. We have increased these values to the recommended levels by adding ulimit -n 65000 to the init script, and the following to ``/etc/security/limits.conf``::
 
@@ -243,7 +240,7 @@ Our sample init script and systemd service file linked above tell Solr to only l
 
 It is **very important** not to allow direct access to the Solr API from outside networks! Otherwise, any host that can reach the Solr port (8983 by default) can add or delete data, search unpublished data, and even reconfigure Solr. For more information, please see https://lucene.apache.org/solr/guide/7_3/securing-solr.html. A particularly serious security issue that has been identified recently allows a potential intruder to remotely execute arbitrary code on the system. See `RCE in Solr via Velocity Template <https://github.com/veracode-research/solr-injection#7-cve-2019-xxxx-rce-via-velocity-template-by-_s00py>`_ for more information.
 
-If you're running your Dataverse instance across multiple service hosts you'll want to remove the jetty.host argument (``-j jetty.host=127.0.0.1``) from the startup command line, but make sure Solr is behind a firewall and only accessible by the Dataverse web application host(s), by specific ip address(es).
+If you're running your Dataverse installation across multiple service hosts you'll want to remove the jetty.host argument (``-j jetty.host=127.0.0.1``) from the startup command line, but make sure Solr is behind a firewall and only accessible by the Dataverse installation host(s), by specific ip address(es).
 
 We additionally recommend that the Solr service account's shell be disabled, as it isn't necessary for daily operation::
 
@@ -265,7 +262,7 @@ jq
 Installing jq
 =============
 
-``jq`` is a command line tool for parsing JSON output that is used by the Dataverse installation script. It is available in the EPEL repository::
+``jq`` is a command line tool for parsing JSON output that is used by the Dataverse Software installation script. It is available in the EPEL repository::
 
 	# yum install epel-release
 	# yum install jq
@@ -280,7 +277,7 @@ or you may install it manually::
 ImageMagick
 -----------
 
-Dataverse uses `ImageMagick <https://www.imagemagick.org>`_ to generate thumbnail previews of PDF files. This is an optional component, meaning that if you don't have ImageMagick installed, there will be no thumbnails for PDF files, in the search results and on the dataset pages; but everything else will be working. (Thumbnail previews for non-PDF image files are generated using standard Java libraries and do not require any special installation steps).
+The Dataverse Software uses `ImageMagick <https://www.imagemagick.org>`_ to generate thumbnail previews of PDF files. This is an optional component, meaning that if you don't have ImageMagick installed, there will be no thumbnails for PDF files, in the search results and on the dataset pages; but everything else will be working. (Thumbnail previews for non-PDF image files are generated using standard Java libraries and do not require any special installation steps).
 
 Installing and configuring ImageMagick
 ======================================
@@ -303,15 +300,12 @@ If the installed location of the convert executable is different from ``/usr/bin
 R
 -
 
-Dataverse uses `R <https://https://cran.r-project.org/>`_ to handle
+The Dataverse Software uses `R <https://https://cran.r-project.org/>`_ to handle
 tabular data files. The instructions below describe a **minimal** R
 installation. It will allow you to ingest R (.RData) files as tabular
-data; to export tabular data as .RData files; and to run `Data
-Explorer <https://github.com/scholarsportal/Dataverse-Data-Explorer>`_
-(specifically, R is used to generate .prep metadata files that Data
-Explorer uses).  R can be considered an optional component, meaning
+data and to export tabular data as .RData files.  R can be considered an optional component, meaning
 that if you don't have R installed, you will still be able to run and
-use Dataverse - but the functionality specific to tabular data
+use the Dataverse Software - but the functionality specific to tabular data
 mentioned above will not be available to your users.  **Note** that if
 you choose to also install `TwoRavens
 <https://github.com/IQSS/TwoRavens>`_, it will require some extra R
@@ -373,7 +367,7 @@ Install them following the normal R package installation procedures. For example
 Rserve
 ======
 
-Dataverse uses `Rserve <https://rforge.net/Rserve/>`_ to communicate
+The Dataverse Software uses `Rserve <https://rforge.net/Rserve/>`_ to communicate
 to R. Rserve is installed as a library package, as described in the
 step above. It runs as a daemon process on the server, accepting
 network connections on a dedicated port. This requires some extra
@@ -416,14 +410,14 @@ You should already have the following 4 JVM options added to your
 If you have changed the password, make sure it is correctly specified
 in the :fixedwidthplain:`dataverse.rserve.password` option above.  If
 Rserve is running on a host that's different from your Dataverse
-server, change the :fixedwidthplain:`dataverse.rserve.host` option
+installation, change the :fixedwidthplain:`dataverse.rserve.host` option
 above as well (and make sure the port 6311 on the Rserve host is not
-firewalled from your Dataverse host).
+firewalled from your Dataverse installation host).
 
 Counter Processor
 -----------------
 
-Counter Processor is required to enable Make Data Count metrics in Dataverse. See the :doc:`/admin/make-data-count` section of the Admin Guide for a description of this feature. Counter Processor is open source and we will be downloading it from https://github.com/CDLUC3/counter-processor
+Counter Processor is required to enable Make Data Count metrics in a Dataverse installation. See the :doc:`/admin/make-data-count` section of the Admin Guide for a description of this feature. Counter Processor is open source and we will be downloading it from https://github.com/CDLUC3/counter-processor
 
 Installing Counter Processor
 ============================

@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import static java.lang.Thread.sleep;
+import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1468,6 +1469,96 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
     }
     
+    /*
+        First test for the new "crawlable file access" API (#7084)
+    */    
+    @Test
+    public void test_CrawlableAccessToDatasetFiles() {
+        msgt("test_test_CrawlableAccessToDatasetFiles");
+         // Create user
+        String apiToken = createUserGetToken();
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+
+        // Create Dataset
+        String datasetId = createDatasetGetId(dataverseAlias, apiToken).toString();
+        
+        msgt("dataset id: "+datasetId);
+       
+        String testFileName = "dataverseproject.png";
+        String pathToFile = "src/main/webapp/resources/images/" + testFileName;
+        String description = "test file 1";
+        String folderName = "subfolder";
+
+        JsonObjectBuilder json = Json.createObjectBuilder()
+                .add("description", description)
+                .add("directoryLabel", folderName);
+
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId, pathToFile, json.build(), apiToken);
+
+        msgt("Server response: " + addResponse.prettyPrint());
+      
+        addResponse.then().assertThat()
+                .body("status", equalTo(AbstractApiBean.STATUS_OK))
+                .body("data.files[0].label", equalTo(testFileName))
+                .body("data.files[0].directoryLabel", equalTo(folderName))
+                .body("data.files[0].description", equalTo(description))
+                .statusCode(OK.getStatusCode());
+        
+        String dataFileId = addResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+        //msgt("datafile id: "+dataFileId);
+        
+        // TODO: (potentially?)
+        // maybe upload a few more files, in more folders, 
+        // and try an actual recursive crawl of a full tree - ?
+                
+        // Make some calls to the "/dirindex API:
+        // (note that this API outputs HTML!)
+        
+        // Expected values in the output: 
+        String expectedTitleTopFolder = "Index of folder /";
+        String expectedLinkTopFolder = folderName + "/";
+        String expectedLinkAhrefTopFolder = "/api/datasets/"+datasetId+"/dirindex/?version=:draft&folder=subfolder";
+        
+        String expectedTitleSubFolder = "Index of folder /" + folderName;
+        String expectedLinkAhrefSubFolder = "/api/access/datafile/" + folderName + "/" + dataFileId;
+        
+        // ... with no folder specified: 
+        // (with just the one file above, this should show one folder only - "subfolder", and no files)
+        Response fileAccessResponse = UtilIT.getCrawlableFileAccess(datasetId, "", apiToken);
+        fileAccessResponse.then().assertThat().statusCode(OK.getStatusCode()).contentType("text/html");
+
+        String htmlTitle = fileAccessResponse.getBody().htmlPath().getString("html.head.title");
+        assertEquals(expectedTitleTopFolder, htmlTitle);
+        
+        String htmlCrawlLink = fileAccessResponse.getBody().htmlPath().getString("html.body.table.tr[2].td[0]");
+        //msgt("html crawl link: "+htmlCrawlLink);
+        assertEquals(expectedLinkTopFolder, htmlCrawlLink);
+        
+        String htmlCrawlLinkAhref = fileAccessResponse.getBody().htmlPath().get("html.body.table.tr[2].td[0].a.@href").toString();
+        //msgt("html crawl link href: "+htmlCrawlLinkAhref);
+        assertEquals(expectedLinkAhrefTopFolder, htmlCrawlLinkAhref);
+
+        
+        // ... and with the folder name "subfolder" specified: 
+        // (should result in being shown one access link to the file above, no folders)
+        fileAccessResponse = UtilIT.getCrawlableFileAccess(datasetId.toString(), folderName, apiToken);
+        fileAccessResponse.then().assertThat().statusCode(OK.getStatusCode()).contentType("text/html");
+
+        htmlTitle = fileAccessResponse.getBody().htmlPath().getString("html.head.title");
+        assertEquals(expectedTitleSubFolder, htmlTitle);
+        
+        htmlCrawlLink = fileAccessResponse.getBody().htmlPath().getString("html.body.table.tr[2].td[0]");
+        //msgt("html crawl link: "+htmlCrawlLink);
+        // this should be the name of the test file above:
+        assertEquals(testFileName, htmlCrawlLink);
+        
+        htmlCrawlLinkAhref = fileAccessResponse.getBody().htmlPath().get("html.body.table.tr[2].td[0].a.@href").toString();
+        //msgt("html crawl link href: "+htmlCrawlLinkAhref);
+        assertEquals(expectedLinkAhrefSubFolder, htmlCrawlLinkAhref);
+
+    }
     
     private void msg(String m){
         System.out.println(m);

@@ -94,7 +94,7 @@
                                                 <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released and FilePage.fileMetadata.datasetVersion.draft}" 
                                                       data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
                                             </div>
-                                            <div class="pull-left row col-sm-8 padding-none">
+                                            <div class="pull-left row col-sm-9 padding-none">
                                                 <div class="col-sm-3 col-md-4 col-lg-3 btn-group margin-bottom citation-download" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                                     <button type="button" class="btn btn-link dropdown-toggle padding-none downloadCitation" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                          #{bundle['file.cite.file.downloadBtn']} <span class="caret"></span>
@@ -140,7 +140,7 @@
                                                 <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}" 
                                                       data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
                                             </div>
-                                            <div class="pull-left row col-sm-8 padding-none">
+                                            <div class="pull-left row col-sm-9 padding-none">
                                                 <div class="col-sm-3 col-md-4 col-lg-3 btn-group margin-bottom citation-download" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                                     <button type="button" class="btn btn-link dropdown-toggle padding-none downloadCitation" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                         #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
@@ -260,7 +260,7 @@
                                     <!-- END: ActionButtonBlock -->
                                 </div>
 
-                                <div class="col-xs-12 col-sm-12 col-md-4 col-lg-3 pull-right margin-bottom" 
+                                <div style="clear:right;" class="col-xs-12 col-sm-12 col-md-4 col-lg-3 pull-right margin-bottom" 
                                      jsf:rendered="#{!(widgetWrapper.widgetView or FilePage.fileMetadata.dataFile.filePackage or FilePage.fileMetadata.datasetVersion.deaccessioned)}">
                                     <!-- Metrics -->
                                     <div id="metrics-block">
@@ -367,7 +367,7 @@
                                     <!-- END: Preview Button Group -->
                                     <div class="btn-group" jsf:rendered="#{FilePage.toolsWithPreviews.size() > 0 and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}">
                                         <!-- Modular/Configured Explore Tool -->
-                                        <h:commandLink rendered="#{!FilePage.selectedTool.worldMapTool and !downloadPopupRequired}" 
+                                        <h:commandLink rendered="#{!downloadPopupRequired}" 
                                                          type="submit"
                                                          styleClass="btn btn-default #{(FilePage.fileMetadata.dataFile.ingestInProgress) ? 'disabled' : ''}"
                                                          disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
@@ -378,7 +378,7 @@
                                                 <f:param value="#{FilePage.selectedTool.getDisplayNameLang()}"/>
                                             </h:outputFormat>
                                         </h:commandLink>
-                                        <p:commandLink rendered="#{!FilePage.selectedTool.worldMapTool and downloadPopupRequired}"
+                                        <p:commandLink rendered="#{downloadPopupRequired}"
                                                          action="#{FilePage.guestbookResponseService.modifyDatafileAndFormat(FilePage.guestbookResponse, FilePage.fileMetadata, 'externalTool', FilePage.selectedTool)}"
                                                          styleClass="btn btn-default"
                                                          disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}"
@@ -392,32 +392,6 @@
                                                 <f:param value="#{FilePage.selectedTool.getDisplayNameLang()}"/>
                                             </h:outputFormat>
                                         </p:commandLink>
-                                        <!-- Modular/Configured Explore Tool -->
-                                        <!-- WorldMap Explore -->
-                                        <h:commandLink rendered="#{FilePage.selectedTool.worldMapTool and !downloadPopupRequired}" 
-                                                       styleClass="btn btn-default #{(FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
-                                                       disabled="#{(FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
-                                                       action="#{FilePage.fileDownloadService.startWorldMapDownloadLink(FilePage.guestbookResponse, FilePage.fileMetadata )}" target="_blank" rel="noopener">
-                                            <span class="glyphicon glyphicon-equalizer"></span> 
-                                            <h:outputFormat value="#{bundle['file.previewTab.exploreBtn']}">
-                                                <f:param value="#{bundle.explore}"/>
-                                                <f:param value="#{bundle['file.mapData.worldMap']}"/>
-                                            </h:outputFormat>
-                                        </h:commandLink>
-                                        <p:commandLink rendered="#{FilePage.selectedTool.worldMapTool and downloadPopupRequired}"
-                                                         styleClass="btn btn-default #{(FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload) ? 'disabled' : ''}"
-                                                         disabled="#{FilePage.fileMetadata.dataFile.ingestInProgress  or lockedFromDownload}"
-                                                         process="@this"
-                                                         action="#{FilePage.guestbookResponseService.modifyDatafileAndFormat(FilePage.guestbookResponse, FilePage.fileMetadata, 'worldMap')}"
-                                                         update="@widgetVar(downloadPopup)"
-                                                         oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                                            <span class="glyphicon glyphicon-equalizer"></span> 
-                                            <h:outputFormat value="#{bundle['file.previewTab.exploreBtn']}">
-                                                <f:param value="#{bundle.explore}"/>
-                                                <f:param value="#{bundle['file.mapData.worldMap']}"/>
-                                            </h:outputFormat>
-                                        </p:commandLink>
-                                        <!-- END WorldMap Explore -->
                                     </div>
                                 </div>
                                 <!-- FRAME EXTERNAL TOOL EMBED -->
@@ -469,137 +443,123 @@
                                         #{bundle['file.metadataTab.fileMetadata.header']} &#160;<span class="glyphicon glyphicon-chevron-up"/>
                                     </div>
                                     <div id="panelCollapseFMD" class="collapse in">
-                                        <div class="panel-body">
-                                            <div class="form-group">
-                                                <label for="preview-square" class="col-sm-3 control-label">
-                                                    #{bundle['file.metadata.preview']}
-                                                </label>
-                                                <div id="file-preview-icon-block" class="col-sm-9">
-                                                    <div id="border-block" style="border:0;">
-                                                        <div id="preview-square">
-                                                            <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(FilePage.fileMetadata.dataFile)} text-muted" jsf:rendered="#{!FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
-                                                            <p:graphicImage styleClass="img-responsive" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" 
-                                                                            alt="#{FilePage.fileMetadata.label}" rendered="#{FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div id="fileCategoriesBlock" class="form-group" jsf:rendered="#{!(empty FilePage.fileMetadata.categoriesByName) or !(empty FilePage.fileMetadata.dataFile.tags)}">
-                                                <label for="file-tags" class="col-sm-3 control-label">
-                                                    #{bundle['file.metadata.filetags']}
-                                                </label>
-                                                <div id="file-tags" class="col-sm-9">
-                                                    <ui:repeat value="#{FilePage.fileMetadata.categoriesByName}" var="tag" rendered="#{!(empty FilePage.fileMetadata.categoriesByName)}">
-                                                        <h:outputText value="#{tag}" styleClass="label label-default"/>
-                                                    </ui:repeat>
-                                                    <ui:repeat value="#{FilePage.fileMetadata.dataFile.tags}" var="tag">
-                                                        <h:outputText value="#{tag.typeLabel}" styleClass="label label-info"/>
-                                                    </ui:repeat>
-                                                </div>
-                                            </div>
-                                            <div class="form-group" jsf:rendered="#{FilePage.file.identifier != null}">
-                                                <label for="metadata_persistentId" class="col-sm-3 control-label">
-                                                    #{bundle['file.metadata.persistentId']}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    #{FilePage.file.getGlobalId()}
-                                                </div>
-                                            </div>
-                                            <!--Only show Public download url if identifier is available -->
-                                            <div class="form-group" jsf:rendered="#{FilePage.publiclyDownloadable and !FilePage.fileMetadata.dataFile.filePackage}">
-                                                <label class="col-sm-3 control-label">                                                   
-                                                   #{bundle['file.metadataTab.fileMetadata.downloadUrl.label']}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    <p class="help-block">
-                                                        <h:outputFormat value="#{bundle['file.metadataTab.fileMetadata.downloadUrl.info']}" escape="false">
-                                                            <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                                            <f:param value="#{systemConfig.guidesVersion}"/>
-                                                        </h:outputFormat>
-                                                    </p>
-                                                    <code><h:outputText value="#{FilePage.publicDownloadUrl}"/></code>
-                                                </div>
-                                            </div>
-                                            <div class="form-group" jsf:rendered="#{!(empty FilePage.file.unf)}">
-                                                <label class="col-sm-3 control-label">
-                                                   #{bundle['file.metadataTab.fileMetadata.unf.label']}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.file.unf}"/>
-                                                </div>
-                                            </div>
-                                            <div class="form-group" jsf:rendered="#{!(empty FilePage.file.checksumValue)}">
-                                                <label class="col-sm-3 control-label">                                                   
-                                                   #{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.file.checksumValue}"/>
-                                                </div>
-                                            </div>
-                                            <div class="form-group" jsf:rendered="#{FilePage.file.released}">
-                                                <label class="col-sm-3 control-label">
-                                                   #{bundle['file.metadataTab.fileMetadata.publicationDate.label']}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.file.publicationDateFormattedYYYYMMDD}"/>
-                                                </div>
-                                            </div>
-                                            <div class="form-group" jsf:rendered="#{!(empty FilePage.file.friendlySize)}">
-                                                <label class="col-sm-3 control-label">
-                                                   #{bundle['file.metadataTab.fileMetadata.size.label']}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.file.friendlySize}"/>
-                                                </div>
-                                            </div>
-                                            <div class="form-group" jsf:rendered="#{!(empty FilePage.file.friendlyType)}">
-                                                <label class="col-sm-3 control-label">
-                                                   #{bundle['file.metadataTab.fileMetadata.type.label']}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.file.friendlyType}"/>
-                                                </div>
-                                            </div>
-                                            <div class="form-group" jsf:rendered="#{!(empty FilePage.file.dataTable.varQuantity)}">
-                                                <label class="col-sm-3 control-label">
-                                                   #{bundle['file.metaData.dataFile.dataTab.variables']}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.file.dataTable.varQuantity}"/>
-                                                </div>
-                                            </div>
-                                            <div class="form-group" jsf:rendered="#{!(empty FilePage.file.dataTable.caseQuantity)}">
-                                                <label class="col-sm-3 control-label">
-                                                   #{bundle['file.metaData.dataFile.dataTab.observations']}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.file.dataTable.caseQuantity}"/>
-                                                </div>
-                                            </div>
-                                            <div class="form-group" jsf:rendered="#{!empty FilePage.fileMetadata.directoryLabel}">
-                                                <label class="col-sm-3 control-label">
-                                                   #{bundle['file.metadataTab.fileMetadata.hierarchy.label']}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.fileMetadata.directoryLabel}/"/>
-                                                </div>
-                                            </div>
-                                            <div class="form-group" jsf:rendered="#{!(empty FilePage.fileMetadata.description)}">
-                                                <label class="col-sm-3 control-label">
-                                                   #{bundle['file.metadataTab.fileMetadata.description.label']}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.fileMetadata.description}"/>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <label class="col-sm-3 control-label">
-                                                   #{bundle['file.metadataTab.fileMetadata.depositDate.label']}
-                                                </label>
-                                                <div class="col-sm-9">
-                                                    <h:outputText value="#{FilePage.file.createDateFormattedYYYYMMDD}"/> 
-                                                </div>
-                                            </div>
+                                        <div class="panel-body metadata-container">
+                                            <table class="metadata">
+                                                <tbody>
+                                                    <tr id="filePreviewBlock">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadata.preview']}
+                                                        </th>
+                                                        <td>
+                                                            <div id="file-preview-icon-block">
+                                                                <div id="border-block" style="border:0;">
+                                                                    <div id="preview-square">
+                                                                        <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(FilePage.fileMetadata.dataFile)} text-muted" jsf:rendered="#{!FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
+                                                                        <p:graphicImage styleClass="img-responsive" value="/api/access/datafile/#{FilePage.fileId}?imageThumb=400" 
+                                                                                        alt="#{FilePage.fileMetadata.label}" rendered="#{FilePage.isThumbnailAvailable(FilePage.fileMetadata)}"/>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr id="fileCategoriesBlock" jsf:rendered="#{!(empty FilePage.fileMetadata.categoriesByName) or !(empty FilePage.fileMetadata.dataFile.tags)}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadata.filetags']}
+                                                        </th>
+                                                        <td>
+                                                            <div id="file-tags">
+                                                                <ui:repeat value="#{FilePage.fileMetadata.categoriesByName}" var="tag" rendered="#{!(empty FilePage.fileMetadata.categoriesByName)}">
+                                                                    <h:outputText value="#{tag}" styleClass="label label-default"/>
+                                                                </ui:repeat>
+                                                                <ui:repeat value="#{FilePage.fileMetadata.dataFile.tags}" var="tag">
+                                                                    <h:outputText value="#{tag.typeLabel}" styleClass="label label-info"/>
+                                                                </ui:repeat>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr id="filePersistentIdBlock" jsf:rendered="#{FilePage.file.identifier != null}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadata.persistentId']}
+                                                        </th>
+                                                        <td>#{FilePage.file.getGlobalId()}</td>
+                                                    </tr>
+                                                    <tr id="fileDownloadUrlBlock" jsf:rendered="#{FilePage.publiclyDownloadable and !FilePage.fileMetadata.dataFile.filePackage}">
+                                                        <!--Only show Public download url if identifier is available -->
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.downloadUrl.label']}
+                                                        </th>
+                                                        <td>
+                                                            <p class="help-block">
+                                                                <h:outputFormat value="#{bundle['file.metadataTab.fileMetadata.downloadUrl.info']}" escape="false">
+                                                                    <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                                                    <f:param value="#{systemConfig.guidesVersion}"/>
+                                                                </h:outputFormat>
+                                                            </p>
+                                                            <code><h:outputText value="#{FilePage.publicDownloadUrl}"/></code>
+                                                        </td>
+                                                    </tr>
+                                                    <tr id="fileUnfBlock" jsf:rendered="#{!(empty FilePage.file.unf)}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.unf.label']}
+                                                        </th>
+                                                        <td>#{FilePage.file.unf}</td>
+                                                    </tr>
+                                                    <tr id="fileChecksumBlock" jsf:rendered="#{!(empty FilePage.file.checksumValue)}">
+                                                        <th scope="row">
+                                                            #{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType}
+                                                        </th>
+                                                        <td class="checksum-block">#{FilePage.file.checksumValue}</td>
+                                                    </tr>
+                                                    <tr id="filePublicationDateBlock" jsf:rendered="#{FilePage.file.released}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.publicationDate.label']}
+                                                        </th>
+                                                        <td>#{FilePage.file.publicationDateFormattedYYYYMMDD}</td>
+                                                    </tr>
+                                                    <tr id="fileSizeBlock" jsf:rendered="#{!(empty FilePage.file.friendlySize)}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.size.label']}
+                                                        </th>
+                                                        <td>#{FilePage.file.friendlySize}</td>
+                                                    </tr>
+                                                    <tr id="fileTypeBlock" jsf:rendered="#{!(empty FilePage.file.friendlyType)}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.type.label']}
+                                                        </th>
+                                                        <td>#{FilePage.file.friendlyType}</td>
+                                                    </tr>
+                                                    <tr id="fileVariablesBlock" jsf:rendered="#{!(empty FilePage.file.dataTable.varQuantity)}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metaData.dataFile.dataTab.variables']}
+                                                        </th>
+                                                        <td>#{FilePage.file.dataTable.varQuantity}</td>
+                                                    </tr>
+                                                    <tr id="fileObservationsBlock" jsf:rendered="#{!(empty FilePage.file.dataTable.caseQuantity)}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metaData.dataFile.dataTab.observations']}
+                                                        </th>
+                                                        <td>#{FilePage.file.dataTable.caseQuantity}</td>
+                                                    </tr>
+                                                    <tr id="filePathBlock" jsf:rendered="#{!empty FilePage.fileMetadata.directoryLabel}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.hierarchy.label']}
+                                                        </th>
+                                                        <td>#{FilePage.fileMetadata.directoryLabel}/</td>
+                                                    </tr>
+                                                    <tr id="fileDescriptionBlock" jsf:rendered="#{!(empty FilePage.fileMetadata.description)}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.description.label']}
+                                                        </th>
+                                                        <td>#{FilePage.fileMetadata.description}</td>
+                                                    </tr>
+                                                    <tr id="fileDepositDateBlock">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.depositDate.label']}
+                                                        </th>
+                                                        <td>#{FilePage.file.createDateFormattedYYYYMMDD}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
                                 </div>
