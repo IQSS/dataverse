@@ -27,8 +27,8 @@ This release updates the citation .tsv file that is distributed with the softwar
 
 2. Update any custom metadata blocks (if used):
 
-For any subfield that has a required value of TRUE, find the corresponding parent field and change its required value to TRUE.
+   For any subfield that has a required value of TRUE, find the corresponding parent field and change its required value to TRUE.
 
-Note: As there is an accompanying Flyway script that updates the values directly in the database, you do not need to reload these metadata .tsv files via API, unless you make additional changes, e.g set some compound fields to be conditionally required.
+   Note: As there is an accompanying Flyway script that updates the values directly in the database, you do not need to reload these metadata .tsv files via API, unless you make additional changes, e.g set some compound fields to be conditionally required.
 
 
