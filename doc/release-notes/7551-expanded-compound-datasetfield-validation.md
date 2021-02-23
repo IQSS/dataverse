@@ -14,7 +14,7 @@ Going forward:
 - For required, the parent compound field would be required = true and at least one child would be required = true.
 - For conditionally required, the parent compound field would be required = false and at least one child would be required = true.
 
-This release updates the citation .tsv file that us distributed with the software for the required parent compound fields (e.g. author), as well as sets Producer Name to be conditionally required. No other distributed .tsv files were updated, as they did not have any required compound values.
+This release updates the citation .tsv file that is distributed with the software for the required parent compound fields (e.g. author), as well as sets Producer Name to be conditionally required. No other distributed .tsv files were updated, as they did not have any required compound values.
 
 **If you have created any custom metadata .tsv files**, you will need to make the same (type of) changes there.
 
