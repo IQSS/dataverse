@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -142,14 +143,6 @@ public class FileDownloadHelper implements java.io.Serializable {
             fileDownloadService.writeGuestbookResponseRecord(guestbookResponse);
     }
 
-    public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
-         
-        guestbookResponse.setDownloadtype("WorldMap");
-        String retVal = fileDownloadService.startWorldMapDownloadLink(guestbookResponse, fmd);
-        PrimeFaces.current().executeScript("PF('downloadPopup').hide()");
-        return retVal;
-    }
-
      /**
       * Writes a guestbook entry for either popup scenario: guestbook or terms.
       */
@@ -196,12 +189,6 @@ public class FileDownloadHelper implements java.io.Serializable {
     /**
      *  WARNING: Before calling this, make sure the user has download
      *  permission for the file!!  (See DatasetPage.canDownloadFile())
-     * 
-     * Should there be a Explore WorldMap Button for this file?
-     *   See table in: https://github.com/IQSS/dataverse/issues/1618
-     * 
-     *  (1) Does the file have MapLayerMetadata?
-     *  (2) Are the proper settings in place
      * 
      * @param  fileMetadata
      * @return boolean
@@ -295,6 +282,17 @@ public class FileDownloadHelper implements java.io.Serializable {
         //Called from download button fragment via either dataset page or file page
         // when there's only one file for the access request and there's no pop-up
         processRequestAccess(file, true);        
+    }
+    
+    public void handleCommandLinkClick(FileMetadata fmd){
+        
+        if (FileUtil.isDownloadPopupRequired(fmd.getDatasetVersion())){
+            addFileForRequestAccess(fmd.getDataFile());
+            PrimeFaces.current().executeScript("PF('requestAccessPopup').show()");
+        } else {
+            requestAccess(fmd.getDataFile());
+        }
+
     }
 
      public void requestAccessMultiple(List<DataFile> files) {

@@ -497,7 +497,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         // If content type indicates it's tabular data, spend 2 extra queries 
         // looking up the data table and tabular tags objects:
         
-        if (MIME_TYPE_TSV.equalsIgnoreCase(contentType)) {
+        if (MIME_TYPE_TSV.equalsIgnoreCase(contentType) || MIME_TYPE_TSV_ALT.equalsIgnoreCase(contentType)) {
             Object[] dtResult;
             try {
                 dtResult = (Object[]) em.createNativeQuery("SELECT ID, UNF, CASEQUANTITY, VARQUANTITY, ORIGINALFILEFORMAT, ORIGINALFILESIZE FROM dataTable WHERE DATAFILE_ID = " + id).getSingleResult();

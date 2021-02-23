@@ -468,7 +468,7 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
 
     public List<Dataset> findDatasetsThisIdHasLinkedTo(long dataverseId) {
-        return datasetLinkingService.findDatasetsThisDataverseIdHasLinkedTo(dataverseId);
+        return datasetLinkingService.findLinkedDatasets(dataverseId);
     }
 
     public List<Dataverse> findDataversesThatLinkToThisDatasetId(long datasetId) {
