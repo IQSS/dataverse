@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonReader;
@@ -70,6 +71,7 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
+@Stateless
 @Path("files")
 public class Files extends AbstractApiBean {
     
