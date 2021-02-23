@@ -2,7 +2,7 @@
 
 Prior to this release, when defining metadata for compound fields (via their dataset field types), fields could be either be optional or required, i.e. if required you must always have (at least one) value for that field. For example, Author Name being required means you must have at least one Author with an nonempty Author name.
 
-In order to support more robust metadata (and specifically to resolve #7551), we need to allow a third case: Conditionally Required, that is, the field is required if and only if any of its "sibling" fields are required. For example, a user does not have to enter a Producer, but if they do, they have to enter a Producer Name.
+In order to support more robust metadata (and specifically to resolve #7551), we need to allow a third case: Conditionally Required, that is, the field is required if and only if any of its "sibling" fields are entered. For example, Producer Name is now conditionally required in the citation metadata block. A user does not have to enter a Producer, but if they do, they have to enter a Producer Name.
 
 This change required some modifications to how "required" is defined in the metadata .tsv files (for compound fields).
 
@@ -31,3 +31,6 @@ This release updates the citation .tsv file that is distributed with the softwar
 
    Note: As there is an accompanying Flyway script that updates the values directly in the database, you do not need to reload these metadata .tsv files via API, unless you make additional changes, e.g set some compound fields to be conditionally required.
 
+### Use Case
+
+Metadata designers can now set subfields of compound fields as **conditionally required**, that is, the field is required if and only if any of its "sibling" fields are entered. For example, Producer Name is now conditionally required in the citation metadata block. A user does not have to enter a Producer, but if they do, they have to enter a Producer Name.
