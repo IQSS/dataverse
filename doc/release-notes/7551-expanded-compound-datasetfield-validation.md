@@ -14,12 +14,19 @@ Going forward:
 - For required, the parent compound field would be required = true and at least one child would be required = true.
 - For conditionally required, the parent compound field would be required = false and at least one child would be required = true.
 
-This release updates the citation .tsv file that us distributed with the software (no other distributed .tsv file has any required values). **If you have created any custom metadata .tsv files**, you will need to make the same (type of) changes there.
+This release updates the citation .tsv file that us distributed with the software for the required parent compound fields (e.g. author), as well as sets Producer Name to be conditionally required. No other distributed .tsv files were updated, as they did not have any required compound values.
+
+**If you have created any custom metadata .tsv files**, you will need to make the same (type of) changes there.
 
 For any subfield that has a required value of TRUE, find the corresponding parent field and change its required value to TRUE.
 
-Note: The metadata .tsv files do not have to be reloaded via API, as there is an accompanying Flyway script that updates the values directly in the database.
+Note: With the exception of citation.tsv (due to the conditionally required Producer Name), the metadata .tsv files do not have to be reloaded via API, as there is an accompanying Flyway script that updates the values directly in the database.
 
 ### Additional Upgrade Steps
 
 1. Update any custom metadata blocks (if used)
+
+2. Reload Citation Metadata Block:
+
+   `wget https://github.com/IQSS/dataverse/releases/download/v5.4/citation.tsv`
+   `curl http://localhost:8080/api/admin/datasetfield/load -X POST --data-binary @citation.tsv -H "Content-type: text/tab-separated-values"`
