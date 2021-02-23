@@ -1,7 +1,7 @@
 Getting Started with APIs
 =========================
 
-If you are a researcher or curator who wants to automate parts of your workflow, this section should help you get started. The :doc:`intro` section lists resources for other groups who may be interested in Dataverse APIs such as developers of integrations and support teams.
+If you are a researcher or curator who wants to automate parts of your workflow, this section should help you get started. The :doc:`intro` section lists resources for other groups who may be interested in Dataverse Software APIs such as developers of integrations and support teams.
 
 .. contents:: |toctitle|
     :local:
@@ -9,14 +9,14 @@ If you are a researcher or curator who wants to automate parts of your workflow,
 Servers You Can Test With
 -------------------------
 
-Rather than using a production installation of Dataverse, API users are welcome to use http://demo.dataverse.org for testing. You can email support@dataverse.org if you have any trouble with this server.  
+Rather than using a production Dataverse installation, API users are welcome to use http://demo.dataverse.org for testing. You can email support@dataverse.org if you have any trouble with this server.  
 
 If you would rather have full control over your own test server, deployments to AWS, Docker, Vagrant, and more are covered in the :doc:`/developers/index` and the :doc:`/installation/index`.
 
 Getting an API Token
 --------------------
 
-Many Dataverse APIs require an API token.
+Many Dataverse Software APIs require an API token.
 
 Once you have identified a server to test with, create an account, click on your name, and get your API token. For more details, see the :doc:`auth` section.
 
@@ -59,8 +59,8 @@ If you don't like curl, don't have curl, or want to use a different programming 
 Depositing Data
 ---------------
 
-Creating a Dataverse
-~~~~~~~~~~~~~~~~~~~~
+Creating a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 See :ref:`create-dataverse-api`.
 
@@ -74,8 +74,8 @@ Uploading Files
 
 See :ref:`add-file-api`.
 
-Publishing a Dataverse
-~~~~~~~~~~~~~~~~~~~~~~
+Publishing a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 See :ref:`publish-dataverse-api`.
 
@@ -94,8 +94,8 @@ A quick example search for the word "data" is https://demo.dataverse.org/api/sea
 
 See the :doc:`search` section for details.
 
-Finding Recently Published Dataverses, Datasets, and Files
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Finding Recently Published Dataverse Collections, Datasets, and Files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 See :ref:`search-date-range`.
 
@@ -117,8 +117,8 @@ Dataset metadata is available in a variety of formats listed at :ref:`metadata-e
 
 See :ref:`export-dataset-metadata-api`.
 
-Listing the Contents of a Dataverse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Listing the Contents of a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 See :ref:`show-contents-of-a-dataverse-api`.
 
@@ -143,11 +143,11 @@ See :ref:`list-role-assignments-on-a-dataverse-api`.
 Beyond "Getting Started" Tasks
 ------------------------------
 
-In addition to the tasks listed above, Dataverse supports many other operations via API.
+In addition to the tasks listed above, your Dataverse installation supports many other operations via API.
 
 See :ref:`list-of-dataverse-apis` and :ref:`types-of-api-users` to get oriented.
 
-If you're looking for some inspiration for how you can use Dataverse APIs, there are open source projects that integrate with Dataverse listed in the :doc:`apps` section.
+If you're looking for some inspiration for how you can use the Dataverse Software APIs, there are open source projects that integrate with the Dataverse Software listed in the :doc:`apps` section.
 
 Getting Help
 -------------
