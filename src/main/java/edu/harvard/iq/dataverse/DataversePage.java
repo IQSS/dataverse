@@ -511,18 +511,6 @@ public class DataversePage implements java.io.Serializable {
         }
         setEditInputLevel(false);
     }
-    
-    public void toggleInputLevel( Long mdbId, long dsftId){
-        for (MetadataBlock mdb : allMetadataBlocks) {
-            if (mdb.getId().equals(mdbId)) {
-                for (DatasetFieldType dsftTest : mdb.getDatasetFieldTypes()) {
-                    if (dsftTest.getId().equals(dsftId)) {
-                            dsftTest.setRequiredDV(!dsftTest.isRequiredDV());                           
-                    }
-                }
-            }
-        }        
-    }
 
     public void updateInclude(Long mdbId, long dsftId) {
         List<DatasetFieldType> childDSFT = new ArrayList<>();

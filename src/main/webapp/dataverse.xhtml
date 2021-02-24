@@ -287,6 +287,7 @@
                                                         <p:ajax update="@widgetVar(optionBlock)" />
                                                     </input>
                                                     <input type="checkbox" jsf:itemValue="#{mdb}" id="#{mdb.idString}" jsf:value="#{mdb.selected}"
+                                                           jsf:disabled="#{DataversePage.editInputLevel == true}"
                                                            name="mdbSelectOptional" jsf:rendered="#{!mdb.required and !DataversePage.inheritMetadataBlockFromParent}">
                                                         <p:ajax update="@widgetVar(optionBlock)" />
                                                     </input>
@@ -330,8 +331,8 @@
                                                                             </div>
                                                                         </td>
                                                                         <td>
-                                                                            <p:selectOneRadio id="OptionsRadio#{dsft.id}" value="#{dsft.requiredDV}" widgetVar="OptButton#{dsft.id}" disabled ="#{DataversePage.editInputLevel == false}"
-                                                                                              rendered="#{!dsft.hasChildren and !((!dsft.hasChildren  and dsft.required) or (dsft.hasChildren and dsft.hasRequiredChildren))}">
+                                                                            <p:selectOneRadio id="OptionsRadio#{dsft.id}" value="#{dsft.requiredDV}" widgetVar="OptButton#{dsft.id}" disabled ="#{DataversePage.editInputLevel == false}" 
+                                                                                              rendered="#{!dsft.hasChildren and !((!dsft.hasChildren  and dsft.required) or (dsft.hasChildren and dsft.hasRequiredChildren))}" >
                                                                                 <f:selectItems value="#{dsft.optionSelectItems}"/>
                                                                             </p:selectOneRadio>
                                                                             <span class="text-muted" jsf:rendered="#{(!dsft.hasChildren and dsft.required) or (dsft.hasChildren and dsft.hasRequiredChildren)}">
@@ -345,6 +346,7 @@
                                                     </div>
                                                 </div>
                                                 <p:commandLink id="hideDSFT" styleClass="btn btn-default" 
+                                                               process="@this @widgetVar(optionBlock)"
                                                                update="@widgetVar(optionBlock)" actionListener="#{DataversePage.hideDatasetFieldTypes(mdb.id)}" 
                                                                oncomplete="javascript:bind_bsui_components();"
                                                                rendered="#{mdb.showDatasetFieldTypes}">
