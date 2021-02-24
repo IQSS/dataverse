@@ -107,8 +107,8 @@ Available variables are:
 http/authext
 ++++++++++++
 
-Similar to the *http/sr* step. A step that sends a HTTP request to an external system, and then waits for a response. The receiver can use the invocationId of the workflow in lieu of an api key to perform work on behlaf of the user launching the workflow. 
-The invocationId must be sent as an 'X-Dataverse-invocationId' HTTP Header or as an ?invocationId= query parameter. Note that any external process started using this step then has the ability to access a Dataverse instance via the API as the user. 
+Similar to the *http/sr* step. A step that sends a HTTP request to an external system, and then waits for a response. The receiver can use the invocationId of the workflow in lieu of an api key to perform work on behalf of the user launching the workflow. 
+The invocationId must be sent as an 'X-Dataverse-invocationId' HTTP Header or as an ?invocationId= query parameter. *Note that any external process started using this step then has the ability to access a Dataverse instance via the API as the user.*
 Once this step completes and responds, the invocationId is invalidated and will not allow further access.
 
 
