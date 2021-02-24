@@ -5,9 +5,6 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
-import edu.harvard.iq.dataverse.UserNotification;
-import edu.harvard.iq.dataverse.UserNotification.Type;
-import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -19,14 +16,11 @@ import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.internalspi.InternalWorkflowStepSP;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
 import edu.harvard.iq.dataverse.workflow.step.Pending;
-import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
-import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 
-import java.sql.Timestamp;
-import java.time.Instant;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,9 +64,6 @@ public class WorkflowServiceBean {
     SystemConfig systemConfig;
 
     @EJB
-    UserNotificationServiceBean userNotificationService;
-    
-    @EJB
     EjbDataverseEngine engine;
     
     @Inject
@@ -106,9 +97,21 @@ public class WorkflowServiceBean {
      * @param ctxt the context in which the workflow is executed.
      * @throws CommandException If the dataset could not be locked.
      */
+    //ToDo - should this be @Async? or just the forward() method?
     @Asynchronous
     public void start(Workflow wf, WorkflowContext ctxt) throws CommandException {
+        
+        // Since we are calling this asynchronously anyway - sleep here 
+        // for a few seconds, just in case, to make sure the database update of 
+        // the dataset initiated by the PublishDatasetCommand has finished, 
+        // to avoid any concurrency/optimistic lock issues. 
+        try {
+            Thread.sleep(1000);
+        } catch (Exception ex) {
+            logger.warning("Failed to sleep for a second.");
+        }
         ctxt = refresh(ctxt, retrieveRequestedSettings( wf.getRequiredSettings()), getCurrentApiToken(ctxt.getRequest().getAuthenticatedUser()));
+        lockDataset(ctxt, new DatasetLock(DatasetLock.Reason.Workflow, ctxt.getRequest().getAuthenticatedUser()));
         forward(wf, ctxt);
     }
     
@@ -163,7 +166,6 @@ public class WorkflowServiceBean {
     @Asynchronous
     public void resume(PendingWorkflowInvocation pending, String body) {
         em.remove(em.merge(pending));
-        em.flush();
         doResume(pending, body);
     }
     
@@ -182,17 +184,10 @@ public class WorkflowServiceBean {
         final WorkflowContext ctxt = refresh(newCtxt,retrieveRequestedSettings( wf.getRequiredSettings()), getCurrentApiToken(newCtxt.getRequest().getAuthenticatedUser()));
         WorkflowStepResult res = pendingStep.resume(ctxt, pending.getLocalData(), body);
         if (res instanceof Failure) {
-            userNotificationService.sendNotification(ctxt.getRequest().getAuthenticatedUser(), Timestamp.from(Instant.now()), UserNotification.Type.WORKFLOW_FAILURE, ctxt.getDataset().getLatestVersion().getId(), ((Failure) res).getMessage());
-            //UserNotification isn't meant to be a long-term record and doesn't store the comment, so we'll also keep it as a workflow comment
-            WorkflowComment wfc = new WorkflowComment(ctxt.getDataset().getLatestVersion(), WorkflowComment.Type.WORKFLOW_FAILURE, ((Failure) res).getMessage(), ctxt.getRequest().getAuthenticatedUser());
-            datasets.addWorkflowComment(wfc);
             rollback(wf, ctxt, (Failure) res, pending.getPendingStepIdx() - 1);
         } else if (res instanceof Pending) {
             pauseAndAwait(wf, ctxt, (Pending) res, pending.getPendingStepIdx());
         } else {
-            if (res instanceof Success) {
-            
-        }
             executeSteps(wf, ctxt, pending.getPendingStepIdx() + 1);
         }
     }
@@ -286,27 +281,41 @@ public class WorkflowServiceBean {
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void lockDataset( WorkflowContext ctxt ) throws CommandException {
-        DatasetLock datasetLock = new DatasetLock(DatasetLock.Reason.Workflow, ctxt.getRequest().getAuthenticatedUser());
-        /* Note that this method directly adds a lock to the database rather than adding it via 
-         * engine.submit(new AddLockCommand(ctxt.getRequest(), ctxt.getDataset(), datasetLock));
-         * which would update the dataset's list of locks, etc. 
-         * An em.find() for the dataset would get a Dataset that has an updated list of locks, but this copy would not have any changes
-         * made in a calling command (e.g. for a PostPublication workflow, the fact that the latest version is 'released' is not yet in the 
-         * database. 
+    void lockDataset(WorkflowContext ctxt, DatasetLock datasetLock) throws CommandException {
+        /*
+         * Note that this method directly adds a lock to the database rather than adding
+         * it via engine.submit(new AddLockCommand(ctxt.getRequest(), ctxt.getDataset(),
+         * datasetLock)); which would update the dataset's list of locks, etc. An
+         * em.find() for the dataset would get a Dataset that has an updated list of
+         * locks, but this copy would not have any changes made in a calling command
+         * (e.g. for a PostPublication workflow, the fact that the latest version is
+         * 'released' is not yet in the database.
          */
         datasetLock.setDataset(ctxt.getDataset());
         em.persist(datasetLock);
         //flush creates the id
         em.flush();
-        ctxt.setLock(datasetLock);
+        ctxt.setLockId(datasetLock.getId());
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    void unlockDataset( WorkflowContext ctxt ) throws CommandException {
-       
-        em.remove(em.merge(ctxt.getLock()));
-        
+    void unlockDataset(WorkflowContext ctxt) throws CommandException {
+        /*
+         * Since the lockDataset command above directly persists a lock to the database,
+         * the ctxt.getDataset() is not updated and its list of locks can't be used.
+         * Using the named query below will find the workflow lock and remove it
+         * (actually all workflow locks for this Dataset but only one workflow should be
+         * active).
+         */
+        TypedQuery<DatasetLock> lockCounter = em.createNamedQuery("DatasetLock.getLocksByDatasetId", DatasetLock.class);
+        lockCounter.setParameter("datasetId", ctxt.getDataset().getId());
+        List<DatasetLock> locks = lockCounter.getResultList();
+        for (DatasetLock lock : locks) {
+            if (lock.getReason() == DatasetLock.Reason.Workflow) {
+                ctxt.getDataset().removeLock(lock);
+                em.remove(lock);
+            }
+        }
         em.flush();
     }
     
@@ -345,9 +354,11 @@ public class WorkflowServiceBean {
                 info += registerGlobalIdsForFiles ? "Registering PIDs for Datafiles; " : "";
                 info += validatePhysicalFiles ? "Validating Datafiles Asynchronously" : "";
                 lock.setInfo(info);
-                datasets.addDatasetLock(ctxt.getDataset(), lock);
+                lockDataset(ctxt, lock);
+                ctxt.getDataset().addLock(lock);
+                
                 unlockDataset(ctxt);
-                ctxt.setLock(null); //the workflow lock
+                ctxt.setLockId(null); //the workflow lock
                 //Refreshing merges the dataset
                 ctxt = refresh(ctxt);
                 //Then call Finalize
@@ -466,7 +477,7 @@ public class WorkflowServiceBean {
     	 */
         WorkflowContext newCtxt =new WorkflowContext( ctxt.getRequest(), 
                 em.merge(ctxt.getDataset()), ctxt.getNextVersionNumber(), 
-                ctxt.getNextMinorVersionNumber(), ctxt.getType(), settings, apiToken, ctxt.getDatasetExternallyReleased(), ctxt.getInvocationId(), ctxt.getLock());
+                ctxt.getNextMinorVersionNumber(), ctxt.getType(), settings, apiToken, ctxt.getDatasetExternallyReleased(), ctxt.getInvocationId(), ctxt.getLockId());
         return newCtxt;
     }
 

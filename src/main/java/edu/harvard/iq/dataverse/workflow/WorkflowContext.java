@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.workflow;
 
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
@@ -32,7 +31,7 @@ public class WorkflowContext {
     private final ApiToken apiToken;
     private final boolean datasetExternallyReleased;
     private Map<String, Object> settings;
-    private DatasetLock lock = null;
+    private Long lockId = null;
     
     private String invocationId = UUID.randomUUID().toString();
 
@@ -48,7 +47,7 @@ public class WorkflowContext {
     }
 
     public WorkflowContext(DataverseRequest request, Dataset dataset, long nextVersionNumber, 
-                            long nextMinorVersionNumber, TriggerType type, Map<String, Object> settings, ApiToken apiToken, boolean datasetExternallyReleased, String invocationId, DatasetLock lock) {
+                            long nextMinorVersionNumber, TriggerType type, Map<String, Object> settings, ApiToken apiToken, boolean datasetExternallyReleased, String invocationId, Long lockId) {
         this.request = request;
         this.dataset = dataset;
         this.nextVersionNumber = nextVersionNumber;
@@ -57,12 +56,12 @@ public class WorkflowContext {
         this.settings = settings;
         this.apiToken = apiToken;
         this.datasetExternallyReleased = datasetExternallyReleased;
-        //If null, we'll keel the randomly generated one
+        //If null, we'll keep the randomly generated one
         if(invocationId!=null) {
             setInvocationId(invocationId);
         }
-        if(lock != null) {
-          this.setLock(lock);
+        if(lockId != null) {
+          this.setLockId(lockId);
         }
     }
 
@@ -109,11 +108,11 @@ public class WorkflowContext {
     public boolean getDatasetExternallyReleased() {
        return datasetExternallyReleased;
     }
-    public DatasetLock getLock() {
-        return lock;
+    public Long getLockId() {
+        return lockId;
     }
-    public void setLock(DatasetLock lock) {
-        this.lock = lock;
+    public void setLockId(Long lockId) {
+        this.lockId = lockId;
     }
     
 }

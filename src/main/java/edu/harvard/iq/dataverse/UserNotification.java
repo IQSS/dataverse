@@ -30,7 +30,7 @@ public class UserNotification implements Serializable {
         ASSIGNROLE, REVOKEROLE, CREATEDV, CREATEDS, CREATEACC, SUBMITTEDDS, RETURNEDDS, 
         PUBLISHEDDS, REQUESTFILEACCESS, GRANTFILEACCESS, REJECTFILEACCESS, FILESYSTEMIMPORT, 
         CHECKSUMIMPORT, CHECKSUMFAIL, CONFIRMEMAIL, APIGENERATED, INGESTCOMPLETED, INGESTCOMPLETEDWITHERRORS, 
-        PUBLISHFAILED_PIDREG, WORKFLOW_SUCCESS, WORKFLOW_FAILURE
+        PUBLISHFAILED_PIDREG
     };
     
     private static final long serialVersionUID = 1L;
@@ -156,5 +156,4 @@ public class UserNotification implements Serializable {
     public String getLocaleSendDate() {
         return DateUtil.formatDate(sendDate);
     }
-
 }
