@@ -35,6 +35,10 @@ public class TemplateDao {
         return em.merge(template);
     }
 
+    public void persist(Template template) {
+        em.persist(template);
+    }
+
     public void flush() {
         em.flush();
     }

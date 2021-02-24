@@ -95,6 +95,7 @@ public class TemplateService {
         newTemplate.setName(BundleUtil.getStringFromBundle("page.copy") + " " + templateIn.getName());
         newTemplate.setUsageCount(0L);
         newTemplate.setCreateTime(Timestamp.valueOf(LocalDateTime.now(clock)));
+        newTemplate.setDataverse(dataverse);
         dataverse.getTemplates().add(newTemplate);
 
         Try<Template> createdTemplate = Try.of(() -> engineService.submit(new CreateTemplateCommand(newTemplate, dvRequestService.getDataverseRequest(), dataverse)))

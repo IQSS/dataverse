@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.persistence.dataset.Template;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
@@ -25,8 +24,8 @@ public class CreateTemplateCommand extends AbstractCommand<Template> {
 
     @Override
     public Template execute(CommandContext ctxt)  {
-
-        return ctxt.templates().merge(created);
+        ctxt.templates().persist(created);
+        return created;
     }
 
 }
