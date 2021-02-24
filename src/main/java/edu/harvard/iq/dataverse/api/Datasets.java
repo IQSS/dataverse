@@ -977,7 +977,9 @@ public class Datasets extends AbstractApiBean {
                 logger.fine("MT: " + ds.getModificationTime());
                 logger.fine("PIT: " + ds.getPermissionIndexTime());
                 logger.fine("PMT: " + ds.getPermissionModificationTime());
-                logger.fine("ITMT: " + (ds.getIndexTime().compareTo(ds.getModificationTime()) <= 0));
+                if (ds.getIndexTime() != null && ds.getModificationTime() != null) {
+                    logger.fine("ITMT: " + (ds.getIndexTime().compareTo(ds.getModificationTime()) <= 0));
+                }
                 /*
                  * Some calls, such as the /datasets/actions/:import* commands do not set the
                  * modification or permission modification times. The checks here are trying to
@@ -989,7 +991,7 @@ public class Datasets extends AbstractApiBean {
                  * 
                  */
                 if ((ds.getModificationTime()!=null && (ds.getIndexTime() == null || (ds.getIndexTime().compareTo(ds.getModificationTime()) <= 0))) ||
-                        (ds.getPermissionModificationTime()!=null && (ds.getIndexTime() == null || (ds.getIndexTime().compareTo(ds.getModificationTime()) <= 0)))) {
+                        (ds.getPermissionModificationTime()!=null && (ds.getPermissionIndexTime() == null || (ds.getPermissionIndexTime().compareTo(ds.getPermissionModificationTime()) <= 0)))) {
                     return error(Response.Status.CONFLICT, "Dataset is awaiting indexing");
                 }
             }

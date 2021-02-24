@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.workflow;
 
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -10,8 +9,6 @@ import edu.harvard.iq.dataverse.workflow.step.Pending;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.persistence.CascadeType;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -55,8 +52,7 @@ public class PendingWorkflowInvocation implements Serializable {
     int typeOrdinal;
     boolean datasetExternallyReleased;
     
-    @OneToOne
-    DatasetLock lock;
+    long lockid;
 
     public static final String AUTHORIZED= "authorized";
                 
@@ -76,13 +72,13 @@ public class PendingWorkflowInvocation implements Serializable {
         localData = new HashMap<>(result.getData());
         typeOrdinal = ctxt.getType().ordinal();
         datasetExternallyReleased=ctxt.getDatasetExternallyReleased();
-        lock=ctxt.getLock();
+        lockid=ctxt.getLockId();
     }
     
     public WorkflowContext reCreateContext(RoleAssigneeServiceBean roleAssignees) {
         DataverseRequest aRequest = new DataverseRequest((User)roleAssignees.getRoleAssignee(userId), IpAddress.valueOf(ipAddress));
         final WorkflowContext workflowContext = new WorkflowContext(aRequest, dataset, nextVersionNumber, 
-                nextMinorVersionNumber, WorkflowContext.TriggerType.values()[typeOrdinal], null, null, datasetExternallyReleased, invocationId, lock);
+                nextMinorVersionNumber, WorkflowContext.TriggerType.values()[typeOrdinal], null, null, datasetExternallyReleased, invocationId, lockid);
         return workflowContext;
     }
     
@@ -166,10 +162,10 @@ public class PendingWorkflowInvocation implements Serializable {
         this.typeOrdinal = typeOrdinal;
     }
     
-    public DatasetLock getLock() {
-        return lock;
+    public long getLockId() {
+        return lockid;
     }
-    public void setLock(DatasetLock lock) {
-        this.lock = lock;
+    public void setLockId(long lockId) {
+        this.lockid = lockId;
     }
 }

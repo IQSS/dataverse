@@ -816,7 +816,7 @@ public class PermissionServiceBean {
         if (invocationId != null) {
             PendingWorkflowInvocation pwfi = workflowService.getPendingWorkflow(invocationId);
             for (DatasetLock dl : d.getLocks()) {
-                if (dl.equals(pwfi.getLock()) && pwfi.getUserId().equals(userId)) {
+                if (dl.getId().equals(pwfi.getLockId()) && pwfi.getUserId().equals(userId)) {
                     return true;
                 }
             }

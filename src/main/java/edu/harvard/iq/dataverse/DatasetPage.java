@@ -1858,16 +1858,6 @@ public class DatasetPage implements java.io.Serializable {
                 MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, workingVersion);
                 mdcLogService.logEntry(entry);
             }
-
-            List<WorkflowComment> comments = workingVersion.getWorkflowComments();
-            for(WorkflowComment wfc: comments) {
-                if(wfc.getType()==WorkflowComment.Type.WORKFLOW_SUCCESS) {
-                    JsfHelper.addSuccessMessage(wfc.getMessage());
-                    
-                } else if (wfc.getType()==WorkflowComment.Type.WORKFLOW_FAILURE) {
-                    JsfHelper.addWarningMessage(wfc.getMessage());
-                }
-            }
             
             if (initFull) {
                 // init the list of FileMetadatas

@@ -183,28 +183,27 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         final Dataset ds = ctxt.em().merge(theDataset);
         //Remove any pre-pub workflow lock (not needed as WorkflowServiceBean.workflowComplete() should already have removed it after setting the finalizePublication lock?)
         ctxt.datasets().removeDatasetLocks(ds, DatasetLock.Reason.Workflow);
+        
+        //Should this be in onSuccess()?
         ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
             try {
-                WorkflowContext wfc = buildContext(ds, TriggerType.PostPublishDataset, datasetExternallyReleased);
-                // Set workflow lock before returning and before releasing the
-                // finalizePublication lock
-                ctxt.workflows().lockDataset(wfc);
-                ctxt.workflows().start(wf, wfc);
+                ctxt.workflows().start(wf, buildContext(ds, TriggerType.PostPublishDataset, datasetExternallyReleased));
             } catch (CommandException ex) {
+                ctxt.datasets().removeDatasetLocks(ds, DatasetLock.Reason.Workflow);
                 logger.log(Level.SEVERE, "Error invoking post-publish workflow: " + ex.getMessage(), ex);
             }
         });
 
-        Dataset readyDataset = ctxt.em().merge(theDataset);
+        Dataset readyDataset = ctxt.em().merge(ds);
         
         // Finally, unlock the dataset (leaving any post-publish workflow lock in place)
-        ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.finalizePublication);
-        if ( theDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
-            ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.InReview);
+        ctxt.datasets().removeDatasetLocks(readyDataset, DatasetLock.Reason.finalizePublication);
+        if (readyDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
+            ctxt.datasets().removeDatasetLocks(readyDataset, DatasetLock.Reason.InReview);
         }
         
-        logger.info("Successfully published the dataset "+theDataset.getGlobalId().asString());
-
+        logger.info("Successfully published the dataset "+readyDataset.getGlobalId().asString());
+        readyDataset = ctxt.em().merge(readyDataset);
         
         return readyDataset;
     }
