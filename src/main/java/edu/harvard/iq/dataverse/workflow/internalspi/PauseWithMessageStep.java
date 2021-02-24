@@ -6,10 +6,15 @@ import edu.harvard.iq.dataverse.workflow.step.Pending;
 import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
+
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.json.Json;
+import javax.json.JsonObject;
 
 /**
  * A sample step that pauses the workflow.
@@ -38,9 +43,29 @@ public class PauseWithMessageStep implements WorkflowStep {
 
     @Override
     public WorkflowStepResult resume(WorkflowContext context, Map<String, String> internalData, String externalData) {
-        logger.log(Level.INFO, "local parameters match: {0}", internalData.equals(params));
-        logger.log(Level.INFO, "externalData: \"{0}\"", externalData);
-        return externalData.trim().equals(FAILURE_RESPONSE) ? new Failure("Simulated fail", "SimulatedWF Failure") : new Success("Hello Log, the step succeeded!", "A workflow was successfully run on your dataset");
+        try (StringReader reader = new StringReader(externalData)) {
+            JsonObject response = Json.createReader(reader).readObject();
+            String status = response.getString("Status");
+            String reason = null;
+            String message = null;
+            if (response.containsKey("Reason")) {
+                reason = response.getString("Reason");
+            }
+            if (response.containsKey("Message")) {
+                message = response.getString("Message");
+            }
+            switch (status) {
+            case "Success":
+                logger.log(Level.FINE, "AuthExt Worfklow Step Succeeded: " + reason);
+                return new Success(reason, message);
+            case "Failure":
+                logger.log(Level.WARNING, "Remote system indicates workflow failed: {0}", reason);
+                return new Failure(reason, message);
+            }
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Remote system returned a bad reposonse: {0}", externalData);
+        }
+        return new Failure("Workflow failure: Response from remote server could not be parsed:" + externalData, null);
     }
 
     @Override
