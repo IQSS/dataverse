@@ -1,5 +1,5 @@
 Workflows
-================
+=========
 
 The Dataverse Software has a flexible workflow mechanism that can be used to trigger actions before and after Dataset publication.
 
@@ -18,12 +18,14 @@ Steps can be internal (say, writing some data to the log) or external. External 
 
 The external system reports the step result back to the Dataverse installation, by sending a HTTP ``POST`` command to ``api/workflows/{invocation-id}`` with Content-Type: text/plain. The body of the request is passed to the paused step for further processing.
 
+Steps can define messages to send to the log and to users. If defined, the message to users is sent as a user notification (creating an email and showing in the user notification tab) and will show once for the given user if/when they view the relevant dataset page. The latter provides a means for the asynchronous workflow execution to report success or failure anologous to the way the publication and other processes report on the page.
+
 If a step in a workflow fails, the Dataverse installation makes an effort to roll back all the steps that preceded it. Some actions, such as writing to the log, cannot be rolled back. If such an action has a public external effect (e.g. send an EMail to a mailing list) it is advisable to put it in the post-release workflow.
 
 .. tip::
   For invoking external systems using a REST api, the Dataverse Software's internal step
-  provider offers a step for sending and receiving customizable HTTP requests.
-  It's called *http/sr*, and is detailed below.
+  provider offers two steps for sending and receiving customizable HTTP requests.
+  *http/sr* and *http/authExt*, detailed below, with the latter able to use the API to make changes to the dataset being processed. (Both lock the dataset to prevent other processes from changing the dataset between the time the step is launched to when the external process responds to the Dataverse instance.)
 
 Administration
 ~~~~~~~~~~~~~~
@@ -69,6 +71,23 @@ A step that pauses the workflow. The workflow is paused until a POST request is 
       "stepType":"pause"
   }
 
+pause/message
++++++++++++++
+
+A variant of the  pause step that pauses the workflow and allows the external process to send a success/failure message. The workflow is paused until a POST request is sent to ``/api/workflows/{invocation-id}``. 
+The response in the POST body (Content-type:application/json) should be a json object (the same as for the http/extauth step) containing:
+- "Status" - can be "Success" or "Failure"
+- "Reason" - a message that will be logged
+- "Message" - a message to send to the user that will be sent as a notification and as a banner on the relevant dataset page.
+An unparsable reponse will be considered a Failure that will be logged with no user message.
+
+.. code:: json
+
+  {
+      "provider":":internal",
+      "stepType":"pause/message"
+  }
+
 
 http/sr
 +++++++
@@ -103,6 +122,49 @@ Available variables are:
 * ``minorVersion``
 * ``majorVersion``
 * ``releaseStatus``
+
+http/authext
+++++++++++++
+
+Similar to the *http/sr* step. A step that sends a HTTP request to an external system, and then waits for a response. The receiver can use the invocationId of the workflow in lieu of an api key to perform work on behalf of the user launching the workflow. 
+The invocationId must be sent as an 'X-Dataverse-invocationId' HTTP Header or as an ?invocationId= query parameter. *Note that any external process started using this step then has the ability to access a Dataverse instance via the API as the user.*
+Once this step completes and responds, the invocationId is invalidated and will not allow further access.
+
+The url, content type, and message body can use data from the workflow context, using a simple markup language. This step has specific parameters for rollback.
+The workflow is restarted when the external system replies with a POST request  to ``/api/workflows/{invocation-id}`` (Content-Type: application/json).
+
+The response has is expected to be a json object with three keys:
+- "Status" - can be "Success" or "Failure"
+- "Reason" - a message that will be logged
+- "Message" - a message to send to the user that will be sent as a notification and as a banner on the relevant dataset page.
+
+.. code:: json
+
+  {
+    "provider":":internal",
+    "stepType":"http/authext",
+    "parameters": {
+        "url":"http://localhost:5050/dump/${invocationId}",
+        "method":"POST",
+        "contentType":"text/plain",
+        "body":"START RELEASE ${dataset.id} as ${dataset.displayName}",
+        "rollbackUrl":"http://localhost:5050/dump/${invocationId}",
+        "rollbackMethod":"DELETE ${dataset.id}"
+    }
+  }
+
+Available variables are:
+
+* ``invocationId``
+* ``dataset.id``
+* ``dataset.identifier``
+* ``dataset.globalId``
+* ``dataset.displayName``
+* ``dataset.citation``
+* ``minorVersion``
+* ``majorVersion``
+* ``releaseStatus``
+
 
 archiver
 ++++++++
