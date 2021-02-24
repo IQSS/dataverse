@@ -23,7 +23,7 @@ If a step in a workflow fails, the Dataverse installation makes an effort to rol
 .. tip::
   For invoking external systems using a REST api, the Dataverse Software's internal step
   provider offers two steps for sending and receiving customizable HTTP requests.
-  *http/sr* and *http/authExt*, detailed below, with the latter able to use the API to make changes to the dataset being processed.
+  *http/sr* and *http/authExt*, detailed below, with the latter able to use the API to make changes to the dataset being processed. (Both lock the dataset to prevent other processes from changing the dataset between the time the step is launched to when the external process responds to the Dataverse instance.)
 
 Administration
 ~~~~~~~~~~~~~~
@@ -110,8 +110,6 @@ http/authext
 Similar to the *http/sr* step. A step that sends a HTTP request to an external system, and then waits for a response. The receiver can use the invocationId of the workflow in lieu of an api key to perform work on behalf of the user launching the workflow. 
 The invocationId must be sent as an 'X-Dataverse-invocationId' HTTP Header or as an ?invocationId= query parameter. *Note that any external process started using this step then has the ability to access a Dataverse instance via the API as the user.*
 Once this step completes and responds, the invocationId is invalidated and will not allow further access.
-
-
 
 The url, content type, and message body can use data from the workflow context, using a simple markup language. This step has specific parameters for rollback.
 The workflow is restarted when the external system replies with a POST request  to ``/api/workflows/{invocation-id}``.
