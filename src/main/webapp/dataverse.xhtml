@@ -287,6 +287,7 @@
                                                         <p:ajax update="@widgetVar(optionBlock)" />
                                                     </input>
                                                     <input type="checkbox" jsf:itemValue="#{mdb}" id="#{mdb.idString}" jsf:value="#{mdb.selected}"
+                                                           jsf:disabled="#{DataversePage.editInputLevel == true}"
                                                            name="mdbSelectOptional" jsf:rendered="#{!mdb.required and !DataversePage.inheritMetadataBlockFromParent}">
                                                         <p:ajax update="@widgetVar(optionBlock)" />
                                                     </input>
@@ -345,6 +346,7 @@
                                                     </div>
                                                 </div>
                                                 <p:commandLink id="hideDSFT" styleClass="btn btn-default" 
+                                                               process="@this @widgetVar(optionBlock)"
                                                                update="@widgetVar(optionBlock)" actionListener="#{DataversePage.hideDatasetFieldTypes(mdb.id)}" 
                                                                oncomplete="javascript:bind_bsui_components();"
                                                                rendered="#{mdb.showDatasetFieldTypes}">
