@@ -28,7 +28,7 @@
         <div id="akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[0]}">
             <p:autoComplete id="cv_vocabs_#{valCount.index+1}_k" value="#{dsfv.valueForEdit}"
                             completeMethod="#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getVocabs()}"
-                            style="width:95%;"
+                            style="width:100%;"
                             readonly="#{facesContext.renderResponse and cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getVocabs().size() == 1
                             and cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).isReadonly()}"/>
 
@@ -43,6 +43,7 @@
     <ui:fragment rendered="#{displayCV and dsfv.datasetField.datasetFieldType.name==cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[2] }">
         <div id="akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[2]}">
             <p:inputText value="#{dsfv.valueForEdit}" id="cv_url_#{valCount.index+1}"
+                         readonly="#{facesContext.renderResponse and cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).isReadonly()}" 
                          styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"/>
         </div>
         <script src="#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getJsUrl()}">
@@ -56,7 +57,7 @@
                     var termParentUri ="#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getTermParentUri()}";
                     var vocabsize = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getVocabs().size()}";
                     var readonly = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).isReadonly()}";
-                    $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[3]}").find("input[name*='cv_vocab_url_'").css('background-color' , '#EEEEEE');
+                    //$("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[3]}").find("input[name*='cv_vocab_url_'").css('background-color' , '#EEEEEE');
                     $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[3]}").find("input[name*='cv_vocab_url_'").val(termParentUri);
                     if (vocabsize == 1 &amp;&amp; readonly)
                         $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[0]}").find("input[name*='cv_vocabs_'").css('background-color' , '#EEEEEE');
@@ -73,6 +74,7 @@
                     var mapquery = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getMapQuery()}";
                     var mapid = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getMapId()}";
                     var mapping = { query: mapquery,  id: mapid };
+                    // Using jQuery UI Autocomplete for the term input
                     $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[1]}").find("input[name*='cv_term_']").autocomplete(
                     {
                           source: function( request, response ) {
@@ -106,7 +108,8 @@
     </ui:fragment>
     <ui:fragment rendered="#{displayCV and dsfv.datasetField.datasetFieldType.name==cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[3]}">
         <div id="akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[3]}">
-            <p:inputText value="#{dsfv.valueForEdit}" id="cv_vocab_url_#{valCount.index+1}" tabindex="#{block.index+1}"
+            <p:inputText value="#{dsfv.valueForEdit}" id="cv_vocab_url_#{valCount.index+1}"
+                         readonly="#{facesContext.renderResponse and cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).isReadonly()}"
                          styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"/>
         </div>
     </ui:fragment>
