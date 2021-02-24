@@ -468,6 +468,42 @@ public class Datasets extends AbstractApiBean {
     }
     
     @GET
+    @Path("{id}/dirindex")
+    @Produces("text/html")
+    public Response getFileAccessFolderView(@PathParam("id") String datasetId, @QueryParam("version") String versionId, @QueryParam("folder") String folderName, @QueryParam("original") Boolean originals, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) {
+
+        folderName = folderName == null ? "" : folderName;
+        versionId = versionId == null ? ":latest-published" : versionId; 
+        
+        DatasetVersion version; 
+        try {
+            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            version = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(datasetId), uriInfo, headers);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        
+        String output = FileUtil.formatFolderListingHtml(folderName, version, "", originals != null && originals);
+        
+        // return "NOT FOUND" if there is no such folder in the dataset version:
+        
+        if ("".equals(output)) {
+            return notFound("Folder " + folderName + " does not exist");
+        }
+        
+        
+        String indexFileName = folderName.equals("") ? ".index.html"
+                : ".index-" + folderName.replace('/', '_') + ".html";
+        response.setHeader("Content-disposition", "attachment; filename=\"" + indexFileName + "\"");
+
+        
+        return Response.ok()
+                .entity(output)
+                //.type("application/html").
+                .build();
+    }
+    
+    @GET
     @Path("{id}/versions/{versionId}/metadata")
     public Response getVersionMetadata( @PathParam("id") String datasetId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         return response( req -> ok(
