@@ -331,11 +331,11 @@
                                                                             </div>
                                                                         </td>
                                                                         <td>
-                                                                            <p:selectOneRadio id="OptionsRadio#{dsft.id}" value="#{dsft.requiredDV}" widgetVar="OptButton#{dsft.id}" disabled ="#{DataversePage.editInputLevel == false}" 
-                                                                                              rendered="#{!dsft.hasChildren and !((!dsft.hasChildren  and dsft.required) or (dsft.hasChildren and dsft.hasRequiredChildren))}" >
+                                                                            <p:selectOneRadio id="OptionsRadio#{dsft.id}" value="#{dsft.requiredDV}" widgetVar="OptButton#{dsft.id}" disabled ="#{DataversePage.editInputLevel == false}"
+                                                                                              rendered="#{!dsft.hasChildren and (!dsft.required or (dsft.hasParent and !dsft.parentDatasetFieldType.required))}">
                                                                                 <f:selectItems value="#{dsft.optionSelectItems}"/>
-                                                                            </p:selectOneRadio>
-                                                                            <span class="text-muted" jsf:rendered="#{(!dsft.hasChildren and dsft.required) or (dsft.hasChildren and dsft.hasRequiredChildren)}">
+                                                                            </p:selectOneRadio>                                           
+                                                                            <span class="text-muted" jsf:rendered="#{dsft.required and (!dsft.hasParent or dsft.parentDatasetFieldType.required)}">
                                                                                 #{bundle['dataverse.field.requiredByDataverse']}
                                                                             </span>
                                                                         </td>
