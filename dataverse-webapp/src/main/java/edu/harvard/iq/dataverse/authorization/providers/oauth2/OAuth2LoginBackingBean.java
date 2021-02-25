@@ -64,8 +64,8 @@ public class OAuth2LoginBackingBean implements Serializable {
     OAuth2FirstLoginPage newAccountPage;
 
     public String linkFor(String idpId, String redirectPage) {
-        AbstractOAuth2AuthenticationProvider idp = authenticationSvc.getOAuth2Provider(idpId);
-        return idp.getService(createState(idp, toOption(redirectPage)), getCallbackUrl()).getAuthorizationUrl();
+        OAuth2AuthenticationProvider idp = authenticationSvc.getOAuth2Provider(idpId);
+        return idp.createAuthorizationUrl(createState(idp, toOption(redirectPage)), getCallbackUrl());
     }
 
     public String getCallbackUrl() {
@@ -92,7 +92,7 @@ public class OAuth2LoginBackingBean implements Serializable {
         final String state = req.getParameter("state");
 
         try {
-            AbstractOAuth2AuthenticationProvider idp = parseState(state);
+            OAuth2AuthenticationProvider idp = parseState(state);
             if (idp == null) {
                 throw new OAuth2Exception(-1, "", "Invalid 'state' parameter.");
             }
@@ -108,12 +108,14 @@ public class OAuth2LoginBackingBean implements Serializable {
             } else {
                 // login the user and redirect to HOME of intended page (if any).
                 session.setUser(dvUser);
-                
+
                 if (!systemConfig.isReadonlyMode()) {
                     final OAuth2TokenData tokenData = oauthUser.getTokenData();
-                    tokenData.setUser(dvUser);
-                    tokenData.setOauthProviderId(idp.getId());
-                    oauth2Tokens.store(tokenData);
+                    if (tokenData != null) {
+                        tokenData.setUser(dvUser);
+                        tokenData.setOauthProviderId(idp.getId());
+                        oauth2Tokens.store(tokenData);
+                    }
                 } else {
                     logger.warn("Can't store OAuth2TokenData when readonlyMode is turned on");
                 }
@@ -131,18 +133,18 @@ public class OAuth2LoginBackingBean implements Serializable {
 
     }
 
-    private AbstractOAuth2AuthenticationProvider parseState(String state) {
+    private OAuth2AuthenticationProvider parseState(String state) {
         String[] topFields = state.split("~", 2);
         if (topFields.length != 2) {
             logger.info("Wrong number of fields in state string: {}", state);
             return null;
         }
-        AbstractOAuth2AuthenticationProvider idp = authenticationSvc.getOAuth2Provider(topFields[0]);
+        OAuth2AuthenticationProvider idp = authenticationSvc.getOAuth2Provider(topFields[0]);
         if (idp == null) {
             logger.info("Can''t find IDP ''{}''", topFields[0]);
             return null;
         }
-        String raw = StringUtil.decrypt(topFields[1], idp.clientSecret);
+        String raw = StringUtil.decrypt(topFields[1], idp.getClientSecret());
         String[] stateFields = raw.split("~", -1);
         if (idp.getId().equals(stateFields[0])) {
             long timeOrigin = Long.parseLong(stateFields[1]);
@@ -162,7 +164,7 @@ public class OAuth2LoginBackingBean implements Serializable {
         }
     }
 
-    private String createState(AbstractOAuth2AuthenticationProvider idp, Optional<String> redirectPage) {
+    private String createState(OAuth2AuthenticationProvider idp, Optional<String> redirectPage) {
         if (idp == null) {
             throw new IllegalArgumentException("idp cannot be null");
         }
@@ -170,7 +172,7 @@ public class OAuth2LoginBackingBean implements Serializable {
                 + "~" + (int) java.lang.Math.round(java.lang.Math.random() * 1000)
                 + redirectPage.map(page -> "~" + page).orElse("");
 
-        String encrypted = StringUtil.encrypt(base, idp.clientSecret);
+        String encrypted = StringUtil.encrypt(base, idp.getClientSecret());
         final String state = idp.getId() + "~" + encrypted;
         return state;
     }
@@ -195,9 +197,9 @@ public class OAuth2LoginBackingBean implements Serializable {
         return error != null;
     }
 
-    public List<AbstractOAuth2AuthenticationProvider> getProviders() {
+    public List<OAuth2AuthenticationProvider> getProviders() {
         return authenticationSvc.getOAuth2Providers().stream()
-                .sorted(Comparator.comparing(AbstractOAuth2AuthenticationProvider::getTitle))
+                .sorted(Comparator.comparing(OAuth2AuthenticationProvider::getTitle))
                 .collect(toList());
     }
 

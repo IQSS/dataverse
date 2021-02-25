@@ -25,7 +25,6 @@ import javax.inject.Named;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -128,7 +127,7 @@ public class LoginPage implements java.io.Serializable {
 
     public List<AuthenticationProviderDisplayInfo> listAuthenticationProviders() {
         List<AuthenticationProviderDisplayInfo> infos = new LinkedList<>();
-        for (String id : authSvc.getAuthenticationProviderIdsSorted()) {
+        for (String id : authSvc.getAuthenticationProviderIds()) {
             AuthenticationProvider authenticationProvider = authSvc.getAuthenticationProvider(id);
             if (authenticationProvider != null) {
                 if (ShibAuthenticationProvider.PROVIDER_ID.equals(authenticationProvider.getId())) {

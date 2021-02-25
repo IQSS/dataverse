@@ -7,7 +7,6 @@ import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
-import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.persistence.user.OAuth2TokenData;
@@ -26,7 +25,7 @@ import java.util.logging.Logger;
  *
  * @author michael
  */
-public abstract class AbstractOAuth2AuthenticationProvider implements AuthenticationProvider {
+public abstract class AbstractOAuth2AuthenticationProvider implements OAuth2AuthenticationProvider {
 
     final static Logger logger = Logger.getLogger(AbstractOAuth2AuthenticationProvider.class.getName());
 
@@ -110,6 +109,12 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         return svcBuilder.build(getApiInstance());
     }
 
+    @Override
+    public String createAuthorizationUrl(String state, String redirectUrl) {
+        return getService(state, redirectUrl).getAuthorizationUrl();
+    }
+
+    @Override
     public OAuth2UserRecord getUserRecord(String code, String state, String redirectUrl) throws IOException, OAuth2Exception {
         OAuth20Service service = getService(state, redirectUrl);
         OAuth2AccessToken accessToken = service.getAccessToken(code);
@@ -159,6 +164,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         return id;
     }
 
+    @Override
     public String getTitle() {
         return title;
     }
@@ -167,6 +173,7 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
         return clientId;
     }
 
+    @Override
     public String getClientSecret() {
         return clientSecret;
     }
@@ -231,14 +238,6 @@ public abstract class AbstractOAuth2AuthenticationProvider implements Authentica
     @Override
     public boolean isOAuthProvider() {
         return true;
-    }
-
-    public enum DevOAuthAccountType {
-        PRODUCTION,
-        RANDOM_EMAIL0,
-        RANDOM_EMAIL1,
-        RANDOM_EMAIL2,
-        RANDOM_EMAIL3,
     }
 
 }

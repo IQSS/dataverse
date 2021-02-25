@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.DevOAuthAccountType;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
@@ -62,7 +62,7 @@ public class SystemConfig {
 
             // We'll rely on Maven placing the version number into the
             // version.properties file using resource filtering
-            
+
             Try<String> appVersionTry = Try.withResources(() -> getClass().getResourceAsStream(VERSION_PROPERTIES_CLASSPATH))
                     .of(is -> {
                         Properties properties = new Properties();
@@ -70,15 +70,15 @@ public class SystemConfig {
                         return properties;
                     })
                     .map(p -> p.getProperty(VERSION_PROPERTIES_KEY));
-            
+
             if (appVersionTry.isFailure()) {
                 appVersionString = VERSION_FALLBACK;
                 logger.warning("Failed to read the " + VERSION_PROPERTIES_CLASSPATH + " file");
-                
+
             } else if (StringUtils.equals(appVersionTry.get(), VERSION_PLACEHOLDER)) {
                 appVersionString = VERSION_FALLBACK;
                 logger.warning(VERSION_PROPERTIES_CLASSPATH + " was not filtered by maven (check your pom.xml configuration)");
-                
+
             } else {
                 appVersionString = appVersionTry.get();
             }
@@ -86,9 +86,9 @@ public class SystemConfig {
 
         if (withBuildNumber) {
             if (buildNumberString == null) {
-                // (build number is still in a .properties file in the source tree; it only 
-                // contains a real build number if this war file was built by 
-                // Jenkins) 
+                // (build number is still in a .properties file in the source tree; it only
+                // contains a real build number if this war file was built by
+                // Jenkins)
 
                 try {
                     buildNumberString = ResourceBundle.getBundle("BuildNumber").getString("build.number");
@@ -169,7 +169,7 @@ public class SystemConfig {
 
         return guidesVersion.equals(StringUtils.EMPTY) ? getVersion() : guidesVersion;
     }
-    
+
     public boolean isRserveConfigured() {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.RserveConfigured);
     }
@@ -234,16 +234,16 @@ public class SystemConfig {
     }
 
     public long getTabularIngestSizeLimit() {
-        // This method will return the blanket ingestable size limit, if 
-        // set on the system. I.e., the universal limit that applies to all 
-        // tabular ingests, regardless of fromat: 
+        // This method will return the blanket ingestable size limit, if
+        // set on the system. I.e., the universal limit that applies to all
+        // tabular ingests, regardless of fromat:
         return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.TabularIngestSizeLimit);
     }
 
     public long getTabularIngestSizeLimit(String formatName) {
         // This method returns the size limit set specifically for this format name,
-        // if available, otherwise - the blanket limit that applies to all tabular 
-        // ingests regardless of a format. 
+        // if available, otherwise - the blanket limit that applies to all tabular
+        // ingests regardless of a format.
 
         if (StringUtils.isEmpty(formatName)) {
             return getTabularIngestSizeLimit();
@@ -267,13 +267,13 @@ public class SystemConfig {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.TimerServer);
     }
 
-    public AbstractOAuth2AuthenticationProvider.DevOAuthAccountType getDevOAuthAccountType() {
-        AbstractOAuth2AuthenticationProvider.DevOAuthAccountType saneDefault = AbstractOAuth2AuthenticationProvider.DevOAuthAccountType.PRODUCTION;
+    public DevOAuthAccountType getDevOAuthAccountType() {
+        DevOAuthAccountType saneDefault = DevOAuthAccountType.PRODUCTION;
         String settingReturned = settingsService.getValueForKey(SettingsServiceBean.Key.DebugOAuthAccountType);
         logger.fine("setting returned: " + settingReturned);
         if (StringUtils.isNotEmpty(settingReturned)) {
             try {
-                AbstractOAuth2AuthenticationProvider.DevOAuthAccountType parsedValue = AbstractOAuth2AuthenticationProvider.DevOAuthAccountType.valueOf(settingReturned);
+                DevOAuthAccountType parsedValue = DevOAuthAccountType.valueOf(settingReturned);
                 return parsedValue;
             } catch (IllegalArgumentException ex) {
                 logger.info("Couldn't parse value: " + ex + " - returning a sane default: " + saneDefault);
@@ -522,19 +522,19 @@ public class SystemConfig {
 
     private String getFromBundleIfEmptyLocalizedProperty(Key key, Locale locale, String bundleKey) {
         String result = getLocalizedProperty(key, locale);
-        
+
         return result.isEmpty() ? getFromBundleIfEmptyProperty(key, bundleKey) : result;
     }
-    
+
     private String getFromBundleIfEmptyProperty(SettingsServiceBean.Key key, String bundleKey) {
         String result = settingsService.getValueForKey(key);
 
         return result.equals(StringUtils.EMPTY) ? BundleUtil.getStringFromBundle(bundleKey) : result;
     }
-    
+
     private String getLocalizedProperty(Key key, Locale locale) {
         String result = settingsService.getValueForKeyWithPostfix(key, locale.toLanguageTag());
-        
+
         return result.isEmpty() ? settingsService.getValueForKey(key) : result;
     }
 

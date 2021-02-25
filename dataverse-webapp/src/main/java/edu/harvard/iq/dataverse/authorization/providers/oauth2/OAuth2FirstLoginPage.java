@@ -38,7 +38,6 @@ import javax.inject.Named;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -122,9 +121,9 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
             return "/403.xhtml";
         }
 
-        AbstractOAuth2AuthenticationProvider.DevOAuthAccountType devMode = systemConfig.getDevOAuthAccountType();
+        DevOAuthAccountType devMode = systemConfig.getDevOAuthAccountType();
         logger.log(Level.FINE, "devMode: {0}", devMode);
-        if (!AbstractOAuth2AuthenticationProvider.DevOAuthAccountType.PRODUCTION.equals(devMode)) {
+        if (!DevOAuthAccountType.PRODUCTION.equals(devMode)) {
             if (devMode.toString().startsWith("RANDOM")) {
                 Map<String, String> randomUser = authTestDataSvc.getRandomUser();
                 String lastName = randomUser.get("lastName");
@@ -218,10 +217,11 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
                                                  NotificationType.CREATEACC);
 
         final OAuth2TokenData tokenData = newUser.getTokenData();
-        tokenData.setUser(user);
-        tokenData.setOauthProviderId(newUser.getServiceId());
-        oauth2Tokens.store(tokenData);
-
+        if (tokenData != null) {
+            tokenData.setUser(user);
+            tokenData.setOauthProviderId(newUser.getServiceId());
+            oauth2Tokens.store(tokenData);
+        }
         return "/dataverse.xhtml?faces-redirect=true";
     }
 

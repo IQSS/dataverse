@@ -417,6 +417,13 @@
             <scope>compile</scope>
         </dependency>
 
+        <!-- OpenID Connect library -->
+        <dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>oauth2-oidc-sdk</artifactId>
+            <version>9.0</version>
+        </dependency>
+
         <!-- BEGIN Data Deposit API v1 (SWORD v2) -->
         <dependency>
             <groupId>org.swordapp</groupId>
@@ -610,6 +617,12 @@
         <dependency>
             <groupId>org.apache.activemq.tooling</groupId>
             <artifactId>activemq-junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.tomakehurst</groupId>
+            <artifactId>wiremock-jre8-standalone</artifactId>
+            <version>2.27.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

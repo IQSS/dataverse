@@ -10,8 +10,9 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthentic
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
-import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.OAuth2AuthenticationProviderFactory;
+import edu.harvard.iq.dataverse.authorization.providers.oauth2.OIDCAuthenticationProviderFactory;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GitHubOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.GoogleOAuth2AP;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.impl.OrcidOAuth2AP;
@@ -82,7 +83,7 @@ public class AuthenticationServiceBean {
     /**
      * Index of all OAuth2 providers. They also live in {@link #authenticationProviders}.
      */
-    final Map<String, AbstractOAuth2AuthenticationProvider> oAuth2authenticationProviders = new HashMap<>();
+    final Map<String, OAuth2AuthenticationProvider> oAuth2authenticationProviders = new HashMap<>();
 
     final Map<String, AuthenticationProviderFactory> providerFactories = new HashMap<>();
 
@@ -134,6 +135,7 @@ public class AuthenticationServiceBean {
             registerProviderFactory(new BuiltinAuthenticationProviderFactory(builtinUserServiceBean, passwordValidatorService, this));
             registerProviderFactory(new ShibAuthenticationProviderFactory());
             registerProviderFactory(new OAuth2AuthenticationProviderFactory());
+            registerProviderFactory(new OIDCAuthenticationProviderFactory());
 
         } catch (AuthorizationSetupException ex) {
             logger.log(Level.SEVERE, "Exception setting up the authentication provider factories: " + ex.getMessage(), ex);
@@ -192,17 +194,19 @@ public class AuthenticationServiceBean {
         authenticationProviders.put(aProvider.getId(), aProvider);
         actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Auth, "registerProvider")
                                  .setInfo(aProvider.getId() + ":" + aProvider.getInfo().getTitle()));
-        if (aProvider instanceof AbstractOAuth2AuthenticationProvider) {
-            oAuth2authenticationProviders.put(aProvider.getId(), (AbstractOAuth2AuthenticationProvider) aProvider);
+        if (aProvider instanceof OAuth2AuthenticationProvider) {
+            OAuth2AuthenticationProvider oauth2Provider = (OAuth2AuthenticationProvider) aProvider;
+            oauth2Provider.initialize();
+            oAuth2authenticationProviders.put(aProvider.getId(), oauth2Provider);
         }
 
     }
 
-    public AbstractOAuth2AuthenticationProvider getOAuth2Provider(String id) {
+    public OAuth2AuthenticationProvider getOAuth2Provider(String id) {
         return oAuth2authenticationProviders.get(id);
     }
 
-    public Set<AbstractOAuth2AuthenticationProvider> getOAuth2Providers() {
+    public Set<OAuth2AuthenticationProvider> getOAuth2Providers() {
         return new HashSet<>(oAuth2authenticationProviders.values());
     }
 
@@ -449,7 +453,7 @@ public class AuthenticationServiceBean {
     // A method for generating a new API token;
     // TODO: this is a simple, one-size-fits-all solution; we'll need
     // to expand this system, to be able to generate tokens with different
-    // lifecycles/valid for specific actions only, etc. 
+    // lifecycles/valid for specific actions only, etc.
     // -- L.A. 4.0 beta12
     public ApiToken generateApiToken(AuthenticatedUser au) {
         ApiToken apiToken = new ApiToken();
@@ -913,5 +917,4 @@ public class AuthenticationServiceBean {
                 google.getId()
         );
     }
-
 }

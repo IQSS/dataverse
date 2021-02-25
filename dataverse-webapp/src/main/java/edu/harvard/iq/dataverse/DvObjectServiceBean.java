@@ -16,6 +16,7 @@ import javax.persistence.Query;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -135,7 +136,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
             .setParameter("id", dvObjectId)
             .setParameter("currentTime", new Timestamp(new Date().getTime()))
             .executeUpdate();
-        
+
         if (rowsAffected == 1) {
             logger.log(Level.FINE, "Updated permission index time for DvObject id {0}", dvObjectId);
         } else {
@@ -187,11 +188,10 @@ public class DvObjectServiceBean implements java.io.Serializable {
     }
 
     public List<Object[]> getDvObjectInfoForMyData(List<Long> dvObjectIdList) {
-        //msgt("getAssigneeAndRoleIdListFor");
 
         String dvObjectClause = getDvObjectIdListClause(dvObjectIdList);
         if (dvObjectClause == null) {
-            return null;
+            return Collections.emptyList();
         }
 
         String qstr = "SELECT dv.id, dv.dtype, dv.owner_id"; // dv.modificationtime,
@@ -213,11 +213,10 @@ public class DvObjectServiceBean implements java.io.Serializable {
      * @return
      */
     public List<Object[]> getDvObjectInfoByParentIdForMyData(List<Long> dvObjectParentIdList) {
-        //msgt("getAssigneeAndRoleIdListFor");
 
         String dvObjectClause = getDvObjectIdListClause(dvObjectParentIdList);
         if (dvObjectClause == null) {
-            return null;
+            return Collections.emptyList();
         }
 
         String qstr = "SELECT dv.id, dv.dtype, dv.owner_id"; // dv.modificationtime,

@@ -1,0 +1,141 @@
+package edu.harvard.iq.dataverse.authorization.providers.oauth2;
+
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.matching.ContentPattern;
+import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
+import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
+import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.omg.CORBA.PRIVATE_MEMBER;
+
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Random;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class OIDCAuthenticationProviderIT {
+
+    private static final int MOCK_SERVER_PORT = 7117;
+    private static final String CLIENT_ID = "client-id";
+    private static final String CLIENT_SECRET = "client-secret";
+    private static final String ISSUER_URL = "http://localhost:" + MOCK_SERVER_PORT;
+
+    private OIDCAuthenticationProvider provider;
+
+    private WireMockServer server;
+
+    @BeforeEach
+    void setUp() throws AuthorizationSetupException {
+        setUpMockServer();
+
+        provider = new OIDCAuthenticationProvider(CLIENT_ID, CLIENT_SECRET, ISSUER_URL);
+        provider.initialize();
+    }
+
+    @AfterEach
+    void tearDown() {
+        server.stop();
+    }
+
+    // -------------------- TESTS --------------------
+
+    @Test
+    @DisplayName("Should create authorization URL")
+    void createAuthorizationUrl() {
+
+        // given
+        String state = String.valueOf(new Random().nextInt());
+        String redirectUri = "redirect-uri";
+
+        // when
+        String authorizationUrl = provider.createAuthorizationUrl(state, redirectUri);
+
+        // then
+        assertThat(authorizationUrl).isEqualTo(String.format(
+                "http://localhost:%d/protocol/openid-connect/auth" +
+                "?response_type=code&redirect_uri=%s" +
+                "&state=%s&client_id=client-id&scope=openid+profile+email", MOCK_SERVER_PORT, redirectUri, state));
+    }
+
+    @Test
+    @DisplayName("Should use received token to retrieve user data")
+    void getUserRecord() throws OAuth2Exception {
+
+        // given
+        String code = String.valueOf(new Random().nextInt());
+        String redirectUri = "redirect-uri";
+
+        WireMock.stubFor(WireMock.post("/protocol/openid-connect/token")
+                .willReturn(WireMock.aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{" +
+                                "\"access_token\": \"access-token\"," +
+                                "\"token_type\": \"Bearer\"," +
+                                "\"refresh_token\": \"refresh-token\"," +
+                                "\"expires_in\": 3600" +
+                                "}")));
+
+        WireMock.stubFor(WireMock.get("/protocol/openid-connect/userinfo")
+                .withHeader("Authorization", WireMock.equalTo("Bearer access-token"))
+                .willReturn(WireMock.aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{" +
+                                "\"sub\": \"248289761001\"," +
+                                "\"name\": \"Zenon Nonez\"," +
+                                "\"given_name\": \"Zenon\"," +
+                                "\"family_name\": \"Nonez\"," +
+                                "\"preferred_username\": \"zenon.nonez\"," +
+                                "\"email\": \"zenon.nonez@icm.edu.pl\"" +
+                                "}")));
+
+        // when
+        OAuth2UserRecord userData = provider.getUserRecord(code, null, redirectUri);
+
+        // then
+        assertThat(userData.getUsername()).isEqualTo("zenon.nonez");
+        AuthenticatedUserDisplayInfo displayInfo = userData.getDisplayInfo();
+        assertThat(displayInfo.getFirstName()).isEqualTo("Zenon");
+        assertThat(displayInfo.getLastName()).isEqualTo("Nonez");
+        assertThat(displayInfo.getEmailAddress()).isEqualTo("zenon.nonez@icm.edu.pl");
+    }
+
+    // -------------------- PRIVATE --------------------
+
+    private void setUpMockServer() {
+        server = new WireMockServer(MOCK_SERVER_PORT);
+        server.start();
+        WireMock.configureFor(MOCK_SERVER_PORT);
+        setUpConfigurationEndpoint();
+    }
+
+    private void setUpConfigurationEndpoint() {
+        String configurationJson = readConfigurationJson();
+
+        WireMock.stubFor(WireMock.get("/.well-known/openid-configuration")
+                .willReturn(WireMock.aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withStatus(200)
+                        .withBody(configurationJson)));
+    }
+
+    private String readConfigurationJson() {
+        try {
+            return IOUtils.toString(
+                    getClass().getClassLoader().getResourceAsStream("json/oidc/oidc_conf.json"), Charset.defaultCharset())
+                    .replaceAll("____", String.valueOf(MOCK_SERVER_PORT));
+        } catch (IOException ioe) {
+            throw new IllegalStateException(ioe);
+        }
+    }
+}

@@ -67,8 +67,8 @@ public class OAuth2AuthenticationProviderFactory implements AuthenticationProvid
      * @param factoryData
      * @return A map of the factory data.
      */
-    protected Map<String, String> parseFactoryData(String factoryData) {
-        return Arrays.asList(factoryData.split("\\|")).stream()
+    public static Map<String, String> parseFactoryData(String factoryData) {
+        return Arrays.stream(factoryData.split("\\|"))
                 .map(s -> s.split(":", 2))
                 .filter(p -> p.length == 2)
                 .collect(Collectors.toMap(kv -> kv[0].trim(), kv -> kv[1].trim()));
