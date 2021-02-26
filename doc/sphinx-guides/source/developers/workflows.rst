@@ -60,7 +60,8 @@ A step that writes data about the current workflow invocation to the instance lo
 pause
 +++++
 
-A step that pauses the workflow. The workflow is paused until a POST request is sent to ``/api/workflows/{invocation-id}``. Sending 'fail' in the POST body (Content-type:text/plain) will trigger a failure and workflow rollback. All other responses are considered as successes. 
+A step that pauses the workflow. The workflow is paused until a POST request is sent to ``/api/workflows/{invocation-id}``. Sending 'fail' in the POST body (Content-type:text/plain) will trigger a failure and workflow rollback. All other responses are considered as successes.
+The pause step is intended for testing - the invocationId required to end the pause is only available in the log (and database). Adding a parameter (see log step) with the key/value "authorized":"true" will allow the invocationId to be used as a credential as with the http/authext step below. 
 
 .. code:: json
 
