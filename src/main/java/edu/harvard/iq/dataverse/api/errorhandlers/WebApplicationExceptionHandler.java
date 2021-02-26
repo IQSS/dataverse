@@ -47,7 +47,7 @@ public class WebApplicationExceptionHandler implements ExceptionMapper<WebApplic
                 if ( (ex.getMessage()+"").toLowerCase().startsWith("tabular data required")) {
                     jrb.message(BundleUtil.getStringFromBundle("access.api.exception.metadata.not.available.for.nontabular.file"));
                 } else if ((ex.getMessage() + "").toLowerCase().startsWith("no permission to download file")) {
-                    jrb.message("You do not have permission to download this file.");
+                    jrb.message(BundleUtil.getStringFromBundle("access.api.exception.metadata.restricted.no.permission"));
                 } else {
                     jrb.message("Bad Request. The API request cannot be completed with the parameters supplied. Please check your code for typos, or consult our API guide at http://guides.dataverse.org.");
                     jrb.request(request);
