@@ -23,7 +23,7 @@ If a step in a workflow fails, the Dataverse installation makes an effort to rol
 .. tip::
   For invoking external systems using a REST api, the Dataverse Software's internal step
   provider offers two steps for sending and receiving customizable HTTP requests.
-  *http/sr* and *http/authExt*, detailed below, with the latter able to use the API to make changes to the dataset being processed. (Both lock the dataset to prevent other processes from changing the dataset between the time the step is launched to when the external process responds to the Dataverse instance.)
+  *http/sr* and *http/authExt*, detailed below, with the latter able to use the API to make changes to the dataset being processed. Both lock the dataset to prevent other processes from changing the dataset between the time the step is launched to when the external process responds to the Dataverse instance.
 
 Administration
 ~~~~~~~~~~~~~~
