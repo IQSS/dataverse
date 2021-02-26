@@ -627,13 +627,37 @@ div.edit-field div.ui-message {margin:6px 0;}
 .metadata-container table.metadata {border-collapse:separate;margin:0 4px;width:100%;}
 .metadata-container table.metadata th {width:25%;vertical-align:top;padding:6px 12px;}
 .metadata-container table.metadata td {padding:6px 12px;vertical-align:top;}
-@media(max-width:767px){
+
+/* TO-DO FIX max-width:1199px FOR SUMMARY BLOCK ONLY, NOT OTHER PAGES */
+@media(max-width:1199px){
     .metadata-container table.metadata th, .metadata-container table.metadata td {display:block;width:100%;}
     .metadata-container table.metadata th {padding-bottom:0;}
     .metadata-container table.metadata td {padding-left:30px;}
 }
 .panel-body.metadata-container {padding:15px 0;}
 .metadata-logo {max-width:180px;max-height:40px;}
+.metadata-container .truncate-more-link, .metadata-container .collapse-less-link {color: #337AB7; cursor: pointer; cursor: hand;}
+
+/* HTML METADATA OVERWRITE */
+.metadata-container table.metadata td > div {
+    /* https://stackoverflow.com/a/24158056 */
+    /*-moz-white-space: pre-wrap;
+    white-space: pre-wrap;
+    hyphens: auto;
+    -ms-word-break: break-all;
+    -ms-word-wrap: break-all;
+    -webkit-word-break: break-word;
+    -webkit-word-wrap: break-word;
+    word-break: break-word;
+    word-wrap: break-word;
+    -webkit-hyphens: auto;
+    -moz-hyphens: auto;
+    -ms-hyphens: auto;
+    hyphens: auto;*/
+}
+.metadata-container pre {
+    white-space: pre-wrap !important;
+}
 
 /* Primefaces vs Bootstrap selectOneMenu fix */
 div.ui-selectonemenu.form-control {padding:0px;}

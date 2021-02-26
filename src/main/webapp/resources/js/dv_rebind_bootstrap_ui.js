@@ -22,15 +22,18 @@ function bind_bsui_components(){
     // Hide open tooltips + popovers
     $('.bootstrap-button-tooltip, [data-toggle="tooltip"]').tooltip("hide");
     $("[data-toggle='popover']").popover("hide");
+    
+    // Truncate content
+    contentTruncate();
+    
+    // Truncate checksums
+    checksumTruncate();
 
     // Tooltips + popovers
     bind_tooltip_popover();
 
     // Disabled pagination links
     disabledLinks();
-    
-    // Truncate checksums
-    checksumTruncate();
     
     // Sharrre
     sharrre();
@@ -157,7 +160,62 @@ function sharrre(){
         }
     });
 }
+
+/*
+ * Truncate any metadata content
+ */
+function contentTruncate(){
     
+    // jquery.truncate.js
+    // HTML-safe truncation
+    // https://github.com/pathable/truncate
+    
+    // WHAT ARE WE TRUNCATING
+    // TO-DO IS THERE A MORE SCALABLE SELECTOR METHOD THAN THIS? ADD TRUNCATE CLASS TO OBJECTS? e.g. span.checksum-truncate
+    $('#dsDescription td div').each(function () {
+        
+        // GET THE DESC TEXT AND HTML
+        var truncateThis = $(this).html();
+
+        // TO-DO TRUNCATE BTN LABEL TEXT FROM BUNDLE
+        var readMoreBtn = '... <button class="btn btn-link truncate-more-link" style="color:teal !important;margin:0;padding:0;" type="button" data-toggle="tooltip" data-original-title="Click to read the full description." aria-expanded="false" aria-controls="#dsDescription">Read More [+]</button>';
+        var readLessBtn = '<button class="btn btn-link collapse-less-link" style="margin:0;padding:0;" type="button" data-toggle="tooltip" data-original-title="Click to collapse the description." aria-expanded="true" aria-controls="#dsDescription">Read Less [-]</button>';
+        
+        if ($(this).hasClass('thisWasTruncated')) {
+            // DO NOTHING
+        }
+        else {
+            
+            // TO-DO PUT THE ORIGINAL FULL DESCRIPTION SOMEWHERE
+            // $('#dsDescription td div').attr({'data-html':'true', 'data-original-text':truncateThis});
+
+            var thisWasTruncated = jQuery.truncate(truncateThis, {
+                length: 500,
+                words: true,
+                keepFirstWord: true,
+                ellipsis: readMoreBtn,
+                finishBlock: true
+            });
+
+            // ... add responsive img class ++ link target ... DO THIS ANYWAY SOMEWHERE ELSE!!
+            $(this).toggleClass('thisWasTruncated').html(thisWasTruncated).find('img').attr('class', 'img-responsive');
+
+            // Return full description on Read More link click ++ add responsive img class ++ link target ... DO THIS ANYWAY SOMEWHERE ELSE!!
+            $(document).on('click', 'button.truncate-more-link', function() {
+                $(this).tooltip('hide').parent('div').toggleClass('thisWasTruncated').html(truncateThis).append(readLessBtn).find('img').attr('class', 'img-responsive');
+                $('button.collapse-less-link').tooltip();
+            });
+            // ... add responsive img class ++ link target ... DO THIS ANYWAY SOMEWHERE ELSE!!
+            $(document).on('click', 'button.collapse-less-link', function() {
+                $(this).tooltip('hide').parent('div').toggleClass('thisWasTruncated').html(thisWasTruncated).find('img').attr('class', 'img-responsive');
+                $('button.truncate-more-link').tooltip();
+            });
+            
+        }
+        
+    });
+}
+
 /*
  * Truncate file checksums
  */
