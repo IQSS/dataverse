@@ -103,10 +103,6 @@ public class UserNotificationServiceBean {
     }
 
     public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, Type type, Long objectId, String comment, AuthenticatedUser requestor, boolean isHtmlContent) {
-        if (dataverseUser.isDisabled()) {
-            logger.info("An attempt was made to send a " + type + " notification to a disabled user: " + dataverseUser);
-            return;
-        }
         UserNotification userNotification = new UserNotification();
         userNotification.setUser(dataverseUser);
         userNotification.setSendDate(sendDate);
