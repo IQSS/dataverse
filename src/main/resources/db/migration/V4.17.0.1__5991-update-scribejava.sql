@@ -1,0 +1,1 @@
+ALTER TABLE OAuth2TokenData DROP COLUMN IF EXISTS scope;
