@@ -8,16 +8,16 @@
 	otherId	Other ID	Another unique identifier that identifies this Dataset (e.g., producer's or another repository's number).		none	4	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 	otherIdAgency	Agency	Name of agency which generated this identifier.		text	5	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation
 	otherIdValue	Identifier	Other identifier that corresponds to this Dataset.		text	6	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation
-	author	Author	The person(s), corporate body(ies), or agency(ies) responsible for creating the work.		none	7		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation	http://purl.org/dc/terms/creator
+	author	Author	The person(s), corporate body(ies), or agency(ies) responsible for creating the work.		none	7		FALSE	FALSE	TRUE	FALSE	TRUE	TRUE		citation	http://purl.org/dc/terms/creator
 	authorName	Name	The author's Family Name, Given Name or the name of the organization responsible for this Dataset.	FamilyName, GivenName or Organization	text	8	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	TRUE	author	citation
 	authorAffiliation	Affiliation	The organization with which the author is affiliated.		text	9	(#VALUE)	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	author	citation
 	authorIdentifierScheme	Identifier Scheme	Name of the identifier scheme (ORCID, ISNI).		text	10	- #VALUE:	FALSE	TRUE	FALSE	FALSE	TRUE	FALSE	author	citation	http://purl.org/spar/datacite/AgentIdentifierScheme
 	authorIdentifier	Identifier	Uniquely identifies an individual author or organization, according to various schemes.		text	11	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	author	citation	http://purl.org/spar/datacite/AgentIdentifier
-	datasetContact	Contact	The contact(s) for this Dataset.		none	12		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
+	datasetContact	Contact	The contact(s) for this Dataset.		none	12		FALSE	FALSE	TRUE	FALSE	TRUE	TRUE		citation
 	datasetContactName	Name	The contact's Family Name, Given Name or the name of the organization.	FamilyName, GivenName or Organization	text	13	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	citation
 	datasetContactAffiliation	Affiliation	The organization with which the contact is affiliated.		text	14	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	citation
 	datasetContactEmail	E-mail	The e-mail address(es) of the contact(s) for the Dataset. This will not be displayed.		email	15	#EMAIL	FALSE	FALSE	FALSE	FALSE	TRUE	TRUE	datasetContact	citation
-	dsDescription	Description	A summary describing the purpose, nature, and scope of the Dataset.		none	16		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation	
+	dsDescription	Description	A summary describing the purpose, nature, and scope of the Dataset.		none	16		FALSE	FALSE	TRUE	FALSE	TRUE	TRUE		citation	
 	dsDescriptionValue	Text	A summary describing the purpose, nature, and scope of the Dataset.		textbox	17	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE	dsDescription	citation
 	dsDescriptionDate	Date	In cases where a Dataset contains more than one description (for example, one might be supplied by the data producer and another prepared by the data repository where the data are deposited), the date attribute is used to distinguish between the two descriptions. The date attribute follows the ISO convention of YYYY-MM-DD.	YYYY-MM-DD	date	18	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	dsDescription	citation
 	subject	Subject	Domain-specific Subject Categories that are topically relevant to the Dataset.		text	19		TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		citation	http://purl.org/dc/terms/subject
@@ -37,7 +37,7 @@
 	notesText	Notes	Additional important information about the Dataset.		textbox	33		FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		citation
 	language	Language	Language of the Dataset		text	34		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		citation	http://purl.org/dc/terms/language
 	producer	Producer	Person or organization with the financial or administrative responsibility over this Dataset		none	35		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
-	producerName	Name	Producer name	FamilyName, GivenName or Organization	text	36	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	producer	citation
+	producerName	Name	Producer name	FamilyName, GivenName or Organization	text	36	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	TRUE	producer	citation
 	producerAffiliation	Affiliation	The organization with which the producer is affiliated.		text	37	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
 	producerAbbreviation	Abbreviation	The abbreviation by which the producer is commonly known. (ex. IQSS, ICPSR)		text	38	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
 	producerURL	URL	Producer URL points to the producer's web presence, if appropriate. Enter an absolute URL where the producer's web site is found, such as http://www.my.org.  	Enter full URL, starting with http://	url	39	<a href="#VALUE" target="_blank" rel="noopener">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	citation
