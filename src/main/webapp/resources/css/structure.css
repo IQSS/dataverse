@@ -638,23 +638,11 @@ div.edit-field div.ui-message {margin:6px 0;}
 .metadata-logo {max-width:180px;max-height:40px;}
 .metadata-container .truncate-more-link, .metadata-container .collapse-less-link {color: #337AB7; cursor: pointer; cursor: hand;}
 
-/* HTML METADATA OVERWRITE */
+/* METADATA LONG STRINGS */
 .metadata-container table.metadata td > div {
-    /* https://stackoverflow.com/a/24158056 */
-    /*-moz-white-space: pre-wrap;
-    white-space: pre-wrap;
-    hyphens: auto;
-    -ms-word-break: break-all;
-    -ms-word-wrap: break-all;
-    -webkit-word-break: break-word;
-    -webkit-word-wrap: break-word;
-    word-break: break-word;
-    word-wrap: break-word;
-    -webkit-hyphens: auto;
-    -moz-hyphens: auto;
-    -ms-hyphens: auto;
-    hyphens: auto;*/
+    /* TO-DO #6685 #6578 #1634 #1249 */
 }
+/* METADATA HTML */
 .metadata-container pre {
     white-space: pre-wrap !important;
 }

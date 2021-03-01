@@ -1655,6 +1655,9 @@
                     //<![CDATA[                   
                     $(document).ready(function () {
                         popoverHTML('#{bundle.htmlAllowedTitle}', '#{bundle.htmlAllowedTags}');
+                        
+                        // TO-DO MAKE DYNAMIC
+                        contentTruncate('dsDescription', 'Description', '#{bundle.truncateMoreBtn}', '#{bundle.truncateMoreTip}', '#{bundle.truncateLessBtn}', '#{bundle.truncateLessTip}');
                     });
                     function openDialog() {
                         PF('details').show();
