@@ -180,13 +180,13 @@ public class FeedbackUtilTest {
         assertEquals(installationBrandName + " contact: " + messageSubject, feedback.getSubject());
         String expectedBody
                 = "You have just been sent the following message from " + userEmail + " "
-                + "via the " + installationBrandName + " hosted dataverse named \"dvAlias1\":\n\n"
+                + "via the " + installationBrandName + " hosted Dataverse collection named \"dvAlias1\":\n\n"
                 + "---\n\n"
                 + userMessage + "\n\n"
                 + "---\n\n"
                 + supportTeamName + "\n"
                 + systemEmail + "\n\n"
-                + "Go to dataverse https://dataverse.librascholar.edu/dataverse/dvAlias1\n\n"
+                + "Go to the Dataverse installation https://dataverse.librascholar.edu/dataverse/dvAlias1\n\n"
                 + "You received this email because you have been listed as a contact for the Dataverse collection. "
                 + "If you believe this was an error, please contact "
                 + supportTeamName + " at " + systemEmail + ". "
