@@ -1656,8 +1656,10 @@
                     $(document).ready(function () {
                         popoverHTML('#{bundle.htmlAllowedTitle}', '#{bundle.htmlAllowedTags}');
                         
-                        // TO-DO MAKE DYNAMIC
-                        contentTruncate('dsDescription', 'Description', '#{bundle.truncateMoreBtn}', '#{bundle.truncateMoreTip}', '#{bundle.truncateLessBtn}', '#{bundle.truncateLessTip}');
+                        // truncate summary description, contentTruncate function in dv_rebind_bootstrap_ui.js
+                        var  = 'dsDescription'
+                        var descLabel = $('#' + descId + ' th').text();
+                        contentTruncate(descId, descLabel, '#{bundle.truncateMoreBtn}', '#{bundle.truncateMoreTip}');
                     });
                     function openDialog() {
                         PF('details').show();

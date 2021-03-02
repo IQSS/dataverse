@@ -23,9 +23,6 @@ function bind_bsui_components(){
     $('.bootstrap-button-tooltip, [data-toggle="tooltip"]').tooltip("hide");
     $("[data-toggle='popover']").popover("hide");
     
-    // Truncate content
-    contentTruncate();
-    
     // Truncate checksums
     checksumTruncate();
 
@@ -162,13 +159,10 @@ function sharrre(){
 }
 
 /*
- * Truncate any metadata content
+ * Truncate dataset description content
  */
-function contentTruncate(truncSelector, truncMetaLabel, truncMoreBtn, truncMoreTip, truncLessBtn, truncLessTip){
+function contentTruncate(truncSelector, truncMetaLabel, truncMoreBtn, truncMoreTip){
     
-    // I MADE IT MYSELF...
-    
-    // WHAT ARE WE TRUNCATING
     // SELECTOR ID FROM PARAMETERS
     $('#' + truncSelector + ' td div').each(function () {
         
