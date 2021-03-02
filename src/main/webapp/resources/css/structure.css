@@ -645,7 +645,7 @@ div.ui-selectonemenu.form-control {padding:0px;}
 table.ui-selectoneradio {border-collapse:separate;}
 table.ui-selectoneradio td {padding:1px;}
 table.ui-selectoneradio span.ui-icon-bullet, .ui-radiobutton-box span.ui-icon-bullet {background-position: -81.3px -145.1px;}
-table.ui-selectoneradio label {font-weight: normal; margin-right:1em;}
+table.ui-selectoneradio label {font-weight: normal; margin-right:1em; word-break:break-all; /* BREAK ALL LONG STRING RESPONSIVE FIX */}
 .ui-radiobutton-box span.ui-radiobutton-icon {height: 16px; width: 16px; display: block; overflow: hidden;}
 
 div.ui-radiobutton {margin:0; vertical-align:text-bottom;}
