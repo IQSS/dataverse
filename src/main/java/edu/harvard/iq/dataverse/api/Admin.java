@@ -404,8 +404,12 @@ public class Admin extends AbstractApiBean {
     }
 
     private Response disableAuthenticatedUser(AuthenticatedUser userToDisable) {
+        AuthenticatedUser superuser = authSvc.getAdminUser();
+        if (superuser == null) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Cannot find superuser to execute DisableUserCommand.");
+        }
         try {
-            execCommand(new DisableUserCommand(createDataverseRequest(findUserOrDie()), userToDisable));
+            execCommand(new DisableUserCommand(createDataverseRequest(superuser), userToDisable));
             return ok("User " + userToDisable.getIdentifier() + " disabled.");
         } catch (WrappedResponse ex) {
             return ex.getResponse();

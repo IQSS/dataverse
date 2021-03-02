@@ -961,18 +961,14 @@ public class UtilIT {
                 .post("api/dataverses/" + definitionPoint + "/assignments?key=" + apiToken);
     }
 
-    public static Response disableUser(String username, String apiToken) {
-//    public static Response disableUser(String username, String apiToken) {
+    public static Response disableUser(String username) {
         Response disableUserResponse = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-//                .post("/api/users/" + username + "/disable");
                 .post("/api/admin/authenticatedUsers/" + username + "/disable");
         return disableUserResponse;
     }
 
-    public static Response disableUser(Long userId, String apiToken) {
+    public static Response disableUser(Long userId) {
         Response disableUserResponse = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .post("/api/admin/authenticatedUsers/id/" + userId + "/disable");
         return disableUserResponse;
     }

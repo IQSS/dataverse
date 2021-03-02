@@ -83,11 +83,7 @@ public class DisableUsersIT {
                 .body("data.traces.roleAssignments.items[0].definitionPointId", equalTo(dataverseId))
                 .body("data.traces.explicitGroups.items[0].name", equalTo("Group for " + dataverseAlias));
 
-        Response failToDisableUserWithoutSuperuserApiToken = UtilIT.disableUser(username, apiToken);
-        failToDisableUserWithoutSuperuserApiToken.prettyPrint();
-        failToDisableUserWithoutSuperuserApiToken.then().assertThat().statusCode(UNAUTHORIZED.getStatusCode());
-
-        Response disableUser = UtilIT.disableUser(username, superuserApiToken);
+        Response disableUser = UtilIT.disableUser(username);
         disableUser.prettyPrint();
         disableUser.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -152,7 +148,7 @@ public class DisableUsersIT {
         Long userId = JsonPath.from(createUser.body().asString()).getLong("data.user.id");
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
 
-        Response disableUser = UtilIT.disableUser(userId, superuserApiToken);
+        Response disableUser = UtilIT.disableUser(userId);
         disableUser.prettyPrint();
         disableUser.then().assertThat().statusCode(OK.getStatusCode());
     }
@@ -175,7 +171,7 @@ public class DisableUsersIT {
         createUserToMerge.prettyPrint();
         String usernameToMerge = UtilIT.getUsernameFromResponse(createUserToMerge);
 
-        Response disableUser = UtilIT.disableUser(usernameToMerge, superuserApiToken);
+        Response disableUser = UtilIT.disableUser(usernameToMerge);
         disableUser.prettyPrint();
         disableUser.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -203,7 +199,7 @@ public class DisableUsersIT {
         createUserToMerge.prettyPrint();
         String usernameToMerge = UtilIT.getUsernameFromResponse(createUserToMerge);
 
-        Response disableUser = UtilIT.disableUser(usernameMergeTarget, superuserApiToken);
+        Response disableUser = UtilIT.disableUser(usernameMergeTarget);
         disableUser.prettyPrint();
         disableUser.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -231,11 +227,11 @@ public class DisableUsersIT {
         createUserToMerge.prettyPrint();
         String usernameToMerge = UtilIT.getUsernameFromResponse(createUserToMerge);
 
-        Response disableUserMergeTarget = UtilIT.disableUser(usernameMergeTarget, superuserApiToken);
+        Response disableUserMergeTarget = UtilIT.disableUser(usernameMergeTarget);
         disableUserMergeTarget.prettyPrint();
         disableUserMergeTarget.then().assertThat().statusCode(OK.getStatusCode());
 
-        Response disableUserToMerge = UtilIT.disableUser(usernameToMerge, superuserApiToken);
+        Response disableUserToMerge = UtilIT.disableUser(usernameToMerge);
         disableUserToMerge.prettyPrint();
         disableUserToMerge.then().assertThat().statusCode(OK.getStatusCode());
 

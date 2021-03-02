@@ -3086,7 +3086,7 @@ Note: If the user has performed certain actions such as creating or contributing
 Disable a User
 ~~~~~~~~~~~~~~
 
-Disables a user.
+Disables a user. A superuser API token is not required but the command will operate using the first superuser it finds.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
