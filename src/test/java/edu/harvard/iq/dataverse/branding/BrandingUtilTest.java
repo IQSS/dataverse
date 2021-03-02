@@ -70,7 +70,7 @@ public class BrandingUtilTest {
                 ));
         System.out.println("message: " + message);
         assertEquals("Welcome to LibraScholar! Get started by adding or finding data. "
-                + "Have questions? Check out the User Guide at http://guides.librascholar.edu/en/4.3/user or"
+                + "Have questions? Check out the Dataverse Software User Guides at http://guides.librascholar.edu/en/4.3/user or"
                 + " contact LibraScholar Support at support@librascholar.edu for assistance.",
                 message);
     }
