@@ -39,10 +39,10 @@ public class BundleUtilTest {
                 + "http://guides.dataverse.org/en/4.0/user/dataset-management.html .",
                 BundleUtil.getStringFromBundle("notification.email.createDataset",
                         Arrays.asList("dsName", "dsUrl", "parentDvName", "parentDvUrl", "http://guides.dataverse.org/en", "4.0")));
-        assertEquals("There are no dataverses, datasets, or files that match your search. "
+        assertEquals("There are no Dataverse collections, datasets, or files that match your search. "
                 + "Please try a new search by using other or broader terms. You can also check out "
                 + "the <a href=\"http://guides.dataverse.org/en/4.2/user/find-use-data.html\" title=\"Finding &amp; Using "
-                + "Data - Dataverse User Guide\" target=\"_blank\">search guide</a> for tips.",
+                + "Data - Dataverse Software User Guide\" target=\"_blank\">search guide</a> for tips.",
                 BundleUtil.getStringFromBundle("dataverse.results.empty.zero",
                         Arrays.asList("http://guides.dataverse.org/en", "4.2")));
         assertEquals("There are no search results based on how you have narrowed your search. You can check out "
