@@ -207,7 +207,7 @@ public class FeedbackUtilTest {
         feedback = feedbacks2.get(0);
         assertEquals("support@librascholar.edu", feedback.getToEmail());
         System.out.println("body:\n\n" + feedback.getBody());
-        assertTrue(feedback.getBody().startsWith("There is no contact address on file for this dataverse so this message is being sent to the system address."));
+        assertTrue(feedback.getBody().startsWith("There is no contact address on file for this Dataverse collection so this message is being sent to the system address."));
     }
 
     @Test
