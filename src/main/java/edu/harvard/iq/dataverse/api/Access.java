@@ -450,6 +450,24 @@ public class Access extends AbstractApiBean {
            throw new BadRequestException("tabular data required");
         }
         
+        if (dataFile.isRestricted()) {
+            boolean hasPermissionToDownloadFile = false;
+            DataverseRequest dataverseRequest;
+            try {
+                dataverseRequest = createDataverseRequest(findUserOrDie());
+            } catch (WrappedResponse ex) {
+                throw new BadRequestException("cannot find user");
+            }
+            if (dataverseRequest != null && dataverseRequest.getUser() instanceof GuestUser) {
+                // We must be in the UI. Try to get a non-GuestUser from the session.
+                dataverseRequest = dvRequestService.getDataverseRequest();
+            }
+            hasPermissionToDownloadFile = permissionService.requestOn(dataverseRequest, dataFile).has(Permission.DownloadFile);
+            if (!hasPermissionToDownloadFile) {
+                throw new BadRequestException("no permission to download file");
+            }
+        }
+
         response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
 
         FileMetadata fm = null;
