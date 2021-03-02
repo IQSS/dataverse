@@ -24,11 +24,11 @@ public class BundleUtilTest {
         String actual = BundleUtil.getStringFromBundle("dataverse.create.success", Arrays.asList("http://guides.dataverse.org/en", "4.0"));
         String expected = "You have successfully created your Dataverse collection! To learn more about what you can do with your Dataverse collection, check out the <a href=\"http://guides.dataverse.org/en/4.0/user/dataverse-management.html\" title=\"Dataverse Collection Management - Dataverse Software User Guide\" target=\"_blank\">User Guide</a>.";
         assertEquals(expected, actual);
-        assertEquals("Your new dataverse named "
+        assertEquals("Your new Dataverse collection named "
                 + "dvName (view at dvUrl ) "
                 + "was created in parentDvName (view at parentDvUrl ). To learn more "
-                + "about what you can do with your dataverse, check out "
-                + "the Dataverse Management - User Guide at "
+                + "about what you can do with your Dataverse collection, check out "
+                + "the Dataverse Collection Management - User Guide at "
                 + "http://guides.dataverse.org/en/4.0/user/dataverse-management.html .",
                 BundleUtil.getStringFromBundle("notification.email.createDataverse",
                         Arrays.asList("dvName", "dvUrl", "parentDvName", "parentDvUrl", "http://guides.dataverse.org/en", "4.0")));

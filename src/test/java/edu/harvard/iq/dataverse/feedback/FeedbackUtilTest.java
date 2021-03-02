@@ -187,7 +187,7 @@ public class FeedbackUtilTest {
                 + supportTeamName + "\n"
                 + systemEmail + "\n\n"
                 + "Go to dataverse https://dataverse.librascholar.edu/dataverse/dvAlias1\n\n"
-                + "You received this email because you have been listed as a contact for the dataverse. "
+                + "You received this email because you have been listed as a contact for the Dataverse collection. "
                 + "If you believe this was an error, please contact "
                 + supportTeamName + " at " + systemEmail + ". "
                 + "To respond directly to the individual who sent the message, simply reply to this email.";

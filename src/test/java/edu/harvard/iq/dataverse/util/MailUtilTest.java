@@ -45,7 +45,7 @@ public class MailUtilTest {
     @Test
     public void testSubjectCreateDataverse() {
         userNotification.setType(UserNotification.Type.CREATEDV);
-        assertEquals("LibraScholar: Your dataverse has been created", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null));
+        assertEquals("LibraScholar: Your Dataverse collection has been created", MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null));
     }
     
     @Test
