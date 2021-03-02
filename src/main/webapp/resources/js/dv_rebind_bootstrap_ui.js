@@ -166,47 +166,30 @@ function sharrre(){
  */
 function contentTruncate(truncSelector, truncMetaLabel, truncMoreBtn, truncMoreTip, truncLessBtn, truncLessTip){
     
-    // jquery.truncate.js
-    // HTML-safe truncation
-    // https://github.com/pathable/truncate
+    // I MADE IT MYSELF...
     
     // WHAT ARE WE TRUNCATING
     // SELECTOR ID FROM PARAMETERS
     $('#' + truncSelector + ' td div').each(function () {
-        // GET THE DESC TEXT AND HTML
-        var truncateThis = $(this).html();
-
-        // BTN LABEL TEXT, DYNAMIC ARIA ATTR'S, FROM BUNDLE VIA PARAMETERS
-        var readMoreBtn = '... <button class="btn btn-link truncate-more-link" style="margin:0;padding:0;" type="button" data-toggle="tooltip" data-original-title="' + truncMoreTip + ' ' + truncMetaLabel + '." aria-expanded="false" aria-controls="#' + truncSelector + '">' + truncMoreBtn + ' [+]</button>';
-        var readLessBtn = '<button class="btn btn-link collapse-less-link" style="margin:0;padding:0;" type="button" data-toggle="tooltip" data-original-title="' + truncLessTip + ' ' + truncMetaLabel + '." aria-expanded="true" aria-controls="#' + truncSelector + '">' + truncLessBtn + ' [-]</button>';
         
-        if ($(this).hasClass('thisWasTruncated')) {
-            // ALREADY TRUNCATED, DO NOTHING
-        }
-        else {
-            var thisWasTruncated = jQuery.truncate(truncateThis, {
-                length: 500,
-                words: true,
-                keepFirstWord: true,
-                ellipsis: readMoreBtn,
-                // REMOVED FINISH BLOCK TO TRUNCATE MID CONENT
-                // finishBlock: true
-            });
+        // ADD A MAX-HEIGHT TO CONTAINER
+        $(this).css({'max-height':'250px','overflow-y':'hidden','position':'relative'});
+        
+        // BTN LABEL TEXT, DYNAMIC ARIA ATTR'S, FROM BUNDLE VIA PARAMETERS
+        var readMoreBtn = '<button class="btn btn-link desc-more-link" style="margin:0;padding:0;" type="button" data-toggle="tooltip" data-original-title="' + truncMoreTip + ' ' + truncMetaLabel + '." aria-expanded="false" aria-controls="#' + truncSelector + '">' + truncMoreBtn + ' [+]</button>';
+        var moreFade = '<div id="more-fade-block" style="text-align:center; padding-top:250px; width:100%; position:absolute; bottom:0; background:linear-gradient(180deg,hsla(0,0%,100%,0),#fff 80%);">' + readMoreBtn + '</div>';
+        
+        // add responsive img class
+        $(this).find('img').attr('class', 'img-responsive');
+        
+        // add Read More + button background fade
+        $(this).append(moreFade);
 
-            // ... add responsive img class ++ link target
-            $(this).toggleClass('thisWasTruncated').html(thisWasTruncated).find('img').attr('class', 'img-responsive');
-
-            // ... add full description to summary block on Read More link click ++ add responsive img class ++ link target
-            $(document).on('click', 'button.truncate-more-link', function() {
-                $(this).tooltip('hide').parent('div').toggleClass('thisWasTruncated').html(truncateThis).append(readLessBtn).find('img').attr('class', 'img-responsive');
-                $('button.collapse-less-link').tooltip();
-            });
-            // ... add responsive img class ++ link target
-            $(document).on('click', 'button.collapse-less-link', function() {
-                $(this).tooltip('hide').parent('div').toggleClass('thisWasTruncated').html(thisWasTruncated).find('img').attr('class', 'img-responsive');
-                $('button.truncate-more-link').tooltip();
-            });
-        }
+        // ... add full description to summary block on Read More link click ++ add responsive img class
+        $(document).on('click', 'button.desc-more-link', function() {
+            $(this).tooltip('hide').parent('div').parent('div').css({'max-height':'none','overflow-y':'visible','position':'relative'});
+            $('#more-fade-block').remove();
+        });
     });
 }
 
