@@ -34,11 +34,6 @@ public class GuestUser implements User {
     }
 
     @Override
-    public boolean isDisabled() {
-        return false;
-    }
-
-    @Override
     public boolean equals( Object o ) {
         return (o instanceof GuestUser);
     }

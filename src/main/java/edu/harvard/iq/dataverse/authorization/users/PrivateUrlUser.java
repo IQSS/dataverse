@@ -48,11 +48,6 @@ public class PrivateUrlUser implements User {
     }
 
     @Override
-    public boolean isDisabled() {
-        return false;
-    }
-
-    @Override
     public String getIdentifier() {
         return PREFIX + datasetId;
     }

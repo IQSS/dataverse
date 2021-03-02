@@ -14,6 +14,8 @@ public interface User extends RoleAssignee, Serializable {
 
     public boolean isSuperuser();
 
-    public boolean isDisabled();
+    default boolean isDisabled() {
+        return false;
+    }
 
 }
