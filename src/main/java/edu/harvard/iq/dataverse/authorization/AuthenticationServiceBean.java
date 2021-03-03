@@ -220,7 +220,6 @@ public class AuthenticationServiceBean {
                 em.remove(confirmEmailData);
             }
             userNotificationService.findByUser(user.getId()).forEach(userNotificationService::delete);
-            em.createNativeQuery("delete from OAuth2TokenData where user_id =" + user.getId()).executeUpdate();
             
             AuthenticationProvider prv = lookupProvider(user);
             if ( prv != null && prv.isUserDeletionAllowed() ) {
