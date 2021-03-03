@@ -166,24 +166,30 @@ function contentTruncate(truncSelector, truncMetaLabel, truncMoreBtn, truncMoreT
     // SELECTOR ID FROM PARAMETERS
     $('#' + truncSelector + ' td div').each(function () {
         
-        // ADD A MAX-HEIGHT TO CONTAINER
-        $(this).css({'max-height':'250px','overflow-y':'hidden','position':'relative'});
-        
-        // BTN LABEL TEXT, DYNAMIC ARIA ATTR'S, FROM BUNDLE VIA PARAMETERS
-        var readMoreBtn = '<button class="btn btn-link desc-more-link" type="button" data-toggle="tooltip" data-original-title="' + truncMoreTip + ' ' + truncMetaLabel + '." aria-expanded="false" aria-controls="#' + truncSelector + '">' + truncMoreBtn + ' [+]</button>';
-        var moreFade = '<div class="more-fade-block">' + readMoreBtn + '</div>';
-        
-        // add responsive img class
+        // add responsive img class to limit width to that of container
         $(this).find('img').attr('class', 'img-responsive');
         
-        // add Read More + button background fade
-        $(this).append(moreFade);
+        // find container height
+        var containerHeight = $(this).outerHeight();
+        
+        if (containerHeight > 250) {
+            // ADD A MAX-HEIGHT TO CONTAINER
+            $(this).css({'max-height':'250px','overflow-y':'hidden','position':'relative'});
 
-        // ... add full description to summary block on Read More link click ++ add responsive img class
-        $(document).on('click', 'button.desc-more-link', function() {
-            $(this).tooltip('hide').parent('div').parent('div').css({'max-height':'none','overflow-y':'visible','position':'relative'});
-            $(this).parent('div.more-fade-block').remove();
-        });
+            // BTN LABEL TEXT, DYNAMIC ARIA ATTR'S, FROM BUNDLE VIA PARAMETERS
+            var readMoreBtn = '<button class="btn btn-link desc-more-link" type="button" data-toggle="tooltip" data-original-title="' + truncMoreTip + ' ' + truncMetaLabel + '." aria-expanded="false" aria-controls="#' + truncSelector + '">' + truncMoreBtn + ' [+]</button>';
+            var moreFade = '<div class="more-fade-block">' + readMoreBtn + '</div>';
+
+            // add Read More + button background fade
+            $(this).append(moreFade);
+
+            // ... add full description to summary block on Read More link click ++ add responsive img class
+            $(document).on('click', 'button.desc-more-link', function() {
+                $(this).tooltip('hide').parent('div').parent('div').css({'max-height':'none','overflow-y':'visible','position':'relative'});
+                $(this).parent('div.more-fade-block').remove();
+            });
+        }
+            
     });
 }
 
