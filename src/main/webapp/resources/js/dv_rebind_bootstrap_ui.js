@@ -22,15 +22,15 @@ function bind_bsui_components(){
     // Hide open tooltips + popovers
     $('.bootstrap-button-tooltip, [data-toggle="tooltip"]').tooltip("hide");
     $("[data-toggle='popover']").popover("hide");
-    
-    // Truncate checksums
-    checksumTruncate();
 
     // Tooltips + popovers
     bind_tooltip_popover();
 
     // Disabled pagination links
     disabledLinks();
+    
+    // Truncate checksums
+    checksumTruncate();
     
     // Sharrre
     sharrre();
@@ -170,8 +170,8 @@ function contentTruncate(truncSelector, truncMetaLabel, truncMoreBtn, truncMoreT
         $(this).css({'max-height':'250px','overflow-y':'hidden','position':'relative'});
         
         // BTN LABEL TEXT, DYNAMIC ARIA ATTR'S, FROM BUNDLE VIA PARAMETERS
-        var readMoreBtn = '<button class="btn btn-link desc-more-link" style="margin:0;padding:0;" type="button" data-toggle="tooltip" data-original-title="' + truncMoreTip + ' ' + truncMetaLabel + '." aria-expanded="false" aria-controls="#' + truncSelector + '">' + truncMoreBtn + ' [+]</button>';
-        var moreFade = '<div id="more-fade-block" style="text-align:center; padding-top:250px; width:100%; position:absolute; bottom:0; background:linear-gradient(180deg,hsla(0,0%,100%,0),#fff 80%);">' + readMoreBtn + '</div>';
+        var readMoreBtn = '<button class="btn btn-link desc-more-link" type="button" data-toggle="tooltip" data-original-title="' + truncMoreTip + ' ' + truncMetaLabel + '." aria-expanded="false" aria-controls="#' + truncSelector + '">' + truncMoreBtn + ' [+]</button>';
+        var moreFade = '<div class="more-fade-block">' + readMoreBtn + '</div>';
         
         // add responsive img class
         $(this).find('img').attr('class', 'img-responsive');
@@ -182,7 +182,7 @@ function contentTruncate(truncSelector, truncMetaLabel, truncMoreBtn, truncMoreT
         // ... add full description to summary block on Read More link click ++ add responsive img class
         $(document).on('click', 'button.desc-more-link', function() {
             $(this).tooltip('hide').parent('div').parent('div').css({'max-height':'none','overflow-y':'visible','position':'relative'});
-            $('#more-fade-block').remove();
+            $(this).parent('div.more-fade-block').remove();
         });
     });
 }
