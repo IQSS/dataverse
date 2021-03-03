@@ -49,6 +49,7 @@
         <script src="#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getJsUrl()}">
         </script>
         <script>
+        //<![CDATA[
                 $(document).ready(function() {
                     var jsonResult = {};
                     var cvocUrl = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getCVocUrl()}";
@@ -56,14 +57,24 @@
                     var cvocProtocol = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getProtocol()}";
                     var termParentUri ="#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getTermParentUri()}";
                     var vocabsize = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getVocabs().size()}";
-                    var readonly = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).isReadonly()}";
+                    var readonly = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).isReadonly()}" === "true";
+                    var hideReadonlyUrls = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).isHideReadonlyUrls()}" === "true";
                     //$("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[3]}").find("input[name*='cv_vocab_url_'").css('background-color' , '#EEEEEE');
                     $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[3]}").find("input[name*='cv_vocab_url_'").val(termParentUri);
-                    if (vocabsize == 1 &amp;&amp; readonly)
+                    if (vocabsize == 1 && readonly) {
+                        // make it look readonly
                         $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[0]}").find("input[name*='cv_vocabs_'").css('background-color' , '#EEEEEE');
+                        // Note that we could decide to not display this at all
+                        //$("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[0]}").parent().css('display' , 'none');
+                    }
+                    if (readonly && hideReadonlyUrls) {
+                        // do not display URL fields and their labels
+                        $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[2]}").parent().css('display' , 'none');
+                        $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[3]}").parent().css('display' , 'none');
+                    }
                     var selectedVocab = "";
                     var vocabFieldValue = $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[0]}").find("input[name*='cv_vocabs_'").val();
-                    if (vocabFieldValue =='' &amp;&amp; vocabsize == 1) {
+                    if (vocabFieldValue =='' && vocabsize == 1) {
                             selectedVocab = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getVocabs()[0]}";
                             $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[0]}").find("input[name*='cv_vocabs_'").val(selectedVocab);
                     }
@@ -81,7 +92,7 @@
                             cv = { 'cvocUrl' : cvocUrl, 'protocol': cvocProtocol, 'lang': cvocLang, 'termParentUri': termParentUri, 'selectedVocab': selectedVocab, 'term': request.term };
                         autointerface(request, response, cv, mapping);
                           },
-                          minLength: 1,
+                          minLength: #{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getMinChars()},
                           select: function(event, ui) {
                                $.each(ui, function(i, v) {
                                $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[2]}").find("input[name*='cv_url_']").val(v.id);
@@ -90,6 +101,7 @@
                         }
                     );
                  });
+            //]]>
             </script>
         <style type="text/css">
             ul.ui-autocomplete {
