@@ -1715,32 +1715,6 @@ public class OpenAireExportUtil {
         }
     }
 
-    private static boolean areAllFilesUnderSameLincese(List<FileDTO> files) {
-        final String firstFileLicense = files.get(0).getLicenseName();
-        if (StringUtils.isNotEmpty(firstFileLicense)) {
-            return files
-                    .stream()
-                    .allMatch(fileDTO -> fileDTO.getLicenseName().equals(firstFileLicense));
-        }
-        return false;
-    }
-
-    private static boolean areAllFilesAllRightsReserved(List<FileDTO> files) {
-        return files
-                .stream()
-                .allMatch(fileDTO -> isOfTermsOfUseType(fileDTO, FileTermsOfUse.TermsOfUseType.ALL_RIGHTS_RESERVED));
-    }
-
-    private static boolean isOfTermsOfUseType(FileDTO fileDTO, FileTermsOfUse.TermsOfUseType allRightsReserved) {
-        return fileDTO.getTermsOfUseType().equals(allRightsReserved.toString());
-    }
-
-    private static boolean areAllFilesRestricted(List<FileDTO> files) {
-        return files
-                .stream()
-                .allMatch(fileDTO -> isOfTermsOfUseType(fileDTO, FileTermsOfUse.TermsOfUseType.RESTRICTED));
-    }
-
     private static void writeRightsUriInfoAttribute(XMLStreamWriter xmlw, List<FileDTO> files, String language, boolean hasActiveGuestbook) throws XMLStreamException {
         writeRightsHeader(xmlw, language);
 
@@ -1756,9 +1730,37 @@ public class OpenAireExportUtil {
         xmlw.writeEndElement(); // </rights>
     }
 
-    private static boolean hasRestrictedFile(List<FileDTO> files) {
+    public static boolean areAllFilesUnderSameLincese(List<FileDTO> files) {
+        final String firstFileLicense = files.get(0).getLicenseName();
+        if (StringUtils.isNotEmpty(firstFileLicense)) {
+            return files
+                    .stream()
+                    .allMatch(fileDTO -> fileDTO.getLicenseName().equals(firstFileLicense));
+        }
+        return false;
+    }
+    
+    public static boolean areAllFilesAllRightsReserved(List<FileDTO> files) {
+        return files
+                .stream()
+                .allMatch(fileDTO -> isOfTermsOfUseType(fileDTO, FileTermsOfUse.TermsOfUseType.ALL_RIGHTS_RESERVED));
+    }
+    
+    public static boolean areAllFilesRestricted(List<FileDTO> files) {
+        return files
+                .stream()
+                .allMatch(fileDTO -> isOfTermsOfUseType(fileDTO, FileTermsOfUse.TermsOfUseType.RESTRICTED));
+    }
+    
+    
+    public static boolean hasRestrictedFile(List<FileDTO> files) {
         return files
                 .stream()
                 .anyMatch(fileDTO -> isOfTermsOfUseType(fileDTO, FileTermsOfUse.TermsOfUseType.RESTRICTED));
+    }
+    
+
+    public static boolean isOfTermsOfUseType(FileDTO fileDTO, FileTermsOfUse.TermsOfUseType termsOfUseType) {
+        return fileDTO.getTermsOfUseType().equals(termsOfUseType.toString());
     }
 }

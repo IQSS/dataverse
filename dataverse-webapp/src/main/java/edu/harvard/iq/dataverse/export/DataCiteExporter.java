@@ -6,12 +6,14 @@ import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.persistence.dataset.DataCitation;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 
+import javax.enterprise.context.ApplicationScoped;
+
 import java.util.Map;
 
 /**
  * @author qqmyers
  */
-
+@ApplicationScoped
 public class DataCiteExporter implements Exporter {
 
     private static String DEFAULT_XML_NAMESPACE = "http://datacite.org/schema/kernel-3";
@@ -21,6 +23,11 @@ public class DataCiteExporter implements Exporter {
     @Override
     public String getProviderName() {
         return ExporterType.DATACITE.getPrefix();
+    }
+
+    @Override
+    public ExporterType getExporterType() {
+        return ExporterType.DATACITE;
     }
 
     @Override
@@ -66,11 +73,6 @@ public class DataCiteExporter implements Exporter {
     @Override
     public String getXMLSchemaVersion() {
         return DataCiteExporter.DEFAULT_XML_VERSION;
-    }
-
-    @Override
-    public void setParam(String name, Object value) {
-        // this exporter does not uses or supports any parameters as of now.
     }
 
 }

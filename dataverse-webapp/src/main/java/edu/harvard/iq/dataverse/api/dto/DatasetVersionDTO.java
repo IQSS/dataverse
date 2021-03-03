@@ -320,12 +320,6 @@ public class DatasetVersionDTO {
         this.fileAccessRequest = fileAccessRequest;
     }
 
-    public List<FieldDTO> getDatasetFields() {
-        List<FieldDTO> fields = new ArrayList<>();
-        //TODO: finish this
-        return null;
-    }
-
     @Override
     public String toString() {
         return "DatasetVersionDTO{" + "archiveNote=" + archiveNote + ", deacessionLink=" + deacessionLink + ", versionNumber=" + versionNumber + ", versionMinorNumber=" + versionMinorNumber + ", id=" + id + ", versionState=" + versionState + ", releaseDate=" + releaseDate + ", lastUpdateTime=" + lastUpdateTime + ", createTime=" + createTime + ", archiveTime=" + archiveTime + ", UNF=" + UNF + ", metadataBlocks=" + metadataBlocks + ", fileMetadatas=" + fileMetadatas + '}';

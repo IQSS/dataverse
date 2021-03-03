@@ -4,22 +4,25 @@ import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.export.openaire.OpenAireExportUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+@ApplicationScoped
 public class OpenAireExporter implements Exporter {
 
-    private boolean excludeEmailFromExport;
+    private SettingsServiceBean settingsService;
 
     // -------------------- CONSTRUCTORS --------------------
 
-    public OpenAireExporter(boolean excludeEmailFromExport) {
-        this.excludeEmailFromExport = excludeEmailFromExport;
+    public OpenAireExporter(SettingsServiceBean settingsService) {
+        this.settingsService = settingsService;
     }
 
     // -------------------- LOGIC --------------------
@@ -30,6 +33,11 @@ public class OpenAireExporter implements Exporter {
     }
 
     @Override
+    public ExporterType getExporterType() {
+        return ExporterType.OPENAIRE;
+    }
+
+    @Override
     public String getDisplayName() {
         return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.dataciteOpenAIRE");
     }
@@ -37,7 +45,7 @@ public class OpenAireExporter implements Exporter {
     @Override
     public String exportDataset(DatasetVersion version) throws ExportException {
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
-            JsonObject datasetAsJson = JsonPrinter.jsonAsDatasetDto(version, excludeEmailFromExport)
+            JsonObject datasetAsJson = JsonPrinter.jsonAsDatasetDto(version, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport))
                     .build();
 
             OpenAireExportUtil.datasetJson2openaire(datasetAsJson, byteArrayOutputStream);
@@ -75,10 +83,5 @@ public class OpenAireExporter implements Exporter {
     @Override
     public String getXMLSchemaVersion() {
         return OpenAireExportUtil.SCHEMA_VERSION;
-    }
-
-    @Override
-    public void setParam(String name, Object value) {
-        // not used
     }
 }

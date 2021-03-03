@@ -89,13 +89,12 @@
       {
         "description": "",
         "label": "trees.png",
-        "version": 1,
-        "datasetVersionId": 1,
+        "termsOfUseType": "LICENSE_BASED",
+        "licenseName": "CC0",
         "dataFile": {
           "id": 12,
-          "name": "trees.png",
           "contentType": "image/png",
-          "filename": "15000410d28-890ffa5c23c6",
+          "filename": "trees.png",
           "originalFormatLabel": "UNKNOWN",
           "md5": "0386269a5acb2c57b4eade587ff4db64",
           "description": ""

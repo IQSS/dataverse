@@ -3,22 +3,28 @@ package edu.harvard.iq.dataverse.export;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import org.apache.commons.lang.StringUtils;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.core.MediaType;
 
 
 
+@ApplicationScoped
 public class JSONExporter implements Exporter {
 
-    private boolean excludeEmailFromExport;
+    private SettingsServiceBean settingsService;
 
     // -------------------- CONSTRUCTORS --------------------
 
-    public JSONExporter(boolean excludeEmailFromExport) {
-        this.excludeEmailFromExport = excludeEmailFromExport;
+    @Inject
+    public JSONExporter(SettingsServiceBean settingsService) {
+        this.settingsService = settingsService;
     }
 
     // -------------------- LOGIC --------------------
@@ -29,6 +35,11 @@ public class JSONExporter implements Exporter {
     }
 
     @Override
+    public ExporterType getExporterType() {
+        return ExporterType.JSON;
+    }
+
+    @Override
     public String getDisplayName() {
         return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.json") != null ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.json") : "JSON";
     }
@@ -36,7 +47,7 @@ public class JSONExporter implements Exporter {
     @Override
     public String exportDataset(DatasetVersion version) throws ExportException {
         try {
-            JsonObjectBuilder jsonObjectBuilder = JsonPrinter.jsonAsDatasetDto(version, excludeEmailFromExport);
+            JsonObjectBuilder jsonObjectBuilder = JsonPrinter.jsonAsDatasetDto(version, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport));
 
             return jsonObjectBuilder
                     .build()
@@ -75,11 +86,6 @@ public class JSONExporter implements Exporter {
     @Override
     public String getXMLSchemaVersion() {
         return StringUtils.EMPTY;
-    }
-
-    @Override
-    public void setParam(String name, Object value) {
-        // this exporter doesn't need/doesn't currently take any parameters
     }
 
     @Override

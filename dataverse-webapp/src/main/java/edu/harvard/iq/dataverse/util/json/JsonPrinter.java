@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFileTag;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
+import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.RestrictType;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.persistence.datafile.license.License;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -546,6 +547,8 @@ public class JsonPrinter {
                 .add("termsOfUseType", fmd.getTermsOfUse().getTermsOfUseType().toString())
                 .add("licenseName", getLicenseName(fmd))
                 .add("licenseUrl", getLicenseUrl(fmd))
+                .add("accessConditions", getAccessConditions(fmd))
+                .add("accessConditionsCustomText", fmd.getTermsOfUse().getRestrictCustomText())
                 .add("directoryLabel", fmd.getDirectoryLabel())
                 .add("version", fmd.getVersion())
                 .add("datasetVersionId", fmd.getDatasetVersion().getId())
@@ -806,5 +809,9 @@ public class JsonPrinter {
 
     private static String getLicenseUrl(FileMetadata fmd) {
         return Optional.ofNullable(fmd.getTermsOfUse().getLicense()).map(License::getUrl).orElse(StringUtils.EMPTY);
+    }
+    
+    private static String getAccessConditions(FileMetadata fmd) {
+        return Optional.ofNullable(fmd.getTermsOfUse().getRestrictType()).map(RestrictType::name).orElse(StringUtils.EMPTY);
     }
 }

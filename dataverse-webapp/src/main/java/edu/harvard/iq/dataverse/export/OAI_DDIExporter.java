@@ -1,11 +1,18 @@
 package edu.harvard.iq.dataverse.export;
 
+import com.google.gson.Gson;
+import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.common.BundleUtil;
-import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
+import edu.harvard.iq.dataverse.export.ddi.DdiConstants;
+import edu.harvard.iq.dataverse.export.ddi.DdiDatasetExportService;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
 import java.io.ByteArrayOutputStream;
@@ -20,23 +27,20 @@ import java.util.Map;
  * that is, without the variable/data information. The ddi export
  * utility does not need the version entity to produce that.
  */
-
+@ApplicationScoped
 public class OAI_DDIExporter implements Exporter {
 
-    private static String DEFAULT_XML_NAMESPACE = "ddi:codebook:2_5";
-    private static String DEFAULT_XML_SCHEMALOCATION = "http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd";
-    private static String DEFAULT_XML_VERSION = "2.5";
-
-    private boolean excludeEmailFromExport;
-    private String dataverseUrl;
+    private DdiDatasetExportService ddiDatasetExportService;
+    private SettingsServiceBean settingsService;
     private VocabularyValuesIndexer vocabularyValuesIndexer;
 
     // -------------------- CONSTRUCTORS --------------------
 
-    public OAI_DDIExporter(boolean excludeEmailFromExport, String dataverseUrl) {
-        this.excludeEmailFromExport = excludeEmailFromExport;
-        this.dataverseUrl = dataverseUrl;
-        this.vocabularyValuesIndexer = new VocabularyValuesIndexer();
+    @Inject
+    public OAI_DDIExporter(DdiDatasetExportService ddiDatasetExportService, SettingsServiceBean settingsService, VocabularyValuesIndexer vocabularyValuesIndexer) {
+        this.ddiDatasetExportService = ddiDatasetExportService;
+        this.settingsService = settingsService;
+        this.vocabularyValuesIndexer = vocabularyValuesIndexer;
     }
 
     // -------------------- LOGIC --------------------
@@ -47,6 +51,11 @@ public class OAI_DDIExporter implements Exporter {
     }
 
     @Override
+    public ExporterType getExporterType() {
+        return ExporterType.OAIDDI;
+    }
+
+    @Override
     public String getDisplayName() {
         return BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.ddi") != null ? BundleUtil.getStringFromBundle("dataset.exportBtn.itemLabel.ddi") : "DDI";
     }
@@ -54,11 +63,15 @@ public class OAI_DDIExporter implements Exporter {
     @Override
     public String exportDataset(DatasetVersion version) throws ExportException {
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
-            JsonObject datasetAsJson = JsonPrinter.jsonAsDatasetDto(version, excludeEmailFromExport)
+            JsonObject datasetAsJson = JsonPrinter.jsonAsDatasetDto(version, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport))
                     .build();
             Map<String, Map<String, String>> localizedValuesIndex
                     = vocabularyValuesIndexer.indexLocalizedNamesOfUsedKeysByTypeAndValue(version, Locale.ENGLISH);
-            DdiExportUtil.datasetJson2ddi(datasetAsJson, byteArrayOutputStream, dataverseUrl, localizedValuesIndex);
+            
+            Gson gson = new Gson();
+            DatasetDTO datasetDto = gson.fromJson(datasetAsJson.toString(), DatasetDTO.class);
+            
+            ddiDatasetExportService.datasetJson2ddi(datasetDto, byteArrayOutputStream, localizedValuesIndex);
             return byteArrayOutputStream.toString(StandardCharsets.UTF_8.name());
         } catch (XMLStreamException | IOException xse) {
             throw new ExportException("Caught XMLStreamException performing DDI export");
@@ -82,21 +95,16 @@ public class OAI_DDIExporter implements Exporter {
 
     @Override
     public String getXMLNameSpace() {
-        return OAI_DDIExporter.DEFAULT_XML_NAMESPACE;
+        return DdiConstants.DDI_NAMESPACE;
     }
 
     @Override
     public String getXMLSchemaLocation() {
-        return OAI_DDIExporter.DEFAULT_XML_SCHEMALOCATION;
+        return DdiConstants.DDI_SCHEMA_LOCATION;
     }
 
     @Override
     public String getXMLSchemaVersion() {
-        return OAI_DDIExporter.DEFAULT_XML_VERSION;
-    }
-
-    @Override
-    public void setParam(String name, Object value) {
-        // this exporter does not uses or supports any parameters as of now.
+        return DdiConstants.DDI_VERSION;
     }
 }

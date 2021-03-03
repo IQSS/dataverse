@@ -1,20 +1,25 @@
 package edu.harvard.iq.dataverse.export.openaire;
 
 import edu.harvard.iq.dataverse.export.OpenAireExporter;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+@ExtendWith(MockitoExtension.class)
 class OpenAireExporterTest {
 
-    OpenAireExporter instance;
+    @InjectMocks
+    private OpenAireExporter instance;
 
-    @BeforeEach
-    void setUp() {
-        instance = new OpenAireExporter(true);
-    }
+    @Mock
+    private SettingsServiceBean settingsService;
 
     // -------------------- TESTS --------------------
 

@@ -1,23 +1,20 @@
 package edu.harvard.iq.dataverse.export;
 
-import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
-import javax.annotation.PostConstruct;
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-
-import org.apache.commons.lang.StringUtils;
-
 import edu.harvard.iq.dataverse.error.DataverseError;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.control.Either;
 import io.vavr.control.Try;
+import org.apache.commons.lang.StringUtils;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.Stateless;
+import javax.enterprise.inject.Instance;
+import javax.inject.Inject;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 
 /**
@@ -26,11 +23,8 @@ import io.vavr.control.Try;
 @Stateless
 public class ExportService {
 
-    private Map<ExporterType, Exporter> exporters = new HashMap<>();
-    private LocalDate currentDate = null;
-
-    private SettingsServiceBean settingsService;
-    private SystemConfig systemConfig;
+    private Instance<Exporter> exporters;
+    private Map<ExporterType, Exporter> exportersMap = new HashMap<>();
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -40,40 +34,15 @@ public class ExportService {
     }
 
     @Inject
-    public ExportService(SettingsServiceBean settingsService,
-                         SystemConfig systemConfig) {
-        this.settingsService = settingsService;
-        this.systemConfig = systemConfig;
+    public ExportService(Instance<Exporter> exporters) {
+        this.exporters = exporters;
     }
-
-    public ExportService(SettingsServiceBean settingsService,
-            SystemConfig systemConfig, LocalDate currentDate) {
-        this(settingsService, systemConfig);
-        this.currentDate = currentDate;
-}
 
     @PostConstruct
     void loadAllExporters() {
-        boolean isEmailExcludedFromExport = settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport);
 
-        exporters.put(ExporterType.DDI, new DDIExporter(isEmailExcludedFromExport, systemConfig.getDataverseSiteUrl()));
+        exporters.iterator().forEachRemaining(exporter -> exportersMap.put(exporter.getExporterType(), exporter));
 
-        exporters.put(ExporterType.DATACITE, new DataCiteExporter());
-
-        exporters.put(ExporterType.DCTERMS, new DCTermsExporter(isEmailExcludedFromExport));
-
-        exporters.put(ExporterType.DUBLINCORE, new DublinCoreExporter(isEmailExcludedFromExport));
-
-        exporters.put(ExporterType.OAIDDI, new OAI_DDIExporter(isEmailExcludedFromExport, systemConfig.getDataverseSiteUrl()));
-
-        exporters.put(ExporterType.OAIORE, new OAI_OREExporter(isEmailExcludedFromExport, systemConfig.getDataverseSiteUrl(), currentDate));
-
-        exporters.put(ExporterType.SCHEMADOTORG, new SchemaDotOrgExporter(systemConfig.getDataverseSiteUrl(),
-                settingsService.getValueForKey(SettingsServiceBean.Key.HideSchemaDotOrgDownloadUrls)));
-
-        exporters.put(ExporterType.OPENAIRE, new OpenAireExporter(isEmailExcludedFromExport));
-
-        exporters.put(ExporterType.JSON, new JSONExporter(isEmailExcludedFromExport));
     }
 
     // -------------------- LOGIC --------------------
@@ -104,7 +73,7 @@ public class ExportService {
     }
 
     public Map<ExporterType, Exporter> getAllExporters() {
-        return exporters;
+        return exportersMap;
     }
 
     /**
@@ -117,8 +86,10 @@ public class ExportService {
                 .get();
     }
 
-    public Optional<Exporter> getExporter(ExporterType exporter) {
-        return Optional.ofNullable(exporters.get(exporter));
+    // -------------------- PRIVATE --------------------
+
+    private Optional<Exporter> getExporter(ExporterType exporter) {
+        return Optional.ofNullable(exportersMap.get(exporter));
     }
 
 }

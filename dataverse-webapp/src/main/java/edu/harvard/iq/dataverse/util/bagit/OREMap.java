@@ -25,6 +25,7 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Comparator;
@@ -42,13 +43,16 @@ public class OREMap {
     private DatasetVersion version;
     private boolean excludeEmail = false;
     private String dataverseSiteUrl;
-    private LocalDate modifiedDate;
+    private Clock clock = Clock.systemUTC();
 
-    public OREMap(DatasetVersion version, boolean excludeEmail, String dataverseSiteUrl, LocalDate modifiedDate) {
+    public OREMap(DatasetVersion version, boolean excludeEmail, String dataverseSiteUrl) {
         this.version = version;
         this.excludeEmail = excludeEmail;
         this.dataverseSiteUrl = dataverseSiteUrl;
-        this.modifiedDate = modifiedDate;
+    }
+    public OREMap(DatasetVersion version, boolean excludeEmail, String dataverseSiteUrl, Clock clock) {
+        this(version, excludeEmail, dataverseSiteUrl);
+        this.clock = clock;
     }
 
     public void writeOREMap(OutputStream outputStream) throws Exception {
@@ -270,7 +274,7 @@ public class OREMap {
 
         // Now create the overall map object with it's metadata
         JsonObject oremap = Json.createObjectBuilder()
-                .add(JsonLDTerm.dcTerms("modified").getLabel(), modifiedDate.toString())
+                .add(JsonLDTerm.dcTerms("modified").getLabel(), LocalDate.now(clock).toString())
                 .add(JsonLDTerm.dcTerms("creator").getLabel(),
                      BundleUtil.getStringFromBundleWithLocale("institution.name", Locale.ENGLISH))
                 .add("@type", JsonLDTerm.ore("ResourceMap").getLabel())

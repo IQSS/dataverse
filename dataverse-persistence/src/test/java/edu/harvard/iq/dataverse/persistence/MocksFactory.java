@@ -138,7 +138,9 @@ public class MocksFactory {
         Random rand = new Random();
         files.forEach(df -> {
             df.getFileMetadata().addCategory(categories.get(rand.nextInt(categories.size())));
-            df.getFileMetadata().setTermsOfUse(new FileTermsOfUse());
+            FileTermsOfUse termsOfUse = new FileTermsOfUse();
+            termsOfUse.setAllRightsReserved(true);
+            df.getFileMetadata().setTermsOfUse(termsOfUse);
             metadatas.add(df.getFileMetadata());
         });
         ds.setFiles(files);

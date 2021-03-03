@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<var ID="v13" name="yes_no" intrvl="discrete">
+  <location fileid="f12"/>
+  <labl level="variable">Is yes or no?</labl>
+  <sumStat type="min">1</sumStat>
+  <sumStat type="max">2</sumStat>
+  <catgry>
+    <catValu>1</catValu>
+    <labl level="category">No</labl>
+    <catStat type="freq">39.99</catStat>
+  </catgry>
+  <catgry>
+    <catValu>2</catValu>
+    <labl level="category">Yes</labl>
+    <catStat type="freq">68</catStat>
+  </catgry>
+  <varFormat type="numeric"/>
+  <notes subject="Universal Numeric Fingerprint" level="variable" type="Dataverse:UNF">UNF:pending</notes>
+</var>

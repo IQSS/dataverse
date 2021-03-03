@@ -4,25 +4,35 @@ import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.export.dublincore.DublinCoreExportUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import io.vavr.control.Try;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 
+@ApplicationScoped
 public class DublinCoreExporter implements Exporter {
 
-    private boolean excludeEmailFromExport;
+    private SettingsServiceBean settingsService;
 
-    public DublinCoreExporter(boolean excludeEmailFromExport) {
-        this.excludeEmailFromExport = excludeEmailFromExport;
+    // -------------------- CONSTRUCTORS --------------------
+
+    @Inject
+    public DublinCoreExporter(SettingsServiceBean settingsService) {
+        this.settingsService = settingsService;
     }
+
+    // -------------------- LOGIC --------------------
 
     @Override
     public String exportDataset(DatasetVersion version) throws ExportException {
-        JsonObjectBuilder jsonObjectBuilder = JsonPrinter.jsonAsDatasetDto(version, excludeEmailFromExport);
+        JsonObjectBuilder jsonObjectBuilder = JsonPrinter.jsonAsDatasetDto(version, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport));
 
         JsonObject jsonDatasetVersion = jsonObjectBuilder
                 .build();
@@ -41,6 +51,11 @@ public class DublinCoreExporter implements Exporter {
     @Override
     public String getProviderName() {
         return ExporterType.DUBLINCORE.getPrefix();
+    }
+
+    @Override
+    public ExporterType getExporterType() {
+        return ExporterType.DUBLINCORE;
     }
 
     @Override
@@ -77,10 +92,5 @@ public class DublinCoreExporter implements Exporter {
     @Override
     public String getXMLSchemaVersion() {
         return DublinCoreExportUtil.DEFAULT_XML_VERSION;
-    }
-
-    @Override
-    public void setParam(String name, Object value) {
-
     }
 }

@@ -2,42 +2,50 @@ package edu.harvard.iq.dataverse.export;
 
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
 import org.apache.commons.lang.StringUtils;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
+import java.time.Clock;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
-
+@ApplicationScoped
 public class OAI_OREExporter implements Exporter {
 
     private static final Logger logger = Logger.getLogger(OAI_OREExporter.class.getCanonicalName());
 
-    private boolean excludeEmailFromExport;
-    private String dataverseSiteUrl;
-    private LocalDate modificationDate = null;
+    private SettingsServiceBean settingsService;
+    private SystemConfig systemConfig;
+
+    private Clock clock = Clock.systemUTC();
 
     // -------------------- CONSTRUCTORS --------------------
 
-    public OAI_OREExporter(boolean excludeEmailFromExport, String dataverseSiteUrl) {
-        this.excludeEmailFromExport = excludeEmailFromExport;
-        this.dataverseSiteUrl = dataverseSiteUrl;
+    @Inject
+    public OAI_OREExporter(SettingsServiceBean settingsService, SystemConfig systemConfig) {
+        this.settingsService = settingsService;
+        this.systemConfig = systemConfig;
     }
 
-    public OAI_OREExporter(boolean excludeEmailFromExport, String dataverseSiteUrl, LocalDate modificationDate) {
-        this(excludeEmailFromExport, dataverseSiteUrl);
-        this.modificationDate = modificationDate;
+    public OAI_OREExporter(SettingsServiceBean settingsService, SystemConfig systemConfig, Clock clock) {
+        this(settingsService, systemConfig);
+        this.clock = clock;
     }
     // -------------------- LOGIC --------------------
 
     @Override
     public String exportDataset(DatasetVersion version) {
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
-            new OREMap(version, excludeEmailFromExport, dataverseSiteUrl, modificationDate != null ? modificationDate : LocalDate.now())
+            new OREMap(version,
+                        settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport),
+                        systemConfig.getDataverseSiteUrl(), clock)
                     .writeOREMap(byteArrayOutputStream);
 
             return byteArrayOutputStream.toString(StandardCharsets.UTF_8.name());
@@ -51,6 +59,11 @@ public class OAI_OREExporter implements Exporter {
     @Override
     public String getProviderName() {
         return ExporterType.OAIORE.getPrefix();
+    }
+
+    @Override
+    public ExporterType getExporterType() {
+        return ExporterType.OAIORE;
     }
 
     @Override
@@ -86,11 +99,6 @@ public class OAI_OREExporter implements Exporter {
     @Override
     public String getXMLSchemaVersion() {
         return StringUtils.EMPTY;
-    }
-
-    @Override
-    public void setParam(String name, Object value) {
-        // this exporter doesn't need/doesn't currently take any parameters
     }
 
     @Override

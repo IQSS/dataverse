@@ -1,34 +1,6 @@
 package edu.harvard.iq.dataverse.export;
 
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.ws.rs.core.MediaType;
-
 import com.google.common.collect.Lists;
-
-import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
-
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.UnitTestUtils;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
@@ -48,6 +20,35 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import io.vavr.control.Either;
+import org.apache.commons.collections4.IteratorUtils;
+import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
+import javax.enterprise.inject.Instance;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.ws.rs.core.MediaType;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.sql.Timestamp;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -56,6 +57,7 @@ public class ExportServiceTest {
 
     //10/07/2019
     private final long DATE = 1562766661000L;
+    private final Clock clock = Clock.fixed(Instant.ofEpochMilli(DATE), ZoneOffset.UTC);
 
     private ExportService exportService;
 
@@ -67,14 +69,25 @@ public class ExportServiceTest {
 
     @Mock
     private SystemConfig systemConfig;
-
+    
+    @Mock
+    private Instance<Exporter> exporters;
+    
     @BeforeEach
     void prepareData() {
         when(settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)).thenReturn(false);
         when(systemConfig.getDataverseSiteUrl()).thenReturn("https://localhost");
         mockDatasetFields();
 
-        exportService = new ExportService(settingsService, systemConfig, LocalDate.of(2019, 7, 11));
+        when(exporters.iterator()).thenReturn(IteratorUtils.arrayIterator(
+                new DataCiteExporter(),
+                new DCTermsExporter(settingsService),
+                new DublinCoreExporter(settingsService),
+                new OAI_OREExporter(settingsService, systemConfig, clock),
+                new SchemaDotOrgExporter(settingsService, systemConfig),
+                new OpenAireExporter(settingsService),
+                new JSONExporter(settingsService)));
+        exportService = new ExportService(exporters);
         exportService.loadAllExporters();
     }
 
@@ -106,38 +119,6 @@ public class ExportServiceTest {
 
         //then
         Assert.assertEquals(UnitTestUtils.readFileToString("exportdata/dcterms.xml"), exportedDataset.get());
-    }
-
-    @Test
-    @DisplayName("export DatasetVersion as string for ddi")
-    public void exportDatasetVersionAsString_forDdi() throws IOException, JsonParseException, URISyntaxException {
-        //given
-        DatasetVersion datasetVersion = parseDatasetVersionFromClasspath("json/testDataset.json");
-        prepareDataForExport(datasetVersion);
-
-        //when
-        Either<DataverseError, String> exportedDataset =
-                exportService.exportDatasetVersionAsString(datasetVersion, ExporterType.DDI);
-
-        //then
-        Assert.assertEquals(UnitTestUtils.readFileToString("exportdata/ddi.xml"), exportedDataset.get());
-    }
-
-    @Test
-    @DisplayName("export DatasetVersion as string for ddi without email")
-    public void exportDatasetVersionAsString_forDdiWithoutEmail() throws IOException, JsonParseException {
-        //given
-        enableExcludingEmails();
-
-        DatasetVersion datasetVersion = parseDatasetVersionFromClasspath("json/testDataset.json");
-        prepareDataForExport(datasetVersion);
-
-        //when
-        Either<DataverseError, String> exportedDataset =
-                exportService.exportDatasetVersionAsString(datasetVersion, ExporterType.DDI);
-
-        //then
-        Assert.assertEquals(UnitTestUtils.readFileToString("exportdata/ddiWithoutEmail.xml"), exportedDataset.get());
     }
 
     @Test
@@ -223,7 +204,6 @@ public class ExportServiceTest {
 
         //then
         Assert.assertTrue(allExporters.containsKey(ExporterType.JSON));
-        Assert.assertTrue(allExporters.containsKey(ExporterType.DDI));
         Assert.assertTrue(allExporters.containsKey(ExporterType.DATACITE));
         Assert.assertTrue(allExporters.containsKey(ExporterType.SCHEMADOTORG));
         Assert.assertTrue(allExporters.containsKey(ExporterType.DCTERMS));
@@ -251,14 +231,6 @@ public class ExportServiceTest {
     }
 
     // -------------------- PRIVATE --------------------
-
-    private void enableExcludingEmails() {
-        when(settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)).thenReturn(true);
-        when(systemConfig.getDataverseSiteUrl()).thenReturn("https://localhost");
-
-        exportService = new ExportService(settingsService, systemConfig);
-        exportService.loadAllExporters();
-    }
 
     private DatasetVersion parseDatasetVersionFromClasspath(String classpath) throws IOException, JsonParseException {
 

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<var ID="v13" name="invalid_range_var" intrvl="contin">
+  <location fileid="f13"/>
+  <labl level="variable">Invalid range variable</labl>
+  <invalrng>
+    <range minExclusive="2" max="5"/>
+  </invalrng>
+  <varFormat type="numeric"/>
+  <notes subject="Universal Numeric Fingerprint" level="variable" type="Dataverse:UNF">UNF:pending</notes>
+</var>

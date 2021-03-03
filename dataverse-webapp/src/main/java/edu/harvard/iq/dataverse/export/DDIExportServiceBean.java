@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataConverter;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
+import edu.harvard.iq.dataverse.export.ddi.DdiConstants;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
@@ -81,11 +82,6 @@ public class DDIExportServiceBean {
     public static final String DB_VAR_RANGE_TYPE_MIN_EX = "min exclusive";
     public static final String DB_VAR_RANGE_TYPE_MAX = "max";
     public static final String DB_VAR_RANGE_TYPE_MAX_EX = "max exclusive";
-    public static final String LEVEL_FILE = "file";
-    public static final String NOTE_TYPE_UNF = "VDC:UNF";
-    public static final String NOTE_TYPE_TAG = "DATAVERSE:TAG";
-    public static final String NOTE_SUBJECT_UNF = "Universal Numeric Fingerprint";
-    public static final String NOTE_SUBJECT_TAG = "Data File Tag";
 
     /*
      * Internal service objects:
@@ -647,9 +643,9 @@ public class DDIExportServiceBean {
         // (Universal Numeric Fingerprint) signature:
         if (checkField("unf", excludedFieldSet, includedFieldSet) && dt.getUnf() != null && !dt.getUnf().equals("")) {
             xmlw.writeStartElement("notes");
-            writeAttribute(xmlw, "level", LEVEL_FILE);
-            writeAttribute(xmlw, "type", NOTE_TYPE_UNF);
-            writeAttribute(xmlw, "subject", NOTE_SUBJECT_UNF);
+            writeAttribute(xmlw, "level", DdiConstants.LEVEL_FILE);
+            writeAttribute(xmlw, "type", DdiConstants.NOTE_TYPE_UNF);
+            writeAttribute(xmlw, "subject", DdiConstants.NOTE_SUBJECT_UNF);
             xmlw.writeCharacters(dt.getUnf());
             xmlw.writeEndElement(); // notes
         }
@@ -677,9 +673,9 @@ public class DDIExportServiceBean {
         if (checkField("tags", excludedFieldSet, includedFieldSet) && df.getTags() != null) {
             for (int i = 0; i < df.getTags().size(); i++) {
                 xmlw.writeStartElement("notes");
-                writeAttribute(xmlw, "level", LEVEL_FILE);
-                writeAttribute(xmlw, "type", NOTE_TYPE_TAG);
-                writeAttribute(xmlw, "subject", NOTE_SUBJECT_TAG);
+                writeAttribute(xmlw, "level", DdiConstants.LEVEL_FILE);
+                writeAttribute(xmlw, "type", DdiConstants.NOTE_TYPE_TAG);
+                writeAttribute(xmlw, "subject", DdiConstants.NOTE_SUBJECT_TAG);
                 xmlw.writeCharacters(df.getTags().get(i).getTypeLabel());
                 xmlw.writeEndElement(); // notes
             }

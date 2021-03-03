@@ -8,6 +8,8 @@ public class FileDTO {
     private String termsOfUseType;
     private String licenseName;
     private String licenseUrl;
+    private String accessConditions;
+    private String accessConditionsCustomText;
 
     public String getLicenseUrl() {
         return licenseUrl;
@@ -55,5 +57,21 @@ public class FileDTO {
 
     public void setRestricted(boolean restricted) {
         this.restricted = restricted;
+    }
+
+    public String getAccessConditions() {
+        return accessConditions;
+    }
+
+    public String getAccessConditionsCustomText() {
+        return accessConditionsCustomText;
+    }
+
+    public void setAccessConditions(String accessConditions) {
+        this.accessConditions = accessConditions;
+    }
+
+    public void setAccessConditionsCustomText(String accessConditionsCustomText) {
+        this.accessConditionsCustomText = accessConditionsCustomText;
     }
 }

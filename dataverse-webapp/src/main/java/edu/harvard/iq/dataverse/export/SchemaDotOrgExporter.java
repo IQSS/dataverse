@@ -3,8 +3,12 @@ package edu.harvard.iq.dataverse.export;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -61,29 +65,37 @@ import javax.ws.rs.core.MediaType;
  * https://www.icpsr.umich.edu/icpsrweb/ICPSR/studies/23980/export , and
  * https://doi.pangaea.de/10.1594/PANGAEA.884619
  */
-
+@ApplicationScoped
 public class SchemaDotOrgExporter implements Exporter {
 
-    private String dataverseSiteUrlStatic;
-    private String hideSchemaDotOrgDownloadUrls;
+    private SettingsServiceBean settingsService;
+    private SystemConfig systemConfig;
 
     // -------------------- CONSTRUCTORS --------------------
 
-    public SchemaDotOrgExporter(String dataverseSiteUrlStatic, String HideSchemaDotOrgDownloadUrls) {
-        this.dataverseSiteUrlStatic = dataverseSiteUrlStatic;
-        this.hideSchemaDotOrgDownloadUrls = HideSchemaDotOrgDownloadUrls;
+    @Inject
+    public SchemaDotOrgExporter(SettingsServiceBean settingsService, SystemConfig systemConfig) {
+        this.settingsService = settingsService;
+        this.systemConfig = systemConfig;
     }
 
     // -------------------- LOGIC --------------------
 
     @Override
     public String exportDataset(DatasetVersion version) throws ExportException {
-        return JsonLdBuilder.buildJsonLd(version, dataverseSiteUrlStatic, hideSchemaDotOrgDownloadUrls);
+        return JsonLdBuilder.buildJsonLd(version,
+                systemConfig.getDataverseSiteUrl(),
+                settingsService.getValueForKey(SettingsServiceBean.Key.HideSchemaDotOrgDownloadUrls));
     }
 
     @Override
     public String getProviderName() {
         return ExporterType.SCHEMADOTORG.getPrefix();
+    }
+
+    @Override
+    public ExporterType getExporterType() {
+        return ExporterType.SCHEMADOTORG;
     }
 
     @Override
@@ -120,11 +132,6 @@ public class SchemaDotOrgExporter implements Exporter {
     @Override
     public String getXMLSchemaVersion() {
         return StringUtils.EMPTY;
-    }
-
-    @Override
-    public void setParam(String name, Object value) {
-        // this exporter doesn't need/doesn't currently take any parameters
     }
 
 

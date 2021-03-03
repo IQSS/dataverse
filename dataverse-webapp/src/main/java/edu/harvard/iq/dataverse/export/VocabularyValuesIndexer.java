@@ -3,10 +3,13 @@ package edu.harvard.iq.dataverse.export;
 import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 
+import javax.enterprise.context.ApplicationScoped;
+
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@ApplicationScoped
 class VocabularyValuesIndexer {
 
     // -------------------- LOGIC --------------------

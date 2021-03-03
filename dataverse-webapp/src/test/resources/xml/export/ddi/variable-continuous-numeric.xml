@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<var ID="v12" name="varName" intrvl="contin">
+  <location fileid="f11"/>
+  <labl level="variable">varLabel</labl>
+  <sumStat type="min">1</sumStat>
+  <sumStat type="max">10</sumStat>
+  <varFormat type="numeric"/>
+  <notes subject="Universal Numeric Fingerprint" level="variable" type="Dataverse:UNF">UNF:number:000</notes>
+</var>

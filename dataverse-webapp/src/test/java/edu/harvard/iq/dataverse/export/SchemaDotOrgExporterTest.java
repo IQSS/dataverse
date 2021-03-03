@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.export;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
 
 import java.io.PrintWriter;
 import java.io.StringReader;
@@ -9,21 +10,26 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.UnitTestUtils;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
@@ -35,32 +41,36 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.qualifiers.TestBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
 /**
  * For docs see {@link SchemaDotOrgExporter}.
  */
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class SchemaDotOrgExporterTest {
 
-    private final SchemaDotOrgExporter schemaDotOrgExporter;
-    DDIExporterTest.MockDatasetFieldSvc datasetFieldTypeSvc = null;
+    @InjectMocks
+    private SchemaDotOrgExporter schemaDotOrgExporter;
+    
+    @Mock
+    private SettingsServiceBean settingsService;
+    
+    @Mock
+    private SystemConfig systemConfig;
+    
+    MockDatasetFieldSvc datasetFieldTypeSvc = null;
 
-    public SchemaDotOrgExporterTest() {
-        schemaDotOrgExporter = new SchemaDotOrgExporter("https://librascholar.org", "false");
-    }
 
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
+    @BeforeEach
     public void setUp() {
-        datasetFieldTypeSvc = new DDIExporterTest.MockDatasetFieldSvc();
+        when(systemConfig.getDataverseSiteUrl()).thenReturn("https://librascholar.org");
+        when(settingsService.isTrueForKey(SettingsServiceBean.Key.HideSchemaDotOrgDownloadUrls)).thenReturn(false);
+        datasetFieldTypeSvc = new MockDatasetFieldSvc();
 
         DatasetFieldType titleType = datasetFieldTypeSvc.add(new DatasetFieldType("title", FieldType.TEXTBOX, false));
         DatasetFieldType authorType = datasetFieldTypeSvc.add(new DatasetFieldType("author", FieldType.TEXT, true));
@@ -217,10 +227,6 @@ public class SchemaDotOrgExporterTest {
         }
         geographicCoverageType.setChildDatasetFieldTypes(geographicCoverageChildTypes);
 
-    }
-
-    @After
-    public void tearDown() {
     }
 
     /**
@@ -418,16 +424,40 @@ public class SchemaDotOrgExporterTest {
 
         Assert.assertTrue(result.isEmpty());
     }
+    
 
-    /**
-     * Test of setParam method, of class SchemaDotOrgExporter.
-     */
-    @Test
-    public void testSetParam() {
-        System.out.println("setParam");
-        String name = "";
-        Object value = null;
-        schemaDotOrgExporter.setParam(name, value);
+    @TestBean
+    static class MockDatasetFieldSvc extends DatasetFieldServiceBean {
+
+        Map<String, DatasetFieldType> fieldTypes = new HashMap<>();
+        long nextId = 1;
+
+        public DatasetFieldType add(DatasetFieldType t) {
+            if (t.getId() == null) {
+                t.setId(nextId++);
+            }
+            fieldTypes.put(t.getName(), t);
+            return t;
+        }
+
+        @Override
+        public DatasetFieldType findByName(String name) {
+            return fieldTypes.get(name);
+        }
+
+        @Override
+        public DatasetFieldType findByNameOpt(String name) {
+            return findByName(name);
+        }
+
+        @Override
+        public ControlledVocabularyValue findControlledVocabularyValueByDatasetFieldTypeAndStrValue(DatasetFieldType dsft, String strValue, boolean lenient) {
+            ControlledVocabularyValue cvv = new ControlledVocabularyValue();
+            cvv.setDatasetFieldType(dsft);
+            cvv.setStrValue(strValue);
+            return cvv;
+        }
+
     }
 
 }

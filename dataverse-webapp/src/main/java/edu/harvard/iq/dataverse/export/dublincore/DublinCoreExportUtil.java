@@ -6,7 +6,7 @@ import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
+import edu.harvard.iq.dataverse.export.ddi.DdiDatasetExportService;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 
@@ -28,7 +28,7 @@ import java.util.stream.Stream;
  */
 public class DublinCoreExportUtil {
 
-    private static final Logger logger = Logger.getLogger(DdiExportUtil.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(DdiDatasetExportService.class.getCanonicalName());
 
     public static String OAI_DC_XML_NAMESPACE = "http://www.openarchives.org/OAI/2.0/oai_dc/";
     public static String OAI_DC_XML_SCHEMALOCATION = "http://www.openarchives.org/OAI/2.0/oai_dc.xsd";

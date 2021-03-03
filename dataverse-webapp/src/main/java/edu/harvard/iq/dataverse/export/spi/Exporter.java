@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.export.spi;
 
 import edu.harvard.iq.dataverse.export.ExportException;
+import edu.harvard.iq.dataverse.export.ExporterType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 
 import javax.ws.rs.core.MediaType;
@@ -21,6 +22,8 @@ public interface Exporter {
 
     String getDisplayName();
 
+    ExporterType getExporterType();
+    
     Boolean isXMLFormat();
 
     Boolean isHarvestable();
@@ -32,8 +35,6 @@ public interface Exporter {
     String getXMLSchemaLocation();
 
     String getXMLSchemaVersion();
-
-    void setParam(String name, Object value);
 
     default String getMediaType() {
         return MediaType.APPLICATION_XML;

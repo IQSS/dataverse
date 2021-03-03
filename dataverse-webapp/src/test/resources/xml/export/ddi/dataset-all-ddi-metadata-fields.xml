@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<codeBook xmlns="ddi:codebook:2_5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="ddi:codebook:2_5 https://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd" version="2.5">
+  <docDscr>
+    <citation>
+      <titlStmt>
+        <titl>All metadata Dataset</titl>
+        <IDNo agency="DOI">doi:10.18150/FK2/AJ4VYO</IDNo>
+      </titlStmt>
+      <distStmt>
+        <distrbtr>PublisherName</distrbtr>
+        <distDate>2021-02-15</distDate>
+      </distStmt>
+      <verStmt source="archive">
+        <version date="2021-02-19" type="RELEASED">1</version>
+      </verStmt>
+      <biblCit>First, Author; Second, Author, 2021, "All metadata Dataset", https://doi.org/10.18150/FK2/AJ4VYO, PublisherName, V1</biblCit>
+    </citation>
+  </docDscr>
+  <stdyDscr>
+    <citation>
+      <titlStmt>
+        <titl>All metadata Dataset</titl>
+        <subTitl>Subtitle</subTitl>
+        <altTitl>variant of title</altTitl>
+        <IDNo agency="DOI">doi:10.18150/FK2/AJ4VYO</IDNo>
+        <IDNo agency="Other id agency">123</IDNo>
+        <IDNo agency="Other id agency 2">124</IDNo>
+      </titlStmt>
+      <rspStmt>
+        <AuthEnty affiliation="author1 aff">First, Author</AuthEnty>
+        <AuthEnty affiliation="author2 Aff">Second, Author</AuthEnty>
+      </rspStmt>
+      <prodStmt>
+        <producer affiliation="producer aff" abbr="PRODU" role="https://example.com/images/producer.jpg">Some, Producer</producer>
+        <prodDate>2001-12-12</prodDate>
+        <prodPlac>Some production place</prodPlac>
+        <software version="v1">Software1</software>
+        <software version="v2">Software2</software>
+        <grantNo agency="Grant Agency 1">GRANT.1</grantNo>
+        <grantNo agency="Grant Agency 2">GRANT.2</grantNo>
+      </prodStmt>
+      <distStmt>
+        <distrbtr source="archive">PublisherName</distrbtr>
+        <distrbtr affiliation="distributor1 aff" abbr="DIST1" URI="http://distributor1.org">Some, Distributor1</distrbtr>
+        <distrbtr affiliation="distributor2 aff" abbr="DIST2" URI="http://distributor2.org">Some, Distributor2</distrbtr>
+        <contact affiliation="contact1 Aff" email="contact1@example.com">First, Contact</contact>
+        <contact affiliation="contact2 Aff" email="contact2@example.com">Second, Contact</contact>
+        <depositr>Some, Depositor</depositr>
+        <depDate>2021-02-15</depDate>
+        <distDate>1990</distDate>
+      </distStmt>
+      <serStmt>
+        <serName>series name</serName>
+        <serInfo>series info</serInfo>
+      </serStmt>
+    </citation>
+    <stdyInfo>
+      <subject>
+        <keyword>Astronomy and Astrophysics</keyword>
+        <keyword>Chemistry</keyword>
+        <keyword vocab="LCSH" vocabURI="http://lcsg.com">keyword 1</keyword>
+        <keyword vocab="MeSH" vocabURI="http://mesh.com">keyword 2</keyword>
+        <topcClas vocab="dict" vocabURI="http://dict.com">topic 1</topcClas>
+        <topcClas vocab="dict 2" vocabURI="http://dict2.com">topic 2</topcClas>
+      </subject>
+      <abstract>&lt;p&gt;some description&lt;/p&gt;</abstract>
+      <abstract>&lt;p&gt;second description&lt;/p&gt;</abstract>
+      <sumDscr>
+        <timePrd cycle="P1" event="start" date="1001">1001</timePrd>
+        <timePrd cycle="P1" event="end" date="1002">1002</timePrd>
+        <timePrd cycle="P2" event="start" date="1004">1004</timePrd>
+        <timePrd cycle="P2" event="end" date="1005">1005</timePrd>
+        <collDate cycle="P1" event="start" date="1100">1100</collDate>
+        <collDate cycle="P1" event="end" date="1200">1200</collDate>
+        <collDate cycle="P2" event="start" date="1205">1205</collDate>
+        <collDate cycle="P2" event="end" date="1210">1210</collDate>
+        <nation>Algeria</nation>
+        <nation>United States</nation>
+        <geogCover>City in Algeria</geogCover>
+        <geogCover>State in Algeria</geogCover>
+        <geogCover>Other notes for geo coverage Algeria</geogCover>
+        <geogCover>Boston</geogCover>
+        <geogCover>Massachusetts</geogCover>
+        <geogCover>Other notes for geo coverage USA</geogCover>
+        <geogUnit>geo unit</geogUnit>
+        <geogUnit>geo unit 2</geogUnit>
+        <geoBndBox>
+          <westBL>90</westBL>
+          <eastBL>98</eastBL>
+          <southBL>-12</southBL>
+          <northBL>12</northBL>
+        </geoBndBox>
+        <anlyUnit>Family</anlyUnit>
+        <anlyUnit>EventOrProcess</anlyUnit>
+        <universe>social universe 1</universe>
+        <universe>social universe 2</universe>
+        <dataKind>Numeric</dataKind>
+        <dataKind>Geospatial</dataKind>
+      </sumDscr>
+      <notes>notes noted</notes>
+    </stdyInfo>
+    <method>
+      <dataColl>
+        <timeMeth>Longitudinal</timeMeth>
+        <timeMeth>Longitudinal.TrendRepeatedCrossSection</timeMeth>
+        <timeMeth>TimeSeries</timeMeth>
+        <dataCollector>Jam jest podmiot zbierający dane</dataCollector>
+        <collectorTraining>szkolenie podmiotu</collectorTraining>
+        <frequenc>1 sekunda</frequenc>
+        <sampProc>Probability, Probability.SystematicRandom</sampProc>
+        <targetSampleSize>
+          <sampleSize>100</sampleSize>
+        </targetSampleSize>
+        <deviat>odchylenie</deviat>
+        <collMode>Interview.FaceToFace</collMode>
+        <collMode>Interview.FaceToFace.PAPI</collMode>
+        <collMode>Interview.WebBased</collMode>
+        <resInstru>Questionnaire, Questionnaire.Unstructured</resInstru>
+        <sources>
+          <dataSrc>data source 1</dataSrc>
+          <dataSrc>data source 2</dataSrc>
+          <srcOrig>sources origin</srcOrig>
+          <srcChar>sources characteristics text</srcChar>
+          <srcDocu>sources access text</srcDocu>
+        </sources>
+        <collSitu>collecting data situation characteristics</collSitu>
+        <actMin>actions to minimize loss</actMin>
+        <ConOps>control operation text</ConOps>
+        <weight>PostStratification</weight>
+        <weight>MixedPostStratificationDesign</weight>
+        <cleanOps>operations cleaning text</cleanOps>
+      </dataColl>
+      <notes type="type of notes (social)" subject="notes subject (social)">notes text (social)</notes>
+      <anlyInfo>
+        <respRate>99.9</respRate>
+        <EstSmpErr>11</EstSmpErr>
+        <dataAppr>appraisal method text</dataAppr>
+      </anlyInfo>
+    </method>
+    <othrStdyMat>
+      <relMat>
+        <citation>
+          <titlStmt>
+            <titl />
+            <IDNo agency="doi">10.1010/abc33</IDNo>
+          </titlStmt>
+          <biblCit>related material</biblCit>
+        </citation>
+        <ExtLink URI="https://doi.org/10.1010/abc33"/>
+      </relMat>
+      <relStdy>
+        <citation>
+          <titlStmt>
+            <titl />
+            <IDNo agency="doi">10.1010/abc</IDNo>
+          </titlStmt>
+          <biblCit>related dataset citation</biblCit>
+        </citation>
+        <ExtLink URI="http://url.com"/>
+      </relStdy>
+      <relStdy>
+        <citation>
+          <titlStmt>
+            <titl />
+            <IDNo agency="arXiv">3491048</IDNo>
+          </titlStmt>
+          <biblCit>related dataset citation 2</biblCit>
+        </citation>
+        <ExtLink URI="http://arxivurl.com"/>
+      </relStdy>
+      <relPubl>
+        <citation>
+          <titlStmt>
+            <titl />
+            <IDNo agency="doi">10.1010/abc</IDNo>
+          </titlStmt>
+          <biblCit>Related publication citation</biblCit>
+        </citation>
+        <ExtLink URI="http://doi.org/10.1010/abc"/>
+      </relPubl>
+      <relPubl>
+        <citation>
+          <titlStmt>
+            <titl />
+            <IDNo agency="arXiv">123903829</IDNo>
+          </titlStmt>
+          <biblCit>Second related citation</biblCit>
+        </citation>
+        <ExtLink URI="http://relatedarxiv.com"/>
+      </relPubl>
+      <othRefs>references to others</othRefs>
+    </othrStdyMat>
+    <notes>notes on errors in dataset level</notes>
+  </stdyDscr>
+</codeBook>
