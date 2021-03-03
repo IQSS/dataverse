@@ -161,11 +161,9 @@ function sharrre(){
 /*
  * Truncate dataset description content
  */
-function contentTruncate(truncSelector, truncMetaLabel, truncMoreBtn, truncMoreTip){
-    
+function contentTruncate(truncSelector, truncMoreBtn, truncMoreTip){
     // SELECTOR ID FROM PARAMETERS
     $('#' + truncSelector + ' td div').each(function () {
-        
         // add responsive img class to limit width to that of container
         $(this).find('img').attr('class', 'img-responsive');
         
@@ -177,7 +175,7 @@ function contentTruncate(truncSelector, truncMetaLabel, truncMoreBtn, truncMoreT
             $(this).css({'max-height':'250px','overflow-y':'hidden','position':'relative'});
 
             // BTN LABEL TEXT, DYNAMIC ARIA ATTR'S, FROM BUNDLE VIA PARAMETERS
-            var readMoreBtn = '<button class="btn btn-link desc-more-link" type="button" data-toggle="tooltip" data-original-title="' + truncMoreTip + ' ' + truncMetaLabel + '." aria-expanded="false" aria-controls="#' + truncSelector + '">' + truncMoreBtn + ' [+]</button>';
+            var readMoreBtn = '<button class="btn btn-link desc-more-link" type="button" data-toggle="tooltip" data-original-title="' + truncMoreTip + '" aria-expanded="false" aria-controls="#' + truncSelector + '">' + truncMoreBtn + '</button>';
             var moreFade = '<div class="more-fade-block">' + readMoreBtn + '</div>';
 
             // add Read More + button background fade
@@ -189,7 +187,6 @@ function contentTruncate(truncSelector, truncMetaLabel, truncMoreBtn, truncMoreT
                 $(this).parent('div.more-fade-block').remove();
             });
         }
-            
     });
 }
 
