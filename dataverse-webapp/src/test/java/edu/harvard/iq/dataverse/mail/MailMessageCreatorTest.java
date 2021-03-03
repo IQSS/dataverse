@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.GenericDao;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.common.BrandingUtil;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.common.RoleTranslationUtil;
 import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.notification.dto.EmailNotificationDto;
@@ -30,6 +31,7 @@ import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -49,28 +51,17 @@ import static org.mockito.ArgumentMatchers.any;
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class MailMessageCreatorTest {
 
+
+    @Mock private SystemConfig systemConfig;
+    @Mock private PermissionServiceBean permissionService;
+    @Mock private DataverseDao dataverseDao;
+    @Mock private ConfirmEmailServiceBean confirmEmailService;
+    @Mock private GenericDao genericDao;
+    @Mock private DataverseSession dataverseSession;
+//    @Mock private MailService mailService;
+
+    @InjectMocks
     private MailMessageCreator mailMessageCreator;
-
-    @Mock
-    private SystemConfig systemConfig;
-
-    @Mock
-    private PermissionServiceBean permissionService;
-
-    @Mock
-    private DataverseDao dataverseDao;
-
-    @Mock
-    private ConfirmEmailServiceBean confirmEmailService;
-
-    @Mock
-    private GenericDao genericDao;
-
-    @Mock
-    private DataverseSession dataverseSession;
-
-    @Mock
-    private MailService mailService;
 
     private final static String GUIDESBASEURL = "http://guides.dataverse.org";
     private final static String GUIDESVERSION = "V8";
@@ -87,9 +78,8 @@ public class MailMessageCreatorTest {
 
         RoleAssignment roleAssignment = createRoleAssignment();
 
-        Mockito.when(permissionService.getRolesOfUser(any(),
-                                                      any(Dataverse.class))).thenReturn(Sets.newHashSet(
-                roleAssignment));
+        Mockito.when(permissionService.getRolesOfUser(any(), any(Dataverse.class)))
+                .thenReturn(Sets.newHashSet(roleAssignment));
         Mockito.when(dataverseDao.findRootDataverse()).thenReturn(rootDataverse);
         Mockito.when(dataverseDao.find(createDataverseEmailNotificationDto().getDvObjectId())).thenReturn(testDataverse);
         Mockito.when(genericDao.find(createReturnToAuthorNotificationDto().getDvObjectId(), DatasetVersion.class)).thenReturn(testDatasetVersion);
@@ -97,20 +87,14 @@ public class MailMessageCreatorTest {
         Mockito.when(systemConfig.getGuidesBaseUrl(any(Locale.class))).thenReturn(GUIDESBASEURL);
         Mockito.when(systemConfig.getGuidesVersion()).thenReturn(GUIDESVERSION);
         Mockito.when(dataverseSession.getUser()).thenReturn(new AuthenticatedUser());
-
-        mailMessageCreator = new MailMessageCreator(systemConfig,
-                                                    permissionService,
-                                                    dataverseDao,
-                                                    confirmEmailService,
-                                                    genericDao
-        );
     }
+
+    // -------------------- TESTS --------------------
 
     @Test
     public void createMailFooterMessage() {
         //given
         InternetAddress systemEmail = MailUtil.parseSystemAddress(SYSTEMEMAIL);
-        String messageText = "Nice message";
 
         //when
         String footerMessage = mailMessageCreator.createMailFooterMessage(Locale.ENGLISH, ROOTDVNAME, systemEmail);
@@ -199,8 +183,8 @@ public class MailMessageCreatorTest {
                                                                                            "test@icm.pl");
 
         //then
-        String ADMIN = "admin";
-        Assert.assertEquals(getAssignRoleMessage(ADMIN, "dataverse"), messageAndSubject._1);
+        Assert.assertEquals(getAssignRoleMessage(RoleTranslationUtil.getLocaleNameFromAlias("admin"), "dataverse"),
+                messageAndSubject._1);
         Assert.assertEquals(getAssignRoleSubject(), messageAndSubject._2);
     }
 
@@ -230,6 +214,8 @@ public class MailMessageCreatorTest {
         Assert.assertEquals(getSubmitForReviewMessage(), messageAndSubject._1);
         Assert.assertEquals("Root: Your dataset has been submitted for review", messageAndSubject._2);
     }
+
+    // -------------------- PRIVATE --------------------
 
     private String getFooterMessage() {
         return "\n\nYou may contact us for support at " + SYSTEMEMAIL + ".\n\nThank you,\n" +

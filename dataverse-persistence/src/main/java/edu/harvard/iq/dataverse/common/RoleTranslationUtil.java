@@ -5,6 +5,8 @@ import java.util.MissingResourceException;
 
 public class RoleTranslationUtil {
 
+    // -------------------- LOGIC --------------------
+
     /**
      *
      * @param alias db alias used to check for property
@@ -27,6 +29,14 @@ public class RoleTranslationUtil {
             }
         }
         return name;
+    }
+
+    /**
+     * Returns localized name for the role alias or the provided alias if the
+     * localized version was not found.
+     */
+    public static String getLocaleNameFromAlias(String alias) {
+        return getLocaleNameFromAlias(alias, alias);
     }
 
     /**
