@@ -60,7 +60,7 @@ public class BundleUtilTest {
                 BundleUtil.getStringFromBundle("shib.welcomeExistingUserMessage",
                         Arrays.asList("TestShib Test IdP")));
         assertEquals("Your institutional log in for your institution matches an email address already being used for a Dataverse "
-                + "account. By entering your current Dataverse password below, your existing Dataverse account can be "
+                + "account. By entering your current Dataverse account password below, your existing Dataverse account can be "
                 + "converted to use your institutional log in. After converting, you will only need to use your institutional log in.",
                 BundleUtil.getStringFromBundle("shib.welcomeExistingUserMessage",
                         Arrays.asList(BundleUtil.getStringFromBundle("shib.welcomeExistingUserMessageDefaultInstitution"))));
