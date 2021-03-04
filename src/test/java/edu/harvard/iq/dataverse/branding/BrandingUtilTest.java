@@ -1,21 +1,53 @@
 package edu.harvard.iq.dataverse.branding;
 
+import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.settings.Setting;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.source.DbSettingConfigSource;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
+@TestMethodOrder(OrderAnnotation.class)
 public class BrandingUtilTest {
 
+    DbSettingConfigSource dbSource = new DbSettingConfigSource();
+    @Mock
+    SettingsServiceBean settingsSvc;
+    @Mock
+    DataverseServiceBean dataverseService;
+    
     @Test
+    @Order(1)
     public void testGetInstallationBrandName() {
+        
+//      Set<Setting> settings = new HashSet<>(Arrays.asList(new Setting("InstitutionName", "LibraScholar"), new Setting("FooBarI18N", "de", "hallo")));
+        Mockito.when(dataverseService.getRootDataverseName()).thenReturn("LibraScholar");
+        BrandingUtil.injectDataverseService(dataverseService);
+//      DbSettingConfigSource.injectSettingsService(settingsSvc);
         System.out.println("testGetInstallationBrandName");
         assertEquals("LibraScholar", BrandingUtil.getInstallationBrandName("LibraScholar"));
-        assertEquals(null, BrandingUtil.getInstallationBrandName(null));// misconfiguration to set to null
-        assertEquals("", BrandingUtil.getInstallationBrandName(""));// misconfiguration to set to empty string
+        Set<Setting> settings = new HashSet<>(Arrays.asList(new Setting("InstitutionName", "NotLibraScholar"), new Setting("FooBarI18N", "de", "hallo")));
+        Mockito.when(settingsSvc.listAll()).thenReturn(settings);
+        DbSettingConfigSource.injectSettingsService(settingsSvc);
+
+        assertEquals("NotLibraScholar", BrandingUtil.getInstallationBrandName(null));// misconfiguration to set to null
+        //assertEquals("", BrandingUtil.getInstallationBrandName(""));// misconfiguration to set to empty string
     }
 
     @Test

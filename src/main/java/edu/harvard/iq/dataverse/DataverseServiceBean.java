@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.io.IOException;
@@ -193,6 +194,16 @@ public class DataverseServiceBean implements java.io.Serializable {
      */
     public Dataverse findRootDataverse() {
         return em.createNamedQuery("Dataverse.findRoot", Dataverse.class).getSingleResult();
+    }
+    
+    public String getRootDataverseName() {
+        Dataverse root = findRootDataverse();
+        if(root==null) {
+            logger.warning("Failed to find root dataverse!");
+            return "";
+        }
+        String rootDataverseName=root.getName();
+        return StringUtil.isEmpty(rootDataverseName) ? "" : rootDataverseName; 
     }
     
     public List<Dataverse> findAllPublishedByOwnerId(Long ownerId) {
