@@ -429,7 +429,7 @@ public class DataversesIT {
         Response updateDataverseDefaultRoleNone = UtilIT.updateDefaultContributorsRoleOnDataverse(dataverseAlias, "none", apiToken);
         updateDataverseDefaultRoleNone.prettyPrint();
         updateDataverseDefaultRoleNone.then().assertThat()
-                .body("data.message", equalTo("Default contributor role for Dataverse " + dataverseAlias + " has been set to None."))
+                .body("data.message", equalTo("Default contributor role for Dataverse collection " + dataverseAlias + " has been set to None."))
                 .statusCode(200);
 
         // try bad role alias

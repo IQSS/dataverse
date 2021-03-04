@@ -90,7 +90,7 @@ public class MoveIT {
         moveDatasetFailAlreadyThere.prettyPrint();
         moveDatasetFailAlreadyThere.then().assertThat()
                 .statusCode(FORBIDDEN.getStatusCode())
-                .body("message", equalTo("This dataset is already in this dataverse."));
+                .body("message", equalTo("This dataset is already in this Dataverse collection."));
 
         Response createAuthorDataverse1 = UtilIT.createRandomDataverse(curatorApiToken);
         createAuthorDataverse1.prettyPrint();
@@ -275,7 +275,7 @@ public class MoveIT {
         attemptToMoveLinkedDataset.prettyPrint();
         attemptToMoveLinkedDataset.then().assertThat()
                 .statusCode(FORBIDDEN.getStatusCode())
-                .body("message", equalTo("Use the query parameter forceMove=true to complete the move. This dataset is linked to the new host dataverse or one of its parents. This move would remove the link to this dataset. "));
+                .body("message", equalTo("Use the query parameter forceMove=true to complete the move. This dataset is linked to the new host Dataverse collection or one of its parents. This move would remove the link to this dataset. "));
 
         JsonObject linksBeforeData = Json.createReader(new StringReader(getLinksBefore.asString())).readObject();
         Assert.assertEquals("OK", linksBeforeData.getString("status"));

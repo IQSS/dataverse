@@ -98,7 +98,7 @@ public class LinkIT {
         tryToLinkAgain.prettyPrint();
         tryToLinkAgain.then().assertThat()
                 .statusCode(FORBIDDEN.getStatusCode())
-                .body("message", equalTo("Can't link a dataset that has already been linked to this dataverse"));
+                .body("message", equalTo("Can't link a dataset that has already been linked to this Dataverse collection"));
     }
 
     @Test
