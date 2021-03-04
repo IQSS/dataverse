@@ -85,7 +85,7 @@ public class LinkIT {
         tryToLinkToParentDataverse.prettyPrint();
         tryToLinkToParentDataverse.then().assertThat()
                 .statusCode(FORBIDDEN.getStatusCode())
-                .body("message", equalTo("Can't link a dataset to its dataverse"));
+                .body("message", equalTo("Can't link a dataset to its Dataverse collection"));
 
         // Link dataset to non-parent dataverse (allowed).
         Response linkDataset = UtilIT.linkDataset(datasetPid, dataverse2Alias, superuserApiToken);

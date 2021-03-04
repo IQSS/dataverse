@@ -1181,7 +1181,7 @@ public class DatasetsIT {
                 giveRandoPermission.prettyPrint();
                         giveRandoPermission.then().assertThat()
                 .contentType(ContentType.JSON)
-                .body("message", containsString("Cannot find role named 'designatedHitter' in dataverse "))
+                .body("message", containsString("Cannot find role named 'designatedHitter' in this Dataverse installation "))
                 .statusCode(400);
         assertEquals(400, giveRandoPermission.getStatusCode());
         
@@ -1736,7 +1736,7 @@ public class DatasetsIT {
         Response createLinkingDatasetResponse = UtilIT.createDatasetLink(datasetId.longValue(), dataverseAlias, apiToken);
         createLinkingDatasetResponse.prettyPrint();
         createLinkingDatasetResponse.then().assertThat()
-                .body("message", equalTo("Can't link a dataset to its dataverse"))
+                .body("message", equalTo("Can't link a dataset to its Dataverse collection"))
                 .statusCode(FORBIDDEN.getStatusCode());
         
         // OK, let's create a different random dataverse:

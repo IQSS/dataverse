@@ -422,7 +422,7 @@ public class DataversesIT {
         Response updateDataverseDefaultRole = UtilIT.updateDefaultContributorsRoleOnDataverse(dataverseAlias, "curator", apiToken);
         updateDataverseDefaultRole.prettyPrint();
         updateDataverseDefaultRole.then().assertThat()
-                .body("data.message", equalTo("Default contributor role for Dataverse " + dataverseAlias + " has been set to Curator."))
+                .body("data.message", equalTo("Default contributor role for Dataverse collection " + dataverseAlias + " has been set to Curator."))
                 .statusCode(200);
         
         //for test use an existing role. In practice this likely will be a custom role

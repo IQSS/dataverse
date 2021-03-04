@@ -78,7 +78,7 @@ public class MoveIT {
         moveDatasetFailNoTargetDataverse.prettyPrint();
         moveDatasetFailNoTargetDataverse.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", equalTo("Target dataverse not found."));
+                .body("message", equalTo("Target Dataverse collection not found."));
 
         Response moveDatasetFailGuest = UtilIT.moveDataset(datasetId.toString(), curatorDataverseAlias1, nullApiToken);
         moveDatasetFailGuest.prettyPrint();
@@ -243,7 +243,7 @@ public class MoveIT {
         moveDatasetFailTargetDataverseNotPublished.prettyPrint();
         moveDatasetFailTargetDataverseNotPublished.then().assertThat()
                 .statusCode(FORBIDDEN.getStatusCode())
-                .body("message", equalTo("A published dataset may not be moved to an unpublished dataverse. You can retry the move after publishing " + dataverse2Name + "."));
+                .body("message", equalTo("A published dataset may not be moved to an unpublished Dataverse collection. You can retry the move after publishing " + dataverse2Name + "."));
 
         UtilIT.publishDataverseViaNativeApi(dataverse2Alias, apiToken).then().assertThat()
                 .statusCode(OK.getStatusCode());
