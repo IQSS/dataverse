@@ -93,6 +93,9 @@ public class DataverseSession implements Serializable{
         return user;
     }
 
+    /**
+     * Sets the user and configures the session timeout.
+     */
     public void setUser(User aUser) {
         // We check for disabled status here in "setUser" to ensure a common user
         // experience across Builtin, Shib, OAuth, and OIDC users.
@@ -108,6 +111,7 @@ public class DataverseSession implements Serializable{
 		// Log the login/logout and Change the session id if we're using the UI and have
 		// a session, versus an API call with no session - (i.e. /admin/submitToArchive()
 		// which sets the user in the session to pass it through to the underlying command)
+        // TODO: reformat to remove tabs etc.
 		if(context != null) {
           logSvc.log( 
                       new ActionLogRecord(ActionLogRecord.ActionType.SessionManagement,(aUser==null) ? "logout" : "login")
@@ -115,6 +119,12 @@ public class DataverseSession implements Serializable{
 
           //#3254 - change session id when user changes
           SessionUtil.changeSessionId((HttpServletRequest) context.getExternalContext().getRequest());
+            HttpSession httpSession = (HttpSession) context.getExternalContext().getSession(false);
+            if (httpSession != null) {
+                // Configure session timeout.
+                logger.fine("jsession: " + httpSession.getId() + " setting the lifespan of the session to " + systemConfig.getLoginSessionTimeout() + " minutes");
+                httpSession.setMaxInactiveInterval(systemConfig.getLoginSessionTimeout() * 60); // session timeout, in seconds
+            }
         }
         this.user = aUser;
     }
@@ -216,19 +226,6 @@ public class DataverseSession implements Serializable{
 
         } else {
             dismissedMessages.add(message);
-        }
-        
-    }
-    
-    public void configureSessionTimeout() {
-        if (user instanceof GuestUser) {
-            return;
-        }
-        HttpSession httpSession = (HttpSession) FacesContext.getCurrentInstance().getExternalContext().getSession(false);
-        
-        if (httpSession != null) {
-            logger.fine("jsession: "+httpSession.getId()+" setting the lifespan of the session to " + systemConfig.getLoginSessionTimeout() + " minutes");
-            httpSession.setMaxInactiveInterval(systemConfig.getLoginSessionTimeout() * 60); // session timeout, in seconds
         }
         
     }

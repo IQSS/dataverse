@@ -360,7 +360,6 @@ public class Shib implements java.io.Serializable {
         au.setShibIdentityProvider(shibIdp);
         // setUser checks for disabled users.
         session.setUser(au);
-        session.configureSessionTimeout();
         logger.fine("Groups for user " + au.getId() + " (" + au.getIdentifier() + "): " + getGroups(au));
     }
 
