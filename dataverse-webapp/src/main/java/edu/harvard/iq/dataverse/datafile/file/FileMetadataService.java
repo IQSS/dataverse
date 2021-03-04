@@ -6,17 +6,20 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteProvJsonCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PersistProvJsonCommand;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
+import edu.harvard.iq.dataverse.persistence.datafile.FileMetadataRepository;
 import edu.harvard.iq.dataverse.provenance.UpdatesEntry;
 import io.vavr.control.Option;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import java.util.List;
 
 @Stateless
 public class FileMetadataService {
 
     private EjbDataverseEngine commandEngine;
     private DataverseRequestServiceBean dvRequestService;
+    private FileMetadataRepository fileMetadataRepository;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -25,9 +28,12 @@ public class FileMetadataService {
     }
 
     @Inject
-    public FileMetadataService(EjbDataverseEngine commandEngine, DataverseRequestServiceBean dvRequestService) {
+    public FileMetadataService(EjbDataverseEngine commandEngine,
+                               DataverseRequestServiceBean dvRequestService,
+                               FileMetadataRepository fileMetadataRepository) {
         this.commandEngine = commandEngine;
         this.dvRequestService = dvRequestService;
+        this.fileMetadataRepository = fileMetadataRepository;
     }
 
     // -------------------- LOGIC --------------------
@@ -57,12 +63,29 @@ public class FileMetadataService {
         } else if (provenanceUpdate.getProvJson().isDefined()) {
             DataFile updatedDataFile = commandEngine.submit(new PersistProvJsonCommand(dvRequestService.getDataverseRequest(),
                                                                                        provenanceUpdate.getDataFile(),
-                                                                                       provenanceUpdate.getProvJson().get(),
-                                                                                       provenanceUpdate.getDataFile().getProvEntityName(),
+                                                                                       provenanceUpdate
+                                                                                               .getProvJson()
+                                                                                               .get(),
+                                                                                       provenanceUpdate
+                                                                                               .getDataFile()
+                                                                                               .getProvEntityName(),
                                                                                        saveContext));
             return Option.of(updatedDataFile);
         }
 
         return updatedEntry;
     }
+
+    public List<FileMetadata> findAccessibleFileMetadataSorted(long dsvId, int pageNumber, int amountToFetch) {
+        return fileMetadataRepository.findFileMetadataByDatasetVersionIdWithPagination(dsvId, pageNumber, amountToFetch);
+    }
+
+    public List<FileMetadata> findSearchedAccessibleFileMetadataSorted(long dsvId, int pageNumber, int amountToFetch, String searchTerms) {
+        return fileMetadataRepository.findSearchedFileMetadataByDatasetVersionIdWithPagination(dsvId, pageNumber, amountToFetch, searchTerms);
+    }
+
+    public List<Long> findFileMetadataIds(long dsvId) {
+        return fileMetadataRepository.findFileMetadataIdsByDatasetVersionId(dsvId);
+    }
+
 }

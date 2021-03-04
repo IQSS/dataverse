@@ -1,12 +1,12 @@
 package edu.harvard.iq.dataverse.datafile.file;
 
+import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFileTag;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+
 import javax.faces.view.ViewScoped;
-
 import javax.inject.Named;
-
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
@@ -76,7 +76,7 @@ public class FileTagModal implements Serializable {
 
     public void initForMultipleFiles(Collection<FileMetadata> fileMetadatas, Dataset dataset) {
         cleanupModalState();
-        this.selectedFiles = fileMetadatas;
+        this.selectedFiles = Lists.newArrayList(fileMetadatas);
 
         prepareTags(fileMetadatas, dataset);
     }

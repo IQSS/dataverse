@@ -28,7 +28,6 @@ import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
 import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
-import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.io.FileUtils;
@@ -205,7 +204,9 @@ public class DataFileServiceBean implements java.io.Serializable {
                 .getResultList();
     }
 
-    public List<Integer> findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(Long datasetVersionId, String searchTerm, FileSortFieldAndOrder sortFieldAndOrder) {
+    public List<Integer> findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(Long datasetVersionId,
+                                                                              String searchTerm,
+                                                                              FileSortFieldAndOrder sortFieldAndOrder) {
 
         String searchClause = "";
         if (searchTerm != null && !searchTerm.isEmpty()) {

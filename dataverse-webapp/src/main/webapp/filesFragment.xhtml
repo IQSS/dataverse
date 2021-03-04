@@ -12,7 +12,7 @@
     <!--@elvariable id="fileMetadata" type="edu.harvard.iq.dataverse.persistence.datafile.FileMetadata"-->
 
     <!-- No files accessible in Dataset -->
-    <ui:fragment rendered="#{empty datasetFilesTab.fileMetadatasSearch and datasetFilesTab.dataset.hasEverBeenPublished()
+    <ui:fragment rendered="#{empty datasetFilesTab.fileMetadatasSearch.getAllAvailableFilesCount() and datasetFilesTab.dataset.hasEverBeenPublished()
                             and !datasetFilesTab.isFilesTabDisplayable()}">
         <div class="panel panel-default" jsf:rendered="#{!settingsWrapper.rsyncOnly}">
             <div class="panel-body">
@@ -43,11 +43,13 @@
                      paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} #{bundle['file.dynamicCounter.filesPerPage']} {RowsPerPageDropdown}"
                      rowsPerPageTemplate="10,25,50"
                      style="margin-right:1px;"
+                     lazy="true"
                      value="#{datasetFilesTab.fileMetadatasSearch}"
                      rowIndexVar="rowNum"
-                     rowKey="#{fileMetadata.dataFile.storageIdentifier}"
-                     rowSelectMode="checkbox"
-                     selection="#{datasetFilesTab.selectedFiles}"
+                     rowKey="#{fileMetadata.id}"
+                     rowSelectMode="add"
+                     selection="#{datasetFilesTab.selectedFileMetadata}"
+                     rowStatePreserved="true"
                      var="fileMetadata"
                      widgetVar="filesTable"
                      rendered="#{datasetFilesTab.workingVersion != null}"
@@ -55,10 +57,10 @@
                      styleClass="filesTable"
         >
             <p:ajax event="page" listener="#{datasetFilesTab.fileListingPaginatorListener}" update="filesTable" process="@this"  oncomplete="refreshPaginator()"  immediate="true"/>
-            <p:ajax event="toggleSelect" listener="#{datasetFilesTab.toggleAllSelected()}" update="filesTable"/>
-            <p:ajax event="rowUnselectCheckbox" listener="#{datasetFilesTab.setSelectAllFiles(false)}" update="filesTable" process="@this" />
+            <p:ajax event="toggleSelect" listener="#{datasetFilesTab.toggleAllSelected}" update="filesTable"/>
+            <p:ajax event="rowUnselectCheckbox" listener="#{datasetFilesTab.onRowUnSelectByCheckbox}" update="filesTable" process="@this" />
             <p:ajax event="rowSelect" listener="#{datasetFilesTab.setSelectAllFiles(false)}" update="filesTable" process="@this" />
-            <p:ajax event="rowSelectCheckbox" listener="#{datasetFilesTab.setSelectAllFiles(false)}" update="filesTable" process="@this" />
+            <p:ajax event="rowSelectCheckbox" listener="#{datasetFilesTab.onRowSelectByCheckbox}" update="filesTable" process="@this" />
             <p:ajax event="rowUnselect" listener="#{datasetFilesTab.setSelectAllFiles(false)}" update="filesTable" process="@this" />
             <p:ajax event="rowDblselect" listener="#{datasetFilesTab.setSelectAllFiles(false)}" update="filesTable" process="@this"/>
 
@@ -67,12 +69,13 @@
                 <div class="col-sm-6">
                     <!-- dataset file search -->
                     <div class="input-group">
-                        <p:inputText id="searchFiles" styleClass="form-control" value="#{datasetFilesTab.fileLabelSearchTerm}" widgetVar="inputSearchTerm"
-                                     onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
-                        <p:watermark for="searchFiles" value="#{bundle['file.search.placeholder']}"/>
+                        <p:inputText id="globalFilter" styleClass="form-control" value="#{datasetFilesTab.fileLabelSearchTerm}" widgetVar="inputSearchTerm"
+                                     onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"
+                                     onkeyup="#{datasetFilesTab.updateFileSearchStatus(datasetFilesTab.fileLabelSearchTerm)}" />
+                        <p:watermark for="globalFilter" value="#{bundle['file.search.placeholder']}"/>
                         <p:remoteCommand name="submitsearch"
-                                         action="#{datasetFilesTab.updateFileSearch()}"
                                          process="@this @widgetVar(inputSearchTerm)"
+                                         action="#{datasetFilesTab.updateFileSearch()}"
                                          update="@form" partialSubmit="true"
                                          onstart="if (PF('filesTable').paginator) PF('filesTable').paginator.setPage(0);"
                         >
@@ -97,10 +100,10 @@
             <div class="row" style="margin-bottom:15px;">
                 <div jsf:id="filesHeaderCount" class="col-sm-3 text-left">
                     <!-- Files Count -->
-                    <h:outputFormat value="#{datasetFilesTab.fileMetadatasSearch.size() == 1 ? bundle['file.count.one'] : bundle['file.count']}" rendered="#{datasetFilesTab.fileMetadatasSearch.size() gt 0}">
+                    <h:outputFormat value="#{datasetFilesTab.fileMetadatasSearch.getAllAvailableFilesCount() == 1 ? bundle['file.count.one'] : bundle['file.count']}" rendered="#{datasetFilesTab.fileMetadatasSearch.getAllAvailableFilesCount() gt 0}">
                         <f:param value="#{(datasetFilesTab.filePaginatorPage * datasetFilesTab.rowsPerPage) + 1}"/>
-                        <f:param value="#{Math:min((datasetFilesTab.filePaginatorPage + 1) * datasetFilesTab.rowsPerPage,datasetFilesTab.fileMetadatasSearch.size()) }"/>
-                        <f:param value="#{datasetFilesTab.fileMetadatasSearch.size()}"/>
+                        <f:param value="#{Math:min((datasetFilesTab.filePaginatorPage + 1) * datasetFilesTab.rowsPerPage,datasetFilesTab.fileMetadatasSearch.getAllAvailableFilesCount()) }"/>
+                        <f:param value="#{datasetFilesTab.fileMetadatasSearch.getAllAvailableFilesCount()}"/>
                     </h:outputFormat>
                 </div>
 
@@ -138,25 +141,18 @@
 
             <div class="row" jsf:rendered="#{datasetFilesTab.fileLabelSearchTerm.equals('') ?
                         datasetFilesTab.workingVersion.fileMetadatas.size() gt datasetFilesTab.rowsPerPage :
-                        datasetFilesTab.fileMetadatasSearch.size() gt datasetFilesTab.rowsPerPage}">
-                <div class="col-xs-12 bg-warning text-left" style="font-weight:normal;">
+                        datasetFilesTab.fileMetadatasSearch.getAllAvailableFilesCount() gt datasetFilesTab.rowsPerPage}">
+                <div class="col-xs-12 bg-warning text-left" style="font-weight:normal;" >
                     <!-- SELECTION MESSAGE -->
                     <p>
-                        <h:outputFormat rendered="#{datasetFilesTab.selectedFiles.size() gt 0}"
+                        <p:outputPanel rendered="#{datasetFilesTab.selectedFileMetadata.size() lt 1}">
+                            #{bundle['file.noneSelected']}
+                        </p:outputPanel>
+                        <h:outputFormat rendered="#{datasetFilesTab.selectedFileMetadata.size() gt 0}"
                                         value="#{bundle['file.numFilesSelected']}">
-                            <f:param value="#{datasetFilesTab.selectedFiles.size()}"/>
+                            <f:param value="#{datasetFilesTab.selectedFileMetadata.size()}"/>
                         </h:outputFormat>
-                        <ui:fragment rendered="#{!datasetFilesTab.isAllFilesSelected()}">
-                        &#160;
-                        <p:commandLink action="#{datasetFilesTab.selectAllFiles}" update="@form">
-                            <h:outputFormat value="#{bundle['file.selectAllFiles']}">
-                                <f:param value="#{datasetFilesTab.fileMetadatasSearch.size()}"/>
-                                <f:param value="#{(empty datasetFilesTab.fileLabelSearchTerm) ? '.' : '&#160;'.concat(bundle['file.selectAllFiles.suffixForSearching'])}" />
-                            </h:outputFormat>
-                        </p:commandLink>
-                        </ui:fragment>
-                        &#160;
-                        <p:commandLink rendered="#{datasetFilesTab.selectedFiles.size() gt 0}"
+                        <p:commandLink rendered="#{datasetFilesTab.selectedFileMetadata.size() gt 0}"
                                        value="#{bundle['file.clearSelection']}"
                                        action="#{datasetFilesTab.clearSelection}"
                                        update="@form"/>
@@ -256,7 +252,7 @@
             <p:column class="col-file-action text-right #{settingsWrapper.rsyncOnly ? 'col-file-access' : ''}">
                 <f:facet name="header" class="col-file-action text-right">
                     <!-- EDIT -->
-                    <div style="margin-right:14px;" class="btn-group" jsf:rendered="#{!widgetWrapper.widgetView and datasetFilesTab.canUpdateDataset() and (datasetFilesTab.fileMetadatasSearch.size() gt 0)}">
+                    <div style="margin-right:14px;" class="btn-group" jsf:rendered="#{!widgetWrapper.widgetView and datasetFilesTab.canUpdateDataset() and (datasetFilesTab.fileMetadatasSearch.getAllAvailableFilesCount() gt 0)}">
                         <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown"
                                 disabled="#{datasetFilesTab.lockedFromEdits ? 'disabled' : ''}">
                             <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFiles']} <span class="caret"></span>
@@ -383,13 +379,13 @@
         </p:dataTable>
 
         <p:remoteCommand name="refreshTagsCommand" action="#{datasetFilesTab.refreshTagsPopUp()}"
-                         onstart="#{FileTagModal.initForMultipleFiles(datasetFilesTab.selectedFiles, datasetFilesTab.dataset)}"
+                         onstart="#{FileTagModal.initForMultipleFiles(datasetFilesTab.selectedFileMetadata, datasetFilesTab.dataset)}"
                          update="@form"
                          oncomplete="PF('fileTagsPopup').show();"/>
 
         <iqbs:fileTagsDialog dialogWidgetId="fileTagsPopup"
                              showRemoveUnusedTags="true"
-                             rendered="#{datasetFilesTab.selectedFiles.size() > 0}">
+                             rendered="#{datasetFilesTab.selectedFileMetadata.size() > 0}">
 
             <p:ajax event="saveAction" listener="#{datasetFilesTab.saveFileTagsAndCategories(FileTagModal.selectedFiles,
              FileTagModal.selectedFileMetadataTags,
