@@ -834,6 +834,22 @@ public class UtilIT {
                 .get("/api/access/datafile/" + idInPath + "/metadata" + optionalFormatInPath + "?key=" + apiToken + optionalQueryParam);
     }
 
+    static Response getFileMetadata(String fileIdOrPersistentId, String optionalFormat) {
+        String idInPath = fileIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
+        }
+        String optionalFormatInPath = "";
+        if (optionalFormat != null) {
+            optionalFormatInPath = "/" + optionalFormat;
+        }
+        return given()
+                .urlEncodingEnabled(false)
+                .get("/api/access/datafile/" + idInPath + "/metadata" + optionalFormatInPath + optionalQueryParam);
+    }
+
     static Response testIngest(String fileName, String fileType) {
         return given()
                 .get("/api/ingest/test/file?fileName=" + fileName + "&fileType=" + fileType);
@@ -1661,11 +1677,19 @@ public class UtilIT {
 //        }
 //        return requestSpecification.delete("/api/files/" + idInPath + "/prov-freeform" + optionalQueryParam);
 //    }
+    static Response exportDataset(String datasetPersistentId, String exporter) {
+        return exportDataset(datasetPersistentId, exporter, null);
+    }
 
     static Response exportDataset(String datasetPersistentId, String exporter, String apiToken) {
 //        http://localhost:8080/api/datasets/export?exporter=dataverse_json&persistentId=doi%3A10.5072/FK2/W6WIMQ
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification
+                //                .header(API_TOKEN_HTTP_HEADER, apiToken)
                 //                .get("/api/datasets/:persistentId/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
                 .get("/api/datasets/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
     }

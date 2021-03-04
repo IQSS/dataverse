@@ -41,6 +41,9 @@ function bind_bsui_components(){
     // clipboard.js click to copy
     clickCopyClipboard();
     
+    // Scrolling autoComplete dropdown in popups
+    handle_dropdown_popup_scroll();
+    
     // Dialog Listener For Calling handleResizeDialog
     PrimeFaces.widget.Dialog.prototype.postShow = function() {
         var dialog_id = this.jq.attr('id').split(/[:]+/).pop();
