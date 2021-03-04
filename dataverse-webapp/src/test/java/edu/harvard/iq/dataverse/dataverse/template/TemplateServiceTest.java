@@ -37,17 +37,12 @@ import static org.mockito.Mockito.when;
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class TemplateServiceTest {
 
+    @Mock private EjbDataverseEngine ejbDataverseEngine;
+    @Mock private DataverseRequestServiceBean dvRequest;
+    @Mock private TemplateDao templateDao;
+
     @InjectMocks
     private TemplateService templateService;
-
-    @Mock
-    private EjbDataverseEngine ejbDataverseEngine;
-
-    @Mock
-    private DataverseRequestServiceBean dvRequest;
-
-    @Mock
-    private TemplateDao templateDao;
 
     private int testTime = 1576156500;
 
@@ -137,7 +132,7 @@ public class TemplateServiceTest {
     }
 
     @Test
-    public void shouldSuccessfullyCloneTemplate()  {
+    public void shouldSuccessfullyCopyAndMergeTemplate()  {
         //given
         Dataverse dataverse = new Dataverse();
         Template template = new Template();
@@ -150,7 +145,7 @@ public class TemplateServiceTest {
                 .thenReturn(template);
 
         //when
-        Try<Template> cloneOperation = templateService.cloneTemplate(template, dataverse);
+        Try<Template> cloneOperation = templateService.mergeIntoDataverse(dataverse, templateService.copyTemplate(template));
 
         Optional<Template> createdTemplate = dataverse.getTemplates().stream()
                 .filter(template1 -> template1.getCreateTime().equals(Timestamp.from(testTime)))
@@ -165,7 +160,7 @@ public class TemplateServiceTest {
     }
 
     @Test
-    public void templateCloningShouldFail()  {
+    public void templateCopyAndMergeShouldFail()  {
         //given
         Dataverse dataverse = new Dataverse();
         Template template = new Template();
@@ -175,7 +170,7 @@ public class TemplateServiceTest {
                 .thenThrow(new RuntimeException());
 
         //when
-        Try<Template> cloneOperation = templateService.cloneTemplate(template, dataverse);
+        Try<Template> cloneOperation = templateService.mergeIntoDataverse(dataverse, templateService.copyTemplate(template));
 
         //then
         Assert.assertTrue(cloneOperation.isFailure());

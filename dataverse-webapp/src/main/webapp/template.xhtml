@@ -11,15 +11,16 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{TemplatePage.editMode == 'CREATE' ? 
-                    bundle['dataset.template.create'] : 
+            <ui:param name="pageTitle" value="#{TemplatePage.editMode == 'CREATE' ?
+                    bundle['dataset.template.create'] :
                     TemplatePage.template.name.concat(': ').concat(bundle['dataset.template.edit'])} - #{TemplatePage.template.dataverse.name}"/>
             <ui:param name="dataverse" value="#{TemplatePage.template.dataverse}"/>
             <ui:param name="template" value="#{TemplatePage.template}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
-            
+
             <ui:define name="body">
                 <f:metadata>
+                    <f:viewParam name="mode" value="#{TemplatePage.editMode}" converter="templateEditModeConverter"/>
                     <f:viewParam name="id" value="#{TemplatePage.templateId}"/>
                     <f:viewParam name="ownerId" value="#{TemplatePage.ownerId}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
@@ -29,12 +30,12 @@
                     <o:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(TemplatePage.template.name)}" if="#{not (TemplatePage.editMode == 'CREATE')}" />
                     <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(TemplatePage.editMode == 'CREATE' ? bundle['dataset.template.create'] : bundle['dataset.template.edit'])}" />
                 </f:metadata>
-                
+
                 <h2 class="no-margin-top">#{TemplatePage.editMode == 'CREATE' ? bundle['dataset.template.create'] : bundle['dataset.template.edit']}</h2>
-                
+
                 <h:form id="templateForm">
                     <p:focus context="templateForm" rendered="#{facesContext.validationFailed}" />
-                    
+
                     <ui:fragment>
                         <div class="form-horizontal">
                             <div class="form-group">
@@ -53,7 +54,7 @@
                                         requiredMessage="#{validationMessages['dataset.templatename']}"/>
                                     <p:message for="templateName" display="text"/>
                                 </div>
-                                
+
                             </div>
                             <div class="form-group">
                                 <div class="col-sm-12">
@@ -72,9 +73,9 @@
                                 <ui:param name="metadataBlocks"
                                           value="#{TemplatePage.mdbForEdit.entrySet().toArray()}"/>
                                 <ui:param name="inputRenderersByFieldType" value="#{TemplatePage.inputRenderersByFieldType}" />
-                                <ui:param name="operation" value="#{TemplatePage.editMode == 'CREATE' ? 
+                                <ui:param name="operation" value="#{TemplatePage.editMode == 'CREATE' ?
                                                                     'CREATE_TEMPLATE' : 'EDIT_TEMPLATE'}" />
-                            </ui:include>  
+                            </ui:include>
                         </ui:fragment>
 
                         </ui:fragment>
@@ -85,17 +86,17 @@
                                          value="#{bundle.save}"
                                          oncomplete="if (args.hasErrorMessage) { window.scrollTo(0, 0); }">
                         </p:commandButton>
-                        <h:button styleClass="btn btn-default" value="#{bundle.cancel}" 
+                        <h:button styleClass="btn btn-default" value="#{bundle.cancel}"
                                   outcome="/manage-templates.xhtml?dataverseId=#{TemplatePage.dataverse.id}"></h:button>
                     </div>
                     </ui:fragment>
-                    <ui:fragment rendered="#{TemplatePage.editMode == 'METADATA'}">
+                    <ui:fragment rendered="#{TemplatePage.editMode == 'EDIT' or TemplatePage.editMode == 'CLONE'}">
                     <div class="button-block">
                         <p:commandButton styleClass="btn btn-default" action="#{TemplatePage.save()}" update="@form"
                                          value="#{bundle.saveChanges}"
                                          oncomplete="if (args.hasErrorMessage) { window.scrollTo(0, 0); }">
                         </p:commandButton>
-                        <h:button styleClass="btn btn-default" value="#{bundle.cancel}" 
+                        <h:button styleClass="btn btn-default" value="#{bundle.cancel}"
                                   outcome="/manage-templates.xhtml?dataverseId=#{TemplatePage.dataverse.id}"></h:button>
                     </div>
                     </ui:fragment>

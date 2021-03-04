@@ -58,7 +58,6 @@ public class TemplateService {
     }
 
     public Try<Template> updateTemplate(Dataverse dataverse, Template template) {
-
         return Try.of(() -> engineService.submit(new UpdateDataverseTemplateCommand(dataverse, template, dvRequestService.getDataverseRequest())))
                 .onFailure(throwable -> logger.log(Level.SEVERE, null, throwable));
     }
@@ -76,7 +75,6 @@ public class TemplateService {
 
     public Try<Dataverse> deleteTemplate(Dataverse dataverse, Template templateToDelete) {
 
-
         if (dataverse.getDefaultTemplate() != null && dataverse.getDefaultTemplate().equals(templateToDelete)) {
             dataverse.setDefaultTemplate(null);
         }
@@ -84,25 +82,38 @@ public class TemplateService {
         dataverse.getTemplates().remove(templateToDelete);
 
         return Try.of(() -> engineService.submit(new DeleteTemplateCommand(dvRequestService.getDataverseRequest(),
-                                                                           dataverse,
-                                                                           templateToDelete,
-                                                                           templateDao.findDataversesByDefaultTemplateId(templateToDelete.getId()))))
+                dataverse, templateToDelete, templateDao.findDataversesByDefaultTemplateId(templateToDelete.getId()))))
                 .onFailure(throwable -> logger.log(Level.SEVERE, throwable.getMessage(), throwable));
     }
 
-    public Try<Template> cloneTemplate(Template templateIn, Dataverse dataverse) {
-        Template newTemplate = templateIn.cloneNewTemplate(templateIn);
-        newTemplate.setName(BundleUtil.getStringFromBundle("page.copy") + " " + templateIn.getName());
-        newTemplate.setUsageCount(0L);
-        newTemplate.setCreateTime(Timestamp.valueOf(LocalDateTime.now(clock)));
-        newTemplate.setDataverse(dataverse);
-        dataverse.getTemplates().add(newTemplate);
+    /**
+     * Creates a copy of the given template and returns that copy.
+     * <p>In order to clone a template within a dataverse use
+     * this method and pass the result to {@link #mergeIntoDataverse}.
+     */
+    public Template copyTemplate(Template toCopy) {
+        Template copy = toCopy.cloneNewTemplate();
+        copy.setName(BundleUtil.getStringFromBundle("page.copy") + " " + toCopy.getName());
+        copy.setUsageCount(0L);
+        copy.setCreateTime(Timestamp.valueOf(LocalDateTime.now(clock)));
 
-        Try<Template> createdTemplate = Try.of(() -> engineService.submit(new CreateTemplateCommand(newTemplate, dvRequestService.getDataverseRequest(), dataverse)))
-                .onFailure(throwable -> logger.log(Level.SEVERE, throwable.getMessage(), throwable));
+        return copy;
+    }
+
+    /**
+     * Merges the given template into the given dataverse.
+     * <p>Could be used with {@link #copyTemplate} in order to clone
+     * a template within a dataverse.
+     */
+    public Try<Template> mergeIntoDataverse(Dataverse dataverse, Template toMerge) {
+        toMerge.setDataverse(dataverse);
+        dataverse.getTemplates().add(toMerge);
+
+        Try<Template> createdTemplate = Try.of(
+                () -> engineService.submit(new CreateTemplateCommand(toMerge, dvRequestService.getDataverseRequest(), dataverse)))
+                .onFailure(t -> logger.log(Level.SEVERE, t.getMessage(), t));
 
         updateDataverse(dataverse);
-
         return createdTemplate;
     }
 

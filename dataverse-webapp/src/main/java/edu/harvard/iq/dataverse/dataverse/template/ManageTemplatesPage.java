@@ -136,16 +136,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
     }
 
     public String cloneTemplate(Template templateIn) {
-
-        Try<Template> cloneTemplate = templateService.cloneTemplate(templateIn, dataverse);
-
-        if (cloneTemplate.isFailure()) {
-            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("template.clone.error"), "");
-            return StringUtils.EMPTY;
-        }
-
-        JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("template.clone"));
-        return "/template.xhtml?id=" + cloneTemplate.get().getId() + "&faces-redirect=true";
+        return "/template.xhtml?id=" + templateIn.getId() + "&mode=CLONE&faces-redirect=true";
     }
 
     public void deleteTemplate() {
@@ -190,9 +181,9 @@ public class ManageTemplatesPage implements java.io.Serializable {
     }
 
     public String editTemplateRedirect(Template template) {
-        return "/template.xhtml?id=" + template.getId() + "&faces-redirect=true";
+        return "/template.xhtml?id=" + template.getId() + "&mode=EDIT&faces-redirect=true";
     }
-    
+
     // -------------------- SETTERS --------------------
 
     public void setDataverseId(Long dataverseId) {

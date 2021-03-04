@@ -134,7 +134,7 @@ public class TemplateServiceIT extends WebappArquillianDeployment {
     }
 
     @Test
-    public void shouldSuccessfullyCloneTemplate() {
+    public void shouldSuccessfullyCopyAndMergeTemplate() {
         //given
         Dataverse dataverse = dataverseDao.findByAlias(TEST_DATAVERSE_ALIAS);
         Template template = prepareTemplate();
@@ -146,7 +146,7 @@ public class TemplateServiceIT extends WebappArquillianDeployment {
         em.persist(template);
 
         //when
-        Try<Template> clonedTemplate = templateService.cloneTemplate(template, dataverse);
+        Try<Template> clonedTemplate = templateService.mergeIntoDataverse(dataverse, templateService.copyTemplate(template));
 
         //then
         assertFalse(clonedTemplate.isFailure());

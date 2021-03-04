@@ -1,8 +1,6 @@
 package edu.harvard.iq.dataverse.dataverse.template;
 
 import edu.harvard.iq.dataverse.DataverseDao;
-import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
-import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataset.DatasetFieldsInitializer;
@@ -22,18 +20,18 @@ import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
+import javax.faces.convert.FacesConverter;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.logging.Logger;
-
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 /**
  * @author skraffmiller
@@ -42,17 +40,26 @@ import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 @Named("TemplatePage")
 public class TemplatePage implements java.io.Serializable {
 
+    private static final Logger logger = Logger.getLogger(TemplatePage.class.getCanonicalName());
+
+    public enum EditMode {
+        CREATE, EDIT, CLONE
+    }
+
+    private EditMode editMode;
+    private Long ownerId;
+    private Long templateId;
+
+    private Template template;
+    private Dataverse dataverse;
+    private Map<MetadataBlock, List<DatasetFieldsByType>> mdbForEdit;
+    private Map<DatasetFieldType, InputFieldRenderer> inputRenderersByFieldType = new HashMap<>();
+
     @EJB
     TemplateDao templateDao;
 
     @EJB
     DataverseDao dataverseDao;
-
-    @EJB
-    EjbDataverseEngine commandEngine;
-
-    @Inject
-    DataverseRequestServiceBean dvRequestService;
 
     @Inject
     PermissionsWrapper permissionsWrapper;
@@ -62,62 +69,31 @@ public class TemplatePage implements java.io.Serializable {
 
     @Inject
     private TemplateService templateService;
-    
+
     @EJB
     private InputFieldRendererManager inputFieldRendererManager;
 
-    private static final Logger logger = Logger.getLogger(TemplatePage.class.getCanonicalName());
 
-    public enum EditMode {
-        CREATE, METADATA
-    }
-
-    private Template template;
-    private Dataverse dataverse;
-    private EditMode editMode;
-    private Long ownerId;
-    private Long templateId;
-    private Map<MetadataBlock, List<DatasetFieldsByType>> mdbForEdit;
-    private Map<DatasetFieldType, InputFieldRenderer> inputRenderersByFieldType = new HashMap<>();
+    // -------------------- GETTERS --------------------
 
     public Long getTemplateId() {
         return templateId;
-    }
-
-    public void setTemplateId(Long templateId) {
-        this.templateId = templateId;
     }
 
     public Template getTemplate() {
         return template;
     }
 
-    public void setTemplate(Template template) {
-        this.template = template;
-    }
-
     public Dataverse getDataverse() {
         return dataverse;
-    }
-
-    public void setDataverse(Dataverse dataverse) {
-        this.dataverse = dataverse;
     }
 
     public EditMode getEditMode() {
         return editMode;
     }
 
-    public void setEditMode(EditMode editMode) {
-        this.editMode = editMode;
-    }
-
     public Long getOwnerId() {
         return ownerId;
-    }
-
-    public void setOwnerId(Long ownerId) {
-        this.ownerId = ownerId;
     }
 
     public Map<MetadataBlock, List<DatasetFieldsByType>> getMdbForEdit() {
@@ -128,57 +104,15 @@ public class TemplatePage implements java.io.Serializable {
         return inputRenderersByFieldType;
     }
 
+    // -------------------- LOGIC --------------------
+
     public String init() {
-
-        if (isEditingTemplate()) {
-            editMode = TemplatePage.EditMode.METADATA;
-            template = templateDao.find(templateId);
-
-            dataverse = template.getDataverse();
-
-            if (dataverse == null) {
-                return permissionsWrapper.notFound();
-            }
-
-            if (!permissionsWrapper.canIssueCommand(dataverse, UpdateDataverseCommand.class)) {
-                return permissionsWrapper.notAuthorized();
-            }
-
-            List<DatasetField> dsfForEdit = datasetFieldsInitializer.prepareDatasetFieldsForEdit(template.getDatasetFields(), dataverse.getMetadataBlockRootDataverse());
-            template.setDatasetFields(dsfForEdit);
-            inputRenderersByFieldType = inputFieldRendererManager.obtainRenderersByType(dsfForEdit);
-            mdbForEdit = datasetFieldsInitializer.groupAndUpdateFlagsForEdit(dsfForEdit, dataverse.getMetadataBlockRootDataverse());
-
-            if (template.getTermsOfUseAndAccess() == null) {
-                template.setTermsOfUseAndAccess(prepareTermsOfUseAndAccess(template));
-            }
-
-
-        } else if (isCreatingTemplate()) {
-            dataverse = dataverseDao.find(ownerId);
-
-            if (dataverse == null) {
-                return permissionsWrapper.notFound();
-            }
-
-            if (!permissionsWrapper.canIssueCommand(dataverse, UpdateDataverseCommand.class)) {
-                return permissionsWrapper.notAuthorized();
-            }
-
-            editMode = TemplatePage.EditMode.CREATE;
-            template = new Template(this.dataverse);
-
-            template.setTermsOfUseAndAccess(prepareTermsOfUseAndAccess(template));
-
-            List<DatasetField> datasetFields = datasetFieldsInitializer.prepareDatasetFieldsForEdit(template.getDatasetFields(), dataverse.getMetadataBlockRootDataverse());
-            template.setDatasetFields(datasetFields);
-            inputRenderersByFieldType = inputFieldRendererManager.obtainRenderersByType(datasetFields);
-            mdbForEdit = datasetFieldsInitializer.groupAndUpdateFlagsForEdit(datasetFields, dataverse.getMetadataBlockRootDataverse());
-        } else {
-            throw new RuntimeException("On Template page without id or ownerid."); // improve error handling
+        switch(editMode) {
+            case CLONE: return initForClone();
+            case CREATE: return initForCreate();
+            case EDIT: return initForEdit();
+            default: throw new RuntimeException("On Template page without id or ownerid."); // improve error handling
         }
-
-        return StringUtils.EMPTY;
     }
 
     public String save() {
@@ -186,31 +120,74 @@ public class TemplatePage implements java.io.Serializable {
                 .forEach(v -> v.forEach(datasetFieldType -> saveDatasetFieldsGUIOrder(datasetFieldType.getDatasetFields())));
         template.setDatasetFields(DatasetFieldUtil.flattenDatasetFieldsFromBlocks(mdbForEdit));
 
-        Try<Template> templateOperation;
-
-        if (editMode == EditMode.CREATE) {
-
-            templateOperation = templateService.createTemplate(dataverse, this.template)
-                    .onSuccess(op -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("template.create")));
-        } else {
-
-            templateOperation = templateService.updateTemplate(dataverse, template)
-                    .onSuccess(op -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("template.save")));
-        }
-
-        if (templateOperation.isFailure()) {
-            logger.fine("There was a problem with creating template: " + templateOperation.getCause().getMessage());
+        Try<Template> saveResult = handleSave();
+        if (saveResult.isFailure()) {
+            logger.fine(() -> String.format("There was a problem with action [%s] on template: %s", editMode, saveResult.getCause().getMessage()));
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("template.save.fail"), "");
-
             return StringUtils.EMPTY;
         }
 
         return "/manage-templates.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true";
     }
 
-    private void saveDatasetFieldsGUIOrder(List<DatasetField> datasetFields) {
-        for(int i=0; i<datasetFields.size(); ++i) {
-            datasetFields.get(i).setDisplayOrder(i);
+
+    // -------------------- PRIVATE --------------------
+
+    private String initForClone() {
+        Template source = templateDao.find(templateId);
+        dataverse = source.getDataverse();
+
+        if (dataverse == null) {
+            return permissionsWrapper.notFound();
+        }
+        if (!permissionsWrapper.canIssueCommand(dataverse, UpdateDataverseCommand.class)) {
+            return permissionsWrapper.notAuthorized();
+        }
+
+        template = templateService.copyTemplate(source);
+        initFields();
+        return StringUtils.EMPTY;
+    }
+
+    private String initForEdit() {
+        template = templateDao.find(templateId);
+        dataverse = template.getDataverse();
+
+        if (dataverse == null) {
+            return permissionsWrapper.notFound();
+        }
+        if (!permissionsWrapper.canIssueCommand(dataverse, UpdateDataverseCommand.class)) {
+            return permissionsWrapper.notAuthorized();
+        }
+
+        initFields();
+        return StringUtils.EMPTY;
+    }
+
+    private String initForCreate() {
+        dataverse = dataverseDao.find(ownerId);
+
+        if (dataverse == null) {
+            return permissionsWrapper.notFound();
+        }
+        if (!permissionsWrapper.canIssueCommand(dataverse, UpdateDataverseCommand.class)) {
+            return permissionsWrapper.notAuthorized();
+        }
+
+        template = new Template(dataverse);
+        initFields();
+        return StringUtils.EMPTY;
+    }
+
+    private void initFields() {
+        List<DatasetField> datasetFields = datasetFieldsInitializer.prepareDatasetFieldsForEdit(
+                template.getDatasetFields(), dataverse.getMetadataBlockRootDataverse());
+        template.setDatasetFields(datasetFields);
+        inputRenderersByFieldType = inputFieldRendererManager.obtainRenderersByType(datasetFields);
+        mdbForEdit = datasetFieldsInitializer.groupAndUpdateFlagsForEdit(datasetFields, dataverse.getMetadataBlockRootDataverse());
+
+        if (template.getTermsOfUseAndAccess() == null) {
+            template.setTermsOfUseAndAccess(prepareTermsOfUseAndAccess(template));
         }
     }
 
@@ -221,12 +198,61 @@ public class TemplatePage implements java.io.Serializable {
         return terms;
     }
 
-    private boolean isEditingTemplate() {
-        return templateId != null;
+    private void saveDatasetFieldsGUIOrder(List<DatasetField> datasetFields) {
+        for (int i = 0; i < datasetFields.size(); ++i) {
+            datasetFields.get(i).setDisplayOrder(i);
+        }
     }
 
-    private boolean isCreatingTemplate() {
-        return ownerId != null;
+    private Try<Template> handleSave() {
+        switch (editMode) {
+            case CREATE: return tryToSave(templateService::createTemplate, "template.create");
+            case EDIT: return tryToSave(templateService::updateTemplate,"template.save");
+            case CLONE: return tryToSave(templateService::mergeIntoDataverse, "template.clone");
+            default: throw new IllegalStateException();
+        }
     }
 
+    private Try<Template> tryToSave(BiFunction<Dataverse, Template, Try<Template>> saveHandler, String successMessage) {
+        return saveHandler.apply(dataverse, template)
+                .onSuccess(op -> JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle(successMessage)));
+    }
+
+    // -------------------- SETTERS --------------------
+
+    public void setTemplateId(Long templateId) {
+        this.templateId = templateId;
+    }
+
+    public void setTemplate(Template template) {
+        this.template = template;
+    }
+
+    public void setDataverse(Dataverse dataverse) {
+        this.dataverse = dataverse;
+    }
+
+    public void setEditMode(EditMode editMode) {
+        this.editMode = editMode;
+    }
+
+    public void setOwnerId(Long ownerId) {
+        this.ownerId = ownerId;
+    }
+
+    // -------------------- INNER CLASSES --------------------
+
+    @FacesConverter("templateEditModeConverter")
+    public static class EditModeConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext context, UIComponent component, String value) {
+            return StringUtils.isNotBlank(value) ? EditMode.valueOf(value) : null;
+        }
+
+        @Override
+        public String getAsString(FacesContext context, UIComponent component, Object value) {
+            return value != null ? value.toString() : StringUtils.EMPTY;
+        }
+    }
 }

@@ -20,7 +20,7 @@
             <ui:param name="dataverse" value="#{manageTemplatesPage.dataverse}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
-            
+
                 <h2 class="no-margin-top">#{bundle['dataset.manageTemplates.pageTitle']}</h2>
                 <h:form id="manageTemplatesForm">
 
@@ -51,7 +51,7 @@
 
                         <div class="pull-right">
                             <h:outputLink styleClass="btn btn-default"
-                                          value="/template.xhtml?ownerId=#{manageTemplatesPage.dataverse.id}">
+                                          value="/template.xhtml?mode=CREATE&amp;ownerId=#{manageTemplatesPage.dataverse.id}">
                                 <span class="glyphicon glyphicon-plus" aria-hidden="true"/> <h:outputText value="#{bundle['dataset.manageTemplates.createBtn']}"/>
                             </h:outputLink>
                         </div>
@@ -134,7 +134,7 @@
                                                    update="@form">
                                         <span class="glyphicon glyphicon-duplicate" aria-hidden="true"/>
                                     </p:commandLink>
-                                    <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip" 
+                                    <p:commandLink styleClass="btn btn-default bootstrap-button-tooltip"
                                                    title="#{bundle['dataset.manageTemplates.tab.action.btn.edit']}"
                                                    ariaLabel="#{bundle['dataset.manageTemplates.tab.action.btn.edit']} #{template.name}"
                                                    action="#{manageTemplatesPage.editTemplateRedirect(template)}"

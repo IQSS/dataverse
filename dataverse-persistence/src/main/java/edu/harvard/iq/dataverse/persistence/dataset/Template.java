@@ -110,9 +110,9 @@ public class Template implements Serializable {
 
     public Template cloneNewTemplate(Template source) {
         Template newTemplate = new Template();
-        Template latestVersion = source;
+
         // if the latest version has values get them copied over
-        if (latestVersion.getDatasetFields() != null && !latestVersion.getDatasetFields().isEmpty()) {
+        if (source.getDatasetFields() != null && !source.getDatasetFields().isEmpty()) {
             newTemplate.setDatasetFields(DatasetFieldUtil.copyDatasetFields(source.getDatasetFields()));
         }
         TermsOfUseAndAccess terms;
@@ -126,6 +126,10 @@ public class Template implements Serializable {
         newTemplate.setDataverse(dataverse);
 
         return newTemplate;
+    }
+
+    public Template cloneNewTemplate() {
+        return cloneNewTemplate(this);
     }
 
     // -------------------- SETTERS --------------------
