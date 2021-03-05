@@ -177,7 +177,7 @@ public class OAIServlet extends HttpServlet {
         // some of the settings below - such as the max list numbers - 
         // need to be configurable!
         
-        String dataverseName = dataverseService.findRootDataverse().getName();
+        String dataverseName = dataverseService.getRootDataverseName();
         String repositoryName = StringUtils.isEmpty(dataverseName) || "Root".equals(dataverseName) ? "Test Dataverse OAI Archive" : dataverseName + " Dataverse OAI Archive";
         InternetAddress internetAddress = MailUtil.parseSystemAddress(settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail));
 
