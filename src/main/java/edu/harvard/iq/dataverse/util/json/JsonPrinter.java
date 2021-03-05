@@ -57,6 +57,9 @@ import java.util.logging.Logger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
+
+import javax.ejb.EJB;
+import javax.ejb.Singleton;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -65,14 +68,16 @@ import javax.json.JsonObject;
  *
  * @author michael
  */
+@Singleton
 public class JsonPrinter {
 
     private static final Logger logger = Logger.getLogger(JsonPrinter.class.getCanonicalName());
 
-    static SettingsServiceBean settingsService = null;
+    @EJB
+    static SettingsServiceBean settingsService;
 
-    // Passed to DatasetFieldWalker so it can check the :ExcludeEmailFromExport setting
-    public static void setSettingsService(SettingsServiceBean ssb) {
+    // Used in Tests
+    public static void injectSettingsService(SettingsServiceBean ssb) {
             settingsService = ssb;
     }
 
