@@ -265,11 +265,6 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
     }
 
     @Override
-    public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag, Long filesize) throws IOException {
-        saveInputStreamAsAux(inputStream, auxItemTag);
-    }
-
-    @Override
     public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException {
 
         // Since this is a local fileystem file, we can use the

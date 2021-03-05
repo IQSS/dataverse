@@ -214,13 +214,10 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException("DvObject type other than datafile is not yet supported");
         }
 
-        boolean shouldCompareMd5 = true;
 
         DataFile dataFile = (DataFile)dvObject;
-        if (ChecksumType.MD5.equals(dataFile.getChecksumType()) || dataFile.getDataTable() != null) {
-            shouldCompareMd5 = false;
-        }
-        
+        boolean shouldCompareMd5 = ChecksumType.MD5 == dataFile.getChecksumType() && dataFile.getDataTable() == null;
+
         if (shouldCompareMd5) {
             putFileToS3(fileSystemPath.toFile(), key, dataFile.getChecksumValue());
         } else {
@@ -330,20 +327,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         File inputFile = fileSystemPath.toFile();
         String checksum = FileUtil.calculateChecksum(inputFile.getAbsolutePath(), ChecksumType.MD5);
         putFileToS3(inputFile, destinationKey, checksum);
-    }
-
-    @Override
-    public void saveInputStreamAsAux(InputStream inputStream, String auxItemTag, Long filesize) throws IOException {
-        if (filesize == null || filesize < 0) {
-            saveInputStreamAsAux(inputStream, auxItemTag);
-            return;
-        }
-        
-        if (!this.canWrite()) {
-            open(DataAccessOption.WRITE_ACCESS);
-        }
-        String destinationKey = getDestinationKey(auxItemTag);
-        putInputStreamToS3(inputStream, filesize, destinationKey);
     }
 
     /**
@@ -706,14 +689,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         putRequest.setMetadata(metadata);
         putObjectToS3(putRequest);
     }
-    
-    private void putInputStreamToS3(InputStream inputStream, long filesize, String s3Key) throws IOException {
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(filesize);
-        
-        PutObjectRequest putRequest = new PutObjectRequest(bucketName, s3Key, inputStream, metadata);
-        putObjectToS3(putRequest);
-    }
 
     private void putObjectToS3(PutObjectRequest putRequest) throws IOException {
         TransferManager s3Transfer = TransferManagerBuilder.standard()
@@ -723,7 +698,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             Upload s3Upload = s3Transfer.upload(putRequest);
             s3Upload.waitForCompletion();
-            if (!verifyUploadedFile(putRequest))  {
+            if (!verifyUploadedFileIfPossible(putRequest))  {
                 s3.deleteObject(putRequest.getBucketName(), putRequest.getKey());
                 throw new IOException("File storage error - checsums before and after put are not identical");
             }
@@ -742,8 +717,11 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     }
     
 
-    private boolean verifyUploadedFile(PutObjectRequest putRequest) {
+    private boolean verifyUploadedFileIfPossible(PutObjectRequest putRequest) {
         String checksumSent = putRequest.getMetadata().getContentMD5();
+        if (checksumSent == null) {
+            return true;
+        }
         String checksumLocal = FileUtil.calculateChecksum(putRequest.getFile().getAbsolutePath(), ChecksumType.MD5);
         try {
             checksumLocal = Base64.getEncoder().encodeToString(Hex.decodeHex(checksumLocal.toCharArray()));
