@@ -41,24 +41,29 @@ public class BrandingUtilTest {
         BrandingUtil.injectDataverseService(dataverseService);
 //      DbSettingConfigSource.injectSettingsService(settingsSvc);
         System.out.println("testGetInstallationBrandName");
-        assertEquals("LibraScholar", BrandingUtil.getInstallationBrandName("LibraScholar"));
+        assertEquals("LibraScholar", BrandingUtil.getInstallationBrandName());
+
         Set<Setting> settings = new HashSet<>(Arrays.asList(new Setting("InstitutionName", "NotLibraScholar"), new Setting("FooBarI18N", "de", "hallo")));
         Mockito.when(settingsSvc.listAll()).thenReturn(settings);
         DbSettingConfigSource.injectSettingsService(settingsSvc);
-
-        assertEquals("NotLibraScholar", BrandingUtil.getInstallationBrandName(null));// misconfiguration to set to null
-        //assertEquals("", BrandingUtil.getInstallationBrandName(""));// misconfiguration to set to empty string
+        assertEquals("NotLibraScholar", BrandingUtil.getInstallationBrandName());// misconfiguration to set to null
     }
 
     @Test
     public void testGetSupportTeamName() throws AddressException, UnsupportedEncodingException {
         System.out.println("testGetSupportTeamName");
-        assertEquals("Support", BrandingUtil.getSupportTeamName(null, null));
-        assertEquals("Support", BrandingUtil.getSupportTeamName(null, ""));
-        assertEquals("LibraScholar Support", BrandingUtil.getSupportTeamName(null, "LibraScholar"));
-        assertEquals("LibraScholar Support", BrandingUtil.getSupportTeamName(new InternetAddress("support@librascholar.edu"), "LibraScholar"));
-        assertEquals("LibraScholar Support Team", BrandingUtil.getSupportTeamName(new InternetAddress("support@librascholar.edu", "LibraScholar Support Team"), "LibraScholar"));
-        assertEquals("", BrandingUtil.getSupportTeamName(new InternetAddress("support@librascholar.edu", ""), "LibraScholar")); // misconfiguration to set to empty string
+        Mockito.when(dataverseService.getRootDataverseName()).thenReturn(null);
+        BrandingUtil.injectDataverseService(dataverseService);
+        assertEquals("Support", BrandingUtil.getSupportTeamName(null));
+        Mockito.when(dataverseService.getRootDataverseName()).thenReturn("");
+        BrandingUtil.injectDataverseService(dataverseService);
+        assertEquals("Support", BrandingUtil.getSupportTeamName(null));
+        Mockito.when(dataverseService.getRootDataverseName()).thenReturn("LibraScholar");
+        BrandingUtil.injectDataverseService(dataverseService);
+        assertEquals("LibraScholar Support", BrandingUtil.getSupportTeamName(null));
+        assertEquals("LibraScholar Support", BrandingUtil.getSupportTeamName(new InternetAddress("support@librascholar.edu")));
+        assertEquals("LibraScholar Support Team", BrandingUtil.getSupportTeamName(new InternetAddress("support@librascholar.edu", "LibraScholar Support Team")));
+        assertEquals("", BrandingUtil.getSupportTeamName(new InternetAddress("support@librascholar.edu", ""))); // misconfiguration to set to empty string
     }
 
     @Test
@@ -135,7 +140,9 @@ public class BrandingUtilTest {
     @Test
     public void testGetContactHeader() {
         System.out.println("testGetContactHeader");
-        assertEquals("Contact Support", BrandingUtil.getContactHeader(null, null));
+        Mockito.when(dataverseService.getRootDataverseName()).thenReturn(null);
+        BrandingUtil.injectDataverseService(dataverseService);
+        assertEquals("Contact Support", BrandingUtil.getContactHeader(null));
     }
 
 }

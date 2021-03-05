@@ -12,18 +12,24 @@ public class BrandingUtil {
 
     static DataverseServiceBean dataverseService;
     
-    public static String getInstallationBrandName(String rootDataverseName) {
+    public static String getInstallationBrandName() {
         String installationName = new DbSettingConfigSource().getValue(DbSettingConfigSource.PREFIX + ".InstitutionName");
         return StringUtils.isEmpty(installationName) ? dataverseService.getRootDataverseName() : installationName;
     }
+    
+    //Convenience to access root name without injecting dataverseService (e.g. in DatasetVersion)
+    public static String getRootDataverseCollectionName() {
+        return dataverseService.getRootDataverseName();
+    }
 
-    public static String getSupportTeamName(InternetAddress systemAddress, String rootDataverseName) {
+    public static String getSupportTeamName(InternetAddress systemAddress) {
         if (systemAddress != null) {
             String personalName = systemAddress.getPersonal();
             if (personalName != null) {
                 return personalName;
             }
         }
+        String rootDataverseName=dataverseService.getRootDataverseName();
         if (rootDataverseName != null && !rootDataverseName.isEmpty()) {
             return rootDataverseName + " " + BundleUtil.getStringFromBundle("contact.support");
         }
@@ -38,8 +44,8 @@ public class BrandingUtil {
         return systemAddress.getAddress();
     }
 
-    public static String getContactHeader(InternetAddress systemAddress, String rootDataverseName) {
-        return BundleUtil.getStringFromBundle("contact.header", Arrays.asList(getSupportTeamName(systemAddress, rootDataverseName)));
+    public static String getContactHeader(InternetAddress systemAddress) {
+        return BundleUtil.getStringFromBundle("contact.header", Arrays.asList(getSupportTeamName(systemAddress)));
     }
 
     public static void injectDataverseService(DataverseServiceBean dataverseService) {
