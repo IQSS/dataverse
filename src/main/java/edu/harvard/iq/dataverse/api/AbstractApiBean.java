@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -86,6 +87,7 @@ public abstract class AbstractApiBean {
     private static final Logger logger = Logger.getLogger(AbstractApiBean.class.getName());
     private static final String DATAVERSE_KEY_HEADER_NAME = "X-Dataverse-key";
     private static final String PERSISTENT_ID_KEY=":persistentId";
+    private static final String ALIAS_KEY=":alias";
     public static final String STATUS_ERROR = "ERROR";
     public static final String STATUS_OK = "OK";
     public static final String STATUS_WF_IN_PROGRESS = "WORKFLOW_IN_PROGRESS";
@@ -481,6 +483,36 @@ public abstract class AbstractApiBean {
                         badRequest(BundleUtil.getStringFromBundle("find.datafile.error.datafile.not.found.bad.id", Collections.singletonList(id))));
             }
         }
+    }
+    
+
+    
+    protected DataverseRole findRoleOrDie(String id) throws WrappedResponse {
+        DataverseRole role;
+        if (id.equals(ALIAS_KEY)) {
+            String alias = getRequestParameter(ALIAS_KEY.substring(1));
+            role = em.createNamedQuery("DataverseRole.findDataverseRoleByAlias", DataverseRole.class)
+                    .setParameter("alias", alias)
+                    .getSingleResult();
+        } else {
+
+            role = rolesSvc.find(Long.parseLong(id));
+
+            try {
+                role = rolesSvc.find(Long.parseLong(id));
+                if (role == null) {
+                    throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.datafile.error.datafile.not.found.id", Collections.singletonList(id))));
+                }
+
+            } catch (NumberFormatException nfe) {
+                throw new WrappedResponse(
+                        badRequest(BundleUtil.getStringFromBundle("find.datafile.error.datafile.not.found.bad.id", Collections.singletonList(id))));
+            }
+        }
+
+
+        throw new WrappedResponse(notFound("role with id " + id + " not found"));
+
     }
     
     protected DatasetLinkingDataverse findDatasetLinkingDataverseOrDie(String datasetId, String linkingDataverseId) throws WrappedResponse {

@@ -76,6 +76,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvidersRegistrationServiceBean;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
@@ -87,6 +88,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.MergeInAccountCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ChangeUserIdentifierCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -890,6 +892,17 @@ public class Admin extends AbstractApiBean {
 			return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
 		}
 	}
+        
+    @DELETE
+    @Path("roles/{id}")
+    public Response deleteRole(@PathParam("id") String id) {
+
+        return response(req -> {
+            DataverseRole doomed = findRoleOrDie(id);
+            execCommand(new DeleteRoleCommand(req, doomed));
+            return ok("role " + doomed.getName() + " deleted.");
+        });
+    }
 
 	@Path("superuser/{identifier}")
 	@POST
