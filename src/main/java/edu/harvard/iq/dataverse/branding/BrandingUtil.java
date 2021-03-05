@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.settings.source.DbSettingConfigSource;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
@@ -21,8 +20,8 @@ public class BrandingUtil {
     static DataverseServiceBean dataverseService;
     
     public static String getInstallationBrandName() {
-        String installationName = new DbSettingConfigSource().getValue(DbSettingConfigSource.PREFIX + ".InstitutionName");
-        return StringUtils.isEmpty(installationName) ? dataverseService.getRootDataverseName() : installationName;
+        //ToDo #7387 which will make this call return something different than getRootDataverseCollectionName() 
+        return dataverseService.getRootDataverseName();
     }
     
     //Convenience to access root name without injecting dataverseService (e.g. in DatasetVersion)
