@@ -13,17 +13,13 @@ import java.util.Set;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import static org.junit.Assert.assertEquals;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-@TestMethodOrder(OrderAnnotation.class)
 public class BrandingUtilTest {
 
     DbSettingConfigSource dbSource = new DbSettingConfigSource();
@@ -33,7 +29,6 @@ public class BrandingUtilTest {
     DataverseServiceBean dataverseService;
     
     @Test
-    @Order(1)
     public void testGetInstallationBrandName() {
         
 //      Set<Setting> settings = new HashSet<>(Arrays.asList(new Setting("InstitutionName", "LibraScholar"), new Setting("FooBarI18N", "de", "hallo")));
