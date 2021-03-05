@@ -196,6 +196,9 @@ public class DataverseServiceBean implements java.io.Serializable {
         return em.createNamedQuery("Dataverse.findRoot", Dataverse.class).getSingleResult();
     }
     
+    
+    //Similarly - if the above throws that exception, do we need to catch it here?
+    //ToDo - consider caching?
     public String getRootDataverseName() {
         Dataverse root = findRootDataverse();
         if(root==null) {
