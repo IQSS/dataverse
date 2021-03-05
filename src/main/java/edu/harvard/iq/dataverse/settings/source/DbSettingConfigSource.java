@@ -39,9 +39,10 @@ public class DbSettingConfigSource implements ConfigSource {
      */
     public static void updateProperties() {
         // skip if the service has not been injected yet
-        if (settingsSvc == null)
+        if (settingsSvc == null) {
             return;
-        
+        }
+        properties.clear();
         Set<Setting> dbSettings = settingsSvc.listAll();
         dbSettings.forEach(s -> properties.put(PREFIX+"."+s.getName()+ (s.getLang() == null ? "" : "."+s.getLang()), s.getContent()));
         lastUpdate = Instant.now();
@@ -50,7 +51,7 @@ public class DbSettingConfigSource implements ConfigSource {
     @Override
     public Map<String, String> getProperties() {
         // if the cache is at least XX number of seconds old, update before serving data.
-        if (lastUpdate == null || Instant.now().minus(Duration.ofSeconds(60)).isBefore(lastUpdate)) {
+        if (lastUpdate == null || Instant.now().minus(Duration.ofSeconds(60)).isAfter(lastUpdate)) {
             updateProperties();
         }
         return properties;
