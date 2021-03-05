@@ -29,7 +29,7 @@ public class MailUtil {
         return null;
     }
 
-    public static String getSubjectTextBasedOnNotification(UserNotification userNotification, String rootDataverseName, Object objectOfNotification) {
+    public static String getSubjectTextBasedOnNotification(UserNotification userNotification, Object objectOfNotification) {
         List<String> rootDvNameAsList = Arrays.asList(BrandingUtil.getInstallationBrandName());
         switch (userNotification.getType()) {
             case ASSIGNROLE:
