@@ -325,7 +325,7 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-solrj</artifactId>
-            <version>7.7.2</version>
+            <version>8.8.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
