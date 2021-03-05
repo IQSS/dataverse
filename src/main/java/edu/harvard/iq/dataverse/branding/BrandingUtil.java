@@ -1,12 +1,20 @@
 package edu.harvard.iq.dataverse.branding;
 
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.settings.source.DbSettingConfigSource;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
+import java.util.NoSuchElementException;
 
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
+import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.mail.internet.InternetAddress;
+
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @Singleton
 public class BrandingUtil {
@@ -15,8 +23,15 @@ public class BrandingUtil {
     static DataverseServiceBean dataverseService;
     
     public static String getInstallationBrandName() {
-        //ToDo #7387 which will make this call return something different than getRootDataverseCollectionName() 
-        return dataverseService.getRootDataverseName();
+        String installationName=null; //new DbSettingConfigSource().getValue(DbSettingConfigSource.PREFIX + ".installation.name");
+        try {
+        installationName = ConfigProvider.getConfig().getValue(DbSettingConfigSource.PREFIX + ".installation.name", String.class);
+        } catch (NoSuchElementException nse) {
+            installationName=null;
+        }
+        //System.out.println("fromdbsource: " +  new DbSettingConfigSource().getValue(DbSettingConfigSource.PREFIX + ".installation.name"));
+        System.out.println("IN: " + installationName);
+        return StringUtils.isEmpty(installationName) ? dataverseService.getRootDataverseName() : installationName;
     }
     
     //Convenience to access root name without injecting dataverseService (e.g. in DatasetVersion)
