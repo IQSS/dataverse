@@ -1,19 +1,14 @@
 package edu.harvard.iq.dataverse.branding;
 
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.settings.source.DbSettingConfigSource;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
 
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
-import javax.ejb.Startup;
 import javax.mail.internet.InternetAddress;
 
-import org.apache.commons.lang3.StringUtils;
-
 @Singleton
-@Startup
 public class BrandingUtil {
 
     @EJB
