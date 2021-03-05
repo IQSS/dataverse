@@ -156,7 +156,7 @@ Some file types and datasets offer data exploration options if external tools ha
 Exploratory Data Analysis Using Differentially Private Metadata (Experimental)
 ------------------------------------------------------------------------------
 
-Through an integration with tools from the OpenDP Project (opendp.io), the Dataverse Software offers an experimental workflow that allows a data depositor to create and deposit Differentially Private (DP) Metadata files, which can then be used for exploratory data analysis. This workflow allows researchers to view the DP metadata for a tabular file in a Dataverse installation, and then determine whether or not access to file contains useful information and make an informed decision about whether or not to request access to the original files themselves.
+Through an integration with tools from the OpenDP Project (opendp.io), the Dataverse Software offers an experimental workflow that allows a data depositor to create and deposit Differentially Private (DP) Metadata files, which can then be used for exploratory data analysis. This workflow allows researchers to view the DP metadata for a tabular file, determine whether or not the file contains useful information, and then make an informed decision about whether or not to request access to the original file.
 
 If the data depositor has made available DP metadata for one or more files in their dataset, these access options will appear on the access dropdown on both the Dataset Page and the File Page. These access options will be available even if a file is restricted. Three types of DP metadata will be available:
 
