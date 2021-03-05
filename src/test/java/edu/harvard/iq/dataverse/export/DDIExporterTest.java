@@ -145,12 +145,10 @@ public class DDIExporterTest {
         version.setVersionState(DatasetVersion.VersionState.DRAFT);
         Dataset dataset = new Dataset();
         version.setDataset(dataset);
-        Dataverse dataverse = new Dataverse();
-        dataset.setOwner(dataverse);
         String citation = version.getCitation();
         System.out.println("citation: " + citation);
         int currentYear = Year.now().getValue();
-        assertEquals("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", DRAFT VERSION", citation);
+        assertEquals("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", LibraScholar, DRAFT VERSION", citation);
     }
 
     @Test

@@ -43,10 +43,14 @@ public class BrandingUtilTest {
         System.out.println("testGetInstallationBrandName");
         assertEquals("LibraScholar", BrandingUtil.getInstallationBrandName());
 
-        Set<Setting> settings = new HashSet<>(Arrays.asList(new Setting("InstitutionName", "NotLibraScholar"), new Setting("FooBarI18N", "de", "hallo")));
+        Set<Setting> settings = new HashSet<>(Arrays.asList(new Setting("InstitutionName", "NotLibraScholar")));
         Mockito.when(settingsSvc.listAll()).thenReturn(settings);
         DbSettingConfigSource.injectSettingsService(settingsSvc);
         assertEquals("NotLibraScholar", BrandingUtil.getInstallationBrandName());// misconfiguration to set to null
+        
+        //Reset for other tests
+        settings.clear();
+        settings.add(new Setting("InstitutionName", "LibraScholar"));
     }
 
     @Test
