@@ -1653,19 +1653,29 @@
                     <!-- END: Publish/Submit for Review Dialogs -->
                 </h:form>
                 <script>
-                    //<![CDATA[                   
+                    //<![CDATA[
+                    
+                    // make sure to only truncate on load and not every ajax update
+                    var truncactionHappened = false;
+                    
                     $(document).ready(function () {
                         popoverHTML('#{bundle.htmlAllowedTitle}', '#{bundle.htmlAllowedTags}');
-                        
+                    });
+                    function summaryDescTruncation() {
                         // truncate summary description, contentTruncate function in dv_rebind_bootstrap_ui.js
                         // add summary desc row id to pass as function selector
                         var descId = 'dsDescription';
                         // add metadata dynamic label text to button and tooltip text from bundle
                         var truncMoreBtn = '#{of:format1(bundle.truncateMoreBtn, DatasetPage.datasetVersionUI.description.datasetFieldType.localeTitle)}';
                         var truncMoreTip = '#{of:format1(bundle.truncateMoreTip, DatasetPage.datasetVersionUI.description.datasetFieldType.localeTitle)}';
-                        // pass text params to function
-                        contentTruncate(descId, truncMoreBtn, truncMoreTip);
-                    });
+                        
+                        if (!truncactionHappened) {
+                            // pass text params to function
+                            contentTruncate(descId, truncMoreBtn, truncMoreTip);
+                            
+                            truncactionHappened = true;
+                        }
+                    }
                     function openDialog() {
                         PF('details').show();
                     }
@@ -1679,8 +1689,7 @@
                         } else {
                             $('button[id$="compareVersions"]').trigger('click');
                         }
-                    }
-                                      
+                    }             
                     function testFilesSelected() {
                         var count = PF('filesTable').getSelectedRowsCount();
                         if (count == 0) {
@@ -1689,7 +1698,6 @@
                             return true;
                         }                        
                     }
-                    
                     function updateTemplate() {
                         $('button[id$="updateTemplate"]').trigger('click');
                     }
@@ -1701,6 +1709,7 @@
                     }
                     //]]>
                 </script>
+                <o:onloadScript>summaryDescTruncation();</o:onloadScript>
             </ui:define>
         </ui:composition>
     </h:body>

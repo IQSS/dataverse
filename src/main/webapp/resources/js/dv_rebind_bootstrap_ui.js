@@ -163,7 +163,8 @@ function sharrre(){
  */
 function contentTruncate(truncSelector, truncMoreBtn, truncMoreTip){
     // SELECTOR ID FROM PARAMETERS
-    $('#' + truncSelector + ' td div').each(function () {
+    $('#' + truncSelector + ' td > div:first-child').each(function () {
+        
         // add responsive img class to limit width to that of container
         $(this).find('img').attr('class', 'img-responsive');
         
