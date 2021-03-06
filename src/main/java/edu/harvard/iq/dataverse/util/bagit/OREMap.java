@@ -179,7 +179,7 @@ public class OREMap {
         }
 
         aggBuilder.add(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel(),
-                BrandingUtil.getRootDataverseCollectionName());
+                dataset.getDataverseContext().getDisplayName());
 
         // The aggregation aggregates aggregatedresources (Datafiles) which each have
         // their own entry and metadata
