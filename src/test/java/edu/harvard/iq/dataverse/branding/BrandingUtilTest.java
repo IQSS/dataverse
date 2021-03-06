@@ -20,13 +20,6 @@ public class BrandingUtilTest {
     DataverseServiceBean dataverseService;
     
     @Test
-    public void testGetInstallationBrandName() {
-        
-       System.out.println("testGetInstallationBrandName");
-        assertEquals("LibraScholar", BrandingUtil.getInstallationBrandName());
-    }
-
-    @Test
     public void testGetSupportTeamName() throws AddressException, UnsupportedEncodingException {
         System.out.println("testGetSupportTeamName");
         Mockito.when(dataverseService.getRootDataverseName()).thenReturn(null);
