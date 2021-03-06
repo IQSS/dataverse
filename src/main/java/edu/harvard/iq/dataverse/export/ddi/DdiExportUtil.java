@@ -205,8 +205,7 @@ public class DdiExportUtil {
                 distributorSet=true;
             }
         }
-        if (!StringUtils.isEmpty(datasetDto.getPublisher()) && !(ConfigProvider.getConfig()
-                .getValue("dataverse.export.distributor.excludeinstallationifset", Boolean.class) && distributorSet)) {
+        if (!StringUtils.isEmpty(datasetDto.getPublisher()) && !(ConfigProvider.getConfig().getOptionalValue("dataverse.export.distributor.excludeinstallationifset", Boolean.class).orElse(false) && distributorSet)) {
             xmlw.writeStartElement("distrbtr");
             writeAttribute(xmlw, "source", "archive");
             xmlw.writeCharacters(datasetDto.getPublisher());

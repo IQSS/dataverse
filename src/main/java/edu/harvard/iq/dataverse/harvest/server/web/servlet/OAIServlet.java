@@ -132,11 +132,11 @@ public class OAIServlet extends HttpServlet {
     }
     
     private void addSupportedMetadataFormats(Context context) {
-        for (String[] provider : ExportService.getInstance(settingsService).getExportersLabels()) {
+        for (String[] provider : ExportService.getInstance().getExportersLabels()) {
             String formatName = provider[1];
             Exporter exporter;
             try {
-                exporter = ExportService.getInstance(settingsService).getExporter(formatName);
+                exporter = ExportService.getInstance().getExporter(formatName);
             } catch (ExportException ex) {
                 exporter = null;
             }

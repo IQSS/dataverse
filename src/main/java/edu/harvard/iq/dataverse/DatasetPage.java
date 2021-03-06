@@ -4198,13 +4198,13 @@ public class DatasetPage implements java.io.Serializable {
     public List< String[]> getExporters(){
         List<String[]> retList = new ArrayList<>();
         String myHostURL = getDataverseSiteUrl();
-        for (String [] provider : ExportService.getInstance(settingsService).getExportersLabels() ){
+        for (String [] provider : ExportService.getInstance().getExportersLabels() ){
             String formatName = provider[1];
             String formatDisplayName = provider[0];
             
             Exporter exporter = null; 
             try {
-                exporter = ExportService.getInstance(settingsService).getExporter(formatName);
+                exporter = ExportService.getInstance().getExporter(formatName);
             } catch (ExportException ex) {
                 exporter = null;
             }
@@ -5293,7 +5293,7 @@ public class DatasetPage implements java.io.Serializable {
     
     public String getJsonLd() {
         if (isThisLatestReleasedVersion()) {
-            ExportService instance = ExportService.getInstance(settingsService);
+            ExportService instance = ExportService.getInstance();
             String jsonLd = instance.getExportAsString(dataset, SchemaDotOrgExporter.NAME);
             if (jsonLd != null) {
                 logger.fine("Returning cached schema.org JSON-LD.");
