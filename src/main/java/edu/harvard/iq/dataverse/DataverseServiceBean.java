@@ -201,10 +201,6 @@ public class DataverseServiceBean implements java.io.Serializable {
     //ToDo - consider caching?
     public String getRootDataverseName() {
         Dataverse root = findRootDataverse();
-        if(root==null) {
-            logger.warning("Failed to find root dataverse!");
-            return "";
-        }
         String rootDataverseName=root.getName();
         return StringUtil.isEmpty(rootDataverseName) ? "" : rootDataverseName; 
     }
