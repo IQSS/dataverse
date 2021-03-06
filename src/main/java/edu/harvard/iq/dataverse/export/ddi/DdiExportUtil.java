@@ -55,6 +55,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.w3c.dom.Document;
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.w3c.dom.DOMException;
 
 // For write operation
@@ -195,7 +197,16 @@ public class DdiExportUtil {
         writeProducersElement(xmlw, version);
         
         xmlw.writeStartElement("distStmt");
-        if (datasetDto.getPublisher() != null && !datasetDto.getPublisher().equals("")) {
+      //The default is to add Dataverse Repository as a distributor. The excludeinstallationifset setting turns that off if there is a distributor defined in the metadata
+        boolean distributorSet=false;
+        MetadataBlockDTO citationDTO= version.getMetadataBlocks().get("citation");
+        if(citationDTO!=null) {
+            if(citationDTO.getField(DatasetFieldConstant.distributorName)!=null) {
+                distributorSet=true;
+            }
+        }
+        if (!StringUtils.isEmpty(datasetDto.getPublisher()) && !(ConfigProvider.getConfig()
+                .getValue("dataverse.export.distributor.excludeinstallationifset", Boolean.class) && distributorSet)) {
             xmlw.writeStartElement("distrbtr");
             writeAttribute(xmlw, "source", "archive");
             xmlw.writeCharacters(datasetDto.getPublisher());
@@ -308,7 +319,8 @@ public class DdiExportUtil {
         xmlw.writeEndElement(); // IDNo
         xmlw.writeEndElement(); // titlStmt
         xmlw.writeStartElement("distStmt");
-        if (datasetDto.getPublisher() != null && !datasetDto.getPublisher().equals("")) {
+        //The doc is always published by the Dataverse Repository
+        if (!StringUtils.isEmpty(datasetDto.getPublisher())) {
             xmlw.writeStartElement("distrbtr");
             writeAttribute(xmlw, "source", "archive");
             xmlw.writeCharacters(datasetDto.getPublisher());
