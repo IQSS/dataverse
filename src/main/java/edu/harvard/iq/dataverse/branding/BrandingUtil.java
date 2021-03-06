@@ -19,16 +19,12 @@ public class BrandingUtil {
     static DataverseServiceBean dataverseService;
 
     public static String getInstallationBrandName() {
-        String installationName=null;
-        try {
-        installationName = ConfigProvider.getConfig().getValue("dataverse.branding.installation.name", String.class);
-        } catch (NoSuchElementException nse) {
-            installationName=null;
-        }
-        return StringUtils.isEmpty(installationName) ? dataverseService.getRootDataverseName() : installationName;
+        return ConfigProvider.getConfig().getOptionalValue("dataverse.branding.installation.name", String.class)
+                .orElse(dataverseService.getRootDataverseName());
     }
-    
-    //Convenience to access root name without injecting dataverseService (e.g. in DatasetVersion)
+
+    // Convenience to access root name without injecting dataverseService (e.g. in
+    // DatasetVersion)
     public static String getRootDataverseCollectionName() {
         return dataverseService.getRootDataverseName();
     }
