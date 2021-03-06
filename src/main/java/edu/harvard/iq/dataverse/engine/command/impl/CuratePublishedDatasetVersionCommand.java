@@ -184,7 +184,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         
         //And the exported metadata files
         try {
-            ExportService instance = ExportService.getInstance(ctxt.settings());
+            ExportService instance = ExportService.getInstance();
             instance.exportAllFormats(getDataset());
         } catch (ExportException ex) {
             // Just like with indexing, a failure to export is not a fatal condition.
