@@ -10,8 +10,8 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.RemoveLockCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.internalspi.InternalWorkflowStepSP;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
@@ -35,7 +35,6 @@ import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 /**
@@ -60,6 +59,9 @@ public class WorkflowServiceBean {
 
     @EJB
     RoleAssigneeServiceBean roleAssignees;
+    
+    @EJB 
+    SystemConfig systemConfig;
 
     @EJB
     EjbDataverseEngine engine;
@@ -95,10 +97,21 @@ public class WorkflowServiceBean {
      * @param ctxt the context in which the workflow is executed.
      * @throws CommandException If the dataset could not be locked.
      */
+    //ToDo - should this be @Async? or just the forward() method?
     @Asynchronous
     public void start(Workflow wf, WorkflowContext ctxt) throws CommandException {
+        
+        // Since we are calling this asynchronously anyway - sleep here 
+        // for a few seconds, just in case, to make sure the database update of 
+        // the dataset initiated by the PublishDatasetCommand has finished, 
+        // to avoid any concurrency/optimistic lock issues. 
+        try {
+            Thread.sleep(1000);
+        } catch (Exception ex) {
+            logger.warning("Failed to sleep for a second.");
+        }
         ctxt = refresh(ctxt, retrieveRequestedSettings( wf.getRequiredSettings()), getCurrentApiToken(ctxt.getRequest().getAuthenticatedUser()));
-        lockDataset(ctxt);
+        lockDataset(ctxt, new DatasetLock(DatasetLock.Reason.Workflow, ctxt.getRequest().getAuthenticatedUser()));
         forward(wf, ctxt);
     }
     
@@ -268,34 +281,40 @@ public class WorkflowServiceBean {
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    void lockDataset( WorkflowContext ctxt ) throws CommandException {
-        final DatasetLock datasetLock = new DatasetLock(DatasetLock.Reason.Workflow, ctxt.getRequest().getAuthenticatedUser());
-        /* Note that this method directly adds a lock to the database rather than adding it via 
-         * engine.submit(new AddLockCommand(ctxt.getRequest(), ctxt.getDataset(), datasetLock));
-         * which would update the dataset's list of locks, etc. 
-         * An em.find() for the dataset would get a Dataset that has an updated list of locks, but this copy would not have any changes
-         * made in a calling command (e.g. for a PostPublication workflow, the fact that the latest version is 'released' is not yet in the 
-         * database. 
+    void lockDataset(WorkflowContext ctxt, DatasetLock datasetLock) throws CommandException {
+        /*
+         * Note that this method directly adds a lock to the database rather than adding
+         * it via engine.submit(new AddLockCommand(ctxt.getRequest(), ctxt.getDataset(),
+         * datasetLock)); which would update the dataset's list of locks, etc. An
+         * em.find() for the dataset would get a Dataset that has an updated list of
+         * locks, but this copy would not have any changes made in a calling command
+         * (e.g. for a PostPublication workflow, the fact that the latest version is
+         * 'released' is not yet in the database.
          */
         datasetLock.setDataset(ctxt.getDataset());
         em.persist(datasetLock);
+        //flush creates the id
         em.flush();
+        ctxt.setLockId(datasetLock.getId());
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    void unlockDataset( WorkflowContext ctxt ) throws CommandException {
-    	/* Since the lockDataset command above directly persists a lock to the database, 
-    	 * the ctxt.getDataset() is not updated and its list of locks can't be used. Using the named query below will find the workflow
-    	 * lock and remove it (actually all workflow locks for this Dataset but only one workflow should be active). 
-    	 */
+    void unlockDataset(WorkflowContext ctxt) throws CommandException {
+        /*
+         * Since the lockDataset command above directly persists a lock to the database,
+         * the ctxt.getDataset() is not updated and its list of locks can't be used.
+         * Using the named query below will find the workflow lock and remove it
+         * (actually all workflow locks for this Dataset but only one workflow should be
+         * active).
+         */
         TypedQuery<DatasetLock> lockCounter = em.createNamedQuery("DatasetLock.getLocksByDatasetId", DatasetLock.class);
         lockCounter.setParameter("datasetId", ctxt.getDataset().getId());
         List<DatasetLock> locks = lockCounter.getResultList();
-        for(DatasetLock lock: locks) {
-        	if(lock.getReason() == DatasetLock.Reason.Workflow) {
-                logger.fine("Removing lock");
-        		em.remove(lock);
-        	}
+        for (DatasetLock lock : locks) {
+            if (lock.getReason() == DatasetLock.Reason.Workflow) {
+                ctxt.getDataset().removeLock(lock);
+                em.remove(lock);
+            }
         }
         em.flush();
     }
@@ -315,7 +334,34 @@ public class WorkflowServiceBean {
         
             try {
         if ( ctxt.getType() == TriggerType.PrePublishDataset ) {
+                ctxt = refresh(ctxt);
+                //Now lock for FinalizePublication - this block mirrors that in PublishDatasetCommand
+                AuthenticatedUser user = ctxt.getRequest().getAuthenticatedUser();
+                DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
+                lock.setDataset(ctxt.getDataset());
+                String currentGlobalIdProtocol = settings.getValueForKey(SettingsServiceBean.Key.Protocol, "");
+                String currentGlobalAuthority= settings.getValueForKey(SettingsServiceBean.Key.Authority, "");
+                String dataFilePIDFormat = settings.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+                boolean registerGlobalIdsForFiles = 
+                        (currentGlobalIdProtocol.equals(ctxt.getDataset().getProtocol()) || dataFilePIDFormat.equals("INDEPENDENT")) 
+                        && systemConfig.isFilePIDsEnabled();
+                if ( registerGlobalIdsForFiles ){
+                    registerGlobalIdsForFiles = currentGlobalAuthority.equals( ctxt.getDataset().getAuthority() );
+                }
+                
+                boolean validatePhysicalFiles = systemConfig.isDatafileValidationOnPublishEnabled();
+                String info = "Publishing the dataset; "; 
+                info += registerGlobalIdsForFiles ? "Registering PIDs for Datafiles; " : "";
+                info += validatePhysicalFiles ? "Validating Datafiles Asynchronously" : "";
+                lock.setInfo(info);
+                lockDataset(ctxt, lock);
+                ctxt.getDataset().addLock(lock);
+                
                 unlockDataset(ctxt);
+                ctxt.setLockId(null); //the workflow lock
+                //Refreshing merges the dataset
+                ctxt = refresh(ctxt);
+                //Then call Finalize
                 engine.submit(new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getRequest(), ctxt.getDatasetExternallyReleased()));
             } else {
                 logger.fine("Removing workflow lock");
@@ -431,7 +477,7 @@ public class WorkflowServiceBean {
     	 */
         WorkflowContext newCtxt =new WorkflowContext( ctxt.getRequest(), 
                 em.merge(ctxt.getDataset()), ctxt.getNextVersionNumber(), 
-                ctxt.getNextMinorVersionNumber(), ctxt.getType(), settings, apiToken, ctxt.getDatasetExternallyReleased(), ctxt.getInvocationId());
+                ctxt.getNextMinorVersionNumber(), ctxt.getType(), settings, apiToken, ctxt.getDatasetExternallyReleased(), ctxt.getInvocationId(), ctxt.getLockId());
         return newCtxt;
     }
 
