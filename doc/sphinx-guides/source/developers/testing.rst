@@ -2,7 +2,7 @@
 Testing
 =======
 
-In order to keep our codebase healthy, the Dataverse project encourages developers to write automated tests in the form of unit tests and integration tests. We also welcome ideas for how to improve our automated testing.
+In order to keep our codebase healthy, the Dataverse Project encourages developers to write automated tests in the form of unit tests and integration tests. We also welcome ideas for how to improve our automated testing.
 
 .. contents:: |toctitle|
 	:local:
@@ -30,7 +30,7 @@ Unit Tests
 
 Creating unit tests for your code is a helpful way to test what you've built piece by piece.
 
-Unit tests can be executed without runtime dependencies on PostgreSQL, Solr, or any other external system. They are the lowest level of testing and are executed constantly on developers' laptops as part of the build process and via continous integration services in the cloud.
+Unit tests can be executed without runtime dependencies on PostgreSQL, Solr, or any other external system. They are the lowest level of testing and are executed constantly on developers' laptops as part of the build process and via continuous integration services in the cloud.
 
 A unit test should execute an operation of your code in a controlled fashion. You must make an assertion of what the expected response gives back. It's important to test optimistic output and assertions (the "happy path"), as well as unexpected input that leads to failure conditions. Know how your program should handle anticipated errors/exceptions and confirm with your test(s) that it does so properly.
 
@@ -113,16 +113,16 @@ Generally speaking, unit tests have been flagged as non-essential because they a
 Integration Tests
 -----------------
 
-Unit tests are fantastic for low level testing of logic but aren't especially real-world-applicable because they do not exercise Dataverse as it runs in production with a database and other runtime dependencies. We test in-depth by also writing integration tests to exercise a running system.
+Unit tests are fantastic for low level testing of logic but aren't especially real-world-applicable because they do not exercise the Dataverse Software as it runs in production with a database and other runtime dependencies. We test in-depth by also writing integration tests to exercise a running system.
 
 Unfortunately, the term "integration tests" can mean different things to
-different people. For our purposes, an integration test can have to flavors:
+different people. For our purposes, an integration test can have two flavors:
 
 1. Be an API Test:
 
-   - Exercise Dataverse APIs.
+   - Exercise the Dataverse Software APIs.
    - Running not automatically on developers' laptops.
-   - Operate on an installation of Dataverse that is running and able to talk to both PostgreSQL and Solr.
+   - Operate on a Dataverse installation that is running and able to talk to both PostgreSQL and Solr.
    - Written using REST Assured.
 
 2. Be a `Testcontainers <https://testcontainers.org>`__ Test:
@@ -173,32 +173,32 @@ Alternatively, you can run tests against the app server running on your laptop b
 Getting Set Up to Run REST Assured Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Unit tests are run automatically on every build, but dev environments and servers require special setup to run REST Assured tests. In short, Dataverse needs to be placed into an insecure mode that allows arbitrary users and datasets to be created and destroyed. This differs greatly from the out-of-the-box behavior of Dataverse, which we strive to keep secure for sysadmins installing the software for their institutions in a production environment.
+Unit tests are run automatically on every build, but dev environments and servers require special setup to run REST Assured tests. In short, the Dataverse Software needs to be placed into an insecure mode that allows arbitrary users and datasets to be created and destroyed. This differs greatly from the out-of-the-box behavior of the Dataverse Software, which we strive to keep secure for sysadmins installing the software for their institutions in a production environment.
 
-The :doc:`dev-environment` section currently refers developers here for advice on getting set up to run REST Assured tests, but we'd like to add some sort of "dev" flag to the installer to put Dataverse in "insecure" mode, with lots of scary warnings that this dev mode should not be used in production.
+The :doc:`dev-environment` section currently refers developers here for advice on getting set up to run REST Assured tests, but we'd like to add some sort of "dev" flag to the installer to put the Dataverse Software in "insecure" mode, with lots of scary warnings that this dev mode should not be used in production.
 
 The instructions below assume a relatively static dev environment on a Mac. There is a newer "all in one" Docker-based approach documented in the :doc:`/developers/containers` section under "Docker" that you may like to play with as well.
 
 The Burrito Key
 ^^^^^^^^^^^^^^^
 
-For reasons that have been lost to the mists of time, Dataverse really wants you to to have a burrito. Specifically, if you're trying to run REST Assured tests and see the error "Dataverse config issue: No API key defined for built in user management", you must run the following curl command (or make an equivalent change to your database):
+For reasons that have been lost to the mists of time, the Dataverse Software really wants you to to have a burrito. Specifically, if you're trying to run REST Assured tests and see the error "Dataverse config issue: No API key defined for built in user management", you must run the following curl command (or make an equivalent change to your database):
 
 ``curl -X PUT -d 'burrito' http://localhost:8080/api/admin/settings/BuiltinUsers.KEY``
 
-Without this "burrito" key in place, REST Assured will not be able to create users. We create users to create objects we want to test, such as dataverses, datasets, and files.
+Without this "burrito" key in place, REST Assured will not be able to create users. We create users to create objects we want to test, such as Dataverse collections, datasets, and files.
 
-Root Dataverse Permissions
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+Root Dataverse Collection Permissions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In your browser, log in as dataverseAdmin (password: admin) and click the "Edit" button for your root dataverse. Navigate to Permissions, then the Edit Access button. Under "Who can add to this dataverse?" choose "Anyone with a Dataverse account can add sub dataverses and datasets" if it isn't set to this already.
+In your browser, log in as dataverseAdmin (password: admin) and click the "Edit" button for your root Dataverse collection. Navigate to Permissions, then the Edit Access button. Under "Who can add to this Dataverse collection?" choose "Anyone with a Dataverse installation account can add sub Dataverse collections and datasets" if it isn't set to this already.
 
 Alternatively, this same step can be done with this script: ``scripts/search/tests/grant-authusers-add-on-root``
 
-Publish Root Dataverse
-^^^^^^^^^^^^^^^^^^^^^^
+Publish Root Dataverse Collection
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The root dataverse must be published for some of the REST Assured tests to run.
+The root Dataverse collection must be published for some of the REST Assured tests to run.
 
 dataverse.siteUrl
 ^^^^^^^^^^^^^^^^^
@@ -235,7 +235,7 @@ Remember, it’s only a test (and it's not graded)! Some guidelines to bear in m
 - Let the code do the labor; automate everything that happens when you run your test file.
 - Just as with any development, if you’re stuck: ask for help!
 
-To execute existing integration tests on your local Dataverse, a helpful command line tool to use is `Maven <http://maven.apache.org/ref/3.1.0/maven-embedder/cli.html>`_. You should have Maven installed as per the `Development Environment <http://guides.dataverse.org/en/latest/developers/dev-environment.html>`_ guide, but if not it’s easily done via Homebrew: ``brew install maven``.
+To execute existing integration tests on your local Dataverse installation, a helpful command line tool to use is `Maven <http://maven.apache.org/ref/3.1.0/maven-embedder/cli.html>`_. You should have Maven installed as per the `Development Environment <http://guides.dataverse.org/en/latest/developers/dev-environment.html>`_ guide, but if not it’s easily done via Homebrew: ``brew install maven``.
 
 Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)>]``.
 
@@ -410,7 +410,7 @@ Enhance build time by caching dependencies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In the future, CI builds in ephemeral build environments and Docker builds can benefit from caching all dependencies and plugins.
-As Dataverse is a huge project, build times can be enhanced by avoiding re-downloading everything when the Maven POM is unchanged.
+As the Dataverse Project is a huge project, build times can be enhanced by avoiding re-downloading everything when the Maven POM is unchanged.
 To seed the cache, use the following Maven goal before using Maven in (optional) offline mode in your scripts:
 
 .. code:: shell
@@ -456,9 +456,9 @@ Accessibility Testing
 Accessibility Policy
 ~~~~~~~~~~~~~~~~~~~~
 
-Dataverse aims to improve the user experience for those with disabilities, and are in the process of following the recommendations of the `Harvard University Digital Accessibility Policy <https://accessibility.huit.harvard.edu/digital-accessibility-policy>`__,  which use the Worldwide Web Consortium’s Web Content Accessibility Guidelines version 2.1, Level AA Conformance (WCAG 2.1 Level AA) as the standard.
+The Dataverse Project aims to improve the user experience for those with disabilities, and are in the process of following the recommendations of the `Harvard University Digital Accessibility Policy <https://accessibility.huit.harvard.edu/digital-accessibility-policy>`__,  which use the Worldwide Web Consortium’s Web Content Accessibility Guidelines version 2.1, Level AA Conformance (WCAG 2.1 Level AA) as the standard.
 
-To report an accessibility issue with Dataverse, you can create a new issue in our GitHub repo at: https://github.com/IQSS/dataverse/issues/
+To report an accessibility issue with the Dataverse Software, you can create a new issue in our GitHub repo at: https://github.com/IQSS/dataverse/issues/
 
 Accessibility Tools
 ~~~~~~~~~~~~~~~~~~~

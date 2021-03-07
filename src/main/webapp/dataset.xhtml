@@ -19,21 +19,21 @@
             <ui:param name="dataset" value="#{DatasetPage.dataset}"/>
             <ui:param name="version" value="#{DatasetPage.workingVersion}"/>
             <ui:param name="locked" value="#{DatasetPage.locked}"/>
-	    <ui:param name="showMessagePanel" value="#{true}"/>
+            <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:param name="showPublishLink" value="#{DatasetPage.workingVersion == DatasetPage.dataset.latestVersion 
-                                                             and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
-                                                             and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
-            
+                                                      and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
+                                                      and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
+
             <ui:param name="showSubmitForReviewLink" value="#{DatasetPage.editMode != 'CREATE' and DatasetPage.workingVersion == DatasetPage.dataset.latestVersion
-                                                                            and !DatasetPage.datasetLockedInWorkflow
-                                                                            and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
-                                                                            and DatasetPage.canUpdateDataset()
-                                                                            and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
+                                                              and !DatasetPage.datasetLockedInWorkflow
+                                                              and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
+                                                              and DatasetPage.canUpdateDataset()
+                                                              and !permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
             <ui:param name="showReturnToAuthorLink" value="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and DatasetPage.dataset.latestVersion.inReview
-                                                                            and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
+                                                             and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}"/>
             <ui:param name="showAccessDatasetButtonGroup" value="#{DatasetPage.canDownloadFiles()
                                                                    and (!DatasetPage.workingVersion.deaccessioned
-                                                                    or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))}"/>
+                                                                   or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))}"/>
             <!-- TO-DO FIX RSYNC LOGIC !fileMetadata.dataFile.filePackage or
                                                     fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload -->
             <ui:param name="showAccessFileButtonGroup" value="#{fileDownloadHelper.canDownloadFile(fileMetadata)
@@ -44,28 +44,28 @@
             <ui:param name="releaseDraft" value="#{DatasetPage.releaseDraftPopup()}"/>
             <ui:param name="releaseBoth" value="#{DatasetPage.publishBothPopup()}"/>
             <ui:define name="meta_header">
-            <meta name="description" content="#{DatasetPage.description}"/>
+                <meta name="description" content="#{DatasetPage.description}"/>
             </ui:define>
             <ui:define name="dc_meta_header">
-	    <meta name="DC.identifier" content="#{DatasetPage.persistentId}"/>
-	    <meta name="DC.type" content="Dataset"/>
-	    <meta name="DC.title" content="#{DatasetPage.title}"/>
-            <meta name="DC.date" content="#{DatasetPage.workingVersion.publicationDateAsString}"/>
-	    <meta name="DC.publisher" content="#{DatasetPage.publisher}" />
-            <meta name="DC.description" content="#{DatasetPage.description}" />
-	    <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
-            <meta name="DC.creator" content="#{author}"/>
-	    </ui:repeat>
-            <ui:repeat var="subject" value="#{DatasetPage.workingVersion.datasetSubjects}">
-            <meta name="DC.subject" content="#{subject}"/>
-	    </ui:repeat>
-	    </ui:define>
-	    <ui:define name="jsonld_header">
+                <meta name="DC.identifier" content="#{DatasetPage.persistentId}"/>
+                <meta name="DC.type" content="Dataset"/>
+                <meta name="DC.title" content="#{DatasetPage.title}"/>
+                <meta name="DC.date" content="#{DatasetPage.workingVersion.publicationDateAsString}"/>
+                <meta name="DC.publisher" content="#{DatasetPage.publisher}" />
+                <meta name="DC.description" content="#{DatasetPage.description}" />
+                <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
+                    <meta name="DC.creator" content="#{author}"/>
+                </ui:repeat>
+                <ui:repeat var="subject" value="#{DatasetPage.workingVersion.datasetSubjects}">
+                    <meta name="DC.subject" content="#{subject}"/>
+                </ui:repeat>
+            </ui:define>
+            <ui:define name="jsonld_header">
                 <script type="application/ld+json">
                     <h:outputText value="#{DatasetPage.jsonLd}"/>
                 </script>
-	    </ui:define>
-	    <ui:define name="og_header">
+            </ui:define>
+            <ui:define name="og_header">
                 <meta property="og:title" content="#{DatasetPage.title}" />
                 <meta property="og:type" content="article" />
                 <meta property="og:url" content="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" />
@@ -76,7 +76,7 @@
                     <meta property="article:author" content="#{author}" />
                 </ui:repeat>
                 <meta property="article:published_time" content="#{DatasetPage.workingVersion.publicationDateAsString}" />
-	    </ui:define>
+            </ui:define>
             <ui:define name="body">
                 <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                 <f:metadata>
@@ -103,22 +103,23 @@
                     <!-- View infoMode -->
                     <!-- Top Button/Citation Blocks -->
                     <p:fragment id="topDatasetBlockFragment">
-                    <div class="row" jsf:rendered="#{empty DatasetPage.editMode}">
-                        <div class="col-xs-12">
-                            <div id="datasetVersionBlock" class="row">
-                                <div id="title-block" class="col-xs-12 margin-bottom-half" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
-                                    <span id="title">#{DatasetPage.datasetVersionUI.title.value}</span>
-                                    <div id="title-label-block" class="margin-top-half">
-                                        <!-- DATASET Publication Status -->
-                                        <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{DatasetPage.workingVersion.draft}"/>
-                                        <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{DatasetPage.workingVersion.inReview}"/>
-                                        <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!DatasetPage.dataset.released}"/>
-                                        <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
-                                        <!-- DATASET VERSION NUMBER -->
-                                        <h:outputText styleClass="label label-default" rendered="#{DatasetPage.workingVersion.released and !(DatasetPage.workingVersion.draft or DatasetPage.workingVersion.inReview or DatasetPage.workingVersion.deaccessioned)}"
-                                                      value="#{bundle['file.DatasetVersion']} #{DatasetPage.workingVersion.versionNumber}.#{DatasetPage.workingVersion.minorVersionNumber}"/>
-                                        <h:outputText styleClass="label label-default" rendered="#{!DatasetPage.workingVersion.released and !(DatasetPage.workingVersion.draft or DatasetPage.workingVersion.inReview or DatasetPage.workingVersion.deaccessioned)}"
-                                                      value="#{bundle['file.DatasetVersion']} #{DatasetPage.workingVersion.versionState}"/>
+                        <div class="row" jsf:rendered="#{empty DatasetPage.editMode}">
+                            <div class="col-xs-12">
+                                <div id="datasetVersionBlock" class="row">
+                                    <div id="title-block" class="col-xs-12 margin-bottom-half" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
+                                        <span id="title">#{DatasetPage.datasetVersionUI.title.value}</span>
+                                        <div id="title-label-block" class="margin-top-half">
+                                            <!-- DATASET Publication Status -->
+                                            <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{DatasetPage.workingVersion.draft}"/>
+                                            <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{DatasetPage.workingVersion.inReview}"/>
+                                            <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!DatasetPage.dataset.released}"/>
+                                            <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
+                                            <!-- DATASET VERSION NUMBER -->
+                                            <h:outputText styleClass="label label-default" rendered="#{DatasetPage.workingVersion.released and !(DatasetPage.workingVersion.draft or DatasetPage.workingVersion.inReview or DatasetPage.workingVersion.deaccessioned)}"
+                                                          value="#{bundle['file.DatasetVersion']} #{DatasetPage.workingVersion.versionNumber}.#{DatasetPage.workingVersion.minorVersionNumber}"/>
+                                            <h:outputText styleClass="label label-default" rendered="#{!DatasetPage.workingVersion.released and !(DatasetPage.workingVersion.draft or DatasetPage.workingVersion.inReview or DatasetPage.workingVersion.deaccessioned)}"
+                                                          value="#{bundle['file.DatasetVersion']} #{DatasetPage.workingVersion.versionState}"/>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -161,7 +162,7 @@
                                                             </p:commandLink>
                                                         </li>
                                                         <!-- DOWNLOAD ORIGINAL BUTTON (TABULAR FILES PRESENT) -->
-                                                        <li jsf:rendered="#{DatasetPage.versionHasTabular}">
+                                                        <li jsf:rendered="#{DatasetPage.versionHasTabular and DatasetPage.sizeOfDatasetOrig != '0 B' }">
                                                             <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadOriginal()}" styleClass="btn-download">
                                                                 #{bundle.downloadOriginal}
                                                                 <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
@@ -428,7 +429,7 @@
                                     <!-- END: ActionButtonBlock -->
                                 </div>
 
-                                <div class="col-xs-12 col-sm-12 col-md-4 col-lg-3 pull-right margin-bottom" 
+                                <div style="clear:right;" class="col-xs-12 col-sm-12 col-md-4 col-lg-3 pull-right margin-bottom" 
                                      jsf:rendered="#{!(settingsWrapper.rsyncDownload or DatasetPage.workingVersion.deaccessioned)}">
                                     <!-- Metrics -->
                                     <div id="metrics-block">
@@ -727,9 +728,7 @@
                                    rendered="#{(!DatasetPage.workingVersion.deaccessioned 
                                                 or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset())) 
                                                 and (empty DatasetPage.editMode)}">
-                                <ui:include src="filesFragment.xhtml">
-                                    <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
-                                </ui:include>
+                                <ui:include src="filesFragment.xhtml"/>
                             </p:tab>
                             <!-- 4.2.1: the 3 tabs below - metadata, terms and versions: these account for ~100 queries total -->
                             <!-- a lot of these however, are repeated queries on AuthenticatedUser and RoleAssignment; once these are optimized, the tabs will become very cheap. -->
@@ -1132,8 +1131,9 @@
                                          rendered="#{!empty(DatasetPage.datasetVersionDifference.datasetFilesDiffList)}">
                                 <p:column styleClass="versionValue">
                                     <h:outputText value="#{bundle['file.viewDiffDialog.fileID']} #{fileDiff.fileId}"/>
-                                    <br></br>
-                                    <h:outputText value="#{fileDiff.fileChecksumType} #{fileDiff.fileChecksumValue}"/>
+                                    <div class="checksum-block">
+                                        <h:outputText value="#{fileDiff.fileChecksumType} #{fileDiff.fileChecksumValue}"/>
+                                    </div>
                                 </p:column>
                                 <p:column styleClass="versionDetails" rendered="#{! fileDiff.file1Empty}">
                                     <h:outputText value="#{bundle['file.viewDiffDialog.fileName']}: #{fileDiff.fileName1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileName1 != null}"/>
@@ -1142,7 +1142,7 @@
                                     <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileDiff.fileCat1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat1 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileDiff.fileDesc1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc1 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.provDescription']}: #{fileDiff.fileProvFree1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileProvFree1 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.restricted']}: #{fileDiff.fileRest1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileRest1 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileAccess']}: #{fileDiff.fileRest1}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileRest1 != null}"/>
                                 </p:column>
                                 <p:column styleClass="versionDetails" rendered="#{fileDiff.file1Empty}">
                                     &#160;
@@ -1154,7 +1154,7 @@
                                     <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileDiff.fileCat2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileCat2 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileDiff.fileDesc2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileDesc2 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.provDescription']}: #{fileDiff.fileProvFree2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileProvFree2 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.restricted']}: #{fileDiff.fileRest2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileRest2 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileAccess']}: #{fileDiff.fileRest2}" styleClass="diffDetailBlock" rendered="#{fileDiff.fileRest2 != null}"/>
                                 </p:column>
                                 <p:column styleClass="versionDetails" rendered="#{fileDiff.file2Empty}">
                                     &#160;
@@ -1174,7 +1174,7 @@
                                     <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileReplace.fdi.fileCat1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileCat1 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileReplace.fdi.fileDesc1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileDesc1 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.provDescription']}: #{fileReplace.fdi.fileProvFree1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileProvFree1 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.restricted']}: #{fileReplace.fdi.fileRest1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileRest1 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileAccess']}: #{fileReplace.fdi.fileRest1}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileRest1 != null}"/>
                                 </p:column>
                                 <p:column styleClass="versionDetails" rendered="#{fileReplace.fdi.file1Empty}">
                                     &#160;
@@ -1188,7 +1188,7 @@
                                     <h:outputText value="#{bundle['file.viewDiffDialog.category']}: #{fileReplace.fdi.fileCat2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileCat2 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.description']}: #{fileReplace.fdi.fileDesc2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileDesc2 != null}"/>
                                     <h:outputText value="#{bundle['file.viewDiffDialog.provDescription']}: #{fileReplace.fdi.fileProvFree2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileProvFree2 != null}"/>
-                                    <h:outputText value="#{bundle['file.viewDiffDialog.restricted']}: #{fileReplace.fdi.fileRest2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileRest2 != null}"/>
+                                    <h:outputText value="#{bundle['file.viewDiffDialog.fileAccess']}: #{fileReplace.fdi.fileRest2}" styleClass="diffDetailBlock" rendered="#{fileReplace.fdi.fileRest2 != null}"/>
                                 </p:column>
                                 <p:column styleClass="versionDetails" rendered="#{fileReplace.fdi.file2Empty}">
                                     &#160;
@@ -1357,7 +1357,6 @@
                             <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
                             <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
                             <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}" rendered="#{!settingsWrapper.rsyncDownload}"/>
-                            <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
                             <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                         </ui:include>
                     </p:dialog>
@@ -1387,7 +1386,6 @@
                             <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
                             <ui:param name="downloadPopupRequired" value="#{DatasetPage.downloadPopupRequired}"/>
                             <ui:param name="guestbookResponse" value="#{DatasetPage.guestbookResponse}" rendered="#{!settingsWrapper.rsyncDownload}"/>
-                            <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
                             <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                         </ui:include>
                     </p:dialog>
@@ -1395,7 +1393,6 @@
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                         <ui:include src="file-request-access-popup-fragment.xhtml">
                             <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
-                            <ui:param name="fileDownloadHelper" value="#{DatasetPage.fileDownloadHelper}"/>
                             <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                         </ui:include>
                     </p:dialog>

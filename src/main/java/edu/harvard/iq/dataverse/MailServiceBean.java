@@ -125,10 +125,12 @@ public class MailServiceBean implements java.io.Serializable {
         // QDR - uses the institution name rather than a dataverse/collection name in
         // email subject
         InternetAddress systemAddress = getSystemAddress();
+        //TODO: Replace with new InstallationName setting
         String institutionName = BundleUtil.getStringFromBundle("institution.name");
-        String body = messageText + BundleUtil.getStringFromBundle("notification.email.closing",
-                Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress),
-                        institutionName));
+        String body = messageText
+                + (isHtmlContent ? BundleUtil.getStringFromBundle("notification.email.closing.html", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), installationName))
+                        : BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), installationName)));
+       
         logger.fine("Sending email to " + to + ". Subject: <<<" + subject + ">>>. Body: " + body);
         try {
             MimeMessage msg = new MimeMessage(session);
@@ -539,7 +541,7 @@ public class MailServiceBean implements java.io.Serializable {
 
             case INGESTCOMPLETED:
                 dataset = (Dataset) targetObject;
-
+                messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
                 String ingestedCompletedMessage = messageText + BundleUtil.getStringFromBundle("notification.ingest.completed", Arrays.asList(
                         systemConfig.getDataverseSiteUrl(),
                         dataset.getGlobalIdString(),
@@ -550,7 +552,7 @@ public class MailServiceBean implements java.io.Serializable {
                 return ingestedCompletedMessage;
             case INGESTCOMPLETEDWITHERRORS:
                 dataset = (Dataset) targetObject;
-
+                messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
                 String ingestedCompletedWithErrorsMessage = messageText + BundleUtil.getStringFromBundle("notification.ingest.completedwitherrors", Arrays.asList(
                         systemConfig.getDataverseSiteUrl(),
                         dataset.getGlobalIdString(),

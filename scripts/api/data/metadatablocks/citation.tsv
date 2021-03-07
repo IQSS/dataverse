@@ -7,16 +7,16 @@
 	otherId	QDRID	The QDR ID assigned to the project		none	3	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		citation
 	otherIdAgency	QDRID	Name of agency which generated this identifier.	provided by QDR	text	4		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation
 	otherIdValue	Identifier	Other identifier that corresponds to this Data Project.	provided by QDR	text	5	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	citation
-	author	Creator	The person(s), corporate body(ies), or agency(ies) responsible for creating the work.		none	6		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation	http://purl.org/dc/terms/creator
+	author	Creator	The person(s), corporate body(ies), or agency(ies) responsible for creating the work.		none	6		FALSE	FALSE	TRUE	FALSE	TRUE	TRUE		citation	http://purl.org/dc/terms/creator
 	authorName	Name	The author's Family Name, Given Name or the name of the organization responsible for this Data Project.	FamilyName, GivenName or Organization	text	7	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	TRUE	author	citation
 	authorAffiliation	Affiliation	The organization with which the author is affiliated.		text	8	(#VALUE)	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	author	citation
 	authorIdentifierScheme	Identifier Scheme	Name of the identifier scheme (ORCID, ISNI).		text	9	ORCID	FALSE	TRUE	FALSE	FALSE	TRUE	FALSE	author	citation	http://purl.org/spar/datacite/AgentIdentifierScheme
 	authorIdentifier	ORCID	Creator's ORCID ID	QDR strongly encourages the use of ORCIDs	text	10	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	author	citation	http://purl.org/spar/datacite/AgentIdentifier
-	datasetContact	Contact	The contact(s) for this Data Project.		none	11		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
+	datasetContact	Contact	The contact(s) for this Data Project.		none	11		FALSE	FALSE	TRUE	FALSE	TRUE	TRUE		citation
 	datasetContactName	Name	The contact's Family Name, Given Name or the name of the organization.	FamilyName, GivenName or Organization	text	12	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	citation
 	datasetContactAffiliation	Affiliation	The organization with which the contact is affiliated.		text	13	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	citation
 	datasetContactEmail	E-mail	The e-mail address(es) of the contact(s) for the Data Project. This will not be displayed.		email	14	#EMAIL	FALSE	FALSE	FALSE	FALSE	TRUE	TRUE	datasetContact	citation
-	dsDescription	Description	A summary describing the purpose, nature, and scope of the Data Project.		none	15		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
+	dsDescription	Description	A summary describing the purpose, nature, and scope of the Data Project.		none	15		FALSE	FALSE	TRUE	FALSE	TRUE	TRUE		citation
 	dsDescriptionValue	Text	A summary describing the purpose, nature, and scope of the Data Project.	What type of data does the project consist of? How were they collected? How are they organized?	textbox	16	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE	dsDescription	citation
 	subject	Subject	Subject area(s) of the data project		text	17		TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		citation	http://purl.org/dc/terms/subject
 	keyword	Keywords	Key terms that describe important aspects of the Data Project.		none	18		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		citation
