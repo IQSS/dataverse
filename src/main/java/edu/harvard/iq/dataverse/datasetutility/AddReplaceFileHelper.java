@@ -508,9 +508,10 @@ public class AddReplaceFileHelper{
         //Update params to match existing file (except checksum, which should match the new file)
         if(fileToReplace != null) {
             String checksum = optionalFileParams.getCheckSum();
+            ChecksumType checkSumType = optionalFileParams.getCheckSumType();
             try {
                 optionalFileParams = new OptionalFileParams(fileToReplace);
-                optionalFileParams.setCheckSum(checksum);
+                optionalFileParams.setCheckSum(checksum, checkSumType);
             } catch (DataFileTagException e) {
                 // Shouldn't happen since fileToReplace should have valid tags
                 e.printStackTrace();

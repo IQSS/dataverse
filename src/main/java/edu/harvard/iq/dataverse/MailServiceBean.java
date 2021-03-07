@@ -126,7 +126,7 @@ public class MailServiceBean implements java.io.Serializable {
         // email subject
         InternetAddress systemAddress = getSystemAddress();
         //TODO: Replace with new InstallationName setting
-        String institutionName = BundleUtil.getStringFromBundle("institution.name");
+        String installationName = BundleUtil.getStringFromBundle("institution.name");
         String body = messageText
                 + (isHtmlContent ? BundleUtil.getStringFromBundle("notification.email.closing.html", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), installationName))
                         : BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), installationName)));
