@@ -52,7 +52,7 @@ body .ui-widget .ui-widget-content:not(.ui-picklist-list, .ui-dialog, .ui-panel-
 #status-alert {margin-top:0; margin-bottom:0;}
 #status-alert div.alert {border:0; box-shadow:none;}
 
-#footer {width:100%; z-index:-1; height:60px; color:#808080;position:relative;}
+#footer {width:100%; z-index:498; height:60px; color:#808080;position:relative;}
 #footer.widget-view {position:fixed; left:0; bottom:0; margin:0; padding:4px 0 0 0; min-height:44px; height:auto; background:#fff;}
 #footer .poweredbylogo {text-align:right;}
 #footer .poweredbylogo span {font-size:.85em;margin-right:.3em;}
@@ -374,7 +374,7 @@ div.ui-state-focus span.ui-chkbox-icon {outline: -webkit-focus-ring-color auto 5
 #dataverse-info-dropdown .dataverse-info-logo-icon .icon-dataverse {font-size:40px; line-height:40px;}
 #dataverse-info-dropdown .dataverse-info-general {float:left; width:300px;}
 
-.button-block {margin-top:1em;}
+.button-block {margin-top:1em;z-index:500;position:relative;}
 .button-block .btn {position:relative;}
 .form-group > .button-block, 
 .panel-body > .button-block, 
@@ -935,7 +935,7 @@ div.ui-dialog.ui-widget-content {z-index:100001 !important;}
 .ui-selectonemenu-list, .ui-selectcheckboxmenu-list, .tooltip, .popover {z-index:100002 !important;}
 
 /* Overwrite Primefaces */
-.ui-tabs.ui-widget.ui-widget-content {position:relative; z-index:999;}
+.ui-tabs.ui-widget.ui-widget-content {position:relative; z-index:499;}
 .ui-tabs.ui-widget-content .ui-tabs-nav li.ui-tabs-selected a {color: #4b75ff; border-bottom: 3px solid;}
 button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14px;}
 button.btn-default span.ui-button-text {line-height:inherit !important;}
