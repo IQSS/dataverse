@@ -763,7 +763,7 @@ div[id$="filesTable"] .col-file-thumb div.thumbnail-block {position:relative;wid
 div[id$="filesTable"] .col-file-thumb div.thumbnail-block span.file-thumbnail-icon {font-size:62px;line-height:1.05;}
 div[id$="filesTable"] .col-file-thumb div.thumbnail-block span.file-thumbnail-preview-img {display:block;}
 div[id$="filesTable"] .col-file-thumb div.thumbnail-block div.file-icon-restricted-block {display:block;position:absolute;bottom:-4px;right:-1px;}
-div[id$="filesTable"] .file-metadata-block {-webkit-flex: 1 100%;
+div[id$="filesTable"] .col-file-metadata {-webkit-flex: 1 100%;
 	-moz-flex: 1 100%;
 	-ms-flex: 1 100%; flex: 1 100%;
 	word-break:break-word;}
