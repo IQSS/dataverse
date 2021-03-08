@@ -112,14 +112,10 @@ public class RemoteDataFrameService {
         Map<String, String> result = new HashMap<>();
         try {
             RConnection connection = setupConnection();
-            // send the data file to the Rserve side:
-            InputStream inFile = new BufferedInputStream(new FileInputStream(originalFile));
-
-
             String tempFileNameIn = generateTempFileNameIn(pid);
 
-            RFileOutputStream rOutFile = connection.createFile(tempFileNameIn);
-            copyWithBuffer(inFile, rOutFile, 1024);
+            // send the data file to the Rserve side:
+            copyFileToRServe(originalFile, tempFileNameIn, connection);
 
             // We need to initialize our R session:
             // send custom R code library over to the Rserve and load the code:
@@ -187,11 +183,7 @@ public class RemoteDataFrameService {
         try {
             RConnection connection = setupConnection();
             // send the data file to the Rserve side:
-            InputStream inFile = new BufferedInputStream(new FileInputStream(
-                    jobRequest.getTabularDataFileName()));
-
-            RFileOutputStream rOutFile = connection.createFile(tempFileNameIn);
-            copyWithBuffer(inFile, rOutFile, 1024);
+            copyFileToRServe(new File(jobRequest.getTabularDataFileName()), tempFileNameIn, connection);
 
             // Rserve code starts here
             logger.fine("wrkdir=" + RSERVE_TMP_DIR);
@@ -551,28 +543,7 @@ public class RemoteDataFrameService {
             setupWorkingDirectory(connection);
 
             // send the tabular data file to the Rserve side:
-
-            StorageIO<DataFile> accessObject = dataAccess.getStorageIO(dataFile);
-
-            accessObject.open();
-            InputStream is = accessObject.getInputStream();
-            if (is == null) {
-                return null;
-            }
-
-            // Create the output stream on the remote, R end: 
-
-            RFileOutputStream rOutStream = connection.createFile(tempFileNameIn);
-
-
-            // before writing out any bytes from the input stream, flush
-            // any extra content, such as the variable header for the 
-            // subsettable files:
-            if (accessObject.getVarHeader() != null) {
-                rOutStream.write(accessObject.getVarHeader().getBytes());
-            }
-
-            copyWithBuffer(is, rOutStream, 4 * 8192);
+            copyDataFileToRServe(dataFile, tempFileNameIn, connection);
 
             // Rserve code starts here
             logger.fine("wrkdir=" + RSERVE_TMP_DIR);
@@ -613,6 +584,35 @@ public class RemoteDataFrameService {
         return preprocessedDataFile;
     }
 
+    private void copyFileToRServe(File sourceFile, String rFile, RConnection rConnection) throws IOException {
+
+        try (
+                InputStream inFile = new BufferedInputStream(new FileInputStream(sourceFile));
+                RFileOutputStream rOutStream = rConnection.createFile(rFile)) {
+
+            copyWithBuffer(inFile, rOutStream, 1024);
+        }
+    }
+    
+    private void copyDataFileToRServe(DataFile dataFile, String rFile, RConnection rConnection) throws IOException {
+        StorageIO<DataFile> accessObject = dataAccess.getStorageIO(dataFile);
+        accessObject.open();
+        
+        try (
+                InputStream is = accessObject.getInputStream();
+                RFileOutputStream rOutStream = rConnection.createFile(rFile)) {
+            
+            // before writing out any bytes from the input stream, flush
+            // any extra content, such as the variable header for the 
+            // subsettable files:
+            if (accessObject.getVarHeader() != null) {
+                rOutStream.write(accessObject.getVarHeader().getBytes());
+            }
+
+            copyWithBuffer(is, rOutStream, 4 * 8192);
+        }
+    }
+
     private void copyWithBuffer(InputStream is, RFileOutputStream rOutStream, int bufSize) throws IOException {
         byte[] buffer = new byte[bufSize];
         bufSize = is.read(buffer);
@@ -620,9 +620,6 @@ public class RemoteDataFrameService {
             rOutStream.write(buffer, 0, bufSize);
             bufSize = is.read(buffer);
         }
-
-        is.close();
-        rOutStream.close();
     }
 
     // utilitiy methods:

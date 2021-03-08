@@ -41,10 +41,13 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -62,13 +65,14 @@ import java.util.logging.Logger;
 public class DataConverter {
     private static Logger logger = Logger.getLogger(DataConverter.class.getPackage().getName());
 
+    private static final String FILE_TYPE_TAB = "tab";
+
     @Inject
     private RemoteDataFrameService dfs;
 
     public DataConverter() {
     }
 
-    private String FILE_TYPE_TAB = "tab";
 
     public StorageIO<DataFile> performFormatConversion(DataFile file, StorageIO<DataFile> storageIO, String formatRequested, String formatType) {
         if (!file.isTabularData()) {
@@ -88,8 +92,8 @@ public class DataConverter {
         // We may already have a cached copy of this
         // format:
         try {
-            convertedFileStream = Channels.newInputStream((ReadableByteChannel) storageIO.openAuxChannel(formatRequested));
             convertedFileSize = storageIO.getAuxObjectSize(formatRequested);
+            convertedFileStream = Channels.newInputStream((ReadableByteChannel) storageIO.openAuxChannel(formatRequested));
         } catch (IOException ioex) {
             logger.fine("No cached copy for file format " + formatRequested + ", file " + file.getStorageIdentifier());
             convertedFileStream = null;
@@ -98,36 +102,21 @@ public class DataConverter {
         // If not cached, run the conversion:
         if (convertedFileStream == null) {
 
-            File tabFile = downloadFromStorageIO(storageIO);
-
-            if (tabFile == null) {
-                return null;
-            }
-
-            if (tabFile.length() > 0) {
+            try {
+                File tabFile = StorageIOUtils.obtainAsLocalFile(storageIO, !storageIO.isLocalFile()); // TODO: remove this file IF it is temporary
+                
                 File formatConvertedFile = runFormatConversion(file, tabFile, formatRequested);
-
-                // cache the result for future use:
+                
                 if (formatConvertedFile != null && formatConvertedFile.exists()) {
-
-                    try {
-                        storageIO.savePathAsAux(Paths.get(formatConvertedFile.getAbsolutePath()), formatRequested);
-
-                    } catch (IOException ex) {
-                        logger.warning("failed to save cached format " + formatRequested + " for " + file.getStorageIdentifier());
-                        // We'll assume that this is a non-fatal condition.
-                    }
-
-                    // re-open the generated file:
-                    try {
-                        convertedFileStream = new FileInputStream(formatConvertedFile);
-                        convertedFileSize = formatConvertedFile.length();
-                    } catch (FileNotFoundException ioex) {
-                        logger.warning("Failed to open generated format " + formatRequested + " for " + file.getStorageIdentifier());
-                        return null;
-                    }
+                    
+                    storageIO.savePathAsAux(Paths.get(formatConvertedFile.getAbsolutePath()), formatRequested);
+                    
+                    convertedFileSize = formatConvertedFile.length();
+                    convertedFileStream = new FileInputStream(formatConvertedFile);
                 }
-
+            } catch(IOException e) {
+                logger.log(Level.WARNING, "Unable to perform format conversion for file with storageId: " + file.getStorageIdentifier(), e);
+                return null;
             }
         }
 
@@ -135,12 +124,7 @@ public class DataConverter {
         // download API instance writer:
         if (convertedFileStream != null && convertedFileSize > 0) {
 
-            InputStreamIO inputStreamIO = null;
-            try {
-                inputStreamIO = new InputStreamIO(convertedFileStream, convertedFileSize);
-            } catch (IOException ioex) {
-                return null;
-            }
+            InputStreamIO inputStreamIO = new InputStreamIO(convertedFileStream, convertedFileSize);
 
             inputStreamIO.setMimeType(formatType);
 
@@ -153,39 +137,6 @@ public class DataConverter {
             return inputStreamIO;
         }
 
-        return null;
-    }
-
-    public static File downloadFromStorageIO(StorageIO<DataFile> storageIO) {
-        if (storageIO.isLocalFile()) {
-            try {
-                Path tabFilePath = storageIO.getFileSystemPath();
-                return tabFilePath.toFile();
-            } catch (IOException ioex) {
-                // this is likely a fatal condition, as in, the file is unaccessible:
-            }
-        } else {
-            try {
-                storageIO.open();
-                return downloadFromByteChannel(storageIO.getReadChannel(), storageIO.getSize());
-            } catch (IOException ex) {
-                logger.warning("caught IOException trying to store tabular file " + storageIO.getDataFile().getStorageIdentifier() + " as a temp file.");
-            }
-        }
-        return null;
-    }
-
-    private static File downloadFromByteChannel(ReadableByteChannel tabFileChannel, long size) {
-        try {
-            logger.fine("opening datafFileIO for the source tabular file...");
-
-            File tabFile = File.createTempFile("tempTabFile", ".tmp");
-            FileChannel tempFileChannel = new FileOutputStream(tabFile).getChannel();
-            tempFileChannel.transferFrom(tabFileChannel, 0, size);
-            return tabFile;
-        } catch (IOException ioex) {
-            logger.warning("caught IOException trying to store tabular file as a temp file.");
-        }
         return null;
     }
 
@@ -228,14 +179,19 @@ public class DataConverter {
                     origFormat = "por";
                 }
 
+                Optional<File> tmpOrigFile = Optional.empty();
                 try {
                     StorageIO<DataFile> storageIO = DataAccess.dataAccess().getStorageIO(file);
-                    long size = storageIO.getAuxObjectSize("orig");
-                    File origFile = downloadFromByteChannel((ReadableByteChannel) storageIO.openAuxChannel("orig"), size);
+                    File origFile = StorageIOUtils.obtainAuxAsLocalFile(storageIO, StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION, storageIO.isRemoteFile());
+                    
+                    tmpOrigFile = storageIO.isRemoteFile() ? Optional.of(origFile) : Optional.empty();
+                    
                     resultInfo = dfs.directConvert(origFile, origFormat);
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    logger.log(Level.SEVERE, "Exception when trying to convert tabular file to rdata", ex);
                     return null;
+                } finally {
+                    tmpOrigFile.ifPresent(tmpFile -> tmpFile.delete());
                 }
 
             } else {

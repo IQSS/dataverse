@@ -82,9 +82,6 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static edu.harvard.iq.dataverse.dataset.DatasetThumbnailService.datasetLogoThumbnail;
-import static edu.harvard.iq.dataverse.dataset.DatasetThumbnailService.thumb48addedByImageThumbConverter;
-
 /**
  * @author gdurand
  */

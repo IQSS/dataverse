@@ -9,6 +9,8 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataConverter;
+import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIOUtils;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.export.ddi.DdiConstants;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -36,6 +38,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -448,14 +451,20 @@ public class DDIExportServiceBean {
     }
 
     private void calculateFrequencies(DataFile df, List<DataVariable> vars) {
+        Optional<File> tmpFile = Optional.empty();
         try {
-            File tabFile = DataConverter.downloadFromStorageIO(DataAccess.dataAccess().getStorageIO(df));
+            StorageIO<DataFile> storageIO = DataAccess.dataAccess().getStorageIO(df);
+            
+            File tabFile = StorageIOUtils.obtainAsLocalFile(storageIO, storageIO.isRemoteFile());
+            tmpFile = storageIO.isRemoteFile() ? Optional.of(tabFile) : Optional.empty();
 
             IngestServiceBean.produceFrequencies(tabFile, vars);
 
         } catch (Exception ex) {
             logger.warning(ex.getMessage());
             return;
+        } finally {
+            tmpFile.ifPresent(file -> file.delete());
         }
     }
 

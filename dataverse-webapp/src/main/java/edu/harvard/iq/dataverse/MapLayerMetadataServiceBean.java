@@ -252,35 +252,16 @@ public class MapLayerMetadataServiceBean {
         try {
             storageIO = dataAccess.getStorageIO(mapLayerMetadata.getDataFile());
         } catch (IOException ioEx) {
-            dataAccess = null;
-        }
-
-        if (storageIO == null) {
             logger.warning("Failed to open Access IO on DataFile " + mapLayerMetadata.getDataFile().getId());
             return false;
         }
 
+
         URL url = new URL(imageUrl);
         logger.info("retrieve url : " + imageUrl);
 
-        logger.info("try to open InputStream");
-        InputStream is = null;
-
-        try {
-            is = url.openStream();
-        } catch (IOException exio) {
-            logger.warning("Error when retrieving map icon image. Exception: " + exio.getMessage());
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException ignore) {
-                }
-            }
-            return false;
-        }
-
-        try {
-            storageIO.saveInputStreamAsAux(is, "img");
+        try (InputStream worldMapImageInputStream = url.openStream()) {
+            storageIO.saveInputStreamAsAux(worldMapImageInputStream, "img");
         } catch (IOException ioex) {
             logger.warning("Failed to save WorldMap-generated image; " + ioex.getMessage());
             return false;

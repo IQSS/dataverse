@@ -14,24 +14,28 @@ import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * @author Leonid Andreev
  */
 public class InputStreamIO extends StorageIO<DataFile> {
 
-    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.InputStreamIO");
-
     private long size;
 
-    public InputStreamIO(InputStream inputStream, long size) throws IOException {
+    public InputStreamIO(InputStream inputStream, long size) {
         super();
 
         this.setIsLocalFile(false);
         this.setInputStream(inputStream);
         setChannel(Channels.newChannel(inputStream));
         this.size = size;
+    }
+
+    public InputStreamIO(InputStream inputStream, long size, String fileName, String mimeType) {
+        this(inputStream, size);
+
+        setMimeType(mimeType);
+        setFileName(fileName);
     }
 
     @Override

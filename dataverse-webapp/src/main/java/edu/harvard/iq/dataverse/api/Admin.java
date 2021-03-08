@@ -20,14 +20,13 @@ import edu.harvard.iq.dataverse.authorization.providers.shib.ShibServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.Util;
-import edu.harvard.iq.dataverse.common.files.extension.FileExtension;
 import edu.harvard.iq.dataverse.consent.api.ConsentApiDto;
 import edu.harvard.iq.dataverse.consent.api.ConsentApiService;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIOConstants;
 import edu.harvard.iq.dataverse.datafile.FileIntegrityChecker;
-import edu.harvard.iq.dataverse.datafile.FileService;
 import edu.harvard.iq.dataverse.datafile.pojo.FilesIntegrityReport;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnailService;
@@ -1298,7 +1297,7 @@ public class Admin extends AbstractApiBean {
                         } else {
                             // if this is a tabular file, read the preserved original "auxiliary file"
                             // instead:
-                            in = storage.getAuxFileAsInputStream(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
+                            in = storage.getAuxFileAsInputStream(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION);
                         }
                         if (in == null) {
                             logger.warning("Cannot retrieve file.");
@@ -1313,7 +1312,7 @@ public class Admin extends AbstractApiBean {
                             } else {
                                 // if this is a tabular file, read the preserved original "auxiliary file"
                                 // instead:
-                                in2 = storage.getAuxFileAsInputStream(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
+                                in2 = storage.getAuxFileAsInputStream(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION);
                             }
                             if (in2 == null) {
                                 logger.warning("Cannot retrieve file to calculate new checksum.");

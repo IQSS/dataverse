@@ -22,6 +22,7 @@ package edu.harvard.iq.dataverse.dataaccess;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -36,20 +37,19 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.Channel;
 import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Iterator;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 /**
@@ -186,76 +186,27 @@ public class ImageThumbConverter {
             return false;
         }
 
-        File sourcePdfFile = null;
-
-        // We'll to get a local Path for this file - but if that is not available 
-        // (i.e., if it's a file that's stored by a driver that does not provide 
-        // direct file access - e.g., swift), we'll save this PDF in a temp file, 
-        // will run the ImageMagick on it, and will save its output in another temp 
-        // file, and will save it as an "auxiliary" file via the driver. 
-        boolean tempFilesRequired = false;
-
+        Optional<File> tempPdfFile = Optional.empty();
+        File tempThumbnailFile = new File(FileUtils.getTempDirectory(), UUID.randomUUID().toString());
         try {
-            Path pdfFilePath = storageIO.getFileSystemPath();
-            sourcePdfFile = pdfFilePath.toFile();
-            logger.fine("Opened the source pdf file as a local File.");
-        } catch (UnsupportedDataAccessOperationException uoex) {
-            // this means there is no direct filesystem path for this object;
-            logger.fine("Could not open source pdf file as a local file - will go the temp file route.");
-            tempFilesRequired = true;
+            File sourcePdfFile = StorageIOUtils.obtainAsLocalFile(storageIO, storageIO.isRemoteFile());
 
+            tempPdfFile = storageIO.isRemoteFile() ? Optional.of(sourcePdfFile) : Optional.empty();
+
+            generatePDFThumbnailFromFile(sourcePdfFile.getAbsolutePath(), size, tempThumbnailFile.getAbsolutePath());
+
+            if (!tempThumbnailFile.exists()) {
+                return false;
+            }
+
+            logger.fine("attempting to save generated pdf thumbnail, as AUX file " + THUMBNAIL_SUFFIX + size);
+            storageIO.savePathAsAux(tempThumbnailFile.toPath(), THUMBNAIL_SUFFIX + size);
         } catch (IOException ioex) {
-            // this on the other hand is likely a fatal condition :(
+            logger.warning("failed to save generated pdf thumbnail, as AUX file " + THUMBNAIL_SUFFIX + size + "!");
             return false;
-        }
-
-        if (tempFilesRequired) {
-            ReadableByteChannel pdfFileChannel;
-
-            try {
-                storageIO.open();
-                //inputStream = storageIO.getInputStream();
-                pdfFileChannel = storageIO.getReadChannel();
-            } catch (Exception ioex) {
-                logger.warning("caught Exception trying to open an input stream for " + storageIO.getDataFile().getStorageIdentifier());
-                return false;
-            }
-
-            File tempFile;
-            FileChannel tempFileChannel = null;
-            try {
-                tempFile = File.createTempFile("tempFileToRescale", ".tmp");
-                tempFileChannel = new FileOutputStream(tempFile).getChannel();
-
-                tempFileChannel.transferFrom(pdfFileChannel, 0, storageIO.getSize());
-            } catch (IOException ioex) {
-                logger.warning("GenerateImageThumb: failed to save pdf bytes in a temporary file.");
-                return false;
-            } finally {
-                IOUtils.closeQuietly(tempFileChannel);
-            }
-            sourcePdfFile = tempFile;
-        }
-
-        String imageThumbFileName = generatePDFThumbnailFromFile(sourcePdfFile.getAbsolutePath(), size);
-
-        if (imageThumbFileName == null) {
-            return false;
-        }
-
-        // If there was a local Path to the permanent location of the PDF file on the 
-        // filesystem, the generatePDFThumbnailFromFile() method must have already saved 
-        // the generated thumbnail as that Path with the .thumb* extension. But 
-        // if this file is stored without a local Path, we'll have to save the 
-        // generated thumbnail with via the storage driver: 
-        if (tempFilesRequired) {
-            try {
-                logger.fine("attempting to save generated pdf thumbnail, as AUX file " + THUMBNAIL_SUFFIX + size);
-                storageIO.savePathAsAux(Paths.get(imageThumbFileName), THUMBNAIL_SUFFIX + size);
-            } catch (IOException ioex) {
-                logger.warning("failed to save generated pdf thumbnail, as AUX file " + THUMBNAIL_SUFFIX + size + "!");
-                return false;
-            }
+        } finally {
+            tempThumbnailFile.delete();
+            tempPdfFile.ifPresent(file -> file.delete());
         }
 
         return true;
@@ -267,10 +218,16 @@ public class ImageThumbConverter {
             logger.fine("Image file too large - skipping");
             return false;
         }
-
+        
         try {
             storageIO.open();
-            return generateImageThumbnailFromInputStream(storageIO, size, storageIO.getInputStream());
+        } catch (IOException e) {
+            logger.warning("caught IOException trying to open storage " + storageIO.getDataFile().getStorageIdentifier() + e);
+            return false;
+        }
+
+        try (InputStream inputStream = storageIO.getInputStream()) {
+            return generateImageThumbnailFromInputStream(storageIO, size, inputStream);
         } catch (IOException ioex) {
             logger.warning("caught IOException trying to open an input stream for " + storageIO.getDataFile().getStorageIdentifier() + ioex);
             return false;
@@ -291,35 +248,32 @@ public class ImageThumbConverter {
      */
     private boolean generateWorldMapThumbnail(StorageIO<DataFile> storageIO, int size) {
 
-        InputStream worldMapImageInputStream = null;
-
         try {
             storageIO.open();
 
-            Channel worldMapImageChannel = storageIO.openAuxChannel(WORLDMAP_IMAGE_SUFFIX);
-            if (worldMapImageChannel == null) {
-                logger.warning("Could not open channel for aux ." + WORLDMAP_IMAGE_SUFFIX + " object; (" + size + ")");
+            boolean worldMapImageExists = storageIO.isAuxObjectCached(WORLDMAP_IMAGE_SUFFIX);
+            if (!worldMapImageExists) {
+                logger.warning("WorldMap image doesn't exists");
                 return false;
             }
-            worldMapImageInputStream = Channels.newInputStream((ReadableByteChannel) worldMapImageChannel);
 
             long worldMapImageSize = storageIO.getAuxObjectSize(WORLDMAP_IMAGE_SUFFIX);
 
             if (isImageOverSizeLimit(worldMapImageSize)) {
                 logger.fine("WorldMap image too large - skipping");
-                worldMapImageInputStream.close();
                 return false;
             }
-        } catch (FileNotFoundException fnfe) {
-            logger.fine("No .img file for this worldmap file yet; giving up. Original Error: " + fnfe);
-            return false;
-
         } catch (IOException ioex) {
             logger.warning("caught IOException trying to open an input stream for worldmap .img file (" + storageIO.getDataFile().getStorageIdentifier() + "). Original Error: " + ioex);
             return false;
         }
 
-        return generateImageThumbnailFromInputStream(storageIO, size, worldMapImageInputStream);
+        try (InputStream worldMapImageInputStream = storageIO.getAuxFileAsInputStream(WORLDMAP_IMAGE_SUFFIX)) {
+            return generateImageThumbnailFromInputStream(storageIO, size, worldMapImageInputStream);
+        } catch (IOException e) {
+            logger.warning("caught IOException trying to open an input stream for WorldMap .img file (" + storageIO.getDataFile().getStorageIdentifier() + "). Original Error: " + e);
+            return false;
+        }
     }
 
     /*
@@ -434,7 +388,7 @@ public class ImageThumbConverter {
 
         // if thumbnails are not even supported on this file type, no need
         // to check anything else:
-        if (file == null || !FileUtil.isThumbnailSupported(file)) {
+        if (!FileUtil.isThumbnailSupported(file)) {
             logger.fine("No thumbnail support for " + file.getContentType());
             return null;
         }
@@ -552,24 +506,13 @@ public class ImageThumbConverter {
      * from usr-uploaded images (i.e., from files not associated with datafiles)
      */
     public String getImageAsBase64FromFile(File imageFile) {
-        InputStream imageInputStream = null;
-        try {
 
-            int imageSize = (int) imageFile.length();
-
-            imageInputStream = new FileInputStream(imageFile);
+        try (InputStream imageInputStream = new FileInputStream(imageFile)) {
 
             return getImageAsBase64FromInputStream(imageInputStream); //, imageSize);
         } catch (IOException ex) {
             // too bad - but not fatal
             logger.warning("getImageAsBase64FromFile: Failed to read data from thumbnail file");
-        } finally {
-            if (imageInputStream != null) {
-                try {
-                    imageInputStream.close();
-                } catch (Exception e) {
-                }
-            }
         }
 
         return null;
@@ -582,13 +525,11 @@ public class ImageThumbConverter {
      * datafiles, etc.
      *
      */
-    public String generateImageThumbnailFromFile(String fileLocation, int size) {
-
-        String thumbFileLocation = fileLocation + ".thumb" + size;
+    public boolean generateImageThumbnailFromFile(String fileLocation, int size, String thumbFileLocation) {
 
         // see if the thumb is already generated and saved:
         if (new File(thumbFileLocation).exists()) {
-            return thumbFileLocation;
+            return true;
         }
 
         // if not, let's attempt to generate the thumb:
@@ -596,7 +537,7 @@ public class ImageThumbConverter {
         long fileSize = new File(fileLocation).length();
 
         if (isImageOverSizeLimit(fileSize)) {
-            return null;
+            return false;
         }
 
         try {
@@ -605,7 +546,7 @@ public class ImageThumbConverter {
 
             if (fullSizeImage == null) {
                 logger.warning("could not read image with ImageIO.read()");
-                return null;
+                return false;
             }
 
             int width = fullSizeImage.getWidth(null);
@@ -613,15 +554,15 @@ public class ImageThumbConverter {
 
             logger.fine("image dimensions: " + width + "x" + height);
 
-            thumbFileLocation = rescaleImage(fullSizeImage, width, height, size, fileLocation);
+            rescaleImage(fullSizeImage, width, height, size, thumbFileLocation);
 
-            if (thumbFileLocation != null) {
-                return thumbFileLocation;
+            if (new File(thumbFileLocation).exists()) {
+                return true;
             }
         } catch (Exception e) {
             logger.warning("Failed to read in an image from " + fileLocation + ": " + e.getMessage());
         }
-        return null;
+        return false;
 
     }
 
@@ -632,13 +573,16 @@ public class ImageThumbConverter {
      *
      */
     public String generateImageThumbnailFromFileAsBase64(File file, int size) {
-        String thumbnailFileLocation = generateImageThumbnailFromFile(file.getAbsolutePath(), size);
+        File tempThumbnailFile = new File(FileUtils.getTempDirectory(), UUID.randomUUID().toString());
+        
+        try {
+            generateImageThumbnailFromFile(file.getAbsolutePath(), size, tempThumbnailFile.getAbsolutePath());
 
-        if (thumbnailFileLocation != null) {
-            File thumbnailFile = new File(thumbnailFileLocation);
-            if (thumbnailFile.exists()) {
-                return getImageAsBase64FromFile(thumbnailFile);
+            if (tempThumbnailFile.exists()) {
+                return getImageAsBase64FromFile(tempThumbnailFile);
             }
+        } finally {
+            tempThumbnailFile.delete();
         }
         return null;
     }
@@ -646,28 +590,27 @@ public class ImageThumbConverter {
     // Public version of the rescaleImage() method; it takes the location of the output
     // file as a string argument. This method is used by external utilities for 
     // rescaling the non-datafile Dataverse and Dataset logos. 
-    public String rescaleImage(BufferedImage fullSizeImage, int width, int height, int size, String fileLocation) {
-        String outputLocation = fileLocation + "." + THUMBNAIL_SUFFIX + size;
-        File outputFile = new File(outputLocation);
+    public boolean rescaleImage(BufferedImage fullSizeImage, int width, int height, int size, String thumbFileLocation) {
+        File outputFile = new File(thumbFileLocation);
         OutputStream outputFileStream = null;
 
         try {
             outputFileStream = new FileOutputStream(outputFile);
         } catch (IOException ioex) {
-            logger.warning("caught IO exception trying to open output stream for " + outputLocation);
-            return null;
+            logger.warning("caught IO exception trying to open output stream for " + thumbFileLocation);
+            return false;
         }
 
         try {
             rescaleImage(fullSizeImage, width, height, size, outputFileStream);
         } catch (Exception ioex) {
-            logger.warning("caught Exceptiopn trying to create rescaled image " + outputLocation);
-            return null;
+            logger.warning("caught Exceptiopn trying to create rescaled image " + thumbFileLocation);
+            return false;
         } finally {
             IOUtils.closeQuietly(outputFileStream);
         }
 
-        return outputLocation;
+        return true;
     }
 
     private void rescaleImage(BufferedImage fullSizeImage, int width, int height, int size, OutputStream outputStream) throws IOException {
@@ -746,19 +689,17 @@ public class ImageThumbConverter {
         }
     }
 
-    public String generatePDFThumbnailFromFile(String fileLocation, int size) {
+    public boolean generatePDFThumbnailFromFile(String fileLocation, int size, String thumbFileLocation) {
         logger.fine("entering generatePDFThumb");
-
-        String thumbFileLocation = fileLocation + ".thumb" + size;
 
         // see if the thumb is already generated and saved:
         if (new File(thumbFileLocation).exists()) {
-            return thumbFileLocation;
+            return true;
         }
 
         long fileSize = new File(fileLocation).length();
         if (isPdfFileOverSizeLimit(fileSize)) {
-            return null;
+            return false;
         }
 
         String imageMagickExec = System.getProperty("dataverse.path.imagemagick.convert");
@@ -779,86 +720,18 @@ public class ImageThumbConverter {
             //  - use "-flatten"
             //  - use "-strip"
             //  - (maybe?) use jpeg instead of png - ?
-            //
-            // (what we observed in production - 3.6.3, June 2014 - was that 
-            // for very large TIFF images, when processed wihout the options
-            // above, thumbnails produced were still obscenely *huge*; for ex.,
-            // for a 100MB 3000x4000 px. TIFF file, the 275 px. PNG thumbnail 
-            // produced was 5MB! - which, for a page with multiple high-res 
-            // images (Grad. School of Design dv) resulted in taking forever 
-            // to load... JPG thumbnails, similarly produced, were smaller, but 
-            // still unnecessarily large. I was never able to figure out what 
-            // was going on (full-rez color profiles still stored in the 
-            // resized version - ??), but the combination above takes care of 
-            // it and brings down the thumbnail size to under 50K, were it 
-            // belongs. :)
-            //          -- L.A. June 2014
-            String previewFileLocation = null;
-
-            // check if the "preview size" image is already available - and 
-            // if not, generate it. this 400 pixel image will be used to 
-            // generate smaller-size thumbnails.
-            previewFileLocation = fileLocation + ".thumb" + DEFAULT_PREVIEW_SIZE;
-
-            if (!((new File(previewFileLocation)).exists())) {
-                previewFileLocation = runImageMagick(imageMagickExec, fileLocation, DEFAULT_PREVIEW_SIZE, "pdf");
-            }
-
-            if (previewFileLocation == null) {
-                return null;
-            }
-
-            if (size == DEFAULT_PREVIEW_SIZE) {
-                return previewFileLocation;
-            }
-
-            // generate the thumbnail for the requested size, *using the already scaled-down
-            // 400x400 png version, above*:
-            if (!((new File(thumbFileLocation)).exists())) {
-                thumbFileLocation = runImageMagick(imageMagickExec, previewFileLocation, thumbFileLocation, size, "png");
-            }
-
-            return thumbFileLocation;
-
-            /*
-             An alternative way of handling it: 
-             while we are at it, let's generate *all* the smaller thumbnail sizes:
-            for (int s : (new int[]{DEFAULT_THUMBNAIL_SIZE, DEFAULT_CARDIMAGE_SIZE})) {
-                String thisThumbLocation = fileLocation + ".thumb" + s;
-                if (!(new File(thisThumbLocation).exists())) {
-                    thisThumbLocation = runImageMagick(imageMagickExec, previewFileLocation, thisThumbLocation, s, "png");
-                }
-            }
-                    
-            // return the location of the thumbnail for the requested size:
-            if (new File(thumbFileLocation).exists()) {
-                return thumbFileLocation;
-            }*/
+            return runImageMagick(imageMagickExec, fileLocation, thumbFileLocation, size);
         }
 
-        logger.fine("returning null");
-        return null;
+        logger.fine("returning false");
+        return false;
 
     }
 
-    /*
-    private static boolean thumbnailFileExists(String fileLocation, int size) {
-        String thumbFileLocation = fileLocation + ".thumb" + size;
-        return new File(thumbFileLocation).exists();
-    }*/
-    private String runImageMagick(String imageMagickExec, String fileLocation, int size, String format) {
-        String thumbFileLocation = fileLocation + ".thumb" + size;
-        return runImageMagick(imageMagickExec, fileLocation, thumbFileLocation, size, format);
-    }
-
-    private String runImageMagick(String imageMagickExec, String fileLocation, String thumbFileLocation, int size, String format) {
+    private boolean runImageMagick(String imageMagickExec, String fileLocation, String thumbFileLocation, int size) {
         String imageMagickCmd = null;
 
-        if ("pdf".equals(format)) {
-            imageMagickCmd = imageMagickExec + " pdf:" + fileLocation + "[0] -thumbnail " + size + "x" + size + " -flatten -strip png:" + thumbFileLocation;
-        } else {
-            imageMagickCmd = imageMagickExec + " " + format + ":" + fileLocation + " -thumbnail " + size + "x" + size + " -flatten -strip png:" + thumbFileLocation;
-        }
+        imageMagickCmd = imageMagickExec + " pdf:" + fileLocation + "[0] -thumbnail " + size + "x" + size + " -flatten -strip png:" + thumbFileLocation;
 
         logger.fine("ImageMagick command line: " + imageMagickCmd);
         int exitValue = 1;
@@ -872,11 +745,11 @@ public class ImageThumbConverter {
         }
 
         if (exitValue == 0 && new File(thumbFileLocation).exists()) {
-            logger.fine("returning " + thumbFileLocation);
-            return thumbFileLocation;
+            logger.fine("generated pdf image thumbnail in: " + thumbFileLocation);
+            return true;
         }
 
-        return null;
+        return false;
     }
 
     private boolean isImageOverSizeLimit(long fileSize) {
@@ -922,6 +795,7 @@ public class ImageThumbConverter {
         return null;
     }
 
+    
     /*
        The method below takes a BufferedImage, and makes the specified color
        transparent. Turns out we don't really need to do this explicitly, since 

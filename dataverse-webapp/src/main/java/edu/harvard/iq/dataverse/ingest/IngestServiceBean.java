@@ -24,11 +24,12 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
-import edu.harvard.iq.dataverse.common.files.extension.FileExtension;
 import edu.harvard.iq.dataverse.common.files.mime.ApplicationMimeType;
 import edu.harvard.iq.dataverse.common.files.mime.TextMimeType;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIOConstants;
+import edu.harvard.iq.dataverse.dataaccess.StorageIOUtils;
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
@@ -73,6 +74,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SumStatCalculator;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.control.Option;
+import org.apache.commons.io.IOUtils;
 import org.dataverse.unf.UNFUtil;
 import org.dataverse.unf.UnfException;
 
@@ -96,6 +98,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.DirectoryStream;
@@ -113,6 +116,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -706,13 +710,9 @@ public class IngestServiceBean {
 
     public boolean ingestAsTabular(Long datafile_id) {
         DataFile dataFile = fileService.find(datafile_id);
-        boolean ingestSuccessful = false;
-        boolean forceTypeCheck = false;
-
         IngestRequest ingestRequest = dataFile.getIngestRequest();
-        if (ingestRequest != null) {
-            forceTypeCheck = ingestRequest.isForceTypeCheck();
-        }
+
+        boolean forceTypeCheck = ingestRequest == null ? false : ingestRequest.isForceTypeCheck();
 
         // Locate ingest plugin for the file format by looking
         // it up with the Ingest Service Provider Registry:
@@ -736,28 +736,12 @@ public class IngestServiceBean {
             return false;
         }
 
-        BufferedInputStream inputStream = null;
         File additionalData = null;
         File localFile = null;
-        StorageIO<DataFile> storageIO = null;
 
         try {
-            storageIO = dataAccess.getStorageIO(dataFile);
-            storageIO.open();
-
-            if (storageIO.isLocalFile()) {
-                localFile = storageIO.getFileSystemPath().toFile();
-                inputStream = new BufferedInputStream(storageIO.getInputStream());
-            } else {
-                ReadableByteChannel dataFileChannel = storageIO.getReadChannel();
-                localFile = File.createTempFile("tempIngestSourceFile", ".tmp");
-                FileChannel tempIngestSourceChannel = new FileOutputStream(localFile).getChannel();
-
-                tempIngestSourceChannel.transferFrom(dataFileChannel, 0, storageIO.getSize());
-
-                inputStream = new BufferedInputStream(new FileInputStream(localFile));
-                logger.fine("Saved " + storageIO.getSize() + " bytes in a local temp file.");
-            }
+            StorageIO<DataFile> storageIO = dataAccess.getStorageIO(dataFile);
+            localFile = StorageIOUtils.obtainAsLocalFile(storageIO, storageIO.isRemoteFile()); // TODO: remove this file IF it is temporary
         } catch (IOException ioEx) {
             dataFile.SetIngestProblem();
 
@@ -803,7 +787,9 @@ public class IngestServiceBean {
         }
 
         TabularDataIngest tabDataIngest = null;
-        try {
+
+        try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(localFile))) {
+
             if (additionalData != null) {
                 tabDataIngest = ingestPlugin.read(inputStream, additionalData);
             } else {
@@ -949,8 +935,8 @@ public class IngestServiceBean {
 
                     // and we want to save the original of the ingested file: 
                     try {
-                        tabularStorageIO.backupAsAux(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
-                        logger.fine("Saved the ingested original as a backup aux file " + FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
+                        tabularStorageIO.backupAsAux(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION);
+                        logger.fine("Saved the ingested original as a backup aux file: " + StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION);
                     } catch (IOException iox) {
                         logger.warning("Failed to save the ingested original! " + iox.getMessage());
                     }
@@ -987,13 +973,13 @@ public class IngestServiceBean {
                     }
                 }
 
-                ingestSuccessful = true;
+                return true;
             }
         } else {
             logger.warning("Ingest failed to produce data obect.");
         }
 
-        return ingestSuccessful;
+        return false;
     }
 
     private void restoreIngestedDataFile(DataFile dataFile, TabularDataIngest tabDataIngest, long originalSize, String originalFileName, String originalContentType) {
@@ -1664,60 +1650,24 @@ public class IngestServiceBean {
                 // s3 and similar implementations, we'll read the saved aux 
                 // channel and save it as a local temp file. 
 
-                StorageIO<DataFile> storageIO;
-
-                File savedOriginalFile = null;
-                boolean tempFileRequired = false;
-
-                try {
-                    storageIO = dataAccess.getStorageIO(dataFile);
-                    storageIO.open();
-
-
-                    if (storageIO.isLocalFile()) {
-                        try {
-                            savedOriginalFile = storageIO.getAuxObjectAsPath(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension()).toFile();
-                        } catch (IOException ioex) {
-                            // do nothing, just make sure savedOriginalFile is still null:
-                            savedOriginalFile = null;
-                        }
-                    }
-
-                    if (savedOriginalFile == null) {
-                        tempFileRequired = true;
-
-                        ReadableByteChannel savedOriginalChannel = (ReadableByteChannel) storageIO.openAuxChannel(
-                                FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
-                        savedOriginalFile = File.createTempFile("tempSavedOriginal", ".tmp");
-                        FileChannel tempSavedOriginalChannel = new FileOutputStream(savedOriginalFile).getChannel();
-                        tempSavedOriginalChannel.transferFrom(savedOriginalChannel,
-                                                              0,
-                                                              storageIO.getAuxObjectSize(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension()));
-
-                    }
-                } catch (Exception ex) {
-                    logger.warning("Exception " + ex.getClass() + " caught trying to open StorageIO channel for the saved original; (datafile id=" + fileId + ", datatable id=" + datatableId + "): " + ex.getMessage());
-                    savedOriginalFile = null;
-                }
-
-                if (savedOriginalFile == null) {
-                    logger.warning("Could not obtain the saved original file as a java.io.File! (datafile id=" + fileId + ", datatable id=" + datatableId + ")");
-                    return;
-                }
-
                 String fileTypeDetermined = null;
+                Long savedOriginalFileSize = null;
+                Optional<File> tmpFile = Optional.empty();
 
                 try {
+                    StorageIO<DataFile> storageIO = dataAccess.getStorageIO(dataFile);
+                    File savedOriginalFile = StorageIOUtils.obtainAuxAsLocalFile(storageIO, StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION, storageIO.isRemoteFile());
+
+                    tmpFile = storageIO.isRemoteFile() ? Optional.of(savedOriginalFile) : Optional.empty();
+                    
+                    savedOriginalFileSize = savedOriginalFile.length();
                     fileTypeDetermined = FileUtil.determineFileType(savedOriginalFile, "");
-                } catch (IOException ioex) {
-                    logger.warning("Caught exception trying to determine original file type (datafile id=" + fileId + ", datatable id=" + datatableId + "): " + ioex.getMessage());
-                }
 
-                Long savedOriginalFileSize = savedOriginalFile.length();
-
-                // If we had to create a temp file, delete it now: 
-                if (tempFileRequired) {
-                    savedOriginalFile.delete();
+                } catch (Exception ex) {
+                    logger.warning("Exception " + ex.getClass() + " caught trying to determine file type; (datafile id=" + fileId + ", datatable id=" + datatableId + "): " + ex.getMessage());
+                    return;
+                } finally {
+                    tmpFile.ifPresent(file -> file.delete());
                 }
 
                 if (fileTypeDetermined == null) {
@@ -1735,7 +1685,7 @@ public class IngestServiceBean {
                 if (ApplicationMimeType.UNDETERMINED_DEFAULT.getMimeValue().equals(fileTypeDetermined)) {
                     fileTypeDetermined = ApplicationMimeType.XLSX.getMimeValue();
                 }
-                logger.info("Original file type determined: " + fileTypeDetermined + " (file id=" + fileId + ", datatable id=" + datatableId + "; file path: " + savedOriginalFile.getAbsolutePath() + ")");
+                logger.info("Original file type determined: " + fileTypeDetermined + " (file id=" + fileId + ", datatable id=" + datatableId + ")");
 
                 // save permanently in the database:
                 dataFile.getDataTable().setOriginalFileFormat(fileTypeDetermined);
@@ -1766,7 +1716,7 @@ public class IngestServiceBean {
                 try {
                     storageIO = dataAccess.getStorageIO(dataFile);
                     storageIO.open();
-                    savedOriginalFileSize = storageIO.getAuxObjectSize(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
+                    savedOriginalFileSize = storageIO.getAuxObjectSize(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION);
 
                 } catch (Exception ex) {
                     logger.warning("Exception " + ex.getClass() + " caught trying to look up the size of the saved original; (datafile id=" + fileId + ", datatable id=" + datatableId + "): " + ex.getMessage());

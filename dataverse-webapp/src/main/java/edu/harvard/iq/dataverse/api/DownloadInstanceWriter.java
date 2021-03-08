@@ -301,51 +301,54 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
     }
     
     private void writeStorageIOToOutputStream(StorageIO<DataFile> storageIO, OutputStream outstream, MultivaluedMap<String, Object> httpHeaders) throws IOException {
-        InputStream instream = storageIO.getInputStream();
-        if (instream == null) {
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
-        }
-        // headers:
+        
+        try (InputStream instream = storageIO.getInputStream()) {
 
-        String fileName = storageIO.getFileName();
-        String mimeType = storageIO.getMimeType();
-
-        // Provide both the "Content-disposition" and "Content-Type" headers,
-        // to satisfy the widest selection of browsers out there. 
-
-        httpHeaders.add("Content-disposition", "attachment; filename=\"" + fileName + "\"");
-        httpHeaders.add("Content-Type", mimeType + "; name=\"" + fileName + "\"");
-
-        long contentSize = getContentSize(storageIO);
-        //if ((contentSize = getFileSize(di, storageIO.getVarHeader())) > 0) {
-        if (contentSize > 0) {
-            logger.debug("Content size (retrieved from the AccessObject): " + contentSize);
-            httpHeaders.add("Content-Length", contentSize);
-        }
-
-        // (the httpHeaders map must be modified *before* writing any
-        // data in the output stream!)
-
-        int bufsize;
-        byte[] bffr = new byte[4 * 8192];
-
-        // before writing out any bytes from the input stream, flush
-        // any extra content, such as the variable header for the 
-        // subsettable files: 
-
-        if (storageIO.getVarHeader() != null) {
-            if (storageIO.getVarHeader().getBytes().length > 0) {
-                outstream.write(storageIO.getVarHeader().getBytes());
+            if (instream == null) {
+                throw new WebApplicationException(Response.Status.NOT_FOUND);
             }
+
+            // headers:
+
+            String fileName = storageIO.getFileName();
+            String mimeType = storageIO.getMimeType();
+
+            // Provide both the "Content-disposition" and "Content-Type" headers,
+            // to satisfy the widest selection of browsers out there. 
+
+            httpHeaders.add("Content-disposition", "attachment; filename=\"" + fileName + "\"");
+            httpHeaders.add("Content-Type", mimeType + "; name=\"" + fileName + "\"");
+
+            long contentSize = getContentSize(storageIO);
+            //if ((contentSize = getFileSize(di, storageIO.getVarHeader())) > 0) {
+            if (contentSize > 0) {
+                logger.debug("Content size (retrieved from the AccessObject): " + contentSize);
+                httpHeaders.add("Content-Length", contentSize);
+            }
+
+            // (the httpHeaders map must be modified *before* writing any
+            // data in the output stream!)
+
+            int bufsize;
+            byte[] bffr = new byte[4 * 8192];
+
+            // before writing out any bytes from the input stream, flush
+            // any extra content, such as the variable header for the 
+            // subsettable files: 
+
+            if (storageIO.getVarHeader() != null) {
+                if (storageIO.getVarHeader().getBytes().length > 0) {
+                    outstream.write(storageIO.getVarHeader().getBytes());
+                }
+            }
+
+            while ((bufsize = instream.read(bffr)) != -1) {
+                outstream.write(bffr, 0, bufsize);
+            }
+
+        } finally {
+            outstream.close();
         }
-
-        while ((bufsize = instream.read(bffr)) != -1) {
-            outstream.write(bffr, 0, bufsize);
-        }
-
-        instream.close();
-        outstream.close();
-
     }
 
     private long getContentSize(StorageIO<?> accessObject) {

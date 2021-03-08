@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
+import org.apache.commons.io.IOUtils;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -33,10 +34,11 @@ public class GetProvJsonCommand extends AbstractCommand<JsonObject> {
     public JsonObject execute(CommandContext ctxt)  {
 
         final String provJsonExtension = "prov-json.json";
+        InputStream inputStream = null;
 
         try {
             StorageIO<DataFile> storageIO = ctxt.dataAccess().getStorageIO(dataFile);
-            InputStream inputStream = storageIO.getAuxFileAsInputStream(provJsonExtension);
+            inputStream = storageIO.getAuxFileAsInputStream(provJsonExtension);
             JsonObject jsonObject = null;
             if (null != inputStream) {
                 JsonReader jsonReader = Json.createReader(inputStream);
@@ -46,6 +48,8 @@ public class GetProvJsonCommand extends AbstractCommand<JsonObject> {
         } catch (IOException ex) {
             String error = "Exception caught in DataAccess.getStorageIO(dataFile) getting file. Error: " + ex;
             throw new IllegalCommandException(error, this);
+        } finally {
+            IOUtils.closeQuietly(inputStream);
         }
     }
 }

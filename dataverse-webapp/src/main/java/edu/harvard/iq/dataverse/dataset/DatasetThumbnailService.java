@@ -37,8 +37,7 @@ public class DatasetThumbnailService {
 
     private static final Logger logger = Logger.getLogger(DatasetThumbnailService.class.getCanonicalName());
     public static String datasetLogoFilenameFinal = "dataset_logo_original";
-    public static String datasetLogoThumbnail = "dataset_logo";
-    public static String thumb48addedByImageThumbConverter = ".thumb48";
+    public static String datasetLogoThumbnail48 = "dataset_logo.thumb48";
     
     @Inject
     private ImageThumbConverter imageThumbConverter;
@@ -58,7 +57,7 @@ public class DatasetThumbnailService {
             InputStream in = null;
             try {
                 StorageIO<Dataset> storageIO = dataAccess.getStorageIO(dataset);
-                in = storageIO.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+                in = storageIO.getAuxFileAsInputStream(datasetLogoThumbnail48);
             } catch (Exception ioex) {
             }
 
@@ -71,11 +70,13 @@ public class DatasetThumbnailService {
                     thumbnails.add(datasetThumbnail);
                 } catch (IOException ex) {
                     logger.warning("Unable to rescale image: " + ex);
+                } finally {
+                    IOUtils.closeQuietly(in);
                 }
             } else {
                 logger.fine("There is no thumbnail created from a dataset logo");
             }
-            IOUtils.closeQuietly(in);
+
         }
         for (FileMetadata fileMetadata : dataset.getLatestVersion().getFileMetadatas()) {
             DataFile dataFile = fileMetadata.getDataFile();
@@ -119,8 +120,8 @@ public class DatasetThumbnailService {
         try {
             if (storageIO == null) {
                 logger.warning("getThumbnail(): Failed to initialize dataset StorageIO for " + dataset.getStorageIdentifier());
-            } else if (storageIO.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter) != null) {
-                in = storageIO.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+            } else {
+                in = storageIO.getAuxFileAsInputStream(datasetLogoThumbnail48);
             }
         } catch (IOException ex) {
             logger.fine("Dataset-level thumbnail file does not exist, or failed to open; will try to find an image file that can be used as the thumbnail.");
@@ -186,13 +187,8 @@ public class DatasetThumbnailService {
         try {
             StorageIO<Dataset> storageIO = dataAccess.getStorageIO(dataset);
 
-            if (storageIO == null) {
-                logger.warning("Null storageIO in deleteDatasetLogo()");
-                return false;
-            }
-
             storageIO.deleteAuxObject(datasetLogoFilenameFinal);
-            storageIO.deleteAuxObject(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+            storageIO.deleteAuxObject(datasetLogoThumbnail48);
 
         } catch (IOException ex) {
             logger.info("Failed to delete dataset logo: " + ex.getMessage());
@@ -200,17 +196,6 @@ public class DatasetThumbnailService {
         }
         return true;
 
-        //TODO: Is this required? 
-//        File originalFile = new File(dataset.getFileSystemDirectory().toString(), datasetLogoFilenameFinal);
-//        boolean originalFileDeleted = originalFile.delete();
-//        File thumb48 = new File(dataset.getFileSystemDirectory().toString(), File.separator + datasetLogoThumbnail + thumb48addedByImageThumbConverter);
-//        boolean thumb48Deleted = thumb48.delete();
-//        if (originalFileDeleted && thumb48Deleted) {
-//            return true;
-//        } else {
-//            logger.info("One of the files wasn't deleted. Original deleted: " + originalFileDeleted + ". thumb48 deleted: " + thumb48Deleted + ".");
-//            return false;
-//        }
     }
 
     /**
@@ -269,7 +254,6 @@ public class DatasetThumbnailService {
             logger.warning("Failed to save the file, storage id " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
         }
 
-        //File originalFile = new File(datasetDirectory.toString(), datasetLogoFilenameFinal);
         try {
             //this goes through Swift API/local storage/s3 to write the dataset thumbnail into a container
             storageIO.savePathAsAux(tmpFile.toPath(), datasetLogoFilenameFinal);
@@ -290,52 +274,23 @@ public class DatasetThumbnailService {
         }
         int width = fullSizeImage.getWidth();
         int height = fullSizeImage.getHeight();
-        FileChannel src = null;
-        try {
-            src = new FileInputStream(tmpFile).getChannel();
-        } catch (FileNotFoundException ex) {
-            logger.severe(ex.getMessage());
-            return null;
-        }
-        FileChannel dest = null;
-        try {
-            dest = new FileOutputStream(tmpFile).getChannel();
-        } catch (FileNotFoundException ex) {
-            logger.severe(ex.getMessage());
-            return null;
-        }
-        try {
-            dest.transferFrom(src, 0, src.size());
-        } catch (IOException ex) {
-            logger.severe(ex.getMessage());
-            return null;
-        }
-        File tmpFileForResize = null;
-        try {
-            tmpFileForResize = FileUtil.inputStreamToFile(inputStream);
-        } catch (IOException ex) {
-            logger.severe(ex.getMessage());
-            return null;
-        }
-        String thumbFileLocation = imageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE, tmpFileForResize.toPath().toString());
+
+        String thumbFileLocation = tmpFile.getAbsolutePath() + ".thumb";
+        imageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE, thumbFileLocation);
         logger.fine("thumbFileLocation = " + thumbFileLocation);
-        logger.fine("tmpFileLocation=" + tmpFileForResize.toPath().toString());
+        logger.fine("tmpFileLocation=" + tmpFile.getAbsolutePath());
+
         //now we must save the updated thumbnail 
         try {
-            storageIO.savePathAsAux(Paths.get(thumbFileLocation), datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+            storageIO.savePathAsAux(Paths.get(thumbFileLocation), datasetLogoThumbnail48);
         } catch (IOException ex) {
             logger.severe("Failed to move updated thumbnail file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
         }
         //This deletes the tempfiles created for rescaling and encoding
-        boolean tmpFileWasDeleted = tmpFile.delete();
-        boolean originalTempFileWasDeleted = tmpFileForResize.delete();
-        try {
-            Files.delete(Paths.get(thumbFileLocation));
-        } catch (IOException ioex) {
-            logger.fine("Failed to delete temporary thumbnail file");
-        }
+        tmpFile.delete();
+        new File(thumbFileLocation).delete();
 
-        logger.fine("Thumbnail saved to " + thumbFileLocation + ". Temporary file deleted : " + tmpFileWasDeleted + ". Original file deleted : " + originalTempFileWasDeleted);
+        
         return dataset;
     }
 
@@ -373,8 +328,9 @@ public class DatasetThumbnailService {
 
         try {
             storageIO = dataAccess.getStorageIO(dataset);
-            return storageIO.isAuxObjectCached(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+            return storageIO.isAuxObjectCached(datasetLogoThumbnail48);
         } catch (IOException ioex) {
+            logger.warning("Unable to check whether dataset logo thumbnail is cached: " + dataset.toString());
         }
         return false;
     }

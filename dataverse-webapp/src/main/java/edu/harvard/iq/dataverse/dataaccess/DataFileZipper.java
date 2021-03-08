@@ -51,25 +51,11 @@ public class DataFileZipper {
 
     private Set<String> zippedFolders = null;
 
-    public DataFileZipper() {
-        fileNameList = new ArrayList<>();
-        zippedFilesList = new ArrayList<>();
-        zippedFolders = new HashSet<>();
-    }
-
     public DataFileZipper(OutputStream outputStream) {
         this.outputStream = outputStream;
         fileNameList = new ArrayList<>();
         zippedFilesList = new ArrayList<>();
         zippedFolders = new HashSet<>();
-    }
-
-    public void setOutputStream(OutputStream outputStream) {
-        this.outputStream = outputStream;
-    }
-
-    public OutputStream getOutputStream() {
-        return this.outputStream;
     }
 
     public void setFileManifest(String fileManifest) {
@@ -80,7 +66,7 @@ public class DataFileZipper {
         return this.fileManifest;
     }
 
-    public void openZipStream() throws IOException {
+    private void openZipStream() throws IOException {
         if (outputStream == null) {
             throw new IOException("Attempted to create a ZipOutputStream from a NULL OutputStream.");
         }
@@ -95,8 +81,6 @@ public class DataFileZipper {
         if (zipOutputStream == null) {
             openZipStream();
         }
-
-        boolean createManifest = fileManifest != null;
 
         StorageIO<DataFile> accessObject = DataAccess.dataAccess().getStorageIO(dataFile);
 
@@ -120,19 +104,16 @@ public class DataFileZipper {
             mimeType = "application/octet-stream";
         }
 
-        //if (sizeTotal + fileSize < sizeLimit) {
-        Boolean Success = true;
 
-        InputStream instream = accessObject.getInputStream();
-        if (instream == null) {
-            if (createManifest) {
+        try (InputStream instream = accessObject.getInputStream()) { 
+            if (instream == null) {
                 addToManifest(fileName
-                                      + " (" + mimeType
-                                      + ") COULD NOT be downloaded because an I/O error has occured. \r\n");
+                                  + " (" + mimeType
+                                  + ") COULD NOT be downloaded because an I/O error has occured. \r\n");
+                return byteSize;
             }
 
-            Success = false;
-        } else {
+
             // If any of the files have non-empty DirectoryLabels we'll 
             // use them to re-create the folders in the Zipped bundle:
             String folderName = dataFile.getFileMetadata().getDirectoryLabel();
@@ -180,43 +161,35 @@ public class DataFileZipper {
                 byteSize += i;
                 zipOutputStream.flush();
             }
-            instream.close();
+
             zipOutputStream.closeEntry();
             logger.fine("closed zip entry for " + zipEntryName);
 
-            if (createManifest) {
-                addToManifest(zipEntryName + " (" + mimeType + ") " + byteSize + " bytes.\r\n");
-            }
+            addToManifest(zipEntryName + " (" + mimeType + ") " + byteSize + " bytes.\r\n");
 
             if (byteSize > 0) {
                 zippedFilesList.add(dataFile.getId());
             }
         }
-        //} else if (createManifest) {
-        //    addToManifest(fileName + " (" + mimeType + ") " + " skipped because the total size of the download bundle exceeded the limit of " + sizeLimit + " bytes.\r\n");
-        //}
         return byteSize;
     }
 
     public void finalizeZipStream() throws IOException {
-        boolean createManifest = fileManifest != null;
 
         if (zipOutputStream == null) {
             openZipStream();
         }
 
-        if (createManifest) {
-            String manifestEntry = MANIFEST_FILE_NAME;
-            while (fileNameList.contains(manifestEntry)) {
-                manifestEntry = "0".concat(manifestEntry);
-            }
-
-            ZipEntry e = new ZipEntry(manifestEntry);
-
-            zipOutputStream.putNextEntry(e);
-            zipOutputStream.write(fileManifest.getBytes());
-            zipOutputStream.closeEntry();
+        String manifestEntry = MANIFEST_FILE_NAME;
+        while (fileNameList.contains(manifestEntry)) {
+            manifestEntry = "0".concat(manifestEntry);
         }
+
+        ZipEntry e = new ZipEntry(manifestEntry);
+
+        zipOutputStream.putNextEntry(e);
+        zipOutputStream.write(fileManifest.getBytes());
+        zipOutputStream.closeEntry();
 
         zipOutputStream.flush();
         zipOutputStream.close();

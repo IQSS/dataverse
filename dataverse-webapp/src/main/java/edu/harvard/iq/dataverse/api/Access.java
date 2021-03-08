@@ -18,12 +18,12 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.dataset.EmbargoAccessService;
 import edu.harvard.iq.dataverse.common.BundleUtil;
-import edu.harvard.iq.dataverse.common.files.extension.FileExtension;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataFileZipper;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIOConstants;
 import edu.harvard.iq.dataverse.datafile.FilePermissionsService;
 import edu.harvard.iq.dataverse.datafile.page.WholeDatasetDownloadLogger;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
@@ -641,7 +641,7 @@ public class Access extends AbstractApiBean {
             } else {
                 StorageIO<DataFile> storageIO = DataAccess.dataAccess().getStorageIO(file);
                 storageIO.open();
-                size = storageIO.getAuxObjectSize(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
+                size = storageIO.getAuxObjectSize(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION);
 
                 // save it permanently:
                 file.getDataTable().setOriginalFileSize(size);
@@ -778,20 +778,17 @@ public class Access extends AbstractApiBean {
             return null;
         }
 
-        String imageThumbFileName = null;
-
         // First, check if the dataverse has a defined logo: 
 
         if (dataverse.getDataverseTheme() != null && dataverse.getDataverseTheme().getLogo() != null && !dataverse.getDataverseTheme().getLogo().equals("")) {
             File dataverseLogoFile = getLogo(dataverse);
             if (dataverseLogoFile != null) {
                 logger.fine("dvCardImage: logo file found");
-                String logoThumbNailPath = null;
                 InputStream in = null;
 
                 try {
                     if (dataverseLogoFile.exists()) {
-                        logoThumbNailPath = imageThumbConverter.generateImageThumbnailFromFile(dataverseLogoFile.getAbsolutePath(), 48);
+                        String logoThumbNailPath = dataverseDao.getDataverseLogoThumbnailFilePath(dataverse.getId());
                         if (logoThumbNailPath != null) {
                             in = new FileInputStream(logoThumbNailPath);
                         }

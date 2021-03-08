@@ -244,18 +244,20 @@ public class DataverseDao implements java.io.Serializable {
                 .setParameter("dataverse_id", dataverse_id).getResultList();
     }
 
-    public String getDataverseLogoThumbnailAsBase64ById(Long dvId) {
+    public String getDataverseLogoThumbnailFilePath(Long dvId) {
 
         File dataverseLogoFile = getLogoById(dvId);
 
         if (dataverseLogoFile != null) {
-            String logoThumbNailPath;
+            String logoThumbNailPath = dataverseLogoFile + ".thumb" + 48;
 
-            if (dataverseLogoFile.exists()) {
-                logoThumbNailPath = imageThumbConverter.generateImageThumbnailFromFile(dataverseLogoFile.getAbsolutePath(), 48);
-                if (logoThumbNailPath != null) {
-                    return imageThumbConverter.getImageAsBase64FromFile(new File(logoThumbNailPath));
-
+            if (new File(logoThumbNailPath).exists()) {
+                return logoThumbNailPath;
+            } else {
+                imageThumbConverter.generateImageThumbnailFromFile(dataverseLogoFile.getAbsolutePath(), 48, logoThumbNailPath);
+                
+                if (new File(logoThumbNailPath).exists()) {
+                    return logoThumbNailPath;
                 }
             }
         }

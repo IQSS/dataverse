@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.dataset.DatasetThumbnailService;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
@@ -19,14 +20,12 @@ import javax.faces.view.ViewScoped;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-
-import static edu.harvard.iq.dataverse.dataset.DatasetThumbnailService.datasetLogoThumbnail;
-import static edu.harvard.iq.dataverse.dataset.DatasetThumbnailService.thumb48addedByImageThumbConverter;
 
 /**
  * @author Leonid Andreev
@@ -226,7 +225,7 @@ public class ThumbnailServiceWrapper implements java.io.Serializable {
         // an auxilary file on the dataset level: 
         // (don't bother checking if it exists; just try to open the input stream)
         try {
-            in = storageIO.getAuxFileAsInputStream(datasetLogoThumbnail + thumb48addedByImageThumbConverter);
+            in = storageIO.getAuxFileAsInputStream(DatasetThumbnailService.datasetLogoThumbnail48);
         } catch (Exception ioex) {
             //ignore
         }
@@ -318,7 +317,11 @@ public class ThumbnailServiceWrapper implements java.io.Serializable {
     // it's the responsibility of the user - to make sure the search result
     // passed to this method is of the Dataverse type!
     public String getDataverseCardImageAsBase64Url(SolrSearchResult result) {
-        return dataverseDao.getDataverseLogoThumbnailAsBase64ById(result.getEntityId());
+        String thumbnailPath = dataverseDao.getDataverseLogoThumbnailFilePath(result.getEntityId());
+        if (thumbnailPath != null) {
+            return imageThumbConverter.getImageAsBase64FromFile(new File(thumbnailPath));
+        }
+        return null;
     }
 
     public void resetObjectMaps() {

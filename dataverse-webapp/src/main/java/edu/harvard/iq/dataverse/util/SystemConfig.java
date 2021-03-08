@@ -202,7 +202,7 @@ public class SystemConfig {
             option = System.getProperty("dataverse.dataAccess.thumbnail.pdf.limit");
         }
 
-        return NumberUtils.toLong(option, 500_000);
+        return NumberUtils.toLong(option, 10_000_000);
     }
 
     private boolean isThumbnailGenerationDisabledForType(String type) {

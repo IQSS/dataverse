@@ -5,8 +5,8 @@
  */
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.common.files.extension.FileExtension;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIOConstants;
 import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -69,7 +69,7 @@ public class UningestFileCommand extends AbstractVoidCommand {
         try {
             storageIO = ctxt.dataAccess().getStorageIO(uningest);
             storageIO.open();
-            storedOriginalFileSize = storageIO.getAuxObjectSize(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
+            storedOriginalFileSize = storageIO.getAuxObjectSize(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION);
         } catch (IOException ioex) {
             String errorMessage = "Failed to open StorageIO for " + uningest.getStorageIdentifier() + " attempting to revert tabular ingest" + " aborting. (";
             if (ioex.getMessage() != null) {
@@ -89,7 +89,7 @@ public class UningestFileCommand extends AbstractVoidCommand {
         // -- L.A. May 2018
 
         try {
-            storageIO.revertBackupAsAux(FileExtension.SAVED_ORIGINAL_FILENAME_EXTENSION.getExtension());
+            storageIO.revertBackupAsAux(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION);
         } catch (IOException ioex) {
             String errorMessage = "Failed to revert backup as Aux for " + uningest.getStorageIdentifier() + " attempting to revert tabular ingest" + " aborting. (";
             if (ioex.getMessage() != null) {

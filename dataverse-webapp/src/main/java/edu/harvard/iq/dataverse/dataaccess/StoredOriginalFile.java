@@ -20,11 +20,10 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
-import java.nio.channels.Channel;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
+import java.io.InputStream;
 import java.util.logging.Logger;
 
 /**
@@ -33,66 +32,59 @@ import java.util.logging.Logger;
 public class StoredOriginalFile {
     private static Logger logger = Logger.getLogger(StoredOriginalFile.class.getPackage().getName());
 
-    public StoredOriginalFile() {
-
-    }
-
-    private static final String SAVED_ORIGINAL_FILENAME_EXTENSION = "orig";
 
     public static StorageIO<DataFile> retreive(StorageIO<DataFile> storageIO) {
-        String originalMimeType;
 
         DataFile dataFile = storageIO.getDataFile();
 
         if (dataFile == null) {
             return null;
         }
-
-        if (dataFile.getDataTable() != null) {
-            originalMimeType = dataFile.getDataTable().getOriginalFileFormat();
-        } else {
+        if (dataFile.getDataTable() == null) {
             return null;
         }
 
-        long storedOriginalSize;
-        InputStreamIO inputStreamIO;
-
+        String originalMimeType = dataFile.getDataTable().getOriginalFileFormat();
+        
+        
         try {
             storageIO.open();
-            Channel storedOriginalChannel = storageIO.openAuxChannel(SAVED_ORIGINAL_FILENAME_EXTENSION);
-            storedOriginalSize = dataFile.getDataTable().getOriginalFileSize() != null ?
+            long storedOriginalSize = dataFile.getDataTable().getOriginalFileSize() != null ?
                     dataFile.getDataTable().getOriginalFileSize() :
-                    storageIO.getAuxObjectSize(SAVED_ORIGINAL_FILENAME_EXTENSION);
-            inputStreamIO = new InputStreamIO(Channels.newInputStream((ReadableByteChannel) storedOriginalChannel), storedOriginalSize);
-            logger.fine("Opened stored original file as Aux " + SAVED_ORIGINAL_FILENAME_EXTENSION);
+                    storageIO.getAuxObjectSize(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION);
+
+            String mimeType = generateOriginalFileMimeType(originalMimeType);
+            String fileName = generateFileName(storageIO.getFileName(), originalMimeType);
+                    
+            InputStream storedOriginalInputStream = storageIO.getAuxFileAsInputStream(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION);
+            logger.fine("Opened stored original file as Aux " + StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION);
+            
+            return new InputStreamIO(storedOriginalInputStream, storedOriginalSize, mimeType, fileName);
+
         } catch (IOException ioEx) {
             // The original file not saved, or could not be opened.
-            logger.fine("Failed to open stored original file as Aux " + SAVED_ORIGINAL_FILENAME_EXTENSION + "!");
+            logger.fine("Failed to open stored original file as Aux " + StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION + "!");
             return null;
         }
 
-        if (originalMimeType != null && !originalMimeType.isEmpty()) {
-            if (originalMimeType.matches("application/x-dvn-.*-zip")) {
-                inputStreamIO.setMimeType("application/zip");
-            } else {
-                inputStreamIO.setMimeType(originalMimeType);
-            }
+    }
+
+    private static String generateOriginalFileMimeType(String originalMimeType) {
+        String mimeType = StringUtils.defaultIfEmpty(originalMimeType, "application/x-unknown");
+
+        if (mimeType.matches("application/x-dvn-.*-zip")) {
+            mimeType = "application/zip";
+        }
+        return mimeType;
+    }
+
+    private static String generateFileName(String storageFilename, String originalMimeType) {
+        if (originalMimeType != null) {
+            String origFileExtension = generateOriginalExtension(originalMimeType);
+            return storageFilename.replaceAll("\\.tab$", origFileExtension);
         } else {
-            inputStreamIO.setMimeType("application/x-unknown");
+            return storageFilename.replaceAll("\\.tab$", "");
         }
-
-        String fileName = storageIO.getFileName();
-        if (fileName != null) {
-            if (originalMimeType != null) {
-                String origFileExtension = generateOriginalExtension(originalMimeType);
-                inputStreamIO.setFileName(fileName.replaceAll(".tab$", origFileExtension));
-            } else {
-                inputStreamIO.setFileName(fileName.replaceAll(".tab$", ""));
-            }
-        }
-
-        return inputStreamIO;
-
     }
 
     // TODO: 

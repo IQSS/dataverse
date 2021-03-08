@@ -1370,25 +1370,23 @@ public class EditDatafilesPage implements java.io.Serializable {
         String filesRootDirectory = systemConfig.getFilesDirectory();
         String fileSystemName = filesRootDirectory + "/temp/" + fileSystemId;
 
-        String imageThumbFileName = null;
+        String imageThumbFileName = fileSystemName + ".thumb" + ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE;
 
         // ATTENTION! TODO: the current version of the method below may not be checking if files are already cached!
         if ("application/pdf".equals(mimeType)) {
-            imageThumbFileName = imageThumbConverter.generatePDFThumbnailFromFile(fileSystemName, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
+            imageThumbConverter.generatePDFThumbnailFromFile(fileSystemName, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE, imageThumbFileName);
         } else if (mimeType != null && mimeType.startsWith("image/")) {
-            imageThumbFileName = imageThumbConverter.generateImageThumbnailFromFile(fileSystemName, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
+            imageThumbConverter.generateImageThumbnailFromFile(fileSystemName, ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE, imageThumbFileName);
         }
 
-        if (imageThumbFileName != null) {
-            File imageThumbFile = new File(imageThumbFileName);
-            if (imageThumbFile.exists()) {
-                String previewAsBase64 = imageThumbConverter.getImageAsBase64FromFile(imageThumbFile);
-                if (previewAsBase64 != null) {
-                    temporaryThumbnailsMap.put(fileSystemId, previewAsBase64);
-                    return true;
-                } else {
-                    temporaryThumbnailsMap.put(fileSystemId, "");
-                }
+        File imageThumbFile = new File(imageThumbFileName);
+        if (imageThumbFile.exists()) {
+            String previewAsBase64 = imageThumbConverter.getImageAsBase64FromFile(imageThumbFile);
+            if (previewAsBase64 != null) {
+                temporaryThumbnailsMap.put(fileSystemId, previewAsBase64);
+                return true;
+            } else {
+                temporaryThumbnailsMap.put(fileSystemId, "");
             }
         }
 
