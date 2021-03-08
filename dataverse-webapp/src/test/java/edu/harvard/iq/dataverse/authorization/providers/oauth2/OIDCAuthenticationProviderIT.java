@@ -2,26 +2,29 @@ package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.matching.ContentPattern;
-import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
+import com.nimbusds.oauth2.sdk.id.Subject;
+import com.nimbusds.openid.connect.sdk.claims.IDTokenClaimsSet;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
 import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.omg.CORBA.PRIVATE_MEMBER;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class OIDCAuthenticationProviderIT {
 
     private static final int MOCK_SERVER_PORT = 7117;
@@ -33,11 +36,14 @@ class OIDCAuthenticationProviderIT {
 
     private WireMockServer server;
 
+    @Mock
+    OIDCValidator validator;
+
     @BeforeEach
-    void setUp() throws AuthorizationSetupException {
+    void setUp() throws AuthorizationSetupException, OAuth2Exception {
         setUpMockServer();
 
-        provider = new OIDCAuthenticationProvider(CLIENT_ID, CLIENT_SECRET, ISSUER_URL);
+        provider = new OIDCAuthenticationProvider(CLIENT_ID, CLIENT_SECRET, ISSUER_URL, validator);
         provider.initialize();
     }
 
@@ -73,6 +79,11 @@ class OIDCAuthenticationProviderIT {
         // given
         String code = String.valueOf(new Random().nextInt());
         String redirectUri = "redirect-uri";
+
+        IDTokenClaimsSet claims = mock(IDTokenClaimsSet.class);
+        Subject subject = new Subject("subject");
+        when(claims.getSubject()).thenReturn(subject);
+        when(validator.validateIDToken(any())).thenReturn(claims);
 
         WireMock.stubFor(WireMock.post("/protocol/openid-connect/token")
                 .willReturn(WireMock.aResponse()

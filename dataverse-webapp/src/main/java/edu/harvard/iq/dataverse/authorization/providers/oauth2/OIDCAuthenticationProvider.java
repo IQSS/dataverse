@@ -20,25 +20,28 @@ import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.oauth2.sdk.id.State;
+import com.nimbusds.oauth2.sdk.id.Subject;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
 import com.nimbusds.openid.connect.sdk.OIDCScopeValue;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponseParser;
 import com.nimbusds.openid.connect.sdk.UserInfoRequest;
 import com.nimbusds.openid.connect.sdk.UserInfoResponse;
+import com.nimbusds.openid.connect.sdk.claims.IDTokenClaimsSet;
 import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderConfigurationRequest;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
+import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProviderDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthorizationSetupException;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.function.Function;
 
 /*
- * Partially based on Dataverse #6433 pull request
+ * Partially based on Dataverse pull request #6433
  */
 public class OIDCAuthenticationProvider implements OAuth2AuthenticationProvider {
 
@@ -55,12 +58,19 @@ public class OIDCAuthenticationProvider implements OAuth2AuthenticationProvider 
 
     private OIDCProviderMetadata providerMetadata;
 
+    private OIDCValidator validator;
+
     // -------------------- CONSTRUCTORS --------------------
 
-    public OIDCAuthenticationProvider(String clientId, String clientSecret, String issuerUrl) {
+    public OIDCAuthenticationProvider(String clientId, String clientSecret, String issuerUrl, OIDCValidator validator) {
         this.clientID = new ClientID(clientId);
         this.clientSecret = new ClientSecretBasic(this.clientID, new Secret(clientSecret));
         this.issuer = new Issuer(issuerUrl);
+        this.validator = validator;
+    }
+
+    public OIDCAuthenticationProvider(String clientId, String clientSecret, String issuerUrl) {
+        this(clientId, clientSecret, issuerUrl, new OIDCValidator());
     }
 
     // -------------------- GETTERS --------------------
@@ -79,6 +89,14 @@ public class OIDCAuthenticationProvider implements OAuth2AuthenticationProvider 
         return subTitle;
     }
 
+    public ClientID getClientID() {
+        return clientID;
+    }
+
+    public Issuer getIssuer() {
+        return issuer;
+    }
+
     public OIDCProviderMetadata getProviderMetadata() {
         return providerMetadata;
     }
@@ -93,6 +111,7 @@ public class OIDCAuthenticationProvider implements OAuth2AuthenticationProvider 
             if (providerMetadata.getResponseTypes().stream().noneMatch(ResponseType::impliesCodeFlow)) {
                 throw new AuthorizationSetupException(String.format("Provider [%s] does not support code flow.", getId()));
             }
+            validator.initialize(this);
         } catch (IOException | ParseException e) {
             throw new AuthorizationSetupException(String.format("Cannot initialize OIDC provider [%s]", getId()), e);
         }
@@ -114,11 +133,8 @@ public class OIDCAuthenticationProvider implements OAuth2AuthenticationProvider 
     @Override
     public OAuth2UserRecord getUserRecord(String code, String _state, String redirectUrl) throws OAuth2Exception {
         AuthorizationGrant codeGrant = new AuthorizationCodeGrant(new AuthorizationCode(code), URI.create(redirectUrl));
-
-        BearerAccessToken token = obtainToken(codeGrant).orElseThrow(() -> createOAuth2Exception("Null token received"));
-        return obtainUserInfo(token)
-                .map(this::createUserRecord)
-                .orElseThrow(() -> createOAuth2Exception("Null user info received"));
+        TokenAndSubject tokenAndSubject = obtainTokenAndSubject(codeGrant);
+        return createUserRecord(obtainUserInfo(tokenAndSubject));
     }
 
     @Override
@@ -146,22 +162,20 @@ public class OIDCAuthenticationProvider implements OAuth2AuthenticationProvider 
 
     // -------------------- PRIVATE --------------------
 
-    private OAuth2Exception createOAuth2Exception(String message) {
-        return new OAuth2Exception(HTTPResponse.SC_SERVER_ERROR, message, message);
-    }
-
-    private Optional<BearerAccessToken> obtainToken(AuthorizationGrant codeGrant) throws OAuth2Exception {
+    private TokenAndSubject obtainTokenAndSubject(AuthorizationGrant codeGrant) throws OAuth2Exception {
         TokenRequest tokenRequest = new TokenRequest(providerMetadata.getTokenEndpointURI(), clientSecret, codeGrant);
-        BearerAccessToken bearerAccessToken = handleRequest(tokenRequest, OIDCTokenResponseParser::parse,
-                t -> t.toSuccessResponse().getTokens().toOIDCTokens().getBearerAccessToken(), TokenResponse::toErrorResponse);
-        return Optional.ofNullable(bearerAccessToken);
+        OIDCTokens tokens = handleRequest(tokenRequest, OIDCTokenResponseParser::parse,
+                t -> t.toSuccessResponse().getTokens().toOIDCTokens(), TokenResponse::toErrorResponse);
+        IDTokenClaimsSet claims = validator.validateIDToken(tokens.getIDToken());
+        return new TokenAndSubject(tokens.getBearerAccessToken(), claims.getSubject());
     }
 
-    private Optional<UserInfo> obtainUserInfo(BearerAccessToken bearerAccessToken) throws OAuth2Exception {
-        UserInfoRequest userInfoRequest = new UserInfoRequest(providerMetadata.getUserInfoEndpointURI(), bearerAccessToken);
+    private UserInfo obtainUserInfo(TokenAndSubject tokenAndSubject) throws OAuth2Exception {
+        UserInfoRequest userInfoRequest = new UserInfoRequest(providerMetadata.getUserInfoEndpointURI(), tokenAndSubject.getToken());
         UserInfo userInfo = handleRequest(userInfoRequest, UserInfoResponse::parse,
                 u -> u.toSuccessResponse().getUserInfo(), UserInfoResponse::toErrorResponse);
-        return Optional.ofNullable(userInfo);
+        validator.validateUserInfoSubject(userInfo, tokenAndSubject.getSubject());
+        return userInfo;
     }
 
     private <R extends Response, S, E extends ErrorResponse> S handleRequest(
@@ -172,7 +186,11 @@ public class OIDCAuthenticationProvider implements OAuth2AuthenticationProvider 
                 ErrorObject error = onError.apply(parsedResponse).getErrorObject();
                 throw new OAuth2Exception(error.getHTTPStatusCode(), error.getDescription(), "OIDC data retrieval error.");
             }
-            return onSuccess.apply(parsedResponse);
+            S result = onSuccess.apply(parsedResponse);
+            if (result == null) {
+                throw new OAuth2Exception(HTTPResponse.SC_SERVER_ERROR, "Null result", "Null result of request processing");
+            }
+            return result;
         } catch (ParseException pe) {
             throw new OAuth2Exception(HTTPResponse.SC_BAD_REQUEST, pe.getMessage(), "Cannot parse response.", pe);
         } catch (IOException ioe) {
@@ -212,5 +230,27 @@ public class OIDCAuthenticationProvider implements OAuth2AuthenticationProvider 
 
     private interface Parser<R extends Response> {
         R parse(HTTPResponse response) throws ParseException;
+    }
+
+    private static class TokenAndSubject {
+        private final BearerAccessToken token;
+        private final Subject subject;
+
+        // -------------------- CONSTRUCTORS --------------------
+
+        public TokenAndSubject(BearerAccessToken token, Subject subject) {
+            this.token = Objects.requireNonNull(token);
+            this.subject = Objects.requireNonNull(subject);
+        }
+
+        // -------------------- GETTERS --------------------
+
+        public BearerAccessToken getToken() {
+            return token;
+        }
+
+        public Subject getSubject() {
+            return subject;
+        }
     }
 }
