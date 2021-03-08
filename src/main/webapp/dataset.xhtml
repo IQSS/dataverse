@@ -1654,12 +1654,9 @@
                 </h:form>
                 <script>
                     //<![CDATA[
-                    
-                    // make sure to only truncate on load and not every ajax update
-                    var truncactionHappened = false;
-                    
                     $(document).ready(function () {
                         popoverHTML('#{bundle.htmlAllowedTitle}', '#{bundle.htmlAllowedTags}');
+                        summaryDescTruncation();
                     });
                     function summaryDescTruncation() {
                         // truncate summary description, contentTruncate function in dv_rebind_bootstrap_ui.js
@@ -1671,12 +1668,8 @@
                         var truncLessBtn = '#{of:format1(bundle.truncateLessBtn, DatasetPage.datasetVersionUI.description.datasetFieldType.localeTitle)}';
                         var truncLessTip = '#{of:format1(bundle.truncateLessTip, DatasetPage.datasetVersionUI.description.datasetFieldType.localeTitle)}';
                         
-                        if (!truncactionHappened) {
-                            // pass bundle text variabls as params to function
-                            contentTruncate(descId, truncMoreBtn, truncMoreTip, truncLessBtn, truncLessTip);
-                            
-                            truncactionHappened = true;
-                        }
+                        // pass bundle text variabls as params to function
+                        contentTruncate(descId, truncMoreBtn, truncMoreTip, truncLessBtn, truncLessTip);
                     }
                     function openDialog() {
                         PF('details').show();
@@ -1691,14 +1684,14 @@
                         } else {
                             $('button[id$="compareVersions"]').trigger('click');
                         }
-                    }             
+                    }
                     function testFilesSelected() {
                         var count = PF('filesTable').getSelectedRowsCount();
                         if (count == 0) {
                             PF('selectFiles').show();
                         } else {
                             return true;
-                        }                        
+                        }
                     }
                     function updateTemplate() {
                         $('button[id$="updateTemplate"]').trigger('click');
@@ -1711,7 +1704,6 @@
                     }
                     //]]>
                 </script>
-                <o:onloadScript>summaryDescTruncation();</o:onloadScript>
             </ui:define>
         </ui:composition>
     </h:body>
