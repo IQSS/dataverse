@@ -195,6 +195,7 @@ function contentTruncate(truncSelector, truncMoreBtn, truncMoreTip, truncLessBtn
             $(document).on('click', 'button.desc-less-link', function() {
                 $(this).tooltip('hide').parent('div').parent('div').css({'max-height':'250px','overflow-y':'hidden','position':'relative'});
                 $(this).parent('div.less-block').replaceWith(moreBlock);
+                $('html, body').animate({scrollTop: $('#' + truncSelector).offset().top - 60}, 500);
                 $('.more-block button').tooltip();
             });
         }
