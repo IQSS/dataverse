@@ -50,22 +50,17 @@ ENV PATH="${PATH}:${PAYARA_DIR}/bin" \
     JREBEL_LIB="${HOME_DIR}/jrebel/lib/libjrebel64.so"
 
 ARG PAYARA_VERSION="@payara.version@"
-ARG TINI_VERSION=0.19.0
 ARG ESH_VERSION=0.3.1
-ARG ESH_CHECKSUM=""
-ARG PKGS="jq imagemagick curl unzip"
+ARG ESH_CHECKSUM="1e0bd783f930cba13d6708b11c1ac844bbb1eddd02ac1666fc10d47eb9517bd7"
+ARG JATTACH_VERSION="v1.5"
+ARG JATTACH_CHECKSUM="adab16e1081aa4fafc91f3f2e44262338a498d8f853d3c6801050889e6389548"
+ARG PKGS="jq imagemagick curl unzip wget acl dirmngr gpg lsof procps netcat tini"
 ARG ASADMIN="${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE}"
 
 ### PART 1: SYSTEM ###
 USER root
 WORKDIR /
 RUN true && \
-    # Download tini
-    curl -sSfL -o /tini "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini" && \
-    curl -sSfL -o /tini.sha256 "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini.sha256sum" && \
-    # Check and install tini
-    sha256sum -c /tini.sha256 && \
-    chmod +x /tini && \
     # Create pathes
     mkdir -p ${HOME_DIR} ${PAYARA_DIR} ${DEPLOY_DIR} ${CONFIG_DIR} ${SCRIPT_DIR} && \
     mkdir -p ${DATA_DIR} ${METADATA_DIR} ${DOCROOT_DIR} ${SECRETS_DIR} ${DUMPS_DIR} && \
@@ -78,16 +73,25 @@ RUN true && \
     chown -R payara: ${DATA_DIR} ${METADATA_DIR} ${DOCROOT_DIR} ${SECRETS_DIR} ${DUMPS_DIR}
 
 RUN true && \
-    # Download & check esh template script
-    curl -sSfL -o /usr/bin/esh https://raw.githubusercontent.com/jirutka/esh/v${ESH_VERSION}/esh && \
-    echo '1e0bd783f930cba13d6708b11c1ac844bbb1eddd02ac1666fc10d47eb9517bd7 /usr/bin/esh' | sha256sum -c - && \
-    chmod +x /usr/bin/esh && \
-    # Download & unzip JRebel to $JREBEL_LIB = ${HOME_DIR}/jrebel/lib/libjrebel64.so (for development use)
-    curl -sS -f -o ${HOME_DIR}/jrebel.zip http://dl.zeroturnaround.com/jrebel-stable-nosetup.zip && \
-    unzip -q "${HOME_DIR}/jrebel.zip" -d "${HOME_DIR}" && \
     # Install packages
     apt-get update -q && \
     apt-get install -qqy ${PKGS} && \
+
+    # Download & check esh template script
+    curl -sSfL -o /usr/bin/esh https://raw.githubusercontent.com/jirutka/esh/v${ESH_VERSION}/esh && \
+    echo "${ESH_CHECKSUM} /usr/bin/esh" | sha256sum -c - && \
+    chmod +x /usr/bin/esh && \
+
+    # Install jattach
+    curl -sSfL -o /usr/bin/jattach https://github.com/apangin/jattach/releases/download/${JATTACH_VERSION}/jattach && \
+    echo "${JATTACH_CHECKSUM} /usr/bin/jattach" | sha256sum -c - && \
+    chmod +x /usr/bin/jattach && \
+
+    # Download & unzip JRebel to $JREBEL_LIB = ${HOME_DIR}/jrebel/lib/libjrebel64.so (for development use)
+    curl -sS -f -o ${HOME_DIR}/jrebel.zip http://dl.zeroturnaround.com/jrebel-stable-nosetup.zip && \
+    unzip -q "${HOME_DIR}/jrebel.zip" -d "${HOME_DIR}" && \
+
+    # Cleanup
     rm -rf /var/lib/apt/lists/* "${HOME_DIR}/jrebel.zip"
 
 ### PART 2: PAYARA ###
@@ -166,8 +170,8 @@ RUN true && \
         ${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/logs
 
 # Make docroot of Payara reside in higher level directory for easier targeting
-# Due to IQSS/dataverse-kubernetes#177: create the generated pathes so they are
-# writeable by us. TBR with #178.
+# Due to gdcc/dataverse-kubernetes#177: create the generated pathes so they are
+# writeable by us. TBR with gdcc/dataverse-kubernetes#178.
 RUN rm -rf ${DOMAIN_DIR}/docroot && \
     ln -s ${DOCROOT_DIR} ${DOMAIN_DIR}/docroot && \
     mkdir -p ${DOMAIN_DIR}/generated/jsp/dataverse
@@ -188,5 +192,5 @@ COPY --chown=payara:payara maven/scripts/app ${SCRIPT_DIR}/
 RUN chmod +x ${SCRIPT_DIR}/*
 
 # Set the entrypoint
-ENTRYPOINT ["/tini", "--"]
+ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD "${SCRIPT_DIR}/entrypoint.sh"
