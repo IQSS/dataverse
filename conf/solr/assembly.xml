@@ -1,0 +1,24 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+    <fileSets>
+        <!-- Configuration for Solr -->
+        <fileSet>
+            <directory>conf/solr/${solr.version}</directory>
+            <outputDirectory>config</outputDirectory>
+            <includes>
+                <include>*.xml</include>
+            </includes>
+            <!--<excludes>
+                <exclude>readme.md</exclude>
+            </excludes>-->
+        </fileSet>
+        <!-- Solr scripts -->
+        <fileSet>
+            <directory>conf/solr/${solr.version}</directory>
+            <outputDirectory>scripts</outputDirectory>
+            <includes>
+                <include>*.sh</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+</assembly>

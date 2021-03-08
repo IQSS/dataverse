@@ -893,6 +893,7 @@
             <properties>
                 <skipUnitTests>true</skipUnitTests>
                 <app.image.name>gdcc/dataverse-k8s:${project.version}</app.image.name>
+                <solr.image.name>gdcc/solr-k8s:${project.version}</solr.image.name>
             </properties>
         
             <build>
@@ -914,6 +915,20 @@
                                             <mode>tar</mode>
                                             <tarLongFileMode>gnu</tarLongFileMode>
                                             <descriptor>${project.basedir}/conf/container/assembly.xml</descriptor>
+                                        </assembly>
+                                    </build>
+                                </image>
+                                <!-- Solr K8s image -->
+                                <image>
+                                    <alias>solr</alias>
+                                    <name>${solr.image.name}</name>
+                                    <build>
+                                        <dockerFile>${project.basedir}/conf/solr/Dockerfile</dockerFile>
+                                        <filter>@</filter>
+                                        <assembly>
+                                            <mode>tar</mode>
+                                            <tarLongFileMode>gnu</tarLongFileMode>
+                                            <descriptor>${project.basedir}/conf/solr/assembly.xml</descriptor>
                                         </assembly>
                                     </build>
                                 </image>
