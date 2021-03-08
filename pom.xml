@@ -28,6 +28,7 @@
         <jakartaee-api.version>8.0.0</jakartaee-api.version>
         <payara.version>5.2020.6</payara.version>
         <postgresql.version>42.2.19</postgresql.version>
+        <solr.version>8.8.1</solr.version>
         <aws.version>1.11.762</aws.version>
         <commons.logging.version>1.2</commons.logging.version>
         <commons.lang3.version>3.12.0</commons.lang3.version>
@@ -336,7 +337,7 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-solrj</artifactId>
-            <version>8.8.1</version>
+            <version>${solr.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
