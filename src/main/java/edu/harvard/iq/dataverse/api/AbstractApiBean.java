@@ -494,14 +494,20 @@ public abstract class AbstractApiBean {
             role = em.createNamedQuery("DataverseRole.findDataverseRoleByAlias", DataverseRole.class)
                     .setParameter("alias", alias)
                     .getSingleResult();
-        } else {
+            if (role == null) {
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.datafile.error.datafile.not.found.alias", Collections.singletonList(alias))));
+            } else {
+                return role;
+            }
 
-            role = rolesSvc.find(Long.parseLong(id));
+        } else {
 
             try {
                 role = rolesSvc.find(Long.parseLong(id));
                 if (role == null) {
                     throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.datafile.error.datafile.not.found.id", Collections.singletonList(id))));
+                } else {
+                    return role;
                 }
 
             } catch (NumberFormatException nfe) {
@@ -509,9 +515,6 @@ public abstract class AbstractApiBean {
                         badRequest(BundleUtil.getStringFromBundle("find.datafile.error.datafile.not.found.bad.id", Collections.singletonList(id))));
             }
         }
-
-
-        throw new WrappedResponse(notFound("role with id " + id + " not found"));
 
     }
     
