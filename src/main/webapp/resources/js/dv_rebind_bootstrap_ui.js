@@ -161,7 +161,7 @@ function sharrre(){
 /*
  * Truncate dataset description content
  */
-function contentTruncate(truncSelector, truncMoreBtn, truncMoreTip){
+function contentTruncate(truncSelector, truncMoreBtn, truncMoreTip, truncLessBtn, truncLessTip){
     // SELECTOR ID FROM PARAMETERS
     $('#' + truncSelector + ' td > div:first-child').each(function () {
         
@@ -175,17 +175,27 @@ function contentTruncate(truncSelector, truncMoreBtn, truncMoreTip){
             // ADD A MAX-HEIGHT TO CONTAINER
             $(this).css({'max-height':'250px','overflow-y':'hidden','position':'relative'});
 
-            // BTN LABEL TEXT, DYNAMIC ARIA ATTR'S, FROM BUNDLE VIA PARAMETERS
+            // BTN LABEL TEXT, ARIA ATTR'S, FROM BUNDLE VIA PARAMETERS
             var readMoreBtn = '<button class="btn btn-link desc-more-link" type="button" data-toggle="tooltip" data-original-title="' + truncMoreTip + '" aria-expanded="false" aria-controls="#' + truncSelector + '">' + truncMoreBtn + '</button>';
-            var moreFade = '<div class="more-fade-block">' + readMoreBtn + '</div>';
+            var moreBlock = '<div class="more-block">' + readMoreBtn + '</div>';
+            var readLessBtn = '<button class="btn btn-link desc-less-link" type="button" data-toggle="tooltip" data-original-title="' + truncLessTip + '" aria-expanded="true" aria-controls="#' + truncSelector + '">' + truncLessBtn + '</button>';
+            var lessBlock = '<div class="less-block">' + readLessBtn + '</div>';
 
-            // add Read More + button background fade
-            $(this).append(moreFade);
+            // add "Read full desc [+]" btn, background fade
+            $(this).append(moreBlock);
 
-            // ... add full description to summary block on Read More link click ++ add responsive img class
+            // show full description in summary block on "Read full desc [+]" btn click
             $(document).on('click', 'button.desc-more-link', function() {
                 $(this).tooltip('hide').parent('div').parent('div').css({'max-height':'none','overflow-y':'visible','position':'relative'});
-                $(this).parent('div.more-fade-block').remove();
+                $(this).parent('div.more-block').replaceWith(lessBlock);
+                $('.less-block button').tooltip();
+            });
+            
+            // trucnate description in summary block on "Collapse desc [-]" btn click
+            $(document).on('click', 'button.desc-less-link', function() {
+                $(this).tooltip('hide').parent('div').parent('div').css({'max-height':'250px','overflow-y':'hidden','position':'relative'});
+                $(this).parent('div.less-block').replaceWith(moreBlock);
+                $('.more-block button').tooltip();
             });
         }
     });

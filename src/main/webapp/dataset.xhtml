@@ -1663,15 +1663,17 @@
                     });
                     function summaryDescTruncation() {
                         // truncate summary description, contentTruncate function in dv_rebind_bootstrap_ui.js
-                        // add summary desc row id to pass as function selector
+                        // add summary desc row id to pass as selector param
                         var descId = 'dsDescription';
-                        // add metadata dynamic label text to button and tooltip text from bundle
+                        // add metadata dynamic label text, tooltip text from bundle as param
                         var truncMoreBtn = '#{of:format1(bundle.truncateMoreBtn, DatasetPage.datasetVersionUI.description.datasetFieldType.localeTitle)}';
                         var truncMoreTip = '#{of:format1(bundle.truncateMoreTip, DatasetPage.datasetVersionUI.description.datasetFieldType.localeTitle)}';
+                        var truncLessBtn = '#{of:format1(bundle.truncateLessBtn, DatasetPage.datasetVersionUI.description.datasetFieldType.localeTitle)}';
+                        var truncLessTip = '#{of:format1(bundle.truncateLessTip, DatasetPage.datasetVersionUI.description.datasetFieldType.localeTitle)}';
                         
                         if (!truncactionHappened) {
-                            // pass text params to function
-                            contentTruncate(descId, truncMoreBtn, truncMoreTip);
+                            // pass bundle text variabls as params to function
+                            contentTruncate(descId, truncMoreBtn, truncMoreTip, truncLessBtn, truncLessTip);
                             
                             truncactionHappened = true;
                         }
