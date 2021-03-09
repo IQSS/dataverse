@@ -4,11 +4,9 @@ package edu.harvard.iq.dataverse.api;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
-import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import java.util.logging.Logger;
-import static javax.ws.rs.core.Response.Status.OK;
 import static junit.framework.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -54,7 +52,7 @@ public class RolesIT {
         status = JsonPath.from(body).getString("status");
         assertEquals("ERROR", status);
         
-        //        deleteTitleViaNative.then().assertThat().body("message", equalTo("Error parsing dataset update: Empty value for field: Title "));
+        deleteBuiltinRoleResponseError.then().assertThat().body("message", equalTo("May not delete Built In Role Test Role."));
 
         
         Response deleteBuiltinRoleResponseSucceed = UtilIT.deleteBuiltInRole("testRole");
@@ -81,9 +79,18 @@ public class RolesIT {
         deleteDataverseRoleResponseBadAlias.prettyPrint();
         body = deleteDataverseRoleResponseBadAlias.getBody().asString();
         status = JsonPath.from(body).getString("status");
-        assertEquals("ERROR", status);
+        assertEquals("ERROR", status);        
+        deleteDataverseRoleResponseBadAlias.then().assertThat().body("message", equalTo("Dataverse Role with alias badAlias not found."));
         
-        Response deleteDataverseRoleResponseSucceed = UtilIT.deleteDataverseRole("testRole", apiToken);
+        Long idBad = Long.parseLong(idString) + 10;
+        Response deleteDataverseRoleResponseBadId = UtilIT.deleteDataverseRoleById(idBad.toString(), apiToken);
+        deleteDataverseRoleResponseBadId.prettyPrint();
+        body = deleteDataverseRoleResponseBadId.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("ERROR", status);
+        deleteDataverseRoleResponseBadId.then().assertThat().body("message", equalTo("Dataverse Role with ID " + idBad.toString() + " not found."));
+        
+        Response deleteDataverseRoleResponseSucceed = UtilIT.deleteDataverseRoleById(idString, apiToken);
         deleteDataverseRoleResponseSucceed.prettyPrint();
         body = deleteDataverseRoleResponseSucceed.getBody().asString();
         status = JsonPath.from(body).getString("status");
