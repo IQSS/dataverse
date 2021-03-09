@@ -30,8 +30,10 @@ public class RolesIT {
 
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
+
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        UtilIT.makeSuperUser(username);
         
         Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
         createDataverseResponse.prettyPrint();
@@ -52,6 +54,8 @@ public class RolesIT {
         status = JsonPath.from(body).getString("status");
         assertEquals("ERROR", status);
         
+        //        deleteTitleViaNative.then().assertThat().body("message", equalTo("Error parsing dataset update: Empty value for field: Title "));
+
         
         Response deleteBuiltinRoleResponseSucceed = UtilIT.deleteBuiltInRole("testRole");
         deleteBuiltinRoleResponseSucceed.prettyPrint();
@@ -59,11 +63,32 @@ public class RolesIT {
         status = JsonPath.from(body).getString("status");
         assertEquals("OK", status);
         
-/*
-        Response deleteUserResponse = UtilIT.deleteUser(username);
-        deleteUserResponse.prettyPrint();
-        assertEquals(200, deleteUserResponse.getStatusCode());
-*/
+        //add as dataverse role
+        Response addDataverseRoleResponse = UtilIT.addDataverseRole(pathToJsonFile, dataverseAlias, apiToken);
+        addDataverseRoleResponse.prettyPrint();
+        body = addBuiltinRoleResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+        
+        Response viewDataverseRoleResponse = UtilIT.viewDataverseRole("testRole", apiToken);
+        viewDataverseRoleResponse.prettyPrint();
+        body = viewDataverseRoleResponse.getBody().asString();
+        String idString = JsonPath.from(body).getString("data.id");
+        
+        System.out.print("idString: " + idString);
+        
+        Response deleteDataverseRoleResponseBadAlias = UtilIT.deleteDataverseRole("badAlias", apiToken);
+        deleteDataverseRoleResponseBadAlias.prettyPrint();
+        body = deleteDataverseRoleResponseBadAlias.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("ERROR", status);
+        
+        Response deleteDataverseRoleResponseSucceed = UtilIT.deleteDataverseRole("testRole", apiToken);
+        deleteDataverseRoleResponseSucceed.prettyPrint();
+        body = deleteDataverseRoleResponseSucceed.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+
     }
     
 }

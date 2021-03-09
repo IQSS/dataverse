@@ -2519,7 +2519,7 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(jsonIn)
                 .contentType("application/json")
-                .post("/api/roles");
+                .post("/api/roles?dvo="+dvAlias);
         return addBannerMessageResponse;
     }
 
@@ -2528,6 +2528,30 @@ public class UtilIT {
         Response addBannerMessageResponse = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .delete("/api/roles/:alias?alias="+roleAlias);
+        return addBannerMessageResponse;
+    }
+    
+    static Response deleteDataverseRoleById( String id, String apiToken) {
+
+        Response addBannerMessageResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/roles/"+id);
+        return addBannerMessageResponse;
+    }
+    
+    static Response viewDataverseRole( String roleAlias, String apiToken) {
+
+        Response addBannerMessageResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/roles/:alias?alias="+roleAlias);
+        return addBannerMessageResponse;
+    }
+    
+    static Response viewDataverseRoleById( String id, String apiToken) {
+
+        Response addBannerMessageResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/roles/"+id);
         return addBannerMessageResponse;
     }
     
