@@ -71,7 +71,8 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         updateVersion.setTermsOfUseAndAccess(newTerms);
         //Put old terms on version that will be deleted....
         getDataset().getEditVersion().setTermsOfUseAndAccess(oldTerms);
-        
+        //Also set the fileaccessrequest boolean on the dataset to match the new terms
+        getDataset().setFileAccessRequest(updateVersion.getTermsOfUseAndAccess().isFileAccessRequest());
         List<WorkflowComment> newComments = getDataset().getEditVersion().getWorkflowComments();
         if (newComments!=null && newComments.size() >0) {
             for(WorkflowComment wfc: newComments) {
