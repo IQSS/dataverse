@@ -41,15 +41,13 @@
         <p:dataTable id="filesTable"
                      rows="10" paginator="#{datasetFilesTab.workingVersion.fileMetadatas.size() gt 10}" paginatorPosition="bottom"
                      paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} #{bundle['file.dynamicCounter.filesPerPage']} {RowsPerPageDropdown}"
-                     rowsPerPageTemplate="10,25,50"
+                     rowsPerPageTemplate="10,25,50,1000"
                      style="margin-right:1px;"
                      lazy="true"
                      value="#{datasetFilesTab.fileMetadatasSearch}"
+                     selection="#{datasetFilesTab.selectedFileMetadataForView}"
                      rowIndexVar="rowNum"
                      rowKey="#{fileMetadata.id}"
-                     rowSelectMode="add"
-                     selection="#{datasetFilesTab.selectedFileMetadata}"
-                     rowStatePreserved="true"
                      var="fileMetadata"
                      widgetVar="filesTable"
                      rendered="#{datasetFilesTab.workingVersion != null}"
@@ -145,14 +143,21 @@
                 <div class="col-xs-12 bg-warning text-left" style="font-weight:normal;" >
                     <!-- SELECTION MESSAGE -->
                     <p>
-                        <p:outputPanel rendered="#{datasetFilesTab.selectedFileMetadata.size() lt 1}">
-                            #{bundle['file.noneSelected']}
-                        </p:outputPanel>
-                        <h:outputFormat rendered="#{datasetFilesTab.selectedFileMetadata.size() gt 0}"
+                        <h:outputFormat rendered="#{datasetFilesTab.countSelectedFiles() gt 0}"
                                         value="#{bundle['file.numFilesSelected']}">
-                            <f:param value="#{datasetFilesTab.selectedFileMetadata.size()}"/>
+                            <f:param value="#{datasetFilesTab.countSelectedFiles()}"/>
                         </h:outputFormat>
-                        <p:commandLink rendered="#{datasetFilesTab.selectedFileMetadata.size() gt 0}"
+                        <ui:fragment rendered="#{!datasetFilesTab.isAllFilesSelected()}">
+                        &#160;
+                        <p:commandLink action="#{datasetFilesTab.selectAllFiles()}" update="@form">
+                            <h:outputFormat value="#{bundle['file.selectAllFiles']}">
+                                <f:param value="#{datasetFilesTab.fileMetadatasSearch.getAllAvailableFilesCount()}"/>
+                                <f:param value="#{(empty datasetFilesTab.fileLabelSearchTerm) ? '.' : '&#160;'.concat(bundle['file.selectAllFiles.suffixForSearching'])}" />
+                            </h:outputFormat>
+                        </p:commandLink>
+                        </ui:fragment>
+                        &#160;
+                        <p:commandLink rendered="#{datasetFilesTab.countSelectedFiles() gt 0}"
                                        value="#{bundle['file.clearSelection']}"
                                        action="#{datasetFilesTab.clearSelection}"
                                        update="@form"/>
@@ -379,13 +384,13 @@
         </p:dataTable>
 
         <p:remoteCommand name="refreshTagsCommand" action="#{datasetFilesTab.refreshTagsPopUp()}"
-                         onstart="#{FileTagModal.initForMultipleFiles(datasetFilesTab.selectedFileMetadata, datasetFilesTab.dataset)}"
+                         onstart="#{FileTagModal.initForMultipleFiles(datasetFilesTab.retrieveSelectedFiles(), datasetFilesTab.dataset)}"
                          update="@form"
                          oncomplete="PF('fileTagsPopup').show();"/>
 
         <iqbs:fileTagsDialog dialogWidgetId="fileTagsPopup"
                              showRemoveUnusedTags="true"
-                             rendered="#{datasetFilesTab.selectedFileMetadata.size() > 0}">
+                             rendered="#{datasetFilesTab.countSelectedFiles() > 0}">
 
             <p:ajax event="saveAction" listener="#{datasetFilesTab.saveFileTagsAndCategories(FileTagModal.selectedFiles,
              FileTagModal.selectedFileMetadataTags,

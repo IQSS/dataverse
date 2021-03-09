@@ -196,7 +196,7 @@ INSERT INTO filemetadata (id, description, directorylabel, label, prov_freeform,
 INSERT INTO filemetadata_datafilecategory (filecategories_id, filemetadatas_id) VALUES (11, 110);
 INSERT INTO filemetadata_datafilecategory (filecategories_id, filemetadatas_id) VALUES (12, 110);
 
---- DS:Draft with files -> testfile1.zip
+--- DS:Draft with files -> testfile1.zip -> testfile1.zip(Restricted)
 INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, authority, identifier, globalidcreatetime, identifierregistered, storageidentifier, releaseuser_id, publicationdate,
                       creator_id, createdate, modificationtime, permissionmodificationtime, indextime, permissionindextime)
     VALUES (55, 'DataFile', 52, false, NULL, NULL, NULL, NULL, false, '16d24989319-2c86e28809de', NULL, NULL,
@@ -206,6 +206,8 @@ INSERT INTO datafile (id, checksumtype, checksumvalue, contenttype, filesize, in
 INSERT INTO filetermsofuse (id, allrightsreserved, restrictcustomtext, restricttype, license_id) VALUES (119, false, NULL, NULL, 1);
 INSERT INTO filemetadata (id, description, directorylabel, label, prov_freeform, restricted, version, datafile_id, datasetversion_id, displayorder, termsofuse_id) VALUES (112, '', NULL, 'testfile1.zip', NULL, NULL, 5, 55, 36, 1, 119);
 INSERT INTO filemetadata_datafilecategory (filecategories_id, filemetadatas_id) VALUES (11, 112);
+INSERT INTO filetermsofuse (id, allrightsreserved, restrictcustomtext, restricttype, license_id) VALUES (120, false, NULL, 'NOT_FOR_REDISTRIBUTION', 1);
+INSERT INTO filemetadata (id, description, directorylabel, label, prov_freeform, restricted, version, datafile_id, datasetversion_id, displayorder, termsofuse_id) VALUES (113, '', NULL, 'testfile1.zip', NULL, NULL, 5, 55, 36, 1, 120);
 
 
 -------------------- GROUPS --------------------

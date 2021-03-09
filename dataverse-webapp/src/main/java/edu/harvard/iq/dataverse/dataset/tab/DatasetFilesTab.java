@@ -67,6 +67,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -125,7 +126,9 @@ public class DatasetFilesTab implements Serializable {
     private int filePaginatorPage;
     private int rowsPerPage;
 
-    private List<FileMetadata> selectedFileMetadata = new ArrayList<>();
+    private List<FileMetadata> selectedFileMetadataForView = new ArrayList<>();
+
+    private HashSet<Long> selectedFileIds = new HashSet<>();
 
     private LazyFileMetadataModel fileMetadatasSearch;
 
@@ -154,7 +157,6 @@ public class DatasetFilesTab implements Serializable {
     private List<String> selectedNonDownloadableFiles;
 
     private boolean downloadOriginal = false;
-
 
     private List<String> categoriesByName;
 
@@ -280,12 +282,10 @@ public class DatasetFilesTab implements Serializable {
         return rowsPerPage;
     }
 
-    public List<FileMetadata> getSelectedFileMetadata() {
-        return selectedFileMetadata;
-    }
-
-    public boolean isSelectAllFiles() {
-        return selectAllFiles;
+    public List<FileMetadata> getSelectedFileMetadataForView() {
+        return this.fileMetadatasSearch.getWrappedData().stream()
+                                       .filter(fileMetadata -> containsFileId(fileMetadata.getId()))
+                                       .collect(toList());
     }
 
     public String getFileLabelSearchTerm() {
@@ -334,35 +334,27 @@ public class DatasetFilesTab implements Serializable {
         }
     }
 
-    public void selectAllFiles() {
-        selectedFileMetadata.clear();
-        selectedFileMetadata.addAll(fileMetadatasSearch.getWrappedData());
-    }
-
     public void clearSelection() {
-        logger.info("clearSelection called");
-        selectedFileMetadata.clear();
+        selectedFileIds.clear();
     }
 
     public void toggleAllSelected(ToggleSelectEvent event) {
         List<FileMetadata> currentFilesOnPage = fileMetadatasSearch.getWrappedData();
 
         if (event.isSelected()) {
-            currentFilesOnPage.stream()
-                              .filter(fm -> !selectedFileMetadata.contains(fm))
-                              .forEach(fm -> selectedFileMetadata.add(fm));
+            currentFilesOnPage.forEach(fm -> selectedFileIds.add(fm.getId()));
         } else {
-            selectedFileMetadata.removeAll(currentFilesOnPage);
+            currentFilesOnPage.forEach(fm -> selectedFileIds.remove(fm.getId()));
         }
         this.selectAllFiles = !this.selectAllFiles;
     }
 
     public void updateFileSearch() {
-        Tuple2<List<FileMetadata>, Integer> foundFileMetadata = selectFileMetadatasForDisplayWithPaging(this.fileLabelSearchTerm);
+        Tuple2<List<FileMetadata>, List<Long>> foundFileMetadata = selectFileMetadatasForDisplayWithPaging(this.fileLabelSearchTerm);
         fileMetadatasSearch.setWrappedData(foundFileMetadata._1);
         fileMetadatasSearch.setLoadedData(foundFileMetadata._1);
-        fileMetadatasSearch.setRowCount(foundFileMetadata._2);
-        fileMetadatasSearch.setLoadedSearchDataSize(foundFileMetadata._2);
+        fileMetadatasSearch.setRowCount(foundFileMetadata._2.size());
+        fileMetadatasSearch.setLoadedSearchDataIds(foundFileMetadata._2);
         updateFileSearchStatus(fileLabelSearchTerm);
     }
 
@@ -495,7 +487,7 @@ public class DatasetFilesTab implements Serializable {
 
     public String requestAccessMultipleFiles() {
 
-        if (selectedFileMetadata.isEmpty()) {
+        if (countSelectedFiles() == 0) {
             PrimefacesUtil.showDialog(SELECT_FILES_FOR_REQUEST_ACCESS_DIALOG);
             return "";
         }
@@ -504,13 +496,8 @@ public class DatasetFilesTab implements Serializable {
 
         fileDownloadRequestHelper.clearRequestAccessFiles();
 
-        List<FileMetadata> restrictedSelectedFiles = selectedFileMetadata.stream()
-                                                                         .filter(fileMetadata -> FileTermsOfUse
-                                                                                 .TermsOfUseType.RESTRICTED
-                                                                                 .equals(fileMetadata
-                                                                                                 .getTermsOfUse()
-                                                                                                 .getTermsOfUseType()))
-                                                                         .collect(Collectors.toList());
+
+        List<FileMetadata> restrictedSelectedFiles = fileMetadataService.findRestrictedFileMetadata(selectedFileIds);
 
         if (isRequestAccessPopupRequired(workingVersion, restrictedSelectedFiles)) {
             restrictedSelectedFiles.stream()
@@ -535,12 +522,13 @@ public class DatasetFilesTab implements Serializable {
         selectedNonDownloadableFiles = new ArrayList<>();
         this.downloadOriginal = downloadOriginal;
 
-        if (this.selectedFileMetadata.isEmpty()) {
+        if (this.selectedFileIds.isEmpty()) {
             PrimefacesUtil.showDialog(SELECT_FILES_FOR_DOWNLAOD_DIALOG);
             return;
         }
+        List<FileMetadata> fetchedFileMetadata = fileMetadataService.findFileMetadata(selectedFileIds.toArray(new Long[0]));
 
-        for (FileMetadata fmd : this.selectedFileMetadata) {
+        for (FileMetadata fmd : fetchedFileMetadata) {
             if (this.fileDownloadHelper.canUserDownloadFile(fmd)) {
                 selectedDownloadableFiles.add(fmd);
             } else {
@@ -597,7 +585,7 @@ public class DatasetFilesTab implements Serializable {
         // be shown to them by an onclick javascript method attached to the 
         // filemetadata edit button on the page.
         // -- L.A. 4.2.1
-        if (this.selectedFileMetadata == null || this.selectedFileMetadata.size() < 1) {
+        if (selectedFileIds.isEmpty()) {
             return "";
         }
         return "/editdatafiles.xhtml?selectedFileIds=" + joinDataFileIdsFromFileMetadata() + "&datasetId=" + dataset.getId() + "&faces-redirect=true";
@@ -647,7 +635,8 @@ public class DatasetFilesTab implements Serializable {
         if (bulkUpdateCheckVersion()) {
             refreshSelectedFiles();
         }
-        filesToBeDeleted = selectedFileMetadata.stream().map(FileMetadata::getDataFile).collect(toList());
+
+        filesToBeDeleted = datafileService.findDataFilesByFileMetadataIds(selectedFileIds);
         return save();
     }
 
@@ -658,11 +647,11 @@ public class DatasetFilesTab implements Serializable {
         }
 
         FileTermsOfUse termsOfUse = termsOfUseFormMapper.mapToFileTermsOfUse(termsOfUseForm);
-        for (FileMetadata fm : selectedFileMetadata) {
+        List<FileMetadata> fetchedFileMetadata = fileMetadataService.findFileMetadata(selectedFileIds.toArray(new Long[0]));
+        for (FileMetadata fm : fetchedFileMetadata) {
             workingVersion.getFileMetadatas().stream()
                           .filter(fileMetadata -> fileMetadata.getId().equals(fm.getId()))
                           .forEach(fileMetadata -> fileMetadata.setTermsOfUse(termsOfUse.createCopy()));
-            fm.setTermsOfUse(termsOfUse.createCopy());
         }
 
         save();
@@ -715,7 +704,7 @@ public class DatasetFilesTab implements Serializable {
     }
 
     public boolean isAllFilesSelected() {
-        return selectedFileMetadata.size() >= allCurrentFilesCount();
+        return selectedFileIds.size() >= allCurrentFilesCount();
     }
 
     public String getEmbargoDateForDisplay() {
@@ -725,17 +714,35 @@ public class DatasetFilesTab implements Serializable {
 
     public void onRowSelectByCheckbox(SelectEvent event) {
         FileMetadata selectedFile = (FileMetadata) event.getObject();
-        selectedFileMetadata.add(selectedFile);
+        selectedFileIds.add(selectedFile.getId());
         setSelectAllFiles(false);
     }
 
     public void onRowUnSelectByCheckbox(UnselectEvent event) {
         FileMetadata unselectedFile = (FileMetadata) event.getObject();
-        selectedFileMetadata.remove(unselectedFile);
+        selectedFileIds.remove(unselectedFile.getId());
         setSelectAllFiles(false);
     }
 
+    public void selectAllFiles() {
+        selectedFileIds.addAll(fileMetadatasSearch.getCurrentlyLoadedDataIds());
+    }
+
+    public long countSelectedFiles() {
+        return selectedFileIds.size();
+    }
+
+    public List<FileMetadata> retrieveSelectedFiles() {
+        return selectedFileIds.isEmpty() ? new ArrayList<>() : fileMetadataService.findFileMetadata(selectedFileIds.toArray(new Long[0]));
+    }
+
     // -------------------- PRIVATE --------------------
+
+    private boolean containsFileId(Long id) {
+        return selectedFileIds.stream()
+                              .anyMatch(storedId -> storedId.equals(id));
+    }
+
     private long allCurrentFilesCount() {
         return fileMetadatasSearch.getAllAvailableFilesCount();
     }
@@ -758,14 +765,15 @@ public class DatasetFilesTab implements Serializable {
         });
     }
 
-    private Tuple2<List<FileMetadata>, Integer> selectFileMetadatasForDisplayWithPaging(String searchTerm) {
+    private Tuple2<List<FileMetadata>, List<Long>> selectFileMetadatasForDisplayWithPaging(String searchTerm) {
 
-        List<Integer> searchResultsIdList = datafileService
+        List<Long> searchResultsIdList = datafileService
                 .findFileMetadataIdsByDatasetVersionIdLabelSearchTerm(workingVersion.getId(),
                                                                       searchTerm,
-                                                                      new FileSortFieldAndOrder("", SortOrder.asc));
-
-        int allIdsMatching = searchResultsIdList.size();
+                                                                      new FileSortFieldAndOrder("", SortOrder.asc))
+                .stream()
+                .map(Integer::longValue)
+                .collect(toList());
 
         if (searchTerm != null && !searchTerm.equals("")) {
             List<FileMetadata> accessibleFileMetadataSorted = fileMetadataService.findSearchedAccessibleFileMetadataSorted(workingVersion
@@ -773,11 +781,11 @@ public class DatasetFilesTab implements Serializable {
                                                                                                                            filePaginatorPage,
                                                                                                                            rowsPerPage,
                                                                                                                            searchTerm);
-            return Tuple.of(accessibleFileMetadataSorted, allIdsMatching);
+            return Tuple.of(accessibleFileMetadataSorted, searchResultsIdList);
 
         }
 
-        return Tuple.of(getAccessibleFilesMetadataWithPaging(), allIdsMatching);
+        return Tuple.of(getAccessibleFilesMetadataWithPaging(), searchResultsIdList);
     }
 
     private List<FileMetadata> getAccessibleFilesMetadataWithPaging() {
@@ -819,26 +827,25 @@ public class DatasetFilesTab implements Serializable {
 
     // helper Method
     private String joinDataFileIdsFromFileMetadata() {
-        return selectedFileMetadata.stream()
-                                   .map(fileMetadata -> fileMetadata.getDataFile().getId().toString())
-                                   .collect(joining(","));
+        return datafileService.findDataFilesByFileMetadataIds(selectedFileIds).stream()
+                              .map(dataFile -> dataFile.getId().toString())
+                              .collect(joining(","));
     }
 
     private void refreshSelectedFiles() {
         dataset = datasetDao.find(dataset.getId());
         workingVersion = dataset.getEditVersion();
 
-        List<DataFile> selectedDataFiles = selectedFileMetadata.stream()
-                                                               .map(FileMetadata::getDataFile)
-                                                               .collect(Collectors.toList());
+        List<DataFile> selectedDataFiles = datafileService.findDataFilesByFileMetadataIds(selectedFileIds);
 
-        List<FileMetadata> filteredMetadata = workingVersion.getFileMetadatas().stream()
-                                                            .filter(fileMetadata -> selectedDataFiles.contains(fileMetadata
-                                                                                                                       .getDataFile()))
-                                                            .collect(Collectors.toList());
+        List<Long> filteredMetadata = workingVersion.getFileMetadatas().stream()
+                                                    .filter(fileMetadata -> selectedDataFiles.contains(fileMetadata
+                                                                                                               .getDataFile()))
+                                                    .map(FileMetadata::getId)
+                                                    .collect(Collectors.toList());
 
-        selectedFileMetadata.clear();
-        selectedFileMetadata.addAll(filteredMetadata);
+        selectedFileIds.clear();
+        selectedFileIds.addAll(filteredMetadata);
     }
 
     private boolean bulkUpdateCheckVersion() {
@@ -974,7 +981,7 @@ public class DatasetFilesTab implements Serializable {
     /**
      * Workaround for LazyDataModel in order to preserve selection across pages.
      */
-    public void setSelectedFileMetadata(List<FileMetadata> selectedFileMetadata) {
+    public void setSelectedFileMetadataForView(List<FileMetadata> selectedFileMetadataForView) {
     }
 
     public void setSelectAllFiles(boolean selectAllFiles) {

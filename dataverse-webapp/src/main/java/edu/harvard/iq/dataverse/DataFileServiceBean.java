@@ -59,6 +59,7 @@ import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -110,17 +111,7 @@ public class DataFileServiceBean implements java.io.Serializable {
 
     public DataFile find(Object pk) {
         return em.find(DataFile.class, pk);
-    }   
-    
-    /*public DataFile findByMD5(String md5Value){
-        if (md5Value == null){
-            return null;
-        }
-        Query query = em.createQuery("select object(o) from DataFile as o where o.md5 =:md5Value order by o.id");
-        query.setParameter("md5Value", md5Value);
-        return (DataFile)query.getSingleResult();
-        
-    }*/
+    }
 
     public DataFile findByGlobalId(String globalId) {
         return (DataFile) dvObjectService.findByGlobalId(globalId, DataFile.DATAFILE_DTYPE_STRING);
@@ -149,16 +140,6 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
     }
 
-    public List<DataFile> findByDatasetId(Long studyId) {
-        /* 
-           Sure, we don't have *studies* any more, in 4.0; it's a tribute 
-           to the past. -- L.A.
-        */
-        String qr = "select o from DataFile o where o.owner.id = :studyId order by o.id";
-        return em.createQuery(qr, DataFile.class)
-                .setParameter("studyId", studyId).getResultList();
-    }
-
     public List<DataFile> findAllRelatedByRootDatafileId(Long datafileId) {
         /* 
          Get all files with the same root datafile id
@@ -167,6 +148,13 @@ public class DataFileServiceBean implements java.io.Serializable {
         String qr = "select o from DataFile o where o.rootDataFileId = :datafileId order by o.id";
         return em.createQuery(qr, DataFile.class)
                 .setParameter("datafileId", datafileId).getResultList();
+    }
+
+    public List<DataFile> findDataFilesByFileMetadataIds(Collection<Long> fileMetadataIds) {
+        return em.createQuery("SELECT d FROM FileMetadata f JOIN f.dataFile d WHERE f.id IN :fileMetadataIds", DataFile.class)
+                 .setParameter("fileMetadataIds", fileMetadataIds)
+                 .setHint("eclipselink.QUERY_RESULTS_CACHE", "TRUE")
+                 .getResultList();
     }
 
     public DataFile findByStorageIdandDatasetVersion(String storageId, DatasetVersion dv) {
@@ -220,12 +208,6 @@ public class DataFileServiceBean implements java.io.Serializable {
                                             + searchClause
                                             + " order by o." + sortFieldAndOrder.getSortField() + " " + (sortFieldAndOrder.getSortOrder() == SortOrder.desc ? "desc" : "asc"))
                 .getResultList();
-    }
-
-    public Long findCountByDatasetVersionId(Long datasetVersionId) {
-        return (Long) em.createNativeQuery("select count(*)  from FileMetadata fmd "
-                                                   + " where fmd.datasetVersion_id = " + datasetVersionId
-                                                   + ";").getSingleResult();
     }
 
     public FileMetadata findFileMetadata(Long fileMetadataId) {
@@ -515,43 +497,6 @@ public class DataFileServiceBean implements java.io.Serializable {
         dashes();
     }
 
-    /*
-        Make sure the file replace ids are set for a initial version 
-        of a file
-    
-    */
-    public DataFile setAndCheckFileReplaceAttributes(DataFile savedDataFile) {
-
-        // Is this the initial version of a file?
-
-        if ((savedDataFile.getRootDataFileId() == null) ||
-                (savedDataFile.getRootDataFileId().equals(DataFile.ROOT_DATAFILE_ID_DEFAULT))) {
-            msg("yes, initial version");
-
-            // YES!  Set the RootDataFileId to the Id
-            savedDataFile.setRootDataFileId(savedDataFile.getId());
-
-            // SAVE IT AGAIN!!!
-            msg("yes, save again");
-
-            return em.merge(savedDataFile);
-
-        } else {
-            // Looking Good Billy Ray! Feeling Good Louis!    
-            msg("nope, looks ok");
-
-            return savedDataFile;
-        }
-    }
-
-
-    public Boolean isPreviouslyPublished(Long fileId) {
-        Query query = em.createQuery("select object(o) from FileMetadata as o where o.dataFile.id =:fileId");
-        query.setParameter("fileId", fileId);
-        List<?> retList = query.getResultList();
-        return (retList.size() > 1);
-    }
-
     public void deleteFromVersion(DatasetVersion d, DataFile f) {
         em.createNamedQuery("DataFile.removeFromDatasetVersion")
                 .setParameter("versionId", d.getId()).setParameter("fileId", f.getId())
@@ -562,18 +507,6 @@ public class DataFileServiceBean implements java.io.Serializable {
      Convenience methods for merging and removingindividual file metadatas, 
      without touching the rest of the DataFile object:
     */
-
-    public FileMetadata mergeFileMetadata(FileMetadata fileMetadata) {
-
-        FileMetadata newFileMetadata = em.merge(fileMetadata);
-        em.flush();
-
-        // Set the initial value of the rootDataFileId
-        //    (does nothing if it's already set)
-        //DataFile updatedDataFile = setAndCheckFileReplaceAttributes(newFileMetadata.getDataFile());
-
-        return newFileMetadata;
-    }
 
     public void removeFileMetadata(FileMetadata fileMetadata) {
         msgt("removeFileMetadata: fileMetadata");

@@ -188,6 +188,41 @@ class FileMetadataServiceTest {
         //then
         assertEquals(1, foundData.size());
         assertEquals(1, foundData.get(0));
+    }
 
+    @Test
+    public void findRestrictedFileMetadata() {
+        //given
+        long fileMetadataId = 1;
+        FileMetadata fileMetadata = new FileMetadata();
+        fileMetadata.setId(1L);
+
+        //when
+        Mockito.when(fileMetadataRepository.findRestrictedFileMetadata(Mockito.anyCollection()))
+               .thenReturn(Lists.newArrayList(fileMetadata));
+
+        List<FileMetadata> foundData = fileMetadataService.findRestrictedFileMetadata(Lists.newArrayList(fileMetadataId));
+
+        //then
+        assertEquals(1, foundData.size());
+        assertEquals(1, foundData.get(0).getId());
+    }
+
+    @Test
+    public void findFileMetadata() {
+        //given
+        long fileMetadataId = 1;
+        FileMetadata fileMetadata = new FileMetadata();
+        fileMetadata.setId(1L);
+
+        //when
+        Mockito.when(fileMetadataRepository.findFileMetadata(Mockito.anyList()))
+               .thenReturn(Lists.newArrayList(fileMetadata));
+
+        List<FileMetadata> foundData = fileMetadataService.findFileMetadata(fileMetadataId);
+
+        //then
+        assertEquals(1, foundData.size());
+        assertEquals(1, foundData.get(0).getId());
     }
 }

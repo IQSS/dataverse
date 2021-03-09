@@ -12,7 +12,10 @@ import io.vavr.control.Option;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Stateless
 public class FileMetadataService {
@@ -86,6 +89,14 @@ public class FileMetadataService {
 
     public List<Long> findFileMetadataIds(long dsvId) {
         return fileMetadataRepository.findFileMetadataIdsByDatasetVersionId(dsvId);
+    }
+
+    public List<FileMetadata> findRestrictedFileMetadata(Collection<Long> filteredFileIds) {
+        return fileMetadataRepository.findRestrictedFileMetadata(filteredFileIds);
+    }
+
+    public List<FileMetadata> findFileMetadata(Long...fileMetadataId) {
+        return fileMetadataRepository.findFileMetadata(Arrays.stream(fileMetadataId).collect(Collectors.toList()));
     }
 
 }

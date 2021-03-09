@@ -18,7 +18,7 @@ public class LazyFileMetadataModel extends LazyDataModel<FileMetadata> {
     private FileMetadataService fileMetadataService;
     private long dsvId;
     private boolean loadedSearchData;
-    private int loadedSearchDataSize;
+    private List<Long> loadedSearchDataIds = new ArrayList<>();
     private List<FileMetadata> loadedData = new ArrayList<>();
     private List<Long> allFileIds = new ArrayList<>();
 
@@ -27,6 +27,12 @@ public class LazyFileMetadataModel extends LazyDataModel<FileMetadata> {
     public LazyFileMetadataModel(FileMetadataService fileMetadataService, long dsvId) {
         this.fileMetadataService = fileMetadataService;
         this.dsvId = dsvId;
+    }
+
+    // -------------------- GETTERS --------------------
+
+    public List<Long> getAllFileIds() {
+        return allFileIds;
     }
 
     // -------------------- LOGIC --------------------
@@ -62,7 +68,11 @@ public class LazyFileMetadataModel extends LazyDataModel<FileMetadata> {
     }
 
     public int getAllAvailableFilesCount() {
-        return loadedSearchData ? loadedSearchDataSize : allFileIds.size();
+        return loadedSearchData ? loadedSearchDataIds.size() : allFileIds.size();
+    }
+
+    public List<Long> getCurrentlyLoadedDataIds() {
+        return loadedSearchData ? loadedSearchDataIds : allFileIds;
     }
 
     /**
@@ -74,10 +84,10 @@ public class LazyFileMetadataModel extends LazyDataModel<FileMetadata> {
     }
 
     /**
-     * Indicates amounts of data that is found using search term.
+     * Sets ids of data that are found using search term.
      */
-    public LazyFileMetadataModel setLoadedSearchDataSize(int loadedSearchDataSize) {
-        this.loadedSearchDataSize = loadedSearchDataSize;
+    public LazyFileMetadataModel setLoadedSearchDataIds(List<Long> loadedSearchDataIds) {
+        this.loadedSearchDataIds = loadedSearchDataIds;
         return this;
     }
 

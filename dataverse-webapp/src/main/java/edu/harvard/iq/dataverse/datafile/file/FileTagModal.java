@@ -115,7 +115,7 @@ public class FileTagModal implements Serializable {
      * It had to be used in 'constructor' and not when closing window,
      * otherwise jsf will raise an error https://stackoverflow.com/questions/9069379/validation-error-value-is-not-valid
      */
-    public void cleanupModalState() {
+    private void cleanupModalState() {
         selectedFileMetadataTags.clear();
         selectedDataFileTags.clear();
         selectedFiles.clear();
