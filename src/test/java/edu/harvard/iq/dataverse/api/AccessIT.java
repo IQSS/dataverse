@@ -103,6 +103,11 @@ public class AccessIT {
         Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
         createDatasetResponse.prettyPrint();
         datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        // TODO: Get this working.
+        Response allowAccessRequests = UtilIT.allowAccessRequests(datasetId.toString(), true, apiToken);
+        allowAccessRequests.prettyPrint();
+        allowAccessRequests.then().assertThat().statusCode(200);
         
         basicFileName = "004.txt";
         String basicPathToFile = "scripts/search/data/replace_test/" + basicFileName;
@@ -179,13 +184,14 @@ public class AccessIT {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .multiPart("file", new File(pathToFile), mimeType)
-                .post("/api/access/datafile/" + tabFile1Id + "/metadata/dpJSON/v1");
+                // In the DP use case, the file is restricted.
+                .post("/api/access/datafile/" + tabFile3IdRestricted + "/metadata/dpJSON/v1");
         response.prettyPrint();
         assertEquals(200, response.getStatusCode());
         System.out.println("Downloading Aux file that was just added");
         response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/access/datafile/" + tabFile1Id + "/metadata/dpJSON/v1");
+                .get("/api/access/datafile/" + tabFile3IdRestricted + "/metadata/dpJSON/v1");
         
         String dataStr = response.prettyPrint();
         assertEquals(dataStr,"a\n");

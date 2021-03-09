@@ -219,6 +219,24 @@
     </ui:fragment>
     <!-- END: Request Access Options -->
     
+    <!-- Auxiliary Files -->
+    <li class="dropdown-submenu pull-left" jsf:rendered="#{not empty auxiliaryFileServiceBean.findAuxiliaryFiles(fileMetadata.dataFile)}">
+        <!--FIXME: Move "Differentially Private Statistics" to bundle and should it be "Auxiliary Files" sometimes? When?-->
+        <a tabindex="-1" href="javascript:void(0);">Differentially Private Statistics</a>
+        <ul class="dropdown-menu">
+            <ui:repeat var="auxFile" value="#{auxiliaryFileServiceBean.findAuxiliaryFiles(fileMetadata.dataFile)}}">
+                <li>
+                    <!--FIXME: Don't hard code "dpJSON" and "v1". See FIXME below.-->
+                    <p:commandLink styleClass="btn-download" action="#{fileDownloadService.redirectToAuxFileDownloadAPI(fileMetadata.dataFile.id, 'dpJSON', 'v1')}">
+                        <!--FIXME: Why does auxFile show up as a String when we try auxFile.formatTag?-->
+                        <h:outputText value="#{auxFile}"/>
+                    </p:commandLink>
+                </li>
+            </ui:repeat>
+        </ul>
+    </li>
+    <!-- END: Auxiliary Files -->
+
     <!-- Explore Options -->
     <ui:fragment rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata) and not empty exploreTools}">
         <!--exploreTools is set as a ui:param by the file and dataset pages-->

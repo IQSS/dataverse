@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -15,6 +16,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import org.apache.tika.Tika;
 
 /**
@@ -112,6 +114,12 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
         } catch(Exception ex) {
             return null;
         }
+    }
+
+    public List<AuxiliaryFile> findAuxiliaryFiles(DataFile dataFile) {
+        TypedQuery query = em.createQuery("select object(o) from AuxiliaryFile as o where o.dataFile.id = :dataFileId", AuxiliaryFile.class);
+        query.setParameter("dataFileId", dataFile.getId());
+        return query.getResultList();
     }
 
 }
