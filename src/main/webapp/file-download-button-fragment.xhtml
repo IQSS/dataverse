@@ -216,30 +216,33 @@
         </ui:fragment>
         <!-- END: TABULAR DOWNLOAD OPTIONS -->
         
-        <!-- AUX FILES DOWNLOAD OPTIONS -->
-        <ui:fragment rendered="#{not empty auxiliaryFileServiceBean.findAuxiliaryFiles(fileMetadata.dataFile)}">
-            <li class="dropdown-submenu pull-left">
-                <!--FIXME: Move "Differentially Private Statistics" to bundle and should it be "Auxiliary Files" sometimes? When?-->
-                <a tabindex="-1" href="javascript:void(0);">Differentially Private Statistics</a>
-                <ul class="dropdown-menu">
-                    <ui:repeat var="auxFile" value="#{auxiliaryFileServiceBean.findAuxiliaryFiles(fileMetadata.dataFile)}}">
-                        <li>
-                            <!--FIXME: Don't hard code "dpJSON" and "v1". See FIXME below.-->
-                            <p:commandLink styleClass="btn-download" action="#{fileDownloadService.redirectToAuxFileDownloadAPI(fileMetadata.dataFile.id, 'dpJSON', 'v1')}">
-                                <!--FIXME: Why does auxFile show up as a String when we try auxFile.formatTag?-->
-                                <h:outputText value="#{auxFile}"/>
-                            </p:commandLink>
-                        </li>
-                    </ui:repeat>
-                </ul>
-            </li>
-        </ui:fragment>
-        <!-- END: AUX FILES  DOWNLOAD OPTIONS -->
-        
         <!-- UI HACK FIX SUBMENU PULL-FLOAT FIX -->
         <li role="presentation" class="clearfix"></li>
     </ui:fragment>
     <!-- END: Download Options -->
+    
+    <!-- AUX FILES DOWNLOAD OPTIONS -->
+    <ui:fragment rendered="#{true or not empty auxiliaryFileServiceBean.findAuxiliaryFiles(fileMetadata.dataFile)}">
+        <li class="dropdown-submenu pull-left">
+            <!--FIXME: Move "Differentially Private Statistics" to bundle and should it be "Auxiliary Files" sometimes? When?-->
+            <a tabindex="-1" href="javascript:void(0);">Differentially Private Statistics</a>
+            <ul class="dropdown-menu">
+                <ui:repeat var="auxFile" value="#{auxiliaryFileServiceBean.findAuxiliaryFiles(fileMetadata.dataFile)}}">
+                    <li>
+                        <!--FIXME: Don't hard code "dpJSON" and "v1". See FIXME below.-->
+                        <p:commandLink styleClass="btn-download" action="#{fileDownloadService.redirectToAuxFileDownloadAPI(fileMetadata.dataFile.id, 'dpJSON', 'v1')}">
+                            <!--FIXME: Why does auxFile show up as a String when we try auxFile.formatTag?-->
+                            <h:outputText value="#{auxFile}"/>
+                        </p:commandLink>
+                    </li>
+                </ui:repeat>
+            </ul>
+        </li>
+        
+        <!-- UI HACK FIX SUBMENU PULL-FLOAT FIX -->
+        <li role="presentation" class="clearfix"></li>
+    </ui:fragment>
+    <!-- END: AUX FILES  DOWNLOAD OPTIONS -->
     
     <!-- Explore Options -->
     <ui:fragment rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata) and not empty exploreTools}">
