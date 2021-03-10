@@ -229,10 +229,9 @@
             <ul class="dropdown-menu">
                 <ui:repeat var="auxFile" value="#{auxiliaryFileServiceBean.findAuxiliaryFiles(fileMetadata.dataFile)}">
                     <li>
-                        <!--FIXME: Don't hard code "dpJSON" and "v1". See FIXME below.-->
-                        <p:commandLink styleClass="btn-download" action="#{fileDownloadService.redirectToAuxFileDownloadAPI(fileMetadata.dataFile.id, 'dpJSON', 'v1')}">
-                            <!--FIXME: Why does auxFile show up as a String when we try auxFile.formatTag?-->
-                            <h:outputText value="#{auxFile}"/>
+                        <p:commandLink styleClass="btn-download" action="#{fileDownloadService.redirectToAuxFileDownloadAPI(fileMetadata.dataFile.id, auxFile.formatTag, auxFile.formatVersion)}">
+                            <h:outputText value="#{auxFile.formatTag}"/>
+                            <h:outputText value=" (#{auxFile.formatVersion})"/>
                         </p:commandLink>
                     </li>
                 </ui:repeat>
