@@ -116,6 +116,9 @@
                 /* add padding to account for vertical scrollbar */
                 padding-right: 20px;
             }
+            input[type='text'].ui-autocomplete-loading {
+                background: url('/resources/images/ajax-loading.gif') no-repeat right center;
+            }
         </style>
     </ui:fragment>
     <ui:fragment rendered="#{displayCV and dsfv.datasetField.datasetFieldType.name==cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[3]}">
