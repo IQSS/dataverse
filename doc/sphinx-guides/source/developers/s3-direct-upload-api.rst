@@ -81,7 +81,7 @@ If the client is unable to complete the multipart upload, it should call the abo
 Adding the Uploaded file to the Dataset
 ---------------------------------------
 
-Once the file exists in the s3 bucket, a final API call is needed to add it to the Dataset. This call is the same call used to upload a file to Dataverse but, rather than sending the file bytes, additional metadata is added the "jsonData" parameter. 
+Once the file exists in the s3 bucket, a final API call is needed to add it to the Dataset. This call is the same call used to upload a file to Dataverse but, rather than sending the file bytes, additional metadata is added using the "jsonData" parameter.
 jsonData normally includes information such as a file description, tags, provenance, whether the file is restricted, etc. For direct uploads, the jsonData object must also include values for:
 
 * "storageIdentifier" - String, as specified in prior calls
