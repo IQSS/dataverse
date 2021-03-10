@@ -2484,13 +2484,13 @@ A curl example using a Role alias ``ALIAS``
   export SERVER_URL=https://demo.dataverse.org
   export ALIAS=roleAlias
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/files/:alias?alias=$ALIAS"
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/roles/:alias?alias=$ALIAS"
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/ROLES/:alias?alias=roleAlias"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/roles/:alias?alias=roleAlias
 
 
 Explicit Groups
