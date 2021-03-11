@@ -3,21 +3,23 @@ package edu.harvard.iq.dataverse.branding;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
-import javax.ejb.EJB;
-import javax.ejb.Singleton;
+
 import javax.mail.internet.InternetAddress;
 
 import org.eclipse.microprofile.config.ConfigProvider;
 
-@Singleton
 public class BrandingUtil {
 
-    @EJB
     static DataverseServiceBean dataverseService;
 
+    static String brandName = null;
+    
     public static String getInstallationBrandName() {
-        return ConfigProvider.getConfig().getOptionalValue("dataverse.branding.installation.name", String.class)
+        if(brandName==null) {
+        brandName = ConfigProvider.getConfig().getOptionalValue("dataverse.branding.installation.name", String.class)
                 .orElse(dataverseService.getRootDataverseName());
+        }
+        return brandName;
     }
 
     // Convenience to access root name without injecting dataverseService (e.g. in
