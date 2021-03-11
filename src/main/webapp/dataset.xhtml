@@ -9,7 +9,8 @@
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:pt="http://java.sun.com/jsf/passthrough"
       xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:o="http://omnifaces.org/ui">
+      xmlns:o="http://omnifaces.org/ui"
+      xmlns:of="http://omnifaces.org/functions">
     <h:head>
     </h:head>
     <h:body>
@@ -1652,10 +1653,24 @@
                     <!-- END: Publish/Submit for Review Dialogs -->
                 </h:form>
                 <script>
-                    //<![CDATA[                   
+                    //<![CDATA[
                     $(document).ready(function () {
                         popoverHTML('#{bundle.htmlAllowedTitle}', '#{bundle.htmlAllowedTags}');
+                        summaryDescTruncation();
                     });
+                    function summaryDescTruncation() {
+                        // truncate summary description, contentTruncate function in dv_rebind_bootstrap_ui.js
+                        // add summary desc row id to pass as selector param
+                        var descId = 'dsDescription';
+                        // add metadata dynamic label text, tooltip text from bundle as param
+                        var truncMoreBtn = '#{of:format1(bundle.truncateMoreBtn, DatasetPage.datasetVersionUI.description.datasetFieldType.localeTitle)}';
+                        var truncMoreTip = '#{of:format1(bundle.truncateMoreTip, DatasetPage.datasetVersionUI.description.datasetFieldType.localeTitle)}';
+                        var truncLessBtn = '#{of:format1(bundle.truncateLessBtn, DatasetPage.datasetVersionUI.description.datasetFieldType.localeTitle)}';
+                        var truncLessTip = '#{of:format1(bundle.truncateLessTip, DatasetPage.datasetVersionUI.description.datasetFieldType.localeTitle)}';
+                        
+                        // pass bundle text variabls as params to function
+                        contentTruncate(descId, truncMoreBtn, truncMoreTip, truncLessBtn, truncLessTip);
+                    }
                     function openDialog() {
                         PF('details').show();
                     }
@@ -1670,16 +1685,14 @@
                             $('button[id$="compareVersions"]').trigger('click');
                         }
                     }
-                                      
                     function testFilesSelected() {
                         var count = PF('filesTable').getSelectedRowsCount();
                         if (count == 0) {
                             PF('selectFiles').show();
                         } else {
                             return true;
-                        }                        
+                        }
                     }
-                    
                     function updateTemplate() {
                         $('button[id$="updateTemplate"]').trigger('click');
                     }
