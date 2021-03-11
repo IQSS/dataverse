@@ -97,14 +97,14 @@ public class DataverseSession implements Serializable{
      * Sets the user and configures the session timeout.
      */
     public void setUser(User aUser) {
-        // We check for disabled status here in "setUser" to ensure a common user
+        // We check for deactivated status here in "setUser" to ensure a common user
         // experience across Builtin, Shib, OAuth, and OIDC users.
         // If we want a different user experience for Builtin users, we can
         // modify getUpdateAuthenticatedUser in AuthenticationServiceBean
         // (and probably other places).
-        if (aUser instanceof AuthenticatedUser && aUser.isDisabled()) {
-            logger.info("Login attempt by disabled user " + aUser.getIdentifier() + ".");
-            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("disabled.error"));
+        if (aUser instanceof AuthenticatedUser && aUser.isDeactivated()) {
+            logger.info("Login attempt by deactivated user " + aUser.getIdentifier() + ".");
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("deactivated.error"));
             return;
         }
         FacesContext context = FacesContext.getCurrentInstance();

@@ -3044,7 +3044,7 @@ Example: ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://demo.dataverse.o
 
 This action moves account data from jsmith2 into the account jsmith and deletes the account of jsmith2.
 
-Note: User accounts can only be merged if they are either both enabled or both disabled. See :ref:`disable a user<disable-a-user>`.
+Note: User accounts can only be merged if they are either both non-deactivated or both deactivated. See :ref:`deactivate a user<deactivate-a-user>`.
 
 .. _change-identifier-label:
 
@@ -3079,14 +3079,14 @@ Deletes an ``AuthenticatedUser`` whose ``id``  is passed. ::
 
     DELETE http://$SERVER/api/admin/authenticatedUsers/id/$id
     
-Note: If the user has performed certain actions such as creating or contributing to a Dataset or downloading a file they cannot be deleted. To see where in the database these actions are stored you can use the :ref:`show-user-traces-api` API. If a user cannot be deleted for this reason, you can choose to :ref:`disable a user<disable-a-user>`.
+Note: If the user has performed certain actions such as creating or contributing to a Dataset or downloading a file they cannot be deleted. To see where in the database these actions are stored you can use the :ref:`show-user-traces-api` API. If a user cannot be deleted for this reason, you can choose to :ref:`deactivate a user<deactivate-a-user>`.
 
-.. _disable-a-user:
+.. _deactivate-a-user:
 
-Disable a User
-~~~~~~~~~~~~~~
+Deactivate a User
+~~~~~~~~~~~~~~~~~
 
-Disables a user. A superuser API token is not required but the command will operate using the first superuser it finds.
+Deactivates a user. A superuser API token is not required but the command will operate using the first superuser it finds.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
@@ -3096,13 +3096,13 @@ Disables a user. A superuser API token is not required but the command will oper
   export SERVER_URL=http://localhost:8080
   export USERNAME=jdoe
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/admin/authenticatedUsers/$USERNAME/disable
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/admin/authenticatedUsers/$USERNAME/deactivate
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST http://localhost:8080/api/admin/authenticatedUsers/jdoe/disable
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST http://localhost:8080/api/admin/authenticatedUsers/jdoe/deactivate
 
 The database ID of the user can be passed instead of the username.
 
@@ -3112,23 +3112,23 @@ The database ID of the user can be passed instead of the username.
   export SERVER_URL=http://localhost:8080
   export USERID=42
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/admin/authenticatedUsers/id/$USERID/disable
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/admin/authenticatedUsers/id/$USERID/deactivate
 
-Note: A primary purpose of most Dataverse installations is to serve an archive. In the archival space, there are best practices around the tracking of data access and the tracking of modifications to data and metadata. In support of these key workflows, a simple mechanism to delete users that have performed edit or access actions in the system is not provided. Providing a Disable User endpoint for users who have taken certain actions in the system alongside a Delete User endpoint to remove users that haven't taken certain actions in the system is by design.
+Note: A primary purpose of most Dataverse installations is to serve an archive. In the archival space, there are best practices around the tracking of data access and the tracking of modifications to data and metadata. In support of these key workflows, a simple mechanism to delete users that have performed edit or access actions in the system is not provided. Providing a Deactivate User endpoint for users who have taken certain actions in the system alongside a Delete User endpoint to remove users that haven't taken certain actions in the system is by design.
 
-This is an irreversible action. There is no option to undisable a user.
+This is an irreversible action. There is no option to undeactivate a user.
 
-Disabling a user with this endpoint will:
+Deactivating a user with this endpoint will:
 
-- Disable the user's ability to log in to the Dataverse installation. A message will be shown, stating that the account has been disabled. The user will not able to create a new account with the same email address, ORCID, Shibboleth, or other login type.
-- Disable the user's ability to use the API
+- Deactivate the user's ability to log in to the Dataverse installation. A message will be shown, stating that the account has been deactivated. The user will not able to create a new account with the same email address, ORCID, Shibboleth, or other login type.
+- Deactivate the user's ability to use the API
 - Remove the user's access from all Dataverse collections, datasets and files
 - Prevent a user from being assigned any roles
 - Cancel any pending file access requests generated by the user
 - Remove the user from all groups
 - No longer have notifications generated or sent by the Dataverse installation
 
-Disabling a user with this endpoint will keep:
+Deactivating a user with this endpoint will keep:
 
 - The user's contributions to datasets, including dataset creation, file uploads, and publishing.
 - The user's access history to datafiles in the Dataverse installation, including guestbook records.

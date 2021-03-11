@@ -358,7 +358,7 @@ public class Shib implements java.io.Serializable {
 
     private void logInUserAndSetShibAttributes(AuthenticatedUser au) {
         au.setShibIdentityProvider(shibIdp);
-        // setUser checks for disabled users.
+        // setUser checks for deactivated users.
         session.setUser(au);
         logger.fine("Groups for user " + au.getId() + " (" + au.getIdentifier() + "): " + getGroups(au));
     }

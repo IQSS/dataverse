@@ -977,16 +977,16 @@ public class UtilIT {
                 .post("api/dataverses/" + definitionPoint + "/assignments?key=" + apiToken);
     }
 
-    public static Response disableUser(String username) {
-        Response disableUserResponse = given()
-                .post("/api/admin/authenticatedUsers/" + username + "/disable");
-        return disableUserResponse;
+    public static Response deactivateUser(String username) {
+        Response deactivateUserResponse = given()
+                .post("/api/admin/authenticatedUsers/" + username + "/deactivate");
+        return deactivateUserResponse;
     }
 
-    public static Response disableUser(Long userId) {
-        Response disableUserResponse = given()
-                .post("/api/admin/authenticatedUsers/id/" + userId + "/disable");
-        return disableUserResponse;
+    public static Response deactivateUser(Long userId) {
+        Response deactivateUserResponse = given()
+                .post("/api/admin/authenticatedUsers/id/" + userId + "/deactivate");
+        return deactivateUserResponse;
     }
 
     public static Response deleteUser(String username) {

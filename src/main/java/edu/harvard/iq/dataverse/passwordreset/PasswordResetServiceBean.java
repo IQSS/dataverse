@@ -65,8 +65,8 @@ public class PasswordResetServiceBean {
             logger.info("Cannot find a user based on " + emailAddress + ". Cannot reset password.");
             return new PasswordResetInitResponse(false);
         }
-        if (authUser.isDisabled()) {
-            logger.info("Cannot reset password for " + emailAddress + " because account is disabled.");
+        if (authUser.isDeactivated()) {
+            logger.info("Cannot reset password for " + emailAddress + " because account is deactivated.");
             return new PasswordResetInitResponse(false);
         }
         BuiltinUser user = dataverseUserService.findByUserName(authUser.getUserIdentifier());

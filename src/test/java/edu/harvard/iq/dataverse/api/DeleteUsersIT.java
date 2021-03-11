@@ -53,8 +53,8 @@ import org.junit.Test;
  *
  * - guestbookresponse: Definitely a concern but it's possible to null out the
  * user id. You can't delete a user but you can merge instead. There is talk of
- * disable which would probably null out the id. In all cases the name and email
- * address in the rows are left alone.
+ * deactivate which would probably null out the id. In all cases the name and
+ * email address in the rows are left alone.
  *
  * - oauth2tokendata: Not a concern. Rows are deleted.
  *
@@ -668,10 +668,10 @@ public class DeleteUsersIT {
                         + " because the user has contributed to dataset version(s)."));
 
         // What should we do with curator2 instead of deleting? The only option is to merge
-        // curator2 into some other account. Once implemented, we'll disable curator2's account
+        // curator2 into some other account. Once implemented, we'll deactivate curator2's account
         // so that curator2 continues to be displayed as a contributor.
         //
-        // TODO: disable curator2 here
+        // TODO: deactivate curator2 here
         //
         Response removeRolesFromAuthor2 = UtilIT.deleteUserRoles(author2Username, superuserApiToken);
         removeRolesFromAuthor2.prettyPrint();

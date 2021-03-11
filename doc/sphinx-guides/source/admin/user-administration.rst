@@ -49,10 +49,10 @@ Delete a User
 
 See :ref:`delete-a-user`
 
-Disable a User
---------------
+Deactivate a User
+-----------------
 
-See :ref:`disable-a-user`
+See :ref:`deactivate-a-user`
 
 Confirm Email
 -------------

@@ -57,7 +57,7 @@ import org.hibernate.validator.constraints.NotBlank;
                 query="select au from AuthenticatedUser au WHERE ("
                         + "LOWER(au.userIdentifier) like LOWER(:query) OR "
                         + "lower(concat(au.firstName,' ',au.lastName)) like lower(:query)) "
-                        + "AND au.disabled != true"),
+                        + "AND au.deactivated != true"),
     @NamedQuery( name="AuthenticatedUser.findAdminUser",
                 query="select au from AuthenticatedUser au WHERE "
                         + "au.superuser = true "
@@ -117,10 +117,10 @@ public class AuthenticatedUser implements User, Serializable {
     private boolean superuser;
 
     @Column(nullable=true)
-    private boolean disabled;
+    private boolean deactivated;
 
     @Column(nullable=true)
-    private Timestamp disabledTime;
+    private Timestamp deactivatedTime;
 
     /**
      * @todo Consider storing a hash of *all* potentially interesting Shibboleth
@@ -315,20 +315,20 @@ public class AuthenticatedUser implements User, Serializable {
     }
 
     @Override
-    public boolean isDisabled() {
-        return disabled;
+    public boolean isDeactivated() {
+        return deactivated;
     }
 
-    public void setDisabled(boolean disabled) {
-        this.disabled = disabled;
+    public void setDeactivated(boolean deactivated) {
+        this.deactivated = deactivated;
     }
 
-    public Timestamp getDisabledTime() {
-        return disabledTime;
+    public Timestamp getDeactivatedTime() {
+        return deactivatedTime;
     }
 
-    public void setDisabledTime(Timestamp disabledTime) {
-        this.disabledTime = disabledTime;
+    public void setDeactivatedTime(Timestamp deactivatedTime) {
+        this.deactivatedTime = deactivatedTime;
     }
 
     @OneToOne(mappedBy = "authenticatedUser")

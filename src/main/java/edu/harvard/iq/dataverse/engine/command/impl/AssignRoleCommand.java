@@ -53,8 +53,8 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
     public RoleAssignment execute(CommandContext ctxt) throws CommandException {
         if (grantee instanceof AuthenticatedUser) {
             AuthenticatedUser user = (AuthenticatedUser) grantee;
-            if (user.isDisabled()) {
-                throw new IllegalCommandException("User " + user.getUserIdentifier() + " is disabled and cannot be given a role.", this);
+            if (user.isDeactivated()) {
+                throw new IllegalCommandException("User " + user.getUserIdentifier() + " is deactivated and cannot be given a role.", this);
             }
         }
         // TODO make sure the role is defined on the dataverse.

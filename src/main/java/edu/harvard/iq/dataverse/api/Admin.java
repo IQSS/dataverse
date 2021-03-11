@@ -87,7 +87,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.MergeInAccountCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ChangeUserIdentifierCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.DisableUserCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeactivateUserCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -384,33 +384,33 @@ public class Admin extends AbstractApiBean {
     }  
 
     @POST
-    @Path("authenticatedUsers/{identifier}/disable")
-    public Response disableAuthenticatedUser(@PathParam("identifier") String identifier) {
+    @Path("authenticatedUsers/{identifier}/deactivate")
+    public Response deactivateAuthenticatedUser(@PathParam("identifier") String identifier) {
         AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
         if (user != null) {
-            return disableAuthenticatedUser(user);
+            return deactivateAuthenticatedUser(user);
         }
         return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
     }
 
     @POST
-    @Path("authenticatedUsers/id/{id}/disable")
-    public Response disableAuthenticatedUserById(@PathParam("id") Long id) {
+    @Path("authenticatedUsers/id/{id}/deactivate")
+    public Response deactivateAuthenticatedUserById(@PathParam("id") Long id) {
         AuthenticatedUser user = authSvc.findByID(id);
         if (user != null) {
-            return disableAuthenticatedUser(user);
+            return deactivateAuthenticatedUser(user);
         }
         return error(Response.Status.BAD_REQUEST, "User " + id + " not found.");
     }
 
-    private Response disableAuthenticatedUser(AuthenticatedUser userToDisable) {
+    private Response deactivateAuthenticatedUser(AuthenticatedUser userToDisable) {
         AuthenticatedUser superuser = authSvc.getAdminUser();
         if (superuser == null) {
-            return error(Response.Status.INTERNAL_SERVER_ERROR, "Cannot find superuser to execute DisableUserCommand.");
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Cannot find superuser to execute DeactivateUserCommand.");
         }
         try {
-            execCommand(new DisableUserCommand(createDataverseRequest(superuser), userToDisable));
-            return ok("User " + userToDisable.getIdentifier() + " disabled.");
+            execCommand(new DeactivateUserCommand(createDataverseRequest(superuser), userToDisable));
+            return ok("User " + userToDisable.getIdentifier() + " deactivated.");
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }

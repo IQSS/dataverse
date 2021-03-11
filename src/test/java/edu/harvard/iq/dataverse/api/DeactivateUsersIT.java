@@ -16,7 +16,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class DisableUsersIT {
+public class DeactivateUsersIT {
 
     @BeforeClass
     public static void setUp() {
@@ -24,7 +24,7 @@ public class DisableUsersIT {
     }
 
     @Test
-    public void testDisableUser() {
+    public void testDeactivateUser() {
 
         Response createSuperuser = UtilIT.createRandomUser();
         createSuperuser.then().assertThat().statusCode(OK.getStatusCode());
@@ -51,9 +51,9 @@ public class DisableUsersIT {
         String username = UtilIT.getUsernameFromResponse(createUser);
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
 
-        Response grantRoleBeforeDisable = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.ADMIN.toString(), "@" + username, superuserApiToken);
-        grantRoleBeforeDisable.prettyPrint();
-        grantRoleBeforeDisable.then().assertThat()
+        Response grantRoleBeforeDeactivate = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.ADMIN.toString(), "@" + username, superuserApiToken);
+        grantRoleBeforeDeactivate.prettyPrint();
+        grantRoleBeforeDeactivate.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.assignee", equalTo("@" + username))
                 .body("data._roleAlias", equalTo("admin"));
@@ -75,31 +75,31 @@ public class DisableUsersIT {
         addToGroup.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
-        Response userTracesBeforeDisable = UtilIT.getUserTraces(username, superuserApiToken);
-        userTracesBeforeDisable.prettyPrint();
-        userTracesBeforeDisable.then().assertThat()
+        Response userTracesBeforeDeactivate = UtilIT.getUserTraces(username, superuserApiToken);
+        userTracesBeforeDeactivate.prettyPrint();
+        userTracesBeforeDeactivate.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.traces.roleAssignments.items[0].definitionPointName", equalTo(dataverseAlias))
                 .body("data.traces.roleAssignments.items[0].definitionPointId", equalTo(dataverseId))
                 .body("data.traces.explicitGroups.items[0].name", equalTo("Group for " + dataverseAlias));
 
-        Response disableUser = UtilIT.disableUser(username);
-        disableUser.prettyPrint();
-        disableUser.then().assertThat().statusCode(OK.getStatusCode());
+        Response deactivateUser = UtilIT.deactivateUser(username);
+        deactivateUser.prettyPrint();
+        deactivateUser.then().assertThat().statusCode(OK.getStatusCode());
 
         Response getUser = UtilIT.getAuthenticatedUser(username, superuserApiToken);
         getUser.prettyPrint();
         getUser.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.disabled", equalTo(true));
+                .body("data.deactivated", equalTo(true));
 
-        Response getUserDisabled = UtilIT.getAuthenticatedUserByToken(apiToken);
-        getUserDisabled.prettyPrint();
-        getUserDisabled.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        Response getUserDeactivated = UtilIT.getAuthenticatedUserByToken(apiToken);
+        getUserDeactivated.prettyPrint();
+        getUserDeactivated.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
 
-        Response userTracesAfterDisable = UtilIT.getUserTraces(username, superuserApiToken);
-        userTracesAfterDisable.prettyPrint();
-        userTracesAfterDisable.then().assertThat()
+        Response userTracesAfterDeactivate = UtilIT.getUserTraces(username, superuserApiToken);
+        userTracesAfterDeactivate.prettyPrint();
+        userTracesAfterDeactivate.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 /**
                  * Here we are showing the the following were deleted:
@@ -110,28 +110,28 @@ public class DisableUsersIT {
                  */
                 .body("data.traces", equalTo(Collections.EMPTY_MAP));
 
-        Response grantRoleAfterDisable = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.ADMIN.toString(), "@" + username, superuserApiToken);
-        grantRoleAfterDisable.prettyPrint();
-        grantRoleAfterDisable.then().assertThat()
+        Response grantRoleAfterDeactivate = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.ADMIN.toString(), "@" + username, superuserApiToken);
+        grantRoleAfterDeactivate.prettyPrint();
+        grantRoleAfterDeactivate.then().assertThat()
                 .statusCode(FORBIDDEN.getStatusCode())
-                .body("message", equalTo("User " + username + " is disabled and cannot be given a role."));
+                .body("message", equalTo("User " + username + " is deactivated and cannot be given a role."));
 
         Response addToGroupAfter = UtilIT.addToGroup(dataverseAlias, aliasInOwner, roleAssigneesToAdd, superuserApiToken);
         addToGroupAfter.prettyPrint();
         addToGroupAfter.then().assertThat()
                 .statusCode(FORBIDDEN.getStatusCode())
-                .body("message", equalTo("User " + username + " is disabled and cannot be added to a group."));
+                .body("message", equalTo("User " + username + " is deactivated and cannot be added to a group."));
 
         Response grantRoleOnDataset = UtilIT.grantRoleOnDataset(datasetPersistentId, DataverseRole.ADMIN.toString(), "@" + username, superuserApiToken);
         grantRoleOnDataset.prettyPrint();
         grantRoleOnDataset.then().assertThat()
                 .statusCode(FORBIDDEN.getStatusCode())
-                .body("message", equalTo("User " + username + " is disabled and cannot be given a role."));
+                .body("message", equalTo("User " + username + " is deactivated and cannot be given a role."));
 
     }
 
     @Test
-    public void testDisableUserById() {
+    public void testDeactivateUserById() {
 
         Response createSuperuser = UtilIT.createRandomUser();
         createSuperuser.then().assertThat().statusCode(OK.getStatusCode());
@@ -148,13 +148,13 @@ public class DisableUsersIT {
         Long userId = JsonPath.from(createUser.body().asString()).getLong("data.user.id");
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
 
-        Response disableUser = UtilIT.disableUser(userId);
-        disableUser.prettyPrint();
-        disableUser.then().assertThat().statusCode(OK.getStatusCode());
+        Response deactivateUser = UtilIT.deactivateUser(userId);
+        deactivateUser.prettyPrint();
+        deactivateUser.then().assertThat().statusCode(OK.getStatusCode());
     }
 
     @Test
-    public void testMergeDisabledIntoEnabledUser() {
+    public void testMergeDeactivatedIntoNonDeactivatedUser() {
 
         Response createSuperuser = UtilIT.createRandomUser();
         String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
@@ -171,18 +171,18 @@ public class DisableUsersIT {
         createUserToMerge.prettyPrint();
         String usernameToMerge = UtilIT.getUsernameFromResponse(createUserToMerge);
 
-        Response disableUser = UtilIT.disableUser(usernameToMerge);
-        disableUser.prettyPrint();
-        disableUser.then().assertThat().statusCode(OK.getStatusCode());
+        Response deactivateUser = UtilIT.deactivateUser(usernameToMerge);
+        deactivateUser.prettyPrint();
+        deactivateUser.then().assertThat().statusCode(OK.getStatusCode());
 
-        // User accounts can only be merged if they are either both enabled or both disabled.
+        // User accounts can only be merged if they are either both non-deactivated or both deactivated.
         Response mergeAccounts = UtilIT.mergeAccounts(usernameMergeTarget, usernameToMerge, superuserApiToken);
         mergeAccounts.prettyPrint();
         mergeAccounts.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
     }
 
     @Test
-    public void testMergeEnabledIntoDisabledUser() {
+    public void testMergeNonDeactivatedIntoDeactivatedUser() {
 
         Response createSuperuser = UtilIT.createRandomUser();
         String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
@@ -199,18 +199,18 @@ public class DisableUsersIT {
         createUserToMerge.prettyPrint();
         String usernameToMerge = UtilIT.getUsernameFromResponse(createUserToMerge);
 
-        Response disableUser = UtilIT.disableUser(usernameMergeTarget);
-        disableUser.prettyPrint();
-        disableUser.then().assertThat().statusCode(OK.getStatusCode());
+        Response deactivateUser = UtilIT.deactivateUser(usernameMergeTarget);
+        deactivateUser.prettyPrint();
+        deactivateUser.then().assertThat().statusCode(OK.getStatusCode());
 
-        // User accounts can only be merged if they are either both enabled or both disabled.
+        // User accounts can only be merged if they are either both non-deactivated or both deactivated.
         Response mergeAccounts = UtilIT.mergeAccounts(usernameMergeTarget, usernameToMerge, superuserApiToken);
         mergeAccounts.prettyPrint();
         mergeAccounts.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
     }
 
     @Test
-    public void testMergeDisabledIntoDisabledUser() {
+    public void testMergeDeactivatedIntoDeactivatedUser() {
 
         Response createSuperuser = UtilIT.createRandomUser();
         String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
@@ -227,15 +227,15 @@ public class DisableUsersIT {
         createUserToMerge.prettyPrint();
         String usernameToMerge = UtilIT.getUsernameFromResponse(createUserToMerge);
 
-        Response disableUserMergeTarget = UtilIT.disableUser(usernameMergeTarget);
-        disableUserMergeTarget.prettyPrint();
-        disableUserMergeTarget.then().assertThat().statusCode(OK.getStatusCode());
+        Response deactivatedUserMergeTarget = UtilIT.deactivateUser(usernameMergeTarget);
+        deactivatedUserMergeTarget.prettyPrint();
+        deactivatedUserMergeTarget.then().assertThat().statusCode(OK.getStatusCode());
 
-        Response disableUserToMerge = UtilIT.disableUser(usernameToMerge);
-        disableUserToMerge.prettyPrint();
-        disableUserToMerge.then().assertThat().statusCode(OK.getStatusCode());
+        Response deactivatedUserToMerge = UtilIT.deactivateUser(usernameToMerge);
+        deactivatedUserToMerge.prettyPrint();
+        deactivatedUserToMerge.then().assertThat().statusCode(OK.getStatusCode());
 
-        // User accounts can only be merged if they are either both enabled or both disabled.
+        // User accounts can only be merged if they are either both non-deactivated or both deactivated.
         Response mergeAccounts = UtilIT.mergeAccounts(usernameMergeTarget, usernameToMerge, superuserApiToken);
         mergeAccounts.prettyPrint();
         mergeAccounts.then().assertThat().statusCode(OK.getStatusCode());
