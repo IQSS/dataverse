@@ -4,9 +4,9 @@
 # this was based off the phoenix deployment; and is likely uglier and bulkier than necessary in a perfect world
 
 mkdir -p testdata/doc/sphinx-guides/source/_static/util/
-cp ../solr/7.7.2/schema*.xml testdata/
-cp ../solr/7.7.2/solrconfig.xml testdata/
-cp ../solr/7.7.2/updateSchemaMDB.sh testdata/
+cp ../solr/8.8.1/schema*.xml testdata/
+cp ../solr/8.8.1/solrconfig.xml testdata/
+cp ../solr/8.8.1/updateSchemaMDB.sh testdata/
 cp ../jhove/jhove.conf testdata/
 cp ../jhove/jhoveConfig.xsd testdata/
 cd ../../

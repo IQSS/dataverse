@@ -9,7 +9,7 @@ The Dataverse Software has a flexible data-driven metadata system powered by "me
 Introduction
 ------------
 
-Before you embark on customizing metadata in your Dataverse installation you should make sure you are aware of the modest amount of customization that is available with your Dataverse installation's web interface. It's possible to hide fields and make field required by clicking "Edit" at the Dataverse collection level, clicking "General Information" and making adjustments under "Metadata Fields" as described in the :ref:`create-dataverse` section of the Dataverse Collection Management page in the User Guide.
+Before you embark on customizing metadata in your Dataverse installation you should make sure you are aware of the modest amount of customization that is available with your Dataverse installation's web interface. It's possible to hide fields and make fields required or conditionally required by clicking "Edit" at the Dataverse collection level, clicking "General Information" and making adjustments under "Metadata Fields" as described in the :ref:`create-dataverse` section of the Dataverse Collection Management page in the User Guide.
 
 Much more customization of metadata is possible, but this is an advanced topic so feedback on what is written below is very welcome. The possibilities for customization include:
 
@@ -289,16 +289,37 @@ Each of the three main sections own sets of properties:
 |                       | the dataset has been  |                        |
 |                       | saved.                |                        |
 +-----------------------+-----------------------+------------------------+
-| required              | Specify whether or    | TRUE (required) or     |
-|                       | not the field is      | FALSE (optional)       |
-|                       | required. This means  |                        |
-|                       | that at least one     |                        |
-|                       | instance of the field |                        |
-|                       | must be present. More |                        |
-|                       | than one field may be |                        |
-|                       | allowed, depending on |                        |
-|                       | the value of          |                        |
-|                       | allowmultiples.       |                        |
+| required              | For primitive         | For primitive          |
+|                       | fields, specify       | fields, TRUE           |
+|                       | whether or not the    | (required) or FALSE    |
+|                       | field is required.    | (optional).            |
+|                       | For compound          |                        |
+|                       | fields, also          | For compound fields:   |
+|                       | specify if one or     |                        |
+|                       | more subfields are    | \• To make one or more |
+|                       | required or           | subfields optional,    |
+|                       | conditionally         | the parent field and   |
+|                       | required. At least    | subfield(s) must be    |
+|                       | one instance of a     | FALSE (optional).      |
+|                       | required field must   |                        |
+|                       | be present. More      | \• To make one or more |
+|                       | than one instance     | subfields required,    |
+|                       | of a field may be     | the parent field and   |
+|                       | allowed, depending    | the required           |
+|                       | on the value of       | subfield(s) must be    |
+|                       | allowmultiples.       | TRUE (required).       |
+|                       |                       |                        |
+|                       |                       | \• To make one or more |
+|                       |                       | subfields              |
+|                       |                       | conditionally          |
+|                       |                       | required, make the     |
+|                       |                       | parent field FALSE     |
+|                       |                       | (optional) and make    |
+|                       |                       | TRUE (required) any    |
+|                       |                       | subfield or subfields  |
+|                       |                       | that are required if   |
+|                       |                       | any other subfields    |
+|                       |                       | are filled.            |
 +-----------------------+-----------------------+------------------------+
 | parent                | For subfields,        | \• Must not result in  |
 |                       | specify the name of   | a cyclical             |
@@ -623,7 +644,7 @@ configuration, including any enabled metadata schemas:
 
 ``curl http://localhost:8080/api/admin/index/solr/schema``
 
-For convenience and automation you can download and consider running :download:`updateSchemaMDB.sh <../../../../conf/solr/7.7.2/updateSchemaMDB.sh>`. It uses the API endpoint above and writes schema files to the filesystem (so be sure to run it on the Solr server itself as the Unix user who owns the Solr files) and then triggers a Solr reload.
+For convenience and automation you can download and consider running :download:`updateSchemaMDB.sh <../../../../conf/solr/8.8.1/updateSchemaMDB.sh>`. It uses the API endpoint above and writes schema files to the filesystem (so be sure to run it on the Solr server itself as the Unix user who owns the Solr files) and then triggers a Solr reload.
 
 By default, it will download from your Dataverse installation at `http://localhost:8080` and reload Solr at `http://localhost:8983`.
 You may use the following environment variables with this script or mix'n'match with options:
@@ -636,13 +657,13 @@ Environment variable  Option  Description                                      E
 `UNBLOCK_KEY`         `-u`    If your installation has a blocked admin API     *xyz* or */secrets/unblock.key*
                               endpoint, you can provide either the key itself
                               or a path to a keyfile
-`TARGET`              `-t`    Provide the config directory of your Solr core   */usr/local/solr/solr-7.7.2/server/solr/collection1/conf*
+`TARGET`              `-t`    Provide the config directory of your Solr core   */usr/local/solr/solr-8.8.1/server/solr/collection1/conf*
                               "collection1"
 ====================  ======  ===============================================  =========================================================
 
 See the :doc:`/installation/prerequisites/` section of the Installation Guide for a suggested location on disk for the Solr schema file.
 
-Please note that if you are going to make a pull request updating ``conf/solr/7.7.2/schema.xml`` with fields you have added, you should first load all the custom metadata blocks in ``scripts/api/data/metadatablocks`` (including ones you don't care about) to create a complete list of fields.
+Please note that if you are going to make a pull request updating ``conf/solr/8.8.1/schema.xml`` with fields you have added, you should first load all the custom metadata blocks in ``scripts/api/data/metadatablocks`` (including ones you don't care about) to create a complete list of fields.
 
 Reloading a Metadata Block
 --------------------------

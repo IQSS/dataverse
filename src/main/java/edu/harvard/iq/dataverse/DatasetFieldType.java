@@ -141,7 +141,9 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public DatasetFieldType() {}
 
     public DatasetFieldType(String name, FieldType fieldType, boolean allowMultiples) {
+        // use the name for both default name and title
         this.name = name;
+        this.title = name;
         this.fieldType = fieldType;
         this.allowMultiples = allowMultiples;
         childDatasetFieldTypes = new LinkedList<>();
