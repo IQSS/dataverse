@@ -8,7 +8,7 @@ import javax.mail.internet.InternetAddress;
 
 public class BrandingUtil {
 
-    static DataverseServiceBean dataverseService;
+    private static DataverseServiceBean dataverseService;
     
     public static String getInstallationBrandName() {
         //ToDo #7387 which will make this call return something different than getRootDataverseCollectionName() 
