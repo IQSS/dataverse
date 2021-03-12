@@ -201,11 +201,15 @@ public class DdiExportUtil {
         boolean distributorSet=false;
         MetadataBlockDTO citationDTO= version.getMetadataBlocks().get("citation");
         if(citationDTO!=null) {
-            if(citationDTO.getField(DatasetFieldConstant.distributorName)!=null) {
+            if(citationDTO.getField(DatasetFieldConstant.distributor)!=null) {
                 distributorSet=true;
             }
         }
-        if (!StringUtils.isEmpty(datasetDto.getPublisher()) && !(ConfigProvider.getConfig().getOptionalValue("dataverse.export.distributor.excludeinstallationifset", Boolean.class).orElse(false) && distributorSet)) {
+        logger.info("Dsitr set?: " + distributorSet);
+        logger.info("Pub?: " + datasetDto.getPublisher());
+        boolean excludeRepository = ConfigProvider.getConfig().getOptionalValue("dataverse.export.distributor.excludeinstallationifset", Boolean.class).orElse(false);
+        logger.info("Exclude: " + excludeRepository);
+        if (!StringUtils.isEmpty(datasetDto.getPublisher()) && !(excludeRepository && distributorSet)) {
             xmlw.writeStartElement("distrbtr");
             writeAttribute(xmlw, "source", "archive");
             xmlw.writeCharacters(datasetDto.getPublisher());
