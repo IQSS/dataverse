@@ -12,7 +12,7 @@ Introduction
 
 The Dataverse Software can perform two sequences of actions when datasets are published: one prior to publishing (marked by a ``PrePublishDataset`` trigger), and one after the publication has succeeded (``PostPublishDataset``). The pre-publish workflow is useful for having an external system prepare a dataset for being publicly accessed (a possibly lengthy activity that requires moving files around, uploading videos to a streaming server, etc.), or to start an approval process. A post-publish workflow might be used for sending notifications about the newly published dataset.
 
-Workflow steps are created using *step providers*. The Dataverse Software ships with an internal step provider that offers some basic functionality, and with the ability to load 3rd party step providers. This allows installations to implement functionality they need without changing the Dataverse Software source code.
+Workflow steps are created using *step providers*. The Dataverse Software ships with an internal step provider that offers some basic functionality, and with the ability to load 3rd party step providers (currently disabled). This allows installations to implement functionality they need without changing the Dataverse Software source code.
 
 Steps can be internal (say, writing some data to the log) or external. External steps involve the Dataverse Software sending a request to an external system, and waiting for the system to reply. The wait period is arbitrary, and so allows the external system unbounded operation time. This is useful, e.g., for steps that require human intervention, such as manual approval of a dataset publication.
 
@@ -62,7 +62,8 @@ A step that writes data about the current workflow invocation to the instance lo
 pause
 +++++
 
-A step that pauses the workflow. The workflow is paused until a POST request is sent to ``/api/workflows/{invocation-id}``. Sending 'fail' in the POST body (Content-type:text/plain) will trigger a failure and workflow rollback. All other responses are considered as successes. 
+A step that pauses the workflow. The workflow is paused until a POST request is sent to ``/api/workflows/{invocation-id}``. Sending 'fail' in the POST body (Content-type:text/plain) will trigger a failure and workflow rollback. All other responses are considered as successes.
+The pause step is intended for testing - the invocationId required to end the pause is only available in the log (and database). Adding a parameter (see log step) with the key/value "authorized":"true" will allow the invocationId to be used as a credential as with the http/authext step below. 
 
 .. code:: json
 

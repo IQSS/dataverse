@@ -179,8 +179,6 @@ Additional download options available for tabular data (found in the same drop-d
 - Data File Citation (currently in either RIS, EndNote XML, or BibTeX format); 
 - All of the above, as a zipped bundle. 
 
-See also :ref:`restricted-tabular-files`.
-
 Astronomy (FITS)
 ----------------
 
@@ -213,19 +211,6 @@ Restricted Files
 When you restrict a file it cannot be downloaded unless permission has been granted.
 
 See also :ref:`terms-of-access` and :ref:`permissions`.
-
-.. _restricted-tabular-files:
-
-Restricted Tabular Files
-------------------------
-
-Restricted tabular files are treated differently than other file types in that the following information is exposed when the files are published:
-
-- The name of columns (variables).
-- The "label" (description) of columns.
-- Summary statistics (max, min, mean, etc.) of columns.
-
-This information can been seen from the file landing page if you click "Export Metada" and then "DDI". Depending on your installation, the information above may also be available from :doc:`/admin/external-tools`.
 
 Edit Files
 ==========

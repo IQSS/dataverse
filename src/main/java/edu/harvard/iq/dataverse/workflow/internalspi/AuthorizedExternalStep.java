@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.workflow.PendingWorkflowInvocation;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext;
 import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
@@ -60,7 +61,8 @@ public class AuthorizedExternalStep implements WorkflowStep {
             if (responseStatus>=200 && responseStatus<300 ) {
                 // HTTP OK range
                 Map<String, String> data = new HashMap<String, String> ();
-                data.put("authorized", "true");
+                //Allow external client to use invocationId as a key to act on the user's behalf
+                data.put(PendingWorkflowInvocation.AUTHORIZED, "true");
                 return new Pending(data);
             } else {
                 String responseBody = mtd.getResponseBodyAsString();
