@@ -6,6 +6,7 @@ import javax.ejb.Singleton;
 import javax.ejb.Startup;
 
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
     /**
      * This is a small helper bean 
@@ -18,9 +19,10 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 
         @EJB
         DataverseServiceBean dataverseSvc;
+        @EJB SettingsServiceBean settingsSvc;
         
         @PostConstruct
         public void injectService() {
-            BrandingUtil.injectDataverseService(dataverseSvc);
+            BrandingUtil.injectServices(dataverseSvc, settingsSvc);
         }
     }

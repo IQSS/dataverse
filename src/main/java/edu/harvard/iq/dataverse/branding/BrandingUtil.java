@@ -1,24 +1,22 @@
 package edu.harvard.iq.dataverse.branding;
 
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 import javax.mail.internet.InternetAddress;
 
-import org.eclipse.microprofile.config.ConfigProvider;
-
 public class BrandingUtil {
 
-    static DataverseServiceBean dataverseService;
-
-    static String brandName = null;
+    private static final Logger logger = Logger.getLogger(BrandingUtil.class.getCanonicalName());
     
+    static DataverseServiceBean dataverseService;
+    static SettingsServiceBean settingsService;
+
     public static String getInstallationBrandName() {
-        if(brandName==null) {
-        brandName = ConfigProvider.getConfig().getOptionalValue("dataverse.branding.installation.name", String.class)
-                .orElse(dataverseService.getRootDataverseName());
-        }
+        String brandName = settingsService.getValueForKey(SettingsServiceBean.Key.InstallationName, dataverseService.getRootDataverseName());
         return brandName;
     }
 
@@ -54,7 +52,8 @@ public class BrandingUtil {
         return BundleUtil.getStringFromBundle("contact.header", Arrays.asList(getSupportTeamName(systemAddress)));
     }
 
-    public static void injectDataverseService(DataverseServiceBean dataverseService) {
-        BrandingUtil.dataverseService = dataverseService;
+    public static void injectServices(DataverseServiceBean dataverseSvc, SettingsServiceBean settingsSvc) {
+        dataverseService = dataverseSvc;
+        settingsService = settingsSvc;
     }
 }
