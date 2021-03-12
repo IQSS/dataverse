@@ -12,7 +12,6 @@ import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.export.OAI_OREExporter;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
@@ -22,12 +21,9 @@ import java.io.OutputStream;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
-import javax.ejb.Stateless;
-import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -35,24 +31,22 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
-@Stateless
 public class OREMap {
 
-    @Inject static SettingsServiceBean settingsService;
+    static SettingsServiceBean settingsService;
     
     public static final String NAME = "OREMap";
     private Map<String, String> localContext = new TreeMap<String, String>();
     private DatasetVersion version;
-    private boolean excludeEmail = false;
+    private Boolean excludeEmail = null;
     
     public OREMap(DatasetVersion version) {
-        this(version, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false));
-        
+        this.version = version;
     }
 
     //Used when the ExcludeEmailFromExport needs to be overriden, i.e. for archiving
     public OREMap(DatasetVersion dv, boolean exclude) {
-        this.version = version;
+        this.version = dv;
         this.excludeEmail = exclude;
     }
 
@@ -63,6 +57,11 @@ public class OREMap {
 
     public JsonObject getOREMap() throws Exception {
 
+        //Set this flag if it wasn't provided
+        if(excludeEmail==null) {
+            excludeEmail = settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false);
+        }
+        
         // Add namespaces we'll definitely use to Context
         // Additional namespaces are added as needed below
         localContext.putIfAbsent(JsonLDNamespace.ore.getPrefix(), JsonLDNamespace.ore.getUrl());
@@ -179,7 +178,7 @@ public class OREMap {
         }
 
         aggBuilder.add(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel(),
-                dataset.getDataverseContext().getDisplayName());
+                BrandingUtil.getRootDataverseCollectionName());
 
         // The aggregation aggregates aggregatedresources (Datafiles) which each have
         // their own entry and metadata
@@ -392,4 +391,7 @@ public class OREMap {
         return null;
     }
 
+    public static void injectSettingsService(SettingsServiceBean settingsSvc) {
+        settingsService = settingsSvc;
+    }
 }

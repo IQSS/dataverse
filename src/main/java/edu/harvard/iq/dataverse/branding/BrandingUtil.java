@@ -4,14 +4,10 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
 
-import javax.ejb.EJB;
-import javax.ejb.Singleton;
 import javax.mail.internet.InternetAddress;
 
-@Singleton
 public class BrandingUtil {
 
-    @EJB
     static DataverseServiceBean dataverseService;
     
     public static String getInstallationBrandName() {
