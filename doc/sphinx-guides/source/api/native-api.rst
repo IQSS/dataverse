@@ -3092,27 +3092,25 @@ Deactivates a user. A superuser API token is not required but the command will o
 
 .. code-block:: bash
 
-  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=http://localhost:8080
   export USERNAME=jdoe
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/admin/authenticatedUsers/$USERNAME/deactivate
+  curl -X POST $SERVER_URL/api/admin/authenticatedUsers/$USERNAME/deactivate
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST http://localhost:8080/api/admin/authenticatedUsers/jdoe/deactivate
+  curl -X POST http://localhost:8080/api/admin/authenticatedUsers/jdoe/deactivate
 
 The database ID of the user can be passed instead of the username.
 
 .. code-block:: bash
 
-  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=http://localhost:8080
   export USERID=42
 
-  curl -H "X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/admin/authenticatedUsers/id/$USERID/deactivate
+  curl -X POST $SERVER_URL/api/admin/authenticatedUsers/id/$USERID/deactivate
 
 Note: A primary purpose of most Dataverse installations is to serve an archive. In the archival space, there are best practices around the tracking of data access and the tracking of modifications to data and metadata. In support of these key workflows, a simple mechanism to delete users that have performed edit or access actions in the system is not provided. Providing a Deactivate User endpoint for users who have taken certain actions in the system alongside a Delete User endpoint to remove users that haven't taken certain actions in the system is by design.
 
