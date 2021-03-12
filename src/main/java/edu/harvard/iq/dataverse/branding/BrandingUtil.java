@@ -12,8 +12,8 @@ public class BrandingUtil {
 
     private static final Logger logger = Logger.getLogger(BrandingUtil.class.getCanonicalName());
     
-    static DataverseServiceBean dataverseService;
-    static SettingsServiceBean settingsService;
+    private static DataverseServiceBean dataverseService;
+    private static SettingsServiceBean settingsService;
 
     public static String getInstallationBrandName() {
         
