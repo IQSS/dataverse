@@ -515,8 +515,6 @@
                     <groupId>javax.xml.stream</groupId>
                     <artifactId>stax-api</artifactId>
                 </exclusion>
-            </exclusions>
-            <exclusions>
                 <exclusion>
                     <groupId>stax</groupId>
                     <artifactId>stax-api</artifactId>
