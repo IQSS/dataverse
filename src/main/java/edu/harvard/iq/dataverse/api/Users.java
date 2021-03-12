@@ -204,8 +204,8 @@ public class Users extends AbstractApiBean {
             }
             execCommand(new RevokeAllRolesCommand(userToModify, createDataverseRequest(findUserOrDie())));
             return ok("Roles removed for user " + identifier + ".");
-        } catch (Exception ex) {
-            return error(Response.Status.BAD_REQUEST, "Unable to revoke all roles: " + ex.getLocalizedMessage());
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
     }
 

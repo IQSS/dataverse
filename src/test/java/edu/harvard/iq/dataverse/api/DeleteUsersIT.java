@@ -16,6 +16,7 @@ import javax.json.JsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.BeforeClass;
@@ -673,6 +674,13 @@ public class DeleteUsersIT {
         //
         // TODO: deactivate curator2 here
         //
+        // Show the error if you don't have permission.
+        Response failToRemoveRole = UtilIT.deleteUserRoles(author2Username, curator2ApiToken);
+        failToRemoveRole.prettyPrint();
+        failToRemoveRole.then().assertThat()
+                .statusCode(UNAUTHORIZED.getStatusCode())
+                .body("message", equalTo("User @" + curator2Username + " is not permitted to perform requested action."));
+
         Response removeRolesFromAuthor2 = UtilIT.deleteUserRoles(author2Username, superuserApiToken);
         removeRolesFromAuthor2.prettyPrint();
         removeRolesFromAuthor2.then().assertThat()
