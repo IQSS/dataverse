@@ -44,7 +44,7 @@ public class DbSettingConfigSource implements ConfigSource {
         }
         properties.clear();
         Set<Setting> dbSettings = settingsSvc.listAll();
-        dbSettings.forEach(s -> properties.put(PREFIX+"."+s.getName()+ (s.getLang() == null ? "" : "."+s.getLang()), s.getContent()));
+        dbSettings.forEach(s -> properties.put(PREFIX+"."+s.getName().substring(1) + (s.getLang() == null ? "" : "."+s.getLang()), s.getContent()));
         lastUpdate = Instant.now();
     }
     
