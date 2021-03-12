@@ -16,7 +16,12 @@ public class BrandingUtil {
     static SettingsServiceBean settingsService;
 
     public static String getInstallationBrandName() {
-        String brandName = settingsService.getValueForKey(SettingsServiceBean.Key.InstallationName, dataverseService.getRootDataverseName());
+        
+        String brandName = settingsService.getValueForKey(SettingsServiceBean.Key.InstallationName);
+        //Separate if statement simplifies test setup, otherwise could use the getValueForKey method with a default param
+        if(brandName==null) {
+            brandName = dataverseService.getRootDataverseName();
+        }
         return brandName;
     }
 
