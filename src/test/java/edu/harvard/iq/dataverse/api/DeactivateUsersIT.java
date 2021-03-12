@@ -13,6 +13,7 @@ import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.startsWith;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -92,6 +93,14 @@ public class DeactivateUsersIT {
         getUser.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body("data.deactivated", equalTo(true));
+
+        Response findUser = UtilIT.filterAuthenticatedUsers(superuserApiToken, username, null, 100, null);
+        findUser.prettyPrint();
+        findUser.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.users[0].userIdentifier", equalTo(username))
+                .body("data.users[0].deactivated", equalTo(true))
+                .body("data.users[0].deactivatedTime", startsWith("2"));
 
         Response getUserDeactivated = UtilIT.getAuthenticatedUserByToken(apiToken);
         getUserDeactivated.prettyPrint();

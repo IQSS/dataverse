@@ -388,6 +388,9 @@ public class AuthenticatedUser implements User, Serializable {
         authenicatedUserJson.add("lastLoginTime", UserUtil.getTimestampStringOrNull(this.lastLoginTime));
         authenicatedUserJson.add("lastApiUseTime", UserUtil.getTimestampStringOrNull(this.lastApiUseTime));
 
+        authenicatedUserJson.add("deactivated", this.deactivated);
+        authenicatedUserJson.add("deactivatedTime", UserUtil.getTimestampStringOrNull(this.deactivatedTime));
+
         return authenicatedUserJson;
     }
     
