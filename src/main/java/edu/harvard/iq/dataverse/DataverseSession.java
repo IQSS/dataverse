@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.PermissionServiceBean.StaticPermissionQuery;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -56,7 +57,10 @@ public class DataverseSession implements Serializable{
     
     @EJB
     BannerMessageServiceBean bannerMessageService;
-    
+
+    @EJB
+    AuthenticationServiceBean authenticationService;
+
     private static final Logger logger = Logger.getLogger(DataverseSession.class.getCanonicalName());
     
     private boolean statusDismissed = false;
@@ -89,7 +93,19 @@ public class DataverseSession implements Serializable{
         if ( user == null ) {
             user = GuestUser.get();
         }
- 
+        if (user instanceof AuthenticatedUser) {
+            AuthenticatedUser auFromSession = (AuthenticatedUser) user;
+            AuthenticatedUser auFreshLookup = authenticationService.findByID(auFromSession.getId());
+            if (auFreshLookup == null) {
+                logger.fine("getUser found user no longer exists (was deleted). Returning GuestUser.");
+                user = GuestUser.get();
+            } else {
+                if (auFreshLookup.isDeactivated()) {
+                    logger.fine("getUser found user is deactivated. Returning GuestUser.");
+                    user = GuestUser.get();
+                }
+            }
+        }
         return user;
     }
 
