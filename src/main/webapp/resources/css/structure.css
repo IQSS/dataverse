@@ -374,7 +374,8 @@ div.ui-state-focus span.ui-chkbox-icon {outline: -webkit-focus-ring-color auto 5
 #dataverse-info-dropdown .dataverse-info-logo-icon .icon-dataverse {font-size:40px; line-height:40px;}
 #dataverse-info-dropdown .dataverse-info-general {float:left; width:300px;}
 
-.button-block {margin-top:1em;z-index:500;position:relative;}
+.button-block {margin-top:1em;}
+#datasetForm .button-block {margin-top:1em;z-index:500;position:relative;}
 .button-block .btn {position:relative;}
 .form-group > .button-block, 
 .panel-body > .button-block, 
