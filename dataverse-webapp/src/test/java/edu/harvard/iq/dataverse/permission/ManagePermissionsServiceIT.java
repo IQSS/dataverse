@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
+import edu.harvard.iq.dataverse.persistence.user.RoleAssignmentRepository;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
@@ -31,10 +32,10 @@ import java.util.stream.Collectors;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(Arquillian.class)
-@Transactional(TransactionMode.ROLLBACK)
 public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -49,6 +50,8 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
     private AuthenticationServiceBean authenticationService;
     @Inject
     private DataverseRoleServiceBean roleService;
+    @Inject
+    private RoleAssignmentRepository roleAssignmentRepository;
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -92,6 +95,7 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
     }
 
     @Test
+    @Transactional(TransactionMode.ROLLBACK)
     public void shouldAssignRoleWithNotification_withPermissionsException() {
         // given
         Dataverse dataverse = dataverseDao.find(1L);
@@ -109,21 +113,14 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
         Dataverse dataverse = dataverseDao.find(1L);
         String userEmail = dataverseSession.getUser().getDisplayInfo().getEmailAddress();
         RoleAssignment toBeRemoved = new RoleAssignment(roleService.findBuiltinRoleByAlias(BuiltInRole.EDITOR), dataverseSession.getUser(), dataverse, null);
-        em.persist(toBeRemoved);
-        em.flush();
+        toBeRemoved = roleAssignmentRepository.save(toBeRemoved);
+        Long toBeRemovedId = toBeRemoved.getId();
 
         // when
         managePermissionsService.removeRoleAssignmentWithNotification(toBeRemoved);
 
         // then
-        TypedQuery<RoleAssignment> query = em.createNamedQuery(
-                "RoleAssignment.listByAssigneeIdentifier_DefinitionPointId_RoleId",
-                RoleAssignment.class);
-        query.setParameter("assigneeIdentifier", dataverseSession.getUser().getIdentifier());
-        query.setParameter("definitionPointId", dataverse.getId());
-        query.setParameter("roleId", roleService.findBuiltinRoleByAlias(BuiltInRole.EDITOR).getId());
-        List<RoleAssignment> roles = query.getResultList();
-        assertEquals(0, roles.size());
+        assertFalse(roleAssignmentRepository.findById(toBeRemovedId).isPresent());
 
         await()
                 .atMost(Duration.ofSeconds(5L))
@@ -132,6 +129,7 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
     }
 
     @Test
+    @Transactional(TransactionMode.ROLLBACK)
     public void removeRoleAssignmentWithNotification_withPermissionsException() {
         // given
         Dataverse dataverse = dataverseDao.find(1L);
@@ -147,6 +145,7 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
     }
 
     @Test
+    @Transactional(TransactionMode.ROLLBACK)
     public void shouldSaveOrUpdateRole() {
         // given
         Dataverse dataverse = dataverseDao.find(19L);
@@ -174,6 +173,7 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
     }
 
     @Test
+    @Transactional(TransactionMode.ROLLBACK)
     public void shouldSaveOrUpdateRole_withPermissionsException() {
         // given
         Dataverse dataverse = dataverseDao.find(19L);
@@ -191,6 +191,7 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
     }
 
     @Test
+    @Transactional(TransactionMode.ROLLBACK)
     public void shouldSetDataverseDefaultContributorRole() {
         // given
         Dataverse dataverse = dataverseDao.find(19L);
@@ -211,6 +212,7 @@ public class ManagePermissionsServiceIT extends WebappArquillianDeployment {
     }
 
     @Test
+    @Transactional(TransactionMode.ROLLBACK)
     public void shouldSetDataverseDefaultContributorRole_withPermissionsException() {
         // given
         Dataverse dataverse = dataverseDao.find(19L);

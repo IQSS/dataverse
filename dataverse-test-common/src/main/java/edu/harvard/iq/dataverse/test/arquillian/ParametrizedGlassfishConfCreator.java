@@ -109,4 +109,5 @@ public class ParametrizedGlassfishConfCreator {
     private boolean isPropertiesFileExists(Path propertiesPath) {
         return propertiesPath.toFile().exists();
     }
+
 }

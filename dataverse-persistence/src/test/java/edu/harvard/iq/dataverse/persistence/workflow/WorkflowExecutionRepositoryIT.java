@@ -39,6 +39,7 @@ public class WorkflowExecutionRepositoryIT extends PersistenceArquillianDeployme
     public void shouldSaveNewExecution() {
         // given
         WorkflowExecution execution = givenWorkflowExecution(dataset.getId(), workflow.getId());
+        execution.setId(null);
         // when
         executions.saveFlushAndClear(execution);
         // then
@@ -65,6 +66,7 @@ public class WorkflowExecutionRepositoryIT extends PersistenceArquillianDeployme
     public void shouldSaveNewStepExecution() {
         // given
         WorkflowExecution execution = givenWorkflowExecution(dataset.getId(), workflow.getId());
+        execution.setId(null);
         execution.start("test", "127.0.0.1", clock);
         executions.saveFlushAndClear(execution);
         // when

@@ -202,6 +202,12 @@
                 <artifactId>jaxen</artifactId>
                 <version>1.1.1</version>
             </dependency>
+            <!-- Newest version that does not use org.ow2.asm:asm (which conflicts with glassfish) -->
+            <dependency>
+                <groupId>net.minidev</groupId>
+                <artifactId>json-smart</artifactId>
+                <version>2.1.1</version>
+            </dependency>
             <dependency>
                 <groupId>org.apache.activemq</groupId>
                 <artifactId>activemq-broker</artifactId>

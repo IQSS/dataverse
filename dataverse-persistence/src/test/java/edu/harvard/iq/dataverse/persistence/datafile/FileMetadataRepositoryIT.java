@@ -28,8 +28,8 @@ public class FileMetadataRepositoryIT extends PersistenceArquillianDeployment {
         //then
         assertEquals(foundFiles.size(), 3);
         assertEquals(110, foundFiles.get(0).getId().longValue());
-        assertEquals(113, foundFiles.get(1).getId().longValue());
-        assertEquals(112, foundFiles.get(2).getId().longValue());
+        assertEquals(112, foundFiles.get(1).getId().longValue());
+        assertEquals(113, foundFiles.get(2).getId().longValue());
     }
 
     @Test
@@ -56,10 +56,9 @@ public class FileMetadataRepositoryIT extends PersistenceArquillianDeployment {
         List<FileMetadata> foundFiles = fileMetadataRepository.findSearchedFileMetadataByDatasetVersionIdWithPagination(datasetVersionId, 0, 10, searchTerm);
 
         //then
-        assertEquals(foundFiles.size(), 3);
+        assertEquals(foundFiles.size(), 2);
         assertEquals(110, foundFiles.get(0).getId().longValue());
-        assertEquals(113, foundFiles.get(1).getId().longValue());
-        assertEquals(112, foundFiles.get(2).getId().longValue());
+        assertEquals(112, foundFiles.get(1).getId().longValue());
     }
 
     @Test

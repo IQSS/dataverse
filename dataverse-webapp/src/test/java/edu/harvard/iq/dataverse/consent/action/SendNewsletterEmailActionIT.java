@@ -56,11 +56,11 @@ public class SendNewsletterEmailActionIT extends WebappArquillianDeployment {
         EmailModel emailSent = FakeSmtpServerUtil.waitForEmailSentTo(smtpServer, "test@gmail.com");
 
         assertEquals("test@gmail.com", emailSent.getTo());
-        assertEquals("Root New consent for personal data processing", emailSent.getSubject());
+        assertEquals("Root: New consent for personal data processing", emailSent.getSubject());
         assertTrue(emailSent.getEmailStr().contains("Consent text: "+ consentDetailsDto.getText()));
         assertTrue(emailSent.getEmailStr().contains("First name: firstname"));
         assertTrue(emailSent.getEmailStr().contains("Last name: lastname"));
-        assertTrue(emailSent.getEmailStr().contains("E-mail: test@gmail.com"));
+        assertTrue(emailSent.getEmailStr().contains("E-mail: superuser@mailinator.com"));
 
     }
 }

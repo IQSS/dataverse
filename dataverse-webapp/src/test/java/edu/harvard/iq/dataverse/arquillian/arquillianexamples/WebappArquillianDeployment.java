@@ -66,7 +66,8 @@ public class WebappArquillianDeployment {
         JavaArchive javaArchive = ShrinkWrap.create(JavaArchive.class, "dv-webapp.jar")
                 .merge(PersistenceArquillianDeployment.createDeployment())
                 .addAsManifestResource(new FileAsset(new File("src/main/webapp/WEB-INF/beans.xml")), "beans.xml")
-                .addPackages(true, "edu.harvard.iq.dataverse");
+                .addPackages(true, "edu.harvard.iq.dataverse")
+                .deleteClass(WorkflowExecutionWorker.class);
 
         logger.info(javaArchive.toString(true));
 
