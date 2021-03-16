@@ -695,6 +695,10 @@ public class Admin extends AbstractApiBean {
 						password);
 				if (authenticatedUser != null) {
 					knowsExistingPassword = true;
+                                        if (builtInUserToConvert.isDeactivated()) {
+                                            problems.add("builtin account has been deactivated");
+                                            return error(Status.BAD_REQUEST, problems.build().toString());
+                                        }
 					AuthenticatedUser convertedUser = authSvc.convertBuiltInToShib(builtInUserToConvert, shibProviderId,
 							newUserIdentifierInLookupTable);
 					if (convertedUser != null) {
