@@ -268,7 +268,7 @@ public class DeactivateUsersIT {
 
         Response mergeAccounts = UtilIT.mergeAccounts(usernameMergeTarget, usernameToMerge, superuserApiToken);
         mergeAccounts.prettyPrint();
-        mergeAccounts.then().assertThat().statusCode(OK.getStatusCode());
+        mergeAccounts.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
     }
 
 }
