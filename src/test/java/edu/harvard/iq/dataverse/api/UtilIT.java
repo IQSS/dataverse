@@ -36,6 +36,7 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import static com.jayway.restassured.path.xml.XmlPath.from;
 import static com.jayway.restassured.RestAssured.given;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.StringReader;
 import javax.json.JsonArray;
 import static org.junit.Assert.assertEquals;
@@ -641,6 +642,16 @@ public class UtilIT {
         }
         return requestSpecification.post("/api/datasets/" + datasetId + "/add");
     }
+    
+    static Response getCrawlableFileAccess(String datasetId, String folderName, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken);
+        String apiPath = "/api/datasets/" + datasetId + "/dirindex?version=:draft";
+        if (StringUtil.nonEmpty(folderName)) {
+            apiPath = apiPath.concat("&folder="+folderName);
+        }
+        return requestSpecification.get(apiPath);
+    }
 
     static Response replaceFile(String fileIdOrPersistentId, String pathToFile, String apiToken) {
         String jsonAsString = null;
@@ -821,6 +832,22 @@ public class UtilIT {
         return given()
                 .urlEncodingEnabled(false)
                 .get("/api/access/datafile/" + idInPath + "/metadata" + optionalFormatInPath + "?key=" + apiToken + optionalQueryParam);
+    }
+
+    static Response getFileMetadata(String fileIdOrPersistentId, String optionalFormat) {
+        String idInPath = fileIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
+        }
+        String optionalFormatInPath = "";
+        if (optionalFormat != null) {
+            optionalFormatInPath = "/" + optionalFormat;
+        }
+        return given()
+                .urlEncodingEnabled(false)
+                .get("/api/access/datafile/" + idInPath + "/metadata" + optionalFormatInPath + optionalQueryParam);
     }
 
     static Response testIngest(String fileName, String fileType) {
@@ -1623,11 +1650,19 @@ public class UtilIT {
 //        }
 //        return requestSpecification.delete("/api/files/" + idInPath + "/prov-freeform" + optionalQueryParam);
 //    }
+    static Response exportDataset(String datasetPersistentId, String exporter) {
+        return exportDataset(datasetPersistentId, exporter, null);
+    }
 
     static Response exportDataset(String datasetPersistentId, String exporter, String apiToken) {
 //        http://localhost:8080/api/datasets/export?exporter=dataverse_json&persistentId=doi%3A10.5072/FK2/W6WIMQ
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification
+                //                .header(API_TOKEN_HTTP_HEADER, apiToken)
                 //                .get("/api/datasets/:persistentId/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
                 .get("/api/datasets/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
     }
