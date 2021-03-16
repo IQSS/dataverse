@@ -524,7 +524,7 @@
                                 });
                             </script>
                             <div>
-                                <button class="btn btn-default" jsf:action="#{ApiTokenPage.generate()}">
+                                <button class="btn btn-default" jsf:action="#{ApiTokenPage.generate()}" jsf:rendered="#{!systemConfig.readonlyMode}">
                                     #{ApiTokenPage.checkForApiToken() ? bundle['apitoken.regenerateBtn'] : bundle['apitoken.generateBtn']}                                </button>
                             </div>
                         </p:tab>
