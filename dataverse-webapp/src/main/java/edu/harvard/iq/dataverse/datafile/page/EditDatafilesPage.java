@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetService;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnailService;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.datasetutility.VirusFoundException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -883,7 +884,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         // -----------------------------------------------------------
         DataFile dFile = null;
         GetMethod dropBoxMethod = null;
-        String localWarningMessage = null;
+        List<String> localWarningMessages = new ArrayList<>();
         for (int i = 0; i < dbArray.size(); i++) {
             JsonObject dbObject = dbArray.getJsonObject(i);
 
@@ -904,13 +905,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // ---------------------------- */
             if ((!this.isUnlimitedUploadFileSize()) && (fileSize > this.getMaxFileUploadSizeInBytes())) {
                 String warningMessage = "Dropbox file \"" + fileName + "\" exceeded the limit of " + fileSize + " bytes and was not uploaded.";
-                //msg(warningMessage);
-                //FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
-                if (localWarningMessage == null) {
-                    localWarningMessage = warningMessage;
-                } else {
-                    localWarningMessage = localWarningMessage.concat("; " + warningMessage);
-                }
+                localWarningMessages.add(warningMessage);
                 continue; // skip to next file, and add error mesage
             }
 
@@ -928,76 +923,70 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
             // -----------------------------------------------------------
 
+            List<DataFile> datafiles = new ArrayList<>();
 
-            String scannerMessage = "";
-            if (settingsService.isTrueForKey(SettingsServiceBean.Key.AntivirusScannerEnabled)) {
-                scannerMessage = fileService.scan(dropBoxStream);
-            }
+            // -----------------------------------------------------------
+            // Send it through the ingest service
+            // -----------------------------------------------------------
+            try {
 
-            if (isClearScannerStatus(scannerMessage, event.getComponent())) {
+                // Note: A single uploaded file may produce multiple datafiles - 
+                // for example, multiple files can be extracted from an uncompressed
+                // zip file.
+                //datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
+                datafiles = datafileDao.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
 
-                List<DataFile> datafiles = new ArrayList<>();
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
+                continue;
+            } catch (VirusFoundException e) {
+                localWarningMessages.add(BundleUtil.getStringFromBundle("dataset.file.uploadScannerWarning"));
+                continue;
+            }/*catch (FileExceedsMaxSizeException ex){
+                this.logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}: {2}", new Object[]{fileName, fileLink, ex.getMessage()});
+                continue;
+            }*/ finally {
+                // -----------------------------------------------------------
+                // release connection for dropBoxMethod
+                // -----------------------------------------------------------
+
+                if (dropBoxMethod != null) {
+                    dropBoxMethod.releaseConnection();
+                }
 
                 // -----------------------------------------------------------
-                // Send it through the ingest service
+                // close the  dropBoxStream
                 // -----------------------------------------------------------
                 try {
-    
-                    // Note: A single uploaded file may produce multiple datafiles - 
-                    // for example, multiple files can be extracted from an uncompressed
-                    // zip file.
-                    //datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
-                    datafiles = datafileDao.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
-    
+                    dropBoxStream.close();
                 } catch (IOException ex) {
-                    logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
-                    continue;
-                }/*catch (FileExceedsMaxSizeException ex){
-                    this.logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}: {2}", new Object[]{fileName, fileLink, ex.getMessage()});
-                    continue;
-                }*/ finally {
-                    // -----------------------------------------------------------
-                    // release connection for dropBoxMethod
-                    // -----------------------------------------------------------
-    
-                    if (dropBoxMethod != null) {
-                        dropBoxMethod.releaseConnection();
-                    }
-    
-                    // -----------------------------------------------------------
-                    // close the  dropBoxStream
-                    // -----------------------------------------------------------
-                    try {
-                        dropBoxStream.close();
-                    } catch (IOException ex) {
-                        logger.log(Level.WARNING, "Failed to close the dropBoxStream for file: {0}", fileLink);
-                    }
+                    logger.log(Level.WARNING, "Failed to close the dropBoxStream for file: {0}", fileLink);
                 }
-    
-                if (datafiles == null) {
-                    logger.log(Level.SEVERE, "Failed to create DataFile for DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
-                    continue;
-                } else {
-                    // -----------------------------------------------------------
-                    // Check if there are duplicate files or ingest warnings
-                    // -----------------------------------------------------------
-                    uploadWarningMessage = processUploadedFileList(datafiles);
-                    logger.fine("Warning message during upload: " + uploadWarningMessage);
-                }
-                if (!uploadInProgress) {
-                    logger.warning("Upload in progress cancelled");
-                    for (DataFile newFile : datafiles) {
-                        deleteTempFile(newFile);
-                    }
+            }
+
+            if (datafiles == null) {
+                logger.log(Level.SEVERE, "Failed to create DataFile for DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
+                continue;
+            } else {
+                // -----------------------------------------------------------
+                // Check if there are duplicate files or ingest warnings
+                // -----------------------------------------------------------
+                uploadWarningMessage = processUploadedFileList(datafiles);
+                logger.fine("Warning message during upload: " + uploadWarningMessage);
+            }
+            if (!uploadInProgress) {
+                logger.warning("Upload in progress cancelled");
+                for (DataFile newFile : datafiles) {
+                    deleteTempFile(newFile);
                 }
             }
         }
 
-        if (localWarningMessage != null) {
+        if (!localWarningMessages.isEmpty()) {
             if (uploadWarningMessage == null) {
-                uploadWarningMessage = localWarningMessage;
+                uploadWarningMessage = StringUtils.join(localWarningMessages, "; ");
             } else {
-                uploadWarningMessage = localWarningMessage.concat("; " + uploadWarningMessage);
+                uploadWarningMessage = uploadWarningMessage + "; " + StringUtils.join(localWarningMessages, "; ");
             }
         }
     }
@@ -1176,58 +1165,42 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (uFile == null) {
             throw new NullPointerException("uFile cannot be null");
         }
-        
-        String scannerMessage = "";
-        if (settingsService.isTrueForKey(SettingsServiceBean.Key.AntivirusScannerEnabled)) {
-            scannerMessage = fileService.scan(uFile.getInputStream());
+
+        List<DataFile> dFileList = null;
+
+        try {
+            // Note: A single uploaded file may produce multiple datafiles - 
+            // for example, multiple files can be extracted from an uncompressed
+            // zip file. 
+            dFileList = datafileDao.createDataFiles(workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType());
+
+        } catch (IOException ioex) {
+            logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
+            return;
+        } catch (VirusFoundException e) {
+            uploadWarningMessage = BundleUtil.getStringFromBundle("dataset.file.uploadScannerWarning");
+            uploadComponentId = event.getComponent().getClientId();
+            return;
         }
 
-        if (isClearScannerStatus(scannerMessage, event.getComponent())) {
-            List<DataFile> dFileList = null;
+        // -----------------------------------------------------------
+        // These raw datafiles are then post-processed, in order to drop any files 
+        // already in the dataset/already uploaded, and to correct duplicate file names, etc. 
+        // -----------------------------------------------------------
+        String warningMessage = processUploadedFileList(dFileList);
 
-            try {
-                // Note: A single uploaded file may produce multiple datafiles - 
-                // for example, multiple files can be extracted from an uncompressed
-                // zip file. 
-                dFileList = datafileDao.createDataFiles(workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType());
-
-            } catch (IOException ioex) {
-                logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
-                return;
-            }
-
-            // -----------------------------------------------------------
-            // These raw datafiles are then post-processed, in order to drop any files 
-            // already in the dataset/already uploaded, and to correct duplicate file names, etc. 
-            // -----------------------------------------------------------
-            String warningMessage = processUploadedFileList(dFileList);
-    
-            if (warningMessage != null) {
-                uploadWarningMessage = warningMessage;
-                FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), warningMessage));
-                // save the component id of the p:upload widget, so that we could 
-                // send an info message there, from elsewhere in the code:
-                uploadComponentId = event.getComponent().getClientId();
-            }
-            if (!uploadInProgress) {
-                logger.warning("Upload in progress cancelled");
-                for (DataFile newFile : dFileList) {
-                    deleteTempFile(newFile);
-                }
+        if (warningMessage != null) {
+            uploadWarningMessage = warningMessage;
+            // save the component id of the p:upload widget, so that we could 
+            // send an info message there, from elsewhere in the code:
+            uploadComponentId = event.getComponent().getClientId();
+        }
+        if (!uploadInProgress) {
+            logger.warning("Upload in progress cancelled");
+            for (DataFile newFile : dFileList) {
+                deleteTempFile(newFile);
             }
         }
-    }
-
-    private boolean isClearScannerStatus(String scannerMessage, UIComponent uiComponent) {
-        if (scannerMessage.contains("FOUND")) {
-            String scannerStatus = scannerMessage.substring("stream: ".length());
-            uploadWarningMessage = BundleUtil.getStringFromBundle("dataset.file.uploadScannerWarning") + " " + scannerStatus;
-            logger.severe(scannerStatus);
-            FacesContext.getCurrentInstance().addMessage(uiComponent.getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), scannerStatus));
-            uploadComponentId = uiComponent.getClientId();
-            return false;
-        }
-        return true;
     }
     
     

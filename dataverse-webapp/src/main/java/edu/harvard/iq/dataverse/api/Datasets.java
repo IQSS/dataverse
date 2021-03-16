@@ -1674,19 +1674,6 @@ public class Datasets extends AbstractApiBean {
         }
 
 
-        try {
-            String scannerMessage = "";
-            if (settingsService.isTrueForKey(SettingsServiceBean.Key.AntivirusScannerEnabled)) {
-                scannerMessage = fileServiceBean.scan(fileInputStream);
-            }
-            if (scannerMessage.contains("FOUND")) {
-                return error(Response.Status.BAD_REQUEST, scannerMessage);
-            }
-        } catch (IOException e) {
-            return error(Response.Status.BAD_REQUEST, e.getMessage());
-        }
-
-
         // -------------------------------------
         // (3) Get the file name and content type
         // -------------------------------------

@@ -25,6 +25,8 @@ import javax.ejb.EJBException;
 import javax.json.JsonObjectBuilder;
 import javax.validation.ConstraintViolation;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -785,6 +787,10 @@ public class AddReplaceFileHelper {
                 this.addErrorSevere(getBundleErr("ingest_create_file_err"));
             }
             logger.severe(ex.toString());
+            this.runMajorCleanup();
+            return false;
+        } catch (VirusFoundException e) {
+            this.addError(Status.BAD_REQUEST, getBundleErr("virus_detected"));
             this.runMajorCleanup();
             return false;
         } finally {

@@ -10,13 +10,41 @@ import javax.ejb.ApplicationException;
 @ApplicationException(rollback = true)
 public class FileReplaceException extends RuntimeException {
 
-    public FileReplaceException(String message) {
-        super(message);
+    private Reason reason;
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    public FileReplaceException(Reason reason) {
+        super(reason.getMessage());
+        this.reason = reason;
     }
 
-    public FileReplaceException(String message, Throwable cause) {
-        super(message, cause);
+    public FileReplaceException(Reason reason, Throwable cause) {
+        super(reason.getMessage(), cause);
+        this.reason = reason;
     }
 
+    // -------------------- GETTERS --------------------
+
+    public Reason getReason() {
+        return reason;
+    }
+
+    // -------------------- INNER CLASSES --------------------
+
+    public enum Reason {
+        ZIP_NOT_SUPPORTED("Zipped files are not supported!"),
+        VIRUS_DETECTED("File contains a virus");
+
+        private String message;
+
+        private Reason(String message) {
+            this.message = message;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+    }
 }
 

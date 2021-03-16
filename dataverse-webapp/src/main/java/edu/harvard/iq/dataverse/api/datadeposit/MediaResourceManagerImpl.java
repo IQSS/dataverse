@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.datasetutility.VirusFoundException;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
@@ -329,6 +330,8 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                 }*/
             } catch (IOException ex) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + ex.getMessage());
+            } catch (VirusFoundException ex) {
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: Virus detected");
             }
             if (!dataFiles.isEmpty()) {
                 Set<ConstraintViolation> constraintViolations = editVersion.validate();

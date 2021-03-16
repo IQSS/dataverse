@@ -1,6 +1,35 @@
 package edu.harvard.iq.dataverse.datafile;
 
+import com.google.common.collect.Lists;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
+import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
+import edu.harvard.iq.dataverse.datafile.pojo.RsyncInfo;
+import edu.harvard.iq.dataverse.engine.command.exception.UpdateDatasetException;
+import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import io.vavr.control.Option;
+import io.vavr.control.Try;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ejb.Stateless;
+import javax.inject.Inject;
+import javax.validation.ConstraintViolation;
+import javax.validation.ValidationException;
+
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
@@ -10,42 +39,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.ejb.Stateless;
-import javax.inject.Inject;
-import javax.validation.ConstraintViolation;
-import javax.validation.ValidationException;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
-
-import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
-import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
-import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
-import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
-import edu.harvard.iq.dataverse.datafile.pojo.FilesIntegrityReport;
-import edu.harvard.iq.dataverse.datafile.pojo.RsyncInfo;
-import edu.harvard.iq.dataverse.engine.command.exception.UpdateDatasetException;
-import edu.harvard.iq.dataverse.engine.command.impl.PersistProvFreeFormCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
-import edu.harvard.iq.dataverse.mail.EmailContent;
-import edu.harvard.iq.dataverse.mail.MailService;
-import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
-import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
-import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import io.vavr.control.Option;
-import io.vavr.control.Try;
 
 @Stateless
 public class FileService {
@@ -172,7 +165,7 @@ public class FileService {
         }
     }
     
-    public String scan(InputStream fileInput) throws IOException {
+    public String scan(File file) throws IOException {
         Socket socket = new Socket();
 
         socket.connect(new InetSocketAddress(settingsService.getValueForKey(SettingsServiceBean.Key.AntivirusScannerSocketAddress),
@@ -181,7 +174,7 @@ public class FileService {
         socket.setSoTimeout(settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.AntivirusScannerSocketTimeout));
 
         DataOutputStream dos = null;
-        try {
+        try (InputStream fileInput = new FileInputStream(file)) {
 
             dos = new DataOutputStream(socket.getOutputStream());
             dos.write(INSTREAM);

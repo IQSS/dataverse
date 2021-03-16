@@ -9,7 +9,9 @@ import edu.harvard.iq.dataverse.common.files.mime.TextMimeType;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.datafile.FileService;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
+import edu.harvard.iq.dataverse.datasetutility.VirusFoundException;
 import edu.harvard.iq.dataverse.ingest.IngestServiceShapefileHelper;
 import edu.harvard.iq.dataverse.license.TermsOfUseFactory;
 import edu.harvard.iq.dataverse.license.TermsOfUseFormMapper;
@@ -46,6 +48,8 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.StoredProcedureQuery;
 import javax.persistence.TypedQuery;
+import javax.ws.rs.core.Response;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -102,6 +106,8 @@ public class DataFileServiceBean implements java.io.Serializable {
     private TermsOfUseFormMapper termsOfUseFormMapper;
     @Inject
     private ImageThumbConverter imageThumbConverter;
+    @Inject
+    private FileService fileService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -1200,6 +1206,21 @@ public class DataFileServiceBean implements java.io.Serializable {
         } else {
             throw new IOException("Temp directory is not configured.");
         }
+        
+        if (settingsService.isTrueForKey(SettingsServiceBean.Key.AntivirusScannerEnabled) &&
+                tempFile.toFile().length() <= settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.AntivirusScannerMaxFileSize)) {
+
+            String scannerMessage = fileService.scan(tempFile.toFile());
+
+            if (scannerMessage.contains("FOUND")) {
+                logger.warn("There was an attempt to upload file infected with virus. Scanner message: {} Dataset version: {}", scannerMessage, version);
+                if (!tempFile.toFile().delete()) {
+                    logger.warn("Unable to remove temporary file {}", tempFile.toFile().getAbsolutePath());
+                }
+                throw new VirusFoundException(scannerMessage);
+            }
+        }
+        
         logger.info("mime type supplied: " + suppliedContentType);
         // Let's try our own utilities (Jhove, etc.) to determine the file type
         // of the uploaded file. (We may already have a mime type supplied for this

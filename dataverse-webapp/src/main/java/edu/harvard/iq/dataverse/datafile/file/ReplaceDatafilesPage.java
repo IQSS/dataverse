@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.files.mime.ApplicationMimeType;
 import edu.harvard.iq.dataverse.datafile.file.exception.FileReplaceException;
+import edu.harvard.iq.dataverse.datafile.file.exception.FileReplaceException.Reason;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnailService;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
@@ -155,7 +156,7 @@ public class ReplaceDatafilesPage implements Serializable {
         UploadedFile uFile = event.getFile();
 
         Try<DataFile> dataFile = Try.of(() -> replaceFileHandler.createDataFile(dataset,
-                                                                                uFile.getContent(),
+                                                                                uFile.getInputStream(),
                                                                                 uFile.getFileName(),
                                                                                 uFile.getContentType()));
 
@@ -173,7 +174,12 @@ public class ReplaceDatafilesPage implements Serializable {
         if (uploadedFile.isFailure()) {
 
             if (uploadedFile.getCause() instanceof FileReplaceException) {
-                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("file.addreplace.error.file_is_zip"), "");
+                FileReplaceException.Reason reason = ((FileReplaceException) uploadedFile.getCause()).getReason();
+                if (reason == Reason.ZIP_NOT_SUPPORTED) {
+                    JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("file.addreplace.error.file_is_zip"), "");
+                } else if (reason == Reason.VIRUS_DETECTED){
+                    JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("file.addreplace.error.virus_detected"), "");
+                }
             } else {
                 JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("file.addreplace.error.generic"), "");
             }

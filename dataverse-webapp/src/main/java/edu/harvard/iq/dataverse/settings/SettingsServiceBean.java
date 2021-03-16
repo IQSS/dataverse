@@ -563,7 +563,11 @@ public class SettingsServiceBean {
          * Indicates if antivirus scanner is enabled
          */
         AntivirusScannerEnabled,
-        
+        /**
+         * Maximum size of files that will be scanned
+         * by antivirus
+         */
+        AntivirusScannerMaxFileSize,
         /**
          * Antivirus scanner engine settings
          */

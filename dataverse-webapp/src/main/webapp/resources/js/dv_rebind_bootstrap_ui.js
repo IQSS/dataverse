@@ -736,9 +736,9 @@ function reinitializePrimefacesComponentsJS() {
     }
 
     if (PrimeFaces.widget.BlockUI) {
-        var originalBlockUIRender = PrimeFaces.widget.Paginator.prototype.render;
-        var originalBlockUIShow = PrimeFaces.widget.Paginator.prototype.show;
-        var originalBlockUIHide = PrimeFaces.widget.Paginator.prototype.hide;
+        var originalBlockUIRender = PrimeFaces.widget.BlockUI.prototype.render;
+        var originalBlockUIShow = PrimeFaces.widget.BlockUI.prototype.show;
+        var originalBlockUIHide = PrimeFaces.widget.BlockUI.prototype.hide;
         
         // change: change position of block element only when overlay is visible 
         PrimeFaces.widget.BlockUI.prototype.render= function() {
