@@ -1,7 +1,7 @@
 Metrics API
 ===========
 
-The Metrics API provides counts of downloads, datasets created, files uploaded, and more, as described below. Dataverse also supports Make Data Count, which is described in the :doc:`/admin/make-data-count` section of the Admin Guide.
+The Metrics API provides counts of downloads, datasets created, files uploaded, and more, as described below. The Dataverse Software also supports Make Data Count, which is described in the :doc:`/admin/make-data-count` section of the Admin Guide.
 
 .. contents:: |toctitle|
     :local:
@@ -15,7 +15,7 @@ The Metrics API provides counts of downloads, datasets created, files uploaded, 
 Total
 -----
 
-Returns a count of various objects in dataverse over all-time::
+Returns a count of various objects in a Dataverse installation over all-time::
 
     GET https://$SERVER/api/info/metrics/$type
 
@@ -26,7 +26,7 @@ Example: ``curl https://demo.dataverse.org/api/info/metrics/downloads``
 To-Month
 --------
 
-Returns a count of various objects in dataverse up to a specified month ``$YYYY-DD`` in YYYY-MM format (e.g. ``2018-01``)::
+Returns a count of various objects in a Dataverse installation up to a specified month ``$YYYY-DD`` in YYYY-MM format (e.g. ``2018-01``)::
 
     GET https://$SERVER/api/info/metrics/$type/toMonth/$YYYY-DD
 
@@ -38,7 +38,7 @@ Example: ``curl https://demo.dataverse.org/api/info/metrics/dataverses/toMonth/2
 Past Days
 ---------
 
-Returns a count of various objects in dataverse for the past ``$days`` (e.g. ``30``):: 
+Returns a count of various objects in a Dataverse installation for the past ``$days`` (e.g. ``30``):: 
 
     GET https://$SERVER/api/info/metrics/$type/pastDays/$days
 
@@ -47,13 +47,13 @@ Returns a count of various objects in dataverse for the past ``$days`` (e.g. ``3
 Example: ``curl https://demo.dataverse.org/api/info/metrics/datasets/pastDays/30``
 
 
-Dataverse Specific Metrics
---------------------------
+Dataverse Collection Specific Metrics
+-------------------------------------
 
 By Subject
 ~~~~~~~~~~~~~~~
 
-Returns the number of dataverses by each subject::
+Returns the number of Dataverse collections in a Dataverse installation by each subject::
 
     GET https://$SERVER/api/info/metrics/dataverses/bySubject
 
@@ -61,7 +61,7 @@ Returns the number of dataverses by each subject::
 By Category
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Returns the number of dataverses by each category::
+Returns the number of Dataverse collections by each category::
 
     GET https://$SERVER/api/info/metrics/dataverses/byCategory
 
