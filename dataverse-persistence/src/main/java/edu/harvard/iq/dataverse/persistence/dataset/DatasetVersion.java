@@ -1149,14 +1149,6 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
         return producerNames;
     }
 
-    public String getCitation() {
-        return getCitation(false);
-    }
-
-    public String getCitation(boolean html) {
-        return new DataCitation(this).toString(html);
-    }
-
     public Date getCitationDate() {
         DatasetField citationDate = getDatasetField(this.getDataset().getCitationDateDatasetFieldType());
         if (citationDate != null && citationDate.getDatasetFieldType().getFieldType().equals(FieldType.DATE)) {

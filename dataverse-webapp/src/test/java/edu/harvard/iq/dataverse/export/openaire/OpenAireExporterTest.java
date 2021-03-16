@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.export.openaire;
 
 import edu.harvard.iq.dataverse.export.OpenAireExporter;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import org.junit.jupiter.api.BeforeEach;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,8 +18,8 @@ class OpenAireExporterTest {
     @InjectMocks
     private OpenAireExporter instance;
 
-    @Mock
-    private SettingsServiceBean settingsService;
+    @Mock private SettingsServiceBean settingsService;
+    @Mock private JsonPrinter jsonPrinter;
 
     // -------------------- TESTS --------------------
 

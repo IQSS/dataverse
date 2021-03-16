@@ -22,12 +22,14 @@ import java.nio.charset.StandardCharsets;
 public class DCTermsExporter implements Exporter {
 
     private SettingsServiceBean settingsService;
+    private JsonPrinter jsonPrinter;
 
     // -------------------- CONSTRUCTORS --------------------
 
     @Inject
-    DCTermsExporter(SettingsServiceBean settingsService) {
+    DCTermsExporter(SettingsServiceBean settingsService, JsonPrinter jsonPrinter) {
         this.settingsService = settingsService;
+        this.jsonPrinter = jsonPrinter;
     }
 
     // -------------------- LOGIC --------------------
@@ -52,7 +54,7 @@ public class DCTermsExporter implements Exporter {
     @Override
     public String exportDataset(DatasetVersion version) throws ExportException {
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
-            JsonObject datasetAsJson = JsonPrinter.jsonAsDatasetDto(version, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport))
+            JsonObject datasetAsJson = jsonPrinter.jsonAsDatasetDto(version, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport))
                     .build();
             DublinCoreExportUtil.datasetJson2dublincore(datasetAsJson, byteArrayOutputStream, DublinCoreExportUtil.DC_FLAVOR_DCTERMS);
             return byteArrayOutputStream.toString(StandardCharsets.UTF_8.name());

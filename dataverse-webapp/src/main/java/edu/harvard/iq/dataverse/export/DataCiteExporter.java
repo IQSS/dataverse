@@ -1,13 +1,13 @@
 package edu.harvard.iq.dataverse.export;
 
 import edu.harvard.iq.dataverse.DOIDataCiteRegisterService;
+import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
-import edu.harvard.iq.dataverse.persistence.dataset.DataCitation;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 
 import javax.enterprise.context.ApplicationScoped;
-
+import javax.inject.Inject;
 import java.util.Map;
 
 /**
@@ -19,6 +19,17 @@ public class DataCiteExporter implements Exporter {
     private static String DEFAULT_XML_NAMESPACE = "http://datacite.org/schema/kernel-3";
     private static String DEFAULT_XML_SCHEMALOCATION = "http://datacite.org/schema/kernel-3 http://schema.datacite.org/meta/kernel-3/metadata.xsd";
     private static String DEFAULT_XML_VERSION = "3.0";
+
+    private final CitationFactory citationFactory;
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    @Inject
+    public DataCiteExporter(CitationFactory citationFactory) {
+        this.citationFactory = citationFactory;
+    }
+
+    // -------------------- LOGIC --------------------
 
     @Override
     public String getProviderName() {
@@ -39,7 +50,7 @@ public class DataCiteExporter implements Exporter {
 
     @Override
     public String exportDataset(DatasetVersion version) {
-        Map<String, String> metadata = new DataCitation(version).getDataCiteMetadata();
+        Map<String, String> metadata = citationFactory.create(version).getDataCiteMetadata();
 
         return DOIDataCiteRegisterService.getMetadataFromDvObject(
                 version.getDataset().getGlobalId().asString(), metadata, version.getDataset());

@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
+import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.files.mime.TextMimeType;
 import edu.harvard.iq.dataverse.datafile.FileService;
@@ -104,8 +105,9 @@ public class FilePage implements java.io.Serializable {
     private FileService fileService;
     @Inject
     private GuestbookResponseDialog guestbookResponseDialog;
+    @Inject
+    private CitationFactory citationFactory;
 
-    
     private static final Logger logger = Logger.getLogger(FilePage.class.getCanonicalName());
 
     public String init() {
@@ -113,8 +115,8 @@ public class FilePage implements java.io.Serializable {
         if (fileId != null || persistentId != null) {
 
             // ---------------------------------------
-            // Set the file and datasetVersion 
-            // ---------------------------------------           
+            // Set the file and datasetVersion
+            // ---------------------------------------
             if (fileId != null) {
                 file = datafileService.find(fileId);
 
@@ -172,7 +174,7 @@ public class FilePage implements java.io.Serializable {
             // If this DatasetVersion is unpublished and permission is doesn't have permissions:
             //  > Go to the Login page
             //
-            // Check permisisons       
+            // Check permisisons
 
 
             boolean authorized = (fileMetadata.getDatasetVersion().isReleased()) ||
@@ -289,8 +291,21 @@ public class FilePage implements java.io.Serializable {
         }
 
         JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("file.message.editSuccess"));
-        
+
         return returnToDraftVersion();
+    }
+
+    public String createCitation() {
+        boolean isDirectCitation = fileMetadata.getDataFile().isIdentifierRegistered();
+        return citationFactory
+                .create(fileMetadata, isDirectCitation)
+                .toString(true);
+    }
+
+    public String createCitationFromFileDatasetVersion() {
+        return citationFactory
+                .create(fileMetadata.getDatasetVersion())
+                .toString(true);
     }
 
     public String deleteFile() {
@@ -302,7 +317,7 @@ public class FilePage implements java.io.Serializable {
         }
 
         JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("file.message.deleteSuccess"));
-        
+
         return returnToDatasetOnly(fileMetadata.getDataFile().getOwner());
     }
 
@@ -471,12 +486,12 @@ public class FilePage implements java.io.Serializable {
     private Boolean thumbnailAvailable = null;
 
     public boolean isThumbnailAvailable(FileMetadata fileMetadata) {
-        // new and optimized logic: 
+        // new and optimized logic:
         // - check download permission here (should be cached - so it's free!)
         // - only then ask the file service if the thumbnail is available/exists.
         // the service itself no longer checks download permissions.
-        // (Also, cache the result the first time the check is performed... 
-        // remember - methods referenced in "rendered=..." attributes are 
+        // (Also, cache the result the first time the check is performed...
+        // remember - methods referenced in "rendered=..." attributes are
         // called *multiple* times as the page is loading!)
 
         if (thumbnailAvailable != null) {
@@ -549,7 +564,7 @@ public class FilePage implements java.io.Serializable {
     public boolean isDraftReplacementFile() {
         /*
         This method tests to see if the file has been replaced in a draft version of the dataset
-        Since it must must work when you are on prior versions of the dataset 
+        Since it must must work when you are on prior versions of the dataset
         it must accrue all replacement files that may have been created
         */
 

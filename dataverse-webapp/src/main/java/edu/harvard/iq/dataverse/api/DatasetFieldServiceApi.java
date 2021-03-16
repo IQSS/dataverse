@@ -17,10 +17,12 @@ import edu.harvard.iq.dataverse.persistence.dataset.InputRendererType;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.search.SolrField;
 import edu.harvard.iq.dataverse.search.SolrFieldFactory;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.persistence.NoResultException;
@@ -44,7 +46,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.asJsonArray;
 
 @Path("admin/datasetfield")
 public class DatasetFieldServiceApi extends AbstractApiBean {
@@ -63,6 +64,9 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
 
     @EJB
     private SolrFieldFactory solrFieldFactory;
+
+    @Inject
+    private JsonPrinter jsonPrinter;
 
     private static final Logger logger = Logger.getLogger(DatasetFieldServiceApi.class.getName());
 
@@ -87,12 +91,12 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             for (DatasetFieldType dt : requiredFields) {
                 requiredFieldNames.add(dt.getName());
             }
-            return ok(Json.createObjectBuilder().add("haveParents", asJsonArray(listOfIsHasParentsTrue))
-                              .add("noParents", asJsonArray(listOfIsHasParentsFalse))
-                              .add("allowsMultiples", asJsonArray(listOfIsAllowsMultiplesTrue))
-                              .add("allowsMultiples", asJsonArray(listOfIsAllowsMultiplesTrue))
-                              .add("doesNotAllowMultiples", asJsonArray(listOfIsAllowsMultiplesFalse))
-                              .add("required", asJsonArray(requiredFieldNames))
+            return ok(Json.createObjectBuilder().add("haveParents", jsonPrinter.asJsonArray(listOfIsHasParentsTrue))
+                              .add("noParents", jsonPrinter.asJsonArray(listOfIsHasParentsFalse))
+                              .add("allowsMultiples", jsonPrinter.asJsonArray(listOfIsAllowsMultiplesTrue))
+                              .add("allowsMultiples", jsonPrinter.asJsonArray(listOfIsAllowsMultiplesTrue))
+                              .add("doesNotAllowMultiples", jsonPrinter.asJsonArray(listOfIsAllowsMultiplesFalse))
+                              .add("required", jsonPrinter.asJsonArray(requiredFieldNames))
             );
 
         } catch (EJBException ex) {
@@ -383,7 +387,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         //See if it already exists
         /*
          Matching relies on assumption that only one cv value will exist for a given identifier or display value
-        If the lookup queries return multiple matches then retval is null 
+        If the lookup queries return multiple matches then retval is null
         */
         //First see if cvv exists based on display name
         ControlledVocabularyValue cvv = datasetFieldService.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(dsv, values[2], true);

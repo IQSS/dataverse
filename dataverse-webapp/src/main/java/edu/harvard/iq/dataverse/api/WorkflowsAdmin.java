@@ -1,12 +1,22 @@
 package edu.harvard.iq.dataverse.api;
 
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
-import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContext.TriggerType.PostPublishDataset;
-
-import java.util.Arrays;
-import java.util.Optional;
+import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.persistence.group.IpAddress;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
+import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecution;
+import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowContext;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowContext.TriggerType;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionFacade;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionService;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -22,24 +32,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import java.util.Arrays;
+import java.util.Optional;
 
-import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
-import edu.harvard.iq.dataverse.engine.command.exception.NoDatasetFilesException;
-import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.persistence.group.IpAddress;
-import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
-import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
-import edu.harvard.iq.dataverse.persistence.workflow.WorkflowExecution;
-import edu.harvard.iq.dataverse.util.json.JsonParseException;
-import edu.harvard.iq.dataverse.util.json.JsonParser;
-import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowContext;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowContext.TriggerType;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionFacade;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionService;
+import static edu.harvard.iq.dataverse.workflow.execution.WorkflowContext.TriggerType.PostPublishDataset;
 
 /**
  * API Endpoint for managing workflows.
@@ -53,15 +49,18 @@ public class WorkflowsAdmin extends AbstractApiBean {
 
     @EJB
     WorkflowServiceBean workflows;
-    
+
     @Inject
     private WorkflowExecutionService workflowExecutionService;
-    
+
     @Inject
     private WorkflowExecutionFacade workflowExecutionFacade;
 
     @Inject
-    private DatasetRepository datasetRepository; 
+    private DatasetRepository datasetRepository;
+
+    @Inject
+    private JsonPrinter jsonPrinter;
 
 
     @POST
@@ -72,7 +71,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
             Workflow wf = jp.parseWorkflow(jsonWorkflow);
             Workflow managedWf = workflows.save(wf);
 
-            return created("/admin/workflows/" + managedWf.getId(), json(managedWf));
+            return created("/admin/workflows/" + managedWf.getId(), jsonPrinter.json(managedWf));
         } catch (JsonParseException ex) {
             return badRequest("Can't parse Json: " + ex.getMessage());
         }
@@ -81,8 +80,8 @@ public class WorkflowsAdmin extends AbstractApiBean {
     @GET
     public Response listWorkflows() {
         return ok(workflows.listWorkflows().stream()
-                .map(brief::json)
-                .collect(toJsonArray()));
+                .map(jsonPrinter.brief::json)
+                .collect(jsonPrinter.toJsonArray()));
     }
 
     @PUT
@@ -113,7 +112,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
         for (TriggerType tp : TriggerType.values()) {
             bld.add(tp.name(),
                     workflows.getDefaultWorkflow(tp)
-                            .map(wf -> (JsonValue) brief.json(wf).build())
+                            .map(wf -> (JsonValue) jsonPrinter.brief.json(wf).build())
                             .orElse(JsonValue.NULL));
         }
         return ok(bld);
@@ -124,7 +123,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
     public Response getDefault(@PathParam("triggerType") String triggerType) {
         try {
             return workflows.getDefaultWorkflow(TriggerType.valueOf(triggerType))
-                    .map(wf -> ok(json(wf)))
+                    .map(wf -> ok(jsonPrinter.json(wf)))
                     .orElse(notFound("no default workflow"));
         } catch (IllegalArgumentException iae) {
             return badRequest("Unknown trigger type '" + triggerType + "'. Available triggers: " + Arrays.toString(TriggerType.values()));
@@ -149,7 +148,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
         try {
             long idtf = Long.parseLong(identifier);
             return workflows.getWorkflow(idtf)
-                    .map(wf -> ok(json(wf)))
+                    .map(wf -> ok(jsonPrinter.json(wf)))
                     .orElse(notFound("Can't find workflow with id " + identifier));
         } catch (NumberFormatException nfe) {
             return badRequest("workflow identifier has to be numeric.");
@@ -237,7 +236,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
             for (Dataset dataset:datasetRepository.findAll()) {
                 DatasetVersion released = dataset.getReleasedVersion();
                 if (released != null) {
-                    Optional<WorkflowExecution> result = workflowExecutionService.findLatestByTriggerTypeAndDatasetVersion(TriggerType.PostPublishDataset, 
+                    Optional<WorkflowExecution> result = workflowExecutionService.findLatestByTriggerTypeAndDatasetVersion(TriggerType.PostPublishDataset,
                             dataset.getId(), released.getVersionNumber(), released.getMinorVersionNumber());
                     if (result.isPresent() && type.equals("failedOnly")) {
                         WorkflowExecution execution = result.get();
@@ -257,7 +256,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
                     }
                 }
             }
-            
+
             return ok("Processed " + datasetProcessed + " datasets");
         } catch (WrappedResponse ex) {
             return ex.getResponse();
@@ -284,7 +283,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
                         updateVersion = datasetVersion;
                     }
                 }
-                
+
                 if (updateVersion == null) {
                     return error(Response.Status.BAD_REQUEST, "Unknown version: " + version);
                 } else if (updateVersion.isDraft()) {
@@ -295,13 +294,13 @@ public class WorkflowsAdmin extends AbstractApiBean {
             } else {
                 return error(Response.Status.BAD_REQUEST, "Missing version number");
             }
-            
+
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
 
     }
-    
+
     private Response rerun(Dataset dataset, DatasetVersion datasetVersion) throws WrappedResponse {
         Optional<Workflow> workflow = workflows.getDefaultWorkflow(PostPublishDataset);
         if (workflow.isPresent()) {

@@ -36,14 +36,17 @@ public class DDIExporter implements Exporter {
     private DdiDatasetExportService ddiDatasetExportService;
     private SettingsServiceBean settingsService;
     private VocabularyValuesIndexer vocabularyValuesIndexer;
-    
+    private JsonPrinter jsonPrinter;
+
     // -------------------- CONSTRUCTORS --------------------
 
     @Inject
-    DDIExporter(DdiDatasetExportService ddiDatasetExportService, SettingsServiceBean settingsService, VocabularyValuesIndexer vocabularyValuesIndexer) {
+    DDIExporter(DdiDatasetExportService ddiDatasetExportService, SettingsServiceBean settingsService,
+                VocabularyValuesIndexer vocabularyValuesIndexer, JsonPrinter jsonPrinter) {
         this.ddiDatasetExportService = ddiDatasetExportService;
         this.settingsService = settingsService;
         this.vocabularyValuesIndexer = vocabularyValuesIndexer;
+        this.jsonPrinter = jsonPrinter;
     }
 
     // -------------------- LOGIC --------------------
@@ -69,11 +72,11 @@ public class DDIExporter implements Exporter {
     public String exportDataset(DatasetVersion version) throws ExportException {
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
 
-            JsonObject datasetAsJson = JsonPrinter.jsonAsDatasetDto(version, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport))
+            JsonObject datasetAsJson = jsonPrinter.jsonAsDatasetDto(version, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport))
                     .build();
             Map<String, Map<String, String>> localizedVocabularyIndex
                     = vocabularyValuesIndexer.indexLocalizedNamesOfUsedKeysByTypeAndValue(version, Locale.ENGLISH);
-            
+
             Gson gson = new Gson();
             DatasetDTO datasetDto = gson.fromJson(datasetAsJson.toString(), DatasetDTO.class);
             ddiDatasetExportService.datasetJson2ddi(datasetDto, version, byteArrayOutputStream, localizedVocabularyIndex);

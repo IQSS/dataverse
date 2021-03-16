@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseLinkingDao;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
+import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
@@ -107,6 +108,8 @@ public class IndexServiceBean {
     private SolrFieldFactory solrFieldFactory;
     @Inject
     private SolrClient solrServer;
+    @Inject
+    private CitationFactory citationFactory;
 
     private DataAccess dataAccess;
 
@@ -161,7 +164,7 @@ public class IndexServiceBean {
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE, dataverse.getCreateDate());
             solrInputDocument.addField(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT, convertToFriendlyDate(dataverse.getCreateDate()));
         }
-        /* We don't really have harvested dataverses yet; 
+        /* We don't really have harvested dataverses yet;
            (I have in fact just removed the isHarvested() method from the Dataverse object) -- L.A.
         if (dataverse.isHarvested()) {
             solrInputDocument.addField(SearchFields.IS_HARVESTED, true);
@@ -679,8 +682,8 @@ public class IndexServiceBean {
         if (datasetVersion != null) {
 
             solrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
-            solrInputDocument.addField(SearchFields.DATASET_CITATION, datasetVersion.getCitation(false));
-            solrInputDocument.addField(SearchFields.DATASET_CITATION_HTML, datasetVersion.getCitation(true));
+            solrInputDocument.addField(SearchFields.DATASET_CITATION, citationFactory.create(datasetVersion).toString(false));
+            solrInputDocument.addField(SearchFields.DATASET_CITATION_HTML, citationFactory.create(datasetVersion).toString(true));
 
             if (datasetVersion.isInReview()) {
                 solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, SearchPublicationStatus.IN_REVIEW.getSolrValue());
@@ -1037,7 +1040,9 @@ public class IndexServiceBean {
                     // dataFile.getDataset().getTitle());
                     datafileSolrInputDocument.addField(SearchFields.PARENT_ID, fileMetadata.getDataFile().getOwner().getId());
                     datafileSolrInputDocument.addField(SearchFields.PARENT_IDENTIFIER, fileMetadata.getDataFile().getOwner().getGlobalId().toString());
-                    datafileSolrInputDocument.addField(SearchFields.PARENT_CITATION, fileMetadata.getDataFile().getOwner().getCitation());
+                    datafileSolrInputDocument.addField(SearchFields.PARENT_CITATION,
+                            citationFactory.create(fileMetadata.getDataFile().getOwner().getLatestVersion())
+                                    .toString(false));
 
                     datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, parentDatasetTitle);
 

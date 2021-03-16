@@ -1,10 +1,10 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.DOIDataCiteRegisterService;
+import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.persistence.dataset.DataCitation;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock.Reason;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
@@ -26,11 +26,10 @@ import org.duracloud.error.ContentStoreException;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.LocalDate;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -49,7 +48,8 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
     }
 
     @Override
-    public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, ApiToken token, Map<String, String> requestedSettings) {
+    public WorkflowStepResult performArchiveSubmission(DatasetVersion dv, ApiToken token,
+                                                       Map<String, String> requestedSettings, CitationFactory citationFactory) {
 
         String port = requestedSettings.get(DURACLOUD_PORT) != null ? requestedSettings.get(DURACLOUD_PORT) : DEFAULT_PORT;
         String dpnContext = requestedSettings.get(DURACLOUD_CONTEXT) != null ? requestedSettings.get(DURACLOUD_CONTEXT) : DEFAULT_CONTEXT;
@@ -78,8 +78,7 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                     store = storeManager.getPrimaryContentStore();
                     // Create space to copy archival files to
                     store.createSpace(spaceName);
-                    DataCitation dc = new DataCitation(dv);
-                    Map<String, String> metadata = dc.getDataCiteMetadata();
+                    Map<String, String> metadata = citationFactory.create(dv).getDataCiteMetadata();
                     String dataciteXml = DOIDataCiteRegisterService.getMetadataFromDvObject(
                             dv.getDataset().getGlobalId().asString(), metadata, dv.getDataset());
 
@@ -87,18 +86,15 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                     try (PipedInputStream dataciteIn = new PipedInputStream(); DigestInputStream digestInputStream = new DigestInputStream(dataciteIn, messageDigest)) {
                         // Add datacite.xml file
 
-                        new Thread(new Runnable() {
-                            public void run() {
-                                try (PipedOutputStream dataciteOut = new PipedOutputStream(dataciteIn)) {
+                        new Thread(() -> {
+                            try (PipedOutputStream dataciteOut = new PipedOutputStream(dataciteIn)) {
 
-                                    dataciteOut.write(dataciteXml.getBytes(Charset.forName("utf-8")));
-                                    dataciteOut.close();
-                                } catch (Exception e) {
-                                    logger.severe("Error creating datacite.xml: " + e.getMessage());
-                                    // TODO Auto-generated catch block
-                                    e.printStackTrace();
-                                    throw new RuntimeException("Error creating datacite.xml: " + e.getMessage());
-                                }
+                                dataciteOut.write(dataciteXml.getBytes(StandardCharsets.UTF_8));
+                            } catch (Exception e) {
+                                logger.severe("Error creating datacite.xml: " + e.getMessage());
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                                throw new RuntimeException("Error creating datacite.xml: " + e.getMessage());
                             }
                         }).start();
 
@@ -195,5 +191,4 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
             return new Failure("DuraCloud Submission not configured - no \":DuraCloudHost\".");
         }
     }
-
 }

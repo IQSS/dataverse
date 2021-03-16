@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import org.apache.commons.lang.StringUtils;
 
@@ -19,12 +18,14 @@ import javax.ws.rs.core.MediaType;
 public class JSONExporter implements Exporter {
 
     private SettingsServiceBean settingsService;
+    private JsonPrinter jsonPrinter;
 
     // -------------------- CONSTRUCTORS --------------------
 
     @Inject
-    public JSONExporter(SettingsServiceBean settingsService) {
+    public JSONExporter(SettingsServiceBean settingsService, JsonPrinter jsonPrinter) {
         this.settingsService = settingsService;
+        this.jsonPrinter = jsonPrinter;
     }
 
     // -------------------- LOGIC --------------------
@@ -47,7 +48,7 @@ public class JSONExporter implements Exporter {
     @Override
     public String exportDataset(DatasetVersion version) throws ExportException {
         try {
-            JsonObjectBuilder jsonObjectBuilder = JsonPrinter.jsonAsDatasetDto(version, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport));
+            JsonObjectBuilder jsonObjectBuilder = jsonPrinter.jsonAsDatasetDto(version, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport));
 
             return jsonObjectBuilder
                     .build()

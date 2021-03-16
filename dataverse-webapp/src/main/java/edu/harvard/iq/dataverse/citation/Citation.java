@@ -1,15 +1,14 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package edu.harvard.iq.dataverse.persistence.dataset;
+package edu.harvard.iq.dataverse.citation;
 
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -41,12 +40,10 @@ import java.util.stream.Collectors;
 /**
  * @author gdurand, qqmyers
  */
-public class DataCitation {
+public class Citation {
 
-    private static final Logger logger = Logger.getLogger(DataCitation.class.getCanonicalName());
-
-    private List<String> authors = new ArrayList<String>();
-    private List<String> producers = new ArrayList<String>();
+    private List<String> authors = new ArrayList<>();
+    private List<String> producers = new ArrayList<>();
     private String title;
     private String fileTitle = null;
     private String year;
@@ -67,19 +64,20 @@ public class DataCitation {
 
     private List<DatasetField> optionalValues = new ArrayList<>();
     private int optionalURLcount = 0;
-
-    public DataCitation(DatasetVersion dsv) {
+    public Citation(DatasetVersion dsv) {
         this(dsv, false);
     }
 
+    private static final Logger logger = Logger.getLogger(Citation.class.getCanonicalName());
 
-    public DataCitation(DatasetVersion dsv, boolean direct) {
+
+    public Citation(DatasetVersion dsv, boolean direct) {
         this.direct = direct;
         getCommonValuesFrom(dsv);
 
-        // The Global Identifier: 
-        // It is always part of the citation for the local datasets; 
-        // And for *some* harvested datasets. 
+        // The Global Identifier:
+        // It is always part of the citation for the local datasets;
+        // And for *some* harvested datasets.
         persistentId = getPIDFrom(dsv, dsv.getDataset());
 
         // UNF
@@ -98,11 +96,11 @@ public class DataCitation {
         }
     }
 
-    public DataCitation(FileMetadata fm) {
+    public Citation(FileMetadata fm) {
         this(fm, false);
     }
 
-    public DataCitation(FileMetadata fm, boolean direct) {
+    public Citation(FileMetadata fm, boolean direct) {
         this.direct = direct;
         DatasetVersion dsv = fm.getDatasetVersion();
 
@@ -186,7 +184,7 @@ public class DataCitation {
     }
 
     public String toString(boolean html) {
-        // first add comma separated parts        
+        // first add comma separated parts
         String separator = ", ";
         List<String> citationList = new ArrayList<>();
         citationList.add(formatString(getAuthorsString(), html));
@@ -206,7 +204,7 @@ public class DataCitation {
         citationList.add(version);
 
         StringBuilder citation = new StringBuilder(citationList.stream().filter(value -> !StringUtils.isEmpty(value))
-                                                           .collect(Collectors.joining(separator)));
+                .collect(Collectors.joining(separator)));
 
         if ((fileTitle != null) && !isDirect()) {
             citation.append("; " + formatString(fileTitle, html, "") + " [fileName]");
@@ -397,8 +395,6 @@ public class DataCitation {
         out.flush();
     }
 
-    private XMLOutputFactory xmlOutputFactory = null;
-
     public String toEndNoteString() {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         writeAsEndNoteCitation(outStream);
@@ -408,7 +404,7 @@ public class DataCitation {
 
     public void writeAsEndNoteCitation(OutputStream os) {
 
-        xmlOutputFactory = javax.xml.stream.XMLOutputFactory.newInstance();
+        XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
         XMLStreamWriter xmlw = null;
         try {
             xmlw = xmlOutputFactory.createXMLStreamWriter(os);
@@ -436,17 +432,17 @@ public class DataCitation {
         xmlw.writeStartElement("record");
 
         // "Ref-type" indicates which of the (numerous!) available EndNote
-        // schemas this record will be interpreted as. 
-        // This is relatively important. Certain fields with generic 
+        // schemas this record will be interpreted as.
+        // This is relatively important. Certain fields with generic
         // names like "custom1" and "custom2" become very specific things
         // in specific schemas; for example, custom1 shows as "legal notice"
-        // in "Journal Article" (ref-type 84), or as "year published" in 
-        // "Government Document". 
-        // We don't want the UNF to show as a "legal notice"! 
-        // We have found a ref-type that works ok for our purposes - 
+        // in "Journal Article" (ref-type 84), or as "year published" in
+        // "Government Document".
+        // We don't want the UNF to show as a "legal notice"!
+        // We have found a ref-type that works ok for our purposes -
         // "Dataset" (type 59). In this one, the fields Custom1
-        // and Custom2 are not translated and just show as is. 
-        // And "Custom1" still beats "legal notice". 
+        // and Custom2 are not translated and just show as is.
+        // And "Custom1" still beats "legal notice".
         // -- L.A. 12.12.2014 beta 10
         // and see https://github.com/IQSS/dataverse/issues/4816
 
@@ -483,7 +479,7 @@ public class DataCitation {
             }
             xmlw.writeEndElement(); // subsidiary-authors
         }
-        xmlw.writeEndElement(); // contributors 
+        xmlw.writeEndElement(); // contributors
 
         xmlw.writeStartElement("titles");
         if ((fileTitle != null) && isDirect()) {
@@ -583,7 +579,7 @@ public class DataCitation {
         xmlw.writeEndElement(); // urls
 
         // a DataFile citation also includes the filename and (for Tabular
-        // files) the UNF signature, that we put into the custom1 and custom2 
+        // files) the UNF signature, that we put into the custom1 and custom2
         // fields respectively:
 
         if (getFileTitle() != null) {
@@ -604,7 +600,7 @@ public class DataCitation {
             xmlw.writeCharacters(electResourceNum);
             xmlw.writeEndElement();
         }
-        //<electronic-resource-num>10.3886/ICPSR03259.v1</electronic-resource-num>                  
+        //<electronic-resource-num>10.3886/ICPSR03259.v1</electronic-resource-num>
         xmlw.writeEndElement(); // record
 
         xmlw.writeEndElement(); // records
@@ -633,7 +629,7 @@ public class DataCitation {
     }
 
 
-    // helper methods   
+    // helper methods
     private String formatString(String value, boolean escapeHtml) {
         return formatString(value, escapeHtml, "");
     }
@@ -792,4 +788,5 @@ public class DataCitation {
         }
         return null;
     }
+
 }

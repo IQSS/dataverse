@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -55,6 +56,8 @@ public class Files extends AbstractApiBean {
     SystemConfig systemConfig;
     @Inject
     private OptionalFileParams optionalFileParams;
+    @Inject
+    private JsonPrinter jsonPrinter;
 
     private static final Logger logger = Logger.getLogger(Files.class.getName());
 
@@ -112,7 +115,7 @@ public class Files extends AbstractApiBean {
 
         // -------------------------------------
         // (2) Check/Parse the JSON (if uploaded)
-        // -------------------------------------        
+        // -------------------------------------
         Boolean forceReplace = false;
         OptionalFileParams optionalFileParams = null;
         if (jsonData != null) {
@@ -154,10 +157,11 @@ public class Files extends AbstractApiBean {
 
         DataverseRequest dvRequest2 = createDataverseRequest(authUser);
         AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
-                                                                      this.ingestService,
-                                                                      this.fileService,
-                                                                      this.permissionSvc,
-                                                                      this.commandEngine, this.optionalFileParams);
+                                                                      ingestService,
+                                                                      fileService,
+                                                                      permissionSvc,
+                                                                      jsonPrinter,
+                                                                      commandEngine, this.optionalFileParams);
 
         //-------------------
         // (5) Run "runReplaceFileByDatasetId"
@@ -276,13 +280,13 @@ public class Files extends AbstractApiBean {
 
     }
 
-    // reingest attempts to queue an *existing* DataFile 
-    // for tabular ingest. It can be used on non-tabular datafiles; to try to 
+    // reingest attempts to queue an *existing* DataFile
+    // for tabular ingest. It can be used on non-tabular datafiles; to try to
     // ingest a file that has previously failed ingest, or to ingest a file of a
-    // type for which ingest was not previously supported. 
-    // We are considering making it possible, in the future, to reingest 
-    // a datafile that's already ingested as Tabular; for example, to address a 
-    // bug that has been found in an ingest plugin. 
+    // type for which ingest was not previously supported.
+    // We are considering making it possible, in the future, to reingest
+    // a datafile that's already ingested as Tabular; for example, to address a
+    // bug that has been found in an ingest plugin.
 
     @POST
     @ApiWriteOperation
@@ -337,15 +341,15 @@ public class Files extends AbstractApiBean {
         // update the datafile, to save the newIngest request in the database:
         dataFile = fileService.save(dataFile);
 
-        // queue the data ingest job for asynchronous execution: 
+        // queue the data ingest job for asynchronous execution:
         String status = ingestService.startIngestJobs(new ArrayList<>(Arrays.asList(dataFile)), u);
 
         if (!StringUtil.isEmpty(status)) {
-            // This most likely indicates some sort of a problem (for example, 
+            // This most likely indicates some sort of a problem (for example,
             // the ingest job was not put on the JMS queue because of the size
             // of the file). But we are still returning the OK status - because
-            // from the point of view of the API, it's a success - we have 
-            // successfully gone through the process of trying to schedule the 
+            // from the point of view of the API, it's a success - we have
+            // successfully gone through the process of trying to schedule the
             // ingest job...
 
             return ok(status);

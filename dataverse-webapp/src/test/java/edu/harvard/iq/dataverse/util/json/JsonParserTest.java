@@ -6,6 +6,7 @@ package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
+import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
@@ -84,8 +85,7 @@ public class JsonParserTest {
     DatasetFieldType compoundSingleType;
     JsonParser sut;
 
-    public JsonParserTest() {
-    }
+    private JsonPrinter jsonPrinter = new JsonPrinter(new CitationFactory());
 
     @BeforeClass
     public static void setUpClass() {
@@ -148,7 +148,7 @@ public class JsonParserTest {
 
         //when
         List<JsonObject> parsedFields = expectedFields.stream()
-                .map(JsonPrinter::json)
+                .map(jsonPrinter::json)
                 .collect(Collectors.toList());
 
         List<DatasetField> actualFields = parsedFields.stream()
@@ -179,7 +179,7 @@ public class JsonParserTest {
         expected.setControlledVocabularyValues(Collections.singletonList(fieldType.getControlledVocabularyValue("ark")));
 
         //when
-        JsonObject json = JsonPrinter.json(expected);
+        JsonObject json = jsonPrinter.json(expected);
         DatasetField actual = sut.parseField(json).get(0);
 
         //then
@@ -198,7 +198,7 @@ public class JsonParserTest {
                                                              fieldType.getControlledVocabularyValue("cs")));
 
         //when
-        JsonObject json = JsonPrinter.json(expected);
+        JsonObject json = jsonPrinter.json(expected);
         DatasetField actual = sut.parseField(json).get(0);
 
         //then
@@ -248,7 +248,7 @@ public class JsonParserTest {
         expected.setFieldValue("This is a description value");
 
         //when
-        JsonObject json = JsonPrinter.json(expected);
+        JsonObject json = jsonPrinter.json(expected);
         DatasetField actual = sut.parseField(json).get(0);
 
         //then
@@ -274,7 +274,7 @@ public class JsonParserTest {
 
         //when
         List<DatasetField> actualFields = expectedFields.stream()
-                .map(JsonPrinter::json)
+                .map(jsonPrinter::json)
                 .flatMap(jsonObject -> API.unchecked(() -> sut.parseField(jsonObject)).get().stream())
                 .collect(Collectors.toList());
 
@@ -454,7 +454,7 @@ public class JsonParserTest {
         c.clear();
         c.set(2015, 8, 15);
         Date d = c.getTime();
-        String generated = JsonPrinter.format(d);
+        String generated = jsonPrinter.format(d);
         System.err.println(generated);
 
         //when
@@ -484,7 +484,7 @@ public class JsonParserTest {
         c.clear();
         c.set(2015, 8, 15, 13, 37, 56);
         Date d = c.getTime();
-        String generated = JsonPrinter.format(d);
+        String generated = jsonPrinter.format(d);
         System.err.println(generated);
 
         //when
@@ -554,7 +554,7 @@ public class JsonParserTest {
         original.add(IpAddressRange.make(IpAddress.valueOf("1:2:3::4:5"), IpAddress.valueOf("1:2:3::4:5")));
         original.add(IpAddressRange.make(IpAddress.valueOf("1:2:3::3:ff"), IpAddress.valueOf("1:2:3::3:5")));
 
-        JsonObject serialized = JsonPrinter.json(original).build();
+        JsonObject serialized = jsonPrinter.json(original).build();
 
         System.out.println(serialized.toString());
 
@@ -578,7 +578,7 @@ public class JsonParserTest {
 
         original.add(IpAddressRange.make(IpAddress.valueOf("1.1.1.1"), IpAddress.valueOf("1.1.1.1")));
 
-        JsonObject serialized = JsonPrinter.json(original).build();
+        JsonObject serialized = jsonPrinter.json(original).build();
 
         System.out.println(serialized.toString());
 
@@ -620,7 +620,7 @@ public class JsonParserTest {
         original.add(IpAddressRange.make(IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61"),
                                          IpAddress.valueOf("fe80::22c9:d0ff:fe48:ce61")));
 
-        JsonObject serialized = JsonPrinter.json(original).build();
+        JsonObject serialized = jsonPrinter.json(original).build();
 
         System.out.println(serialized.toString());
 

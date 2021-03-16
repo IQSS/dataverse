@@ -1,16 +1,14 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
+import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 
 /**
  * Api bean for managing metadata blocks.
@@ -21,9 +19,14 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 @Produces("application/json")
 public class MetadataBlocks extends AbstractApiBean {
 
+    @Inject
+    private JsonPrinter jsonPrinter;
+
     @GET
     public Response list() {
-        return allowCors(ok(metadataBlockSvc.listMetadataBlocks().stream().map(brief::json).collect(toJsonArray())));
+        return allowCors(ok(metadataBlockSvc.listMetadataBlocks().stream()
+                .map(jsonPrinter.brief::json)
+                .collect(jsonPrinter.toJsonArray())));
     }
 
     @GET
@@ -31,7 +34,9 @@ public class MetadataBlocks extends AbstractApiBean {
     public Response getBlock(@PathParam("identifier") String idtf) {
         MetadataBlock b = findMetadataBlock(idtf);
 
-        return allowCors((b != null) ? ok(json(b)) : notFound("Can't find metadata block '" + idtf + "'"));
+        return allowCors((b != null)
+                ? ok(jsonPrinter.json(b))
+                : notFound("Can't find metadata block '" + idtf + "'"));
     }
 
 }

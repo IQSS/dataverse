@@ -10,10 +10,8 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SolrField;
-import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.query.SearchObjectType;
 import edu.harvard.iq.dataverse.search.query.SearchPublicationStatus;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -528,7 +526,7 @@ public class SolrSearchResult {
                  * MD5 or SHA-1 in "checksum".
                  */
                 .add("md5", getFileMd5())
-                .add("checksum", JsonPrinter.getChecksumTypeAndValue(getFileChecksumType(), getFileChecksumValue()))
+                .add("checksum", getChecksumTypeAndValue(getFileChecksumType(), getFileChecksumValue()))
                 .add("unf", getUnf())
                 .add("file_persistent_id", this.filePersistentId)
                 .add("dataset_name", datasetName)
@@ -975,13 +973,13 @@ public class SolrSearchResult {
     }
 
     public String getFileUrl() {
-        // Nothing special needs to be done for harvested file URLs: 
+        // Nothing special needs to be done for harvested file URLs:
         // simply directing these to the local dataset.xhtml for this dataset
-        // will take care of it - because DatasetPage will issue a redirect 
-        // to the remote archive URL. 
+        // will take care of it - because DatasetPage will issue a redirect
+        // to the remote archive URL.
         // This is true AS OF 4.2.4, FEB. 2016! - We'll probably want to make
-        // .getRemoteArchiveURL() methods, both in DataFile and Dataset objects, 
-        // work again at some point in the future. 
+        // .getRemoteArchiveURL() methods, both in DataFile and Dataset objects,
+        // work again at some point in the future.
         /*
         if (entity != null && entity instanceof DataFile && this.isHarvested()) {
             String remoteArchiveUrl = ((DataFile) entity).getRemoteArchiveURL();
@@ -998,7 +996,7 @@ public class SolrSearchResult {
         }
 
         return "/file.xhtml?fileId=" + entity.getId() + "&datasetVersionId=" + datasetVersionId;
-        
+
         /*
         if (parentDatasetGlobalId != null) {
             return "/dataset.xhtml?persistentId=" + parentDatasetGlobalId;
@@ -1116,4 +1114,13 @@ public class SolrSearchResult {
         this.fileAccess = fileAccess;
     }
 
+    private JsonObjectBuilder getChecksumTypeAndValue(DataFile.ChecksumType checksumType, String checksumValue) {
+        if (checksumType != null) {
+            return Json.createObjectBuilder()
+                    .add("type", checksumType.toString())
+                    .add("value", checksumValue);
+        } else {
+            return null;
+        }
+    }
 }

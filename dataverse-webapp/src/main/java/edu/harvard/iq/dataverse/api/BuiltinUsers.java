@@ -12,10 +12,12 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
@@ -31,8 +33,6 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-
 /**
  * REST API bean for managing {@link BuiltinUser}s.
  *
@@ -47,6 +47,9 @@ public class BuiltinUsers extends AbstractApiBean {
 
     @EJB
     protected BuiltinUserServiceBean builtinUserSvc;
+
+    @Inject
+    private JsonPrinter jsonPrinter;
 
     @GET
     @Path("{username}/api-token")
@@ -170,8 +173,8 @@ public class BuiltinUsers extends AbstractApiBean {
             authSvc.save(token);
 
             JsonObjectBuilder resp = Json.createObjectBuilder();
-            resp.add("user", json(user));
-            resp.add("authenticatedUser", json(au));
+            resp.add("user", jsonPrinter.json(user));
+            resp.add("authenticatedUser", jsonPrinter.json(au));
             resp.add("apiToken", token.getTokenString());
 
             alr.setInfo("builtinUser:" + user.getUserName() + " authenticatedUser:" + au.getIdentifier());

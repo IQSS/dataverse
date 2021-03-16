@@ -7,8 +7,10 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteRoleCommand;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.User;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -17,7 +19,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 
 /**
  * Util API for managing roles. Might not make it to the production version.
@@ -28,6 +29,9 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 @Path("roles")
 public class Roles extends AbstractApiBean {
 
+    @Inject
+    private JsonPrinter jsonPrinter;
+
     @GET
     @Path("{id}")
     public Response viewRole(@PathParam("id") Long id) {
@@ -35,7 +39,7 @@ public class Roles extends AbstractApiBean {
             final User user = findUserOrDie();
             final DataverseRole role = findRoleOrDie(id);
             return (permissionSvc.userOn(user, role.getOwner()).has(Permission.ManageDataversePermissions))
-                    ? ok(json(role)) : permissionError("Permission required to view roles.");
+                    ? ok(jsonPrinter.json(role)) : permissionError("Permission required to view roles.");
         });
     }
 
@@ -53,7 +57,7 @@ public class Roles extends AbstractApiBean {
     @ApiWriteOperation
     public Response createNewRole(RoleDTO roleDto,
                                   @QueryParam("dvo") String dvoIdtf) {
-        return response(req -> ok(json(execCommand(
+        return response(req -> ok(jsonPrinter.json(execCommand(
                 new CreateRoleCommand(roleDto.asRole(),
                                       req, findDataverseOrDie(dvoIdtf))))));
     }

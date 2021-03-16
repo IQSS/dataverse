@@ -7,8 +7,8 @@ package edu.harvard.iq.dataverse.export;
 
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetDao;
+import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataaccess.DataConverter;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIOUtils;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
@@ -30,6 +30,7 @@ import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -66,6 +67,9 @@ public class DDIExportServiceBean {
 
     @EJB
     VariableServiceBean variableService;
+
+    @Inject
+    private CitationFactory citationFactory;
 
     /*
      * Constants used by the worker methods:
@@ -117,11 +121,11 @@ public class DDIExportServiceBean {
 
         /*
          * Some checks will need to be here, to see if the corresponding dataset
-         * is released, if all the permissions are satisfied, etc., with 
-         * approrpiate exceptions thrown otherwise. 
+         * is released, if all the permissions are satisfied, etc., with
+         * approrpiate exceptions thrown otherwise.
          *
          *      something like
-        
+
          throw new IllegalArgumentException("ExportStudy called with a null study.");
          throw new IllegalArgumentException("Study does not have released version, study.id = " + s.getId());
          */
@@ -157,7 +161,7 @@ public class DDIExportServiceBean {
         // Create XML Stream Writer, using the supplied OutputStream:
         XMLStreamWriter xmlw = null;
 
-        // Try to resolve the supplied object id: 
+        // Try to resolve the supplied object id:
         Object dataObject = null;
 
         if (OBJECT_TAG_VARIABLE.equals(objectTag)) {
@@ -454,7 +458,7 @@ public class DDIExportServiceBean {
         Optional<File> tmpFile = Optional.empty();
         try {
             StorageIO<DataFile> storageIO = DataAccess.dataAccess().getStorageIO(df);
-            
+
             File tabFile = StorageIOUtils.obtainAsLocalFile(storageIO, storageIO.isRemoteFile());
             tmpFile = storageIO.isRemoteFile() ? Optional.of(tabFile) : Optional.empty();
 
@@ -476,7 +480,7 @@ public class DDIExportServiceBean {
 
         createStdyDscr(xmlw, excludedFieldSet, includedFieldSet, version);
 
-        // Files: 
+        // Files:
 
         List<FileMetadata> tabularDataFiles = new ArrayList<>();
         List<FileMetadata> otherDataFiles = new ArrayList<>();
@@ -502,7 +506,7 @@ public class DDIExportServiceBean {
                 createFileDscr(xmlw, excludedFieldSet, includedFieldSet, fileMetadata.getDataFile(), dt);
             }
 
-            // 2nd pass, to create data (variable) description sections: 
+            // 2nd pass, to create data (variable) description sections:
             xmlw.writeStartElement("dataDscr");
 
             for (FileMetadata fileMetadata : tabularDataFiles) {
@@ -560,8 +564,7 @@ public class DDIExportServiceBean {
         xmlw.writeEndElement(); // rspStmt
         xmlw.writeStartElement("biblCit");
 
-        xmlw.writeCharacters(version.getCitation());
-
+        xmlw.writeCharacters(citationFactory.create(version).toString(false));
         xmlw.writeEndElement(); // biblCit
 
         xmlw.writeEndElement(); // citation
@@ -689,7 +692,7 @@ public class DDIExportServiceBean {
                 xmlw.writeEndElement(); // notes
             }
         }
-        xmlw.writeEndElement(); // fileDscr   
+        xmlw.writeEndElement(); // fileDscr
     }
 
     /*
@@ -710,19 +713,19 @@ public class DDIExportServiceBean {
     }
 
     private boolean checkField(String fieldName, Set<String> excludedFieldSet, Set<String> includedFieldSet) {
-        // the field is explicitly included on the list of allowed fields: 
+        // the field is explicitly included on the list of allowed fields:
 
         if (includedFieldSet != null && includedFieldSet.contains(fieldName)) {
             return true;
         }
 
         // if not, and we are instructed to ignore all the fields that are not
-        // explicitly allowed: 
+        // explicitly allowed:
         if (excludedFieldSet != null && excludedFieldSet.contains("*") && excludedFieldSet.size() == 1) {
             return false;
         }
 
-        // if we've made it this far, and there is no explicitly defined list of allowed fields: 
+        // if we've made it this far, and there is no explicitly defined list of allowed fields:
         if (includedFieldSet == null || includedFieldSet.size() == 0) {
 
             // AND the field is not specifically included on the list of unwanted fields:

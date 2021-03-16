@@ -18,11 +18,13 @@ import java.nio.charset.StandardCharsets;
 public class OpenAireExporter implements Exporter {
 
     private SettingsServiceBean settingsService;
+    private JsonPrinter jsonPrinter;
 
     // -------------------- CONSTRUCTORS --------------------
 
-    public OpenAireExporter(SettingsServiceBean settingsService) {
+    public OpenAireExporter(SettingsServiceBean settingsService, JsonPrinter jsonPrinter) {
         this.settingsService = settingsService;
+        this.jsonPrinter = jsonPrinter;
     }
 
     // -------------------- LOGIC --------------------
@@ -45,7 +47,7 @@ public class OpenAireExporter implements Exporter {
     @Override
     public String exportDataset(DatasetVersion version) throws ExportException {
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
-            JsonObject datasetAsJson = JsonPrinter.jsonAsDatasetDto(version, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport))
+            JsonObject datasetAsJson = jsonPrinter.jsonAsDatasetDto(version, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport))
                     .build();
 
             OpenAireExportUtil.datasetJson2openaire(datasetAsJson, byteArrayOutputStream);

@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.export.dublincore.DublinCoreExportUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import io.vavr.control.Try;
 
@@ -20,19 +19,21 @@ import java.nio.charset.StandardCharsets;
 public class DublinCoreExporter implements Exporter {
 
     private SettingsServiceBean settingsService;
+    private JsonPrinter jsonPrinter;
 
     // -------------------- CONSTRUCTORS --------------------
 
     @Inject
-    public DublinCoreExporter(SettingsServiceBean settingsService) {
+    public DublinCoreExporter(SettingsServiceBean settingsService, JsonPrinter jsonPrinter) {
         this.settingsService = settingsService;
+        this.jsonPrinter = jsonPrinter;
     }
 
     // -------------------- LOGIC --------------------
 
     @Override
     public String exportDataset(DatasetVersion version) throws ExportException {
-        JsonObjectBuilder jsonObjectBuilder = JsonPrinter.jsonAsDatasetDto(version, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport));
+        JsonObjectBuilder jsonObjectBuilder = jsonPrinter.jsonAsDatasetDto(version, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport));
 
         JsonObject jsonDatasetVersion = jsonObjectBuilder
                 .build();

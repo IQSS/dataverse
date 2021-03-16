@@ -8,7 +8,6 @@ import edu.harvard.iq.dataverse.export.ddi.DdiDatasetExportService;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -33,14 +32,16 @@ public class OAI_DDIExporter implements Exporter {
     private DdiDatasetExportService ddiDatasetExportService;
     private SettingsServiceBean settingsService;
     private VocabularyValuesIndexer vocabularyValuesIndexer;
-
+    private JsonPrinter jsonPrinter;
     // -------------------- CONSTRUCTORS --------------------
 
     @Inject
-    public OAI_DDIExporter(DdiDatasetExportService ddiDatasetExportService, SettingsServiceBean settingsService, VocabularyValuesIndexer vocabularyValuesIndexer) {
+    public OAI_DDIExporter(DdiDatasetExportService ddiDatasetExportService, SettingsServiceBean settingsService,
+                           VocabularyValuesIndexer vocabularyValuesIndexer, JsonPrinter jsonPrinter) {
         this.ddiDatasetExportService = ddiDatasetExportService;
         this.settingsService = settingsService;
         this.vocabularyValuesIndexer = vocabularyValuesIndexer;
+        this.jsonPrinter = jsonPrinter;
     }
 
     // -------------------- LOGIC --------------------
@@ -63,14 +64,14 @@ public class OAI_DDIExporter implements Exporter {
     @Override
     public String exportDataset(DatasetVersion version) throws ExportException {
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
-            JsonObject datasetAsJson = JsonPrinter.jsonAsDatasetDto(version, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport))
+            JsonObject datasetAsJson = jsonPrinter.jsonAsDatasetDto(version, settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport))
                     .build();
             Map<String, Map<String, String>> localizedValuesIndex
                     = vocabularyValuesIndexer.indexLocalizedNamesOfUsedKeysByTypeAndValue(version, Locale.ENGLISH);
-            
+
             Gson gson = new Gson();
             DatasetDTO datasetDto = gson.fromJson(datasetAsJson.toString(), DatasetDTO.class);
-            
+
             ddiDatasetExportService.datasetJson2ddi(datasetDto, byteArrayOutputStream, localizedValuesIndex);
             return byteArrayOutputStream.toString(StandardCharsets.UTF_8.name());
         } catch (XMLStreamException | IOException xse) {

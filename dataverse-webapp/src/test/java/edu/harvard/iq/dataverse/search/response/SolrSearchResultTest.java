@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.search.response;
 
 import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.query.SearchObjectType;
-import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 import org.junit.Test;
 
 import javax.json.Json;

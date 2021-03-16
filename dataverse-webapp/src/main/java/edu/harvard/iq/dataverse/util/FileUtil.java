@@ -189,9 +189,9 @@ public class FileUtil implements java.io.Serializable {
         String fileExtension = getFileExtension(fileName);
 
 
-        // step 1: 
-        // Apply our custom methods to try and recognize data files that can be 
-        // converted to tabular data, or can be parsed for extra metadata 
+        // step 1:
+        // Apply our custom methods to try and recognize data files that can be
+        // converted to tabular data, or can be parsed for extra metadata
         // (such as FITS).
         logger.fine("Attempting to identify potential tabular data files;");
         IngestableDataChecker tabChk = new IngestableDataChecker(TABULAR_DATA_FORMAT_SET);
@@ -226,9 +226,9 @@ public class FileUtil implements java.io.Serializable {
             }
         }
 
-        // step 4: 
-        // Additional processing; if we haven't gotten much useful information 
-        // back from Jhove, we'll try and make an educated guess based on 
+        // step 4:
+        // Additional processing; if we haven't gotten much useful information
+        // back from Jhove, we'll try and make an educated guess based on
         // the file extension:
 
         if (fileExtension != null) {
@@ -248,8 +248,8 @@ public class FileUtil implements java.io.Serializable {
             logger.fine("fileExtension is null");
         }
 
-        // step 5: 
-        // if this is a compressed file - zip or gzip - we'll check the 
+        // step 5:
+        // if this is a compressed file - zip or gzip - we'll check the
         // file(s) inside the compressed stream and see if it's one of our
         // recognized formats that we want to support compressed:
 
@@ -259,7 +259,7 @@ public class FileUtil implements java.io.Serializable {
             // if they were just regular FITS files:
             FileInputStream gzippedIn = new FileInputStream(f);
             // (new FileInputStream() can throw a "filen not found" exception;
-            // however, if we've made it this far, it really means that the 
+            // however, if we've made it this far, it really means that the
             // file does exist and can be opened)
             InputStream uncompressedIn = null;
             try {
@@ -322,7 +322,7 @@ public class FileUtil implements java.io.Serializable {
     private static boolean isFITSFile(InputStream ins) {
         boolean isFITS = false;
 
-        // number of header bytes read for identification: 
+        // number of header bytes read for identification:
         int magicWordLength = 6;
         String magicWord = "SIMPLE";
 
@@ -538,7 +538,7 @@ public class FileUtil implements java.io.Serializable {
 
         logger.log(Level.FINE, "UUID value: {0}", uid.toString());
 
-        // last 6 bytes, of the random UUID, in hex: 
+        // last 6 bytes, of the random UUID, in hex:
 
         String hexRandom = uid.toString().substring(24);
 
@@ -556,14 +556,28 @@ public class FileUtil implements java.io.Serializable {
 
     public enum FileCitationExtension {
 
-        ENDNOTE("-endnote.xml"),
+        ENDNOTE("-endnote", ".xml"),
         RIS(".ris"),
         BIBTEX(".bib");
 
         private final String text;
+        private final String extension;
 
-        FileCitationExtension(final String text) {
+        public String getSuffix() {
+            return text + extension;
+        }
+
+        public String getExtension() {
+            return extension;
+        }
+
+        FileCitationExtension(String text, String extension) {
             this.text = text;
+            this.extension = extension;
+        }
+
+        FileCitationExtension(String extension) {
+            this(StringUtils.EMPTY, extension);
         }
     }
 
@@ -572,9 +586,9 @@ public class FileUtil implements java.io.Serializable {
             return null;
         }
         if (fileTitle.endsWith("tab")) {
-            return fileTitle.replaceAll("\\.tab$", fileCitationExtension.text);
+            return fileTitle.replaceAll("\\.tab$", fileCitationExtension.getSuffix());
         } else {
-            return fileTitle + fileCitationExtension.text;
+            return fileTitle + fileCitationExtension.getSuffix();
         }
     }
 
@@ -584,8 +598,8 @@ public class FileUtil implements java.io.Serializable {
      * elaborate on the text "This file cannot be downloaded publicly."
      */
     public static boolean isDownloadPopupRequired(DatasetVersion datasetVersion) {
-        // Each of these conditions is sufficient reason to have to 
-        // present the user with the popup: 
+        // Each of these conditions is sufficient reason to have to
+        // present the user with the popup:
         if (datasetVersion == null) {
             logger.fine("Download popup required because datasetVersion is null.");
             return false;
@@ -624,8 +638,8 @@ public class FileUtil implements java.io.Serializable {
 
     public static boolean isRequestAccessPopupRequired(FileMetadata fileMetadata) {
         Preconditions.checkNotNull(fileMetadata);
-        // Each of these conditions is sufficient reason to have to 
-        // present the user with the popup: 
+        // Each of these conditions is sufficient reason to have to
+        // present the user with the popup:
 
         //0. if version is draft then Popup "not required"
         if (!fileMetadata.getDatasetVersion().isReleased()) {
@@ -797,7 +811,7 @@ public class FileUtil implements java.io.Serializable {
         // Some browsers (Chrome?) seem to identify FITS files as mime
         // type "image/fits" on upload; this is both incorrect (the official
         // mime type for FITS is "application/fits", and problematic: then
-        // the file is identified as an image, and the page will attempt to 
+        // the file is identified as an image, and the page will attempt to
         // generate a preview - which of course is going to fail...
         if (ImageMimeType.FITSIMAGE.getMimeValue().equalsIgnoreCase(contentType)) {
             return false;
@@ -811,12 +825,12 @@ public class FileUtil implements java.io.Serializable {
                         (file.isTabularData() && file.hasGeospatialTag()) ||
                         contentType.equalsIgnoreCase(ApplicationMimeType.GEO_SHAPE.getMimeValue())));
     }
-    
-    
-    /* 
-     * The method below appears to be unnecessary; 
+
+
+    /*
+     * The method below appears to be unnecessary;
      * it duplicates the method generateImageThumbnailFromFileAsBase64() from ImageThumbConverter;
-     * plus it creates an unnecessary temp file copy of the source file.    
+     * plus it creates an unnecessary temp file copy of the source file.
     public static String rescaleImage(File file) throws IOException {
         if (file == null) {
             logger.info("file was null!!");

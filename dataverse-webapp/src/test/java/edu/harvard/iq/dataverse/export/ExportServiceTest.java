@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.export;
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.UnitTestUtils;
+import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.error.DataverseError;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
@@ -19,6 +20,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import io.vavr.control.Either;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.io.IOUtils;
@@ -69,10 +71,12 @@ public class ExportServiceTest {
 
     @Mock
     private SystemConfig systemConfig;
-    
+
     @Mock
     private Instance<Exporter> exporters;
-    
+
+    private JsonPrinter jsonPrinter = new JsonPrinter(new CitationFactory());
+
     @BeforeEach
     void prepareData() {
         when(settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)).thenReturn(false);
@@ -80,13 +84,13 @@ public class ExportServiceTest {
         mockDatasetFields();
 
         when(exporters.iterator()).thenReturn(IteratorUtils.arrayIterator(
-                new DataCiteExporter(),
-                new DCTermsExporter(settingsService),
-                new DublinCoreExporter(settingsService),
+                new DataCiteExporter(new CitationFactory()),
+                new DCTermsExporter(settingsService, jsonPrinter),
+                new DublinCoreExporter(settingsService,jsonPrinter),
                 new OAI_OREExporter(settingsService, systemConfig, clock),
                 new SchemaDotOrgExporter(settingsService, systemConfig),
-                new OpenAireExporter(settingsService),
-                new JSONExporter(settingsService)));
+                new OpenAireExporter(settingsService, jsonPrinter),
+                new JSONExporter(settingsService, jsonPrinter)));
         exportService = new ExportService(exporters);
         exportService.loadAllExporters();
     }
@@ -329,7 +333,7 @@ public class ExportServiceTest {
             datasetField.getDatasetFieldType().setTitle("Name");
         }
     }
-    
+
     private void setupDescriptionData(List<DatasetField> datasetFields) {
 
         DatasetField descriptionField = datasetFields.stream()

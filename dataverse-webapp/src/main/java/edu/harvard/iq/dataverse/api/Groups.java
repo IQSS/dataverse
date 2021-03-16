@@ -6,9 +6,11 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider
 import edu.harvard.iq.dataverse.persistence.group.IpGroup;
 import edu.harvard.iq.dataverse.persistence.group.ShibGroup;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -24,8 +26,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import static org.apache.commons.lang.StringUtils.isNumeric;
 
 /**
@@ -38,6 +38,9 @@ public class Groups extends AbstractApiBean {
 
     private IpGroupProvider ipGroupPrv;
     private ShibGroupProvider shibGroupPrv;
+
+    @Inject
+    private JsonPrinter jsonPrinter;
 
     Pattern legalGroupName = Pattern.compile("^[-_a-zA-Z0-9]+$");
 
@@ -66,7 +69,7 @@ public class Groups extends AbstractApiBean {
                             grp.getPersistedGroupAlias() == null ? "ipGroup" : grp.getPersistedGroupAlias()));
 
             grp = ipGroupPrv.store(grp);
-            return created("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp));
+            return created("/groups/ip/" + grp.getPersistedGroupAlias(), jsonPrinter.json(grp));
 
         } catch (Exception e) {
             logger.log(Level.WARNING, "Error while storing a new IP group: " + e.getMessage(), e);
@@ -97,7 +100,7 @@ public class Groups extends AbstractApiBean {
             IpGroup grp = new JsonParser().parseIpGroup(dto);
             grp.setPersistedGroupAlias(groupName);
             grp = ipGroupPrv.store(grp);
-            return created("/groups/ip/" + grp.getPersistedGroupAlias(), json(grp));
+            return created("/groups/ip/" + grp.getPersistedGroupAlias(), jsonPrinter.json(grp));
 
         } catch (Exception e) {
             logger.log(Level.WARNING, "Error while storing a new IP group: " + e.getMessage(), e);
@@ -109,8 +112,9 @@ public class Groups extends AbstractApiBean {
     @GET
     @Path("ip")
     public Response listIpGroups() {
-        return ok(ipGroupPrv.findGlobalGroups()
-                          .stream().map(g -> json(g)).collect(toJsonArray()));
+        return ok(ipGroupPrv.findGlobalGroups().stream()
+                .map(g -> jsonPrinter.json(g))
+                .collect(jsonPrinter.toJsonArray()));
     }
 
     @GET
@@ -123,7 +127,9 @@ public class Groups extends AbstractApiBean {
             grp = ipGroupPrv.get(groupIdtf);
         }
 
-        return (grp == null) ? notFound("Group " + groupIdtf + " not found") : ok(json(grp));
+        return (grp == null)
+                ? notFound("Group " + groupIdtf + " not found")
+                : ok(jsonPrinter.json(grp));
     }
 
     @DELETE
@@ -164,7 +170,7 @@ public class Groups extends AbstractApiBean {
     public Response listShibGroups() {
         JsonArrayBuilder arrBld = Json.createArrayBuilder();
         for (ShibGroup g : shibGroupPrv.findGlobalGroups()) {
-            arrBld.add(json(g));
+            arrBld.add(jsonPrinter.json(g));
         }
         return ok(arrBld);
     }

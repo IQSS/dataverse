@@ -15,7 +15,6 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -36,6 +35,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Methods to add or replace a single file.
@@ -97,6 +98,7 @@ public class AddReplaceFileHelper {
     private IngestServiceBean ingestService;
     private DataFileServiceBean fileService;
     private PermissionServiceBean permissionService;
+    private JsonPrinter jsonPrinter;
     private EjbDataverseEngine commandEngine;
     private OptionalFileParams optionalFileParams;
 
@@ -108,7 +110,7 @@ public class AddReplaceFileHelper {
     private InputStream newFileInputStream;     // step 20
     private String newFileName;                 // step 20
     private String newFileContentType;          // step 20
-    // -- Optional  
+    // -- Optional
     private DataFile fileToReplace;             // step 25
 
 
@@ -141,15 +143,12 @@ public class AddReplaceFileHelper {
     /**
      * MAIN CONSTRUCTOR -- minimal requirements
      *
-     * @param dataset
-     * @param ingestService
-     * @param datasetDao
-     * @param dvRequest
      */
     public AddReplaceFileHelper(DataverseRequest dvRequest,
                                 IngestServiceBean ingestService,
                                 DataFileServiceBean fileService,
                                 PermissionServiceBean permissionService,
+                                JsonPrinter jsonPrinter,
                                 EjbDataverseEngine commandEngine,
                                 OptionalFileParams optionalFileParams) {
 
@@ -162,10 +161,11 @@ public class AddReplaceFileHelper {
         // ---------------------------------
         // make sure services aren't null
         // ---------------------------------
-        this.ingestService = Objects.requireNonNull(ingestService, "ingestService cannot be null");
-        this.fileService = Objects.requireNonNull(fileService, "fileService cannot be null");
-        this.permissionService = Objects.requireNonNull(permissionService, "permissionService cannot be null");
-        this.commandEngine = Objects.requireNonNull(commandEngine, "commandEngine cannot be null");
+        this.ingestService = requireNonNull(ingestService, "ingestService cannot be null");
+        this.fileService = requireNonNull(fileService, "fileService cannot be null");
+        this.permissionService = requireNonNull(permissionService, "permissionService cannot be null");
+        this.jsonPrinter = requireNonNull(jsonPrinter);
+        this.commandEngine = requireNonNull(commandEngine, "commandEngine cannot be null");
         this.optionalFileParams = optionalFileParams;
 
         // ---------------------------------
@@ -178,14 +178,6 @@ public class AddReplaceFileHelper {
 
     }
 
-    /**
-     * @param chosenDataset
-     * @param newFileName
-     * @param newFileContentType
-     * @param newFileInputStream
-     * @param optionalFileParams
-     * @return
-     */
     public boolean runAddFileByDataset(Dataset chosenDataset,
                                        String newFileName,
                                        String newFileContentType,
@@ -210,12 +202,6 @@ public class AddReplaceFileHelper {
 
     /**
      * After the constructor, this method is called to replace a file
-     *
-     * @param dataset
-     * @param newFileName
-     * @param newFileContentType
-     * @param newFileInputStream
-     * @return
      */
     public boolean runForceReplaceFile(Long oldFileId,
                                        String newFileName,
@@ -286,8 +272,6 @@ public class AddReplaceFileHelper {
      * <p>
      * The UI will call Phase 1 on initial upload and
      * then run Phase 2 if the user chooses to save the changes.
-     *
-     * @return
      */
     private boolean runAddReplaceFile(Dataset dataset,
                                       String newFileName, String newFileContentType,
@@ -318,8 +302,6 @@ public class AddReplaceFileHelper {
      * <p>
      * Phase 1 (here): Add/replace the file and make sure there are no errors
      * But don't update the Dataset (yet)
-     *
-     * @return
      */
     private boolean runAddReplacePhase1(Dataset dataset,
                                         String newFileName,
@@ -368,8 +350,6 @@ public class AddReplaceFileHelper {
      * For the UI: File add/replace has been broken into 2 steps
      * <p>
      * Phase 2 (here): Phase 1 has run ok, Update the Dataset -- issue the commands!
-     *
-     * @return
      */
     private boolean runAddReplacePhase2() {
 
@@ -415,8 +395,6 @@ public class AddReplaceFileHelper {
      * Is this a file FORCE replace operation?
      * <p>
      * Only overrides warnings of content type change
-     *
-     * @return
      */
     public boolean isForceFileOperation() {
 
@@ -425,8 +403,6 @@ public class AddReplaceFileHelper {
 
     /**
      * Is this a file replace operation?
-     *
-     * @return
      */
     public boolean isFileReplaceOperation() {
 
@@ -454,8 +430,6 @@ public class AddReplaceFileHelper {
 
     /**
      * Add error message
-     *
-     * @param errMsg
      */
     private void addError(String errMsg) {
 
@@ -505,8 +479,6 @@ public class AddReplaceFileHelper {
 
     /**
      * Was an error found?
-     *
-     * @return
      */
     public boolean hasError() {
         return this.errorFound;
@@ -515,9 +487,6 @@ public class AddReplaceFileHelper {
 
     /**
      * get error messages as string
-     *
-     * @param joinString
-     * @return
      */
     public String getErrorMessagesAsString(String joinString) {
         if (joinString == null) {
@@ -531,8 +500,6 @@ public class AddReplaceFileHelper {
      * For API use, return the HTTP error code
      * <p>
      * Default is BAD_REQUEST
-     *
-     * @return
      */
     public Response.Status getHttpErrorCode() {
 
@@ -573,9 +540,6 @@ public class AddReplaceFileHelper {
 
     /**
      * Convenience method for getting bundle error message
-     *
-     * @param msgName
-     * @return
      */
     private String getBundleErr(String msgName) {
         return this.getBundleMsg(msgName, true);
@@ -604,8 +568,6 @@ public class AddReplaceFileHelper {
 
     /**
      * Step 10 Verify User and Permissions
-     *
-     * @return
      */
     private boolean step_010_VerifyUserAndPermissions() {
 
@@ -677,9 +639,6 @@ public class AddReplaceFileHelper {
 
     /**
      * Optional: old file to replace
-     *
-     * @param oldFile
-     * @return
      */
     private boolean step_005_loadFileToReplaceById(Long dataFileId) {
 
@@ -733,8 +692,6 @@ public class AddReplaceFileHelper {
     /**
      * Make sure the file to replace is in the workingVersion
      * -- e.g. that it wasn't deleted from a previous Version
-     *
-     * @return
      */
     private boolean step_007_auto_isReplacementInLatestVersion(DataFile existingFile) {
 
@@ -823,7 +780,7 @@ public class AddReplaceFileHelper {
         }
 
         return this.step_040_auto_checkForDuplicates();
-                       
+
 
         /*
             commenting out. see the comment in the source of the method below.
@@ -838,8 +795,6 @@ public class AddReplaceFileHelper {
      * Create a "final file list"
      * <p>
      * This is always run after step 30 -- the ingest
-     *
-     * @return
      */
     private boolean step_040_auto_checkForDuplicates() {
 
@@ -887,7 +842,7 @@ public class AddReplaceFileHelper {
 
             // -----------------------------------------------------------
             // (2) Check for duplicates
-            // -----------------------------------------------------------     
+            // -----------------------------------------------------------
             if (isFileReplaceOperation() && Objects.equals(df.getChecksumValue(), fileToReplace.getChecksumValue())) {
                 this.addErrorSevere(getBundleErr("replace.new_file_same_as_replacement"));
                 break;
@@ -978,7 +933,7 @@ public class AddReplaceFileHelper {
      * in the dataset. AND the replacement content type too. -- L.A. Jan 16 2017
      */
     /*private boolean step_045_auto_checkForFileReplaceDuplicate(){
-        
+
         if (this.hasError()){
             return false;
         }
@@ -987,33 +942,33 @@ public class AddReplaceFileHelper {
         if (!isFileReplaceOperation()){
             return true;
         }
-        
+
         if (finalFileList.isEmpty()){
             // This error shouldn't happen if steps called in sequence....
-            this.addErrorSevere("There are no files to add.  (This error shouldn't happen if steps called in sequence....checkForFileReplaceDuplicate)");                
+            this.addErrorSevere("There are no files to add.  (This error shouldn't happen if steps called in sequence....checkForFileReplaceDuplicate)");
             return false;
         }
-        
-        
+
+
         if (this.fileToReplace == null){
             // This error shouldn't happen if steps called correctly
             this.addErrorSevere(getBundleErr("existing_file_to_replace_is_null") + " (This error shouldn't happen if steps called in sequence....checkForFileReplaceDuplicate)");
             return false;
         }
-    
+
         for (DataFile df : finalFileList){
-            
+
             if (Objects.equals(df.getChecksumValue(), fileToReplace.getChecksumValue())){
-                this.addError(getBundleErr("replace.new_file_same_as_replacement"));                                
+                this.addError(getBundleErr("replace.new_file_same_as_replacement"));
                 break;
             }
             // Has the content type of the file changed?
             //
             if (!df.getContentType().equalsIgnoreCase(fileToReplace.getContentType())){
-            
-                String contentTypeErr = BundleUtil.getStringFromBundle("file.addreplace.error.replace.new_file_has_different_content_type", 
+
+                String contentTypeErr = BundleUtil.getStringFromBundle("file.addreplace.error.replace.new_file_has_different_content_type",
                                 fileToReplace.getFriendlyType(), df.getFriendlyType());
-                                        
+
                 if (isForceFileOperation()){
                     // for force replace, just give a warning
                     this.setContentTypeWarning(contentTypeErr);
@@ -1023,14 +978,14 @@ public class AddReplaceFileHelper {
                 }
             }
         }
-        
+
         if (hasError()){
             runMajorCleanup();
             return false;
         }
-        
+
         return true;
-        
+
     } // end step_045_auto_checkForFileReplaceDuplicate
     */
     private boolean step_050_checkForConstraintViolations() {
@@ -1048,19 +1003,19 @@ public class AddReplaceFileHelper {
         // -----------------------------------------------------------
         // Iterate through checking for constraint violations
         //  Gather all error messages
-        // -----------------------------------------------------------   
+        // -----------------------------------------------------------
         Set<ConstraintViolation> constraintViolations = workingVersion.validate();
 
-        // -----------------------------------------------------------   
+        // -----------------------------------------------------------
         // No violations found
-        // -----------------------------------------------------------   
+        // -----------------------------------------------------------
         if (constraintViolations.isEmpty()) {
             return true;
         }
 
-        // -----------------------------------------------------------   
+        // -----------------------------------------------------------
         // violations found: gather all error messages
-        // -----------------------------------------------------------   
+        // -----------------------------------------------------------
         List<String> errMsgs = new ArrayList<>();
         for (ConstraintViolation violation : constraintViolations) {
             this.addError(violation.getMessage());
@@ -1072,9 +1027,6 @@ public class AddReplaceFileHelper {
 
     /**
      * Load optional file params such as description, tags, fileDataTags, etc..
-     *
-     * @param optionalFileParams
-     * @return
      */
     private boolean step_055_loadOptionalFileParams(OptionalFileParams optionalFileParams) {
 
@@ -1139,8 +1091,6 @@ public class AddReplaceFileHelper {
 
     /**
      * Create and run the update dataset command
-     *
-     * @return
      */
     private boolean step_070_run_update_dataset_command() {
 
@@ -1153,7 +1103,7 @@ public class AddReplaceFileHelper {
         ((UpdateDatasetVersionCommand) update_cmd).setValidateLenient(true);
 
         try {
-            // Submit the update dataset command 
+            // Submit the update dataset command
             // and update the local dataset object
             //
             dataset = commandEngine.submit(update_cmd);
@@ -1179,8 +1129,6 @@ public class AddReplaceFileHelper {
     /**
      * Go through the working DatasetVersion and remove the
      * FileMetadata of the file to replace
-     *
-     * @return
      */
     private boolean step_085_auto_remove_filemetadata_to_replace_from_working_version() {
 
@@ -1213,26 +1161,26 @@ public class AddReplaceFileHelper {
                 if (Objects.equals(fm.getDataFile().getId(), fileToReplace.getId())) {
                     msg("Let's remove it!");
 
-                    // If this is a tabular data file with a UNF, we'll need 
-                    // to recalculate the version UNF, once the file is removed: 
+                    // If this is a tabular data file with a UNF, we'll need
+                    // to recalculate the version UNF, once the file is removed:
 
                     boolean recalculateUNF = !StringUtils.isEmpty(fm.getDataFile().getUnf());
 
                     if (workingVersion.getId() != null) {
-                        // If this is an existing draft (i.e., this draft version 
-                        // is already saved in the dataset, we'll also need to remove this filemetadata 
+                        // If this is an existing draft (i.e., this draft version
+                        // is already saved in the dataset, we'll also need to remove this filemetadata
                         // explicitly:
                         msg(" this is an existing draft version...");
                         fileService.removeFileMetadata(fm);
 
                         // remove the filemetadata from the list of filemetadatas
-                        // attached to the datafile object as well, for a good 
-                        // measure: 
+                        // attached to the datafile object as well, for a good
+                        // measure:
                         fileToReplace.getFileMetadatas().remove(fm);
                         // (and yes, we can do .remove(fm) safely - if this released
-                        // file is part of an existing draft, we know that the 
+                        // file is part of an existing draft, we know that the
                         // filemetadata object also exists in the database, and thus
-                        // has the id, and can be identified unambiguously. 
+                        // has the id, and can be identified unambiguously.
                     }
 
                     // and remove it from the list of filemetadatas attached
@@ -1282,16 +1230,14 @@ public class AddReplaceFileHelper {
 
     /**
      * We are outta here!  Remove everything unsaved from the edit version!
-     *
-     * @return
      */
     private boolean removeUnSavedFilesFromWorkingVersion() {
         msgt("Clean up: removeUnSavedFilesFromWorkingVersion");
 
         // -----------------------------------------------------------
         // (1) Remove all new FileMetadata objects
-        // -----------------------------------------------------------                        
-        //Iterator<FileMetadata> fmIt = dataset.getEditVersion().getFileMetadatas().iterator();//  
+        // -----------------------------------------------------------
+        //Iterator<FileMetadata> fmIt = dataset.getEditVersion().getFileMetadatas().iterator();//
         Iterator<FileMetadata> fmIt = workingVersion.getFileMetadatas().iterator(); //dataset.getEditVersion().getFileMetadatas().iterator();//
         while (fmIt.hasNext()) {
             FileMetadata fm = fmIt.next();
@@ -1302,7 +1248,7 @@ public class AddReplaceFileHelper {
 
         // -----------------------------------------------------------
         // (2) Remove all new DataFile objects
-        // -----------------------------------------------------------                        
+        // -----------------------------------------------------------
         Iterator<DataFile> dfIt = dataset.getFiles().iterator();
         msgt("Clear Files");
         while (dfIt.hasNext()) {
@@ -1338,12 +1284,12 @@ public class AddReplaceFileHelper {
         // -----------------------------------------------------------
         // Set the "root file ids" and "previous file ids"
         // THIS IS A KEY STEP - SPLIT IT OUT
-        //  (1) Old file: Set the Root File Id on the original file  
+        //  (1) Old file: Set the Root File Id on the original file
         //  (2) New file: Set the previousFileId to the id of the original file
         //  (3) New file: Set the rootFileId to the rootFileId of the original file
         // -----------------------------------------------------------
- 
-        
+
+
         /*
             Check the root file id on fileToReplace, updating it if necessary
         */
@@ -1352,7 +1298,7 @@ public class AddReplaceFileHelper {
             fileToReplace.setRootDataFileId(fileToReplace.getId());
             fileToReplace = fileService.save(fileToReplace);
         }
-        
+
         /*
             Go through the final file list, settting the rootFileId and previousFileId
         */
@@ -1379,8 +1325,6 @@ public class AddReplaceFileHelper {
      * (2) pick off files that are NOT released
      * (3) iterate through only those files
      * - or an alternate/better version
-     *
-     * @param df
      */
     private void setNewlyAddedFiles(List<DataFile> datafiles) {
 
@@ -1437,7 +1381,7 @@ public class AddReplaceFileHelper {
             throw new NoFilesException("newlyAddedFiles is empty!");
         }
 
-        return JsonPrinter.jsonDataFileList(newlyAddedFiles);
+        return jsonPrinter.jsonDataFileList(newlyAddedFiles);
     }
 
 
@@ -1517,7 +1461,7 @@ public class AddReplaceFileHelper {
 } // end class
   /*
     DatasetPage sequence:
-    
+
     (A) editFilesFragment.xhtml -> EditDataFilesPage.handleFileUpload
     (B) EditDataFilesPage.java -> handleFileUpload
         (1) UploadedFile uf  event.getFile() // UploadedFile
@@ -1530,12 +1474,12 @@ public class AddReplaceFileHelper {
                     public String getContentType();
                     public void write(String string) throws Exception;
             --------
-        (2) List<DataFile> dFileList = null;     
+        (2) List<DataFile> dFileList = null;
         try {
             // Note: A single file may be unzipped into multiple files
             dFileList = ingestService.createDataFiles(workingVersion, uFile.getInputstream(), uFile.getFileName(), uFile.getContentType());
         }
-    
+
         (3) processUploadedFileList(dFileList);
     (C) EditDataFilesPage.java -> processUploadedFileList
         - iterate through list of DataFile objects -- which COULD happen with a single .zip
@@ -1545,7 +1489,7 @@ public class AddReplaceFileHelper {
                 - fileMetadatas.add(dataFile.getFileMetadata());
             - return null;    // looks good, return null
     (D) save()  // in the UI, user clicks the button.  API is automatic if no errors
-        
+
         (1) Look for constraintViolations:
             // DatasetVersion workingVersion;
             Set<ConstraintViolation> constraintViolations = workingVersion.validate();
@@ -1555,20 +1499,20 @@ public class AddReplaceFileHelper {
                 //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "See below for details."));
                 return "";
             }
-    
+
          (2) Use the ingestService for a final check
             // ask Leonid if this is needed for API
-            // One last check before we save the files - go through the newly-uploaded 
-            // ones and modify their names so that there are no duplicates. 
+            // One last check before we save the files - go through the newly-uploaded
+            // ones and modify their names so that there are no duplicates.
             // (but should we really be doing it here? - maybe a better approach to do it
             // in the ingest service bean, when the files get uploaded.)
-            // Finally, save the files permanently: 
+            // Finally, save the files permanently:
             ingestService.saveAndAddFilesToDataset(workingVersion, newFiles);
          (3) Use the API to save the dataset
             - make new CreateDatasetCommand
                 - check if dataset has a template
             - creates UserNotification message
-    
+
     */
 // Checks:
 //   - Does the md5 already exist in the dataset?
@@ -1582,8 +1526,8 @@ public class AddReplaceFileHelper {
 //      - If it's replace, don't copy the file being replaced
 // - Add this new file.
 // ....
-    
-    
+
+
 
 /*
     1) Recovery from adding same file and duplicate being found

@@ -7,7 +7,6 @@ import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.path.xml.XmlPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
-import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.persistence.user.PrivateUrlUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -33,14 +32,7 @@ import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.json.JsonPath.with;
 import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import static edu.harvard.iq.dataverse.api.UtilIT.equalToCI;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static javax.ws.rs.core.Response.Status.NO_CONTENT;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static javax.ws.rs.core.Response.Status.*;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -63,7 +55,7 @@ public class DatasetsIT {
         removeExcludeEmail.then().assertThat()
                 .statusCode(200);
         /* With Dual mode, we can no longer mess with upload methods since native is now required for anything to work
-               
+
         Response removeDcmUrl = UtilIT.deleteSetting(SettingsServiceBean.Key.DataCaptureModuleUrl);
         removeDcmUrl.then().assertThat()
                 .statusCode(200);
@@ -778,67 +770,67 @@ public class DatasetsIT {
         assertEquals(OK.getStatusCode(), getDatasetAsUserWhoClicksPrivateUrl.getStatusCode());
 
         /*
-         * NOTE, this is what happens when we attempt to access the dataset via the 
-         * private url, as implemented above: 
-         * 
-         * The private url page authorizes the user to view the dataset 
-         * by issuing a new jsession, and issuing a 302 redirect to the dataset 
-         * page WITH THE JSESSIONID ADDED TO THE URL - as in 
+         * NOTE, this is what happens when we attempt to access the dataset via the
+         * private url, as implemented above:
+         *
+         * The private url page authorizes the user to view the dataset
+         * by issuing a new jsession, and issuing a 302 redirect to the dataset
+         * page WITH THE JSESSIONID ADDED TO THE URL - as in
          * dataset.xhtml?persistentId=xxx&jsessionid=yyy
-         * RestAssured's .get() method follows redirects by default - so in the 
-         * end the above works and we get the correct dataset. 
-         * But note that this relies on the jsessionid in the url. We've 
-         * experimented with disabling url-supplied jsessions (in PR #5316); 
-         * then the above stopped working - because now jsession is supplied 
-         * AS A COOKIE, which the RestAssured code above does not use, so 
-         * the dataset page refuses to show the dataset to the user. (So the 
-         * assertEquals code above fails, because the page title is not "Darwin's Finches", 
+         * RestAssured's .get() method follows redirects by default - so in the
+         * end the above works and we get the correct dataset.
+         * But note that this relies on the jsessionid in the url. We've
+         * experimented with disabling url-supplied jsessions (in PR #5316);
+         * then the above stopped working - because now jsession is supplied
+         * AS A COOKIE, which the RestAssured code above does not use, so
+         * the dataset page refuses to show the dataset to the user. (So the
+         * assertEquals code above fails, because the page title is not "Darwin's Finches",
          * but "Login Page")
-         * Below is an implementation of the test above that uses the jsession 
-         * cookie, instead of relying on the jsessionid in the URL: 
-         
-        // This should redirect us to the actual dataset page, and 
-        // give us a valid session cookie: 
-        
+         * Below is an implementation of the test above that uses the jsession
+         * cookie, instead of relying on the jsessionid in the URL:
+
+        // This should redirect us to the actual dataset page, and
+        // give us a valid session cookie:
+
         Response getDatasetAsUserWhoClicksPrivateUrl = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .redirects().follow(false)
                 .get(urlWithToken);
-        // (note that we have purposefully asked not to follow redirects 
+        // (note that we have purposefully asked not to follow redirects
         // automatically; this way we can test that we are being redirected
         // to the right place, that we've been given the session cookie, etc.
-                
+
         assertEquals(FOUND.getStatusCode(), getDatasetAsUserWhoClicksPrivateUrl.getStatusCode());
         // Yes, javax.ws.rs.core.Response.Status.FOUND is 302!
         String title = getDatasetAsUserWhoClicksPrivateUrl.getBody().htmlPath().getString("html.head.title");
         assertEquals("Document moved", title);
-        
+
         String redirectLink = getDatasetAsUserWhoClicksPrivateUrl.getBody().htmlPath().getString("html.body.a.@href");
         assertNotNull(redirectLink);
         assertTrue(redirectLink.contains("dataset.xhtml"));
-        
+
         String jsessionid = getDatasetAsUserWhoClicksPrivateUrl.cookie("jsessionid");
         assertNotNull(jsessionid);
-        
-        // ... and now we can try and access the dataset, with another HTTP GET, 
+
+        // ... and now we can try and access the dataset, with another HTTP GET,
         // sending the jsession cookie along:
-        
-        try { 
+
+        try {
             redirectLink = URLDecoder.decode(redirectLink, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
-            // do nothing - try to redirect to the url as is? 
+            // do nothing - try to redirect to the url as is?
         }
-        
+
         logger.info("redirecting to "+redirectLink+", using jsession "+jsessionid);
-        
+
         getDatasetAsUserWhoClicksPrivateUrl = given()
                 .cookies("JSESSIONID", jsessionid)
                 .get(redirectLink);
-        
+
         assertEquals(OK.getStatusCode(), getDatasetAsUserWhoClicksPrivateUrl.getStatusCode());
         title = getDatasetAsUserWhoClicksPrivateUrl.getBody().htmlPath().getString("html.head.title");
         assertEquals("Darwin's Finches - " + dataverseAlias, title);
-         
+
         */
 
         Response junkPrivateUrlToken = given()
@@ -1268,7 +1260,7 @@ public class DatasetsIT {
      */
     @Test
     public void testDcmChecksumValidationMessages() throws IOException, InterruptedException {
-        
+
         /*SEK 3/28/2018 This test needs more work
             Currently it is failing at around line 1114
             Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
@@ -1511,7 +1503,7 @@ public class DatasetsIT {
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
-        // This should fail, because we are attempting to link the dataset 
+        // This should fail, because we are attempting to link the dataset
         // to its own dataverse:
         Response publishTargetDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken);
         publishTargetDataverse.prettyPrint();
@@ -1579,14 +1571,14 @@ public class DatasetsIT {
                 .body("data", equalTo(emptyArray))
                 .statusCode(200);
 
-        // Lock the dataset with an ingest lock: 
+        // Lock the dataset with an ingest lock:
         Response lockDatasetResponse = UtilIT.lockDataset(datasetId.longValue(), "Ingest", apiToken);
         lockDatasetResponse.prettyPrint();
         lockDatasetResponse.then().assertThat()
                 .body("data.message", equalTo("dataset locked with lock type Ingest"))
                 .statusCode(200);
 
-        // Check again: 
+        // Check again:
         // This should return an empty list, as the dataset should have no locks just yet:
         checkDatasetLocks = UtilIT.checkDatasetLocks(datasetId.longValue(), "Ingest", apiToken);
         checkDatasetLocks.prettyPrint();
@@ -1594,7 +1586,7 @@ public class DatasetsIT {
                 .body("data[0].lockType", equalTo("Ingest"))
                 .statusCode(200);
 
-        // Try to lock the dataset with the same type lock, AGAIN 
+        // Try to lock the dataset with the same type lock, AGAIN
         // (this should fail, of course!)
         lockDatasetResponse = UtilIT.lockDataset(datasetId.longValue(), "Ingest", apiToken);
         lockDatasetResponse.prettyPrint();
@@ -1610,7 +1602,7 @@ public class DatasetsIT {
                 .body("data.message", equalTo("lock type Ingest removed"))
                 .statusCode(200);
 
-        // ... and check for the lock on the dataset again, this time by specific lock type: 
+        // ... and check for the lock on the dataset again, this time by specific lock type:
         // (should return an empty list, now that we have unlocked it)
         checkDatasetLocks = UtilIT.checkDatasetLocks(datasetId.longValue(), "Ingest", apiToken);
         checkDatasetLocks.prettyPrint();

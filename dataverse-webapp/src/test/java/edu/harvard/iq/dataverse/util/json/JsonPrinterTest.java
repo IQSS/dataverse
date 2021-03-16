@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.util.json;
 
 import com.google.common.collect.Lists;
+import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.common.Util;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
@@ -31,7 +32,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -49,6 +49,8 @@ public class JsonPrinterTest {
     private DatasetFieldType contactNameFieldType;
     private DatasetFieldType contactAffiliationFieldType;
 
+    private JsonPrinter jsonPrinter = new JsonPrinter(new CitationFactory());
+
     @Before
     public void setUp() {
 
@@ -61,11 +63,11 @@ public class JsonPrinterTest {
             t.setParentDatasetFieldType(contactFieldType);
         }
         contactFieldType.setChildDatasetFieldTypes(contactChildrenFieldTypes);
-        
+
         citationBlock = new MetadataBlock();
         citationBlock.setName("citation");
         citationBlock.setDatasetFieldTypes(Lists.newArrayList(contactFieldType));
-        
+
         contactFieldType.setMetadataBlock(citationBlock);
     }
 
@@ -80,7 +82,7 @@ public class JsonPrinterTest {
         RoleAssignment ra = new RoleAssignment(aRole, anAssignee, dataset, privateUrlToken);
 
         //when
-        JsonObjectBuilder job = JsonPrinter.json(ra);
+        JsonObjectBuilder job = jsonPrinter.json(ra);
         assertNotNull(job);
         JsonObject jsonObject = job.build();
 
@@ -102,7 +104,7 @@ public class JsonPrinterTest {
         PrivateUrl privateUrl = new PrivateUrl(ra, dataset, dataverseSiteUrl);
 
         //when
-        JsonObjectBuilder job = JsonPrinter.json(privateUrl);
+        JsonObjectBuilder job = jsonPrinter.json(privateUrl);
         assertNotNull(job);
         JsonObject jsonObject = job.build();
 
@@ -136,7 +138,7 @@ public class JsonPrinterTest {
         fmd.setCategories(fileCategories);
 
         //when
-        JsonObjectBuilder job = JsonPrinter.json(fmd);
+        JsonObjectBuilder job = jsonPrinter.json(fmd);
         assertNotNull(job);
         JsonObject jsonObject = job.build();
 
@@ -164,7 +166,7 @@ public class JsonPrinterTest {
         fields.add(datasetContactField);
 
         //when
-        JsonObject jsonObject = JsonPrinter.json(citationBlock, fields, false).build();
+        JsonObject jsonObject = jsonPrinter.json(citationBlock, fields, false).build();
         assertNotNull(jsonObject);
 
         //then
@@ -172,7 +174,7 @@ public class JsonPrinterTest {
         assertEquals("Bar University", jsonObject.getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject("datasetContactAffiliation").getString("value"));
         assertEquals("foo@bar.com", jsonObject.getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject("datasetContactEmail").getString("value"));
 
-        JsonObject byBlocks = JsonPrinter.jsonByBlocks(fields, false).build();
+        JsonObject byBlocks = jsonPrinter.jsonByBlocks(fields, false).build();
 
         System.out.println("byBlocks: " + JsonUtil.prettyPrint(byBlocks.toString()));
         assertEquals("Foo Bar", byBlocks.getJsonObject("citation").getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject("datasetContactName").getString("value"));
@@ -196,7 +198,7 @@ public class JsonPrinterTest {
         fields.add(datasetContactField);
 
         //when
-        JsonObject jsonObject = JsonPrinter.json(citationBlock, fields, true).build();
+        JsonObject jsonObject = jsonPrinter.json(citationBlock, fields, true).build();
         assertNotNull(jsonObject);
 
         //then
@@ -205,7 +207,7 @@ public class JsonPrinterTest {
         assertNull(jsonObject.getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject(
                 "datasetContactEmail"));
 
-        JsonObject byBlocks = JsonPrinter.jsonByBlocks(fields, true).build();
+        JsonObject byBlocks = jsonPrinter.jsonByBlocks(fields, true).build();
 
         System.out.println("byBlocks: " + JsonUtil.prettyPrint(byBlocks.toString()));
         assertEquals("Foo Bar", byBlocks.getJsonObject("citation").getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject("datasetContactName").getString("value"));
@@ -224,7 +226,7 @@ public class JsonPrinterTest {
         dataset.setEmbargoDate(embargoDate);
 
         // when
-        JsonObject jsonObject = JsonPrinter.json(dataset).build();
+        JsonObject jsonObject = jsonPrinter.json(dataset).build();
 
         // then
         assertThat("Should include embargo date", jsonObject.getString("embargoDate"), is(expectedDate));
@@ -236,7 +238,7 @@ public class JsonPrinterTest {
         Dataset datasetWithNoEmbargoDate = createDatasetForTests();
 
         // when
-        JsonObject jsonObject = JsonPrinter.json(datasetWithNoEmbargoDate).build();
+        JsonObject jsonObject = jsonPrinter.json(datasetWithNoEmbargoDate).build();
 
         // then
         assertThat("Should not include embargo date if it's null", jsonObject.get("embargoDate"), nullValue());
@@ -262,8 +264,8 @@ public class JsonPrinterTest {
         dsWithInactiveEmbargo.setEmbargoDate(dateInPast);
 
         // when
-        JsonObject active = JsonPrinter.json(dsWithActiveEmbargo).build();
-        JsonObject inactive = JsonPrinter.json(dsWithInactiveEmbargo).build();
+        JsonObject active = jsonPrinter.json(dsWithActiveEmbargo).build();
+        JsonObject inactive = jsonPrinter.json(dsWithInactiveEmbargo).build();
 
         // then
         assertThat("Object with embargo in future should have embargo flag set to TRUE",
@@ -277,17 +279,17 @@ public class JsonPrinterTest {
         // given
         Dataset datasetWithActiveEmbargo = createDatasetForTests();
         datasetWithActiveEmbargo.setEmbargoDate(Date.from(Instant.now().plus(1, ChronoUnit.DAYS)));
-        
+
         FileMetadata fileMetadata = new FileMetadata();
         fileMetadata.setLabel("file.txt");
-        
+
         DatasetVersion datasetVersion = new DatasetVersion();
         datasetVersion.setVersionState(VersionState.RELEASED);
         datasetVersion.setDataset(datasetWithActiveEmbargo);
         datasetVersion.addFileMetadata(new FileMetadata());
 
         // when
-        JsonObject jsonObject = JsonPrinter.json(datasetVersion, false).build();
+        JsonObject jsonObject = jsonPrinter.json(datasetVersion, false).build();
 
         // then
         assertTrue(jsonObject.getJsonArray("files").isEmpty());

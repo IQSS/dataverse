@@ -17,7 +17,6 @@ import javax.json.JsonObjectBuilder;
 import java.util.Comparator;
 import java.util.List;
 
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.typeClassString;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -38,7 +37,7 @@ public class JsonDatasetFieldsPrinter {
      */
     public JsonArrayBuilder json(List<DatasetField> dsfFields, boolean excludeEmailFields) {
         JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
-        
+
         for(DatasetField dsf : dsfFields) {
             if (dsf.getDatasetFieldsChildren().size() > 1) {
                 dsf.getDatasetFieldsChildren().sort(Comparator.comparing(DatasetField::getDatasetFieldTypeDisplayOrder));
@@ -54,46 +53,46 @@ public class JsonDatasetFieldsPrinter {
 
             DatasetFieldType dsfType = fieldsByType.getDatasetFieldType();
             List<DatasetField> datasetFields = fieldsByType.getDatasetFields();
-            
+
             if (dsfType.isControlledVocabulary()) {
-                
+
                 List<String> controlledVocabularyStrValues = datasetFields.stream()
                     .flatMap(dsf -> dsf.getControlledVocabularyValues().stream())
                     .sorted(ControlledVocabularyValue.DisplayOrder)
                     .map(ControlledVocabularyValue::getStrValue)
                     .collect(toList());
-                
+
                 JsonObjectBuilder fieldNode = prepareDatasetFieldObject(dsfType);
                 attachFieldValues(dsfType, controlledVocabularyStrValues, fieldNode);
-                
+
                 fieldsArray.add(fieldNode);
-            
+
             } else if (dsfType.isPrimitive()) {
-                
+
                 List<String> fieldValues = datasetFields.stream()
                     .map(dsf -> dsf.getFieldValue())
                     .filter(fieldValue -> fieldValue.isDefined())
                     .map(Option::get)
                     .collect(toList());
-                
+
                 JsonObjectBuilder fieldNode = prepareDatasetFieldObject(dsfType);
                 attachFieldValues(dsfType, fieldValues, fieldNode);
-                
+
                 fieldsArray.add(fieldNode);
-                
+
             } else if (dsfType.isCompound()) {
-                
+
                 List<JsonObject> fieldNodes = datasetFields.stream()
                     .map(datasetField -> parseChildren(excludeEmailFields, datasetField))
                     .collect(toList());
-                
-                
+
+
                 JsonObjectBuilder fieldNode = prepareDatasetFieldObject(dsfType);
                 attachFieldObjectValues(dsfType, fieldNodes, fieldNode);
-                
+
                 fieldsArray.add(fieldNode);
             }
-            
+
         }
 
         return fieldsArray;
@@ -129,7 +128,7 @@ public class JsonDatasetFieldsPrinter {
                         .sorted(Comparator.comparing(ControlledVocabularyValue::getDisplayOrder))
                         .map(ControlledVocabularyValue::getStrValue)
                         .collect(toList());
-                
+
                 attachFieldValues(childType, vocabValues, childObject);
 
             } else if (childType.isPrimitive()) {
@@ -145,12 +144,12 @@ public class JsonDatasetFieldsPrinter {
 
         return childKey.build();
     }
-    
+
     private void attachFieldValues(DatasetFieldType datasetFieldType, List<String> fieldValues, JsonObjectBuilder valueParent) {
         if (datasetFieldType.isAllowMultiples() || fieldValues.size() > 1) {
             JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
             fieldValues.forEach(v -> arrayBuilder.add(v));
-            
+
             valueParent.add("value", arrayBuilder);
         } else {
             valueParent.add("value", fieldValues.get(0));
@@ -161,11 +160,20 @@ public class JsonDatasetFieldsPrinter {
         if (datasetFieldType.isAllowMultiples() || fieldObjectValues.size() > 1) {
             JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
             fieldObjectValues.forEach(v -> arrayBuilder.add(v));
-            
+
             valueParent.add("value", arrayBuilder);
         } else {
             valueParent.add("value", fieldObjectValues.get(0));
         }
     }
-    
+
+    private String typeClassString(DatasetFieldType typ) {
+        if (typ.isControlledVocabulary()) {
+            return "controlledVocabulary";
+        }
+        if (typ.isCompound()) {
+            return "compound";
+        }
+        return "primitive";
+    }
 }

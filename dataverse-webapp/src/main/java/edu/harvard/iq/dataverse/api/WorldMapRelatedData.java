@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
@@ -120,6 +121,9 @@ public class WorldMapRelatedData extends AbstractApiBean {
     @Inject
     DataverseSession session;
 
+    @Inject
+    CitationFactory citationFactory;
+
     // test call to track down problems
     // http://127.0.0.1:8080/api/worldmap/t/
     @GET
@@ -166,9 +170,9 @@ public class WorldMapRelatedData extends AbstractApiBean {
     /*
         Link used within Dataverse for MapIt button
         Sends file link to GeoConnect using a Redirect
-    
+
     */
-    //@GET    
+    //@GET
     //@Path( MAP_IT_API_PATH_FRAGMENT + "token-option/{datafile_id}/{dvuser_id}/{token_only}")
     private Response mapDataFileTokenOnlyOption(@Context HttpServletRequest request
             , Long datafile_id
@@ -210,7 +214,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         if (dfile == null) {
             return error(Response.Status.NOT_FOUND, "DataFile not found for id: " + datafile_id);
         }
-        
+
         /*
             Is the dataset public?
         */
@@ -219,7 +223,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
 
         }
 
-        // Does this user have permission to edit metadata for this file?    
+        // Does this user have permission to edit metadata for this file?
         if (!permissionService.requestOn(createDataverseRequest(dvUser), dfile.getOwner()).has(Permission.EditDataset)) {
             String errMsg = "The user does not have permission to edit metadata for this file.";
             return error(Response.Status.FORBIDDEN, errMsg);
@@ -271,7 +275,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         }
 
 
-        //String worldmapTokenParam = worldmapTokenObject.toString();                
+        //String worldmapTokenParam = worldmapTokenObject.toString();
         String worldmapTokenParam = jsonTokenInfo.getString(WorldMapToken.GEOCONNECT_TOKEN_KEY);
         if (worldmapTokenParam == null) {      // shouldn't happen
             logger.warning("worldmapTokenParam is null when .toString() called.  Permission denied.");
@@ -312,7 +316,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         //   -- For testing, the GEOCONNECT_TOKEN_VALUE will be dynamic, found in the db
         //----------------------------------
         logger.info("(1) jsonTokenData: " + jsonTokenData);
-        // Parse JSON 
+        // Parse JSON
         JsonObject jsonTokenInfo;
         try (StringReader rdr = new StringReader(jsonTokenData)) {
             jsonTokenInfo = Json.createReader(rdr).readObject();
@@ -392,7 +396,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
 
         //------------------------------------
         // Type of file, currently:
-        //  - shapefile or 
+        //  - shapefile or
         //  - tabular file (.tab) with geospatial tag
         //------------------------------------
         if (dfile.isShapefileType()) {
@@ -413,7 +417,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         jsonData.add("dv_user_email", dvUser.getEmail());
 
         //------------------------------------
-        // Dataverse URLs to this server 
+        // Dataverse URLs to this server
         //------------------------------------
         String serverName = systemConfig.getDataverseSiteUrl();
         jsonData.add("return_to_dataverse_url", dset_version.getReturnToFilePageURL(serverName, dset, dfile));
@@ -446,7 +450,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         jsonData.add("dataset_semantic_version", dset_version.getSemanticVersion());  // major/minor version number, e.g. 3.1
 
         jsonData.add("dataset_name", dset_version.getTitle());
-        jsonData.add("dataset_citation", dset_version.getCitation(true));
+        jsonData.add("dataset_citation", citationFactory.create(dset_version).toString(true));
 
         jsonData.add("dataset_description", "");  // Need to fix to/do
 
@@ -476,7 +480,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
     /*
         For WorldMap/GeoConnect Usage
         Create/Updated a MapLayerMetadata object for a given Datafile id
-        
+
         Example of jsonLayerData String:
         {
              "layerName": "geonode:boston_census_blocks_zip_cr9"
@@ -499,7 +503,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
             return error(Response.Status.BAD_REQUEST, "No JSON data");
         }
 
-        // (1) Parse JSON 
+        // (1) Parse JSON
         //
         JsonObject jsonInfo;
         try (StringReader rdr = new StringReader(jsonLayerData)) {
@@ -538,13 +542,13 @@ public class WorldMapRelatedData extends AbstractApiBean {
             }
         }
 
-        // (3) Attempt to retrieve DataverseUser      
+        // (3) Attempt to retrieve DataverseUser
         AuthenticatedUser dvUser = wmToken.getDataverseUser();
         if (dvUser == null) {
             return error(Response.Status.NOT_FOUND, "DataverseUser not found for token");
         }
 
-        // (4) Attempt to retrieve DataFile      
+        // (4) Attempt to retrieve DataFile
         DataFile dfile = wmToken.getDatafile();
         if (dfile == null) {
             return error(Response.Status.NOT_FOUND, "DataFile not found for token");
@@ -558,7 +562,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
 
 
         // (5) See if a MapLayerMetadata already exists
-        //  
+        //
         MapLayerMetadata mapLayerMetadata = this.mapLayerMetadataService.findMetadataByDatafile(dfile);
         if (mapLayerMetadata == null) {
             // Create a new mapLayerMetadata object
@@ -589,7 +593,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
             mapLayerMetadata.setJoinDescription(null);
         }
 
-        // Set the mapLayerLinks 
+        // Set the mapLayerLinks
         //
         String mapLayerLinks = jsonInfo.getString("mapLayerLinks", null);
         if ((mapLayerLinks == null) || (mapLayerLinks.equals(""))) {
@@ -640,7 +644,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
     @ApiWriteOperation
     @Path(DELETE_MAP_LAYER_DATA_API_PATH_FRAGMENT)
     public Response deleteWorldMapLayerData(String jsonData) {
-        
+
         /*----------------------------------
             Parse the json message.
             - Auth check: GEOCONNECT_TOKEN
@@ -649,7 +653,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
             logger.log(Level.SEVERE, "jsonData is null");
             return error(Response.Status.BAD_REQUEST, "No JSON data");
         }
-        // (1) Parse JSON 
+        // (1) Parse JSON
         //
         JsonObject jsonInfo;
         try (StringReader rdr = new StringReader(jsonData)) {
@@ -679,7 +683,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
             return error(Response.Status.UNAUTHORIZED, "No access. Invalid token.");
         }
 
-        // (5) Attempt to retrieve DataFile and mapLayerMetadata   
+        // (5) Attempt to retrieve DataFile and mapLayerMetadata
         DataFile dfile = wmToken.getDatafile();
         MapLayerMetadata mapLayerMetadata = this.mapLayerMetadataService.findMetadataByDatafile(dfile);
         if (mapLayerMetadata == null) {
@@ -712,7 +716,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
     @ApiWriteOperation
     @Path(DELETE_WORLDMAP_TOKEN_PATH_FRAGMENT)
     public Response deleteWorldMapToken(String jsonData) {
-        
+
         /*----------------------------------
             Parse the json message.
             - Auth check: GEOCONNECT_TOKEN
@@ -721,7 +725,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
             logger.log(Level.SEVERE, "jsonData is null");
             return error(Response.Status.BAD_REQUEST, "No JSON data");
         }
-        // (1) Parse JSON 
+        // (1) Parse JSON
         //
         JsonObject jsonInfo;
         try (StringReader rdr = new StringReader(jsonData)) {
@@ -749,6 +753,6 @@ public class WorldMapRelatedData extends AbstractApiBean {
         tokenServiceBean.deleteToken(wmToken);
         return ok("Token has been deleted.");
 
-    }  // end deleteWorldMapLayerData    
+    }  // end deleteWorldMapLayerData
 
 } // end class

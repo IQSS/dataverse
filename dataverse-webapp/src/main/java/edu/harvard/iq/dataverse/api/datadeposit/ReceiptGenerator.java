@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api.datadeposit;
 
+import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import org.apache.abdera.i18n.iri.IRI;
@@ -10,6 +11,16 @@ import java.util.logging.Logger;
 public class ReceiptGenerator {
 
     private static final Logger logger = Logger.getLogger(ReceiptGenerator.class.getCanonicalName());
+
+    private final CitationFactory citationFactory;
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    public ReceiptGenerator(CitationFactory citationFactory) {
+        this.citationFactory = citationFactory;
+    }
+
+    // -------------------- LOGIC --------------------
 
     DepositReceipt createDatasetReceipt(String baseUrl, Dataset dataset) {
         logger.fine("baseUrl was: " + baseUrl);
@@ -25,7 +36,7 @@ public class ReceiptGenerator {
         depositReceipt.setLocation(new IRI(editIri));
         depositReceipt.setEditMediaIRI(new IRI(baseUrl + "/edit-media/study/" + globalId));
         depositReceipt.setStatementURI("application/atom+xml;type=feed", baseUrl + "/statement/study/" + globalId);
-        depositReceipt.addDublinCore("bibliographicCitation", dataset.getLatestVersion().getCitation());
+        depositReceipt.addDublinCore("bibliographicCitation", citationFactory.create(dataset.getLatestVersion()).toString(false));
         depositReceipt.setSplashUri(dataset.getPersistentURL());
         return depositReceipt;
     }

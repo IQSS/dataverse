@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.common.DateUtil;
 import edu.harvard.iq.dataverse.persistence.JpaEntity;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.datafile.license.TermsOfUseForm;
-import edu.harvard.iq.dataverse.persistence.dataset.DataCitation;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.persistence.annotations.BatchFetch;
@@ -334,20 +333,6 @@ public class FileMetadata implements JpaEntity<Long>, Serializable {
         }
         return "";
     }
-
-    public String getFileCitation() {
-        return getFileCitation(false);
-    }
-
-
-    public String getFileCitation(boolean html) {
-        return new DataCitation(this).toString(html);
-    }
-
-    public String getDirectFileCitation(boolean html) {
-        return new DataCitation(this, true).toString(html);
-    }
-
 
     public DatasetVersion getDatasetVersion() {
         return datasetVersion;

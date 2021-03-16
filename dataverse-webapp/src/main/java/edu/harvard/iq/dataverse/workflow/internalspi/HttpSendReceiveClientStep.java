@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
+import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionContext;
 import edu.harvard.iq.dataverse.workflow.step.Failure;
@@ -39,10 +40,13 @@ public class HttpSendReceiveClientStep implements WorkflowStep {
 
     private final WorkflowStepParams params;
     private final DatasetVersionServiceBean versionsService;
+    private final CitationFactory citationFactory;
 
-    public HttpSendReceiveClientStep(WorkflowStepParams params, DatasetVersionServiceBean versionsService) {
+    public HttpSendReceiveClientStep(WorkflowStepParams params, DatasetVersionServiceBean versionsService,
+                                     CitationFactory citationFactory) {
         this.params = params;
         this.versionsService = versionsService;
+        this.citationFactory = citationFactory;
     }
 
     @Override
@@ -134,7 +138,10 @@ public class HttpSendReceiveClientStep implements WorkflowStep {
                     params.put("dataset.identifier", datasetVersion.getDataset().getIdentifier());
                     params.put("dataset.globalId", datasetVersion.getDataset().getGlobalIdString());
                     params.put("dataset.displayName", datasetVersion.getDataset().getDisplayName());
-                    params.put("dataset.citation", datasetVersion.getDataset().getCitation());
+                    params.put("dataset.citation",
+                            citationFactory.create(datasetVersion.getDataset().getLatestVersion())
+                                    .toString(false));
+
                     return params;
                 }
         ).orElseGet(Collections::emptyMap));

@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.common.DateUtil;
 import edu.harvard.iq.dataverse.export.ExporterType;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFileTag;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -15,7 +16,6 @@ import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -28,7 +28,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -257,7 +256,7 @@ public class OREMap {
                     aggRes.add(JsonLDTerm.checksum.getLabel(), checksum);
                 }
                 JsonArray tabTags = null;
-                JsonArrayBuilder jab = JsonPrinter.getTabularFileTags(df);
+                JsonArrayBuilder jab = getTabularFileTags(df);
                 if (jab != null) {
                     tabTags = jab.build();
                 }
@@ -407,4 +406,21 @@ public class OREMap {
         return null;
     }
 
+    private JsonArrayBuilder getTabularFileTags(DataFile df) {
+        if (df == null) {
+            return null;
+        }
+        List<DataFileTag> tags = df.getTags();
+        if (tags == null || tags.isEmpty()) {
+            return null;
+        }
+        JsonArrayBuilder tabularTags = Json.createArrayBuilder();
+        for (DataFileTag tag : tags) {
+            String label = tag.getTypeLabel();
+            if (label != null) {
+                tabularTags.add(label);
+            }
+        }
+        return tabularTags;
+    }
 }

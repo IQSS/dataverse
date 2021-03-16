@@ -56,22 +56,22 @@ import java.util.stream.Stream;
 })
 
 /*
-    Below is the stored procedure for getting a numeric value from a database 
-    sequence. Used when the Dataverse is (optionally) configured to use 
-    incremental numeric values for dataset ids, instead of the default 
-    random strings. 
+    Below is the stored procedure for getting a numeric value from a database
+    sequence. Used when the Dataverse is (optionally) configured to use
+    incremental numeric values for dataset ids, instead of the default
+    random strings.
 
-    Unfortunately, there's no standard EJB way of handling sequences. So in the 
+    Unfortunately, there's no standard EJB way of handling sequences. So in the
     past we would simply use a NativeQuery to call a proprietary Postgres
-    sequence query. A better way of handling this however is to define any 
-    proprietary SQL functionality outside of the application, in the database, 
-    and call it using the standard JPA @StoredProcedureQuery. 
+    sequence query. A better way of handling this however is to define any
+    proprietary SQL functionality outside of the application, in the database,
+    and call it using the standard JPA @StoredProcedureQuery.
 
-    The identifier sequence and the stored procedure for accessing it are currently 
-    implemented with PostgresQL "CREATE SEQUENCE ..." and "CREATE FUNCTION ..."; 
-    (we explain how to create these in the installation documentation and supply 
+    The identifier sequence and the stored procedure for accessing it are currently
+    implemented with PostgresQL "CREATE SEQUENCE ..." and "CREATE FUNCTION ...";
+    (we explain how to create these in the installation documentation and supply
     a script). If necessary, it can be implemented using other SQL flavors -
-    without having to modify the application code. 
+    without having to modify the application code.
             -- L.A. 4.6.2
 */
 @NamedStoredProcedureQuery(
@@ -382,7 +382,7 @@ public class Dataset extends DvObjectContainer {
 
             dsv.getFileMetadatas().add(newFm);
         }
-        
+
         getVersions().add(0, dsv);
 
 
@@ -425,7 +425,7 @@ public class Dataset extends DvObjectContainer {
         }
         return getReleasedVersion() != null;
     }
-    
+
     public DatasetVersion getReleasedVersion() {
         for (DatasetVersion version : this.getVersions()) {
             if (version.isReleased()) {
@@ -614,18 +614,6 @@ public class Dataset extends DvObjectContainer {
         return 0;
     }
 
-    public String getCitation() {
-        return getCitation(false, getLatestVersion());
-    }
-
-    public String getCitation(DatasetVersion version) {
-        return version.getCitation();
-    }
-
-    public String getCitation(boolean isOnlineVersion, DatasetVersion version) {
-        return version.getCitation(isOnlineVersion);
-    }
-
     public String getPublicationDateFormattedYYYYMMDD() {
         if (getPublicationDate() != null) {
             return new SimpleDateFormat("yyyy-MM-dd").format(getPublicationDate());
@@ -687,17 +675,17 @@ public class Dataset extends DvObjectContainer {
                     return rootArchiveUrl + "/faces/study/StudyPage.xhtml?globalId=" + getGlobalIdString();
                 }
             } else if (HarvestingClient.HARVEST_STYLE_ICPSR.equals(this.getHarvestedFrom().getHarvestStyle())) {
-                // For the ICPSR, it turns out that the best thing to do is to 
-                // rely on the DOI to send the user to the right landing page for 
-                // the study: 
+                // For the ICPSR, it turns out that the best thing to do is to
+                // rely on the DOI to send the user to the right landing page for
+                // the study:
                 //String icpsrId = identifier;
                 //return this.getOwner().getHarvestingClient().getArchiveUrl() + "/icpsrweb/ICPSR/studies/"+icpsrId+"?q="+icpsrId+"&amp;searchSource=icpsr-landing";
                 return "http://doi.org/" + this.getAuthority() + "/" + this.getIdentifier();
             } else if (HarvestingClient.HARVEST_STYLE_NESSTAR.equals(this.getHarvestedFrom().getHarvestStyle())) {
                 String nServerURL = this.getHarvestedFrom().getArchiveUrl();
                 // chop any trailing slashes in the server URL - or they will result
-                // in multiple slashes in the final URL pointing to the study 
-                // on server of origin; Nesstar doesn't like it, apparently. 
+                // in multiple slashes in the final URL pointing to the study
+                // on server of origin; Nesstar doesn't like it, apparently.
                 nServerURL = nServerURL.replaceAll("/*$", "");
 
                 String nServerURLencoded = nServerURL;
@@ -714,12 +702,12 @@ public class Dataset extends DvObjectContainer {
             } else if (HarvestingClient.HARVEST_STYLE_ROPER.equals(this.getHarvestedFrom().getHarvestStyle())) {
                 return this.getHarvestedFrom().getArchiveUrl() + "/CFIDE/cf/action/catalog/abstract.cfm?archno=" + this.getIdentifier();
             } else if (HarvestingClient.HARVEST_STYLE_HGL.equals(this.getHarvestedFrom().getHarvestStyle())) {
-                // a bit of a hack, true. 
+                // a bit of a hack, true.
                 // HGL documents, when turned into Dataverse studies/datasets
                 // all 1 datafile; the location ("storage identifier") of the file
-                // is the URL pointing back to the HGL GUI viewer. This is what 
-                // we will display for the dataset URL.  -- L.A. 
-                // TODO: create a 4.+ ticket for a cleaner solution. 
+                // is the URL pointing back to the HGL GUI viewer. This is what
+                // we will display for the dataset URL.  -- L.A.
+                // TODO: create a 4.+ ticket for a cleaner solution.
                 List<DataFile> dataFiles = this.getFiles();
                 if (dataFiles != null && dataFiles.size() == 1) {
                     if (dataFiles.get(0) != null) {

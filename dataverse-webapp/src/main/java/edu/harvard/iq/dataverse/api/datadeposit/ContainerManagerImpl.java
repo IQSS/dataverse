@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.imports.ImportGenericServiceBean;
+import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
@@ -37,8 +38,6 @@ import org.swordapp.server.UriRegistry;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,6 +70,8 @@ public class ContainerManagerImpl implements ContainerManager {
     private SystemConfig systemConfig;
     @EJB
     SwordServiceBean swordService;
+    @Inject
+    private CitationFactory citationFactory;
 
     private HttpServletRequest httpRequest;
 
@@ -95,7 +96,7 @@ public class ContainerManagerImpl implements ContainerManager {
                                 " is not authorized to retrieve entry for " + dataset.getGlobalIdString());
                     }
                     Dataverse dvThatOwnsDataset = dataset.getOwner();
-                    ReceiptGenerator receiptGenerator = new ReceiptGenerator();
+                    ReceiptGenerator receiptGenerator = new ReceiptGenerator(citationFactory);
                     String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath();
                     DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, dataset);
                     if (depositReceipt != null) {
@@ -166,7 +167,7 @@ public class ContainerManagerImpl implements ContainerManager {
                     } catch (CommandException ex) {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem updating dataset: " + ex);
                     }
-                    ReceiptGenerator receiptGenerator = new ReceiptGenerator();
+                    ReceiptGenerator receiptGenerator = new ReceiptGenerator(citationFactory);
                     String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath();
                     DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, dataset);
                     return depositReceipt;
@@ -297,12 +298,12 @@ public class ContainerManagerImpl implements ContainerManager {
                                         "dataset is in illegal state (not published yet not in draft)");
                             }
                         }
-                        // If we have gotten this far, the delete command has succeeded - 
-                        // by either deleting the Draft version of a published dataset, 
-                        // or destroying an unpublished one. 
+                        // If we have gotten this far, the delete command has succeeded -
+                        // by either deleting the Draft version of a published dataset,
+                        // or destroying an unpublished one.
                         // This means we can finalize permanently deleting the physical files:
-                        // (DataFileService will double-check that the datafiles no 
-                        // longer exist in the database, before attempting to delete 
+                        // (DataFileService will double-check that the datafiles no
+                        // longer exist in the database, before attempting to delete
                         // the physical files)
                         if (!deleteStorageLocations.isEmpty()) {
                             datafileService.finalizeFileDeletes(deleteStorageLocations);
@@ -384,7 +385,7 @@ public class ContainerManagerImpl implements ContainerManager {
                                     logger.severe(msg + ": " + ex.getMessage());
                                     throw SwordUtil.throwRegularSwordErrorWithoutStackTrace(msg);
                                 }
-                                ReceiptGenerator receiptGenerator = new ReceiptGenerator();
+                                ReceiptGenerator receiptGenerator = new ReceiptGenerator(citationFactory);
                                 String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath();
                                 DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, dataset);
                                 return depositReceipt;
@@ -414,7 +415,7 @@ public class ContainerManagerImpl implements ContainerManager {
                         }
                         try {
                             engineSvc.submit(publishDataverseCommand);
-                            ReceiptGenerator receiptGenerator = new ReceiptGenerator();
+                            ReceiptGenerator receiptGenerator = new ReceiptGenerator(citationFactory);
                             String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath();
                             DepositReceipt depositReceipt = receiptGenerator.createDataverseReceipt(baseUrl, dvToRelease);
                             return depositReceipt;

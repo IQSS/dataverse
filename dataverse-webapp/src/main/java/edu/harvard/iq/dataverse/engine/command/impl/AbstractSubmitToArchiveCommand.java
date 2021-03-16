@@ -1,10 +1,10 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.user.ApiToken;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
@@ -51,7 +51,7 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
         if ((token == null) || (token.getExpireTime().before(new Date()))) {
             token = ctxt.authentication().generateApiTokenForUser(user);
         }
-        performArchiveSubmission(version, token, requestedSettings);
+        performArchiveSubmission(version, token, requestedSettings, ctxt.citationFactory());
         return ctxt.em().merge(version);
     }
 
@@ -66,7 +66,9 @@ public abstract class AbstractSubmitToArchiveCommand extends AbstractCommand<Dat
      * @param token             - an API Token for the user performing this action
      * @param requestedSettings - a map of the names/values for settings required by this archiver (sent because this class is not part of the EJB context (by design) and has no direct access to service beans).
      */
-    abstract public WorkflowStepResult performArchiveSubmission(DatasetVersion version, ApiToken token, Map<String, String> requestedSetttings);
+    abstract public WorkflowStepResult performArchiveSubmission(DatasetVersion version, ApiToken token,
+                                                                Map<String, String> requestedSettings,
+                                                                CitationFactory citationFactory);
 
     @Override
     public String describe() {

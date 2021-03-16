@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.workflow.internalspi;
 
+import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
@@ -29,9 +30,11 @@ public class ArchivalSubmissionWorkflowStep implements WorkflowStep {
     private static final Logger logger = Logger.getLogger(ArchivalSubmissionWorkflowStep.class.getName());
 
     private final DatasetVersionServiceBean versionsService;
+    private final CitationFactory citationFactory;
 
-    public ArchivalSubmissionWorkflowStep(DatasetVersionServiceBean versionsService) {
+    public ArchivalSubmissionWorkflowStep(DatasetVersionServiceBean versionsService, CitationFactory citationFactory) {
         this.versionsService = versionsService;
+        this.citationFactory = citationFactory;
     }
 
     @Override
@@ -55,7 +58,7 @@ public class ArchivalSubmissionWorkflowStep implements WorkflowStep {
                     String className = requestedSettings.get(SettingsServiceBean.Key.ArchiverClassName.toString());
                     AbstractSubmitToArchiveCommand archiveCommand = createSubmitToArchiveCommand(className, dvr, datasetVersion);
                     if (archiveCommand != null) {
-                        return (archiveCommand.performArchiveSubmission(datasetVersion, context.getApiToken(), requestedSettings));
+                        return archiveCommand.performArchiveSubmission(datasetVersion, context.getApiToken(), requestedSettings, citationFactory);
                     } else {
                         logger.severe("No Archiver instance could be created for name: " + className);
                         return new Failure("No Archiver", "Could not create instance of class: " + className);

@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.export;
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
+import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.export.ddi.DdiDatasetExportService;
 import edu.harvard.iq.dataverse.persistence.MockMetadataFactory;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
@@ -14,6 +15,8 @@ import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,66 +42,67 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class DDIExporterTest {
 
-    @InjectMocks
     private DDIExporter ddiExporter;
-    
-    @Mock
-    private DdiDatasetExportService ddiDatasetExportService;
 
-    @Mock
-    private SettingsServiceBean settingsService;
-    
-    @Mock
-    private VocabularyValuesIndexer vocabularyValuesIndexer;
-    
+    @Mock private DdiDatasetExportService ddiDatasetExportService;
+    @Mock private SettingsServiceBean settingsService;
+    @Mock private VocabularyValuesIndexer vocabularyValuesIndexer;
+    private JsonPrinter jsonPrinter = new JsonPrinter(new CitationFactory());
+
     @Captor
     private ArgumentCaptor<DatasetDTO> datasetDtoCaptor;
 
+    @BeforeEach
+    void setUp() {
+        ddiExporter = new DDIExporter(ddiDatasetExportService, settingsService, vocabularyValuesIndexer, jsonPrinter);
+    }
+
+    // -------------------- TESTS --------------------
 
     @Test
     @DisplayName("Should pass email type field to service responsible for export")
-    public void exportDataset_without_excluding_emails() throws IOException, ExportException, XMLStreamException {
+    void exportDataset_without_excluding_emails() throws IOException, ExportException, XMLStreamException {
         //given
         Dataset dataset = createDataset();
         DatasetVersion datasetVersion = dataset.getLatestVersion();
-        
+
         MetadataBlock citationBlock = MockMetadataFactory.makeCitationMetadataBlock();
-        
+
         DatasetFieldType titleType = MockMetadataFactory.makeTitleFieldType(citationBlock);
         DatasetField titleField = DatasetField.createNewEmptyDatasetField(titleType, datasetVersion);
         MockMetadataFactory.fillTitle(titleField, "Export test");
-        
+
         DatasetFieldType emailType = MocksFactory.makeDatasetFieldType("email", FieldType.EMAIL, false, citationBlock);
         DatasetField emailField = DatasetField.createNewEmptyDatasetField(emailType, datasetVersion);
         emailField.setValue("example@domain.com");
-        
+
         datasetVersion.setDatasetFields(Lists.newArrayList(titleField, emailField));
-        
+
         when(settingsService.isTrueForKey(Key.ExcludeEmailFromExport)).thenReturn(false);
-        
-        
+
+
         //when
         ddiExporter.exportDataset(datasetVersion);
 
         //then
         verify(ddiDatasetExportService).datasetJson2ddi(datasetDtoCaptor.capture(), same(datasetVersion), any(), any());
         DatasetDTO datasetDTO = datasetDtoCaptor.getValue();
-        
+
         assertThat(extractDatasetField(datasetDTO, "email")).isPresent();
         FieldDTO capturedEmailField = extractDatasetField(datasetDTO, "email").get();
         assertThat(capturedEmailField.getSinglePrimitive()).isEqualTo("example@domain.com");
-        
+
     }
-    
+
     @Test
     @DisplayName("Should not pass email type field to service responsible for export")
-    public void exportDataset_with_excluding_emails() throws IOException, ExportException, XMLStreamException {
+    void exportDataset_with_excluding_emails() throws IOException, ExportException, XMLStreamException {
         //given
         Dataset dataset = createDataset();
         DatasetVersion datasetVersion = dataset.getLatestVersion();
 
         MetadataBlock citationBlock = MockMetadataFactory.makeCitationMetadataBlock();
-        
+
         DatasetFieldType titleType = MockMetadataFactory.makeTitleFieldType(citationBlock);
         DatasetField titleField = DatasetField.createNewEmptyDatasetField(titleType, datasetVersion);
         MockMetadataFactory.fillTitle(titleField, "Export test");
@@ -108,19 +112,21 @@ public class DDIExporterTest {
         emailField.setValue("example@domain.com");
 
         datasetVersion.setDatasetFields(Lists.newArrayList(titleField, emailField));
-        
+
         when(settingsService.isTrueForKey(Key.ExcludeEmailFromExport)).thenReturn(true);
-        
+
         //when
         ddiExporter.exportDataset(datasetVersion);
 
         //then
         verify(ddiDatasetExportService).datasetJson2ddi(datasetDtoCaptor.capture(), same(datasetVersion), any(), any());
         DatasetDTO datasetDTO = datasetDtoCaptor.getValue();
-        
+
         assertThat(extractDatasetField(datasetDTO, "email")).isNotPresent();
-        
+
     }
+
+    // -------------------- PRIVATE --------------------
 
     private Optional<FieldDTO> extractDatasetField(DatasetDTO dataset, String fieldTypeName) {
         return dataset.getDatasetVersion().getMetadataBlocks().values().stream()
@@ -128,7 +134,7 @@ public class DDIExporterTest {
                 .filter(field -> field.getTypeName().equals(fieldTypeName))
                 .findFirst();
     }
-    
+
     private Dataset createDataset() {
         Dataset dataset = MocksFactory.makeDataset();
         dataset.getFiles().clear();

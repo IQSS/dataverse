@@ -21,9 +21,6 @@ import static org.junit.Assert.assertEquals;
  */
 public class BriefJsonPrinterTest {
 
-    public BriefJsonPrinterTest() {
-    }
-
     /**
      * Test of json method, of class BriefJsonPrinter.
      */

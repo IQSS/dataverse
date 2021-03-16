@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package edu.harvard.iq.dataverse.api;
 
 import com.amazonaws.services.glacier.model.MissingParameterValueException;
@@ -16,6 +10,7 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
+import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -41,7 +36,6 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
-import edu.harvard.iq.dataverse.persistence.dataset.DataCitation;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -60,6 +54,7 @@ import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.worldmapauth.WorldMapTokenServiceBean;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
@@ -106,7 +101,6 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 
@@ -161,12 +155,16 @@ public class Access extends AbstractApiBean {
     private WholeDatasetDownloadLogger wholeDatasetDownloadLogger;
     @Inject
     private ImageThumbConverter imageThumbConverter;
+    @Inject
+    private CitationFactory citationFactory;
+    @Inject
+    private JsonPrinter jsonPrinter;
 
     private static final String API_KEY_HEADER = "X-Dataverse-key";
 
     //@EJB
 
-    // TODO: 
+    // TODO:
     // versions? -- L.A. 4.0 beta 10
     @Path("datafile/bundle/{fileId}")
     @GET
@@ -182,7 +180,7 @@ public class Access extends AbstractApiBean {
             apiToken = headers.getHeaderString(API_KEY_HEADER);
         }
 
-        // This will throw a ForbiddenException if access isn't authorized: 
+        // This will throw a ForbiddenException if access isn't authorized:
         checkAuthorization(datafile, apiToken);
 
         if (gbrecs == null && datafile.isReleased()) {
@@ -198,9 +196,9 @@ public class Access extends AbstractApiBean {
         FileMetadata fileMetadata = datafile.getFileMetadata();
         DatasetVersion datasetVersion = datafile.getOwner().getLatestVersion();
 
-        downloadInstance.setFileCitationEndNote(new DataCitation(fileMetadata).toEndNoteString());
-        downloadInstance.setFileCitationRIS(new DataCitation(fileMetadata).toRISString());
-        downloadInstance.setFileCitationBibtex(new DataCitation(fileMetadata).toBibtexString());
+        downloadInstance.setFileCitationEndNote(citationFactory.create(fileMetadata).toEndNoteString());
+        downloadInstance.setFileCitationRIS(citationFactory.create(fileMetadata).toRISString());
+        downloadInstance.setFileCitationBibtex(citationFactory.create(fileMetadata).toBibtexString());
 
         ByteArrayOutputStream outStream = null;
         outStream = new ByteArrayOutputStream();
@@ -218,7 +216,7 @@ public class Access extends AbstractApiBean {
 
     }
 
-    //Added a wrapper method since the original method throws a wrapped response 
+    //Added a wrapper method since the original method throws a wrapped response
     //the access methods return files instead of responses so we convert to a WebApplicationException
 
     private DataFile findDataFileOrDieWrapper(String fileId) {
@@ -260,7 +258,7 @@ public class Access extends AbstractApiBean {
             gbr = guestbookResponseService.initAPIGuestbookResponse(df.getOwner(), df, session, apiTokenUser);
         }
 
-        // This will throw a ForbiddenException if access isn't authorized: 
+        // This will throw a ForbiddenException if access isn't authorized:
         checkAuthorization(df, apiToken);
 
         DownloadInfo dInfo = new DownloadInfo(df);
@@ -290,9 +288,9 @@ public class Access extends AbstractApiBean {
             logger.fine("is download service supported? key=" + key + ", value=" + value);
 
             if (downloadInstance.checkIfServiceSupportedAndSetConverter(key, value)) {
-                // this automatically sets the conversion parameters in 
+                // this automatically sets the conversion parameters in
                 // the download instance to key and value;
-                // TODO: I should probably set these explicitly instead. 
+                // TODO: I should probably set these explicitly instead.
                 logger.fine("yes!");
 
                 if (downloadInstance.getConversionParam().equals("subset")) {
@@ -337,7 +335,7 @@ public class Access extends AbstractApiBean {
                 break;
             } else {
                 // Service unknown/not supported/bad arguments, etc.:
-                // TODO: throw new ServiceUnavailableException(); 
+                // TODO: throw new ServiceUnavailableException();
             }
         }
 
@@ -349,7 +347,7 @@ public class Access extends AbstractApiBean {
         /*
          * Provide some browser-friendly headers: (?)
          */
-        //return retValue; 
+        //return retValue;
         return downloadInstance;
     }
 
@@ -399,7 +397,7 @@ public class Access extends AbstractApiBean {
             apiToken = header.getHeaderString(API_KEY_HEADER);
         }
 
-        // This will throw a ForbiddenException if access isn't authorized: 
+        // This will throw a ForbiddenException if access isn't authorized:
         checkAuthorization(dataFile, apiToken);
 
         response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
@@ -421,8 +419,8 @@ public class Access extends AbstractApiBean {
             retValue = outStream.toString();
 
         } catch (Exception e) {
-            // For whatever reason we've failed to generate a partial 
-            // metadata record requested. 
+            // For whatever reason we've failed to generate a partial
+            // metadata record requested.
             // We return Service Unavailable.
             throw new ServiceUnavailableException();
         }
@@ -452,7 +450,7 @@ public class Access extends AbstractApiBean {
                     exclude,
                     include);
         } catch (Exception e) {
-            // For whatever reason we've failed to generate a partial 
+            // For whatever reason we've failed to generate a partial
             // metadata record requested. We simply return an empty string.
             return retValue;
         }
@@ -481,7 +479,7 @@ public class Access extends AbstractApiBean {
             apiToken = headers.getHeaderString(API_KEY_HEADER);
         }
 
-        // This will throw a ForbiddenException if access isn't authorized: 
+        // This will throw a ForbiddenException if access isn't authorized:
         checkAuthorization(df, apiToken);
         DownloadInfo dInfo = new DownloadInfo(df);
 
@@ -657,9 +655,9 @@ public class Access extends AbstractApiBean {
         return size;
     }
 
-    /* 
-     * Geting rid of the tempPreview API - it's always been a big, fat hack. 
-     * the edit files page is now using the Base64 image strings in the preview 
+    /*
+     * Geting rid of the tempPreview API - it's always been a big, fat hack.
+     * the edit files page is now using the Base64 image strings in the preview
      * URLs, just like the search and dataset pages.
     @Path("tempPreview/{fileSystemId}")
     @GET
@@ -727,10 +725,10 @@ public class Access extends AbstractApiBean {
             return null;
         }
 
-        //String imageThumbFileName = null; 
+        //String imageThumbFileName = null;
         StorageIO thumbnailDataAccess = null;
 
-        // First, check if this dataset has a designated thumbnail image: 
+        // First, check if this dataset has a designated thumbnail image:
 
         if (datasetVersion.getDataset() != null) {
 
@@ -757,7 +755,7 @@ public class Access extends AbstractApiBean {
             if (thumbnailDataAccess == null) {
 
                 if (!datasetVersion.getDataset().isHarvested()) {
-                    thumbnailDataAccess = getThumbnailForDatasetVersion(datasetVersion); 
+                    thumbnailDataAccess = getThumbnailForDatasetVersion(datasetVersion);
                 }
             }*/
 
@@ -779,7 +777,7 @@ public class Access extends AbstractApiBean {
             return null;
         }
 
-        // First, check if the dataverse has a defined logo: 
+        // First, check if the dataverse has a defined logo:
 
         if (dataverse.getDataverseTheme() != null && dataverse.getDataverseTheme().getLogo() != null && !dataverse.getDataverseTheme().getLogo().equals("")) {
             File dataverseLogoFile = getLogo(dataverse);
@@ -845,7 +843,7 @@ public class Access extends AbstractApiBean {
         return thumbnailDataAccess;
     }
     */
-    // TODO: 
+    // TODO:
     // put this method into the dataverseservice; use it there
     // -- L.A. 4.0 beta14
 
@@ -870,22 +868,22 @@ public class Access extends AbstractApiBean {
 
         return null;
     }
-    
-    /* 
-        removing: 
+
+    /*
+        removing:
     private String getWebappImageResource(String imageName) {
         String imageFilePath = null;
         String persistenceFilePath = null;
         java.net.URL persistenceFileUrl = Thread.currentThread().getContextClassLoader().getResource("META-INF/persistence.xml");
-        
+
         if (persistenceFileUrl != null) {
             persistenceFilePath = persistenceFileUrl.getDataFile();
             if (persistenceFilePath != null) {
                 persistenceFilePath = persistenceFilePath.replaceFirst("/[^/]*$", "/");
                 imageFilePath = persistenceFilePath + "../../../resources/images/" + imageName;
-                return imageFilePath; 
+                return imageFilePath;
             }
-            logger.warning("Null file path representation of the location of persistence.xml in the webapp root directory!"); 
+            logger.warning("Null file path representation of the location of persistence.xml in the webapp root directory!");
         } else {
             logger.warning("Could not find the location of persistence.xml in the webapp root directory!");
         }
@@ -942,7 +940,6 @@ public class Access extends AbstractApiBean {
      * Request Access to Restricted File
      *
      * @param fileToRequestAccessId
-     * @param apiToken
      * @param headers
      * @return
      * @author sekmiller
@@ -980,7 +977,7 @@ public class Access extends AbstractApiBean {
 
         try {
             engineSvc.submit(new RequestAccessCommand(dataverseRequest, dataFile));
-            
+
             filePermissionsService.sendRequestFileAccessNotification(dataFile.getOwner(), dataFile.getId(), requestor);
         } catch (CommandException ex) {
             return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.requestAccess.failure.commandError", dataFile.getDisplayName(), ex.getLocalizedMessage()));
@@ -1035,7 +1032,7 @@ public class Access extends AbstractApiBean {
         JsonArrayBuilder userArray = Json.createArrayBuilder();
 
         for (AuthenticatedUser au : requesters) {
-            userArray.add(json(au));
+            userArray.add(jsonPrinter.json(au));
         }
 
         return ok(userArray);
@@ -1047,7 +1044,6 @@ public class Access extends AbstractApiBean {
      *
      * @param fileToRequestAccessId
      * @param identifier
-     * @param apiToken
      * @param headers
      * @return
      * @author sekmiller
@@ -1107,7 +1103,6 @@ public class Access extends AbstractApiBean {
      *
      * @param fileToRequestAccessId
      * @param identifier
-     * @param apiToken
      * @param headers
      * @return
      * @author sekmiller
@@ -1171,7 +1166,6 @@ public class Access extends AbstractApiBean {
      *
      * @param fileToRequestAccessId
      * @param identifier
-     * @param apiToken
      * @param headers
      * @return
      * @author sekmiller
@@ -1264,20 +1258,20 @@ public class Access extends AbstractApiBean {
         }
 
         // TODO: (IMPORTANT!)
-        // Business logic like this should NOT be maintained in individual 
-        // application fragments. 
+        // Business logic like this should NOT be maintained in individual
+        // application fragments.
         // At the moment it is duplicated here, and inside the Dataset page.
         // There are also stubs for file-level permission lookups and caching
-        // inside Gustavo's view-scoped PermissionsWrapper. 
-        // All this logic needs to be moved to the PermissionServiceBean where it will be 
-        // centrally maintained; with the PermissionsWrapper providing 
-        // efficient cached lookups to the pages (that often need to make 
-        // repeated lookups on the same files). Care will need to be taken 
-        // to preserve the slight differences in logic utilized by the page and 
+        // inside Gustavo's view-scoped PermissionsWrapper.
+        // All this logic needs to be moved to the PermissionServiceBean where it will be
+        // centrally maintained; with the PermissionsWrapper providing
+        // efficient cached lookups to the pages (that often need to make
+        // repeated lookups on the same files). Care will need to be taken
+        // to preserve the slight differences in logic utilized by the page and
         // this Access call (the page checks the restriction flag on the
-        // filemetadata, not the datafile - as it needs to reflect the permission 
-        // status of the file in the version history).  
-        // I will open a 4.[34] ticket. 
+        // filemetadata, not the datafile - as it needs to reflect the permission
+        // status of the file in the version history).
+        // I will open a 4.[34] ticket.
         //
         // -- L.A. 4.2.1
 
@@ -1288,9 +1282,9 @@ public class Access extends AbstractApiBean {
          *
          * note that the fragment below - that retrieves the session object
          * and tries to find the user associated with the session - is really
-         * for logging/debugging purposes only; for practical purposes, it 
+         * for logging/debugging purposes only; for practical purposes, it
          * would be enough to just call "permissionService.on(df).has(Permission.DownloadFile)"
-         * and the method does just that, tries to authorize for the user in 
+         * and the method does just that, tries to authorize for the user in
          * the current session (or guest user, if no session user is available):
          */
 
@@ -1311,8 +1305,8 @@ public class Access extends AbstractApiBean {
             logger.fine("Session is null.");
         }
 
-        // OK, let's revisit the case of non-restricted files, this time in        
-        // an unpublished version:         
+        // OK, let's revisit the case of non-restricted files, this time in
+        // an unpublished version:
         // (if (published) was already addressed above)
 
         if (!published) {
@@ -1344,13 +1338,13 @@ public class Access extends AbstractApiBean {
             }
 
 
-            // We don't want to return false just yet. 
-            // If all else fails, we'll want to use the special WorldMapAuth 
-            // token authentication before we give up. 
+            // We don't want to return false just yet.
+            // If all else fails, we'll want to use the special WorldMapAuth
+            // token authentication before we give up.
             //return false;
         } else {
 
-            // OK, this is a restricted file. 
+            // OK, this is a restricted file.
 
             boolean hasAccessToRestrictedBySession = false;
             boolean hasAccessToRestrictedByToken = false;
@@ -1374,11 +1368,11 @@ public class Access extends AbstractApiBean {
                     }
                     return true;
                 } else {
-                    // if the file is NOT published, we will let them download the 
-                    // file ONLY if they also have the permission to view 
+                    // if the file is NOT published, we will let them download the
+                    // file ONLY if they also have the permission to view
                     // unpublished versions:
                     // Note that the code below does not allow a case where it is the
-                    // session user that has the permission on the file, and the API token 
+                    // session user that has the permission on the file, and the API token
                     // user with the ViewUnpublished permission, or vice versa!
                     if (hasAccessToRestrictedBySession) {
                         if (permissionService.requestOn(createDataverseRequest(session.getUser()), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
@@ -1405,11 +1399,11 @@ public class Access extends AbstractApiBean {
 
 
         if ((apiToken != null) && (apiToken.length() == 64)) {
-            /* 
+            /*
                 WorldMap token check
                 - WorldMap tokens are 64 chars in length
-            
-                - Use the worldMapTokenServiceBean to verify token 
+
+                - Use the worldMapTokenServiceBean to verify token
                     and check permissions against the requested DataFile
             */
             if (!(this.worldMapTokenServiceBean.isWorldMapTokenAuthorizedForDataFileDownload(apiToken, df))) {
@@ -1422,8 +1416,8 @@ public class Access extends AbstractApiBean {
             return true;
 
         } else if ((apiToken != null) && (apiToken.length() != 64)) {
-            // Will try to obtain the user information from the API token, 
-            // if supplied: 
+            // Will try to obtain the user information from the API token,
+            // if supplied:
 
             try {
                 logger.fine("calling user = findUserOrDie()...");
@@ -1442,8 +1436,8 @@ public class Access extends AbstractApiBean {
                     logger.log(Level.FINE, "API token-based auth: User {0} has rights to access the datafile.", user.getIdentifier());
                     return true;
                 } else {
-                    // if the file is NOT published, we will let them download the 
-                    // file ONLY if they also have the permission to view 
+                    // if the file is NOT published, we will let them download the
+                    // file ONLY if they also have the permission to view
                     // unpublished versions:
                     if (permissionService.requestOn(createDataverseRequest(user), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
                         logger.log(Level.FINE, "API token-based auth: User {0} has rights to access the (unpublished) datafile.", user.getIdentifier());

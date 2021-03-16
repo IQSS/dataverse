@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.DataverseTextMessageServiceBean;
+import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.datafile.FileDownloadServiceBean;
@@ -41,9 +42,8 @@ import edu.harvard.iq.dataverse.search.index.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionFacade;
-import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionService;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
+import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionFacade;
 
 import javax.persistence.EntityManager;
 
@@ -274,6 +274,11 @@ public class TestCommandContext implements CommandContext {
 
     @Override
     public DatasetThumbnailService datasetThumailService() {
+        return null;
+    }
+
+    @Override
+    public CitationFactory citationFactory() {
         return null;
     }
 }

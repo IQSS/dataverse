@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.imports.ImportGenericServiceBean;
+import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractCreateDatasetCommand;
@@ -62,6 +63,8 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
     SettingsServiceBean settingsService;
     @Inject
     private SystemConfig systemConfig;
+    @Inject
+    private CitationFactory citationFactory;
 
     private HttpServletRequest request;
 
@@ -106,7 +109,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
 
                     dataset.setProtocol(protocol);
                     dataset.setAuthority(authority);
-                    //Wait until the create command before actually getting an identifier                    
+                    //Wait until the create command before actually getting an identifier
                     logger.log(Level.FINE, "DS Deposit identifier: {0}", dataset.getIdentifier());
 
                     AbstractCreateDatasetCommand createDatasetCommand = new CreateNewDatasetCommand(dataset, dvReq);
@@ -167,7 +170,7 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Couldn't create dataset: " + sb.toString());
                     }
                     if (createdDataset != null) {
-                        ReceiptGenerator receiptGenerator = new ReceiptGenerator();
+                        ReceiptGenerator receiptGenerator = new ReceiptGenerator(citationFactory);
                         String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath();
                         DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, createdDataset);
                         return depositReceipt;

@@ -1,9 +1,8 @@
 package edu.harvard.iq.dataverse;
 
 import com.google.common.collect.Lists;
+import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.common.BundleUtil;
-import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.datafile.FileDownloadServiceBean;
 import edu.harvard.iq.dataverse.dataset.DatasetService;
 import edu.harvard.iq.dataverse.dataset.DatasetSummaryService;
@@ -132,6 +131,8 @@ public class DatasetPage implements java.io.Serializable {
     private DatasetSummaryService datasetSummaryService;
     @Inject
     private SystemConfig systemConfig;
+    @Inject
+    private CitationFactory citationFactory;
 
     private Dataset dataset = new Dataset();
 
@@ -168,13 +169,13 @@ public class DatasetPage implements java.io.Serializable {
         if (thumbnailStringIsCached) {
             return thumbnailString;
         }
-        
+
         if (systemConfig.isReadonlyMode()) {
             thumbnailString = thumbnailServiceWrapper.getDatasetCardImageAsBase64Url(dataset, workingVersion.getId(), false);
             thumbnailStringIsCached = true;
             return thumbnailString;
         }
-        
+
         if (!readOnly) {
             DatasetThumbnail datasetThumbnail = datasetThumbnailService.getThumbnail(dataset);
             if (datasetThumbnail == null) {
@@ -284,7 +285,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public boolean canLinkDatasetToSomeDataverse() {
-        return !systemConfig.isReadonlyMode() && session.getUser().isAuthenticated() 
+        return !systemConfig.isReadonlyMode() && session.getUser().isAuthenticated()
                 && workingVersion.isDeaccessioned() && dataset.isReleased();
     }
 
@@ -321,7 +322,6 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String getDisplayCitation() {
-        //displayCitation = dataset.getCitation(false, workingVersion);
         return displayCitation;
     }
 
@@ -504,7 +504,7 @@ public class DatasetPage implements java.io.Serializable {
             }
 
             // init the citation
-            displayCitation = dataset.getCitation(true, workingVersion);
+            displayCitation = citationFactory.create(workingVersion).toString(true);
             initCurrentEmbargo();
 
 
@@ -1269,10 +1269,10 @@ public class DatasetPage implements java.io.Serializable {
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
-    
+
     /*
      * Informs that current dataset status has changed and dataset view can be refreshed. Auto-refresh cannot be used according to WCAG rule
-     * that changes of content should be initiated by user.  
+     * that changes of content should be initiated by user.
      */
     public void showDatasetUnlockedInfo() {
    		JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("dataset.unlocked.info"), BundleUtil.getStringFromBundle("dataset.unlocked.info.details"));
