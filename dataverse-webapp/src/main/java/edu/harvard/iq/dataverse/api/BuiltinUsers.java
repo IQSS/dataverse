@@ -85,6 +85,7 @@ public class BuiltinUsers extends AbstractApiBean {
     //and use the values to create BuiltinUser/AuthenticatedUser.
     //--MAD 4.9.3
     @POST
+    @ApiWriteOperation
     public Response save(BuiltinUser user, @QueryParam("password") String password, @QueryParam("key") String key) {
         return internalSave(user, password, key);
     }

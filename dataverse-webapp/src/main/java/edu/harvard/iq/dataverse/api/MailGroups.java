@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.api.converters.MailGroupConverter;
 import edu.harvard.iq.dataverse.api.dto.MailDomainGroupDTO;
 import edu.harvard.iq.dataverse.api.dto.ResponseDTO;
@@ -51,6 +52,7 @@ public class MailGroups {
 
     @Path("/")
     @PUT
+    @ApiWriteOperation
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response addOrUpdateGroup(MailDomainGroupDTO group) {
@@ -75,6 +77,7 @@ public class MailGroups {
 
     @Path("/{alias}")
     @DELETE
+    @ApiWriteOperation
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteGroup(@PathParam("alias") String alias) {
         return groupService.deleteGroup(alias).isPresent()

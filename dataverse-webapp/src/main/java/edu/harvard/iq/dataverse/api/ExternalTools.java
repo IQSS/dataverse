@@ -46,6 +46,7 @@ public class ExternalTools extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("{id}")
     public Response deleteExternalTool(@PathParam("id") long externalToolIdFromUser) {
         boolean deleted = externalToolService.delete(externalToolIdFromUser);

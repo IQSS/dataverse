@@ -415,6 +415,7 @@ public class Dataverses extends AbstractApiBean {
     }
 
     @DELETE
+    @ApiWriteOperation
     @Path("{identifier}")
     public Response deleteDataverse(@PathParam("identifier") String idtf) {
         return response(req -> {
