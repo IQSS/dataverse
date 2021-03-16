@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -16,25 +17,28 @@ import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.globus.AccessToken;
+import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
+import edu.harvard.iq.dataverse.globus.fileDetailsHolder;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+
+import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -42,6 +46,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Named;
+import javax.json.*;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
@@ -49,7 +54,13 @@ import javax.persistence.Query;
 import javax.persistence.StoredProcedureQuery;
 import javax.persistence.TypedQuery;
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.ocpsoft.common.util.Strings;
+
+import javax.servlet.http.HttpServletRequest;
+
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 
 /**
  *
@@ -94,6 +105,10 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     @EJB
     SystemConfig systemConfig;
+
+    @EJB
+    GlobusServiceBean globusServiceBean;
+
 
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     
@@ -1004,6 +1019,246 @@ public class DatasetServiceBean implements java.io.Serializable {
             hdLogger.info("Successfully destroyed the dataset");
         } catch (Exception ex) {
             hdLogger.warning("Failed to destroy the dataset");
-        } 
+        }
     }
+
+    @Asynchronous
+    public void globusAsyncCall(String jsonData, ApiToken token, Dataset dataset, User authUser, String httpRequestUrl) throws ExecutionException, InterruptedException {
+
+        logger.info(httpRequestUrl + " ==  globusAsyncCall == step 1  "+ dataset.getId());
+
+        Thread.sleep(5000);
+        String lockInfoMessage = "Globus Upload API is running ";
+        DatasetLock lock = addDatasetLock(dataset.getId(), DatasetLock.Reason.EditInProgress,
+                ((AuthenticatedUser) authUser).getId(), lockInfoMessage);
+        if (lock != null) {
+            dataset.addLock(lock);
+        } else {
+            logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
+        }
+
+
+        JsonObject jsonObject = null;
+        try (StringReader rdr = new StringReader(jsonData)) {
+            jsonObject = Json.createReader(rdr).readObject();
+        } catch (Exception jpe) {
+            jpe.printStackTrace();
+            logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}");
+        }
+
+        String taskIdentifier = jsonObject.getString("taskIdentifier");
+        String datasetIdentifier = jsonObject.getString("datasetId").replace("doi:","");
+
+        //  globus task status check
+        globusStatusCheck(taskIdentifier);
+
+        // calculate checksum, mimetype
+        try {
+            List<String> inputList = new ArrayList<String>();
+            JsonArray filesJsonArray = jsonObject.getJsonArray("files");
+
+            if (filesJsonArray != null) {
+
+                for (JsonObject fileJsonObject : filesJsonArray.getValuesAs(JsonObject.class)) {
+
+                    //   storageIdentifier   s3://gcs5-bucket1:1781cfeb8a7-748c270a227c from victoria
+                    String storageIdentifier = fileJsonObject.getString("storageIdentifier");
+                    String fileName = fileJsonObject.getString("fileName");
+                    String[] bits = storageIdentifier.split(":");
+                    String fileId = bits[bits.length-1];
+                    String bucketName = bits[1].replace("/", "");
+
+                    //  fullpath    s3://gcs5-bucket1/10.5072/FK2/3S6G2E/1781cfeb8a7-4ad9418a5873
+                    String fullPath = "s3://" + bucketName + "/" + datasetIdentifier +"/" +fileId ;
+
+                    inputList.add(fileId + "IDsplit" + fullPath + "IDsplit" + fileName);
+                }
+
+                JsonObject newfilesJsonObject= calculateMissingMetadataFields(inputList);
+                JsonArray newfilesJsonArray = newfilesJsonObject.getJsonArray("files");
+
+                JsonArrayBuilder jsonSecondAPI = Json.createArrayBuilder() ;
+
+                for (JsonObject fileJsonObject : filesJsonArray.getValuesAs(JsonObject.class)) {
+
+                    String storageIdentifier = fileJsonObject.getString("storageIdentifier");
+                    String[] bits = storageIdentifier.split(":");
+                    String fileId = bits[bits.length-1];
+
+                    List<JsonObject> newfileJsonObject =  IntStream.range(0, newfilesJsonArray.size() )
+                            .mapToObj(index -> ((JsonObject)newfilesJsonArray.get(index)).getJsonObject(fileId))
+                            .filter(Objects::nonNull).collect(Collectors.toList());
+
+                    if(newfileJsonObject != null) {
+                        JsonPatch path = Json.createPatchBuilder().add("/md5Hash", newfileJsonObject.get(0).getString("hash")).build();
+                        fileJsonObject = path.apply(fileJsonObject);
+                        path = Json.createPatchBuilder().add("/mimeType", newfileJsonObject.get(0).getString("mime")).build();
+                        fileJsonObject = path.apply(fileJsonObject);
+                        jsonSecondAPI.add(stringToJsonObjectBuilder(fileJsonObject.toString()));
+                    }
+                }
+
+                String newjsonData = jsonSecondAPI.build().toString();
+
+                ProcessBuilder processBuilder = new ProcessBuilder();
+
+                String command = "curl -H \"X-Dataverse-key:" + token.getTokenString() + "\" -X POST "+httpRequestUrl.split("/api")[0]+"/api/datasets/:persistentId/addFiles?persistentId=doi:" + datasetIdentifier + " -F jsonData='" + newjsonData  + "'";
+                System.out.println("*******====command ==== " + command);
+
+                new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            processBuilder.command("bash", "-c", command);
+                            Process process = processBuilder.start();
+                        } catch (Exception ex) {
+                            logger.log(Level.SEVERE, "******* Unexpected Exception while executing api/datasets/:persistentId/add call ", ex);
+                        }
+                    }
+                }).start();
+
+            }
+
+        } catch (Exception e) {
+            logger.info("Exception  ");
+            e.printStackTrace();
+        }
+    }
+
+    public static JsonObjectBuilder stringToJsonObjectBuilder(String str) {
+        JsonReader jsonReader = Json.createReader(new StringReader(str));
+        JsonObject jo = jsonReader.readObject();
+        jsonReader.close();
+
+        JsonObjectBuilder job = Json.createObjectBuilder();
+
+        for (Map.Entry<String, JsonValue> entry : jo.entrySet()) {
+            job.add(entry.getKey(), entry.getValue());
+        }
+
+        return job;
+    }
+
+    Executor executor = Executors.newFixedThreadPool(10);
+
+
+    private Boolean globusStatusCheck(String taskId)
+    {
+        boolean success = false;
+        do {
+            try {
+                logger.info(" sleep before globus transfer check");
+                Thread.sleep(50000);
+
+                String basicGlobusToken = settingsService.getValueForKey(SettingsServiceBean.Key.BasicGlobusToken, "");
+                AccessToken clientTokenUser =  globusServiceBean.getClientToken(basicGlobusToken);
+
+                success =  globusServiceBean.getSuccessfulTransfers(clientTokenUser, taskId);
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
+        } while (!success);
+
+        logger.info(" globus transfer  completed ");
+
+        return success;
+    }
+
+
+    public JsonObject calculateMissingMetadataFields(List<String> inputList) throws InterruptedException, ExecutionException, IOException {
+
+        List<CompletableFuture<fileDetailsHolder>> hashvalueCompletableFutures =
+                inputList.stream().map(iD -> calculateDetailsAsync(iD)).collect(Collectors.toList());
+
+        CompletableFuture<Void> allFutures = CompletableFuture
+                .allOf(hashvalueCompletableFutures.toArray(new CompletableFuture[hashvalueCompletableFutures.size()]));
+
+        CompletableFuture<List<fileDetailsHolder>> allCompletableFuture = allFutures.thenApply(future -> {
+            return hashvalueCompletableFutures.stream()
+                    .map(completableFuture -> completableFuture.join())
+                    .collect(Collectors.toList());
+        });
+
+        CompletableFuture completableFuture = allCompletableFuture.thenApply(files -> {
+            return files.stream().map(d -> json(d)).collect(toJsonArray());
+        });
+
+        JsonArrayBuilder filesObject = (JsonArrayBuilder) completableFuture.get();
+
+        JsonObject output = Json.createObjectBuilder().add("files", filesObject).build();
+
+        return output;
+
+    }
+
+    private CompletableFuture<fileDetailsHolder> calculateDetailsAsync(String id) {
+        logger.info(" calcualte additional details for these globus id  ==== " + id);
+        return CompletableFuture.supplyAsync( () -> {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            try {
+                return ( calculateDetails(id) );
+            } catch (InterruptedException | IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }, executor).exceptionally(ex -> {
+            return null;
+        });
+    }
+
+
+    private fileDetailsHolder calculateDetails(String id) throws InterruptedException, IOException {
+        int count = 0;
+        String checksumVal = "";
+        InputStream in = null;
+        String fileId = id.split("IDsplit")[0];
+        String fullPath = id.split("IDsplit")[1];
+        String fileName = id.split("IDsplit")[2];
+        do {
+            try {
+                StorageIO<DvObject> dataFileStorageIO = DataAccess.getDirectStorageIO(fullPath);
+                in = dataFileStorageIO.getInputStream();
+                checksumVal = FileUtil.calculateChecksum(in, DataFile.ChecksumType.MD5);
+                count = 3;
+            } catch (Exception ex) {
+                count = count + 1;
+                ex.printStackTrace();
+                logger.info(ex.getMessage());
+                Thread.sleep(5000);
+            }
+
+        } while (count < 3);
+
+
+        return  new fileDetailsHolder(fileId, checksumVal, calculatemime(fileName));
+                //getBytes(in)+"" );
+        // calculatemime(fileName));
+    }
+
+    public long getBytes(InputStream is) throws IOException {
+
+        FileInputStream fileStream = (FileInputStream)is;
+        return fileStream.getChannel().size();
+    }
+
+    public String calculatemime(String fileName) throws InterruptedException {
+
+        String finalType = FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT;
+        String type = FileUtil.determineFileTypeByExtension(fileName);
+
+        if (!StringUtils.isBlank(type)) {
+            if (FileUtil.useRecognizedType(finalType, type)) {
+                finalType = type;
+            }
+        }
+
+        return finalType;
+    }
+
+
 }
