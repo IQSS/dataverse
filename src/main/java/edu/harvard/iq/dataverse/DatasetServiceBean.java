@@ -1025,7 +1025,11 @@ public class DatasetServiceBean implements java.io.Serializable {
     @Asynchronous
     public void globusAsyncCall(String jsonData, ApiToken token, Dataset dataset, User authUser, String httpRequestUrl) throws ExecutionException, InterruptedException {
 
-        logger.info(httpRequestUrl + " ==  globusAsyncCall == step 1  "+ dataset.getId());
+        String datasetIdentifier = dataset.getStorageIdentifier();
+
+        String storageType = datasetIdentifier.substring(0, datasetIdentifier.indexOf("://") +3);
+        datasetIdentifier = datasetIdentifier.substring(datasetIdentifier.indexOf("://") +3);
+
 
         Thread.sleep(5000);
         String lockInfoMessage = "Globus Upload API is running ";
@@ -1047,12 +1051,11 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
 
         String taskIdentifier = jsonObject.getString("taskIdentifier");
-        String datasetIdentifier = jsonObject.getString("datasetId").replace("doi:","");
 
         //  globus task status check
         globusStatusCheck(taskIdentifier);
 
-        // calculate checksum, mimetype
+
         try {
             List<String> inputList = new ArrayList<String>();
             JsonArray filesJsonArray = jsonObject.getJsonArray("files");
@@ -1069,12 +1072,13 @@ public class DatasetServiceBean implements java.io.Serializable {
                     String bucketName = bits[1].replace("/", "");
 
                     //  fullpath    s3://gcs5-bucket1/10.5072/FK2/3S6G2E/1781cfeb8a7-4ad9418a5873
-                    String fullPath = "s3://" + bucketName + "/" + datasetIdentifier +"/" +fileId ;
+                    String fullPath = storageType + bucketName + "/" + datasetIdentifier +"/" +fileId ;
 
                     inputList.add(fileId + "IDsplit" + fullPath + "IDsplit" + fileName);
                 }
 
-                JsonObject newfilesJsonObject= calculateMissingMetadataFields(inputList);
+                // calculate checksum, mimetype
+                JsonObject newfilesJsonObject = calculateMissingMetadataFields(inputList);
                 JsonArray newfilesJsonArray = newfilesJsonObject.getJsonArray("files");
 
                 JsonArrayBuilder jsonSecondAPI = Json.createArrayBuilder() ;

@@ -2998,6 +2998,11 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                 logger.log(Level.WARNING, "==== datasetId :" + dataset.getId() + "====== UpdateDatasetVersionCommand Exception  : " + ex.getMessage());
             }
 
+            dataset = datasetService.find(dataset.getId());
+
+            List<DataFile> s = dataset.getFiles();
+            for (DataFile dataFile : s) {}
+
             //ingest job
             ingestService.startIngestJobsForDataset(dataset, (AuthenticatedUser) authUser);
 
