@@ -250,4 +250,25 @@ public class DeactivateUsersIT {
         mergeAccounts.then().assertThat().statusCode(OK.getStatusCode());
     }
 
+    @Test
+    public void testMergeUserIntoSelf() {
+
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        Response toggleSuperuser = UtilIT.makeSuperUser(superuserUsername);
+        toggleSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response createUserToMerge = UtilIT.createRandomUser();
+        createUserToMerge.prettyPrint();
+        String usernameToMerge = UtilIT.getUsernameFromResponse(createUserToMerge);
+
+        String usernameMergeTarget = usernameToMerge;
+
+        Response mergeAccounts = UtilIT.mergeAccounts(usernameMergeTarget, usernameToMerge, superuserApiToken);
+        mergeAccounts.prettyPrint();
+        mergeAccounts.then().assertThat().statusCode(OK.getStatusCode());
+    }
+
 }

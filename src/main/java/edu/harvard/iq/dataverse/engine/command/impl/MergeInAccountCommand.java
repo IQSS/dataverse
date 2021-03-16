@@ -59,6 +59,10 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
 
+        if (consumedAU.getId() == ongoingAU.getId()) {
+            throw new IllegalCommandException("You cannot merge an account into itself.", this);
+        }
+
         if (consumedAU.isDeactivated() && !ongoingAU.isDeactivated() || !consumedAU.isDeactivated() && ongoingAU.isDeactivated()) {
             throw new IllegalCommandException("User accounts can only be merged if they are either both non-deactivated or both deactivated.", this);
         }
