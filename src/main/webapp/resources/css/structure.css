@@ -1092,7 +1092,7 @@ div.container {
   left: calc(-50vw + 50%);
   top: 42px;
   width: 100vw;
-  height: calc(100% + 15vh);
+  height: calc(100% + 8vh);
   z-index: -1;
   border-top: 2px solid rgba(0, 0, 0, 0.1);
 }
