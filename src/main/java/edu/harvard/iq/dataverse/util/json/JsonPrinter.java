@@ -777,15 +777,15 @@ public class JsonPrinter {
                     .add("name", aFacet.getDatasetFieldType().getDisplayName());
     }
 
-//    public static JsonObjectBuilder json(License l) {
-//        return jsonObjectBuilder()
-//            .add("id", l.getId())
-//            .add("name", l.getName())
-//            .add("shortDescription", l.getShortDescription())
-//            .add("uri", l.getUri())
-//            .add("iconUrl", l.getIconUrl())
-//            .add("active", l.isActive());
-//    }
+    public static JsonObjectBuilder json(License l) {
+        return jsonObjectBuilder()
+            .add("id", l.getId())
+            .add("name", l.getName())
+            .add("shortDescription", l.getShortDescription())
+            .add("uri", l.getUri())
+            .add("iconUrl", l.getIconUrl())
+            .add("active", l.isActive());
+    }
         
     public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> stringsToJsonArray() {
         return new Collector<String, JsonArrayBuilder, JsonArrayBuilder>() {
