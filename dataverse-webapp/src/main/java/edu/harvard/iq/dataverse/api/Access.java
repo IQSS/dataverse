@@ -16,16 +16,15 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
-import edu.harvard.iq.dataverse.dataset.EmbargoAccessService;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.dataaccess.DataFileZipper;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIOConstants;
 import edu.harvard.iq.dataverse.datafile.FilePermissionsService;
 import edu.harvard.iq.dataverse.datafile.page.WholeDatasetDownloadLogger;
+import edu.harvard.iq.dataverse.dataset.EmbargoAccessService;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -509,7 +508,9 @@ public class Access extends AbstractApiBean {
     @Path("datafiles/{fileIds}")
     @GET
     @Produces({"application/zip"})
-    public Response datafiles(@PathParam("fileIds") String fileIds, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    @ApiWriteOperation
+    public Response datafiles(@PathParam("fileIds") String fileIds, @QueryParam("gbrecs") Boolean gbrecs, @QueryParam("key") String apiTokenParam,
+                              @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
         assertOrThrowBadRequest(() -> StringUtils.isNotBlank(fileIds));
 
         final long zipDownloadSizeLimit = determineDownloadSizeLimit();
@@ -1477,32 +1478,4 @@ public class Access extends AbstractApiBean {
         return Optional.ofNullable(variableService.find(dataVariableId).getDataTable().getDataFile().getOwner());
     }
 
-    private static class ZipperWrapper {
-        private DataFileZipper zipper;
-        private String manifest = StringUtils.EMPTY;
-
-        public ZipperWrapper init(OutputStream outputStream) {
-            if (this.isEmpty()) {
-                zipper = new DataFileZipper(outputStream);
-                zipper.setFileManifest(manifest);
-            }
-            return this;
-        }
-
-        public boolean isEmpty() {
-            return zipper == null;
-        }
-
-        public void addToManifest(String text) {
-            if (this.isEmpty()) {
-                manifest = manifest + text;
-            }  else {
-                zipper.addToManifest(text);
-            }
-        }
-
-        public DataFileZipper getZipper() {
-            return zipper;
-        }
-    }
 }

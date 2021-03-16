@@ -19,8 +19,6 @@ import javax.ejb.TransactionAttribute;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
-import java.util.List;
 import java.util.logging.Logger;
 
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
@@ -97,19 +95,6 @@ public class WorldMapTokenServiceBean {
             return;
         }
         em.remove(em.merge(wmToken));
-    }
-
-    /*
-        Remove expired tokens from the database
-    */
-    public void deleteExpiredTokens() {
-
-        TypedQuery<WorldMapToken> query = em.createQuery("select object(w) from WorldMapToken as w where w.hasExpired IS TRUE", WorldMapToken.class);// order by o.name");
-        List<WorldMapToken> tokenList = query.getResultList();
-        for (WorldMapToken wmToken : tokenList) {
-            // em.remove(token);
-            em.remove(em.merge(wmToken));
-        }
     }
 
     public WorldMapToken save(WorldMapToken dvToken) {

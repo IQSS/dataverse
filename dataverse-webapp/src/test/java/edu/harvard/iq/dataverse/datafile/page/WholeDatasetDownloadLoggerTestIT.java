@@ -74,6 +74,19 @@ public class WholeDatasetDownloadLoggerTestIT extends WebappArquillianDeployment
         assertThat(extractNumberOfLoggedDownloads(), is(countBeforeDownload));
     }
 
+    @Test
+    public void incrementLogIfDownloadingWholeDataset() {
+        // given
+        DatasetVersion dsv = takeDatasetVersionFromPublishedDataset();
+
+        // when
+        long countBeforeDownload = extractNumberOfLoggedDownloads();
+        datasetDownloadUiLogger.incrementLogForDownloadingWholeDataset(dsv);
+
+        // then
+        assertThat(extractNumberOfLoggedDownloads(), is(countBeforeDownload + 1));
+    }
+
     // -------------------- PRIVATE --------------------
 
     private List<DataFile> takeFilesMetadataFromPublishedDataset() {
@@ -83,6 +96,11 @@ public class WholeDatasetDownloadLoggerTestIT extends WebappArquillianDeployment
         return currentVersion.getFileMetadatas().stream()
                 .map(FileMetadata::getDataFile)
                 .collect(toList());
+    }
+
+    private DatasetVersion takeDatasetVersionFromPublishedDataset() {
+        Dataset dataset = datasetDao.find(DRAFT_DATASET_WITH_FILES_ID);
+        return dataset.getLatestVersion();
     }
 
     private long extractNumberOfLoggedDownloads() {

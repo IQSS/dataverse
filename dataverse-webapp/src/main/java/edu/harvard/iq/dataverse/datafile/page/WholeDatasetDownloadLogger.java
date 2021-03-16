@@ -53,6 +53,19 @@ public class WholeDatasetDownloadLogger {
                 new Object[] { extractDatasetIds(filesByDataset), totalTime });
     }
 
+    public void incrementLogForDownloadingWholeDataset(DatasetVersion dsv) {
+        List<DataFile> fileList = dsv.getFileMetadatas().stream()
+                                    .map(FileMetadata::getDataFile)
+                                    .collect(toList());
+
+        if (Lists.isEmpty(fileList)) {
+            logger.warning("Empty or null file metadata list.");
+            return;
+        }
+
+        downloadDatasetLogService.logWholeSetDownload(dsv.getDataset().getId());
+    }
+
     // -------------------- PRIVATE --------------------
 
     private Map<Dataset, List<DataFile>> groupFilesByDatasetsAndUpdateLogIfNeeded(List<DataFile> filesToDownload) {

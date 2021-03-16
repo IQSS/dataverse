@@ -119,6 +119,37 @@ public class WholeDatasetDownloadLoggerTest {
         verify(downloadDatasetLogService, never()).logWholeSetDownload(anyLong());
     }
 
+    @Test
+    public void shouldIncrementCountWhenProvidingDatasetVersionWithFiles() {
+        //given
+        DatasetVersion dsv = new DatasetVersion();
+        Dataset dataset = new Dataset();
+        dataset.setId(1L);
+        dsv.setDataset(dataset);
+        FileMetadata fileMetadata = new FileMetadata();
+        DataFile file = new DataFile();
+        fileMetadata.setDataFile(file);
+        dsv.addFileMetadata(fileMetadata);
+
+        //when
+        wholeDatasetDownloadLogger.incrementLogForDownloadingWholeDataset(dsv);
+
+        //then
+        verify(downloadDatasetLogService, times(1)).logWholeSetDownload(anyLong());
+    }
+
+    @Test
+    public void shouldNotIncrementCountWhenProvidingDatasetVersionWithoutFiles() {
+        //given
+        DatasetVersion dsv = new DatasetVersion();
+
+        //when
+        wholeDatasetDownloadLogger.incrementLogForDownloadingWholeDataset(dsv);
+
+        //then
+        verify(downloadDatasetLogService, never()).logWholeSetDownload(anyLong());
+    }
+
     private List<DataFile> createDatafileWithSingleVersionInDataset() {
         Dataset dataset = new Dataset();
         dataset.setId(DATASET_ID);
