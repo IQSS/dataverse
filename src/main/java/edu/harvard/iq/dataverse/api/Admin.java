@@ -16,6 +16,8 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.License;
+import edu.harvard.iq.dataverse.LicenseServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
@@ -42,9 +44,11 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.settings.Setting;
+import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
+import javax.persistence.PersistenceException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -152,6 +156,8 @@ public class Admin extends AbstractApiBean {
         ExplicitGroupServiceBean explicitGroupService;
         @EJB
         BannerMessageServiceBean bannerMessageService;
+        @EJB
+		LicenseServiceBean licenseService;
         
 
 	// Make the session available
@@ -1919,5 +1925,55 @@ public class Admin extends AbstractApiBean {
                 .collect(toJsonArray()));
 
     }
+    
+//    @GET
+//    @Path("/licenses")
+//    public Response getLicenses() {
+//        return ok(licenseService.listAll().stream()
+//        		.map(JsonPrinter::json)
+//        		.collect(toJsonArray()));
+//    }
+//    
+//    @GET
+//    @Path("/licenses/{id}")
+//    public Response getLicense(@PathParam("id") long id) {
+//    	License l = licenseService.get(id);
+//    	if (l == null) {
+//    		return error(Response.Status.NOT_FOUND, "Not Found.");
+//		}
+//		return ok(json(l));
+//    }
+//    
+//    @POST
+//    @Path("/licenses")
+//    public Response addLicense(License l) {
+//		try {
+//			licenseService.save(l);
+//			return created("/api/admin/licenses", Json.createObjectBuilder().add("message", "License created"));
+//		} catch(PersistenceException e) {
+//			return error(Response.Status.CONFLICT, "A license with the same URI or name is already present.");
+//		}
+//    }
+//
+//	@PUT
+//	@Path("/licenses/{id}")
+//	public Response putLicense(@PathParam("id") long id, License l) {
+//		License updated = licenseService.set(id, l.getName(), l.getShortDescription(), l.getUri(), l.getIconUrl(), l.isActive());
+//		if (updated == null) {
+//			return error(Response.Status.BAD_REQUEST, "Bad Request. There is no existing LicenseInfo with that ID. To add a license use POST.");
+//		}
+//		return ok("License with ID " + id + " was replaced.");
+//	}
+//
+//	@DELETE
+//	@Path("/licenses/{id}")
+//	public Response deleteLicense(@PathParam("id") long id) {
+//		try {
+//			licenseService.delete(id);
+//			return ok("OK. License with ID " + id + " was deleted.");
+//		} catch (PersistenceException e) {
+//			return error(Response.Status.BAD_REQUEST, "The license is still in used and cannot be deleted.");
+//		}
+//	}
     
 }

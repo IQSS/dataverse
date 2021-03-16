@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseTheme;
+import edu.harvard.iq.dataverse.License;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
@@ -775,6 +776,16 @@ public class JsonPrinter {
                     .add("id", String.valueOf(aFacet.getId())) // TODO should just be id I think
                     .add("name", aFacet.getDatasetFieldType().getDisplayName());
     }
+
+//    public static JsonObjectBuilder json(License l) {
+//        return jsonObjectBuilder()
+//            .add("id", l.getId())
+//            .add("name", l.getName())
+//            .add("shortDescription", l.getShortDescription())
+//            .add("uri", l.getUri())
+//            .add("iconUrl", l.getIconUrl())
+//            .add("active", l.isActive());
+//    }
         
     public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> stringsToJsonArray() {
         return new Collector<String, JsonArrayBuilder, JsonArrayBuilder>() {
