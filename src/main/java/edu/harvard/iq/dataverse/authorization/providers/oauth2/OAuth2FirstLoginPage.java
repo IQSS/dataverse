@@ -208,6 +208,10 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         auReq.putCredential(creds.get(1).getKey(), getPassword());
         try {
             AuthenticatedUser existingUser = authenticationSvc.getUpdateAuthenticatedUser(BuiltinAuthenticationProvider.PROVIDER_ID, auReq);
+            if (existingUser.isDeactivated()) {
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("oauth2.convertAccount.failedDeactivated"));
+                return null;
+            }
             authenticationSvc.updateProvider(existingUser, newUser.getServiceId(), newUser.getIdInService());
             builtinUserSvc.removeUser(existingUser.getUserIdentifier());
 
