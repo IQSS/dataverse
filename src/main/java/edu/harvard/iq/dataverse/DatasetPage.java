@@ -5489,11 +5489,15 @@ public class DatasetPage implements Serializable {
                 if (jo.containsKey("term-parent-uri"))
                     cvocTermParentUri = jo.getString("term-parent-uri");
                 logger.fine("cvoc - term-parent-uri: " + cvocTermParentUri);
+                String cvocVocabUri = "";
+                if (jo.containsKey("vocab-uri"))
+                    cvocVocabUri = jo.getString("vocab-uri");
+                logger.fine("cvoc - vocab-uri: " + cvocVocabUri);
                 String cvocUrl = "http://localhost/Skosmos";
                 if (jo.containsKey("cvoc-url"))
                     cvocUrl = jo.getString("cvoc-url");
                 logger.fine("cvoc - cvoc-url: " + cvocUrl);
-                CVoc cvoc = new CVoc(cvocUrl, cvocLang, cvocProtocol, cvocTermParentUri, cvocReadonly, cvocHideReadonlyUrls, cvocMinChars, vocabsList, vocabCodesList
+                CVoc cvoc = new CVoc(cvocUrl, cvocLang, cvocProtocol, cvocVocabUri, cvocTermParentUri, cvocReadonly, cvocHideReadonlyUrls, cvocMinChars, vocabsList, vocabCodesList
                         , cvocJsUrl, cvocMapId, cvocMapQuery);
                 cvocMap.put(jo.getString("vocab-name"), cvoc);
             }
@@ -5504,6 +5508,7 @@ public class DatasetPage implements Serializable {
         String cvocUrl;
         String language;
         String protocol;
+        String vocabUri;
         String termParentUri;
         String jsUrl;
         String mapId;
@@ -5513,7 +5518,7 @@ public class DatasetPage implements Serializable {
         int minChars;
         List<String> vocabs;
         List<String> keys;
-        public CVoc(String cvocUrl, String language, String protocol, String termParentUri, boolean readonly, boolean hideReadonlyUrls, int minChars,
+        public CVoc(String cvocUrl, String language, String protocol, String vocabUri, String termParentUri, boolean readonly, boolean hideReadonlyUrls, int minChars,
                     List<String> vocabs, List<String> keys, String jsUrl, String mapId, String mapQuery){
             this.cvocUrl = cvocUrl;
             this.language = language;
@@ -5522,6 +5527,7 @@ public class DatasetPage implements Serializable {
             this.hideReadonlyUrls = hideReadonlyUrls;
             this.minChars = minChars;
             this.vocabs = vocabs;
+            this.vocabUri = vocabUri;
             this.termParentUri = termParentUri;
             this.keys = keys;
             this.jsUrl = jsUrl;
@@ -5536,6 +5542,9 @@ public class DatasetPage implements Serializable {
             return language;
         }
         public String getProtocol() { return protocol; }
+        public String getVocabUri() {
+            return vocabUri;
+        }
         public String getTermParentUri() {
             return termParentUri;
         }
