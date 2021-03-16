@@ -655,15 +655,14 @@
                         </div>
 
                         <div>
-                            <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
-                        </div>
-
-                        <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus"
+                          <h:outputText value="#{Strings:abbreviate(result.descriptionNoSnippet, descriptionAbbreviationThreshold)}" rendered="#{result.descriptionSnippets.size() eq 0}"/>
+                          <ui:repeat value="#{result.descriptionSnippets}" var="snippet" varStatus="varStatus"
                                    rendered="#{result.descriptionSnippets.size() gt 0}">
                             <h:outputText value="#{snippet}" escape="false"/>
                             <h:outputText value="... " rendered="#{varStatus.last != true}"/>
-                        </ui:repeat>
-
+                          </ui:repeat>
+                        </div>
+                        
                         <div jsf:rendered="#{result.highlightsAsList.size() > 0}">
                             <ui:repeat value="#{result.highlightsAsList}" var="highlight">
                                 <ui:repeat value="#{highlight.snippets}" var="snippet">
