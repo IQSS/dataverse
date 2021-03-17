@@ -246,7 +246,7 @@ The fully expanded example above (without environment variables) looks like this
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST https://demo.dataverse.org/api/dataverses/root/roles --upload-file roles.json
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -H "Content-type:application/json" https://demo.dataverse.org/api/dataverses/root/roles --upload-file roles.json
 
 Where ``roles.json`` looks like this::
 
@@ -2428,13 +2428,13 @@ Creates a new role under Dataverse collection ``id``. Needs a json file with the
   export SERVER_URL=https://demo.dataverse.org
   export ID=root
 
-  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$ID/roles --upload-file roles.json
+  curl -H X-Dataverse-key:$API_TOKEN -X POST -H "Content-type:application/json" $SERVER_URL/api/dataverses/$ID/roles --upload-file roles.json
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST https://demo.dataverse.org/api/dataverses/root/roles --upload-file roles.json
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -H "Content-type:application/json" https://demo.dataverse.org/api/dataverses/root/roles --upload-file roles.json
 
 Where ``roles.json`` looks like this::
 
