@@ -200,9 +200,6 @@ public class AuthenticationServiceBean {
      * Before calling this method, make sure you've deleted all the stuff tied
      * to the user, including stuff they've created, role assignments, group
      * assignments, etc. See the "removeAuthentictedUserItems" (sic) method.
-     * 
-     * Longer term, the intention is to have a "disableAuthenticatedUser"
-     * method/command. See https://github.com/IQSS/dataverse/issues/2419
      */
     public void deleteAuthenticatedUser(Object pk) {
         AuthenticatedUser user = em.find(AuthenticatedUser.class, pk);

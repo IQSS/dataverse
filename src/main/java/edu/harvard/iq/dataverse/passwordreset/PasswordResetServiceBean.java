@@ -53,7 +53,7 @@ public class PasswordResetServiceBean {
      *
      * @param emailAddress
      * @return {@link PasswordResetInitResponse} with empty PasswordResetData if
-     * the reset won't continue (no user, disabled user).
+     * the reset won't continue (no user, deactivated user).
      * @throws edu.harvard.iq.dataverse.passwordreset.PasswordResetException
      */
     // inspired by Troy Hunt: Everything you ever wanted to know about building a secure password reset feature - http://www.troyhunt.com/2012/05/everything-you-ever-wanted-to-know.html

@@ -121,14 +121,14 @@ public class PasswordResetPage implements java.io.Serializable {
                 actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.BuiltinUser, "passwordResetSent")
                             .setInfo("Email Address: " + emailAddress) );
             } else {
-                logger.log(Level.INFO, "Cannot find account (or it's disabled) given {0}", emailAddress);
+                logger.log(Level.INFO, "Cannot find account (or it's deactivated) given {0}", emailAddress);
             }
             /**
              * We show this "an email will be sent" message no matter what (if
-             * the account can be found or not, if the account has been disabled
-             * or not) to prevent hackers from figuring out if you have an
-             * account based on your email address. Yes, this is a white lie
-             * sometimes, in the name of security.
+             * the account can be found or not, if the account has been
+             * deactivated or not) to prevent hackers from figuring out if you
+             * have an account based on your email address. Yes, this is a white
+             * lie sometimes, in the name of security.
              */
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetInitiated"), 
                     BundleUtil.getStringFromBundle("passwdReset.successSubmit.tip", Arrays.asList(emailAddress))));
