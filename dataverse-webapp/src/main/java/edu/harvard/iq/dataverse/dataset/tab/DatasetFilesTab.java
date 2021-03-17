@@ -572,12 +572,6 @@ public class DatasetFilesTab implements Serializable {
         return downloadButtonAvailable;
     }
 
-    public void refreshTagsPopUp() {
-        if (bulkUpdateCheckVersion()) {
-            refreshSelectedFiles();
-        }
-    }
-
     public String editFileMetadata() {
         // If there are no files selected, return an empty string - which 
         // means, do nothing, don't redirect anywhere, stay on this page. 
@@ -599,6 +593,10 @@ public class DatasetFilesTab implements Serializable {
                                           Collection<String> selectedFileMetadataTags,
                                           Collection<String> selectedDataFileTags,
                                           boolean removeUnusedTags) {
+
+        if (bulkUpdateCheckVersion()) {
+            selectedFiles = fetchDraftVersionsOfSelectedFiles();
+        }
 
         for (FileMetadata fmd : selectedFiles) {
             fmd.getCategories().clear();
@@ -633,25 +631,25 @@ public class DatasetFilesTab implements Serializable {
     public String deleteFilesAndSave() {
         bulkFileDeleteInProgress = true;
         if (bulkUpdateCheckVersion()) {
-            refreshSelectedFiles();
+            filesToBeDeleted = fetchDraftVersionsOfSelectedFiles().stream()
+                                                                  .map(FileMetadata::getDataFile)
+                                                                  .collect(toList());
+        } else {
+            filesToBeDeleted = datafileService.findDataFilesByFileMetadataIds(selectedFileIds);
         }
 
-        filesToBeDeleted = datafileService.findDataFilesByFileMetadataIds(selectedFileIds);
         return save();
     }
 
     public String saveTermsOfUse(TermsOfUseForm termsOfUseForm) {
+        FileTermsOfUse termsOfUse = termsOfUseFormMapper.mapToFileTermsOfUse(termsOfUseForm);
 
         if (bulkUpdateCheckVersion()) {
-            refreshSelectedFiles();
-        }
-
-        FileTermsOfUse termsOfUse = termsOfUseFormMapper.mapToFileTermsOfUse(termsOfUseForm);
-        List<FileMetadata> fetchedFileMetadata = fileMetadataService.findFileMetadata(selectedFileIds.toArray(new Long[0]));
-        for (FileMetadata fm : fetchedFileMetadata) {
-            workingVersion.getFileMetadatas().stream()
-                          .filter(fileMetadata -> fileMetadata.getId().equals(fm.getId()))
-                          .forEach(fileMetadata -> fileMetadata.setTermsOfUse(termsOfUse.createCopy()));
+            List<FileMetadata> fetchedFileMetadata = fetchDraftVersionsOfSelectedFiles();
+            updateTermsOfUseForDraftFiles(termsOfUse, fetchedFileMetadata);
+        } else {
+            List<FileMetadata> fetchedFileMetadata = fileMetadataService.findFileMetadata(selectedFileIds.toArray(new Long[0]));
+            updateTermsOfUse(termsOfUse, workingVersion, fetchedFileMetadata);
         }
 
         save();
@@ -733,10 +731,31 @@ public class DatasetFilesTab implements Serializable {
     }
 
     public List<FileMetadata> retrieveSelectedFiles() {
-        return selectedFileIds.isEmpty() ? new ArrayList<>() : fileMetadataService.findFileMetadata(selectedFileIds.toArray(new Long[0]));
+
+        if (bulkUpdateCheckVersion()) {
+            return fetchDraftVersionsOfSelectedFiles();
+        }
+
+        return selectedFileIds.isEmpty() ?
+                new ArrayList<>() :
+                fileMetadataService.findFileMetadata(selectedFileIds.toArray(new Long[0]));
     }
 
     // -------------------- PRIVATE --------------------
+
+    private void updateTermsOfUse(FileTermsOfUse termsOfUse,
+                                  DatasetVersion versionToUpdate,
+                                  List<FileMetadata> fetchedFileMetadata) {
+        for (FileMetadata fm : fetchedFileMetadata) {
+            versionToUpdate.getFileMetadatas().stream()
+                           .filter(fileMetadata -> fileMetadata.getId().equals(fm.getId()))
+                           .forEach(fileMetadata -> fileMetadata.setTermsOfUse(termsOfUse.createCopy()));
+        }
+    }
+
+    private void updateTermsOfUseForDraftFiles(FileTermsOfUse termsOfUse, List<FileMetadata> fetchedFileMetadata) {
+        fetchedFileMetadata.forEach(fileMetadata -> fileMetadata.setTermsOfUse(termsOfUse.createCopy()));
+    }
 
     private boolean containsFileId(Long id) {
         return selectedFileIds.stream()
@@ -832,20 +851,16 @@ public class DatasetFilesTab implements Serializable {
                               .collect(joining(","));
     }
 
-    private void refreshSelectedFiles() {
+    private List<FileMetadata> fetchDraftVersionsOfSelectedFiles() {
         dataset = datasetDao.find(dataset.getId());
-        workingVersion = dataset.getEditVersion();
+        DatasetVersion newestVersion = dataset.getEditVersion();
 
-        List<DataFile> selectedDataFiles = datafileService.findDataFilesByFileMetadataIds(selectedFileIds);
+        List<DataFile> selectedDataFiles = selectedFileIds.isEmpty() ? new ArrayList<>() :
+                datafileService.findDataFilesByFileMetadataIds(selectedFileIds);
 
-        List<Long> filteredMetadata = workingVersion.getFileMetadatas().stream()
-                                                    .filter(fileMetadata -> selectedDataFiles.contains(fileMetadata
-                                                                                                               .getDataFile()))
-                                                    .map(FileMetadata::getId)
-                                                    .collect(Collectors.toList());
-
-        selectedFileIds.clear();
-        selectedFileIds.addAll(filteredMetadata);
+        return newestVersion.getFileMetadatas().stream()
+                            .filter(fileMetadata -> selectedDataFiles.contains(fileMetadata.getDataFile()))
+                            .collect(Collectors.toList());
     }
 
     private boolean bulkUpdateCheckVersion() {

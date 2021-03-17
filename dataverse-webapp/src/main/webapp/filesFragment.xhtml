@@ -383,7 +383,7 @@
             </p:column>
         </p:dataTable>
 
-        <p:remoteCommand name="refreshTagsCommand" action="#{datasetFilesTab.refreshTagsPopUp()}"
+        <p:remoteCommand name="refreshTagsCommand"
                          onstart="#{FileTagModal.initForMultipleFiles(datasetFilesTab.retrieveSelectedFiles(), datasetFilesTab.dataset)}"
                          update="@form"
                          oncomplete="PF('fileTagsPopup').show();"/>
