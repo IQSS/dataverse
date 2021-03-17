@@ -894,6 +894,7 @@ span.ui-autocomplete input.ui-autocomplete-input {width:100%;}
 
 /* Overwrite Bootstrap */
 .btn, .input-group-btn {white-space: normal !important;}
+.dropdown-item-text {display: block;padding: 3px 20px;color: #212529;}
 
 @media print {
     a[href]:after {
