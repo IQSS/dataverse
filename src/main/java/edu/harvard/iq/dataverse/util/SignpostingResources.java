@@ -66,7 +66,7 @@ public class SignpostingResources {
 
     /**
      * Get identifier schema for each author
-     *
+     * <p>
      * For example:
      * if author has VIAF
      * Link: <http://viaf.org/viaf/:id/>; rel="author"
@@ -119,6 +119,12 @@ public class SignpostingResources {
             valueList.add(citeAs);
         }
 
+        List<FileMetadata> fms = workingDatasetVersion.getFileMetadatas();
+        String items = getItems(fms);
+        if (items != null) {
+            valueList.add(items);
+        }
+
         String describedby = "<" + describedByJsonObj.getString(ds.getProtocol()) + ds.getAuthority() + "/"
                 + ds.getIdentifier() + ">;rel=\"describedby\"" + ";type=\"" + describedByJsonObj.getString("type") + "\"";
         describedby += ",<" + systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=schema.org&persistentId="
@@ -129,11 +135,14 @@ public class SignpostingResources {
         valueList.add(type);
 
         // TODO: support only CC0 now, should add flexible license support when flex-terms is ready
-        String license;
-        if (workingDatasetVersion.getTermsOfUseAndAccess().getLicense() == TermsOfUseAndAccess.License.CC0) {
+        TermsOfUseAndAccess.License license = workingDatasetVersion.getTermsOfUseAndAccess().getLicense();
+        String licenseString = "";
+        if (license == TermsOfUseAndAccess.License.CC0 || license == TermsOfUseAndAccess.License.NONE) {
             // On the current Dataverse, only None and CC0. In the signposting protocol: cardinality is 1
-            license = "<https://creativecommons.org/publicdomain/zero/1.0/>;rel=\"license\"";
-            valueList.add(license);
+            licenseString = "<https://creativecommons.org/publicdomain/zero/1.0/>;rel=\"license\"";
+            valueList.add(licenseString);
+        } else {
+            valueList.add(license.toString());
         }
 
         String linkset = "<" + systemConfig.getDataverseSiteUrl() + "/api/datasets/:persistentId/versions/"
@@ -158,8 +167,27 @@ public class SignpostingResources {
         return returnNull ? null : authors;
     }
 
+    private String getItems(List<FileMetadata> fms) {
+        if (fms.size() > maxItems) {
+            logger.info(String.format("maxItem is %s and fms size is %s", maxItems, fms.size()));
+            return null;
+        }
+
+        JsonArrayBuilder items = Json.createArrayBuilder();
+        String result = "";
+
+        for (FileMetadata fm : fms) {
+            DataFile df = fm.getDataFile();
+            if (Objects.equals(result, "")) {
+                result = "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"df.getContentType()\"";
+            } else {
+                result = String.join(",", result, "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"df.getContentType()\"");
+            }
+        }
+        return result;
+    }
+
     private JsonArrayBuilder getJsonItems(List<FileMetadata> fms) {
-        if (fms.size() > maxItems) return null;
         JsonArrayBuilder items = Json.createArrayBuilder();
         for (FileMetadata fm : fms) {
             DataFile df = fm.getDataFile();
