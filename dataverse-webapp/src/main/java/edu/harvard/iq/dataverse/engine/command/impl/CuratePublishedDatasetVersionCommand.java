@@ -40,7 +40,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
     }
 
     @Override
-    public Dataset execute(CommandContext ctxt)  {
+    public Dataset execute(CommandContext ctxt) {
         if (!getUser().isSuperuser()) {
             throw new IllegalCommandException("Only superusers can curate published dataset versions", this);
         }
@@ -115,6 +115,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         tempDataset.setModificationTime(getTimestamp());
 
         Dataset savedDataset = ctxt.em().merge(tempDataset);
+        ctxt.em().merge(updateVersion);
 
         // Flush before calling DeleteDatasetVersion which calls
         // PrivateUrlServiceBean.getPrivateUrlFromDatasetId() that will query the DB and
