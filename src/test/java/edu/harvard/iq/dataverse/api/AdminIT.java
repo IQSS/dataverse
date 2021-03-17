@@ -746,11 +746,12 @@ public class AdminIT {
 
         byte[] updatedContent = null;
         try {
-            updatedContent = Files.readAllBytes(Paths.get("src/test/resources/tsv/citation.tsv"));
+            updatedContent = Files.readAllBytes(Paths.get("scripts/api/data/metadatablocks/citation.tsv"));
         } catch (IOException e) {
             logger.warning(e.getMessage());
             assertEquals(0,1);
         }
+
         Response response = UtilIT.loadMetadataBlock(apiToken, updatedContent);
         assertEquals(200, response.getStatusCode());
         response.then().assertThat().statusCode(OK.getStatusCode());
