@@ -121,7 +121,7 @@ public class SignpostingResources {
 
         List<FileMetadata> fms = workingDatasetVersion.getFileMetadatas();
         String items = getItems(fms);
-        if (items != null) {
+        if (items != null && !Objects.equals(items, "")) {
             valueList.add(items);
         }
 
@@ -173,15 +173,15 @@ public class SignpostingResources {
             return null;
         }
 
-        JsonArrayBuilder items = Json.createArrayBuilder();
         String result = "";
-
         for (FileMetadata fm : fms) {
             DataFile df = fm.getDataFile();
             if (Objects.equals(result, "")) {
-                result = "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"df.getContentType()\"";
+                // result = "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"" + df.getContentType() + "\"";
+                result = "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"https://schema.org/Dataset\"";
             } else {
-                result = String.join(",", result, "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"df.getContentType()\"");
+                // result = String.join(",", result, "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"" + df.getContentType() + "\"");
+                result = String.join(",", result, "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"https://schema.org/Dataset\"");
             }
         }
         return result;
@@ -205,9 +205,12 @@ public class SignpostingResources {
         List<FileMetadata> fms = workingDatasetVersion.getFileMetadatas();
         JsonArrayBuilder items = getJsonItems(fms);
 
-        String license = "";
-        if (workingDatasetVersion.getTermsOfUseAndAccess().getLicense() == TermsOfUseAndAccess.License.CC0) {
-            license = licJsonObj.getString(TermsOfUseAndAccess.License.CC0.name());
+        TermsOfUseAndAccess.License license = workingDatasetVersion.getTermsOfUseAndAccess().getLicense();
+        String licenseString = "";
+        if (license == TermsOfUseAndAccess.License.CC0 || license == TermsOfUseAndAccess.License.NONE) {
+            licenseString = licJsonObj.getString(TermsOfUseAndAccess.License.CC0.name());
+        } else {
+            licenseString = license.toString();
         }
 
         JsonArrayBuilder mediaTypes = Json.createArrayBuilder();
@@ -240,8 +243,8 @@ public class SignpostingResources {
         if (authors != null) {
             mandatory.add("author", authors);
         }
-        if (license != null && !license.trim().isEmpty()) {
-            mandatory.add("license", jsonObjectBuilder().add("href", license));
+        if (licenseString != null && !Objects.equals(licenseString, "")) {
+            mandatory.add("license", jsonObjectBuilder().add("href", licenseString));
         }
         if (!mediaTypes.toString().trim().isEmpty()) {
             mandatory.add("describedby", mediaTypes);
