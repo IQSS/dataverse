@@ -177,11 +177,11 @@ public class SignpostingResources {
         for (FileMetadata fm : fms) {
             DataFile df = fm.getDataFile();
             if (Objects.equals(result, "")) {
-                // result = "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"" + df.getContentType() + "\"";
-                result = "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"https://schema.org/Dataset\"";
+                 result = "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"" + df.getContentType() + "\"";
+//                result = "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"https://schema.org/Dataset\"";
             } else {
-                // result = String.join(",", result, "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"" + df.getContentType() + "\"");
-                result = String.join(",", result, "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"https://schema.org/Dataset\"");
+                 result = String.join(",", result, "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"" + df.getContentType() + "\"");
+//                result = String.join(",", result, "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"https://schema.org/Dataset\"");
             }
         }
         return result;
