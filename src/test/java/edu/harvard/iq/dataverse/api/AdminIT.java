@@ -785,4 +785,66 @@ public class AdminIT {
         assertEquals("OK", status);
         
     }
+    
+    @Test
+    public void testLicenses(){
+        
+        String pathToJsonFile = "scripts/api/data/license.json";
+        Response addLicenseResponse = UtilIT.addLicense(pathToJsonFile);
+        addLicenseResponse.prettyPrint();
+        String body = addLicenseResponse.getBody().asString();
+        String status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+        
+        pathToJsonFile = "scripts/api/data/licenseError.json";
+        Response addLicenseErrorResponse = UtilIT.addLicense(pathToJsonFile);
+        addLicenseErrorResponse.prettyPrint();
+        body = addLicenseErrorResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("ERROR", status);
+        
+        Response getLicensesResponse = UtilIT.getLicenses();
+        getLicensesResponse.prettyPrint();
+        body = getLicensesResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+        
+        Response getLicenseResponse = UtilIT.getLicense(1L);
+        getLicenseResponse.prettyPrint();
+        body = getLicenseResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+        
+        Response getLicenseErrorResponse = UtilIT.getLicense(10L);
+        getLicenseErrorResponse.prettyPrint();
+        body = getLicenseErrorResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("ERROR", status);
+        
+        pathToJsonFile = "scripts/api/data/licenseUpdate.json";
+        Response updateLicenseResponse = UtilIT.updateLicense(pathToJsonFile, 1L);
+        updateLicenseResponse.prettyPrint();
+        body = updateLicenseResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+        
+        Response updateLicenseErrorResponse = UtilIT.updateLicense(pathToJsonFile, 10L);
+        updateLicenseErrorResponse.prettyPrint();
+        body = updateLicenseErrorResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("ERROR", status);
+        
+        Response deleteLicenseResponse = UtilIT.deleteLicense(1L);
+        deleteLicenseResponse.prettyPrint();
+        body = deleteLicenseResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+        
+        Response deleteLicenseErrorResponse = UtilIT.deleteLicense(10L);
+        deleteLicenseErrorResponse.prettyPrint();
+        body = deleteLicenseErrorResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("ERROR", status);
+        
+    }
 }

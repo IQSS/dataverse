@@ -2523,5 +2523,46 @@ public class UtilIT {
         return "0";
     }
     
+    static Response addLicense(String pathToJsonFile) {
+        String jsonIn = getDatasetJson(pathToJsonFile);
+        
+        Response addLicenseResponse = given()               
+                .body(jsonIn)
+                .contentType("application/json")
+                .post("/api/admin/licenses");
+        return addLicenseResponse;
+    }
+    
+    static Response getLicenses() {
+        
+        Response getLicensesResponse = given()               
+                .get("/api/admin/licenses");
+        return getLicensesResponse;
+    }
+    
+    static Response getLicense(Long id) {
+        
+        Response getLicenseResponse = given()               
+                .get("/api/admin/licenses/"+id.toString());
+        return getLicenseResponse;
+    }
+    
+    static Response updateLicense(String pathToJsonFile, Long id) {
+        String jsonIn = getDatasetJson(pathToJsonFile);
+        
+        Response updateLicenseResponse = given()               
+                .body(jsonIn)
+                .contentType("application/json")
+                .put("/api/admin/licenses/"+id.toString());
+        return updateLicenseResponse;
+    }
+    
+    static Response deleteLicense(Long id) {
+        
+        Response deleteLicenseResponse = given()               
+                .delete("/api/admin/licenses/"+id.toString());
+        return deleteLicenseResponse;
+    }
+    
     
 }
