@@ -2787,8 +2787,18 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
+        /*
+        String requestUrl =  httpRequest.getProtocol().toLowerCase().split("/")[0]+"://"+httpRequest.getServerName();
 
-        String requestUrl = httpRequest.getRequestURL().toString();
+        if( httpRequest.getServerPort() > 0 )
+        {
+            requestUrl = requestUrl + ":"+ httpRequest.getServerPort();
+        }
+        */
+
+
+        String requestUrl = "https://dvdev.scholarsportal.info" ;
+        //String requestUrl = "http://localhost:8080" ;
 
         // Async Call
         datasetService.globusAsyncCall(  jsonData , token , dataset , authUser, requestUrl);

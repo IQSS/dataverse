@@ -1106,7 +1106,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
                 ProcessBuilder processBuilder = new ProcessBuilder();
 
-                String command = "curl -H \"X-Dataverse-key:" + token.getTokenString() + "\" -X POST "+httpRequestUrl.split("/api")[0]+"/api/datasets/:persistentId/addFiles?persistentId=doi:" + datasetIdentifier + " -F jsonData='" + newjsonData  + "'";
+                String command = "curl -H \"X-Dataverse-key:" + token.getTokenString() + "\" -X POST "+httpRequestUrl+"/api/datasets/:persistentId/addFiles?persistentId=doi:" + datasetIdentifier + " -F jsonData='" + newjsonData  + "'";
                 System.out.println("*******====command ==== " + command);
 
                 new Thread(new Runnable() {
