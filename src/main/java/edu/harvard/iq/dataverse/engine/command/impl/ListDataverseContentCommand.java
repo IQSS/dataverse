@@ -7,7 +7,9 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -32,11 +34,14 @@ public class ListDataverseContentCommand extends AbstractCommand<List<DvObject>>
 
     @Override
     public List<DvObject> execute(CommandContext ctxt) throws CommandException {
+        List<DvObject> availableObjects = new ArrayList();
         if (getRequest().getUser().isSuperuser()) {
-            return ctxt.dvObjects().findByOwnerId(dvToList.getId());
+            availableObjects = ctxt.dvObjects().findByOwnerId(dvToList.getId());
         } else {
-            return ctxt.permissions().whichChildrenHasPermissionsForOrReleased(getRequest(), dvToList, EnumSet.of(Permission.ViewUnpublishedDataverse, Permission.ViewUnpublishedDataset));
+            availableObjects =  ctxt.permissions().whichChildrenHasPermissionsForOrReleased(getRequest(), dvToList, EnumSet.of(Permission.ViewUnpublishedDataverse, Permission.ViewUnpublishedDataset));
         }
+        availableObjects.sort(Comparator.comparing(DvObject::getDisplayName));
+        return availableObjects;
     }
 
     @Override
