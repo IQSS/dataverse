@@ -162,7 +162,7 @@ public class DataverseUserPage implements java.io.Serializable {
             }
         }
 
-        if ( session.getUser().isAuthenticated() ) {
+        if (session.getUser(true).isAuthenticated()) {
             setCurrentUser((AuthenticatedUser) session.getUser());
             userAuthProvider = authenticationService.lookupProvider(currentUser);
             notificationsList = userNotificationService.findByUser(currentUser.getId());

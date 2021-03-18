@@ -90,10 +90,23 @@ public class DataverseSession implements Serializable{
     private Boolean debug;
     
     public User getUser() {
+        return getUser(false);
+    }
+
+    /**
+     * For performance reasons, we only lookup the authenticated user again (to
+     * check if it has been deleted or deactivated, for example) when we have
+     * to.
+     *
+     * @param lookupAuthenticatedUserAgain A boolean to indicate if we should go
+     * to the database again to lookup the user to get the latest values that
+     * may have been updated outside the session.
+     */
+    public User getUser(boolean lookupAuthenticatedUserAgain) {
         if ( user == null ) {
             user = GuestUser.get();
         }
-        if (user instanceof AuthenticatedUser) {
+        if (lookupAuthenticatedUserAgain && user instanceof AuthenticatedUser) {
             AuthenticatedUser auFromSession = (AuthenticatedUser) user;
             AuthenticatedUser auFreshLookup = authenticationService.findByID(auFromSession.getId());
             if (auFreshLookup == null) {

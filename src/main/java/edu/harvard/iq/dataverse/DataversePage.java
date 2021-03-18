@@ -695,7 +695,7 @@ public class DataversePage implements java.io.Serializable {
 
         } catch (CommandException ex) {
             logger.log(Level.SEVERE, "Unexpected Exception calling dataverse command", ex);
-            String errMsg = create ? BundleUtil.getStringFromBundle("dataverse.create.failure") : BundleUtil.getStringFromBundle("dataverse.update.failure");
+            String errMsg = create ? ex.getLocalizedMessage() : BundleUtil.getStringFromBundle("dataverse.update.failure");
             JH.addMessage(FacesMessage.SEVERITY_FATAL, errMsg);
             return null;
         } catch (Exception e) {
