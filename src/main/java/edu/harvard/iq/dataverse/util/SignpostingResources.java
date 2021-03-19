@@ -77,7 +77,7 @@ public class SignpostingResources {
     private String getIdentifierSchema(List<DatasetAuthor> datasetAuthors) {
         String singleAuthorString;
         String identifierSchema = "";
-
+        if (datasetAuthors.size() > maxAuthors) return "";
         for (DatasetAuthor da : datasetAuthors) {
             logger.info(String.format(
                     "idtype: %s; idvalue: %s, affiliation: %s; identifierUrl: %s",
