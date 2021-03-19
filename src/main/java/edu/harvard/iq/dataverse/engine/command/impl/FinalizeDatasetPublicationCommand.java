@@ -80,7 +80,13 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             // some imported datasets may already be released.
 
             // validate the physical files (verify checksums):
-            validateDataFiles(theDataset, ctxt);
+            if(theDataset.getCategoryByName("GLOBUS") != null) {
+                logger.info("skip validating checksum "+theDataset.getGlobalId().asString());
+            }
+            else {
+                logger.info("run validating checksum  ");
+                validateDataFiles(theDataset, ctxt);
+            }
             // (this will throw a CommandException if it fails)
         }
 

@@ -2775,8 +2775,6 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             );
         }
 
-        ApiToken token = authSvc.findApiTokenByUser((AuthenticatedUser) authUser);
-
         // -------------------------------------
         // (2) Get the Dataset Id
         // -------------------------------------
@@ -2787,6 +2785,21 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
+
+
+        String lockInfoMessage = "Globus Upload API is started ";
+        DatasetLock lock = datasetService.addDatasetLock(dataset.getId(), DatasetLock.Reason.EditInProgress,
+                ((AuthenticatedUser) authUser).getId(), lockInfoMessage);
+        if (lock != null) {
+            dataset.addLock(lock);
+        } else {
+            logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
+        }
+
+
+        ApiToken token = authSvc.findApiTokenByUser((AuthenticatedUser) authUser);
+
+
         /*
         String requestUrl =  httpRequest.getProtocol().toLowerCase().split("/")[0]+"://"+httpRequest.getServerName();
 
@@ -2801,7 +2814,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         //String requestUrl = "http://localhost:8080" ;
 
         // Async Call
-        datasetService.globusAsyncCall(  jsonData , token , dataset , authUser, requestUrl);
+        datasetService.globusAsyncCall(  jsonData , token , dataset , requestUrl);
 
         return ok("Globus Task successfully completed ");
     }

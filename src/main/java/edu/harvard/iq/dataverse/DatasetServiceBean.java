@@ -1023,7 +1023,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
     @Asynchronous
-    public void globusAsyncCall(String jsonData, ApiToken token, Dataset dataset, User authUser, String httpRequestUrl) throws ExecutionException, InterruptedException {
+    public void globusAsyncCall(String jsonData, ApiToken token, Dataset dataset, String httpRequestUrl) throws ExecutionException, InterruptedException {
 
         String datasetIdentifier = dataset.getStorageIdentifier();
 
@@ -1032,14 +1032,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
 
         Thread.sleep(5000);
-        String lockInfoMessage = "Globus Upload API is running ";
-        DatasetLock lock = addDatasetLock(dataset.getId(), DatasetLock.Reason.EditInProgress,
-                ((AuthenticatedUser) authUser).getId(), lockInfoMessage);
-        if (lock != null) {
-            dataset.addLock(lock);
-        } else {
-            logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
-        }
+
 
 
         JsonObject jsonObject = null;
