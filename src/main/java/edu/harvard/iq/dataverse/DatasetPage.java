@@ -1305,7 +1305,6 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean canPublishDataset(){
-        permissionsWrapper.doesSessionUserHaveDataSetPermission(dvRequestService.getDataverseRequest(), dataset, Permission.PublishDataset);
         return permissionsWrapper.canIssuePublishDatasetCommand(dataset);
     }
 
