@@ -35,7 +35,7 @@ from conf/jhove:
 
 jhove.conf
 
-SOLR schema and config files, from conf/solr/7.7.2: 
+SOLR schema and config files, from conf/solr/8.8.1: 
 
 schema.xml
 schema_dv_cmb_copies.xml

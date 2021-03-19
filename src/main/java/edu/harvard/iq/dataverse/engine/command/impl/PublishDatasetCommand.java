@@ -61,7 +61,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
     @Override
     public PublishDatasetResult execute(CommandContext ctxt) throws CommandException {
         
-        verifyCommandArguments();
+        verifyCommandArguments(ctxt);
         
         // Invariant 1: If we're here, publishing the dataset makes sense, from a "business logic" point of view.
         // Invariant 2: The latest version of the dataset is the one being published, EVEN IF IT IS NOT DRAFT.
@@ -69,6 +69,10 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
 
         Dataset theDataset = getDataset();
 
+        
+        //ToDo - any reason to set the version in publish versus finalize? Failure in a prepub workflow or finalize will leave draft versions with an assigned version number as is.
+        //Changing the dataset in this transaction also potentially makes a race condition with a prepub workflow, possibly resulting in an OptimisticLockException there.
+        
         // Set the version numbers:
 
         if (theDataset.getPublicationDate() == null) {
@@ -86,6 +90,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             theDataset.getLatestVersion().setMinorVersionNumber(new Long(0));
         }
         
+        //ToDo - should this be in onSuccess()? May relate to todo above 
         Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
         if ( prePubWf.isPresent() ) {
             // We start a workflow
@@ -158,7 +163,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
      * 
      * @throws IllegalCommandException if the publication request is invalid.
      */
-    private void verifyCommandArguments() throws IllegalCommandException {
+    private void verifyCommandArguments(CommandContext ctxt) throws IllegalCommandException {
         if (!getDataset().getOwner().isReleased()) {
             throw new IllegalCommandException("This dataset may not be published because its host dataverse (" + getDataset().getOwner().getAlias() + ") has not been published.", this);
         }
@@ -167,9 +172,10 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             throw new IllegalCommandException("Only authenticated users can release a Dataset. Please authenticate and try again.", this);
         }
         
-        if ( getDataset().isLockedFor(DatasetLock.Reason.Workflow)
+        if ( (getDataset().isLockedFor(DatasetLock.Reason.Workflow)&&!ctxt.permissions().isMatchingWorkflowLock(getDataset(),request.getUser().getIdentifier(),request.getWFInvocationId())) 
                 || getDataset().isLockedFor(DatasetLock.Reason.Ingest) 
-                || getDataset().isLockedFor(DatasetLock.Reason.finalizePublication)) {
+                || getDataset().isLockedFor(DatasetLock.Reason.finalizePublication)
+                || getDataset().isLockedFor(DatasetLock.Reason.EditInProgress)) {
             throw new IllegalCommandException("This dataset is locked. Reason: " 
                     + getDataset().getLocks().stream().map(l -> l.getReason().name()).collect( joining(",") )
                     + ". Please try publishing later.", this);

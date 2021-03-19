@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
+import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -1678,11 +1679,12 @@ public class EditDatafilesPage implements java.io.Serializable {
                     setLabelForDeleteFilesPopup();
                     PrimeFaces.current().ajax().update("datasetForm:fileAlreadyExistsPopup");
                     PrimeFaces.current().executeScript("PF('fileAlreadyExistsPopup').show();");
+                } else {
+                    //adding back warnings in non-replace situations
+                    FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), uploadWarningMessage));                   
                 }
                 
 
-                //taking this out for now based on design feedback 7/8/2020
-               // FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.file.uploadWarning"), uploadWarningMessage));
 
             } else if (uploadSuccessMessage != null) {
                 FacesContext.getCurrentInstance().addMessage(uploadComponentId, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.file.uploadWorked"), uploadSuccessMessage));
@@ -1788,6 +1790,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (fileReplacePageHelper.handleNativeFileUpload(inputStream,null,
                                     fileName,
                                     contentType, 
+                                    null, 
                                     null
                                 )){
             saveEnabled = true;
@@ -1848,12 +1851,13 @@ public class EditDatafilesPage implements java.io.Serializable {
     private void handleReplaceFileUpload(String fullStorageLocation, 
     		String fileName, 
     		String contentType, 
-    		String checkSum){
+    		String checkSumValue,
+    		ChecksumType checkSumType){
 
     	fileReplacePageHelper.resetReplaceFileHelper();
     	saveEnabled = false;
     	String storageIdentifier = DataAccess.getStorarageIdFromLocation(fullStorageLocation);
-    	if (fileReplacePageHelper.handleNativeFileUpload(null, storageIdentifier, fileName, contentType, checkSum)){
+    	if (fileReplacePageHelper.handleNativeFileUpload(null, storageIdentifier, fileName, contentType, checkSumValue, checkSumType)){
     		saveEnabled = true;
 
     		/**
@@ -1985,9 +1989,12 @@ public class EditDatafilesPage implements java.io.Serializable {
         String fullStorageIdentifier = paramMap.get("fullStorageIdentifier");
         String fileName = paramMap.get("fileName");
         String contentType = paramMap.get("contentType");
-        String checksumType = paramMap.get("checksumType");
+        String checksumTypeString = paramMap.get("checksumType");
         String checksumValue = paramMap.get("checksumValue");
-        
+        ChecksumType checksumType = null;
+        if (!checksumTypeString.isBlank()) {
+            checksumType = ChecksumType.fromString(checksumTypeString);
+        }
         int lastColon = fullStorageIdentifier.lastIndexOf(':');
         String storageLocation= fullStorageIdentifier.substring(0,lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + fullStorageIdentifier.substring(lastColon+1);
     	if (uploadInProgress.isFalse()) {
@@ -2009,12 +2016,6 @@ public class EditDatafilesPage implements java.io.Serializable {
 				contentType = FileUtil.MIME_TYPE_UNDETERMINED_DEFAULT;
 			}
 			
-			if(DataFile.ChecksumType.fromString(checksumType) != DataFile.ChecksumType.MD5 ) {
-				String warningMessage = "Non-MD5 checksums not yet supported in external uploads";
-				localWarningMessage = warningMessage;
-				//ToDo - methods like handleReplaceFileUpload and classes like OptionalFileParams will need to track the algorithm in addition to the value to enable this
-			}
-			
     		/* ----------------------------
                 Check file size
                 - Max size NOT specified in db: default is unlimited
@@ -2029,7 +2030,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     			// Is this a FileReplaceOperation?  If so, then diverge!
     			// -----------------------------------------------------------
     			if (this.isFileReplaceOperation()){
-    				this.handleReplaceFileUpload(storageLocation, fileName, contentType, checksumValue);
+    				this.handleReplaceFileUpload(storageLocation, fileName, contentType, checksumValue, checksumType);
     				this.setFileMetadataSelectedForTagsPopup(fileReplacePageHelper.getNewFileMetadatasBeforeSave().get(0));
     				return;
     			}
@@ -2047,7 +2048,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     				//datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
 
 
-    				datafiles = FileUtil.createDataFiles(workingVersion, null, fileName, contentType, fullStorageIdentifier, checksumValue, systemConfig);
+    				datafiles = FileUtil.createDataFiles(workingVersion, null, fileName, contentType, fullStorageIdentifier, checksumValue, checksumType, systemConfig);
     			} catch (IOException ex) {
     				logger.log(Level.SEVERE, "Error during ingest of file {0}", new Object[]{fileName});
     			}
@@ -2452,20 +2453,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
         return false;
     }
-    
-    public boolean isThumbnailAvailable(FileMetadata fileMetadata) {
-        // new and optimized logic: 
-        // - check download permission here (should be cached - so it's free!)
-        // - only then ask the file service if the thumbnail is available/exists.
-        // the service itself no longer checks download permissions.  
-        if (!fileDownloadHelper.canDownloadFile(fileMetadata)) {
-            return false;
-        }
-
-        return datafileService.isThumbnailAvailable(fileMetadata.getDataFile());
-    }
-    
-
     
     private Boolean lockedFromEditsVar;
     

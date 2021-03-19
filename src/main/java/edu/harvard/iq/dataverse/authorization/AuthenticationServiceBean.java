@@ -34,6 +34,7 @@ import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
 import edu.harvard.iq.dataverse.passwordreset.PasswordResetServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
+import edu.harvard.iq.dataverse.workflow.PendingWorkflowInvocation;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -448,6 +449,25 @@ public class AuthenticationServiceBean {
         }
         
         return tkn.getAuthenticatedUser();
+    }
+    
+    public AuthenticatedUser lookupUserForWorkflowInvocationID(String wfId) {
+        try {
+            PendingWorkflowInvocation pwfi = em.find(PendingWorkflowInvocation.class, wfId);
+            if (pwfi == null) {
+                return null;
+            }
+            if (pwfi.getUserId().startsWith(AuthenticatedUser.IDENTIFIER_PREFIX)) {
+                if (pwfi.getLocalData().containsKey(PendingWorkflowInvocation.AUTHORIZED)
+                        && Boolean.parseBoolean(pwfi.getLocalData().get(PendingWorkflowInvocation.AUTHORIZED))) {
+                    return getAuthenticatedUser(
+                            pwfi.getUserId().substring(AuthenticatedUser.IDENTIFIER_PREFIX.length()));
+                }
+            }
+        } catch (NoResultException ex) {
+            return null;
+        }
+        return null;
     }
     
     /*
