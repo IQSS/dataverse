@@ -66,7 +66,7 @@ Some hints:
 
 - Due to their excessive CPU usage, regular expressions should be used rarely.
 - Remember to properly escape "\" in your regular expression. Both Java and JSON are a bit picky about this. E.g. a character class "\d" would have to be escaped as "\\d". Plenty of tutorials on the web explain this in more detail.
-- There is no way Dataverse can detect a wrong regular expression for you. Be sure to do extensive testing, as a misconfigured group could result in privilege escalation or an unexpected influx of support contacts.
+- There is no way the Dataverse Software can detect a wrong regular expression for you. Be sure to do extensive testing, as a misconfigured group could result in privilege escalation or an unexpected influx of support contacts.
 - Remember to enable the regular expression support for a group by adding ``"regex": true``!
 
 A short example for a group using regular expressions:
