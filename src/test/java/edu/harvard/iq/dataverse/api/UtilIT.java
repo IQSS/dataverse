@@ -2232,7 +2232,7 @@ public class UtilIT {
             } catch (InterruptedException ex) {
                 Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } while (lockedForIngest.body().prettyPrint().contains(lockType));
+        } while (lockedForIngest.body().jsonPath().getList("data").size() >0 && (lockType==null || lockedForIngest.body().prettyPrint().contains(lockType)));
 
         return i <= duration;
 
