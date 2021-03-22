@@ -65,9 +65,11 @@ public class WorkflowUtil {
                 message = response.getString("Message");
             }
             switch (status) {
+            case "success":
             case "Success":
                 logger.log(Level.FINE, "AuthExt Worfklow Step Succeeded: " + reason);
                 return new Success(reason, message);
+            case "failure":
             case "Failure":
                 logger.log(Level.WARNING, "Remote system indicates workflow failed: {0}", reason);
                 return new Failure(reason, message);
