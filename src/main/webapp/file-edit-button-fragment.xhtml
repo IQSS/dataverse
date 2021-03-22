@@ -73,16 +73,16 @@
 
     <!-- TO-DO #7342 - ADD REPLACE FOR SINGLE FILE-->      
     <ui:fragment rendered="#{isFilePg}">
-        <ui:fragment rendered="#{fileMetadata.dataFile.released and !isDraftReplacementFile}">                                        
+        <ui:fragment rendered="#{!isDraftReplacementFile}">                                        
             <li><!-- start: replace file link -->
                 <h:outputLink value="/editdatafiles.xhtml?mode=SINGLE_REPLACE&#38;datasetId=#{fileMetadata.datasetVersion.dataset.id}&#38;fid=#{fileMetadata.dataFile.id}&#38;version=#{fileMetadata.datasetVersion.version}">
                     <h:outputText value="#{bundle['file.replace']}"/>
                 </h:outputLink>
                 <!-- end replace file link --></li>
         </ui:fragment>
-        <ui:fragment rendered="#{((fileMetadata.dataFile.released and draftReplacementFile) or (!fileMetadata.dataFile.released and fileMetadata.datasetVersion.dataset.released)) }">                                        
+        <ui:fragment rendered="#{draftReplacementFile}">                                        
             <li><!-- start: already replaced replace file link -->
-                <p:commandLink title="#{bundle['file.delete']}" onclick="PF('fileAlreadyReplacedDraft').show();">
+                <p:commandLink title="#{bundle['file.replace']}" onclick="PF('fileAlreadyReplacedDraft').show();">
                     <h:outputText value="#{bundle['file.replace']}"/>
                 </p:commandLink>
                 <!-- end replace file link --></li>
