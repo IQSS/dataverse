@@ -77,10 +77,10 @@ pause/message
 
 A variant of the  pause step that pauses the workflow and allows the external process to send a success/failure message. The workflow is paused until a POST request is sent to ``/api/workflows/{invocation-id}``. 
 The response in the POST body (Content-type:application/json) should be a json object (the same as for the http/extauth step) containing:
-- "Status" - can be "Success" or "Failure"
-- "Reason" - a message that will be logged
-- "Message" - a message to send to the user that will be sent as a notification and as a banner on the relevant dataset page.
-An unparsable reponse will be considered a Failure that will be logged with no user message.
+- "status" - can be "success" or "failure"
+- "reason" - a message that will be logged
+- "message" - a message to send to the user that will be sent as a notification and as a banner on the relevant dataset page.
+An unparsable reponse will be considered a Failure that will be logged with no user message. (See the http/authext step for an example POST call)
 
 .. code:: json
 
@@ -135,9 +135,17 @@ The url, content type, and message body can use data from the workflow context, 
 The workflow is restarted when the external system replies with a POST request  to ``/api/workflows/{invocation-id}`` (Content-Type: application/json).
 
 The response has is expected to be a json object with three keys:
-- "Status" - can be "Success" or "Failure"
-- "Reason" - a message that will be logged
-- "Message" - a message to send to the user that will be sent as a notification and as a banner on the relevant dataset page.
+- "status" - can be "success" or "failure"
+- "reason" - a message that will be logged
+- "message" - a message to send to the user that will be sent as a notification and as a banner on the relevant dataset page.
+
+.. code-block:: bash
+
+  export INVOCATION_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export MESSAGE={"status":"success", "reason":"Workflow completed in 10 seconds", "message":"An external workflow to virus check your data was successfully run prior to publication of your data"}
+ 
+  curl -H 'Content-Type:application/json' -X POST -d $MESSAGE "$SERVER_URL/api/workflows/$INVOCATION_ID"
 
 .. code:: json
 
