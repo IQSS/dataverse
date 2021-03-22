@@ -193,6 +193,7 @@ public class WorkflowServiceBean {
         final WorkflowContext ctxt = refresh(newCtxt,retrieveRequestedSettings( wf.getRequiredSettings()), getCurrentApiToken(newCtxt.getRequest().getAuthenticatedUser()));
         WorkflowStepResult res = pendingStep.resume(ctxt, pending.getLocalData(), body);
         if (res instanceof Failure) {
+            logger.warning(((Failure) res).getReason());
             userNotificationService.sendNotification(ctxt.getRequest().getAuthenticatedUser(), Timestamp.from(Instant.now()), UserNotification.Type.WORKFLOW_FAILURE, ctxt.getDataset().getLatestVersion().getId(), ((Failure) res).getMessage());
             //UserNotification isn't meant to be a long-term record and doesn't store the comment, so we'll also keep it as a workflow comment
             WorkflowComment wfc = new WorkflowComment(ctxt.getDataset().getLatestVersion(), WorkflowComment.Type.WORKFLOW_FAILURE, ((Failure) res).getMessage(), ctxt.getRequest().getAuthenticatedUser());
@@ -202,6 +203,7 @@ public class WorkflowServiceBean {
             pauseAndAwait(wf, ctxt, (Pending) res, pending.getPendingStepIdx());
         } else {
             if (res instanceof Success) {
+                logger.info(((Success) res).getReason());
                 userNotificationService.sendNotification(ctxt.getRequest().getAuthenticatedUser(), Timestamp.from(Instant.now()), UserNotification.Type.WORKFLOW_SUCCESS, ctxt.getDataset().getLatestVersion().getId(), ((Success) res).getMessage());
                 //UserNotification isn't meant to be a long-term record and doesn't store the comment, so we'll also keep it as a workflow comment
                 WorkflowComment wfc = new WorkflowComment(ctxt.getDataset().getLatestVersion(), WorkflowComment.Type.WORKFLOW_SUCCESS, ((Success) res).getMessage(), ctxt.getRequest().getAuthenticatedUser());

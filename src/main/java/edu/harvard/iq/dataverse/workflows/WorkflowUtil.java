@@ -74,7 +74,8 @@ public class WorkflowUtil {
                 logger.log(Level.WARNING, "Remote system indicates workflow failed: {0}", reason);
                 return new Failure(reason, message);
             default:
-                logger.log(Level.WARNING, "Remote system returned a response with no \"status\" key: {0}", externalData);
+                logger.log(Level.WARNING, "Remote system returned a response with no \"status\" key or bad status value: {0}", escapeHtml4(externalData));
+                return new Failure("Workflow failure: Response from remote server doesn't have valid \"status\":" + escapeHtml4(externalData), null);
             }
         } catch (Exception e) {
             logger.log(Level.WARNING, "Remote system returned a bad response: {0}", externalData);
