@@ -18,7 +18,7 @@ Steps can be internal (say, writing some data to the log) or external. External 
 
 The external system reports the step result back to the Dataverse installation, by sending a HTTP ``POST`` command to ``api/workflows/{invocation-id}`` with Content-Type: text/plain. The body of the request is passed to the paused step for further processing.
 
-Steps can define messages to send to the log and to users. If defined, the message to users is sent as a user notification (creating an email and showing in the user notification tab) and will show once for the given user if/when they view the relevant dataset page. The latter provides a means for the asynchronous workflow execution to report success or failure anologous to the way the publication and other processes report on the page.
+Steps can define messages to send to the log and to users. If defined, the message to users is sent as a user notification (creating an email and showing in the user notification tab) and will show once for the given user if/when they view the relevant dataset page. The latter provides a means for the asynchronous workflow execution to report success or failure analogous to the way the publication and other processes report on the page.
 
 If a step in a workflow fails, the Dataverse installation makes an effort to roll back all the steps that preceded it. Some actions, such as writing to the log, cannot be rolled back. If such an action has a public external effect (e.g. send an EMail to a mailing list) it is advisable to put it in the post-release workflow.
 
