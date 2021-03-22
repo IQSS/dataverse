@@ -184,7 +184,7 @@ public class DeactivateUsersIT {
         deactivateUser.prettyPrint();
         deactivateUser.then().assertThat().statusCode(OK.getStatusCode());
 
-        // User accounts can only be merged if they are either both non-deactivated or both deactivated.
+        // User accounts can only be merged if they are either both active or both deactivated.
         Response mergeAccounts = UtilIT.mergeAccounts(usernameMergeTarget, usernameToMerge, superuserApiToken);
         mergeAccounts.prettyPrint();
         mergeAccounts.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
@@ -212,7 +212,7 @@ public class DeactivateUsersIT {
         deactivateUser.prettyPrint();
         deactivateUser.then().assertThat().statusCode(OK.getStatusCode());
 
-        // User accounts can only be merged if they are either both non-deactivated or both deactivated.
+        // User accounts can only be merged if they are either both active or both deactivated.
         Response mergeAccounts = UtilIT.mergeAccounts(usernameMergeTarget, usernameToMerge, superuserApiToken);
         mergeAccounts.prettyPrint();
         mergeAccounts.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
@@ -244,7 +244,7 @@ public class DeactivateUsersIT {
         deactivatedUserToMerge.prettyPrint();
         deactivatedUserToMerge.then().assertThat().statusCode(OK.getStatusCode());
 
-        // User accounts can only be merged if they are either both non-deactivated or both deactivated.
+        // User accounts can only be merged if they are either both active or both deactivated.
         Response mergeAccounts = UtilIT.mergeAccounts(usernameMergeTarget, usernameToMerge, superuserApiToken);
         mergeAccounts.prettyPrint();
         mergeAccounts.then().assertThat().statusCode(OK.getStatusCode());

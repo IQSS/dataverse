@@ -3055,7 +3055,7 @@ Example: ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://demo.dataverse.o
 
 This action moves account data from jsmith2 into the account jsmith and deletes the account of jsmith2.
 
-Note: User accounts can only be merged if they are either both non-deactivated or both deactivated. See :ref:`deactivate a user<deactivate-a-user>`.
+Note: User accounts can only be merged if they are either both active or both deactivated. See :ref:`deactivate a user<deactivate-a-user>`.
 
 .. _change-identifier-label:
 

@@ -64,7 +64,7 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         }
 
         if (consumedAU.isDeactivated() && !ongoingAU.isDeactivated() || !consumedAU.isDeactivated() && ongoingAU.isDeactivated()) {
-            throw new IllegalCommandException("User accounts can only be merged if they are either both non-deactivated or both deactivated.", this);
+            throw new IllegalCommandException("User accounts can only be merged if they are either both active or both deactivated.", this);
         }
 
         List<RoleAssignment> baseRAList = ctxt.roleAssignees().getAssignmentsFor(ongoingAU.getIdentifier());
