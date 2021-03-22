@@ -1930,52 +1930,52 @@ public class Admin extends AbstractApiBean {
     @Path("/licenses")
     public Response getLicenses() {
         return ok(licenseService.listAll().stream()
-        		.map(JsonPrinter::json)
-        		.collect(toJsonArray()));
+                .map(JsonPrinter::json)
+                .collect(toJsonArray()));
     }
 
     @GET
     @Path("/licenses/{id}")
     public Response getLicense(@PathParam("id") long id) {
-    	License l = licenseService.get(id);
-    	if (l == null) {
-    		return error(Response.Status.NOT_FOUND, "Not Found.");
-		}
-		return ok(json(l));
+        License l = licenseService.get(id);
+        if (l == null) {
+            return error(Response.Status.NOT_FOUND, "Not Found.");
+        }
+        return ok(json(l));
     }
 
     @POST
     @Path("/licenses")
     public Response addLicense(License l) {
-		try {
-			License added = licenseService.save(l);
-			if (added == null) {
-				return error(Response.Status.BAD_REQUEST, "Bad Request.");
-			}
-			return created("/api/admin/licenses", Json.createObjectBuilder().add("message", "License created"));
-		} catch(PersistenceException e) {
-			return error(Response.Status.CONFLICT, "A license with the same URI or name is already present.");
-		}
+        try {
+            License added = licenseService.save(l);
+            if (added == null) {
+                return error(Response.Status.BAD_REQUEST, "Bad Request.");
+            }
+            return created("/api/admin/licenses", Json.createObjectBuilder().add("message", "License created"));
+        } catch(PersistenceException e) {
+            return error(Response.Status.CONFLICT, "A license with the same URI or name is already present.");
+        }
     }
 
-	@PUT
-	@Path("/licenses/{id}")
-	public Response putLicense(@PathParam("id") long id, License l) {
-		License updated = licenseService.set(id, l.getName(), l.getShortDescription(), l.getUri(), l.getIconUrl(), l.isActive());
-		if (updated == null) {
-			return error(Response.Status.BAD_REQUEST, "Bad Request. There is no existing LicenseInfo with that ID. To add a license use POST.");
-		}
-		return ok("License with ID " + id + " was replaced.");
-	}
+    @PUT
+    @Path("/licenses/{id}")
+    public Response putLicense(@PathParam("id") long id, License l) {
+        License updated = licenseService.set(id, l.getName(), l.getShortDescription(), l.getUri(), l.getIconUrl(), l.isActive());
+        if (updated == null) {
+            return error(Response.Status.BAD_REQUEST, "Bad Request. There is no existing LicenseInfo with that ID. To add a license use POST.");
+        }
+        return ok("License with ID " + id + " was replaced.");
+    }
 
-	@DELETE
-	@Path("/licenses/{id}")
-	public Response deleteLicense(@PathParam("id") long id) {
-		int result = licenseService.delete(id);
-		if (result == 1) {
-			return ok("OK. License with ID " + id + " was deleted.");
-		}
-		return error(Response.Status.NOT_FOUND, "A license with ID " + id + " doesn't exist.");
-	}
+    @DELETE
+    @Path("/licenses/{id}")
+    public Response deleteLicense(@PathParam("id") long id) {
+        int result = licenseService.delete(id);
+        if (result == 1) {
+            return ok("OK. License with ID " + id + " was deleted.");
+        }
+        return error(Response.Status.NOT_FOUND, "A license with ID " + id + " doesn't exist.");
+    }
     
 }
