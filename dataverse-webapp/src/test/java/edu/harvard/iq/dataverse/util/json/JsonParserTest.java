@@ -6,7 +6,9 @@ package edu.harvard.iq.dataverse.util.json;
 
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
+import edu.harvard.iq.dataverse.citation.CitationDataExtractor;
 import edu.harvard.iq.dataverse.citation.CitationFactory;
+import edu.harvard.iq.dataverse.citation.StandardCitationFormatsConverter;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
@@ -85,7 +87,8 @@ public class JsonParserTest {
     DatasetFieldType compoundSingleType;
     JsonParser sut;
 
-    private JsonPrinter jsonPrinter = new JsonPrinter(new CitationFactory());
+    private JsonPrinter jsonPrinter = new JsonPrinter(
+            new CitationFactory(new CitationDataExtractor(), new StandardCitationFormatsConverter()));
 
     @BeforeClass
     public static void setUpClass() {

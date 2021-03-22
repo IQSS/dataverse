@@ -78,7 +78,9 @@ public class DuraCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveComm
                     store = storeManager.getPrimaryContentStore();
                     // Create space to copy archival files to
                     store.createSpace(spaceName);
-                    Map<String, String> metadata = citationFactory.create(dv).getDataCiteMetadata();
+                    Map<String, String> metadata = citationFactory.create(dv)
+                            .getCitationData()
+                            .getDataCiteMetadata();
                     String dataciteXml = DOIDataCiteRegisterService.getMetadataFromDvObject(
                             dv.getDataset().getGlobalId().asString(), metadata, dv.getDataset());
 

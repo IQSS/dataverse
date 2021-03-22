@@ -50,7 +50,9 @@ public class DataCiteExporter implements Exporter {
 
     @Override
     public String exportDataset(DatasetVersion version) {
-        Map<String, String> metadata = citationFactory.create(version).getDataCiteMetadata();
+        Map<String, String> metadata = citationFactory.create(version)
+                .getCitationData()
+                .getDataCiteMetadata();
 
         return DOIDataCiteRegisterService.getMetadataFromDvObject(
                 version.getDataset().getGlobalId().asString(), metadata, version.getDataset());

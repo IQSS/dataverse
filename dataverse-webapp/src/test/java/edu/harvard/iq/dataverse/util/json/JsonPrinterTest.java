@@ -1,7 +1,9 @@
 package edu.harvard.iq.dataverse.util.json;
 
 import com.google.common.collect.Lists;
+import edu.harvard.iq.dataverse.citation.CitationDataExtractor;
 import edu.harvard.iq.dataverse.citation.CitationFactory;
+import edu.harvard.iq.dataverse.citation.StandardCitationFormatsConverter;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.common.Util;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
@@ -49,7 +51,8 @@ public class JsonPrinterTest {
     private DatasetFieldType contactNameFieldType;
     private DatasetFieldType contactAffiliationFieldType;
 
-    private JsonPrinter jsonPrinter = new JsonPrinter(new CitationFactory());
+    private JsonPrinter jsonPrinter = new JsonPrinter(
+            new CitationFactory(new CitationDataExtractor(), new StandardCitationFormatsConverter()));
 
     @Before
     public void setUp() {

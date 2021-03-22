@@ -3,7 +3,9 @@ package edu.harvard.iq.dataverse.export;
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.UnitTestUtils;
+import edu.harvard.iq.dataverse.citation.CitationDataExtractor;
 import edu.harvard.iq.dataverse.citation.CitationFactory;
+import edu.harvard.iq.dataverse.citation.StandardCitationFormatsConverter;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.error.DataverseError;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
@@ -75,7 +77,8 @@ public class ExportServiceTest {
     @Mock
     private Instance<Exporter> exporters;
 
-    private JsonPrinter jsonPrinter = new JsonPrinter(new CitationFactory());
+    private JsonPrinter jsonPrinter = new JsonPrinter(
+            new CitationFactory(new CitationDataExtractor(), new StandardCitationFormatsConverter()));
 
     @BeforeEach
     void prepareData() {
@@ -84,7 +87,7 @@ public class ExportServiceTest {
         mockDatasetFields();
 
         when(exporters.iterator()).thenReturn(IteratorUtils.arrayIterator(
-                new DataCiteExporter(new CitationFactory()),
+                new DataCiteExporter(new CitationFactory(new CitationDataExtractor(), new StandardCitationFormatsConverter())),
                 new DCTermsExporter(settingsService, jsonPrinter),
                 new DublinCoreExporter(settingsService,jsonPrinter),
                 new OAI_OREExporter(settingsService, systemConfig, clock),

@@ -3,7 +3,9 @@ package edu.harvard.iq.dataverse.export;
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
+import edu.harvard.iq.dataverse.citation.CitationDataExtractor;
 import edu.harvard.iq.dataverse.citation.CitationFactory;
+import edu.harvard.iq.dataverse.citation.StandardCitationFormatsConverter;
 import edu.harvard.iq.dataverse.export.ddi.DdiDatasetExportService;
 import edu.harvard.iq.dataverse.persistence.MockMetadataFactory;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
@@ -47,7 +49,8 @@ public class DDIExporterTest {
     @Mock private DdiDatasetExportService ddiDatasetExportService;
     @Mock private SettingsServiceBean settingsService;
     @Mock private VocabularyValuesIndexer vocabularyValuesIndexer;
-    private JsonPrinter jsonPrinter = new JsonPrinter(new CitationFactory());
+    private JsonPrinter jsonPrinter = new JsonPrinter(
+            new CitationFactory(new CitationDataExtractor(), new StandardCitationFormatsConverter()));
 
     @Captor
     private ArgumentCaptor<DatasetDTO> datasetDtoCaptor;

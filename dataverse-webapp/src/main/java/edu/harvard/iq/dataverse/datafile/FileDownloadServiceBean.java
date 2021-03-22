@@ -6,12 +6,12 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.citation.Citation;
+import edu.harvard.iq.dataverse.citation.CitationData;
 import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
-import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.FileUtil.ApiBatchDownloadType;
 import edu.harvard.iq.dataverse.util.FileUtil.ApiDownloadType;
 import edu.harvard.iq.dataverse.util.FileUtil.FileCitationExtension;
+import org.apache.commons.io.IOUtils;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -32,11 +33,11 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
-import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -170,7 +171,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
     public void downloadCitationXML(FileMetadata fileMetadata, Dataset dataset, boolean direct) {
         downloadCitation(fileMetadata, dataset, direct, "attachment",
-                Citation::writeAsEndNoteCitation,
+                Citation::toEndNoteString,
                 (f, c) -> createFileNameString(f, c, "attachment", FileCitationExtension.ENDNOTE));
     }
 
@@ -188,7 +189,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
     public void downloadCitationRIS(FileMetadata fileMetadata, Dataset dataset, boolean direct) {
         downloadCitation(fileMetadata, dataset, direct, "application/download",
-                Citation::writeAsRISCitation,
+                Citation::toRISString,
                 (f, c) -> createFileNameString(f, c, "attachment", FileCitationExtension.RIS));
     }
 
@@ -207,7 +208,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     public void downloadCitationBibtex(FileMetadata fileMetadata, Dataset dataset, boolean direct) {
         downloadCitation(fileMetadata, dataset, direct,
                 "application/json", // FIXME: BibTeX isn't JSON. Firefox will try to parse it and report "SyntaxError".
-                Citation::writeAsBibtexCitation,
+                Citation::toBibtexString,
                 (f, c) -> createFileNameString(f, c, "inline", FileCitationExtension.BIBTEX));
     }
 
@@ -215,7 +216,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
     private void downloadCitation(FileMetadata fileMetadata, Dataset dataset, boolean direct,
                                   String contentType,
-                                  ThrowingBiConsumer<Citation, OutputStream, IOException> citationWriter,
+                                  Function<Citation, String> citationCreator,
                                   BiFunction<FileMetadata, Citation, String> fileNameCreator) {
         Citation citation = createCitation(fileMetadata, dataset, direct);
         FacesContext facesContext = FacesContext.getCurrentInstance();
@@ -225,7 +226,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
         try {
             ServletOutputStream outputStream = response.getOutputStream();
-            citationWriter.accept(citation, outputStream);
+            String citationText = citationCreator.apply(citation);
+            IOUtils.write(citationText, outputStream, StandardCharsets.UTF_8);
             outputStream.flush();
             facesContext.responseComplete();
         } catch (IOException ioe) {
@@ -241,10 +243,11 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
     private String createFileNameString(FileMetadata fileMetadata, Citation citation, String type,
                                         FileCitationExtension extension) {
+        CitationData citationData = citation.getCitationData();
         String nameEnd = (fileMetadata == null || fileMetadata.getLabel() == null)
                 ? extension.getExtension() // Dataset-level citation
-                : FileUtil.getCiteDataFileFilename(citation.getFileTitle(), extension); // Datafile-level citation
-        return type + ";" + "filename=" + citation.getPersistentId().asString() + nameEnd;
+                : FileUtil.getCiteDataFileFilename(citationData.getFileTitle(), extension); // Datafile-level citation
+        return type + ";" + "filename=" + citationData.getPersistentId().asString() + nameEnd;
     }
 
     // -------------------- INNER CLASSES --------------------
