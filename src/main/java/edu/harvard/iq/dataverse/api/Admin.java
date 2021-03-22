@@ -689,16 +689,16 @@ public class Admin extends AbstractApiBean {
 			boolean knowsExistingPassword = false;
 			BuiltinUser oldBuiltInUser = builtinUserService.findByUserName(builtInUserToConvert.getUserIdentifier());
 			if (oldBuiltInUser != null) {
+                                if (builtInUserToConvert.isDeactivated()) {
+                                        problems.add("builtin account has been deactivated");
+                                        return error(Status.BAD_REQUEST, problems.build().toString());
+                                }
 				String usernameOfBuiltinAccountToConvert = oldBuiltInUser.getUserName();
 				response.add("old username", usernameOfBuiltinAccountToConvert);
 				AuthenticatedUser authenticatedUser = authSvc.canLogInAsBuiltinUser(usernameOfBuiltinAccountToConvert,
 						password);
 				if (authenticatedUser != null) {
 					knowsExistingPassword = true;
-                                        if (builtInUserToConvert.isDeactivated()) {
-                                            problems.add("builtin account has been deactivated");
-                                            return error(Status.BAD_REQUEST, problems.build().toString());
-                                        }
 					AuthenticatedUser convertedUser = authSvc.convertBuiltInToShib(builtInUserToConvert, shibProviderId,
 							newUserIdentifierInLookupTable);
 					if (convertedUser != null) {
