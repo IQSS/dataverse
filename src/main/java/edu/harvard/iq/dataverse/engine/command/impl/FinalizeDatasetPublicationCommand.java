@@ -120,7 +120,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         theDataset.setModificationTime(getTimestamp());
         theDataset.setFileAccessRequest(theDataset.getLatestVersion().getTermsOfUseAndAccess().isFileAccessRequest());
         
-        updateFiles(getTimestamp(), ctxt);
+        //Use dataset pub date (which may not be the current date for migrated datasets)
+        updateFiles(theDataset.getPublicationDate(), ctxt);
         
         // 
         // TODO: Not sure if this .merge() is necessary here - ? 
