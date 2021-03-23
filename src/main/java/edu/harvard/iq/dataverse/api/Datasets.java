@@ -267,7 +267,7 @@ public class Datasets extends AbstractApiBean {
                 return error(Response.Status.NOT_FOUND, "A dataset with the persistentId " + persistentId + " could not be found.");
             }
             
-            ExportService instance = ExportService.getInstance(settingsSvc);
+            ExportService instance = ExportService.getInstance();
             
             InputStream is = instance.getExport(dataset, exporter);
            

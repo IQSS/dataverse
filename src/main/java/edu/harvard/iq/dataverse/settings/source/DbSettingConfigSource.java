@@ -23,7 +23,7 @@ public class DbSettingConfigSource implements ConfigSource {
     private static final ConcurrentHashMap<String, String> properties = new ConcurrentHashMap<>();
     private static Instant lastUpdate;
     private static SettingsServiceBean settingsSvc;
-    static final String PREFIX = "dataverse.settings.fromdb";
+    public static final String PREFIX = "dataverse.settings.fromdb";
     
     /**
      * Let the SettingsServiceBean be injected by DbSettingConfigHelper with PostConstruct
