@@ -787,6 +787,12 @@ public class DatasetServiceBean implements java.io.Serializable {
         return workflowComment;
     }
     
+    public void markWorkflowCommentAsRead(WorkflowComment workflowComment) {
+        workflowComment.setToBeShown(false);
+        em.merge(workflowComment);
+    }
+    
+    
     /**
      * This method used to throw CommandException, which was pretty pointless 
      * seeing how it's called asynchronously. As of v5.0 any CommanExceptiom 
