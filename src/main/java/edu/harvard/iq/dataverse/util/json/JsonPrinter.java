@@ -76,7 +76,6 @@ public class JsonPrinter {
     @EJB
     static SettingsServiceBean settingsService;
 
-    // Used in Tests
     public static void injectSettingsService(SettingsServiceBean ssb) {
             settingsService = ssb;
     }
