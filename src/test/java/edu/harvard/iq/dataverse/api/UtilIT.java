@@ -642,7 +642,22 @@ public class UtilIT {
         }
         return requestSpecification.post("/api/datasets/" + datasetId + "/add");
     }
-    
+
+    static Response uploadAuxFile(Long fileId, String pathToFile, String formatTag, String formatVersion, String mimeType, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .multiPart("file", new File(pathToFile), mimeType)
+                .post("/api/access/datafile/" + fileId + "/metadata/" + formatTag + "/" + formatVersion);
+        return response;
+    }
+
+    static Response downloadAuxFile(Long fileId, String formatTag, String formatVersion, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/access/datafile/" + fileId + "/metadata/" + formatTag + "/" + formatVersion);
+        return response;
+    }
+
     static Response getCrawlableFileAccess(String datasetId, String folderName, String apiToken) {
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken);

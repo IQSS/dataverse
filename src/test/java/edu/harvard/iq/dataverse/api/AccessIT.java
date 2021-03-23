@@ -181,22 +181,19 @@ public class AccessIT {
         System.out.println("Add aux file with update");
         String mimeType = null;
         String pathToFile = "scripts/search/data/tabular/1char";
-        Response response = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .multiPart("file", new File(pathToFile), mimeType)
-                // In the DP use case, the file is restricted.
-                .post("/api/access/datafile/" + tabFile3IdRestricted + "/metadata/dpJSON/v1");
-        response.prettyPrint();
-        assertEquals(200, response.getStatusCode());
+        String formatTag = "dpJSON";
+        String formatVersion = "v1";
+
+        Response uploadResponse = UtilIT.uploadAuxFile(tabFile3IdRestricted.longValue(), pathToFile, formatTag, formatVersion, mimeType, apiToken);
+        uploadResponse.prettyPrint();
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
         System.out.println("Downloading Aux file that was just added");
-        response = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/access/datafile/" + tabFile3IdRestricted + "/metadata/dpJSON/v1");
-        
-        String dataStr = response.prettyPrint();
-        assertEquals(dataStr,"a\n");
-        assertEquals(200, response.getStatusCode());       
-      }
+        Response downloadResponse = UtilIT.downloadAuxFile(tabFile3IdRestricted.longValue(), formatTag, formatVersion, apiToken);
+        downloadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String dataStr = downloadResponse.prettyPrint();
+        assertEquals(dataStr, "a\n");
+    }
     
     //This test does a lot of testing of non-original downloads as well
     @Test
