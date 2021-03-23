@@ -59,7 +59,7 @@ public class StoredOriginalFile {
             InputStream storedOriginalInputStream = storageIO.getAuxFileAsInputStream(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION);
             logger.fine("Opened stored original file as Aux " + StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION);
             
-            return new InputStreamIO(storedOriginalInputStream, storedOriginalSize, mimeType, fileName);
+            return new InputStreamIO(storedOriginalInputStream, storedOriginalSize, fileName, mimeType);
 
         } catch (IOException ioEx) {
             // The original file not saved, or could not be opened.
