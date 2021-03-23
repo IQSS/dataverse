@@ -500,6 +500,7 @@ public class MailServiceBean implements java.io.Serializable {
             case WORKFLOW_SUCCESS:
                 version =  (DatasetVersion) targetObject;
                 pattern = BundleUtil.getStringFromBundle("notification.email.workflow.success");
+                
                 if (comment == null) {
                     comment = BundleUtil.getStringFromBundle("notification.email.workflow.nullMessage");
                 }
@@ -509,10 +510,10 @@ public class MailServiceBean implements java.io.Serializable {
             case WORKFLOW_FAILURE:
                 version =  (DatasetVersion) targetObject;
                 pattern = BundleUtil.getStringFromBundle("notification.email.workflow.failure");
-                String[] paramArrayWorkflowFailure = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()), comment};
                 if (comment == null) {
                     comment = BundleUtil.getStringFromBundle("notification.email.workflow.nullMessage");
                 }
+                String[] paramArrayWorkflowFailure = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()), comment};
                 messageText += MessageFormat.format(pattern, paramArrayWorkflowFailure);
                 return messageText;
             case CREATEACC:
