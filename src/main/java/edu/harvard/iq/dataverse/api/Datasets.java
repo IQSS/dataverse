@@ -807,11 +807,16 @@ public class Datasets extends AbstractApiBean {
     
     @PUT
     @Path("{id}/editMetadata")
-    public Response editVersionMetadata(String jsonBody, @PathParam("id") String id, @QueryParam("replace") Boolean replace) throws WrappedResponse{
+    public Response editVersionMetadata(String jsonBody, @PathParam("id") String id, @QueryParam("replace") Boolean replace) {
 
         Boolean replaceData = replace != null;
-
-        DataverseRequest req = createDataverseRequest(findUserOrDie());
+        DataverseRequest req = null;
+        try {
+         req = createDataverseRequest(findUserOrDie());
+        } catch (WrappedResponse ex) {
+            logger.log(Level.SEVERE, "Edit metdata error: " + ex.getMessage(), ex);
+            return ex.getResponse();
+        }
 
         return processDatasetUpdate(jsonBody, id, req, replaceData);
     }
