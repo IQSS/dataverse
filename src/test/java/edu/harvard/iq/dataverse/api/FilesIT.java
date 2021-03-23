@@ -241,16 +241,12 @@ public class FilesIT {
 
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, junkJson, apiToken);
 
+        String parseError = BundleUtil.getStringFromBundle("file.addreplace.error.parsing");
+        
         addResponse.then().assertThat()
-                .body("status", equalTo(AbstractApiBean.STATUS_OK))
-                .body("data.files[0].categories", nullValue())
-                .body("data.files[0].dataFile.contentType", equalTo("image/png"))
-                .body("data.files[0].dataFile.description", equalTo(""))
-                .body("data.files[0].dataFile.tabularTags", nullValue())
-                .body("data.files[0].label", equalTo("dataverseproject.png"))
-                // not sure why description appears in two places
-                .body("data.files[0].description", equalTo(""))
-                .statusCode(OK.getStatusCode());
+        .statusCode(BAD_REQUEST.getStatusCode())
+        .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
+        .body("message", equalTo(parseError));
     }
     
     @Test
@@ -372,12 +368,25 @@ public class FilesIT {
                 .add("categories", Json.createArrayBuilder()
                         .add("Data")
                 );
+        
+        /*
+         * ToDo: When the dataset is still locked, the replaceFile call below returns an
+         * 'OK' status with an empty 'data' array The sleepForLock avoids that so this
+         * test tests the normal replace functionality directly, but a new test to check
+         * that, when the dataset is locked, the call fails instead of returning OK
+         * would be useful (along with making the replace call do that)
+         */
+        /*
+         * ToDo: make sleep time shorter for this? Add sleepForLock before subsequent
+         * calls as well? (Or is it only needed here because it is still locked from the
+         * publish call above?)
+         */
+
+        UtilIT.sleepForLock(datasetId, null, apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);
         Response replaceResp = UtilIT.replaceFile(origFileId.toString(), pathToFile2, json.build(), apiToken);
         
         msgt(replaceResp.prettyPrint());
         
-        String successMsg2 = BundleUtil.getStringFromBundle("file.addreplace.success.replace");
-
         replaceResp.then().assertThat()
                 /**
                  * @todo We have a need to show human readable success messages
@@ -621,6 +630,9 @@ public class FilesIT {
                 .add("categories", Json.createArrayBuilder()
                         .add("Data")
                 );
+        
+        UtilIT.sleepForLock(datasetId, null, apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);
+        
         Response replaceResp = UtilIT.replaceFile(origFileId.toString(), pathToFile2, json.build(), apiToken);
 
         replaceResp.prettyPrint();
@@ -733,14 +745,11 @@ public class FilesIT {
         String pathToFile2 = "src/main/webapp/resources/images/cc0.png";
         Response replaceResp = UtilIT.replaceFile(origFileId.toString(), pathToFile2, apiToken);
 
-        String errMsgUnpublished = BundleUtil.getStringFromBundle("file.addreplace.error.unpublished_file_cannot_be_replaced");
-        
         replaceResp.then().assertThat()
-               .statusCode(BAD_REQUEST.getStatusCode())
-               .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
-               .body("message", Matchers.startsWith(errMsgUnpublished))
-               ;
-       
+        .body("data.files[0].dataFile.contentType", equalTo("image/png"))
+        .body("data.files[0].label", equalTo("cc0.png"))
+        .statusCode(OK.getStatusCode());
+        
         // -------------------------
         // Publish dataset
         // -------------------------
@@ -903,10 +912,11 @@ public class FilesIT {
         Response replaceResp = UtilIT.replaceFile(origFileId.toString(), pathToFile2, jsonAsString, apiToken);
 
         msgt("replace resp: " + replaceResp.prettyPrint());
-
+        String parseError = BundleUtil.getStringFromBundle("file.addreplace.error.parsing");
         replaceResp.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("status", equalTo(AbstractApiBean.STATUS_OK));
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
+                .body("message", equalTo(parseError));
 
     }
 

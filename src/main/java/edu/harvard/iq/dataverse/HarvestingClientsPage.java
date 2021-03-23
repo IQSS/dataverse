@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -915,6 +916,12 @@ public class HarvestingClientsPage implements java.io.Serializable {
     private void createOaiSetsSelectItems(List<String> setNames) {
         setOaiSetsSelectItems(new ArrayList<>());
         if (setNames != null) {
+            
+            // Let's sort the list - otherwise, if the list is long enough, 
+            // using this pulldown menu may be very difficult:
+            
+            Collections.sort(setNames, String.CASE_INSENSITIVE_ORDER);
+            
             for (String set: setNames) {
                 if (!StringUtils.isEmpty(set)) {
                     getOaiSetsSelectItems().add(new SelectItem(set, set));
