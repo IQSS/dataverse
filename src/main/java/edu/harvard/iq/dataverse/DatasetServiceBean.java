@@ -795,6 +795,12 @@ public class DatasetServiceBean implements java.io.Serializable {
         return workflowComment;
     }
     
+    public void markWorkflowCommentAsRead(WorkflowComment workflowComment) {
+        workflowComment.setToBeShown(false);
+        em.merge(workflowComment);
+    }
+    
+    
     /**
      * This method used to throw CommandException, which was pretty pointless 
      * seeing how it's called asynchronously. As of v5.0 any CommanExceptiom 
@@ -971,7 +977,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             // (i.e., the metadata exports):
             StorageIO<Dataset> datasetSIO = DataAccess.getStorageIO(dataset);
             
-            for (String[] exportProvider : ExportService.getInstance(settingsService).getExportersLabels()) {
+            for (String[] exportProvider : ExportService.getInstance().getExportersLabels()) {
                 String exportLabel = "export_" + exportProvider[1] + ".cached";
                 try {
                     total += datasetSIO.getAuxObjectSize(exportLabel);
