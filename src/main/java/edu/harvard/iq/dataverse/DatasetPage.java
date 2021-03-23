@@ -1107,6 +1107,29 @@ public class DatasetPage implements java.io.Serializable {
         
     }
     
+    
+    //get a string to add to save success message
+    //depends on dataset state and user privleges
+    private String getReminderString(Dataset dataset) {
+
+        //dataset id is null before first save -- needed for create mode
+        if( dataset.getId() == null || !dataset.isReleased() ){
+            //messages for draft state.
+            if (canPublishDataset()){
+                return BundleUtil.getStringFromBundle("dataset.message.publish.remind.draft");
+            } else {
+                return BundleUtil.getStringFromBundle("dataset.message.submit.remind.draft");
+            }            
+        } else{
+            //messages for new version - post-publish
+            if (canPublishDataset()){
+                return BundleUtil.getStringFromBundle("dataset.message.publish.remind.version");
+            } else {
+                return BundleUtil.getStringFromBundle("dataset.message.submit.remind.version");
+            }           
+        }             
+    }   
+    
     //For a single file
     public String getComputeUrl(FileMetadata metadata) {
         SwiftAccessIO swiftObject = null;
@@ -1279,6 +1302,10 @@ public class DatasetPage implements java.io.Serializable {
     }
     public boolean canPublishDataverse() {
         return permissionsWrapper.canIssuePublishDataverseCommand(dataset.getOwner());
+    }
+    
+    public boolean canPublishDataset(){
+        return permissionsWrapper.canIssuePublishDatasetCommand(dataset);
     }
 
     public boolean canViewUnpublishedDataset() {
@@ -3347,6 +3374,8 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         }
         
+
+        
         // Use the Create or Update command to save the dataset: 
         Command<Dataset> cmd;
         Map<Long, String> deleteStorageLocations = null;
@@ -3450,7 +3479,7 @@ public class DatasetPage implements java.io.Serializable {
                     }
                     if (addFilesSuccess && dataset.getFiles().size() > 0) {
                         if (nNewFiles == dataset.getFiles().size()) {
-                            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess"));
+                            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess").concat(" ").concat(getReminderString(dataset)));
                         } else {
                             String partialSuccessMessage = BundleUtil.getStringFromBundle("dataset.message.createSuccess.partialSuccessSavingFiles");
                             partialSuccessMessage = partialSuccessMessage.replace("{0}", "" + dataset.getFiles().size() + "");
@@ -3460,26 +3489,26 @@ public class DatasetPage implements java.io.Serializable {
                     } else {
                         JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess.failedToSaveFiles"));
                     }
-                } else {
-                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess"));
+                } else {                    
+                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess").concat(" ").concat(getReminderString(dataset)));
                 }
             }
             if (editMode.equals(EditMode.METADATA)) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.metadataSuccess"));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.metadataSuccess").concat(" ").concat(getReminderString(dataset)));
             }
             if (editMode.equals(EditMode.LICENSE)) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.termsSuccess"));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.termsSuccess").concat(" ").concat(getReminderString(dataset)));
             }
             if (editMode.equals(EditMode.FILE)) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.filesSuccess"));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.filesSuccess").concat(" ").concat(getReminderString(dataset)));
             }
 
         } else {
             // must have been a bulk file update or delete:
             if (bulkFileDeleteInProgress) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileDeleteSuccess"));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileDeleteSuccess").concat(" ").concat(getReminderString(dataset)));
             } else {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileUpdateSuccess"));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileUpdateSuccess").concat(" ").concat(getReminderString(dataset)));
             }
         }
 
