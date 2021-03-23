@@ -179,6 +179,43 @@ Additional download options available for tabular data (found in the same drop-d
 - Data File Citation (currently in either RIS, EndNote XML, or BibTeX format); 
 - All of the above, as a zipped bundle. 
 
+Research Code
+-------------
+
+Code files - such as Stata, R, MATLAB, or Python files or scripts - have become a frequent addition to the research data deposited in Dataverse. Research code is typically developed by few researchers with the primary goal of obtaining results, while its reproducibility and reuse aspects are sometimes overlooked. Because several independent studies reported issues trying to rerun research code, please consider the following guidelines if your dataset contains code.
+
+The following are general guidelines applicable to all programming languages.
+
+- Create a README text file in the top-level directory to introduce your project. It should answer questions that reviewers or reusers would likely have, such as how to install and use your code. 
+- If possible, use free and open-source file formats and software to make your research outputs more reusable and accessible.
+- Make sure your code uses relative file paths instead of absolute (or full) file paths, as they can cause an execution error.
+- Consider testing your code in a clean environment before sharing it, as it could help you identify missing files or dependencies.
+- Consider providing notes (in the README) on the expected code outputs or adding tests in the code, which would ensure that its functionality is intact.
+
+General Guidelines
+******************
+
+Capturing code dependencies will help other researchers recreate the necessary runtime environment. Without it, your code will not be able to run correctly (or at all). 
+
+Many programing languages enable an automatic dependency capture. Here are a few examples:
+
+- If you are using the conda package manager, you can export your environment with the command ``conda env export > environment.yml``. For more information, see the `official documentation <https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#sharing-an-environment>`_.
+- Python has multiple conventions for capturing its dependencies, but probably the best-known one is with the ``requirements.txt`` file, which is created using the command ``pip freeze > requirements. txt``. Managing environments with ``pip`` is explained in the `official documentation <https://docs.python.org/3/tutorial/venv.html#managing-packages-with-pip>`_.
+- If you are using the R programming language, create a file called ``install.R``\ , and list all library dependencies that your code requires. This file should be executable in R to set up the environment. See also other strategies for capturing the environment proposed by RStudio in the `official documentation <https://environments.rstudio.com>`_.
+- In case you are using multiple programming languages or different versions of the same language, it would be best to use a containerization technology such as Docker. Create a Dockerfile that builds your environment (make sure to specify dependency versions) and deposit it with the rest of the files. Have a look at the `official Docker guide <https://docs.docker.com/language/python/build-images/>`_ for more information.
+
+We recommend taking a look at `Jupyter Binder's documentation <https://mybinder.readthedocs.io/en/latest/using/config_files.html#config-files>`_ for other configuration files that capture code dependencies. 
+
+Code Automation
+***************
+
+Finally, automating your code can be immensely helpful to the code and research reviewers. Here are a few options on how to automate your code.
+
+- A simple way to automate your code is using a bash script or Make. `Here is a detailed guide <https://the-turing-way.netlify.app/reproducible-research/make.html>`_ on how to use the Make build automation tool.
+- Consider using research workflow tools to automate your analysis. A popular workflow tool is called Common Workflow Language, and you can find more information about it `here <https://www.commonwl.org/user_guide/>`_.
+
+**Note:** Capturing code dependencies and automating your code will create new files in your directory. Make sure to include them when depositing your dataset.
+
 Astronomy (FITS)
 ----------------
 
