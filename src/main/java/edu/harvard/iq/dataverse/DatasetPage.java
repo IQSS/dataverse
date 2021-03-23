@@ -5464,7 +5464,7 @@ public class DatasetPage implements Serializable {
                 if (jo.containsKey("map-query"))
                     cvocMapQuery = jo.getString("map-query");
                 logger.fine("cvoc - map-query: " + cvocMapQuery);
-                String cvocJsUrl = "http://localhost/interface.js";
+                String cvocJsUrl = "/resources/js/cvoc-interface.js";
                 if (jo.containsKey("js-url"))
                     cvocJsUrl = jo.getString("js-url");
                 logger.fine("cvoc - js-url: " + cvocJsUrl);
