@@ -73,6 +73,14 @@ Some useful examples of search queries to define OAI sets:
 
   ``parentId:NNN``
 
+  where NNN is the database id of the Dataverse collection object (consult the Dataverse table of the SQL database used by the application to verify the database id).
+  
+  Note that this query does **not** provide datasets that are linked into the specified Dataverse collection.
+
+- A query to create a set to include the datasets from a specific Dataverse collection including datasets that have been deposited into other Dataverse collections but linked into the specified Dataverse collection: 
+
+  ``subtreePaths:"/NNN"``
+
   where NNN is the database id of the Dataverse collection object (consult the Dataverse table of the SQL database used by the application to verify the database id). 
 
 - A query to find all the dataset by a certain author: 
