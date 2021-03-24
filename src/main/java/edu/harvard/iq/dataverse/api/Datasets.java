@@ -1181,6 +1181,8 @@ public class Datasets extends AbstractApiBean {
                 LocalDateTime dateTime = JSONLDUtil.getDateTimeFrom(pubDate);
                 // dataset.getPublicationDateFormattedYYYYMMDD())
                 ds.setPublicationDate(Timestamp.valueOf(dateTime));
+                //Release User is only set in FinalizeDatasetPublicationCommand if the pub date is null, so set it here.
+                ds.setReleaseUser((AuthenticatedUser) user);
             } catch (Exception e) {
                 logger.fine(e.getMessage());
                 throw new BadRequestException("Unable to set publication date ("
