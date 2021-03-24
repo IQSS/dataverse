@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIOConstants;
 import edu.harvard.iq.dataverse.datafile.pojo.FileIntegrityCheckResult;
 import edu.harvard.iq.dataverse.datafile.pojo.FilesIntegrityReport;
 import edu.harvard.iq.dataverse.mail.EmailContent;
@@ -62,9 +63,11 @@ public class FileIntegrityChecker {
         List<DataFile> dataFiles = dataFileService.findAll();
 
         FilesIntegrityReport report = new FilesIntegrityReport();
-        report.setCheckedCount(dataFiles.size());
 
         for (DataFile dataFile:dataFiles) {
+            if (dataFile.isHarvested()) {
+                continue;
+            }
             FileIntegrityCheckResult checkResult = checkFileIntegrity(dataFile);
 
             if (!checkResult.isOK()) {
@@ -72,6 +75,8 @@ public class FileIntegrityChecker {
             } else if (checkResult == FileIntegrityCheckResult.OK_SKIPPED_CHECKSUM_VERIFICATION) {
                 report.incrementSkippedChecksumVerification();
             }
+
+            report.incrementCheckedCount();
         }
 
         EmailContent reportEmailContent = buildReportEmailContent(report);
@@ -89,26 +94,50 @@ public class FileIntegrityChecker {
     private FileIntegrityCheckResult checkFileIntegrity(DataFile dataFile) {
         try {
             StorageIO<DataFile> storageIO = dataAccess.getStorageIO(dataFile);
-            
-            if (!storageIO.exists() || storageIO.getSize() == 0) {
+
+            if (!existsInStorage(dataFile, storageIO)) {
                 return FileIntegrityCheckResult.NOT_EXIST;
             }
-            if (storageIO.getSize() != dataFile.getFilesize()) {
+            if (!haveSameFilesize(dataFile, storageIO)) {
                 return FileIntegrityCheckResult.DIFFERENT_SIZE;
             }
-            if (storageIO.isMD5CheckSupported() && dataFile.getChecksumType() == ChecksumType.MD5) {
-                if (!StringUtils.equals(storageIO.getMD5(), dataFile.getChecksumValue())) {
-                    return FileIntegrityCheckResult.DIFFERENT_CHECKSUM;
-                }
-            } else {
-                return FileIntegrityCheckResult.OK_SKIPPED_CHECKSUM_VERIFICATION;
+            
+            boolean withMd5Compare = storageIO.isMD5CheckSupported() && dataFile.getChecksumType() == ChecksumType.MD5;
+
+            if (withMd5Compare && !haveSameMd5(dataFile, storageIO)) {
+                return FileIntegrityCheckResult.DIFFERENT_CHECKSUM;
             }
-            return FileIntegrityCheckResult.OK;
+
+            return withMd5Compare ? FileIntegrityCheckResult.OK : FileIntegrityCheckResult.OK_SKIPPED_CHECKSUM_VERIFICATION;
             
         } catch (IOException e) {
             logger.info(e.getMessage());
             return FileIntegrityCheckResult.STORAGE_ERROR;
         }
+    }
+
+    private boolean existsInStorage(DataFile dataFile, StorageIO<DataFile> storageIO) throws IOException {
+        return dataFile.isTabularData()
+                ? storageIO.isAuxObjectCached(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION)
+                : storageIO.exists();
+    }
+
+    private boolean haveSameFilesize(DataFile dataFile, StorageIO<DataFile> storageIO) throws IOException {
+        long databaseFilesize = dataFile.isTabularData() ? dataFile.getOriginalFileSize() : dataFile.getFilesize();
+        long storageFilesize = dataFile.isTabularData()
+                ? storageIO.getAuxObjectSize(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION)
+                : storageIO.getSize();
+
+        return databaseFilesize == storageFilesize;
+    }
+
+    private boolean haveSameMd5(DataFile dataFile, StorageIO<DataFile> storageIO) throws IOException {
+        String databaseChecksum = dataFile.getChecksumValue();
+        String storageChecksum = dataFile.isTabularData()
+                ? storageIO.getAuxObjectMD5(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION)
+                : storageIO.getMD5();
+
+        return StringUtils.equals(databaseChecksum, storageChecksum);
     }
 
     private EmailContent buildReportEmailContent(FilesIntegrityReport report) {
@@ -144,4 +173,5 @@ public class FileIntegrityChecker {
 
         return new EmailContent(messageSubject, messageBodyBuilder.toString(), "");
     }
+
 }

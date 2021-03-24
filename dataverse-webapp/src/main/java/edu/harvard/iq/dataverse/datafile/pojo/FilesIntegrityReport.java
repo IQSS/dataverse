@@ -34,6 +34,10 @@ public class FilesIntegrityReport {
         suspicious.add(new FileIntegrityFail(dataFile, checkResult));
     }
 
+    public void incrementCheckedCount() {
+        ++checkedCount;
+    }
+
     public void incrementSkippedChecksumVerification() {
         ++skippedChecksumVerification;
     }

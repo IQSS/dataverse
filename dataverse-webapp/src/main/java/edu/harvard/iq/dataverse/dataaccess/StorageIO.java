@@ -142,6 +142,8 @@ public abstract class StorageIO<T extends DvObject> {
 
     public abstract String getMD5() throws IOException;
 
+    public abstract String getAuxObjectMD5(String auxItemTag) throws IOException;
+
     private InputStream in;
     private OutputStream out;
     protected Channel channel;

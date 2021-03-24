@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.dataaccess.StorageIOConstants;
 import edu.harvard.iq.dataverse.datafile.pojo.FileIntegrityCheckResult;
 import edu.harvard.iq.dataverse.datafile.pojo.FilesIntegrityReport;
 import edu.harvard.iq.dataverse.mail.EmailContent;
@@ -12,6 +13,9 @@ import edu.harvard.iq.dataverse.mail.MailService;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile.ChecksumType;
+import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -142,11 +146,53 @@ public class FileIntegrityCheckerTest {
     }
 
     @Test
+    public void checkFilesIntegrity__with_storage_aux_md5_different_than_datafile_md5() throws IOException {
+        // given
+        DataFile datafile1 = makeTabularDataFile(102L, ChecksumType.MD5, "md5hash1");
+
+        StorageIO<DataFile> datafileStorage1 = mockDataFileStorageIOWithAuxObject(true, 102L, true, "md5hash_other");
+
+        when(dataFileService.findAll()).thenReturn(Lists.newArrayList(datafile1));
+        when(dataAccess.getStorageIO(datafile1)).thenReturn(datafileStorage1);
+
+        // when
+        FilesIntegrityReport integrityReport = fileIntegrityChecker.checkFilesIntegrity();
+
+        // then
+        assertEquals(1, integrityReport.getCheckedCount());
+        assertEquals(0, integrityReport.getSkippedChecksumVerification());
+        assertEquals(1, integrityReport.getSuspicious().size());
+        assertEquals(FileIntegrityCheckResult.DIFFERENT_CHECKSUM, integrityReport.getSuspicious().get(0).getCheckResult());
+        assertEquals(datafile1, integrityReport.getSuspicious().get(0).getIntegrityFailFile());
+    }
+
+    @Test
     public void checkFilesIntegrity__with_storage_size_different_than_datafile_size() throws IOException {
         // given
         DataFile datafile1 = makeDataFile(102L, ChecksumType.MD5, "md5hash1");
 
         StorageIO<DataFile> datafileStorage1 = mockDataFileStorageIO(true, 10200L, false, "md5hash1");
+
+        when(dataFileService.findAll()).thenReturn(Lists.newArrayList(datafile1));
+        when(dataAccess.getStorageIO(datafile1)).thenReturn(datafileStorage1);
+
+        // when
+        FilesIntegrityReport integrityReport = fileIntegrityChecker.checkFilesIntegrity();
+
+        // then
+        assertEquals(1, integrityReport.getCheckedCount());
+        assertEquals(0, integrityReport.getSkippedChecksumVerification());
+        assertEquals(1, integrityReport.getSuspicious().size());
+        assertEquals(FileIntegrityCheckResult.DIFFERENT_SIZE, integrityReport.getSuspicious().get(0).getCheckResult());
+        assertEquals(datafile1, integrityReport.getSuspicious().get(0).getIntegrityFailFile());
+    }
+
+    @Test
+    public void checkFilesIntegrity__with_storage_aux_size_different_than_datafile_tabular_size() throws IOException {
+        // given
+        DataFile datafile1 = makeTabularDataFile(102L, ChecksumType.MD5, "md5hash1");
+
+        StorageIO<DataFile> datafileStorage1 = mockDataFileStorageIOWithAuxObject(true, 10200L, false, "md5hash1");
 
         when(dataFileService.findAll()).thenReturn(Lists.newArrayList(datafile1));
         when(dataAccess.getStorageIO(datafile1)).thenReturn(datafileStorage1);
@@ -184,6 +230,27 @@ public class FileIntegrityCheckerTest {
     }
 
     @Test
+    public void checkFilesIntegrity__with_not_existing_storage_tabular_file() throws IOException {
+        // given
+        DataFile datafile1 = makeTabularDataFile(102L, ChecksumType.MD5, "md5hash1");
+
+        StorageIO<DataFile> datafileStorage1 = mockDataFileStorageIOWithAuxObject(false, 0L, false, null);
+
+        when(dataFileService.findAll()).thenReturn(Lists.newArrayList(datafile1));
+        when(dataAccess.getStorageIO(datafile1)).thenReturn(datafileStorage1);
+
+        // when
+        FilesIntegrityReport integrityReport = fileIntegrityChecker.checkFilesIntegrity();
+
+        // then
+        assertEquals(1, integrityReport.getCheckedCount());
+        assertEquals(0, integrityReport.getSkippedChecksumVerification());
+        assertEquals(1, integrityReport.getSuspicious().size());
+        assertEquals(FileIntegrityCheckResult.NOT_EXIST, integrityReport.getSuspicious().get(0).getCheckResult());
+        assertEquals(datafile1, integrityReport.getSuspicious().get(0).getIntegrityFailFile());
+    }
+
+    @Test
     public void checkFilesIntegrity__with_error_obtaining_storage() throws IOException {
         // given
         DataFile datafile1 = makeDataFile(102L, ChecksumType.MD5, "md5hash1");
@@ -200,6 +267,23 @@ public class FileIntegrityCheckerTest {
         assertEquals(1, integrityReport.getSuspicious().size());
         assertEquals(FileIntegrityCheckResult.STORAGE_ERROR, integrityReport.getSuspicious().get(0).getCheckResult());
         assertEquals(datafile1, integrityReport.getSuspicious().get(0).getIntegrityFailFile());
+    }
+
+    @Test
+    public void checkFilesIntegrity__with_harvested_data_file() throws IOException {
+        // given
+        DataFile datafile1 = makeDataFile(102L, ChecksumType.MD5, "md5hash1");
+        datafile1.getOwner().setHarvestedFrom(new HarvestingClient());
+
+        when(dataFileService.findAll()).thenReturn(Lists.newArrayList(datafile1));
+
+        // when
+        FilesIntegrityReport integrityReport = fileIntegrityChecker.checkFilesIntegrity();
+
+        // then
+        assertEquals(0, integrityReport.getCheckedCount());
+        assertEquals(0, integrityReport.getSkippedChecksumVerification());
+        assertEquals(0, integrityReport.getSuspicious().size());
     }
 
 
@@ -253,6 +337,20 @@ public class FileIntegrityCheckerTest {
         datafile1.setFilesize(size);
         datafile1.setChecksumType(checksumType);
         datafile1.setChecksumValue(checksumValue);
+        datafile1.setStorageIdentifier("");
+        datafile1.setOwner(new Dataset());
+        return datafile1;
+    }
+
+    private DataFile makeTabularDataFile(long originalSize, ChecksumType checksumType, String checksumValue) {
+        DataFile datafile1 = MocksFactory.makeDataFile();
+        datafile1.setDataTable(new DataTable());
+        datafile1.getDataTable().setOriginalFileSize(originalSize);
+
+        datafile1.setChecksumType(checksumType);
+        datafile1.setChecksumValue(checksumValue);
+        datafile1.setStorageIdentifier("");
+        datafile1.setOwner(new Dataset());
         return datafile1;
     }
 
@@ -262,6 +360,15 @@ public class FileIntegrityCheckerTest {
         when(storageIO.getSize()).thenReturn(size);
         when(storageIO.isMD5CheckSupported()).thenReturn(isMD5Supported);
         when(storageIO.getMD5()).thenReturn(md5);
+        return storageIO;
+    }
+
+    private StorageIO<DataFile> mockDataFileStorageIOWithAuxObject(boolean exists, long size, boolean isMD5Supported, String md5) throws IOException {
+        StorageIO<DataFile> storageIO = mock(StorageIO.class);
+        when(storageIO.isAuxObjectCached(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION)).thenReturn(exists);
+        when(storageIO.getAuxObjectSize(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION)).thenReturn(size);
+        when(storageIO.isMD5CheckSupported()).thenReturn(isMD5Supported);
+        when(storageIO.getAuxObjectMD5(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION)).thenReturn(md5);
         return storageIO;
     }
 }

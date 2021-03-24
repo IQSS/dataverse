@@ -543,7 +543,19 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         try {
             objectMetadata = s3.getObjectMetadata(bucketName, key);
         } catch (SdkClientException sce) {
-            throw new IOException("Cannot get S3 object " + key + " (" + sce.getMessage() + ")");
+            throw new IOException("Cannot get S3 object " + key + " (" + sce.getMessage() + ")", sce);
+        }
+        
+        return objectMetadata.getUserMetadata().get(MD5_METADATA_KEY);
+    }
+
+    @Override
+    public String getAuxObjectMD5(String auxItemTag) throws IOException {
+        ObjectMetadata objectMetadata;
+        try {
+            objectMetadata = s3.getObjectMetadata(bucketName, getDestinationKey(auxItemTag));
+        } catch (SdkClientException sce) {
+            throw new IOException("Cannot get S3 object " + key + " (" + sce.getMessage() + ")", sce);
         }
         
         return objectMetadata.getUserMetadata().get(MD5_METADATA_KEY);

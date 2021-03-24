@@ -525,4 +525,9 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
         throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
     }
 
+    @Override
+    public String getAuxObjectMD5(String auxItemTag) throws IOException {
+        throw new UnsupportedDataAccessOperationException("InputStreamIO: this method is not supported in this DataAccess driver.");
+    }
+
 }
