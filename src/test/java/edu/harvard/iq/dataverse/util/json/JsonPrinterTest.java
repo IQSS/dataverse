@@ -201,7 +201,7 @@ public class JsonPrinterTest {
         fields.add(datasetContactField);
 
         SettingsServiceBean nullServiceBean = null;
-        JsonPrinter.setSettingsService(nullServiceBean);
+        JsonPrinter.injectSettingsService(nullServiceBean);
         
         JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
@@ -242,7 +242,7 @@ public class JsonPrinterTest {
         datasetContactField.setDatasetFieldCompoundValues(vals);
         fields.add(datasetContactField);
 
-        JsonPrinter.setSettingsService(new MockSettingsSvc());
+        JsonPrinter.injectSettingsService(new MockSettingsSvc());
 
         JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
