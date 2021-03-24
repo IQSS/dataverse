@@ -246,7 +246,7 @@ The fully expanded example above (without environment variables) looks like this
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST https://demo.dataverse.org/api/dataverses/root/roles --upload-file roles.json
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -H "Content-type:application/json" https://demo.dataverse.org/api/dataverses/root/roles --upload-file roles.json
 
 Where ``roles.json`` looks like this::
 
@@ -258,6 +258,8 @@ Where ``roles.json`` looks like this::
       "AddDataset"
     ]
   } 
+
+.. note:: Only a Dataverse installation account with superuser permissions is allowed to create roles in a Dataverse Collection.
 
 .. _list-role-assignments-on-a-dataverse-api:
 
@@ -2418,9 +2420,35 @@ Roles
 Create a New Role in a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Creates a new role in Dataverse collection object whose Id is ``dataverseIdtf`` (that's an id/alias)::
+Creates a new role under Dataverse collection ``id``. Needs a json file with the role description:
 
-  POST http://$SERVER/api/roles?dvo=$dataverseIdtf&key=$apiKey
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H X-Dataverse-key:$API_TOKEN -X POST -H "Content-type:application/json" $SERVER_URL/api/dataverses/$ID/roles --upload-file roles.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -H "Content-type:application/json" https://demo.dataverse.org/api/dataverses/root/roles --upload-file roles.json
+
+Where ``roles.json`` looks like this::
+
+  {
+    "alias": "sys1",
+    "name": “Restricted System Role”,
+    "description": “A person who may only add datasets.”,
+    "permissions": [
+      "AddDataset"
+    ]
+  } 
+
+.. note:: Only a Dataverse installation account with superuser permissions is allowed to create roles in a Dataverse Collection.
+
 
 Show Role
 ~~~~~~~~~
@@ -2432,9 +2460,38 @@ Shows the role with ``id``::
 Delete Role
 ~~~~~~~~~~~
 
-Deletes the role with ``id``::
+A curl example using an ``ID``
 
-  DELETE http://$SERVER/api/roles/$id
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE $SERVER_URL/api/roles/$ID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/roles/24
+
+A curl example using a Role alias ``ALIAS``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ALIAS=roleAlias
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/roles/:alias?alias=$ALIAS"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/roles/:alias?alias=roleAlias
+
 
 Explicit Groups
 ---------------
@@ -2874,6 +2931,41 @@ Create Global Role
 Creates a global role in the Dataverse installation. The data POSTed are assumed to be a role JSON. ::
 
     POST http://$SERVER/api/admin/roles
+    
+Delete Global Role
+~~~~~~~~~~~~~~~~~~
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE $SERVER_URL/api/admin/roles/$ID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/admin/roles/24
+
+A curl example using a Role alias ``ALIAS``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ALIAS=roleAlias
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/admin/roles/:alias?alias=$ALIAS"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/admin/roles/:alias?alias=roleAlias    
 
 List Users
 ~~~~~~~~~~
