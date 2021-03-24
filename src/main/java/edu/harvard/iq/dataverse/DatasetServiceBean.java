@@ -1025,6 +1025,31 @@ public class DatasetServiceBean implements java.io.Serializable {
     @Asynchronous
     public void globusAsyncCall(String jsonData, ApiToken token, Dataset dataset, String httpRequestUrl) throws ExecutionException, InterruptedException {
 
+        String logTimestamp = logFormatter.format(new Date());
+        Logger globusLogger = Logger.getLogger("edu.harvard.iq.dataverse.upload.client.DatasetServiceBean." + "GlobusUpload" + logTimestamp);
+
+        //Logger.getLogger(DatasetServiceBean.class.getCanonicalName());
+        //Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.DatasetServiceBean." + "ExportAll" + logTimestamp);
+        String logFileName = "../logs" + File.separator + "globus_" + logTimestamp + ".log";
+        FileHandler fileHandler;
+        boolean fileHandlerSuceeded;
+        try {
+            fileHandler = new FileHandler(logFileName);
+            globusLogger.setUseParentHandlers(false);
+            fileHandlerSuceeded = true;
+        } catch (IOException | SecurityException ex) {
+            Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
+            return;
+        }
+
+        if (fileHandlerSuceeded) {
+            globusLogger.addHandler(fileHandler);
+        } else {
+            globusLogger = logger;
+        }
+
+        globusLogger.info("Starting an globusAsyncCall");
+
         String datasetIdentifier = dataset.getStorageIdentifier();
 
         String storageType = datasetIdentifier.substring(0, datasetIdentifier.indexOf("://") +3);
@@ -1032,8 +1057,6 @@ public class DatasetServiceBean implements java.io.Serializable {
 
 
         Thread.sleep(5000);
-
-
 
         JsonObject jsonObject = null;
         try (StringReader rdr = new StringReader(jsonData)) {
@@ -1046,7 +1069,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         String taskIdentifier = jsonObject.getString("taskIdentifier");
 
         //  globus task status check
-        globusStatusCheck(taskIdentifier);
+        globusStatusCheck(taskIdentifier,globusLogger);
 
 
         try {
@@ -1071,7 +1094,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                 }
 
                 // calculate checksum, mimetype
-                JsonObject newfilesJsonObject = calculateMissingMetadataFields(inputList);
+                JsonObject newfilesJsonObject = calculateMissingMetadataFields(inputList,globusLogger);
                 JsonArray newfilesJsonArray = newfilesJsonObject.getJsonArray("files");
 
                 JsonArrayBuilder jsonSecondAPI = Json.createArrayBuilder() ;
@@ -1097,6 +1120,8 @@ public class DatasetServiceBean implements java.io.Serializable {
 
                 String newjsonData = jsonSecondAPI.build().toString();
 
+                globusLogger.info("Generated new JsonData with calculated values");
+
                 ProcessBuilder processBuilder = new ProcessBuilder();
 
                 String command = "curl -H \"X-Dataverse-key:" + token.getTokenString() + "\" -X POST "+httpRequestUrl+"/api/datasets/:persistentId/addFiles?persistentId=doi:" + datasetIdentifier + " -F jsonData='" + newjsonData  + "'";
@@ -1113,6 +1138,13 @@ public class DatasetServiceBean implements java.io.Serializable {
                     }
                 }).start();
 
+            }
+
+
+            globusLogger.info("Finished export-all job.");
+
+            if (fileHandlerSuceeded) {
+                fileHandler.close();
             }
 
         } catch (Exception e) {
@@ -1138,12 +1170,13 @@ public class DatasetServiceBean implements java.io.Serializable {
     Executor executor = Executors.newFixedThreadPool(10);
 
 
-    private Boolean globusStatusCheck(String taskId)
+    private Boolean globusStatusCheck(String taskId, Logger globusLogger)
     {
         boolean success = false;
         do {
             try {
-                logger.info(" sleep before globus transfer check");
+
+                globusLogger.info("checking globus transfer task   " + taskId);
                 Thread.sleep(50000);
 
                 String basicGlobusToken = settingsService.getValueForKey(SettingsServiceBean.Key.BasicGlobusToken, "");
@@ -1157,16 +1190,17 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         } while (!success);
 
-        logger.info(" globus transfer  completed ");
+
+        globusLogger.info("globus transfer task completed successfully");
 
         return success;
     }
 
 
-    public JsonObject calculateMissingMetadataFields(List<String> inputList) throws InterruptedException, ExecutionException, IOException {
+    public JsonObject calculateMissingMetadataFields(List<String> inputList, Logger globusLogger) throws InterruptedException, ExecutionException, IOException {
 
         List<CompletableFuture<fileDetailsHolder>> hashvalueCompletableFutures =
-                inputList.stream().map(iD -> calculateDetailsAsync(iD)).collect(Collectors.toList());
+                inputList.stream().map(iD -> calculateDetailsAsync(iD,globusLogger)).collect(Collectors.toList());
 
         CompletableFuture<Void> allFutures = CompletableFuture
                 .allOf(hashvalueCompletableFutures.toArray(new CompletableFuture[hashvalueCompletableFutures.size()]));
@@ -1189,8 +1223,9 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     }
 
-    private CompletableFuture<fileDetailsHolder> calculateDetailsAsync(String id) {
-        logger.info(" calcualte additional details for these globus id  ==== " + id);
+    private CompletableFuture<fileDetailsHolder> calculateDetailsAsync(String id, Logger globusLogger) {
+        //logger.info(" calcualte additional details for these globus id  ==== " + id);
+
         return CompletableFuture.supplyAsync( () -> {
             try {
                 Thread.sleep(2000);
@@ -1198,7 +1233,7 @@ public class DatasetServiceBean implements java.io.Serializable {
                 e.printStackTrace();
             }
             try {
-                return ( calculateDetails(id) );
+                return ( calculateDetails(id,globusLogger) );
             } catch (InterruptedException | IOException e) {
                 e.printStackTrace();
             }
@@ -1209,13 +1244,17 @@ public class DatasetServiceBean implements java.io.Serializable {
     }
 
 
-    private fileDetailsHolder calculateDetails(String id) throws InterruptedException, IOException {
+    private fileDetailsHolder calculateDetails(String id, Logger globusLogger) throws InterruptedException, IOException {
         int count = 0;
         String checksumVal = "";
         InputStream in = null;
         String fileId = id.split("IDsplit")[0];
         String fullPath = id.split("IDsplit")[1];
         String fileName = id.split("IDsplit")[2];
+
+        // what if the file doesnot exists in s3
+        // what if checksum calculation failed
+
         do {
             try {
                 StorageIO<DvObject> dataFileStorageIO = DataAccess.getDirectStorageIO(fullPath);
@@ -1232,8 +1271,10 @@ public class DatasetServiceBean implements java.io.Serializable {
         } while (count < 3);
 
 
-        return  new fileDetailsHolder(fileId, checksumVal, calculatemime(fileName));
-                //getBytes(in)+"" );
+        String mimeType = calculatemime(fileName);
+        globusLogger.info("File Details " + fileId  + " checksum = "+ checksumVal + " mimeType = " + mimeType);
+        return  new fileDetailsHolder(fileId, checksumVal,mimeType);
+        //getBytes(in)+"" );
         // calculatemime(fileName));
     }
 

@@ -2801,6 +2801,8 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
 
         /*
+
+        x-forwarded-proto
         String requestUrl =  httpRequest.getProtocol().toLowerCase().split("/")[0]+"://"+httpRequest.getServerName();
 
         if( httpRequest.getServerPort() > 0 )
@@ -2810,11 +2812,14 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         */
 
 
-        String requestUrl = "https://dvdev.scholarsportal.info" ;
-        //String requestUrl = "http://localhost:8080" ;
+        //String requestUrl = "https://dvdev.scholarsportal.info" ;
+        String requestUrl = "http://localhost:8080" ;
 
         // Async Call
         datasetService.globusAsyncCall(  jsonData , token , dataset , requestUrl);
+
+        userNotificationService.sendNotification((AuthenticatedUser) authUser, new Timestamp(new Date().getTime()), UserNotification.Type.CHECKSUMFAIL, dataset.getId());
+
 
         return ok("Globus Task successfully completed ");
     }
