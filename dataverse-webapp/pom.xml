@@ -500,19 +500,19 @@
             <version>6.0</version>
         </dependency>
         <dependency>
-            <groupId>edu.harvard.hul.ois.jhove</groupId>
-            <artifactId>jhove</artifactId>
-            <version>1.11.0</version>
+            <groupId>org.openpreservation.jhove</groupId>
+            <artifactId>jhove-core</artifactId>
+            <version>${jhove.version}</version>
         </dependency>
         <dependency>
-            <groupId>edu.harvard.hul.ois.jhove</groupId>
-            <artifactId>jhove-module</artifactId>
-            <version>1.11.0</version>
+            <groupId>org.openpreservation.jhove</groupId>
+            <artifactId>jhove-modules</artifactId>
+            <version>${jhove.version}</version>
         </dependency>
         <dependency>
-            <groupId>edu.harvard.hul.ois.jhove</groupId>
-            <artifactId>jhove-handler</artifactId>
-            <version>1.11.0</version>
+            <groupId>org.openpreservation.jhove</groupId>
+            <artifactId>jhove-ext-modules</artifactId>
+            <version>${jhove.version}</version>
         </dependency>
 
         <!-- EXPERIMENTAL: -->

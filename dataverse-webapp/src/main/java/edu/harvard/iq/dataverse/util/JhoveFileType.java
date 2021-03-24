@@ -21,13 +21,14 @@ package edu.harvard.iq.dataverse.util;
 
 import edu.harvard.hul.ois.jhove.App;
 import edu.harvard.hul.ois.jhove.JhoveBase;
+import edu.harvard.hul.ois.jhove.JhoveException;
 import edu.harvard.hul.ois.jhove.Module;
 import edu.harvard.hul.ois.jhove.RepInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Iterator;
-import java.util.logging.Logger;
 
 /**
  * This is based on Akio Sone's implementation from DVN v2-3:
@@ -39,154 +40,21 @@ import java.util.logging.Logger;
  * @author landreev
  */
 public class JhoveFileType implements java.io.Serializable {
-    private static final Logger logger = Logger.getLogger(JhoveFileType.class.getCanonicalName());
-
-
-    public JhoveFileType() {
-
-    }
-
-
-    public static String getJhoveConfigFile() {
-        return Thread.currentThread()
-                .getContextClassLoader()
-                .getResource("jhove/jhove.conf").getPath();
-    }
+    private static final Logger logger = LoggerFactory.getLogger(JhoveFileType.class);
 
     private static final int[] ORIGINAL_RELEASE_DATE = {2013, 8, 30};
     private static final String ORIGINAL_COPR_RIGHTS = "Copyright"
             + "2004-2007 by the President and Fellows of Harvard College. "
             + "Released under the GNU Lesser General Public License.";
 
-    /**
-     * A method that returns Jhove's RepInfo
-     */
 
-    public RepInfo checkFileType(File file) {
-        RepInfo info = null;
-        boolean DEBUG = false;
-
-        try {
-            // initialize the application spec object
-            // name, release number, build date, usage, Copyright infor
-            App jhoveApp = new App("Jhove", "1.11",
-                                   ORIGINAL_RELEASE_DATE, "Java JhoveFileType",
-                                   ORIGINAL_COPR_RIGHTS);
-
-            //String configFile = JhoveBase.getConfigFileFromProperties();
-            String saxClass = JhoveBase.getSaxClassFromProperties();
-
-            String configFile = getJhoveConfigFile();
-            logger.fine("config file: " + configFile);
-            if (configFile == null) {
-                logger.info("Called getJhoveConfigFile but the result was null! Configuring JHOVE is highly recommended to determine file types.");
-            }
-
-            // create an instance of jhove engine
-            JhoveBase jb = new JhoveBase();
-            if (DEBUG) {
-                jb.setLogLevel("INFO");
-            } else {
-                jb.setLogLevel("SEVERE");
-            }
-            jb.init(configFile, saxClass);
-
-            jb.setEncoding("utf-8"); // encoding
-            jb.setTempDirectory("/tmp");
-            jb.setBufferSize(131072); // bufferSize
-
-            jb.setChecksumFlag(false); // -s option
-            jb.setShowRawFlag(false);  // -r option 
-            jb.setSignatureFlag(true); // -k option
-
-            // String moduleName = null;
-            Module module = jb.getModule(null);
-
-            if (DEBUG) {
-                if (module != null) {
-                    logger.fine("Module " + module.getName());
-                } else {
-                    logger.fine("module is null!");
-                }
-            }
-
-            if (DEBUG) {
-                logger.fine("file name=" + file.getAbsolutePath());
-            }
-
-            // get a RepInfo instance
-            if (file.exists() && file.isFile() && (file.length() > 0L)) {
-                //info = jb.processRepInfo(jhoveApp, module, file);
-                info = new RepInfo(file.getAbsolutePath());
-                info.setSize(file.length());
-                if (module != null) {
-                    if (!jb.processFile(jhoveApp, module, false, file, info)) {
-                        info = null;
-                    } else {
-                        if (DEBUG) {
-                            logger.fine("mime type (module specified above)=" + info.getMimeType());
-                        }
-                    }
-                } else {
-                    /*
-                     * Invoke all modules until one returns well-formed. If a
-                     * module doesn't know how to validate, we don't want to
-                     * throw arbitrary files at it, so we'll skip it.
-                     */
-                    //Iterator iter = _moduleList.iterator();
-                    Iterator<Module> iter = jb.getModuleList().iterator();
-                    while (iter.hasNext()) {
-                        Module mod = iter.next();
-                        RepInfo infc = (RepInfo) info.clone();
-
-                        if (mod.hasFeature("edu.harvard.hul.ois.jhove.canValidate")) {
-                            if (DEBUG) {
-                                logger.fine("Trying to apply Jhove module " + mod.getName());
-                            }
-                            try {
-                                if (!jb.processFile(jhoveApp, mod, false, file, infc)) {
-                                    continue;
-                                }
-                                if (infc.getWellFormed() == RepInfo.TRUE) {
-                                    info.copy(infc);
-                                    break;
-                                } else {
-                                    // We want to know what modules matched the
-                                    // signature, so we force the sigMatch
-                                    // property
-                                    // to be persistent.
-                                    info.setSigMatch(infc.getSigMatch());
-                                }
-                            } catch (Exception e) {
-                                /*
-                                 * The assumption is that in trying to analyze
-                                 * the wrong type of file, the module may go off
-                                 * its track and throw an exception, so we just
-                                 * continue on to the next module.
-                                 */
-                                continue;
-                            }
-                        }
-                    }
-                }
-            } else {
-                logger.warning("Jhove: the specified file does not exist or not a file or empty");
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return info;
-    }
+    // -------------------- LOGIC --------------------
 
     /**
      * A convenience method that returns the value of the mime type tag only
      */
-
     public String getFileMimeType(File file) {
         String mimeType = null;
-        boolean DEBUG = false;
 
         if (file.exists() && file.isFile() && (file.length() > 0L)) {
             RepInfo info = checkFileType(file);
@@ -196,5 +64,90 @@ public class JhoveFileType implements java.io.Serializable {
         }
 
         return mimeType;
+    }
+
+    // -------------------- PRIVATE --------------------
+
+    /**
+     * A method that returns Jhove's RepInfo
+     */
+    private RepInfo checkFileType(File file) {
+        RepInfo info = null;
+
+        try {
+            App jhoveApp = createJhoveApp();
+            JhoveBase jb = createJhoveBase();
+
+            // get a RepInfo instance
+            info = new RepInfo(file.getAbsolutePath());
+            info.setSize(file.length());
+
+            /*
+             * Invoke all modules until one returns well-formed. If a
+             * module doesn't know how to validate, we don't want to
+             * throw arbitrary files at it, so we'll skip it.
+             */
+            Iterator<Module> iter = jb.getModuleList().iterator();
+            while (iter.hasNext()) {
+                Module mod = iter.next();
+                RepInfo infc = (RepInfo) info.clone();
+
+                if (mod.hasFeature("edu.harvard.hul.ois.jhove.canValidate")) {
+                    try {
+                        if (!jb.processFile(jhoveApp, mod, false, file, infc)) {
+                            continue;
+                        }
+                        if (infc.getWellFormed() == RepInfo.TRUE) {
+                            info.copy(infc);
+                            break;
+                        } else {
+                            // We want to know what modules matched the
+                            // signature, so we force the sigMatch
+                            // property
+                            // to be persistent.
+                            info.setSigMatch(infc.getSigMatch());
+                        }
+                    } catch (Exception e) {
+                        /*
+                         * The assumption is that in trying to analyze
+                         * the wrong type of file, the module may go off
+                         * its track and throw an exception, so we just
+                         * continue on to the next module.
+                         */
+                        continue;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Unable to detect file type using jhove", e);
+        }
+        return info;
+    }
+    
+    private App createJhoveApp() {
+        // initialize the application spec object
+        // name, release number, build date, usage, Copyright infor
+        return new App("Jhove", "1.20.1",
+                               ORIGINAL_RELEASE_DATE, "Java JhoveFileType",
+                               ORIGINAL_COPR_RIGHTS);
+    }
+
+    private JhoveBase createJhoveBase() throws JhoveException {
+        String configFile = JhoveConfigurationInitializer.JHOVE_CONFIG_PATH;
+
+        // create an instance of jhove engine
+        JhoveBase jb = new JhoveBase();
+        jb.setLogLevel("SEVERE");
+        jb.init(configFile, null);
+
+        jb.setEncoding("utf-8"); // encoding
+        jb.setTempDirectory("/tmp");
+        jb.setBufferSize(131072); // bufferSize
+
+        jb.setChecksumFlag(false); // -s option
+        jb.setShowRawFlag(false);  // -r option 
+        jb.setSignatureFlag(true); // -k option
+
+        return jb;
     }
 }

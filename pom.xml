@@ -39,6 +39,7 @@
         <jackson.version>2.5.1</jackson.version>
         <jaxb.version>2.3.0</jaxb.version>
         <jersey.version>2.21</jersey.version>
+        <jhove.version>1.20.1</jhove.version>
         <postgresql.version>42.2.11</postgresql.version>
         <slf4j.version>1.7.7</slf4j.version>
         <spring.version>4.1.9.RELEASE</spring.version>
