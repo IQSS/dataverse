@@ -173,13 +173,13 @@ public class SettingsWrapper implements java.io.Serializable {
     public String getSupportTeamName() {
         String systemEmail = getValueForKey(SettingsServiceBean.Key.SystemEmail);
         InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);
-        return BrandingUtil.getSupportTeamName(systemAddress, dataverseService.findRootDataverse().getName());
+        return BrandingUtil.getSupportTeamName(systemAddress);
     }
     
     public String getSupportTeamEmail() {
         String systemEmail = getValueForKey(SettingsServiceBean.Key.SystemEmail);
         InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);        
-        return BrandingUtil.getSupportTeamEmailAddress(systemAddress) != null ? BrandingUtil.getSupportTeamEmailAddress(systemAddress) : BrandingUtil.getSupportTeamName(systemAddress, dataverseService.findRootDataverse().getName());
+        return BrandingUtil.getSupportTeamEmailAddress(systemAddress) != null ? BrandingUtil.getSupportTeamEmailAddress(systemAddress) : BrandingUtil.getSupportTeamName(systemAddress);
     }
     
     public Integer getUploadMethodsCount() {

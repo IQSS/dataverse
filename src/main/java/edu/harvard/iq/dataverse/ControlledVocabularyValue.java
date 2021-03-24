@@ -100,7 +100,7 @@ public class ControlledVocabularyValue implements Serializable  {
         this.datasetFieldType = datasetFieldType;
     }
   
-    @OneToMany(mappedBy = "controlledVocabularyValue", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany(mappedBy = "controlledVocabularyValue", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval=true)
     private Collection<ControlledVocabAlternate> controlledVocabAlternates = new ArrayList<>();
 
     public Collection<ControlledVocabAlternate> getControlledVocabAlternates() {
