@@ -782,8 +782,8 @@ public class JsonPrinter {
             .add("id", l.getId())
             .add("name", l.getName())
             .add("shortDescription", l.getShortDescription())
-            .add("uri", l.getUri())
-            .add("iconUrl", l.getIconUrl())
+            .add("uri", l.getUri().toString())
+            .add("iconUrl", l.getIconUrl().toString())
             .add("active", l.isActive());
     }
         

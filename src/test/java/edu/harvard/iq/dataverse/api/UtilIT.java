@@ -2540,27 +2540,51 @@ public class UtilIT {
         return getLicensesResponse;
     }
     
-    static Response getLicense(Long id) {
+    static Response getLicenseById(Long id) {
         
         Response getLicenseResponse = given()               
-                .get("/api/admin/licenses/"+id.toString());
+                .get("/api/admin/licenses/id/"+id.toString());
         return getLicenseResponse;
     }
     
-    static Response updateLicense(String pathToJsonFile, Long id) {
+    static Response getLicenseByName(String name) {
+        
+        Response getLicenseResponse = given()               
+                .get("/api/admin/licenses/name/"+name);
+        return getLicenseResponse;
+    }
+    
+    static Response updateLicenseById(String pathToJsonFile, Long id) {
         String jsonIn = getDatasetJson(pathToJsonFile);
         
         Response updateLicenseResponse = given()               
                 .body(jsonIn)
                 .contentType("application/json")
-                .put("/api/admin/licenses/"+id.toString());
+                .put("/api/admin/licenses/id/"+id.toString());
         return updateLicenseResponse;
     }
     
-    static Response deleteLicense(Long id) {
+    static Response updateLicenseByName(String pathToJsonFile, String name) {
+        String jsonIn = getDatasetJson(pathToJsonFile);
+        
+        Response updateLicenseResponse = given()               
+                .body(jsonIn)
+                .contentType("application/json")
+                .put("/api/admin/licenses/name/"+name);
+        return updateLicenseResponse;
+    }
+    
+    static Response deleteLicenseById(Long id) {
         
         Response deleteLicenseResponse = given()               
-                .delete("/api/admin/licenses/"+id.toString());
+                .delete("/api/admin/licenses/id/"+id.toString());
+        return deleteLicenseResponse;
+    }
+    
+    static Response deleteLicenseByName(String name) {
+        
+        Response deleteLicenseResponse = given()               
+                .delete("/api/admin/licenses/name/"+name);
         return deleteLicenseResponse;
     }
     

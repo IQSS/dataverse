@@ -1,7 +1,7 @@
 {
-  "name": "Updated Apache License",
-  "shortDescription": "Updated license description",
-  "uri": "www.update-apache.com",
-  "iconUrl": "www.update-icon.com",
+  "name": "Apache License 2.0",
+  "shortDescription": "The 2.0 version of the Apache License, approved by the ASF in 2004.",
+  "uri": "https://www.apache.org/licenses/LICENSE-2.0",
+  "iconUrl": "https://yt3.ggpht.com/ytc/AAUvwni36SveDisR-vOAmmklBfJxnnjuRG3ihzfrwEfORA=s900-c-k-c0x00ffffff-no-rj",
   "active": true
 }

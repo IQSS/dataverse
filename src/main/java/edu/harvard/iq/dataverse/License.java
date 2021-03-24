@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse;
 
+import java.net.URI;
+import java.net.URL;
 import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -41,10 +43,10 @@ public class License {
     private String shortDescription;
 
     @Column(columnDefinition="TEXT", nullable = false)
-    private String uri;
+    private URI uri;
 
     @Column(columnDefinition="TEXT")
-    private String iconUrl;
+    private URL iconUrl;
 
     @Column(nullable = false)
     private boolean active;
@@ -52,7 +54,7 @@ public class License {
     public License() {
     }
 
-    public License(String name, String shortDescription, String uri, String iconUrl, boolean active) {
+    public License(String name, String shortDescription, URI uri, URL iconUrl, boolean active) {
         this.name = name;
         this.shortDescription = shortDescription;
         this.uri = uri;
@@ -84,19 +86,19 @@ public class License {
         this.shortDescription = shortDescription;
     }
 
-    public String getUri() {
+    public URI getUri() {
         return uri;
     }
 
-    public void setUri(String uri) {
+    public void setUri(URI uri) {
         this.uri = uri;
     }
 
-    public String getIconUrl() {
+    public URL getIconUrl() {
         return iconUrl;
     }
 
-    public void setIconUrl(String iconUrl) {
+    public void setIconUrl(URL iconUrl) {
         this.iconUrl = iconUrl;
     }
 
@@ -132,8 +134,8 @@ public class License {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", shortDescription='" + shortDescription + '\'' +
-                ", uri='" + uri + '\'' +
-                ", iconUrl='" + iconUrl + '\'' +
+                ", uri=" + uri +
+                ", iconUrl=" + iconUrl +
                 ", active=" + active +
                 '}';
     }

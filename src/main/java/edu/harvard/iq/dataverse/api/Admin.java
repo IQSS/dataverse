@@ -18,7 +18,6 @@ import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.License;
 import edu.harvard.iq.dataverse.LicenseServiceBean;
-import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
@@ -75,7 +74,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
@@ -89,8 +87,6 @@ import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.MergeInAccountCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.ChangeUserIdentifierCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -105,7 +101,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.json.JsonArray;
 import javax.persistence.Query;
@@ -1935,47 +1930,80 @@ public class Admin extends AbstractApiBean {
     }
 
     @GET
-    @Path("/licenses/{id}")
-    public Response getLicense(@PathParam("id") long id) {
-        License l = licenseService.get(id);
-        if (l == null) {
-            return error(Response.Status.NOT_FOUND, "Not Found.");
-        }
-        return ok(json(l));
+    @Path("/licenses/id/{id}")
+    public Response getLicenseById(@PathParam("id") long id) {
+		try {
+			License license = licenseService.getById(id);
+        	return ok(json(license));
+		} catch (FetchException e) {
+			return error(Response.Status.NOT_FOUND, e.getMessage());
+		}
+    }
+
+    @GET
+    @Path("/licenses/name/{name}")
+    public Response getLicenseByName(@PathParam("name") String name) {
+		try {
+			License license = licenseService.getByName(name);
+        	return ok(json(license));
+		} catch (FetchException e) {
+			return error(Response.Status.NOT_FOUND, e.getMessage());
+		}
     }
 
     @POST
     @Path("/licenses")
-    public Response addLicense(License l) {
+    public Response addLicense(License license) {
         try {
-            License added = licenseService.save(l);
-            if (added == null) {
-                return error(Response.Status.BAD_REQUEST, "Bad Request.");
-            }
+            licenseService.save(license);
             return created("/api/admin/licenses", Json.createObjectBuilder().add("message", "License created"));
-        } catch(PersistenceException e) {
+        } catch (RequestBodyException e) {
+			return error(Response.Status.BAD_REQUEST, e.getMessage());
+		} catch(PersistenceException e) {
             return error(Response.Status.CONFLICT, "A license with the same URI or name is already present.");
         }
-    }
+	}
 
     @PUT
-    @Path("/licenses/{id}")
-    public Response putLicense(@PathParam("id") long id, License l) {
-        License updated = licenseService.set(id, l.getName(), l.getShortDescription(), l.getUri(), l.getIconUrl(), l.isActive());
-        if (updated == null) {
-            return error(Response.Status.BAD_REQUEST, "Bad Request. There is no existing LicenseInfo with that ID. To add a license use POST.");
-        }
+    @Path("/licenses/id/{id}")
+    public Response putLicenseById(@PathParam("id") long id, License license) {
+		try {
+			licenseService.setById(id, license.getName(), license.getShortDescription(), license.getUri(), license.getIconUrl(), license.isActive());
+		} catch (UpdateException e) {
+			return error(Response.Status.BAD_REQUEST, e.getMessage());
+		}
         return ok("License with ID " + id + " was replaced.");
     }
 
+    @PUT
+    @Path("/licenses/name/{name}")
+    public Response putLicenseByName(@PathParam("name") String name, License license) {
+		try {
+			licenseService.setByName(license.getName(), license.getShortDescription(), license.getUri(), license.getIconUrl(), license.isActive());
+		} catch (UpdateException e) {
+			return error(Response.Status.BAD_REQUEST, e.getMessage());
+		}
+        return ok("License with name " + name + " was replaced.");
+    }
+
     @DELETE
-    @Path("/licenses/{id}")
-    public Response deleteLicense(@PathParam("id") long id) {
-        int result = licenseService.delete(id);
+    @Path("/licenses/id/{id}")
+    public Response deleteLicenseById(@PathParam("id") long id) {
+        int result = licenseService.deleteById(id);
         if (result == 1) {
             return ok("OK. License with ID " + id + " was deleted.");
         }
         return error(Response.Status.NOT_FOUND, "A license with ID " + id + " doesn't exist.");
+    }
+
+    @DELETE
+    @Path("/licenses/name/{name}")
+    public Response deleteLicenseByName(@PathParam("name") String name) {
+        int result = licenseService.deleteByName(name);
+        if (result == 1) {
+            return ok("OK. License with name " + name + " was deleted.");
+        }
+        return error(Response.Status.NOT_FOUND, "A license with name " + name + " doesn't exist.");
     }
     
 }

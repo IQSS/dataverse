@@ -1,8 +1,8 @@
 {
   "id": 6,
-  "name": "Apache License",
-  "shortDescription": "License description",
-  "uri": "www.apache.com",
-  "iconUrl": "www.icon.com",
+  "name": "Apache License 1.0",
+  "shortDescription": "This is the original Apache License which applies only to very old versions of Apache packages (such as version 1.2 of the Web server).",
+  "uri": "https://www.apache.org/licenses/LICENSE-1.0",
+  "iconUrl": "https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/rick-astley-1-1552336336.png",
   "active": false
 }

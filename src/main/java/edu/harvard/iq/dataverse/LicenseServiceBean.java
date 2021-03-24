@@ -2,12 +2,12 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
-import edu.harvard.iq.dataverse.authorization.DataverseRole;
-import edu.harvard.iq.dataverse.search.IndexResponse;
-import edu.harvard.iq.dataverse.settings.Setting;
-import java.util.HashSet;
+import edu.harvard.iq.dataverse.api.FetchException;
+import edu.harvard.iq.dataverse.api.RequestBodyException;
+import edu.harvard.iq.dataverse.api.UpdateException;
+import java.net.URI;
+import java.net.URL;
 import java.util.List;
-import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -32,48 +32,89 @@ public class LicenseServiceBean {
         return em.createNamedQuery("License.findAll", License.class).getResultList();
     }
 
-    public License get( long id ) {
+    public License getById(long id) throws FetchException {
         List<License> tokens = em.createNamedQuery("License.findById", License.class)
                 .setParameter("id", id )
                 .getResultList();
-        return tokens.isEmpty() ? null : tokens.get(0);
+        if (tokens.isEmpty()) {
+            throw new FetchException("License with that ID doesn't exist.");
+        }
+        return tokens.get(0);
     }
 
-    public License save(License l) throws PersistenceException {
-        if (l.getId() == null) {
-            em.persist(l);
-            return l;
+    public License getByName(String name) throws FetchException {
+        List<License> tokens = em.createNamedQuery("License.findByName", License.class)
+                .setParameter("name", name )
+                .getResultList();
+        if (tokens.isEmpty()) {
+            throw new FetchException("License with that name doesn't exist.");
+        }
+        return tokens.get(0);
+    }
+
+    public License save(License license) throws PersistenceException, RequestBodyException {
+        if (license.getId() == null) {
+            em.persist(license);
+            return license;
         } else {
-            return null;
+            throw new RequestBodyException("There shouldn't be an ID in the request body");
         }
     }
 
-    public License set( long id, String name, String shortDescription, String uri, String iconUrl, boolean active ) {
+    public License setById(long id, String name, String shortDescription, URI uri, URL iconUrl, boolean active) throws UpdateException {
         List<License> tokens = em.createNamedQuery("License.findById", License.class)
                 .setParameter("id", id )
                 .getResultList();
 
         if(tokens.size() > 0) {
-            License l = tokens.get(0);
-            l.setName(name);
-            l.setShortDescription(shortDescription);
-            l.setUri(uri);
-            l.setIconUrl(iconUrl);
-            l.setActive(active);        
-            em.merge(l);
+            License license = tokens.get(0);
+            license.setName(name);
+            license.setShortDescription(shortDescription);
+            license.setUri(uri);
+            license.setIconUrl(iconUrl);
+            license.setActive(active);        
+            em.merge(license);
             actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Admin, "set")
                 .setInfo(name + ": " + shortDescription + ": " + uri + ": " + iconUrl + ": " + active));
-            return l;
+            return license;
         } else {
-            return null;
+            throw new UpdateException("There is no existing License with that ID. To add a license use POST.");
         }
     }
 
-    public int delete( long id ) throws PersistenceException {
+    public License setByName(String name, String shortDescription, URI uri, URL iconUrl, boolean active) throws UpdateException {
+        List<License> tokens = em.createNamedQuery("License.findByName", License.class)
+                .setParameter("name", name )
+                .getResultList();
+
+        if(tokens.size() > 0) {
+            License license = tokens.get(0);
+            license.setShortDescription(shortDescription);
+            license.setUri(uri);
+            license.setIconUrl(iconUrl);
+            license.setActive(active);        
+            em.merge(license);
+            actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Admin, "set")
+                .setInfo(name + ": " + shortDescription + ": " + uri + ": " + iconUrl + ": " + active));
+            return license;
+        } else {
+            throw new UpdateException("There is no existing License with that name. To add a license use POST.");
+        }
+    }
+
+    public int deleteById(long id) throws PersistenceException {
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Admin, "delete")
                             .setInfo(Long.toString(id)));
         return em.createNamedQuery("License.deleteById")
                 .setParameter("id", id)
+                .executeUpdate();
+    }
+
+    public int deleteByName(String name) throws PersistenceException {
+        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Admin, "delete")
+                            .setInfo(name));
+        return em.createNamedQuery("License.deleteByName")
+                .setParameter("name", name)
                 .executeUpdate();
     }
 
