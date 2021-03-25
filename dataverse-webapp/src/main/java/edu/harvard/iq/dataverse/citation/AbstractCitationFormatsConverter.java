@@ -1,29 +1,27 @@
 package edu.harvard.iq.dataverse.citation;
 
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
-abstract class AbstractCitationFormatsConverter implements CitationFormatsConverter {
-    private static final Logger logger = LoggerFactory.getLogger(AbstractCitationFormatsConverter.class);
+public abstract class AbstractCitationFormatsConverter implements CitationFormatsConverter {
 
     // -------------------- INNER CLASSES --------------------
 
-    static class CitationBuilder {
-        private boolean escapeHtml;
-        private List<String> elements = new ArrayList<>();
+    protected static class CitationBuilder {
+        private final boolean escapeHtml;
+        private final StringBuilder citation = new StringBuilder();
+        private final List<Token> partElements = new ArrayList<>();
 
         // -------------------- CONSTRUCTORS --------------------
 
@@ -33,56 +31,81 @@ abstract class AbstractCitationFormatsConverter implements CitationFormatsConver
 
         // -------------------- LOGIC --------------------
 
-        public CitationBuilder add(String... values) {
-            elements.addAll(Arrays.asList(values));
+        public CitationBuilder add(String value) {
+            partElements.add(new Token(value, Token.Type.STATIC));
             return this;
         }
 
-        public CitationBuilder addFormatted(String value) {
-            return addFormatted(value, "");
-        }
-
-        public CitationBuilder addFormatted(String value, String delimiter) {
-            return addFormatted(value, delimiter, delimiter);
-        }
-
-        public CitationBuilder addFormatted(String value, String startDelimiter, String endDelimiter) {
-            if (isNotEmpty(value)) {
-                elements.add(startDelimiter
-                        + (escapeHtml ? StringEscapeUtils.escapeHtml4(value) : value)
-                        + endDelimiter);
+        public CitationBuilder value(String value) {
+            if (isNotBlank(value)) {
+                partElements.add(new Token(escapeHtml ? StringEscapeUtils.escapeHtml4(value) : value, Token.Type.DATA));
+            } else {
+                partElements.add(new Token(StringUtils.EMPTY, Token.Type.DATA));
             }
             return this;
         }
 
-        public String escapeHtmlIfNeeded(String value) {
-            if (isNotEmpty(value)) {
-                return escapeHtml ? StringEscapeUtils.escapeHtml4(value) : value;
-            }
-            return null;
+        public CitationBuilder rawValue(String value) {
+            partElements.add(new Token(value, Token.Type.DATA));
+            return this;
         }
 
-        public String formatURL(String text, String url) {
+        public CitationBuilder urlValue(String text, String url) {
             if (text == null) {
-                return null;
+                partElements.add(new Token(StringUtils.EMPTY, Token.Type.DATA));
+            } else {
+                String value = escapeHtml && url != null
+                        ? "<a href=\"" + url + "\" target=\"_blank\">" + StringEscapeUtils.escapeHtml4(text) + "</a>"
+                        : text;
+                partElements.add(new Token(value, Token.Type.DATA));
             }
-            return escapeHtml && url != null
-                    ? "<a href=\"" + url + "\" target=\"_blank\">" + StringEscapeUtils.escapeHtml4(text) + "</a>"
-                    : text;
+            return this;
         }
 
-        public String join(String separator, Predicate<String> filter) {
-            String joined = elements.stream()
-                    .filter(filter)
-                    .collect(Collectors.joining(separator));
-            elements.clear();
-            elements.add(joined);
-            return joined;
+        public CitationBuilder endPart() {
+            return endPart(", ");
+        }
+
+        public CitationBuilder endPart(String delimiter) {
+            if (partElements.stream()
+                    .filter(t -> Token.Type.DATA == t.type)
+                    .map(t -> t.value)
+                    .allMatch(StringUtils::isNotBlank)) {
+                citation.append(partElements.stream()
+                        .map(t -> t.value)
+                        .collect(Collectors.joining()))
+                        .append(delimiter);
+            }
+            partElements.clear();
+            return this;
+        }
+
+        public String toString() {
+            return citation.toString();
+        }
+
+        private static class Token {
+            public final String value;
+            public final Type type;
+
+            public Token(String value, Type type) {
+                this.value = value;
+                this.type = type;
+            }
+
+            enum Type {
+                STATIC, DATA
+            }
         }
     }
 
-    static class BibTeXCitationBuilder {
+
+    protected static class BibTeXCitationBuilder {
         private StringBuilder sb = new StringBuilder();
+
+        // -------------------- CONSTRUCTORS --------------------
+
+        public BibTeXCitationBuilder() { }
 
         // -------------------- LOGIC --------------------
 
@@ -113,8 +136,12 @@ abstract class AbstractCitationFormatsConverter implements CitationFormatsConver
         }
     }
 
-    static class RISCitationBuilder {
+    protected static class RISCitationBuilder {
         private StringBuilder sb = new StringBuilder();
+
+        // -------------------- CONSTRUCTORS --------------------
+
+        public RISCitationBuilder() { }
 
         // -------------------- LOGIC --------------------
 
@@ -146,7 +173,7 @@ abstract class AbstractCitationFormatsConverter implements CitationFormatsConver
         }
     }
 
-    static class EndNoteCitationBuilder {
+    protected static class EndNoteCitationBuilder {
         private XMLStreamWriter writer;
 
         // -------------------- CONSTRUCTORS --------------------

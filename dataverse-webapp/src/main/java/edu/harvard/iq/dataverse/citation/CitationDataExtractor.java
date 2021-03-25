@@ -1,14 +1,13 @@
 package edu.harvard.iq.dataverse.citation;
 
 import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -20,6 +19,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Stateless
@@ -37,16 +38,6 @@ public class CitationDataExtractor {
                 .setPersistentId(extractPID(datasetVersion, datasetVersion.getDataset(), false)) // Global Id: always part of citation for local datasets & some harvested
                 .setUNF(datasetVersion.getUNF());
 
-        for (DatasetFieldType dsfType : datasetVersion.getDataset().getOwner().getCitationDatasetFieldTypes()) {
-            DatasetField dsf = datasetVersion.getDatasetField(dsfType);
-            if (dsf != null) {
-                data.getOptionalValues().add(dsf);
-
-                if (FieldType.URL.equals(dsf.getDatasetFieldType().getFieldType())) {
-                    data.setOptionalURLcount(data.getOptionalURLcount() + 1);
-                }
-            }
-        }
         return data;
     }
 
@@ -72,20 +63,54 @@ public class CitationDataExtractor {
 
     private void extractAndWriteCommonValues(DatasetVersion dsv, CitationData data) {
         data.getAuthors().addAll(extractAuthors(dsv));
-        data.getProducers().addAll(dsv.getDatasetProducerNames());
+        data.getProducers().addAll(extractProducers(dsv));
+        data.getDistributors().addAll(dsv.getDatasetFieldValuesByTypeName(DatasetFieldConstant.distributorName));
         data.getFunders().addAll(dsv.getUniqueGrantAgencyValues());
         data.getKindsOfData().addAll(dsv.getKindOfData());
         data.getDatesOfCollection().addAll(dsv.getDatesOfCollection());
         data.getLanguages().addAll(dsv.getLanguages());
         data.getSpatialCoverages().addAll(dsv.getSpatialCoverages());
         data.getKeywords().addAll(dsv.getKeywords());
+        data.getOtherIds().addAll(dsv.getDatasetFieldValuesByTypeName(DatasetFieldConstant.otherIdValue));
 
         data.setDate(extractCitationDate(dsv))
                 .setYear(new SimpleDateFormat("yyyy").format(data.getDate()))
+                .setProductionPlace(extractField(dsv, DatasetFieldConstant.productionPlace))
+                .setProductionDate(extractProductionDate(dsv))
+                .setReleaseYear(extractReleaseYear(dsv))
+                .setRootDataverseName(dsv.getRootDataverseNameforCitation())
                 .setTitle(dsv.getTitle())
                 .setSeriesTitle(dsv.getSeriesTitle())
                 .setPublisher(extractPublisher(dsv))
                 .setVersion(extractVersion(dsv));
+    }
+
+    private String extractField(DatasetVersion dsv, String typeName) {
+        return dsv.getDatasetFieldValueByTypeName(typeName)
+                .orElse(null);
+    }
+
+    private String extractProductionDate(DatasetVersion dsv) {
+        String rawDate = dsv.getDatasetFieldValueByTypeName(DatasetFieldConstant.productionDate)
+                .orElse(StringUtils.EMPTY);
+        Pattern year = Pattern.compile("\\d{4}");
+        Matcher yearMatcher = year.matcher(rawDate);
+        if (yearMatcher.find()) {
+            return yearMatcher.group();
+        }
+        return StringUtils.EMPTY;
+    }
+
+    private List<CitationData.Producer> extractProducers(DatasetVersion dsv) {
+        return dsv.getDatasetProducers(DatasetField::getValue).stream()
+                .map(p -> new CitationData.Producer(p[0], p[1]))
+                .collect(Collectors.toList());
+    }
+
+    private String extractReleaseYear(DatasetVersion dsv) {
+        return dsv.getReleaseTime() != null
+                ? new SimpleDateFormat("yyyy").format(dsv.getReleaseTime())
+                : StringUtils.EMPTY;
     }
 
     private List<String> extractAuthors(DatasetVersion dsv) {

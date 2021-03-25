@@ -1,8 +1,6 @@
 package edu.harvard.iq.dataverse.citation;
 
 import edu.harvard.iq.dataverse.persistence.GlobalId;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
-import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,18 +11,13 @@ import javax.enterprise.inject.Alternative;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 /**
  * Based on DataCitation class created by
@@ -40,44 +33,26 @@ public class StandardCitationFormatsConverter extends AbstractCitationFormatsCon
     public String toString(CitationData data, boolean escapeHtml) {
         CitationBuilder citation = new CitationBuilder(escapeHtml);
 
-        citation.addFormatted(data.getAuthorsString())
-                .add(data.getYear());
+        citation.value(data.getAuthorsString()).endPart()
+                .rawValue(data.getYear()).endPart();
         if (data.getFileTitle() != null && data.isDirect()) {
-            citation.addFormatted(data.getFileTitle(), "\"")
-                    .addFormatted(data.getTitle(), "<i>", "</i>");
+            citation.add("\"").value(data.getFileTitle()).endPart("\", ")
+                    .add("<i>").value(data.getTitle()).endPart("</i>, ");
         } else {
-            citation.addFormatted(data.getTitle(), "\"");
+            citation.add("\"").value(data.getTitle()).endPart("\", ");
         }
-        if (data.getPersistentId() != null) {
-            String url = data.getPersistentId().toURL().toString();
-            citation.add(citation.formatURL(url, url));
+        String pid = Optional.ofNullable(data.getPersistentId())
+                .map(GlobalId::toURL)
+                .map(URL::toString)
+                .orElse(StringUtils.EMPTY);
+        citation.urlValue(pid, pid).endPart()
+                .value(data.getPublisher()).endPart()
+                .rawValue(data.getVersion()).endPart(StringUtils.EMPTY);
+        if (!data.isDirect()) {
+            citation.add("; ").value(data.getFileTitle()).endPart(" [fileName]");
         }
-
-        String separator = ", ";
-        citation.addFormatted(data.getPublisher())
-                .add(data.getVersion())
-                .join(separator, StringUtils::isNotEmpty);
-        if (data.getFileTitle() != null && !data.isDirect()) {
-            citation.add("; ", citation.escapeHtmlIfNeeded(data.getFileTitle()), " [fileName]");
-        }
-        if (isNotEmpty(data.getUNF())) {
-            citation.add(separator, data.getUNF(), " [fileUNF]");
-        }
-        for (DatasetField field : data.getOptionalValues()) {
-            String displayName = field.getDatasetFieldType().getDisplayName();
-            String displayValue;
-
-            if (FieldType.URL.equals(field.getDatasetFieldType().getFieldType())) {
-                displayValue = citation.formatURL(field.getDisplayValue(), field.getDisplayValue());
-                if (data.getOptionalURLcount() == 1) {
-                    displayName = "URL";
-                }
-            } else {
-                displayValue = citation.escapeHtmlIfNeeded(field.getDisplayValue());
-            }
-            citation.add(" [", displayName, ": ", displayValue, "]");
-        }
-        return citation.join("", s -> true);
+        citation.add(", ").rawValue(data.getUNF()).endPart(" [fileUNF]");
+        return citation.toString();
     }
 
     @Override
@@ -127,7 +102,7 @@ public class StandardCitationFormatsConverter extends AbstractCitationFormatsCon
             ris.line("T3", data.getSeriesTitle());
         }
         ris.lines("AU", data.getAuthors())
-                .lines("A2", data.getProducers())
+                .lines("A2", extractProducerNames(data))
                 .lines("A4", data.getFunders())
                 .lines("C3", data.getKindsOfData())
                 .lines("DA", data.getDatesOfCollection());
@@ -206,7 +181,7 @@ public class StandardCitationFormatsConverter extends AbstractCitationFormatsCon
                 .endTag() // ref-type
                 .startTag("contributors")
                 .addTagCollection("authors", "author", data.getAuthors())
-                .addTagCollection("secondary-authors", "author", data.getProducers())
+                .addTagCollection("secondary-authors", "author", extractProducerNames(data))
                 .addTagCollection("subsidiary-authors", "author", data.getFunders())
                 .endTag(); // contributors
 
@@ -255,5 +230,11 @@ public class StandardCitationFormatsConverter extends AbstractCitationFormatsCon
                 .endTag() // records
                 .endTag() // xml
                 .end();
+    }
+
+    private List<String> extractProducerNames(CitationData data) {
+        return data.getProducers().stream()
+                .map(CitationData.Producer::getName)
+                .collect(Collectors.toList());
     }
 }

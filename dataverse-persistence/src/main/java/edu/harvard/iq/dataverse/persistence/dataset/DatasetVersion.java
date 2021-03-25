@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -740,6 +741,10 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
     }
 
     public List<String[]> getDatasetProducers() {
+        return getDatasetProducers(DatasetField::getDisplayValue);
+    }
+
+    public List<String[]> getDatasetProducers(Function<DatasetField, String> valueMapper) {
         List<String[]> retList = new ArrayList<>();
         for (DatasetField dsf : this.getDatasetFields()) {
             Boolean addContributor = true;
@@ -751,15 +756,16 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
                         if (subField.isEmptyForDisplay()) {
                             addContributor = false;
                         }
-                        contributorName = subField.getDisplayValue();
+                        contributorName = valueMapper.apply(subField);
                     }
                     if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.producerAffiliation)) {
-                        contributorAffiliation = subField.getDisplayValue();
+                        contributorAffiliation = valueMapper.apply(subField);
                     }
 
                 }
                 if (addContributor) {
-                    String[] datasetContributor = new String[]{contributorName, contributorAffiliation};
+                    String[] datasetContributor = new String[]
+                            { contributorName, contributorAffiliation };
                     retList.add(datasetContributor);
                 }
             }
@@ -1182,6 +1188,17 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
                 .findFirst();
     }
 
+    public Optional<String> getDatasetFieldValueByTypeName(String datasetFieldTypeName) {
+        return getDatasetFieldByTypeName(datasetFieldTypeName)
+                .map(DatasetField::getValue);
+    }
+
+    public List<String> getDatasetFieldValuesByTypeName(String datasetFieldTypeName) {
+        return streamDatasetFieldsByTypeName(datasetFieldTypeName)
+                .map(DatasetField::getValue)
+                .collect(toList());
+    }
+
     /**
      * Returns a list of all {@link DatasetField}s with {@link DatasetFieldType}'s name
      * equal to the provided {@code datasetFieldTypeName}.
@@ -1190,6 +1207,7 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
         return streamDatasetFieldsByTypeName(datasetFieldTypeName)
                 .collect(toList());
     }
+
 
     public Stream<DatasetField> streamDatasetFieldsByTypeName(String datasetFieldTypeName) {
         return getFlatDatasetFields().stream()
@@ -1238,17 +1256,6 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
 
     public void setDatasetDistributors(List<DatasetDistributor> distributors) {
         //todo implement
-    }
-
-    public String getDistributorNames() {
-        StringBuilder str = new StringBuilder();
-        for (DatasetDistributor sd : this.getDatasetDistributors()) {
-            if (str.toString().trim().length() > 1) {
-                str.append(";");
-            }
-            str.append(sd.getName());
-        }
-        return str.toString();
     }
 
     public String getAuthorsStr() {

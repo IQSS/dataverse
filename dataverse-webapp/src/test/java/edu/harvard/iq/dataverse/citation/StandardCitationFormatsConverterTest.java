@@ -4,9 +4,6 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 
 import static org.assertj.core.api.Assertions.assertThat;
