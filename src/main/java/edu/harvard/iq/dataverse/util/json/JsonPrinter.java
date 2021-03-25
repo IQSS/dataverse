@@ -45,6 +45,7 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 
+import java.net.URISyntaxException;
 import java.util.*;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -777,14 +778,14 @@ public class JsonPrinter {
                     .add("name", aFacet.getDatasetFieldType().getDisplayName());
     }
 
-    public static JsonObjectBuilder json(License l) {
+    public static JsonObjectBuilder json(License license) throws URISyntaxException {
         return jsonObjectBuilder()
-            .add("id", l.getId())
-            .add("name", l.getName())
-            .add("shortDescription", l.getShortDescription())
-            .add("uri", l.getUri().toString())
-            .add("iconUrl", l.getIconUrl().toString())
-            .add("active", l.isActive());
+            .add("id", license.getId())
+            .add("name", license.getName())
+            .add("shortDescription", license.getShortDescription())
+            .add("uri", license.getUri().toString())
+            .add("iconUrl", license.getIconUrl().toString())
+            .add("active", license.isActive());
     }
         
     public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> stringsToJsonArray() {

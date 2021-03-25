@@ -61,7 +61,7 @@ public class LicenseServiceBean {
         }
     }
 
-    public License setById(long id, String name, String shortDescription, URI uri, URL iconUrl, boolean active) throws UpdateException {
+    public void setById(long id, String name, String shortDescription, URI uri, URI iconUrl, boolean active) throws UpdateException {
         List<License> tokens = em.createNamedQuery("License.findById", License.class)
                 .setParameter("id", id )
                 .getResultList();
@@ -76,13 +76,12 @@ public class LicenseServiceBean {
             em.merge(license);
             actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Admin, "set")
                 .setInfo(name + ": " + shortDescription + ": " + uri + ": " + iconUrl + ": " + active));
-            return license;
         } else {
             throw new UpdateException("There is no existing License with that ID. To add a license use POST.");
         }
     }
 
-    public License setByName(String name, String shortDescription, URI uri, URL iconUrl, boolean active) throws UpdateException {
+    public void setByName(String name, String shortDescription, URI uri, URI iconUrl, boolean active) throws UpdateException {
         List<License> tokens = em.createNamedQuery("License.findByName", License.class)
                 .setParameter("name", name )
                 .getResultList();
@@ -96,7 +95,6 @@ public class LicenseServiceBean {
             em.merge(license);
             actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Admin, "set")
                 .setInfo(name + ": " + shortDescription + ": " + uri + ": " + iconUrl + ": " + active));
-            return license;
         } else {
             throw new UpdateException("There is no existing License with that name. To add a license use POST.");
         }

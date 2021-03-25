@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import java.net.URI;
-import java.net.URL;
+import java.net.URISyntaxException;
 import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -21,9 +21,12 @@ import javax.persistence.UniqueConstraint;
                 query="SELECT l FROM License l"),
     @NamedQuery( name="License.findById",
             query = "SELECT l FROM License l WHERE l.id=:id"),
+    @NamedQuery( name="License.findByName",
+            query = "SELECT l FROM License l WHERE l.name=:name"),
     @NamedQuery( name="License.deleteById",
-                query="DELETE FROM License l WHERE l.id=:id")
-
+                query="DELETE FROM License l WHERE l.id=:id"),
+    @NamedQuery( name="License.deleteByName",
+                query="DELETE FROM License l WHERE l.name=:name")
 })
 @Entity
 @Table(uniqueConstraints = {
@@ -43,10 +46,10 @@ public class License {
     private String shortDescription;
 
     @Column(columnDefinition="TEXT", nullable = false)
-    private URI uri;
+    private String uri;
 
     @Column(columnDefinition="TEXT")
-    private URL iconUrl;
+    private String iconUrl;
 
     @Column(nullable = false)
     private boolean active;
@@ -54,11 +57,11 @@ public class License {
     public License() {
     }
 
-    public License(String name, String shortDescription, URI uri, URL iconUrl, boolean active) {
+    public License(String name, String shortDescription, URI uri, URI iconUrl, boolean active) {
         this.name = name;
         this.shortDescription = shortDescription;
-        this.uri = uri;
-        this.iconUrl = iconUrl;
+        this.uri = uri.toASCIIString();
+        this.iconUrl = iconUrl.toASCIIString();
         this.active = active;
     }
 
@@ -86,20 +89,20 @@ public class License {
         this.shortDescription = shortDescription;
     }
 
-    public URI getUri() {
-        return uri;
+    public URI getUri() throws URISyntaxException {
+        return new URI(uri);
     }
 
     public void setUri(URI uri) {
-        this.uri = uri;
+        this.uri = uri.toASCIIString();
     }
 
-    public URL getIconUrl() {
-        return iconUrl;
+    public URI getIconUrl() throws URISyntaxException {
+        return new URI(iconUrl);
     }
 
-    public void setIconUrl(URL iconUrl) {
-        this.iconUrl = iconUrl;
+    public void setIconUrl(URI iconUrl) {
+        this.iconUrl = iconUrl.toASCIIString();
     }
 
     public boolean isActive() {
