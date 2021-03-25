@@ -42,5 +42,12 @@
             <directory>conf/container/scripts</directory>
             <outputDirectory>scripts</outputDirectory>
         </fileSet>
+        <!-- TEMPORARY WORKAROUND - to be replaced with MPCONFIG setting -->
+        <!-- Include pom.properties to retrieve version string -->
+        <!-- http://github.com/IQSS/dataverse/blob/5dc5db197ab1c0c50cc7f932b45875f5699518e8/src/main/java/edu/harvard/iq/dataverse/util/SystemConfig.java#L176-L176 -->
+        <fileSet>
+            <directory>target/maven-archiver</directory>
+            <outputDirectory>maven-archiver</outputDirectory>
+        </fileSet>
     </fileSets>
 </assembly>

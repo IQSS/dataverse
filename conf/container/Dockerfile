@@ -47,7 +47,8 @@ ENV PATH="${PATH}:${PAYARA_DIR}/bin" \
     ENABLE_JMX=0 \
     ENABLE_JDWP=0 \
     ENABLE_JREBEL=0 \
-    JREBEL_LIB="${HOME_DIR}/jrebel/lib/libjrebel64.so"
+    JREBEL_LIB="${HOME_DIR}/jrebel/lib/libjrebel64.so" \
+    DATAVERSE_VERSION="@project.version@"
 
 ARG PAYARA_VERSION="@payara.version@"
 ARG ESH_VERSION=0.3.1
@@ -181,6 +182,9 @@ RUN rm -rf ${DOMAIN_DIR}/docroot && \
 COPY --chown=payara:payara maven/deps ${DEPLOY_DIR}/dataverse/WEB-INF/lib/
 COPY --chown=payara:payara maven/app ${DEPLOY_DIR}/dataverse/
 COPY --chown=payara:payara maven/supplements ${DEPLOY_DIR}/dataverse/supplements/
+# TEMPORARY WORKAROUND FOR DATAVERSE VERSION SUPPORT
+# http://github.com/IQSS/dataverse/blob/5dc5db197ab1c0c50cc7f932b45875f5699518e8/src/main/java/edu/harvard/iq/dataverse/util/SystemConfig.java#L176-L176
+COPY --chown=payara:payara maven/maven-archiver ${DEPLOY_DIR}/maven-archiver/
 
 # Create symlinks for jHove
 RUN ln -s ${DEPLOY_DIR}/dataverse/supplements/jhove.conf ${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/config/jhove.conf && \
