@@ -42,6 +42,7 @@
         <flyway.version>5.2.4</flyway.version>
         <jhove.version>1.20.1</jhove.version>
         <jacoco.version>0.8.6</jacoco.version>
+        <dmp.version>0.34.1</dmp.version>
     </properties>
     <pluginRepositories>
         <pluginRepository>
@@ -717,8 +718,18 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <release>11</release>
+                    <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
+                    <compilerArgument>${compilerArgument}</compilerArgument>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3</version>
+                <version>3.2.0</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -731,7 +742,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>2.3</version>
+                <version>3.3.1</version>
                 <configuration>
                     <attachClasses>true</attachClasses>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
@@ -746,12 +757,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.1.1</version>
+                <version>3.1.2</version>
             </plugin>
             <plugin>
                 <groupId>de.qaware.maven</groupId>
                 <artifactId>go-offline-maven-plugin</artifactId>
-                <version>1.2.1</version>
+                <version>1.2.8</version>
                 <configuration>
                     <dynamicDependencies>
                     </dynamicDependencies>
@@ -838,26 +849,6 @@
             <id>all-unit-tests</id>
         </profile>
         <!-- TODO: Add a profile to run API tests (integration tests that end in IT.java. See conf/docker-aio/run-test-suite.sh -->
-      <profile>
-        <id>Java9Plus</id>
-        <activation>
-          <jdk>[1.9</jdk>
-        </activation>
-        <build>
-          <plugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-compiler-plugin</artifactId>
-              <version>3.8.0</version>
-              <configuration>
-                <release>11</release>
-                <!-- for use with `mvn -DcompilerArgument=-Xlint:unchecked compile` -->
-                <compilerArgument>${compilerArgument}</compilerArgument>
-              </configuration>
-            </plugin>
-          </plugins>
-        </build>
-      </profile>
         <profile>
             <id>tc</id>
             <properties>
@@ -899,7 +890,7 @@
                     <plugin>
                         <groupId>io.fabric8</groupId>
                         <artifactId>docker-maven-plugin</artifactId>
-                        <version>0.34.1</version>
+                        <version>${dmp.version}</version>
                         <configuration>
                             <images>
                                 <!-- Dataverse K8s image -->
@@ -934,7 +925,7 @@
                     <plugin>
                         <groupId>io.fabric8</groupId>
                         <artifactId>docker-maven-plugin</artifactId>
-                        <version>0.34.1</version>
+                        <version>${dmp.version}</version>
                         <configuration>
                             <images>
                                 <!-- Solr K8s image -->
