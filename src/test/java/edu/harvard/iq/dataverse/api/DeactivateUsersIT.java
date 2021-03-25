@@ -271,4 +271,22 @@ public class DeactivateUsersIT {
         mergeAccounts.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
     }
 
+    @Test
+    public void testTurnDeactivatedUserIntoSuperuser() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+
+        Response deactivateUser = UtilIT.deactivateUser(username);
+        deactivateUser.prettyPrint();
+        deactivateUser.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response toggleSuperuser = UtilIT.makeSuperUser(username);
+        toggleSuperuser.prettyPrint();
+        toggleSuperuser.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+    }
+
 }

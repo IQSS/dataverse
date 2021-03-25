@@ -3229,6 +3229,7 @@ Deactivating a user with this endpoint will:
 - Remove the user from all groups
 - No longer have notifications generated or sent by the Dataverse installation
 - Prevent the account from being converted into an OAuth or Shibboleth account.
+- Prevent the user from becoming a superuser.
 
 Deactivating a user with this endpoint will keep:
 
