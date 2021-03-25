@@ -889,13 +889,11 @@
             </build>
         </profile>
         <profile>
-            <id>container</id>
+            <id>ct</id>
             <properties>
                 <skipUnitTests>true</skipUnitTests>
                 <app.image.name>gdcc/dataverse-k8s:${project.version}</app.image.name>
-                <solr.image.name>gdcc/solr-k8s:${project.version}</solr.image.name>
             </properties>
-        
             <build>
                 <plugins>
                     <plugin>
@@ -918,6 +916,27 @@
                                         </assembly>
                                     </build>
                                 </image>
+                            </images>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>solr-ct</id>
+            <properties>
+                <skipUnitTests>true</skipUnitTests>
+                <solr.image.name>gdcc/solr-k8s:${project.version}</solr.image.name>
+            </properties>
+        
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <version>0.34.1</version>
+                        <configuration>
+                            <images>
                                 <!-- Solr K8s image -->
                                 <image>
                                     <alias>solr</alias>
