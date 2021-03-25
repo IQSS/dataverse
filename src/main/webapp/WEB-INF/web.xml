@@ -22,15 +22,18 @@
         <param-name>org.jboss.weld.context.conversation.lazy</param-name>
         <param-value>false</param-value>
     </context-param>
-    <!-- UI warnings that can be enabled setting to Develop or another level. 
-            See https://docs.oracle.com/javaee/6/tutorial/doc/bnaxj.html#giqxl -->
+    <!--
+        The following parameters can be changed quickly using MicroProfile Config API.
+        See also dev guide: https://guides.dataverse.org/en/latest/developers/debugging.html
+     -->
     <context-param>
         <param-name>javax.faces.PROJECT_STAGE</param-name>
-<!--        <param-value>Development</param-value>-->
+        <!-- Uses Microprofile Config to replace at runtime. Not standardized, Payara App Server specific. -->
         <param-value>${MPCONFIG=dataverse.jsf.project-stage}</param-value>
     </context-param>
     <context-param>
         <param-name>primefaces.THEME</param-name>
+        <!-- Uses Microprofile Config to replace at runtime. Not standardized, Payara App Server specific. -->
         <param-value>${MPCONFIG=dataverse.jsf.primefaces.theme}</param-value>
     </context-param>
     <!-- example of a hard-coded PrimePush configuration: -->
@@ -42,18 +45,22 @@
         <param-name>
             javax.faces.INTERPRET_EMPTY_STRING_SUBMITTED_VALUES_AS_NULL
         </param-name>
+        <!-- Uses Microprofile Config to replace at runtime. Not standardized, Payara App Server specific. -->
         <param-value>${MPCONFIG=dataverse.jsf.empty-string-null}</param-value>
     </context-param>
     <context-param>
         <param-name>javax.faces.FACELETS_SKIP_COMMENTS</param-name>
+        <!-- Uses Microprofile Config to replace at runtime. Not standardized, Payara App Server specific. -->
         <param-value>${MPCONFIG=dataverse.jsf.skip-comments}</param-value>
     </context-param>
     <context-param>
         <param-name>javax.faces.FACELETS_BUFFER_SIZE</param-name>
+        <!-- Uses Microprofile Config to replace at runtime. Not standardized, Payara App Server specific. -->
         <param-value>${MPCONFIG=dataverse.jsf.buffer-size}</param-value>
     </context-param>
     <context-param>
         <param-name>javax.faces.FACELETS_REFRESH_PERIOD</param-name>
+        <!-- Uses Microprofile Config to replace at runtime. Not standardized, Payara App Server specific. -->
         <param-value>${MPCONFIG=dataverse.jsf.refresh-period}</param-value>
     </context-param>
     <!-- JSF mapping -->
