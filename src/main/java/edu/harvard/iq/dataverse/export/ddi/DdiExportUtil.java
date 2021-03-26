@@ -27,6 +27,8 @@ import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_SUBJECT_
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_TYPE_TAG;
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_TYPE_UNF;
 import edu.harvard.iq.dataverse.export.DDIExporter;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+
 import static edu.harvard.iq.dataverse.util.SystemConfig.FQDN;
 import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
@@ -56,7 +58,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.w3c.dom.Document;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.w3c.dom.DOMException;
 
 // For write operation
@@ -81,8 +82,8 @@ public class DdiExportUtil {
 
     public static final String LEVEL_DV = "dv";
 
-    @EJB
-    VariableServiceBean variableService;
+    
+    static SettingsServiceBean settingsService;
     
     public static final String NOTE_TYPE_CONTENTTYPE = "DATAVERSE:CONTENTTYPE";
     public static final String NOTE_SUBJECT_CONTENTTYPE = "Content/MIME Type";
@@ -207,7 +208,7 @@ public class DdiExportUtil {
         }
         logger.info("Dsitr set?: " + distributorSet);
         logger.info("Pub?: " + datasetDto.getPublisher());
-        boolean excludeRepository = ConfigProvider.getConfig().getOptionalValue("dataverse.export.distributor.excludeinstallationifset", Boolean.class).orElse(false);
+        boolean excludeRepository = settingsService.isTrueForKey(SettingsServiceBean.Key.ExportInstallationAsDistributorOnlyWhenNotSet, false);
         logger.info("Exclude: " + excludeRepository);
         if (!StringUtils.isEmpty(datasetDto.getPublisher()) && !(excludeRepository && distributorSet)) {
             xmlw.writeStartElement("distrbtr");
@@ -1797,6 +1798,10 @@ public class DdiExportUtil {
             logger.info("I/O error " + ioe.getMessage());
         }
 
+    }
+
+    public static void injectSettingsService(SettingsServiceBean settingsSvc) {
+        settingsService=settingsSvc;
     }
 
 }
