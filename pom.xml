@@ -28,6 +28,7 @@
         <jakartaee-api.version>8.0.0</jakartaee-api.version>
         <payara.version>5.2020.6</payara.version>
         <postgresql.version>42.2.19</postgresql.version>
+        <postgresql.server.version>13</postgresql.server.version>
         <solr.version>8.8.1</solr.version>
         <aws.version>1.11.762</aws.version>
         <commons.logging.version>1.2</commons.logging.version>
@@ -852,7 +853,6 @@
             <id>tc</id>
             <properties>
                 <skipUnitTests>true</skipUnitTests>
-                <postgresql.server.version>9.6</postgresql.server.version>
             </properties>
             <build>
                 <plugins>
@@ -909,6 +909,24 @@
                                             <descriptor>${project.basedir}/conf/container/assembly.xml</descriptor>
                                         </assembly>
                                     </build>
+                                    <run>
+                                        <env>
+                                            <DATAVERSE_DB_USER>dataverse</DATAVERSE_DB_USER>
+                                            <DATAVERSE_DB_PASSWORD>changeme</DATAVERSE_DB_PASSWORD>
+                                        </env>
+                                        <hostname>dataverse</hostname>
+                                        <ports>
+                                            <port>8080:8080</port>
+                                        </ports>
+                                        <network>
+                                            <mode>custom</mode>
+                                            <name>dataverse</name>
+                                        </network>
+                                        <dependsOn>
+                                            <container>solr</container>
+                                            <container>postgresql</container>
+                                        </dependsOn>
+                                    </run>
                                 </image>
                                 <!-- Solr K8s image -->
                                 <image>
@@ -924,8 +942,32 @@
                                             <descriptor>${project.basedir}/conf/solr/assembly.xml</descriptor>
                                         </assembly>
                                     </build>
+                                    <run>
+                                        <hostname>solr</hostname>
+                                        <network>
+                                            <mode>custom</mode>
+                                            <name>dataverse</name>
+                                        </network>
+                                    </run>
+                                </image>
+                                <!-- Postgresql Image (no build, run only -->
+                                <image>
+                                    <alias>postgresql</alias>
+                                    <name>postgres:${postgresql.server.version}</name>
+                                    <run>
+                                        <hostname>postgresql</hostname>
+                                        <network>
+                                            <mode>custom</mode>
+                                            <name>dataverse</name>
+                                        </network>
+                                        <env>
+                                            <POSTGRES_USER>dataverse</POSTGRES_USER>
+                                            <POSTGRES_PASSWORD>changeme</POSTGRES_PASSWORD>
+                                        </env>
+                                    </run>
                                 </image>
                             </images>
+                            <autoCreateCustomNetworks>true</autoCreateCustomNetworks>
                         </configuration>
                     </plugin>
                 </plugins>
