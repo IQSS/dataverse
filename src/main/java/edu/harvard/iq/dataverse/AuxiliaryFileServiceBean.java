@@ -122,4 +122,18 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
         return query.getResultList();
     }
 
+    public List<AuxiliaryFile> findAuxiliaryFilesStartingWith(DataFile dataFile, String tagPrefix) {
+        TypedQuery query = em.createQuery("select object(o) from AuxiliaryFile as o where o.dataFile.id = :dataFileId and o.formatTag like CONCAT(:tagPrefix,'%')", AuxiliaryFile.class);
+        query.setParameter("dataFileId", dataFile.getId());
+        query.setParameter("tagPrefix", tagPrefix);
+        return query.getResultList();
+    }
+
+    public List<AuxiliaryFile> findAuxiliaryFilesNotStartingWith(DataFile dataFile, String tagPrefix) {
+        TypedQuery query = em.createQuery("select object(o) from AuxiliaryFile as o where o.dataFile.id = :dataFileId and o.formatTag not like CONCAT(:tagPrefix,'%')", AuxiliaryFile.class);
+        query.setParameter("dataFileId", dataFile.getId());
+        query.setParameter("tagPrefix", tagPrefix);
+        return query.getResultList();
+    }
+
 }

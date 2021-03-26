@@ -68,7 +68,7 @@ public class AuxiliaryFilesIT {
         Path pathToAuxFileJson = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.json");
         String contentOfJson = "{}";
         java.nio.file.Files.write(pathToAuxFileJson, contentOfJson.getBytes());
-        String formatTagJson = "tagForJson";
+        String formatTagJson = "dpJson";
         String formatVersionJson = "0.1";
         String mimeTypeJson = "application/json";
         Response uploadAuxFileJson = UtilIT.uploadAuxFile(fileId, pathToAuxFileJson.toString(), formatTagJson, formatVersionJson, mimeTypeJson, apiToken);
@@ -79,7 +79,7 @@ public class AuxiliaryFilesIT {
         Path pathToAuxFileXml = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.xml");
         String contentOfXml = "<foo></foo>";
         java.nio.file.Files.write(pathToAuxFileXml, contentOfXml.getBytes());
-        String formatTagXml = "tagForXml";
+        String formatTagXml = "dpXml";
         String formatVersionXml = "0.1";
         String mimeTypeXml = "application/xml";
         Response uploadAuxFileXml = UtilIT.uploadAuxFile(fileId, pathToAuxFileXml.toString(), formatTagXml, formatVersionXml, mimeTypeXml, apiToken);
@@ -90,12 +90,23 @@ public class AuxiliaryFilesIT {
         Path pathToAuxFilePdf = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.pdf");
         String contentOfPdf = "";
         java.nio.file.Files.write(pathToAuxFilePdf, contentOfPdf.getBytes());
-        String formatTagPdf = "tagForPdf";
+        String formatTagPdf = "dpPdf";
         String formatVersionPdf = "0.1";
         String mimeTypePdf = "application/xml";
         Response uploadAuxFilePdf = UtilIT.uploadAuxFile(fileId, pathToAuxFilePdf.toString(), formatTagPdf, formatVersionPdf, mimeTypePdf, apiToken);
         uploadAuxFilePdf.prettyPrint();
         uploadAuxFilePdf.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Non-DP file file
+        Path pathToAuxFileMd = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "README.md");
+        String contentOfMd = "This is my README.";
+        java.nio.file.Files.write(pathToAuxFileMd, contentOfMd.getBytes());
+        String formatTagMd = "README";
+        String formatVersionDp = "0.1";
+        String mimeTypeMd = "application/xml";
+        Response uploadAuxFileMd = UtilIT.uploadAuxFile(fileId, pathToAuxFileMd.toString(), formatTagMd, formatVersionDp, mimeTypeMd, apiToken);
+        uploadAuxFileMd.prettyPrint();
+        uploadAuxFileMd.then().assertThat().statusCode(OK.getStatusCode());
 
         // Test download of one of the aux files.
         Response downloadAuxFileJson = UtilIT.downloadAuxFile(fileId, formatTagJson, formatVersionJson, apiToken);
