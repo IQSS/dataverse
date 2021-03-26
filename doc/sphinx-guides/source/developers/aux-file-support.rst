@@ -1,7 +1,7 @@
 Auxiliary File Support
 ======================
 
-Auxiliary file support is experimental. Auxiliary files in the Dataverse Software are being added to support depositing and downloading differentially private metadata, as part of the OpenDP project (OpenDP.io). In future versions, this approach may become more broadly used and supported. 
+Auxiliary file support is experimental. Auxiliary files in the Dataverse Software are being added to support depositing and downloading differentially private metadata, as part of the OpenDP project (opendp.org). In future versions, this approach may become more broadly used and supported. 
 
 Adding an Auxiliary File to a Datafile
 --------------------------------------
@@ -34,3 +34,5 @@ formatTag and formatVersion (if applicable) associated with the auxiliary file:
   export FORMAT_VERSION='v1'
 
   curl "$SERVER_URL/api/access/datafile/$FILE_ID/$FORMAT_TAG/$FORMAT_VERSION"
+
+It is also possible to download the auxiliary file from the web interface. Auxiliary files that have a tag beginning with "dp" appear under "Differentially Private Statistics". The rest appear under "Other Auxiliary Files".
