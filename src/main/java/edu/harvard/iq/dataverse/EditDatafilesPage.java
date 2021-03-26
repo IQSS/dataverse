@@ -92,7 +92,11 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public enum FileEditMode {
 
-        EDIT, UPLOAD, CREATE, SINGLE, SINGLE_REPLACE
+        EDIT, UPLOAD, CREATE, REPLACE, TEST
+    };
+    
+    public enum Referrer {
+        DATASET, FILE
     };
     
     @EJB
@@ -138,6 +142,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     private String selectedFileIdsString = null; 
     private FileEditMode mode; 
+    private Referrer referrer = Referrer.DATASET;
     private List<Long> selectedFileIdsList = new ArrayList<>(); 
     private List<FileMetadata> fileMetadatas = new ArrayList<>();;
 
@@ -207,6 +212,16 @@ public class EditDatafilesPage implements java.io.Serializable {
     public void setMode(FileEditMode mode) {
         this.mode = mode;
     }
+
+    public Referrer getReferrer() {
+        return referrer;
+    }
+
+    public void setReferrer(Referrer referrer) {
+        this.referrer = referrer;
+    }
+    
+    
     
     public List<FileMetadata> getFileMetadatas() {
         
@@ -503,9 +518,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         // -------------------------------------------
         //  Is this a file replacement operation?
         // -------------------------------------------
-        if (mode == FileEditMode.SINGLE_REPLACE){
+        if (mode == FileEditMode.REPLACE){
             /*
-            http://localhost:8080/editdatafiles.xhtml?mode=SINGLE_REPLACE&datasetId=26&fid=726
+            http://localhost:8080/editdatafiles.xhtml?mode=REPLACE&datasetId=26&fid=726
             */        
             DataFile fileToReplace = loadFileToReplace();
             if (fileToReplace == null){
@@ -527,7 +542,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
             populateFileMetadatas();
             singleFile = getFileToReplace();
-        }else if (mode == FileEditMode.EDIT || mode == FileEditMode.SINGLE) {
+        }else if (mode == FileEditMode.EDIT) {
 
             if (selectedFileIdsString != null) {
                 String[] ids = selectedFileIdsString.split(",");
@@ -541,7 +556,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                         test = null;
                     }
                     if (test != null) {
-                        if (mode == FileEditMode.SINGLE) {
+                        if (FileEditMode.EDIT == mode && Referrer.FILE == referrer) {
                             singleFile = datafileService.find(test);
                         }
                         selectedFileIdsList.add(test);
@@ -569,7 +584,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 return permissionsWrapper.notFound();
             }
             
-            if (FileEditMode.SINGLE == mode){
+            if (FileEditMode.EDIT == mode && Referrer.FILE == referrer){
                 if (fileMetadatas.get(0).getDatasetVersion().getId() != null){
                     versionString = "DRAFT";
                 }
@@ -896,7 +911,11 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (fileReplacePageHelper.runSaveReplacementFile_Phase2()){
             JsfHelper.addSuccessMessage(getBundleString("file.message.replaceSuccess"));
             // It worked!!!  Go to page of new file!!
-            return returnToFileLandingPageAfterReplace(fileReplacePageHelper.getFirstNewlyAddedFile());
+            if (Referrer.FILE == referrer) {
+                return returnToFileLandingPageAfterReplace(fileReplacePageHelper.getFirstNewlyAddedFile());
+            } else {
+                return returnToDraftVersion();
+            }
         }else{
             // Uh oh.
             String errMsg = fileReplacePageHelper.getErrorMessages();
@@ -1114,7 +1133,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         workingVersion = dataset.getEditVersion();
         logger.fine("working version id: "+workingVersion.getId());
        
-        if (mode == FileEditMode.SINGLE){
+        if (FileEditMode.EDIT == mode && Referrer.FILE == referrer){
             JsfHelper.addSuccessMessage(getBundleString("file.message.editSuccess"));
             
         } else {
@@ -1137,7 +1156,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             ingestService.startIngestJobsForDataset(dataset, (AuthenticatedUser) session.getUser());
         }
 
-        if (mode == FileEditMode.SINGLE && fileMetadatas.size() > 0) {
+        if (FileEditMode.EDIT == mode && Referrer.FILE == referrer && fileMetadatas.size() > 0) {
             // If this was a "single file edit", i.e. an edit request sent from 
             // the individual File Landing page, we want to redirect back to 
             // the landing page. BUT ONLY if the file still exists - i.e., if 
@@ -1197,7 +1216,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             FileUtil.deleteTempFile(newFile, dataset, ingestService);
         }
 
-        if (mode == FileEditMode.SINGLE || mode == FileEditMode.SINGLE_REPLACE ) {
+        if (Referrer.FILE == referrer) {
             return returnToFileLandingPage();
         }
         if (workingVersion.getId() != null) {
@@ -1254,7 +1273,7 @@ public class EditDatafilesPage implements java.io.Serializable {
      * @return 
      */
     public boolean isFileReplaceOperation(){
-        return (mode == FileEditMode.SINGLE_REPLACE)&&(fileReplacePageHelper!= null);
+        return (mode == FileEditMode.REPLACE)&&(fileReplacePageHelper!= null);
     }
     
     public boolean allowMultipleFileUpload(){
@@ -1263,7 +1282,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
     
     public boolean showFileUploadFragment(){
-        return mode == FileEditMode.UPLOAD || mode == FileEditMode.CREATE || mode == FileEditMode.SINGLE_REPLACE;
+        return mode == FileEditMode.UPLOAD || mode == FileEditMode.CREATE || mode == FileEditMode.REPLACE;
     }
     
     
