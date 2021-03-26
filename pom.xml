@@ -42,7 +42,6 @@
         <flyway.version>5.2.4</flyway.version>
         <jhove.version>1.20.1</jhove.version>
         <jacoco.version>0.8.6</jacoco.version>
-        <dmp.version>0.34.1</dmp.version>
     </properties>
     <pluginRepositories>
         <pluginRepository>
@@ -883,14 +882,17 @@
             <id>ct</id>
             <properties>
                 <skipUnitTests>true</skipUnitTests>
+                <app.build.skip>false</app.build.skip>
+                <solr.build.skip>false</solr.build.skip>
                 <app.image.name>gdcc/dataverse-k8s:${project.version}</app.image.name>
+                <solr.image.name>gdcc/solr-k8s:${project.version}</solr.image.name>
             </properties>
             <build>
                 <plugins>
                     <plugin>
                         <groupId>io.fabric8</groupId>
                         <artifactId>docker-maven-plugin</artifactId>
-                        <version>${dmp.version}</version>
+                        <version>0.34.1</version>
                         <configuration>
                             <images>
                                 <!-- Dataverse K8s image -->
@@ -898,6 +900,7 @@
                                     <alias>dataverse</alias>
                                     <name>${app.image.name}</name>
                                     <build>
+                                        <skip>${app.build.skip}</skip>
                                         <dockerFile>${project.basedir}/conf/container/Dockerfile</dockerFile>
                                         <filter>@</filter>
                                         <assembly>
@@ -907,32 +910,12 @@
                                         </assembly>
                                     </build>
                                 </image>
-                            </images>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>solr-ct</id>
-            <properties>
-                <skipUnitTests>true</skipUnitTests>
-                <solr.image.name>gdcc/solr-k8s:${project.version}</solr.image.name>
-            </properties>
-        
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>io.fabric8</groupId>
-                        <artifactId>docker-maven-plugin</artifactId>
-                        <version>${dmp.version}</version>
-                        <configuration>
-                            <images>
                                 <!-- Solr K8s image -->
                                 <image>
                                     <alias>solr</alias>
                                     <name>${solr.image.name}</name>
                                     <build>
+                                        <skip>${solr.build.skip}</skip>
                                         <dockerFile>${project.basedir}/conf/solr/Dockerfile</dockerFile>
                                         <filter>@</filter>
                                         <assembly>
