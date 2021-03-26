@@ -284,6 +284,12 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public String save() {
         boolean passwordChanged = false;
+        
+        //First reget user to make sure they weren't deactivated or deleted
+        if (session.getUser().isAuthenticated() && !session.getUser(true).isAuthenticated()) {
+            return "dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias() + "&faces-redirect=true";
+        }
+        
         if (editMode == EditMode.CHANGE_PASSWORD) {
             final AuthenticationProvider prv = getUserAuthProvider();
             if (prv.isPasswordUpdateAllowed()) {
