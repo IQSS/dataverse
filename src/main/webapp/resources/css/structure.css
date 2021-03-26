@@ -627,13 +627,35 @@ div.edit-field div.ui-message {margin:6px 0;}
 .metadata-container table.metadata {border-collapse:separate;margin:0 4px;width:100%;}
 .metadata-container table.metadata th {width:25%;vertical-align:top;padding:6px 12px;}
 .metadata-container table.metadata td {padding:6px 12px;vertical-align:top;}
+
+/* STACK METADATA TABLE LABELS + VALUES FOR SM, XS */
 @media(max-width:767px){
-    .metadata-container table.metadata th, .metadata-container table.metadata td {display:block;width:100%;}
-    .metadata-container table.metadata th {padding-bottom:0;}
-    .metadata-container table.metadata td {padding-left:30px;}
+    .metadata-container:not(#dataset-summary-metadata) table.metadata th, .metadata-container:not(#dataset-summary-metadata) table.metadata td {display:block;width:100%;}
+    .metadata-container:not(#dataset-summary-metadata) table.metadata th {padding-bottom:0;}
+    .metadata-container:not(#dataset-summary-metadata) table.metadata td {padding-left:30px;}
+}
+/* STACK METADATA TABLE LABELS + VALUES FOR MD, SM, XS ... DATASET-SUMMARY-BLOCK ONLY */
+@media(max-width:1199px){
+    #dataset-summary-metadata.metadata-container table.metadata th, #dataset-summary-metadata.metadata-container table.metadata td {display:block;width:100%;}
+    #dataset-summary-metadata.metadata-container table.metadata th {padding-bottom:0;}
+    #dataset-summary-metadata.metadata-container table.metadata td {padding-left:30px;}
 }
 .panel-body.metadata-container {padding:15px 0;}
 .metadata-logo {max-width:180px;max-height:40px;}
+.metadata-container .truncate-more-link, .metadata-container .collapse-less-link {color: #337AB7; cursor: pointer; cursor: hand;}
+
+/* METADATA LONG STRINGS */
+.metadata-container table.metadata td > div {
+    /* TO-DO #6685 #6578 #1634 #1249 */
+}
+/* METADATA HTML */
+.metadata-container pre {
+    white-space: pre-wrap !important;
+}
+/* TRUNCATION */
+div.more-block {text-align:center; padding-top:250px; width:100%; position:absolute; bottom:0; background:linear-gradient(180deg,hsla(0,0%,100%,0),#fff 80%);}
+button.desc-more-link {margin:0; padding:0;}
+div.less-block {text-align:center;};
 
 /* Primefaces vs Bootstrap selectOneMenu fix */
 div.ui-selectonemenu.form-control {padding:0px;}

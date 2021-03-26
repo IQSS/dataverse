@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessRequest;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
+import edu.harvard.iq.dataverse.datavariable.VariableMetadata;
 import edu.harvard.iq.dataverse.datavariable.VariableMetadataUtil;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
@@ -45,7 +46,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.ejb.AsyncResult;
@@ -698,7 +701,7 @@ public class IndexServiceBean {
         return addOrUpdateDataset(indexableDataset, null);
     }
     
-    private String addOrUpdateDataset(IndexableDataset indexableDataset, Set<Long> datafilesInDraftVersion) throws  SolrServerException, IOException {
+    private String addOrUpdateDataset(IndexableDataset indexableDataset, Set<Long> datafilesInDraftVersion) throws  SolrServerException, IOException {        
         IndexableDataset.DatasetState state = indexableDataset.getDatasetState();
         Dataset dataset = indexableDataset.getDatasetVersion().getDataset();
         logger.fine("adding or updating Solr document for dataset id " + dataset.getId());
@@ -934,8 +937,7 @@ public class IndexServiceBean {
                              */
                             if ((fileMetadata.getDataFile().isRestricted() == releasedFileMetadata.getDataFile().isRestricted())) {
                                 if (fileMetadata.contentEquals(releasedFileMetadata)
-                                     /* SEK 3/12/2020 remove variable metadata indexing*/
-                                     //   && variableMetadataUtil.compareVariableMetadata(releasedFileMetadata,fileMetadata)
+                                        && variableMetadataUtil.compareVariableMetadata(releasedFileMetadata,fileMetadata)
                                         ) {
                                     indexThisMetadata = false;
                                     logger.fine("This file metadata hasn't changed since the released version; skipping indexing.");
@@ -1155,6 +1157,14 @@ public class IndexServiceBean {
                     // names and labels:
                     if (fileMetadata.getDataFile().isTabularData()) {
                         List<DataVariable> variables = fileMetadata.getDataFile().getDataTable().getDataVariables();
+                        
+                        Map<Long, VariableMetadata> variableMap = null;
+                        List<VariableMetadata> variablesByMetadata = variableService.findVarMetByFileMetaId(fileMetadata.getId());
+
+                        variableMap = 
+                            variablesByMetadata.stream().collect(Collectors.toMap(VariableMetadata::getId, Function.identity())); 
+    
+                                      
                         for (DataVariable var : variables) {
                             // Hard-coded search fields, for now:
                             // TODO: eventually: review, decide how datavariables should
@@ -1169,21 +1179,14 @@ public class IndexServiceBean {
                             if (var.getName() != null && !var.getName().equals("")) {
                                 datafileSolrInputDocument.addField(SearchFields.VARIABLE_NAME, var.getName());
                             }
-
-/* SEK 3/12/2020 remove variable metadata indexing
-                            List<VariableMetadata> vmList = variableService.findByDataVarIdAndFileMetaId(var.getId(), fileMetadata.getId());
-                            VariableMetadata vm = null;
-                            if (vmList != null && vmList.size() >0) {
-                                vm = vmList.get(0);
-                            }
-
-                            if (vmList.size() == 0 ) {
+                            
+                            VariableMetadata vm = variableMap.get(var.getId()); 
+                            if (vm == null) {    
                                 //Variable Label
                                 if (var.getLabel() != null && !var.getLabel().equals("")) {
                                     datafileSolrInputDocument.addField(SearchFields.VARIABLE_LABEL, var.getLabel());
                                 }
-
-                            } else if (vm != null) {
+                            } else {
                                 if (vm.getLabel() != null && !vm.getLabel().equals("")  ) {
                                     datafileSolrInputDocument.addField(SearchFields.VARIABLE_LABEL, vm.getLabel());
                                 }
@@ -1204,7 +1207,6 @@ public class IndexServiceBean {
                                 }
 
                             }
-*/
                         }
                         
                         // TABULAR DATA TAGS:

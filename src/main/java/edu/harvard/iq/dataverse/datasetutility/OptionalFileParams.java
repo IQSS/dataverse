@@ -77,7 +77,9 @@ public class OptionalFileParams {
     public static final String CHECKSUM_OBJECT_TYPE = "@type";
     public static final String CHECKSUM_OBJECT_VALUE = "@value";
 
-     
+    public OptionalFileParams() {
+    }
+    
     public OptionalFileParams(String jsonData) throws DataFileTagException{
         
         if (jsonData != null){
@@ -106,6 +108,21 @@ public class OptionalFileParams {
         setCategories(newCategories);
         this.addFileDataTags(potentialFileDataTags);
         this.restrict = restrict;
+    }
+
+    //For use in replace operations - load the file metadata from the file being replaced so it can be applied to the new file
+    //checksum and mimetype aren't needed
+    public OptionalFileParams(DataFile df) throws DataFileTagException {
+        FileMetadata fm = df.getFileMetadata();
+
+        this.description = fm.getDescription();
+        setCategories(fm.getCategoriesByName());
+        this.addFileDataTags(df.getTagLabels());
+        this.restrict = fm.isRestricted();
+        //Explicitly do not replace the file name - replaces with -force may change the mimetype and extension
+        //this.label = fm.getLabel(); 
+        this.directoryLabel = fm.getDirectoryLabel();
+        this.provFreeForm = fm.getProvFreeForm();
     }
 
 
@@ -289,12 +306,7 @@ public class OptionalFileParams {
 //            logger.log(Level.SEVERE, "jsonData is null");
         }
         JsonObject jsonObj;
-        try {
-            jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
-        } catch (ClassCastException ex) {
-            logger.info("Exception parsing string '" + jsonData + "': " + ex);
-            return;
-        }
+        jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
 
         // -------------------------------
         // get description as string
