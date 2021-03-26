@@ -241,7 +241,7 @@ public class DataFile extends DvObject implements Comparable {
     @Transient
     private Boolean deleted;
 
-    public Boolean isDeleted() {
+    public Boolean getDeleted() {
         return deleted;
     }
 

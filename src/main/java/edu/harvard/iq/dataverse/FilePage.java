@@ -788,11 +788,11 @@ public class FilePage implements java.io.Serializable {
     
     // wrappermethod to see if the file has been deleted (or replaced) in the current version
     public boolean isDeletedFile () {
-        if (file.isDeleted() == null) {
+        if (file.getDeleted() == null) {
             file.setDeleted(datafileService.hasBeenDeleted(file));
         }
         
-        return file.isDeleted();
+        return file.getDeleted();
     }
     
     /**
