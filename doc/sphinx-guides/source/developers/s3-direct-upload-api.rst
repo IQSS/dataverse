@@ -88,9 +88,10 @@ jsonData normally includes information such as a file description, tags, provena
 * "fileName" - String
 * "mimeType" - String
 * "fileSize" - number of bytes
-* fixity/checksum: either:
-** "md5Hash" - String with MD5 hash value, or
-** "checksum" - Json Object with "@type" field specifying the algorithm used and "@value" field with the value from that algorithm, both Strings
+* fixity/checksum: either: 
+
+  * "md5Hash" - String with MD5 hash value, or
+  * "checksum" - Json Object with "@type" field specifying the algorithm used and "@value" field with the value from that algorithm, both Strings 
 
 The allowed checksum algorithms are defined by the edu.harvard.iq.dataverse.DataFile.CheckSumType class and currently include MD5, SHA-1, SHA-256, and SHA-512
 
