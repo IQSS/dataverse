@@ -92,7 +92,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public enum FileEditMode {
 
-        EDIT, UPLOAD, CREATE, REPLACE, TEST
+        EDIT, UPLOAD, CREATE, REPLACE
     };
     
     public enum Referrer {
