@@ -11,8 +11,7 @@ The `OpenID Connect <https://openid.net/connect/>`_ (or OIDC) standard support i
 as it has been based on the `OAuth 2.0 <https://oauth.net/2/>`_ standard. Quick summary: OIDC is using OAuth 2.0, but
 adds a standardized way how authentication is done, while this is up to providers when using OAuth 2.0 for authentication.
 
-Being a standard, you can easily enable the use of any OpenID connect compliant provider out there for login into your
-Dataverse installation.
+Being a standard, you can easily enable the use of any OpenID connect compliant provider out there for login into your Dataverse installation.
 
 Some prominent provider examples:
 
@@ -32,13 +31,13 @@ Other use cases and combinations
 
 - Using your custom identity management solution might be a workaround when you seek for LDAP support, but
   don't want to go for services like Microsoft Azure AD et al.
-- You want to enable users to login in multiple different ways but appear as one account to Dataverse. This is
-  currently not possible within Dataverse itself, but hosting an IDM and attaching Dataverse solves it.
+- You want to enable users to login in multiple different ways but appear as one account to the Dataverse installation. This is
+  currently not possible within the Dataverse Software itself, but hosting an IDM and attaching the Dataverse installation solves it.
 - You want to use the `eduGain Federation <https://edugain.org>`_ or other well known SAML federations, but don't want
   to deploy Shibboleth as your service provider. Using an IDM solution in front easily allows you to use them
   without hassle.
 - There's also a `Shibboleth IdP (not SP!) extension <https://github.com/CSCfi/shibboleth-idp-oidc-extension>`_,
-  so if you already have a Shibboleth identity provider at your institution, you can reuse it more easily with Dataverse.
+  so if you already have a Shibboleth identity provider at your institution, you can reuse it more easily with your Dataverse installation.
 - In the future, OpenID Connect might become a successor to the large scale R&E SAML federations we have nowadays.
   See also `OpenID Connect Federation Standard <https://openid.net/specs/openid-connect-federation-1_0.html>`_ (in development)
 
@@ -48,10 +47,10 @@ How to use
 Just like with :doc:`oauth2` you need to obtain a *Client ID* and a *Client Secret* from your provider(s).
 
 .. note::
-  Dataverse does not support `OpenID Connect Dynamic Registration <https://openid.net/specs/openid-connect-registration-1_0.html>`_.
+  The Dataverse Software does not support `OpenID Connect Dynamic Registration <https://openid.net/specs/openid-connect-registration-1_0.html>`_.
   You need to apply for credentials out-of-band.
 
-Dataverse will discover all necessary metadata for a given provider on its own (this is `part of the standard
+The Dataverse installation will discover all necessary metadata for a given provider on its own (this is `part of the standard
 <http://openid.net/specs/openid-connect-discovery-1_0.html>`_).
 
 To enable this, you need to specify an *Issuer URL* when creating the configuration for your provider (see below).
@@ -73,11 +72,11 @@ Please create a my-oidc-provider.json file like this, replacing every ``<...>`` 
         "enabled":true
     }
 
-Now load the configuration into Dataverse using the same API as with :doc:`oauth2`:
+Now load the configuration into your Dataverse installation using the same API as with :doc:`oauth2`:
 
 ``curl -X POST -H 'Content-type: application/json' --upload-file my-oidc-provider.json http://localhost:8080/api/admin/authenticationProviders``
 
-Dataverse will automatically try to load the provider and retrieve the metadata. Watch the app server log for errors.
+The Dataverse installation will automatically try to load the provider and retrieve the metadata. Watch the app server log for errors.
 You should see the new provider under "Other options" on the Log In page, as described in the :doc:`/user/account`
 section of the User Guide.
 
@@ -86,5 +85,5 @@ configuration option. For details, see :doc:`config`.
 
 .. hint::
    In contrast to our :doc:`oauth2`, you can use multiple providers by creating distinct configurations enabled by
-   the same technology and without modifying the Dataverse code base (standards for the win!).
+   the same technology and without modifying the Dataverse Software code base (standards for the win!).
 

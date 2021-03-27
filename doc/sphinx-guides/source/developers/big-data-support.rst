@@ -11,18 +11,18 @@ Various components need to be installed and/or configured for big data support.
 S3 Direct Upload and Download
 -----------------------------
 
-A lightweight option for supporting file sizes beyond a few gigabytes - a size that can cause performance issues when uploaded through the Dataverse server itself - is to configure an S3 store to provide direct upload and download via 'pre-signed URLs'. When these options are configured, file uploads and downloads are made directly to and from a configured S3 store using secure (https) connections that enforce Dataverse's access controls. (The upload and download URLs are signed with a unique key that only allows access for a short time period and Dataverse will only generate such a URL if the user has permission to upload/download the specific file in question.)
+A lightweight option for supporting file sizes beyond a few gigabytes - a size that can cause performance issues when uploaded through a Dataverse installation itself - is to configure an S3 store to provide direct upload and download via 'pre-signed URLs'. When these options are configured, file uploads and downloads are made directly to and from a configured S3 store using secure (https) connections that enforce a Dataverse installation's access controls. (The upload and download URLs are signed with a unique key that only allows access for a short time period and a Dataverse installation will only generate such a URL if the user has permission to upload/download the specific file in question.)
 
-This option can handle files >40GB and could be appropriate for files up to a TB. Other options can scale farther, but this option has the advantages that it is simple to configure and does not require any user training - uploads and downloads are done via the same interface as normal uploads to Dataverse.
+This option can handle files >40GB and could be appropriate for files up to a TB. Other options can scale farther, but this option has the advantages that it is simple to configure and does not require any user training - uploads and downloads are done via the same interface as normal uploads to a Dataverse installation.
 
-To configure these options, an administrator must set two JVM options for the Dataverse server using the same process as for other configuration options:
+To configure these options, an administrator must set two JVM options for the Dataverse installation using the same process as for other configuration options:
 
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.download-redirect=true"``
 
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.upload-redirect=true"``
 
 
-With multiple stores configured, it is possible to configure one S3 store with direct upload and/or download to support large files (in general or for specific dataverses) while configuring only direct download, or no direct access for another store.
+With multiple stores configured, it is possible to configure one S3 store with direct upload and/or download to support large files (in general or for specific Dataverse collections) while configuring only direct download, or no direct access for another store.
 
 The direct upload option now switches between uploading the file in one piece (up to 1 GB by default) and sending it as multiple parts. The default can be changed by setting:
   
@@ -32,12 +32,12 @@ For AWS, the minimum allowed part size is 5*1024*1024 bytes and the maximum is 5
 
 It is also possible to set file upload size limits per store. See the :MaxFileUploadSizeInBytes setting described in the :doc:`/installation/config` guide.
 
-At present, one potential drawback for direct-upload is that files are only partially 'ingested', tabular and FITS files are processed, but zip files are not unzipped, and the file contents are not inspected to evaluate their mimetype. This could be appropriate for large files, or it may be useful to completely turn off ingest processing for performance reasons (ingest processing requires a copy of the file to be retrieved by Dataverse from the S3 store). A store using direct upload can be configured to disable all ingest processing for files above a given size limit:
+At present, one potential drawback for direct-upload is that files are only partially 'ingested', tabular and FITS files are processed, but zip files are not unzipped, and the file contents are not inspected to evaluate their mimetype. This could be appropriate for large files, or it may be useful to completely turn off ingest processing for performance reasons (ingest processing requires a copy of the file to be retrieved by the Dataverse installation from the S3 store). A store using direct upload can be configured to disable all ingest processing for files above a given size limit:
 
 ``./asadmin create-jvm-options "-Ddataverse.files.<id>.ingestsizelimit=<size in bytes>"``
 
 
-**IMPORTANT:** One additional step that is required to enable direct uploads via Dataverse and for direct download to work with previewers is to allow cross site (CORS) requests on your S3 store. 
+**IMPORTANT:** One additional step that is required to enable direct uploads via a Dataverse installation and for direct download to work with previewers is to allow cross site (CORS) requests on your S3 store. 
 The example below shows how to enable CORS rules (to support upload and download) on a bucket using the AWS CLI command line tool. Note that you may want to limit the AllowedOrigins and/or AllowedHeaders further.  https://github.com/GlobalDataverseCommunityConsortium/dataverse-previewers/wiki/Using-Previewers-with-download-redirects-from-S3 has some additional information about doing this.
 
 ``aws s3api put-bucket-cors --bucket <BUCKET_NAME> --cors-configuration file://cors.json``
@@ -59,7 +59,7 @@ with the contents of the file cors.json as follows:
 
 Alternatively, you can enable CORS using the AWS S3 web interface, using json-encoded rules as in the example above. 
 
-Since the direct upload mechanism creates the final file rather than an intermediate temporary file, user actions, such as neither saving or canceling an upload session before closing the browser page, can leave an abandoned file in the store. The direct upload mechanism attempts to use S3 Tags to aid in identifying/removing such files. Upon upload, files are given a "dv-status":"temp" tag which is removed when the dataset changes are saved and the new file(s) are added in Dataverse. Note that not all S3 implementations support Tags: Minio does not. WIth such stores, direct upload works, but Tags are not used. 
+Since the direct upload mechanism creates the final file rather than an intermediate temporary file, user actions, such as neither saving or canceling an upload session before closing the browser page, can leave an abandoned file in the store. The direct upload mechanism attempts to use S3 Tags to aid in identifying/removing such files. Upon upload, files are given a "dv-status":"temp" tag which is removed when the dataset changes are saved and the new file(s) are added in the Dataverse installation. Note that not all S3 implementations support Tags: Minio does not. WIth such stores, direct upload works, but Tags are not used. 
 
 Data Capture Module (DCM)
 -------------------------
@@ -71,37 +71,37 @@ DCM was developed and tested using Glassfish but these docs have been updated wi
 Install a DCM
 ~~~~~~~~~~~~~
 
-Installation instructions can be found at https://github.com/sbgrid/data-capture-module/blob/master/doc/installation.md. Note that shared storage (posix or AWS S3) between Dataverse and your DCM is required. You cannot use a DCM with Swift at this point in time.
+Installation instructions can be found at https://github.com/sbgrid/data-capture-module/blob/master/doc/installation.md. Note that shared storage (posix or AWS S3) between your Dataverse installation and your DCM is required. You cannot use a DCM with Swift at this point in time.
 
 .. FIXME: Explain what ``dataverse.files.dcm-s3-bucket-name`` is for and what it has to do with ``dataverse.files.s3.bucket-name``.
 
-Once you have installed a DCM, you will need to configure two database settings on the Dataverse side. These settings are documented in the :doc:`/installation/config` section of the Installation Guide:
+Once you have installed a DCM, you will need to configure two database settings on the Dataverse installation side. These settings are documented in the :doc:`/installation/config` section of the Installation Guide:
 
 - ``:DataCaptureModuleUrl`` should be set to the URL of a DCM you installed.
 - ``:UploadMethods`` should include ``dcm/rsync+ssh``.
   
-This will allow your Dataverse installation to communicate with your DCM, so that Dataverse can download rsync scripts for your users.
+This will allow your Dataverse installation to communicate with your DCM, so that your Dataverse installation can download rsync scripts for your users.
 
-Downloading rsync scripts via Dataverse API
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Downloading rsync scripts via Your Dataverse Installation's API
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The rsync script can be downloaded from Dataverse via API using an authorized API token. In the curl example below, substitute ``$PERSISTENT_ID`` with a DOI or Handle:
+The rsync script can be downloaded from your Dataverse installation via API using an authorized API token. In the curl example below, substitute ``$PERSISTENT_ID`` with a DOI or Handle:
 
 ``curl -H "X-Dataverse-key: $API_TOKEN" $DV_BASE_URL/api/datasets/:persistentId/dataCaptureModule/rsync?persistentId=$PERSISTENT_ID``
 
-How a DCM reports checksum success or failure to Dataverse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+How a DCM reports checksum success or failure to your Dataverse Installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Once the user uploads files to a DCM, that DCM will perform checksum validation and report to Dataverse the results of that validation. The DCM must be configured to pass the API token of a superuser. The implementation details, which are subject to change, are below.
+Once the user uploads files to a DCM, that DCM will perform checksum validation and report to your Dataverse installation the results of that validation. The DCM must be configured to pass the API token of a superuser. The implementation details, which are subject to change, are below.
 
-The JSON that a DCM sends to Dataverse on successful checksum validation looks something like the contents of :download:`checksumValidationSuccess.json <../_static/installation/files/root/big-data-support/checksumValidationSuccess.json>` below:
+The JSON that a DCM sends to your Dataverse installation on successful checksum validation looks something like the contents of :download:`checksumValidationSuccess.json <../_static/installation/files/root/big-data-support/checksumValidationSuccess.json>` below:
 
 .. literalinclude:: ../_static/installation/files/root/big-data-support/checksumValidationSuccess.json
    :language: json
 
 - ``status`` - The valid strings to send are ``validation passed`` and ``validation failed``.
-- ``uploadFolder`` - This is the directory on disk where Dataverse should attempt to find the files that a DCM has moved into place. There should always be a ``files.sha`` file and a least one data file. ``files.sha`` is a manifest of all the data files and their checksums. The ``uploadFolder`` directory is inside the directory where data is stored for the dataset and may have the same name as the "identifier" of the persistent id (DOI or Handle). For example, you would send ``"uploadFolder": "DNXV2H"`` in the JSON file when the absolute path to this directory is ``/usr/local/payara5/glassfish/domains/domain1/files/10.5072/FK2/DNXV2H/DNXV2H``.
-- ``totalSize`` - Dataverse will use this value to represent the total size in bytes of all the files in the "package" that's created. If 360 data files and one ``files.sha`` manifest file are in the ``uploadFolder``, this value is the sum of the 360 data files.
+- ``uploadFolder`` - This is the directory on disk where your Dataverse installation should attempt to find the files that a DCM has moved into place. There should always be a ``files.sha`` file and a least one data file. ``files.sha`` is a manifest of all the data files and their checksums. The ``uploadFolder`` directory is inside the directory where data is stored for the dataset and may have the same name as the "identifier" of the persistent id (DOI or Handle). For example, you would send ``"uploadFolder": "DNXV2H"`` in the JSON file when the absolute path to this directory is ``/usr/local/payara5/glassfish/domains/domain1/files/10.5072/FK2/DNXV2H/DNXV2H``.
+- ``totalSize`` - Your Dataverse installation will use this value to represent the total size in bytes of all the files in the "package" that's created. If 360 data files and one ``files.sha`` manifest file are in the ``uploadFolder``, this value is the sum of the 360 data files.
 
 
 Here's the syntax for sending the JSON.
@@ -115,12 +115,12 @@ Steps to set up a DCM mock for Development
 See instructions at https://github.com/sbgrid/data-capture-module/blob/master/doc/mock.md
 
 
-Add Dataverse settings to use mock (same as using DCM, noted above):
+Add Dataverse Installation settings to use mock (same as using DCM, noted above):
 
 - ``curl http://localhost:8080/api/admin/settings/:DataCaptureModuleUrl -X PUT -d "http://localhost:5000"``
 - ``curl http://localhost:8080/api/admin/settings/:UploadMethods -X PUT -d "dcm/rsync+ssh"``
 
-At this point you should be able to download a placeholder rsync script. Dataverse is then waiting for news from the DCM about if checksum validation has succeeded or not. First, you have to put files in place, which is usually the job of the DCM. You should substitute "X1METO" for the "identifier" of the dataset you create. You must also use the proper path for where you store files in your dev environment.
+At this point you should be able to download a placeholder rsync script. Your Dataverse installation is then waiting for news from the DCM about if checksum validation has succeeded or not. First, you have to put files in place, which is usually the job of the DCM. You should substitute "X1METO" for the "identifier" of the dataset you create. You must also use the proper path for where you store files in your dev environment.
 
 - ``mkdir /usr/local/payara5/glassfish/domains/domain1/files/10.5072/FK2/X1METO``
 - ``mkdir /usr/local/payara5/glassfish/domains/domain1/files/10.5072/FK2/X1METO/X1METO``
@@ -130,7 +130,7 @@ At this point you should be able to download a placeholder rsync script. Dataver
 
 
 
-Now the files are in place and you need to send JSON to Dataverse with a success or failure message as described above. Make a copy of ``doc/sphinx-guides/source/_static/installation/files/root/big-data-support/checksumValidationSuccess.json`` and put the identifier in place such as "X1METO" under "uploadFolder"). Then use curl as described above to send the JSON.
+Now the files are in place and you need to send JSON to your Dataverse installation with a success or failure message as described above. Make a copy of ``doc/sphinx-guides/source/_static/installation/files/root/big-data-support/checksumValidationSuccess.json`` and put the identifier in place such as "X1METO" under "uploadFolder"). Then use curl as described above to send the JSON.
 
 Troubleshooting
 ~~~~~~~~~~~~~~~
@@ -155,7 +155,7 @@ Optional steps for setting up the S3 Docker DCM Variant
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Before: the default bucket for DCM to hold files in S3 is named test-dcm. It is coded into `post_upload_s3.bash` (line 30). Change to a different bucket if needed.
-- Also Note: With the new support for multiple file store in Dataverse, DCM requires a store with id="s3" and DCM will only work with this store.
+- Also Note: With the new support for multiple file store in the Dataverse Software, DCM requires a store with id="s3" and DCM will only work with this store.
 
   - Add AWS bucket info to dcmsrv
     - Add AWS credentials to ``~/.aws/credentials``
@@ -164,7 +164,7 @@ Optional steps for setting up the S3 Docker DCM Variant
       - ``aws_access_key_id =``
       - ``aws_secret_access_key =``
 
-- Dataverse configuration (on dvsrv):
+- Dataverse installation configuration (on dvsrv):
 
   - Set S3 as the storage driver
 
@@ -175,7 +175,7 @@ Optional steps for setting up the S3 Docker DCM Variant
     - ``./asadmin create-jvm-options "\-Ddataverse.files.s3.label=s3"``
     
 
-  - Add AWS bucket info to Dataverse
+  - Add AWS bucket info to your Dataverse installation
     - Add AWS credentials to ``~/.aws/credentials``
     
       - ``[default]``
@@ -187,13 +187,13 @@ Optional steps for setting up the S3 Docker DCM Variant
       - ``[default]``
       - ``region = us-east-1``
 
-  - Add the S3 bucket names to Dataverse
+  - Add the S3 bucket names to your Dataverse installation
 
-    - S3 bucket for Dataverse
+    - S3 bucket for your Dataverse installation
 
       - ``/usr/local/payara5/glassfish/bin/asadmin create-jvm-options "-Ddataverse.files.s3.bucket-name=iqsstestdcmbucket"``
 
-    - S3 bucket for DCM (as Dataverse needs to do the copy over)
+    - S3 bucket for DCM (as your Dataverse installation needs to do the copy over)
 
       - ``/usr/local/payara5/glassfish/bin/asadmin create-jvm-options "-Ddataverse.files.dcm-s3-bucket-name=test-dcm"``
 
@@ -255,7 +255,7 @@ Configuring the RSAL Mock
 
 Info for configuring the RSAL Mock: https://github.com/sbgrid/rsal/tree/master/mocks
 
-Also, to configure Dataverse to use the new workflow you must do the following (see also the :doc:`workflows` section):
+Also, to configure your Dataverse installation to use the new workflow you must do the following (see also the :doc:`workflows` section):
 
 1. Configure the RSAL URL:
 

@@ -121,9 +121,12 @@ public class MailServiceBean implements java.io.Serializable {
 
 
         boolean sent = false;
-        String rootDataverseName = dataverseService.findRootDataverse().getName();
-        InternetAddress systemAddress = getSystemAddress();
-        String body = messageText + BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName)));
+        InternetAddress systemAddress = getSystemAddress(); 
+        
+        String body = messageText
+                + (isHtmlContent ? BundleUtil.getStringFromBundle("notification.email.closing.html", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress)))
+                        : BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress))));
+       
         logger.fine("Sending email to " + to + ". Subject: <<<" + subject + ">>>. Body: " + body);
         try {
             MimeMessage msg = new MimeMessage(session);
@@ -241,8 +244,7 @@ public class MailServiceBean implements java.io.Serializable {
            Object objectOfNotification =  getObjectOfNotification(notification);
            if (objectOfNotification != null){
                String messageText = getMessageTextBasedOnNotification(notification, objectOfNotification, comment, requestor);
-               String rootDataverseName = dataverseService.findRootDataverse().getName();
-               String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, rootDataverseName, objectOfNotification);
+               String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, objectOfNotification);
                if (!(messageText.isEmpty() || subjectText.isEmpty())){
                    retval = sendSystemEmail(emailAddress, subjectText, messageText, isHtmlContent);
                } else {
@@ -492,14 +494,33 @@ public class MailServiceBean implements java.io.Serializable {
                     version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner()), optionalReturnReason};
                 messageText += MessageFormat.format(pattern, paramArrayReturnedDataset);
                 return messageText;
+                
+            case WORKFLOW_SUCCESS:
+                version =  (DatasetVersion) targetObject;
+                pattern = BundleUtil.getStringFromBundle("notification.email.workflow.success");
+                
+                if (comment == null) {
+                    comment = BundleUtil.getStringFromBundle("notification.email.workflow.nullMessage");
+                }
+                String[] paramArrayWorkflowSuccess = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()), comment};
+                messageText += MessageFormat.format(pattern, paramArrayWorkflowSuccess);
+                return messageText;
+            case WORKFLOW_FAILURE:
+                version =  (DatasetVersion) targetObject;
+                pattern = BundleUtil.getStringFromBundle("notification.email.workflow.failure");
+                if (comment == null) {
+                    comment = BundleUtil.getStringFromBundle("notification.email.workflow.nullMessage");
+                }
+                String[] paramArrayWorkflowFailure = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()), comment};
+                messageText += MessageFormat.format(pattern, paramArrayWorkflowFailure);
+                return messageText;
             case CREATEACC:
-                String rootDataverseName = dataverseService.findRootDataverse().getName();
                 InternetAddress systemAddress = getSystemAddress();
                 String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome", Arrays.asList(
-                        BrandingUtil.getInstallationBrandName(rootDataverseName),
+                        BrandingUtil.getInstallationBrandName(),
                         systemConfig.getGuidesBaseUrl(),
                         systemConfig.getGuidesVersion(),
-                        BrandingUtil.getSupportTeamName(systemAddress, rootDataverseName),
+                        BrandingUtil.getSupportTeamName(systemAddress),
                         BrandingUtil.getSupportTeamEmailAddress(systemAddress)
                 ));
                 String optionalConfirmEmailAddon = confirmEmailService.optionalConfirmEmailAddonMsg(userNotification.getUser());
@@ -541,7 +562,7 @@ public class MailServiceBean implements java.io.Serializable {
 
             case INGESTCOMPLETED:
                 dataset = (Dataset) targetObject;
-
+                messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
                 String ingestedCompletedMessage = messageText + BundleUtil.getStringFromBundle("notification.ingest.completed", Arrays.asList(
                         systemConfig.getDataverseSiteUrl(),
                         dataset.getGlobalIdString(),
@@ -552,7 +573,7 @@ public class MailServiceBean implements java.io.Serializable {
                 return ingestedCompletedMessage;
             case INGESTCOMPLETEDWITHERRORS:
                 dataset = (Dataset) targetObject;
-
+                messageText = BundleUtil.getStringFromBundle("notification.email.greeting.html");
                 String ingestedCompletedWithErrorsMessage = messageText + BundleUtil.getStringFromBundle("notification.ingest.completedwitherrors", Arrays.asList(
                         systemConfig.getDataverseSiteUrl(),
                         dataset.getGlobalIdString(),
@@ -590,6 +611,8 @@ public class MailServiceBean implements java.io.Serializable {
             case PUBLISHEDDS:
             case PUBLISHFAILED_PIDREG:
             case RETURNEDDS:
+            case WORKFLOW_SUCCESS:
+            case WORKFLOW_FAILURE:
                 return versionService.find(userNotification.getObjectId());
             case CREATEACC:
                 return userNotification.getUser();

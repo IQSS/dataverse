@@ -54,6 +54,8 @@ import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.workflows.WorkflowComment;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -1107,6 +1109,29 @@ public class DatasetPage implements java.io.Serializable {
         
     }
     
+    
+    //get a string to add to save success message
+    //depends on dataset state and user privleges
+    private String getReminderString(Dataset dataset) {
+
+        //dataset id is null before first save -- needed for create mode
+        if( dataset.getId() == null || !dataset.isReleased() ){
+            //messages for draft state.
+            if (canPublishDataset()){
+                return BundleUtil.getStringFromBundle("dataset.message.publish.remind.draft");
+            } else {
+                return BundleUtil.getStringFromBundle("dataset.message.submit.remind.draft");
+            }            
+        } else{
+            //messages for new version - post-publish
+            if (canPublishDataset()){
+                return BundleUtil.getStringFromBundle("dataset.message.publish.remind.version");
+            } else {
+                return BundleUtil.getStringFromBundle("dataset.message.submit.remind.version");
+            }           
+        }             
+    }   
+    
     //For a single file
     public String getComputeUrl(FileMetadata metadata) {
         SwiftAccessIO swiftObject = null;
@@ -1280,6 +1305,10 @@ public class DatasetPage implements java.io.Serializable {
     public boolean canPublishDataverse() {
         return permissionsWrapper.canIssuePublishDataverseCommand(dataset.getOwner());
     }
+    
+    public boolean canPublishDataset(){
+        return permissionsWrapper.canIssuePublishDatasetCommand(dataset);
+    }
 
     public boolean canViewUnpublishedDataset() {
         return permissionsWrapper.canViewUnpublishedDataset( dvRequestService.getDataverseRequest(), dataset);
@@ -1309,15 +1338,6 @@ public class DatasetPage implements java.io.Serializable {
             return true;
         }
         return false;
-    }
-    /* 
-       TODO/OPTIMIZATION: This is still costing us N SELECT FROM GuestbookResponse queries, 
-       where N is the number of files. This could of course be replaced by a query that'll 
-       look up all N at once... Not sure if it's worth it; especially now that N
-       will always be 10, for the initial page load. -- L.A. 4.2.1
-     */
-    public Long getGuestbookResponseCount(FileMetadata fileMetadata) {
-        return guestbookResponseService.getCountGuestbookResponsesByDataFileId(fileMetadata.getDataFile().getId());
     }
     /**
      * Check Dataset related permissions
@@ -1865,7 +1885,9 @@ public class DatasetPage implements java.io.Serializable {
                 MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, workingVersion);
                 mdcLogService.logEntry(entry);
             }
-
+            displayWorkflowComments();
+            
+            
             if (initFull) {
                 // init the list of FileMetadatas
                 if (workingVersion.isDraft() && canUpdateDataset()) {
@@ -2025,6 +2047,22 @@ public class DatasetPage implements java.io.Serializable {
         return null;
     }
     
+    private void displayWorkflowComments() {
+        List<WorkflowComment> comments = workingVersion.getWorkflowComments();
+        for (WorkflowComment wfc : comments) {
+            if (wfc.isToBeShown() && wfc.getDatasetVersion().equals(workingVersion)
+                    && wfc.getAuthenticatedUser().equals(session.getUser())) {
+                if (wfc.getType() == WorkflowComment.Type.WORKFLOW_SUCCESS) {
+                    JsfHelper.addSuccessMessage(wfc.getMessage());
+
+                } else if (wfc.getType() == WorkflowComment.Type.WORKFLOW_FAILURE) {
+                    JsfHelper.addWarningMessage(wfc.getMessage());
+                }
+                datasetService.markWorkflowCommentAsRead(wfc);
+            }
+        }
+    }
+
     private void displayLockInfo(Dataset dataset) {
         // Various info messages, when the dataset is locked (for various reasons):
         if (dataset.isLocked() && canUpdateDataset()) {
@@ -2064,9 +2102,8 @@ public class DatasetPage implements java.io.Serializable {
                         BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.contactSupport"));
             } 
             if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
-                String rootDataverseName = dataverseService.findRootDataverse().getName();
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message"),
-                        BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details", Arrays.asList(BrandingUtil.getSupportTeamName(null, rootDataverseName))));
+                        BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details", Arrays.asList(BrandingUtil.getSupportTeamName(null))));
             }
         }
         
@@ -2712,6 +2749,8 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
 
+        displayWorkflowComments();
+        
         return "";
     }
     
@@ -3356,6 +3395,8 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         }
         
+
+        
         // Use the Create or Update command to save the dataset: 
         Command<Dataset> cmd;
         Map<Long, String> deleteStorageLocations = null;
@@ -3380,8 +3421,7 @@ public class DatasetPage implements java.io.Serializable {
                     if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress) || lockTest.isLockedFor(DatasetLock.Reason.EditInProgress)) {
                         logger.log(Level.INFO, "Couldn''t save dataset: {0}", "It is locked."
                                 + "");
-                        String rootDataverseName = dataverseService.findRootDataverse().getName();
-                        JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message"),BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details", Arrays.asList(BrandingUtil.getSupportTeamName(null, rootDataverseName))));
+                        JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message"),BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details", Arrays.asList(BrandingUtil.getSupportTeamName(null))));
                         return returnToDraftVersion();
                     }
                 }
@@ -3459,7 +3499,7 @@ public class DatasetPage implements java.io.Serializable {
                     }
                     if (addFilesSuccess && dataset.getFiles().size() > 0) {
                         if (nNewFiles == dataset.getFiles().size()) {
-                            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess"));
+                            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess").concat(" ").concat(getReminderString(dataset)));
                         } else {
                             String partialSuccessMessage = BundleUtil.getStringFromBundle("dataset.message.createSuccess.partialSuccessSavingFiles");
                             partialSuccessMessage = partialSuccessMessage.replace("{0}", "" + dataset.getFiles().size() + "");
@@ -3469,26 +3509,26 @@ public class DatasetPage implements java.io.Serializable {
                     } else {
                         JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess.failedToSaveFiles"));
                     }
-                } else {
-                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess"));
+                } else {                    
+                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess").concat(" ").concat(getReminderString(dataset)));
                 }
             }
             if (editMode.equals(EditMode.METADATA)) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.metadataSuccess"));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.metadataSuccess").concat(" ").concat(getReminderString(dataset)));
             }
             if (editMode.equals(EditMode.LICENSE)) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.termsSuccess"));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.termsSuccess").concat(" ").concat(getReminderString(dataset)));
             }
             if (editMode.equals(EditMode.FILE)) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.filesSuccess"));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.filesSuccess").concat(" ").concat(getReminderString(dataset)));
             }
 
         } else {
             // must have been a bulk file update or delete:
             if (bulkFileDeleteInProgress) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileDeleteSuccess"));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileDeleteSuccess").concat(" ").concat(getReminderString(dataset)));
             } else {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileUpdateSuccess"));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileUpdateSuccess").concat(" ").concat(getReminderString(dataset)));
             }
         }
 
@@ -4209,13 +4249,13 @@ public class DatasetPage implements java.io.Serializable {
     public List< String[]> getExporters(){
         List<String[]> retList = new ArrayList<>();
         String myHostURL = getDataverseSiteUrl();
-        for (String [] provider : ExportService.getInstance(settingsService).getExportersLabels() ){
+        for (String [] provider : ExportService.getInstance().getExportersLabels() ){
             String formatName = provider[1];
             String formatDisplayName = provider[0];
             
             Exporter exporter = null; 
             try {
-                exporter = ExportService.getInstance(settingsService).getExporter(formatName);
+                exporter = ExportService.getInstance().getExporter(formatName);
             } catch (ExportException ex) {
                 exporter = null;
             }
@@ -5107,15 +5147,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     
-    public FileDownloadHelper getFileDownloadHelper() {
-        return fileDownloadHelper;
-    }
-
-    public void setFileDownloadHelper(FileDownloadHelper fileDownloadHelper) {
-        this.fileDownloadHelper = fileDownloadHelper;
-    }
-    
-    
+    // todo: we should be able to remove - this is passed in the html pages to other fragments, but they could just access this service bean directly.
     public FileDownloadServiceBean getFileDownloadService() {
         return fileDownloadService;
     }
@@ -5167,8 +5199,7 @@ public class DatasetPage implements java.io.Serializable {
      * @return the publisher of the version
      */
     public String getPublisher() {
-        assert (null != workingVersion);
-        return workingVersion.getRootDataverseNameforCitation();
+        return dataverseService.getRootDataverseName();
     }
     
     public void downloadRsyncScript() {
@@ -5313,7 +5344,7 @@ public class DatasetPage implements java.io.Serializable {
     
     public String getJsonLd() {
         if (isThisLatestReleasedVersion()) {
-            ExportService instance = ExportService.getInstance(settingsService);
+            ExportService instance = ExportService.getInstance();
             String jsonLd = instance.getExportAsString(dataset, SchemaDotOrgExporter.NAME);
             if (jsonLd != null) {
                 logger.fine("Returning cached schema.org JSON-LD.");

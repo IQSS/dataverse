@@ -326,8 +326,8 @@
                             </f:facet>
                             <p:column selectionMode="multiple" class="col-select-width text-center" style="width:40px !important;"/>
                             <p:column class="col-file-metadata">
-                                <div class="col-file-flexbox">
-                                    <div class="col-file-thumb pull-left">
+                                <div id="fileInfoInclude-filesTable" class="col-sm-12 row">
+                                    <div class="pull-left col-file-thumb">
                                         <div class="thumbnail-block text-center">
                                             <!-- Thumbnail Preview -->
                                             <span class="file-thumbnail-preview-img" jsf:rendered="#{!empty fileMetadata.dataFile.id and dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)}"
@@ -353,7 +353,7 @@
                                             </span>
                                         </div>
                                     </div>
-                                    <div class="file-metadata-block">
+                                    <div class="col-md-10 file-metadata-block">
                                         <label class="control-label" for="fileName" style="margin-right:1em;margin-bottom:.5em;">
                                             #{bundle['file.fileName']}
                                         </label>
@@ -369,20 +369,20 @@
                                                      style="width:60%; margin-bottom:.5em;" disabled="#{fileMetadata.dataFile.filePackage}" widgetVar="fileDirectoryName"/>                        
                                         <p:message for="fileDirectoryName"/>
 
-                                        <!-- TYPE + SIZE + DATE + CHECKSUM -->
                                         <div class="text-muted small">
+                                            <!-- TYPE + SIZE + DATE + CHECKSUM -->
                                             <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
                                             <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{fileMetadata.dataFile.tabularData}"/>
                                             <h:outputText id="fileCreatePublishDate" value=" - #{fileMetadata.getFileDateToDisplay()}" rendered="#{!(empty fileMetadata.id)}"/>
                                             <div class="checksum-block">
-                                                <h:outputText id="fileChecksum" value="#{fileMetadata.dataFile.tabularData ? fileMetadata.dataFile.originalChecksumType : fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue};" rendered="#{!(empty fileMetadata.dataFile.checksumValue)}"/>
+                                                <h:outputText id="fileChecksum" value="#{fileMetadata.dataFile.tabularData ? fileMetadata.dataFile.originalChecksumType : fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue}"/>
                                             </div>
-                                        </div>
-                                        <!-- UNF + Variables, Obsersvations -->
-                                        <div class="text-muted small" jsf:rendered="#{fileMetadata.dataFile.tabularData}">
-                                            <h:outputText id="fileNumVars" value="#{fileMetadata.dataFile.dataTable.varQuantity} #{bundle['file.metaData.dataFile.dataTab.variables']}, " rendered="#{fileMetadata.dataFile.tabularData}"/>
-                                            <h:outputText id="fileNumObs" value="#{fileMetadata.dataFile.dataTable.caseQuantity} #{bundle['file.metaData.dataFile.dataTab.observations']} #{!empty fileMetadata.dataFile.unf ? ' - ' : ''}" rendered="#{fileMetadata.dataFile.tabularData}"/>
-                                            <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}" rendered="#{!empty fileMetadata.dataFile.unf}"/>
+                                            <!-- UNF + Variables, Obsersvations -->
+                                            <div class="unf-block" style="word-break: break-all;" jsf:rendered="#{fileMetadata.dataFile.tabularData}">
+                                                <h:outputText id="fileNumVars" value="#{fileMetadata.dataFile.dataTable.varQuantity} #{bundle['file.metaData.dataFile.dataTab.variables']}, " rendered="#{fileMetadata.dataFile.tabularData}"/>
+                                                <h:outputText id="fileNumObs" value="#{fileMetadata.dataFile.dataTable.caseQuantity} #{bundle['file.metaData.dataFile.dataTab.observations']} #{!empty fileMetadata.dataFile.unf ? ' - ' : ''}" rendered="#{fileMetadata.dataFile.tabularData}"/>
+                                                <h:outputText id="fileUNF" value="#{fileMetadata.dataFile.unf}" rendered="#{!empty fileMetadata.dataFile.unf}"/>
+                                            </div>
                                         </div>
                                         <div class="file-description-block">
                                             <label class="control-label" for="fileDescription" style="margin-right:1em; margin-top:.5em; vertical-align:top;">
@@ -407,7 +407,7 @@
                                     </div>
                                 </div>
                             </p:column>
-                            <p:column class="col-file-action text-right">
+                            <p:column class="col-file-action button-block text-right" style="width:30%;" ariaHeaderText="#{bundle['file.actionsBlock']}">
                                 <f:facet name="header" class="col-file-action text-right">
                                     <div jsf:id="editFilesRestrictDeletePanel" style="margin-right:14px;" class="btn-group" jsf:rendered="#{!empty EditDatafilesPage.fileMetadatas and !EditDatafilesPage.workingVersion.hasPackageFile}">
                                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">

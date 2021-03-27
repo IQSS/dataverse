@@ -132,7 +132,7 @@ public class DataverseUserPage implements java.io.Serializable {
     private Long dataverseId;
     private List<UserNotification> notificationsList;
     private int activeIndex;
-    private String selectTab = "somedata";
+    private String selectTab = "dataRelatedToMe";
     UIInput usernameField;
 
     
@@ -174,18 +174,16 @@ public class DataverseUserPage implements java.io.Serializable {
                     break;
                 case "dataRelatedToMe":
                     mydatapage.init();
+                    activeIndex = 0;
                     break;
-                // case "groupsRoles":
-                // activeIndex = 2;
-                // break;
                 case "accountInfo":
                     activeIndex = 2;
-                    // activeIndex = 3;
                     break;
                 case "apiTokenTab":
                     activeIndex = 3;
                     break;
                 default:
+                    //TODO: Do we need to call mydatapage.init(); here too?
                     activeIndex = 0;
                     break;
             }
@@ -487,6 +485,8 @@ public class DataverseUserPage implements java.io.Serializable {
                 case PUBLISHEDDS:
                 case PUBLISHFAILED_PIDREG:
                 case RETURNEDDS:
+                case WORKFLOW_SUCCESS:
+                case WORKFLOW_FAILURE:
                     userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
                     break;
                     
