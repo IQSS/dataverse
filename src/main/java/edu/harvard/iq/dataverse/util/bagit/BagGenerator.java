@@ -91,7 +91,6 @@ public class BagGenerator {
     private int timeout = 60;
     private RequestConfig config = RequestConfig.custom().setConnectTimeout(timeout * 1000)
             .setConnectionRequestTimeout(timeout * 1000).setSocketTimeout(timeout * 1000).build();
-    private static HttpClientContext localContext = HttpClientContext.create();
     protected CloseableHttpClient client;
     private PoolingHttpClientConnectionManager cm = null;
 
@@ -1000,7 +999,8 @@ public class BagGenerator {
                         HttpGet getMap = createNewGetRequest(new URI(uri), null);
                         logger.finest("Retrieving " + tries + ": " + uri);
                         CloseableHttpResponse response;
-                        response = client.execute(getMap, localContext);
+                        //Note - if we ever need to pass an HttpClientContext, we need a new one per thread.
+                        response = client.execute(getMap);
                         if (response.getStatusLine().getStatusCode() == 200) {
                             logger.finest("Retrieved: " + uri);
                             return response.getEntity().getContent();
