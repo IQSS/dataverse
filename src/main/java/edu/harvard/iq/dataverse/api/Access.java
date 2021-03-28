@@ -540,7 +540,7 @@ public class Access extends AbstractApiBean {
     
     @Path("datafile/{fileId}/metadata/{formatTag}/{formatVersion}")
     @GET    
-    public DownloadInstance tabularDatafileMetadataAux(@PathParam("fileId") String fileId,
+    public DownloadInstance datafileMetadataAux(@PathParam("fileId") String fileId,
             @PathParam("formatTag") String formatTag,
             @PathParam("formatVersion") String formatVersion,
             @QueryParam("key") String apiToken, 
@@ -1191,7 +1191,44 @@ public class Access extends AbstractApiBean {
         }
     }
   
-    
+
+    /**
+     * 
+     * @param fileId
+     * @param formatTag
+     * @param formatVersion
+     * @param origin
+     * @param isPublic
+     * @param fileInputStream
+     * @param contentDispositionHeader
+     * @param formDataBodyPart
+     * @return 
+     */
+    @Path("datafile/{fileId}/metadata/{formatTag}/{formatVersion}")
+    @DELETE
+    public Response deleteAuxiliaryFileWithVersion(@PathParam("fileId") Long fileId,
+            @PathParam("formatTag") String formatTag,
+            @PathParam("formatVersion") String formatVersion) {
+        AuthenticatedUser authenticatedUser;
+        try {
+            authenticatedUser = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(FORBIDDEN, "Authorized users only.");
+        }
+
+        DataFile dataFile = dataFileService.find(fileId);
+        if (dataFile == null) {
+            return error(BAD_REQUEST, "File not found based on id " + fileId + ".");
+        }
+
+        if (!permissionService.userOn(authenticatedUser, dataFile.getOwner()).has(Permission.EditDataset)) {
+            return error(FORBIDDEN, "User not authorized to edit the dataset.");
+        }
+
+        auxiliaryFileService.deleteAuxiliaryFile(dataFile, formatTag, formatVersion);
+
+        return ok("Auxiliary file deleted.");
+    }
 
   
     

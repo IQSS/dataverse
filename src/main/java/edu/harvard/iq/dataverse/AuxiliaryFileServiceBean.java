@@ -15,6 +15,11 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.ws.rs.ClientErrorException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.ServerErrorException;
+import javax.ws.rs.core.Response;
+
 import org.apache.tika.Tika;
 
 /**
@@ -68,6 +73,9 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             // If the db fails for any reason, then rollback
             // by removing the auxfile from storage.
             storageIO = dataFile.getStorageIO();
+            if(storageIO.isAuxObjectCached(auxExtension)) {
+                throw new ClientErrorException("Auxiliary file already exists", Response.Status.CONFLICT);
+            }
             MessageDigest md = MessageDigest.getInstance(systemConfig.getFileFixityChecksumAlgorithm().toString());
             DigestInputStream di 
                 = new DigestInputStream(fileInputStream, md); 
@@ -112,6 +120,26 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
         } catch(Exception ex) {
             return null;
         }
+    }
+
+    public void deleteAuxiliaryFile(DataFile dataFile, String formatTag, String formatVersion) {
+        AuxiliaryFile af = lookupAuxiliaryFile(dataFile, formatTag, formatVersion);
+        if (af == null) {
+            throw new NotFoundException();
+        }
+        em.remove(af);
+        StorageIO<?> storageIO;
+        try {
+            storageIO = dataFile.getStorageIO();
+            String auxExtension = formatTag + "_" + formatVersion;
+            if (storageIO.isAuxObjectCached(auxExtension)) {
+                storageIO.deleteAuxObject(auxExtension);
+            }
+        } catch (IOException ioex) {
+            logger.warning("IO Exception trying remove auxiliary file in exception handler: " + ioex.getMessage());
+            throw new ServerErrorException("IO Exception trying remove auxiliary file", Response.Status.INTERNAL_SERVER_ERROR, ioex);
+        }
+
     }
 
 }
