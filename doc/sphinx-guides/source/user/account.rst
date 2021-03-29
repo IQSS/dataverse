@@ -99,6 +99,8 @@ If you already have a Dataverse installation account associated with the Usernam
 #. Enter your current password for your Dataverse installation account and click "Convert Account".
 #. Now you have finished converting your Dataverse installation account to use your institutional log in.
 
+Note that you cannot go through this conversion process if your Dataverse installation account associated with the Username/Email log in option has been deactivated.
+
 Convert your Dataverse installation account away from your Institutional Log In
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -131,6 +133,8 @@ If you already have a Dataverse installation account associated with the Usernam
 #. After you put in your ORCID credentials successfully, you will be brought back to the Dataverse installation. Click the "convert your account" link.
 #. Enter your username and password for your Dataverse installation account and click "Convert Account".
 #. Now you have finished converting your Dataverse installation account to use ORCID for log in.
+
+Note that you cannot go through this conversion process if your Dataverse installation account associated with the Username/Email log in option has been deactivated.
 
 Convert your Dataverse installation account away from ORCID for log in
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

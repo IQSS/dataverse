@@ -977,10 +977,36 @@ public class UtilIT {
                 .post("api/dataverses/" + definitionPoint + "/assignments?key=" + apiToken);
     }
 
+    public static Response deactivateUser(String username) {
+        Response deactivateUserResponse = given()
+                .post("/api/admin/authenticatedUsers/" + username + "/deactivate");
+        return deactivateUserResponse;
+    }
+
+    public static Response deactivateUser(Long userId) {
+        Response deactivateUserResponse = given()
+                .post("/api/admin/authenticatedUsers/id/" + userId + "/deactivate");
+        return deactivateUserResponse;
+    }
+
     public static Response deleteUser(String username) {
         Response deleteUserResponse = given()
                 .delete("/api/admin/authenticatedUsers/" + username + "/");
         return deleteUserResponse;
+    }
+
+    public static Response deleteUserRoles(String username, String apiToken) {
+        Response deleteUserResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/users/" + username + "/removeRoles");
+        return deleteUserResponse;
+    }
+
+    public static Response getUserTraces(String username, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/users/" + username + "/traces");
+        return response;
     }
 
     public static Response reingestFile(Long fileId, String apiToken) {
@@ -1201,6 +1227,7 @@ public class UtilIT {
         return response;
     }
 
+    // TODO: Consider removing apiToken since it isn't used by the API itself.
     static Response getAuthenticatedUser(String userIdentifier, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
