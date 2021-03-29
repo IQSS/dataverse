@@ -385,6 +385,7 @@ public abstract class AbstractApiBean {
 
     private AuthenticatedUser findAuthenticatedUserOrDie( String key, String wfid ) throws WrappedResponse {
         if (key != null) {
+            // No check for deactivated user because it's done in authSvc.lookupUser.
             AuthenticatedUser authUser = authSvc.lookupUser(key);
 
             if (authUser != null) {
