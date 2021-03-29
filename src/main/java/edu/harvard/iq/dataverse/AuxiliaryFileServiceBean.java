@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -16,6 +17,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.ws.rs.ClientErrorException;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Response;
@@ -62,8 +64,8 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
      * @return success boolean - returns whether the save was successful
      */
     public AuxiliaryFile processAuxiliaryFile(InputStream fileInputStream, DataFile dataFile, String formatTag, String formatVersion, String origin, boolean isPublic) {
-    
-        StorageIO<DataFile> storageIO =null;
+
+        StorageIO<DataFile> storageIO = null;
         AuxiliaryFile auxFile = new AuxiliaryFile();
         String auxExtension = formatTag + "_" + formatVersion;
         try {
@@ -73,15 +75,20 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             // If the db fails for any reason, then rollback
             // by removing the auxfile from storage.
             storageIO = dataFile.getStorageIO();
-            if(storageIO.isAuxObjectCached(auxExtension)) {
+            if (storageIO.isAuxObjectCached(auxExtension)) {
                 throw new ClientErrorException("Auxiliary file already exists", Response.Status.CONFLICT);
             }
-            MessageDigest md = MessageDigest.getInstance(systemConfig.getFileFixityChecksumAlgorithm().toString());
-            DigestInputStream di 
-                = new DigestInputStream(fileInputStream, md); 
-  
-            storageIO.saveInputStreamAsAux(fileInputStream, auxExtension);          
-            auxFile.setChecksum(FileUtil.checksumDigestToString(di.getMessageDigest().digest())    );
+            MessageDigest md;
+            try {
+                md = MessageDigest.getInstance(systemConfig.getFileFixityChecksumAlgorithm().toString());
+            } catch (NoSuchAlgorithmException e) {
+                logger.severe("NoSuchAlgorithmException for system fixity algorithm: " + systemConfig.getFileFixityChecksumAlgorithm().toString());
+                throw new InternalServerErrorException();
+            }
+            DigestInputStream di = new DigestInputStream(fileInputStream, md);
+
+            storageIO.saveInputStreamAsAux(fileInputStream, auxExtension);
+            auxFile.setChecksum(FileUtil.checksumDigestToString(di.getMessageDigest().digest()));
 
             Tika tika = new Tika();
             auxFile.setContentType(tika.detect(storageIO.getAuxFileAsInputStream(auxExtension)));
@@ -89,20 +96,20 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             auxFile.setFormatVersion(formatVersion);
             auxFile.setOrigin(origin);
             auxFile.setIsPublic(isPublic);
-            auxFile.setDataFile(dataFile);         
+            auxFile.setDataFile(dataFile);
             auxFile.setFileSize(storageIO.getAuxObjectSize(auxExtension));
             auxFile = save(auxFile);
         } catch (IOException ioex) {
-            logger.info("IO Exception trying to save auxiliary file: " + ioex.getMessage());
-            return null;
-        } catch (Exception e) {
+            logger.severe("IO Exception trying to save auxiliary file: " + ioex.getMessage());
+            throw new InternalServerErrorException();
+        } catch (RuntimeException e) {
             // If anything fails during database insert, remove file from storage
             try {
                 storageIO.deleteAuxObject(auxExtension);
-            } catch(IOException ioex) {
-                    logger.info("IO Exception trying remove auxiliary file in exception handler: " + ioex.getMessage());
-            return null;
+            } catch (IOException ioex) {
+                logger.warning("IO Exception trying remove auxiliary file in exception handler: " + ioex.getMessage());
             }
+            throw e;
         }
         return auxFile;
     }

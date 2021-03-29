@@ -1183,12 +1183,7 @@ public class Access extends AbstractApiBean {
         }
 
         AuxiliaryFile saved = auxiliaryFileService.processAuxiliaryFile(fileInputStream, dataFile, formatTag, formatVersion, origin, isPublic);
-      
-        if (saved!=null) {
-            return ok(json(saved));
-        } else {
-            return error(BAD_REQUEST, "Error saving Auxiliary file.");
-        }
+        return ok(json(saved));
     }
   
 
