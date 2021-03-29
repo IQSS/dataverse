@@ -150,6 +150,14 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
 
+    public List<Dataset> findByCreatorId(Long creatorId) {
+        return em.createNamedQuery("Dataset.findByCreatorId").setParameter("creatorId", creatorId).getResultList();
+    }
+
+    public List<Dataset> findByReleaseUserId(Long releaseUserId) {
+        return em.createNamedQuery("Dataset.findByReleaseUserId").setParameter("releaseUserId", releaseUserId).getResultList();
+    }
+
     public List<Dataset> filterByPidQuery(String filterQuery) {
         // finds only exact matches
         Dataset ds = findByGlobalId(filterQuery);
