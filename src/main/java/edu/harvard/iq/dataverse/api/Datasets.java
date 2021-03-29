@@ -2531,7 +2531,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         do {
             try {
                 String basicGlobusToken = settingsSvc.getValueForKey(SettingsServiceBean.Key.BasicGlobusToken, "");
-                AccessToken clientTokenUser = globusServiceBean.getClientToken(basicGlobusToken);
+                AccessToken clientTokenUser = globusServiceBean.getClientToken();
 
                 success = globusServiceBean.getSuccessfulTransfers(clientTokenUser, taskIdentifier);
 
@@ -2799,6 +2799,9 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
         ApiToken token = authSvc.findApiTokenByUser((AuthenticatedUser) authUser);
 
+
+        //String xfp = httpRequest.getHeader("X-Forwarded-Proto");
+        //String requestUrl =  xfp +"://"+httpRequest.getServerName();
 
         /*
 

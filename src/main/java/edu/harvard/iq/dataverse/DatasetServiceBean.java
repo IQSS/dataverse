@@ -28,6 +28,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -1022,8 +1023,11 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
 
+
+
+
     @Asynchronous
-    public void globusAsyncCall(String jsonData, ApiToken token, Dataset dataset, String httpRequestUrl) throws ExecutionException, InterruptedException {
+    public void globusAsyncCall(String jsonData, ApiToken token, Dataset dataset, String httpRequestUrl) throws ExecutionException, InterruptedException, MalformedURLException {
 
         String logTimestamp = logFormatter.format(new Date());
         Logger globusLogger = Logger.getLogger("edu.harvard.iq.dataverse.upload.client.DatasetServiceBean." + "GlobusUpload" + logTimestamp);
@@ -1048,7 +1052,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             globusLogger = logger;
         }
 
-        globusLogger.info("Starting an globusAsyncCall");
+        globusLogger.info("Starting an globusAsyncCall ");
 
         String datasetIdentifier = dataset.getStorageIdentifier();
 
@@ -1070,6 +1074,8 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         //  globus task status check
         globusStatusCheck(taskIdentifier,globusLogger);
+
+        globusLogger.info("Start removing Globus permission for the client");
 
 
         try {
@@ -1170,8 +1176,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     Executor executor = Executors.newFixedThreadPool(10);
 
 
-    private Boolean globusStatusCheck(String taskId, Logger globusLogger)
-    {
+    private Boolean globusStatusCheck(String taskId, Logger globusLogger) throws MalformedURLException {
         boolean success = false;
         do {
             try {
@@ -1179,10 +1184,10 @@ public class DatasetServiceBean implements java.io.Serializable {
                 globusLogger.info("checking globus transfer task   " + taskId);
                 Thread.sleep(50000);
 
-                String basicGlobusToken = settingsService.getValueForKey(SettingsServiceBean.Key.BasicGlobusToken, "");
-                AccessToken clientTokenUser =  globusServiceBean.getClientToken(basicGlobusToken);
+                AccessToken clientTokenUser =  globusServiceBean.getClientToken();
 
                 success =  globusServiceBean.getSuccessfulTransfers(clientTokenUser, taskId);
+
 
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -1190,7 +1195,13 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         } while (!success);
 
+/*
+        AccessToken clientTokenUser = globusServiceBean.getClientToken();
+        String directory = globusServiceBean.getDirectory( dataset.getId()+"" );
+        globusServiceBean.updatePermision(clientTokenUser, directory, "identity", "r");
 
+        globusLogger.info("Successfully removed Globus permission for the client");
+*/
         globusLogger.info("globus transfer task completed successfully");
 
         return success;
@@ -1272,7 +1283,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
 
         String mimeType = calculatemime(fileName);
-        globusLogger.info("File Details " + fileId  + " checksum = "+ checksumVal + " mimeType = " + mimeType);
+        globusLogger.info(" File Name " + fileName  +  "  File Details " + fileId  + " checksum = "+ checksumVal + " mimeType = " + mimeType);
         return  new fileDetailsHolder(fileId, checksumVal,mimeType);
         //getBytes(in)+"" );
         // calculatemime(fileName));

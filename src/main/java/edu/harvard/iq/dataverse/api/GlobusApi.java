@@ -166,7 +166,7 @@ public class GlobusApi extends AbstractApiBean {
                 String basicGlobusToken = settingsSvc.getValueForKey(SettingsServiceBean.Key.BasicGlobusToken, "");
                 basicGlobusToken = "ODA0ODBhNzEtODA5ZC00ZTJhLWExNmQtY2JkMzA1NTk0ZDdhOmQvM3NFd1BVUGY0V20ra2hkSkF3NTZMWFJPaFZSTVhnRmR3TU5qM2Q3TjA9";
                 msgt("******* (api) basicGlobusToken: " + basicGlobusToken);
-                AccessToken clientTokenUser = globusServiceBean.getClientToken(basicGlobusToken);
+                AccessToken clientTokenUser = globusServiceBean.getClientToken();
 
                 success = globusServiceBean.getSuccessfulTransfers(clientTokenUser, taskIdentifier);
                 msgt("******* (api) success: " + success);

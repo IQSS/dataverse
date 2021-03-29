@@ -145,7 +145,8 @@ public class GlobusServiceBean implements java.io.Serializable{
                 }
                 logger.info(accessTokenUser.getAccessToken());
                 logger.info(usr.getEmail());
-                AccessToken clientTokenUser = getClientToken(basicGlobusToken);
+                //AccessToken clientTokenUser = getClientToken(basicGlobusToken);
+                AccessToken clientTokenUser = getClientToken();
                 if (clientTokenUser == null) {
                     logger.severe("Cannot get client token ");
                     JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.GlobusError"));
@@ -219,6 +220,16 @@ public class GlobusServiceBean implements java.io.Serializable{
         String httpString = "window.location.replace('" + "https://app.globus.org/file-manager?origin_id=" + globusEndpoint + "&origin_path=" + directory + "'" +")";
         PrimeFaces.current().executeScript(httpString);
     }
+/*
+    public void removeGlobusPermission() throws MalformedURLException {
+        //taskId and ruleId
+        String basicGlobusToken = settingsSvc.getValueForKey(SettingsServiceBean.Key.BasicGlobusToken, "");
+        AccessToken clientTokenUser =  getClientToken(basicGlobusToken);
+        String directory =  getDirectory( dataset.getId()+"" );
+        updatePermision(clientTokenUser, directory, "identity", "r");
+    }
+
+ */
 
     ArrayList<String>  checkPermisions( AccessToken clientTokenUser, String directory, String globusEndpoint, String principalType, String principal) throws MalformedURLException {
         URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + globusEndpoint + "/access_list");
@@ -234,6 +245,7 @@ public class GlobusServiceBean implements java.io.Serializable{
                         ((principal == null) || (principal != null && pr.getPrincipal().equals(principal))) ) {
                     ids.add(pr.getId());
                 } else {
+                    logger.info(pr.getPath() + " === " + directory + " == " + pr.getPrincipalType());
                     continue;
                 }
             }
@@ -244,7 +256,7 @@ public class GlobusServiceBean implements java.io.Serializable{
 
     public void updatePermision(AccessToken clientTokenUser, String directory, String principalType, String perm) throws MalformedURLException {
         if (directory != null && !directory.equals("")) {
-            directory = "/" + directory + "/";
+            directory =  directory + "/";
         }
         logger.info("Start updating permissions." + " Directory is " + directory);
         String globusEndpoint = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusEndpoint, "");
@@ -270,6 +282,24 @@ public class GlobusServiceBean implements java.io.Serializable{
             }
             count++;
         }
+    }
+
+    public void deletePermision(String ruleId) throws MalformedURLException {
+
+        AccessToken clientTokenUser = getClientToken();
+        logger.info("Start updating permissions."  );
+        String globusEndpoint = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusEndpoint, "");
+
+        URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + globusEndpoint + "/access/" + ruleId);
+        logger.info("https://transfer.api.globusonline.org/v0.10/endpoint/" + globusEndpoint + "/access/" + ruleId);
+        MakeRequestResponse result = makeRequest(url, "Bearer",
+                clientTokenUser.getOtherTokens().get(0).getAccessToken(),"DELETE",  null);
+        if (result.status != 200) {
+            logger.warning("Cannot update access rule " + ruleId);
+        } else {
+            logger.info("Access rule " + ruleId + " was updated");
+        }
+
     }
 
     public int givePermission(String principalType, String principal, String perm, AccessToken clientTokenUser, String directory, String globusEndpoint) throws MalformedURLException {
@@ -347,7 +377,8 @@ public class GlobusServiceBean implements java.io.Serializable{
             logger.info("1.getTaskList ====== timeWhenAsyncStarted = " + timeWhenAsyncStarted + "    ====== identifierForFileStorage ====== " + identifierForFileStorage);
 
             String globusEndpoint = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusEndpoint, "");
-            AccessToken clientTokenUser = getClientToken(basicGlobusToken);
+            //AccessToken clientTokenUser = getClientToken(basicGlobusToken);
+            AccessToken clientTokenUser = getClientToken( );
 
             URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint_manager/task_list?filter_endpoint="+globusEndpoint+"&filter_status=SUCCEEDED&filter_completion_time="+timeWhenAsyncStarted);
 
@@ -453,7 +484,8 @@ public class GlobusServiceBean implements java.io.Serializable{
 
 
 
-    public AccessToken getClientToken(String basicGlobusToken) throws MalformedURLException {
+    public AccessToken getClientToken() throws MalformedURLException {
+        String basicGlobusToken = settingsSvc.getValueForKey(SettingsServiceBean.Key.BasicGlobusToken, "");
         URL url = new URL("https://auth.globus.org/v2/oauth2/token?scope=openid+email+profile+urn:globus:auth:scope:transfer.api.globus.org:all&grant_type=client_credentials");
 
         MakeRequestResponse result = makeRequest(url, "Basic",
@@ -590,7 +622,7 @@ public class GlobusServiceBean implements java.io.Serializable{
         }
     }
 
-    String getDirectory(String datasetId) {
+    public String getDirectory(String datasetId) {
         Dataset dataset = null;
         String directory = null;
         try {
@@ -642,7 +674,8 @@ public class GlobusServiceBean implements java.io.Serializable{
         if (globusEndpoint.equals("") || basicGlobusToken.equals("")) {
             return false;
         }
-        AccessToken clientTokenUser = getClientToken(basicGlobusToken);
+        //AccessToken clientTokenUser = getClientToken(basicGlobusToken);
+        AccessToken clientTokenUser = getClientToken( );
         if (clientTokenUser == null) {
             logger.severe("Cannot get client token ");
             return false;
@@ -713,7 +746,6 @@ public class GlobusServiceBean implements java.io.Serializable{
             if (workingVersion.getCreateTime() != null) {
                 workingVersion.setCreateTime(new Timestamp(new Date().getTime()));
             }
-
 
             directory = dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage();
 
