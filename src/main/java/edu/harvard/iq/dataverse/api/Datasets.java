@@ -1213,8 +1213,27 @@ public class Datasets extends AbstractApiBean {
                 LocalDateTime dateTime = JSONLDUtil.getDateTimeFrom(pubDate);
                 // dataset.getPublicationDateFormattedYYYYMMDD())
                 ds.setPublicationDate(Timestamp.valueOf(dateTime));
-                //Release User is only set in FinalizeDatasetPublicationCommand if the pub date is null, so set it here.
+                // Release User is only set in FinalizeDatasetPublicationCommand if the pub date
+                // is null, so set it here.
                 ds.setReleaseUser((AuthenticatedUser) user);
+                // Assign a version number if not set
+                if (ds.getLatestVersion().getVersionNumber() == null) {
+
+                    if (ds.getVersions().size() == 1) {
+                        // First Release
+                        ds.getLatestVersion().setVersionNumber(new Long(1));
+                        ds.getLatestVersion().setMinorVersionNumber(new Long(0));
+
+                    } else if (ds.getLatestVersion().isMinorUpdate()) {
+                        ds.getLatestVersion().setVersionNumber(new Long(ds.getVersionNumber()));
+                        ds.getLatestVersion().setMinorVersionNumber(new Long(ds.getMinorVersionNumber() + 1));
+
+                    } else {
+                        // major, non-first release
+                        ds.getLatestVersion().setVersionNumber(new Long(ds.getVersionNumber() + 1));
+                        ds.getLatestVersion().setMinorVersionNumber(new Long(0));
+                    }
+                }
             } catch (Exception e) {
                 logger.fine(e.getMessage());
                 throw new BadRequestException("Unable to set publication date ("
