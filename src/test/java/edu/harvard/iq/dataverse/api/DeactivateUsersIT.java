@@ -142,19 +142,11 @@ public class DeactivateUsersIT {
     @Test
     public void testDeactivateUserById() {
 
-        Response createSuperuser = UtilIT.createRandomUser();
-        createSuperuser.then().assertThat().statusCode(OK.getStatusCode());
-        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
-        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
-        Response toggleSuperuser = UtilIT.makeSuperUser(superuserUsername);
-        toggleSuperuser.then().assertThat()
-                .statusCode(OK.getStatusCode());
-
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
         String username = UtilIT.getUsernameFromResponse(createUser);
-        Long userId = JsonPath.from(createUser.body().asString()).getLong("data.user.id");
+        Long userId = JsonPath.from(createUser.body().asString()).getLong("data.authenticatedUser.id");
         String apiToken = UtilIT.getApiTokenFromResponse(createUser);
 
         Response deactivateUser = UtilIT.deactivateUser(userId);
