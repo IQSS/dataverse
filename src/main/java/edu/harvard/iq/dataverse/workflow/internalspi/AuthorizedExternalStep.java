@@ -9,6 +9,8 @@ import edu.harvard.iq.dataverse.workflow.step.Pending;
 import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStep;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
+import edu.harvard.iq.dataverse.workflows.WorkflowUtil;
+
 import static edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult.OK;
 
 import java.io.StringReader;
@@ -77,29 +79,7 @@ public class AuthorizedExternalStep implements WorkflowStep {
 
     @Override
     public WorkflowStepResult resume(WorkflowContext context, Map<String, String> internalData, String externalData) {
-        try (StringReader reader = new StringReader(externalData)) {
-            JsonObject response = Json.createReader(reader).readObject();
-            String status = response.getString("Status");
-            String reason = null;
-            String message = null;
-            if (response.containsKey("Reason")) {
-                reason = response.getString("Reason");
-            }
-            if (response.containsKey("Message")) {
-                message = response.getString("Message");
-            }
-            switch (status) {
-            case "Success":
-                logger.log(Level.FINE, "AuthExt Worfklow Step Succeeded: " + reason);
-                return new Success(reason, message);
-            case "Failure":
-                logger.log(Level.WARNING, "Remote system indicates workflow failed: {0}", reason);
-                return new Failure(reason, message);
-            }
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "Remote system returned a bad reposonse: {0}", externalData);
-        }
-        return new Failure("Workflow failure: Response from remote server could not be parsed:" + externalData, null);
+        return WorkflowUtil.parseResponse(externalData);
     }
 
     @Override

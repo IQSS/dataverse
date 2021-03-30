@@ -140,7 +140,10 @@ public class UserServiceBean {
        
         user.setAuthProviderId(UserUtil.getStringOrNull(dbRowValues[11]));
         user.setAuthProviderFactoryAlias(UserUtil.getStringOrNull(dbRowValues[12]));
-        
+
+        user.setDeactivated((Boolean)(dbRowValues[13]));
+        user.setDeactivatedTime(UserUtil.getTimestampOrNull(dbRowValues[14]));
+
         user.setRoles(roles);
         return user;
     } 
@@ -417,7 +420,8 @@ public class UserServiceBean {
         qstr += " u.affiliation, u.superuser,";
         qstr += " u.position,";
         qstr += " u.createdtime, u.lastlogintime, u.lastapiusetime, ";
-        qstr += " prov.id, prov.factoryalias";
+        qstr += " prov.id, prov.factoryalias, ";
+        qstr += " u.deactivated, u.deactivatedtime ";
         qstr += " FROM authenticateduser u,";
         qstr += " authenticateduserlookup prov_lookup,";
         qstr += " authenticationproviderrow prov";

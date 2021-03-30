@@ -111,13 +111,8 @@ public class FileReplacePageHelper {
         }
         
         OptionalFileParams ofp = null;
+        ofp = new OptionalFileParams();
         if(checkSumValue != null) {
-            try {
-                ofp = new OptionalFileParams(null);
-            } catch (DataFileTagException e) {
-                // Shouldn't happen with null input
-                e.printStackTrace();
-            }
             ofp.setCheckSum(checkSumValue, checkSumType);
         }
         // Run 1st phase of replace
