@@ -1253,37 +1253,6 @@ public class Datasets extends AbstractApiBean {
                 ds = commandEngine.submit(cmd);
                 //Todo - update messages
                 successMsg = BundleUtil.getStringFromBundle("datasetversion.update.success");
-
-                // If configured, update archive copy as well
-                String className = settingsService.get(SettingsServiceBean.Key.ArchiverClassName.toString());
-                DatasetVersion updateVersion = ds.getLatestVersion();
-                AbstractSubmitToArchiveCommand archiveCommand = ArchiverUtil.createSubmitToArchiveCommand(className,
-                        createDataverseRequest(user), updateVersion);
-                if (archiveCommand != null) {
-                    // Delete the record of any existing copy since it is now out of date/incorrect
-                    updateVersion.setArchivalCopyLocation(null);
-                    /*
-                     * Then try to generate and submit an archival copy. Note that running this
-                     * command within the CuratePublishedDatasetVersionCommand was causing an error:
-                     * "The attribute [id] of class
-                     * [edu.harvard.iq.dataverse.DatasetFieldCompoundValue] is mapped to a primary
-                     * key column in the database. Updates are not allowed." To avoid that, and to
-                     * simplify reporting back to the GUI whether this optional step succeeded, I've
-                     * pulled this out as a separate submit().
-                     */
-                    try {
-                        updateVersion = commandEngine.submit(archiveCommand);
-                        if (updateVersion.getArchivalCopyLocation() != null) {
-                            successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.success");
-                        } else {
-                            successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure");
-                        }
-                    } catch (CommandException ex) {
-                        successMsg = BundleUtil.getStringFromBundle("datasetversion.update.archive.failure") + " - "
-                                + ex.toString();
-                        logger.severe(ex.getMessage());
-                    }
-                }
             } catch (CommandException ex) {
                 errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.failure") + " - " + ex.toString();
                 logger.severe(ex.getMessage());
