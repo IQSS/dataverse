@@ -732,7 +732,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     //depends on dataset state and user privleges
     public String getReminderString(Dataset dataset, boolean canPublishDataset) {
 
-        if( dataset.getId() == null || !dataset.isReleased() ){
+        if(!dataset.isReleased() ){
             //messages for draft state.
             if (canPublishDataset){
                 return BundleUtil.getStringFromBundle("dataset.message.publish.remind.draft");
