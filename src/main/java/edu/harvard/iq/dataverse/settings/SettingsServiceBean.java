@@ -4,13 +4,17 @@ import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import org.eclipse.microprofile.config.ConfigProvider;
 
 import java.io.StringReader;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -444,25 +448,73 @@ public class SettingsServiceBean {
      * @return the actual setting, or {@code null}.
      */
     public String get( String name ) {
-        List<Setting> tokens = em.createNamedQuery("Setting.findByName", Setting.class)
-                .setParameter("name", name )
-                .getResultList();
-        String val = null;
-        if(tokens.size() > 0) {
-            val = tokens.get(0).getContent();
+        // null safety and don't lookup empty or really short names
+        if (name == null || name.length() < 2) { return null; }
+        
+        // try to lookup the key
+        Key namedKey = Key.lookupKey(name);
+        String value;
+        // try to get for key
+        value = getValueForKey(namedKey);
+        
+        // not found yet? try to get from mpconfig "unscoped" scope with the name as lowercase and stripped colon
+        if (value == null) {
+            String noColonName = name.charAt(0) == ':' ? name.substring(1) : name;
+            value = getFromMpConfig(ConfigScope.UNSCOPED, noColonName.toLowerCase());
         }
-        return (val!=null) ? val : null;
+        
+        // not found yet? try to get from database
+        if (value == null)
+            value = getFromDB(name);
+        
+        // not found yet? will return initial null value...
+        return value;
     }
     
     /**
-     * Same as {@link #get(java.lang.String)}, but with static checking.
+     * Lookup a setting for a registered (and documented) key.
      * @param key Enum value of the name.
      * @return The setting, or {@code null}.
      */
     public String getValueForKey( Key key ) {
-        return get(key.toString());
+        // null safety
+        if (key == null) { return null; }
+        
+        String value;
+        // try to get from mpconfig
+        value = getFromMpConfig(key.getScopedKey());
+        
+        // not found yet? try to get from db
+        if (value == null)
+            value = getFromDB(key.toString());
+        
+        // not found yet? will return initial null value...
+        return value;
     }
     
+    String getFromMpConfig(ConfigScope scope, String name) {
+        return getFromMpConfig(scope.getScopedKey(name));
+    }
+    
+    String getFromMpConfig(String scopedName) {
+        return ConfigProvider.getConfig().getOptionalValue(scopedName, String.class).orElse(null);
+    }
+    
+    /**
+     * Get the setting from the database
+     * @param name Some key name
+     * @return The setting value from the database or null
+     */
+    String getFromDB(String name) {
+        List<Setting> tokens = em.createNamedQuery("Setting.findByName", Setting.class)
+            .setParameter("name", name )
+            .getResultList();
+        String val = null;
+        if(tokens.size() > 0) {
+            val = tokens.get(0).getContent();
+        }
+        return val;
+    }
     
     /**
      * Attempt to convert the value to an integer
