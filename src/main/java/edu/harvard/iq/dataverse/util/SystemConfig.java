@@ -535,11 +535,6 @@ public class SystemConfig {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.MyDataDoesNotUseSolrPermissionDocs, safeDefaultIfKeyNotFound);
     }
 
-    public boolean isFilesOnDatasetPageFromSolr() {
-        boolean safeDefaultIfKeyNotFound = false;
-        return settingsService.isTrueForKey(SettingsServiceBean.Key.FilesOnDatasetPageFromSolr, safeDefaultIfKeyNotFound);
-    }
-
     public Long getMaxFileUploadSizeForStore(String driverId){
          return settingsService.getValueForCompoundKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes, driverId);
      }

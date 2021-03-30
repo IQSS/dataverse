@@ -117,7 +117,8 @@ public class SearchPermissionsServiceBean {
         return ra;
     }
 
-    @Deprecated
+     /*
+    @Deprecated - since 2014. Unused. Leaving here in case the logic is needed in the future.
     private List<String> findDirectAssignments(DvObject dvObject) {
         List<String> permStrings = new ArrayList<>();
         List<RoleAssignee> roleAssignees = findWhoHasDirectAssignments(dvObject);
@@ -130,8 +131,10 @@ public class SearchPermissionsServiceBean {
         }
         return permStrings;
     }
+    */
 
-    @Deprecated
+    /*
+    @Deprecated - since 2014. Unused. Leaving here in case the logic is needed in the future.
     private List<RoleAssignee> findWhoHasDirectAssignments(DvObject dvObject) {
         List<RoleAssignee> emptyList = new ArrayList<>();
         List<RoleAssignee> peopleWhoCanSearch = emptyList;
@@ -149,8 +152,10 @@ public class SearchPermissionsServiceBean {
         resetRoleAssigneeCache();
         return peopleWhoCanSearch;
     }
+    */
 
-    @Deprecated
+    /*
+    @Deprecated - since 2014. Unused. Leaving here in case the logic is needed in the future.
     private List<String> findImplicitAssignments(DvObject dvObject) {
         List<String> permStrings = new ArrayList<>();
         DvObject parent = dvObject.getOwner();
@@ -170,6 +175,7 @@ public class SearchPermissionsServiceBean {
         }
         return permStrings;
     }
+    */
 
     public Map<DatasetVersion.VersionState, Boolean> getDesiredCards(Dataset dataset) {
         Map<DatasetVersion.VersionState, Boolean> desiredCards = new LinkedHashMap<>();
@@ -229,13 +235,15 @@ public class SearchPermissionsServiceBean {
         }
 
     }
-
-    @Deprecated
+    
+    /*
+    @Deprecated - since 2014. Unused. Leaving here in case the logic is needed in the future.
     private boolean respectPermissionRoot() {
         boolean safeDefaultIfKeyNotFound = true;
         // see javadoc of the key
         return settingsService.isTrueForKey(SettingsServiceBean.Key.SearchRespectPermissionRoot, safeDefaultIfKeyNotFound);
     }
+    */
 
     /**
      * From a Solr perspective we can't just index any string when we go to do
