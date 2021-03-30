@@ -1,9 +1,16 @@
 package edu.harvard.iq.dataverse.settings;
 
-import com.amazonaws.services.s3.transfer.Upload;
-
 import java.util.Optional;
 
+/**
+ * This enum class contains scopes for configuration values, allowing for
+ * an aligned use of prefixes and naming conventions. Scopes enhance readability
+ * and self-documentation of settings.
+ *
+ * This datastructer is kinda tree-like, as it supports the use of parent
+ * scopes in a flat hierarchy. Currently it does not implement retrieving
+ * the scopes as a tree structure, which might be done in the future.
+ */
 public enum ConfigScope {
     
     // TOP SCOPES
@@ -62,9 +69,20 @@ public enum ConfigScope {
     }
     
     // ACTIONS
+    
+    /**
+     * Generate the full qualified scope name via recursion.
+     * @return FQSN
+     */
     public String toScope() {
         return parentScope.map(ConfigScope::toScope).orElse(prefix) + "." + scope;
     }
+    
+    /**
+     * Create a fully scoped key from a key name and the scope given.
+     * @param key The key name to use
+     * @return The scoped key
+     */
     public String getScopedKey(String key) { return toScope()+"."+key; }
     
     // GETTERS
