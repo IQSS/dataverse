@@ -141,14 +141,12 @@ public class DeactivateUsersIT {
 
     @Test
     public void testDeactivateUserById() {
-
+        
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
         createUser.then().assertThat().statusCode(OK.getStatusCode());
-        String username = UtilIT.getUsernameFromResponse(createUser);
+        
         Long userId = JsonPath.from(createUser.body().asString()).getLong("data.authenticatedUser.id");
-        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-
         Response deactivateUser = UtilIT.deactivateUser(userId);
         deactivateUser.prettyPrint();
         deactivateUser.then().assertThat().statusCode(OK.getStatusCode());
