@@ -7,7 +7,6 @@ Before you start the "index all", Dataverse will appear to be empty because
 the search results come from Solr. As indexing progresses, partial results will 
 appear until indexing is complete.
 
-
 See http://guides.dataverse.org/installation/prerequisites.html#installing-solr
 
 [for the additional upgrade steps section]
@@ -20,3 +19,5 @@ chmod +x updateSchemaMDB.sh
 ./updateSchemaMDB.sh -t .
 
 See http://guides.dataverse.org/en/5.4/admin/metadatacustomization.html?highlight=updateschemamdb for more information.
+
+1. You will need to replace or modify your `schema.xml` and restart solr. Re-indexing is required to get full-functionality from this change - the standard instructions for an incremental reindex could be added here.
