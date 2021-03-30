@@ -529,6 +529,15 @@ public class MailServiceBean implements java.io.Serializable {
                 logger.fine("fileImportMsg: " + fileImportMsg);
                 return messageText += fileImportMsg;
 
+            case GLOBUSUPLOADSUCCESS:
+                dataset =  (Dataset) targetObject;
+                String fileMsg = BundleUtil.getStringFromBundle("notification.mail.import.globus", Arrays.asList(
+                        systemConfig.getDataverseSiteUrl(),
+                        dataset.getGlobalIdString(),
+                        dataset.getDisplayName()
+                ));
+                return messageText += fileMsg;
+
             case CHECKSUMIMPORT:
                 version =  (DatasetVersion) targetObject;
                 String checksumImportMsg = BundleUtil.getStringFromBundle("notification.import.checksum", Arrays.asList(
@@ -601,6 +610,8 @@ public class MailServiceBean implements java.io.Serializable {
                 return datasetService.find(userNotification.getObjectId());
             case FILESYSTEMIMPORT:
                 return versionService.find(userNotification.getObjectId());
+            case GLOBUSUPLOADSUCCESS:
+                return datasetService.find(userNotification.getObjectId());
             case CHECKSUMIMPORT:
                 return versionService.find(userNotification.getObjectId());
             case APIGENERATED:

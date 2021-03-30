@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 
 import java.io.*;
 import java.net.MalformedURLException;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -110,6 +111,8 @@ public class DatasetServiceBean implements java.io.Serializable {
     @EJB
     GlobusServiceBean globusServiceBean;
 
+    @EJB
+    UserNotificationServiceBean userNotificationService;
 
     private static final SimpleDateFormat logFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
     
@@ -1027,7 +1030,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
 
     @Asynchronous
-    public void globusAsyncCall(String jsonData, ApiToken token, Dataset dataset, String httpRequestUrl) throws ExecutionException, InterruptedException, MalformedURLException {
+    public void globusAsyncCall(String jsonData, ApiToken token, Dataset dataset, String httpRequestUrl, User authUser) throws ExecutionException, InterruptedException, MalformedURLException {
 
         String logTimestamp = logFormatter.format(new Date());
         Logger globusLogger = Logger.getLogger("edu.harvard.iq.dataverse.upload.client.DatasetServiceBean." + "GlobusUpload" + logTimestamp);
@@ -1071,12 +1074,12 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
 
         String taskIdentifier = jsonObject.getString("taskIdentifier");
+        String ruleId = jsonObject.getString("ruleId");
 
         //  globus task status check
         globusStatusCheck(taskIdentifier,globusLogger);
 
-        globusLogger.info("Start removing Globus permission for the client");
-
+        globusServiceBean.deletePermision(ruleId,globusLogger);
 
         try {
             List<String> inputList = new ArrayList<String>();
@@ -1128,26 +1131,22 @@ public class DatasetServiceBean implements java.io.Serializable {
 
                 globusLogger.info("Generated new JsonData with calculated values");
 
-                ProcessBuilder processBuilder = new ProcessBuilder();
 
                 String command = "curl -H \"X-Dataverse-key:" + token.getTokenString() + "\" -X POST "+httpRequestUrl+"/api/datasets/:persistentId/addFiles?persistentId=doi:" + datasetIdentifier + " -F jsonData='" + newjsonData  + "'";
                 System.out.println("*******====command ==== " + command);
 
-                new Thread(new Runnable() {
-                    public void run() {
-                        try {
-                            processBuilder.command("bash", "-c", command);
-                            Process process = processBuilder.start();
-                        } catch (Exception ex) {
-                            logger.log(Level.SEVERE, "******* Unexpected Exception while executing api/datasets/:persistentId/add call ", ex);
-                        }
-                    }
-                }).start();
+                String output = addFilesAsync(command , globusLogger ) ;
+                if(output.equalsIgnoreCase("ok"))
+                {
+                    userNotificationService.sendNotification((AuthenticatedUser) authUser, new Timestamp(new Date().getTime()), UserNotification.Type.GLOBUSUPLOADSUCCESS, dataset.getId());
+                    globusLogger.info("Successfully completed api/datasets/:persistentId/addFiles call ");
+                }
+                else
+                {
+                    globusLogger.log(Level.SEVERE, "******* Error while executing api/datasets/:persistentId/add call ", command);
+                }
 
             }
-
-
-            globusLogger.info("Finished export-all job.");
 
             if (fileHandlerSuceeded) {
                 fileHandler.close();
@@ -1180,28 +1179,16 @@ public class DatasetServiceBean implements java.io.Serializable {
         boolean success = false;
         do {
             try {
-
                 globusLogger.info("checking globus transfer task   " + taskId);
                 Thread.sleep(50000);
-
                 AccessToken clientTokenUser =  globusServiceBean.getClientToken();
-
                 success =  globusServiceBean.getSuccessfulTransfers(clientTokenUser, taskId);
-
-
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
 
         } while (!success);
 
-/*
-        AccessToken clientTokenUser = globusServiceBean.getClientToken();
-        String directory = globusServiceBean.getDirectory( dataset.getId()+"" );
-        globusServiceBean.updatePermision(clientTokenUser, directory, "identity", "r");
-
-        globusLogger.info("Successfully removed Globus permission for the client");
-*/
         globusLogger.info("globus transfer task completed successfully");
 
         return success;
@@ -1308,6 +1295,65 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         return finalType;
     }
+
+    public String addFilesAsync(String curlCommand, Logger globusLogger) throws ExecutionException, InterruptedException {
+        CompletableFuture<String> addFilesFuture =  CompletableFuture.supplyAsync(() -> {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return (addFiles(curlCommand,   globusLogger));
+        }, executor).exceptionally(ex -> {
+            globusLogger.fine("Something went wrong : " +  ex.getLocalizedMessage());
+            ex.printStackTrace();
+            return null;
+        });
+
+        String result = addFilesFuture.get();
+
+        return result ;
+    }
+
+
+
+
+    private String addFiles(String curlCommand, Logger globusLogger)
+    {
+        boolean success = false;
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        Process process = null;
+        String line;
+        String  status = "";
+
+        try {
+            globusLogger.info("Call to :  " + curlCommand);
+            processBuilder.command("bash", "-c", curlCommand);
+            process = processBuilder.start();
+            process.waitFor();
+
+            BufferedReader br=new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+            StringBuilder sb = new StringBuilder();
+            while((line=br.readLine())!=null) sb.append(line);
+            globusLogger.info(" API Output :  " + sb.toString());
+            JsonObject jsonObject = null;
+            try (StringReader rdr = new StringReader(sb.toString())) {
+                jsonObject = Json.createReader(rdr).readObject();
+            } catch (Exception jpe) {
+                jpe.printStackTrace();
+                globusLogger.log(Level.SEVERE, "Error parsing dataset json.");
+            }
+
+              status = jsonObject.getString("status");
+       } catch (Exception ex) {
+            globusLogger.log(Level.SEVERE, "******* Unexpected Exception while executing api/datasets/:persistentId/add call ", ex);
+        }
+
+
+        return status;
+    }
+
 
 
 }

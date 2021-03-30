@@ -284,20 +284,20 @@ public class GlobusServiceBean implements java.io.Serializable{
         }
     }
 
-    public void deletePermision(String ruleId) throws MalformedURLException {
+    public void deletePermision(String ruleId, Logger globusLogger) throws MalformedURLException {
 
         AccessToken clientTokenUser = getClientToken();
-        logger.info("Start updating permissions."  );
+        globusLogger.info("Start deleting permissions."  );
         String globusEndpoint = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusEndpoint, "");
 
         URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + globusEndpoint + "/access/" + ruleId);
-        logger.info("https://transfer.api.globusonline.org/v0.10/endpoint/" + globusEndpoint + "/access/" + ruleId);
+        //logger.info("https://transfer.api.globusonline.org/v0.10/endpoint/" + globusEndpoint + "/access/" + ruleId);
         MakeRequestResponse result = makeRequest(url, "Bearer",
                 clientTokenUser.getOtherTokens().get(0).getAccessToken(),"DELETE",  null);
         if (result.status != 200) {
-            logger.warning("Cannot update access rule " + ruleId);
+            globusLogger.warning("Cannot delete access rule " + ruleId);
         } else {
-            logger.info("Access rule " + ruleId + " was updated");
+            globusLogger.info("Access rule " + ruleId + " was deleted successfully");
         }
 
     }

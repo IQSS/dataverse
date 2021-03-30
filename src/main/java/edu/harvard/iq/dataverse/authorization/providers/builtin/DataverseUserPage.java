@@ -500,6 +500,10 @@ public class DataverseUserPage implements java.io.Serializable {
                     userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
                     break;
 
+                case GLOBUSUPLOADSUCCESS:
+                    userNotification.setTheObject(datasetService.find(userNotification.getObjectId()));
+                    break;
+
                 case CHECKSUMIMPORT:
                     userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
                     break;

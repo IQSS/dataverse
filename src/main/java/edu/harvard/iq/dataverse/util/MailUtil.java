@@ -66,6 +66,14 @@ public class MailUtil {
                 } catch (Exception e) {
                     return BundleUtil.getStringFromBundle("notification.email.import.filesystem.subject", rootDvNameAsList);
                 }
+            case GLOBUSUPLOADSUCCESS:
+                try {
+                    DatasetVersion version =  (DatasetVersion)objectOfNotification;
+                    List<String> dsNameAsList = Arrays.asList(version.getDataset().getDisplayName());
+                    return BundleUtil.getStringFromBundle("notification.email.import.globus.subject", dsNameAsList);
+                } catch (Exception e) {
+                    return BundleUtil.getStringFromBundle("notification.email.import.globus.subject", rootDvNameAsList);
+                }
 
             case CHECKSUMIMPORT:
                 return BundleUtil.getStringFromBundle("notification.email.import.checksum.subject", rootDvNameAsList);
