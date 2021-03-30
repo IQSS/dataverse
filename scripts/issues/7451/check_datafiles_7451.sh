@@ -71,7 +71,7 @@ else
     do
 	PG_QUERY_SI=`printf "${PG_QUERY_FIX_1}" $dataset "$storageidentifier"`
 
-	echo ${PSQL_EXEC} -h ${pg_host} -U ${pg_user} -d ${pg_db} -tA -F ' ' -c \"${PG_QUERY_SI}\"
+	${PSQL_EXEC} -h ${pg_host} -U ${pg_user} -d ${pg_db} -tA -F ' ' -c "${PG_QUERY_SI}"
     done 
 
     echo "... done."
