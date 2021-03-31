@@ -1196,6 +1196,7 @@ public class Datasets extends AbstractApiBean {
         }
     }
     
+    @POST
     @Path("{id}/actions/:releasemigrated")
     @Consumes("application/json-ld")
     public Response publishMigratedDataset(String jsonldBody, @PathParam("id") String id) {
