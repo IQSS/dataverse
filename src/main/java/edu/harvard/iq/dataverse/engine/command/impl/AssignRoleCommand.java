@@ -10,10 +10,12 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -49,6 +51,12 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
 
     @Override
     public RoleAssignment execute(CommandContext ctxt) throws CommandException {
+        if (grantee instanceof AuthenticatedUser) {
+            AuthenticatedUser user = (AuthenticatedUser) grantee;
+            if (user.isDeactivated()) {
+                throw new IllegalCommandException("User " + user.getUserIdentifier() + " is deactivated and cannot be given a role.", this);
+            }
+        }
         // TODO make sure the role is defined on the dataverse.
         RoleAssignment roleAssignment = new RoleAssignment(role, grantee, defPoint, privateUrlToken);
         return ctxt.roles().save(roleAssignment);

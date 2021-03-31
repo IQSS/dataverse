@@ -57,6 +57,10 @@ import org.hibernate.validator.constraints.NotBlank;
 @NamedQueries({
 	@NamedQuery( name="DataFile.removeFromDatasetVersion",
 		query="DELETE FROM FileMetadata f WHERE f.datasetVersion.id=:versionId and f.dataFile.id=:fileId"),
+        @NamedQuery(name = "DataFile.findByCreatorId",
+                query = "SELECT o FROM DataFile o WHERE o.creator.id=:creatorId"),
+        @NamedQuery(name = "DataFile.findByReleaseUserId",
+                query = "SELECT o FROM DataFile o WHERE o.releaseUser.id=:releaseUserId"),
         @NamedQuery(name="DataFile.findDataFileByIdProtocolAuth", 
                 query="SELECT s FROM DataFile s WHERE s.identifier=:identifier AND s.protocol=:protocol AND s.authority=:authority"),
         @NamedQuery(name="DataFile.findDataFileThatReplacedId", 
@@ -671,10 +675,6 @@ public class DataFile extends DvObject implements Comparable {
     
     public boolean isFilePackage() {
         return DataFileServiceBean.MIME_TYPE_PACKAGE_FILE.equalsIgnoreCase(contentType);
-    }
-
-    public boolean isFileGlobus() {
-        return DataFileServiceBean.MIME_TYPE_GLOBUS_FILE.equalsIgnoreCase(contentType);
     }
 
     public void setIngestStatus(char ingestStatus) {

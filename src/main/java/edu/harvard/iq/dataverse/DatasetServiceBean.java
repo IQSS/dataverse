@@ -169,6 +169,14 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
     }
 
+    public List<Dataset> findByCreatorId(Long creatorId) {
+        return em.createNamedQuery("Dataset.findByCreatorId").setParameter("creatorId", creatorId).getResultList();
+    }
+
+    public List<Dataset> findByReleaseUserId(Long releaseUserId) {
+        return em.createNamedQuery("Dataset.findByReleaseUserId").setParameter("releaseUserId", releaseUserId).getResultList();
+    }
+
     public List<Dataset> filterByPidQuery(String filterQuery) {
         // finds only exact matches
         Dataset ds = findByGlobalId(filterQuery);
@@ -806,6 +814,12 @@ public class DatasetServiceBean implements java.io.Serializable {
         return workflowComment;
     }
     
+    public void markWorkflowCommentAsRead(WorkflowComment workflowComment) {
+        workflowComment.setToBeShown(false);
+        em.merge(workflowComment);
+    }
+    
+    
     /**
      * This method used to throw CommandException, which was pretty pointless 
      * seeing how it's called asynchronously. As of v5.0 any CommanExceptiom 
@@ -982,7 +996,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             // (i.e., the metadata exports):
             StorageIO<Dataset> datasetSIO = DataAccess.getStorageIO(dataset);
             
-            for (String[] exportProvider : ExportService.getInstance(settingsService).getExportersLabels()) {
+            for (String[] exportProvider : ExportService.getInstance().getExportersLabels()) {
                 String exportLabel = "export_" + exportProvider[1] + ".cached";
                 try {
                     total += datasetSIO.getAuxObjectSize(exportLabel);

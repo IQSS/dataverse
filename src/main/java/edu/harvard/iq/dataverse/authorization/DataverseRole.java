@@ -33,18 +33,20 @@ import javax.validation.constraints.Size;
  * @author michael
  */
 @NamedQueries({
-	@NamedQuery(name = "DataverseRole.findByOwnerId",
-			    query= "SELECT r FROM DataverseRole r WHERE r.owner.id=:ownerId ORDER BY r.name"),
-	@NamedQuery(name = "DataverseRole.findBuiltinRoles",
-			    query= "SELECT r FROM DataverseRole r WHERE r.owner is null ORDER BY r.name"),
+    @NamedQuery(name = "DataverseRole.findByOwnerId",
+            query = "SELECT r FROM DataverseRole r WHERE r.owner.id=:ownerId ORDER BY r.name"),
+    @NamedQuery(name = "DataverseRole.findBuiltinRoles",
+            query = "SELECT r FROM DataverseRole r WHERE r.owner is null ORDER BY r.name"),
     @NamedQuery(name = "DataverseRole.findBuiltinRoleByAlias",
-			    query= "SELECT r FROM DataverseRole r WHERE r.alias=:alias AND r.owner is null"),
-        @NamedQuery(name = "DataverseRole.findCustomRoleByAliasAndOwner",
-			    query= "SELECT r FROM DataverseRole r WHERE r.alias=:alias and (r.owner is null or r.owner.id=:ownerId)"),
-	@NamedQuery(name = "DataverseRole.listAll",
-			    query= "SELECT r FROM DataverseRole r"),
-	@NamedQuery(name = "DataverseRole.deleteById",
-			    query= "DELETE FROM DataverseRole r WHERE r.id=:id")
+            query = "SELECT r FROM DataverseRole r WHERE r.alias=:alias AND r.owner is null"),
+    @NamedQuery(name = "DataverseRole.findDataverseRoleByAlias",
+            query = "SELECT r FROM DataverseRole r WHERE r.alias=:alias"),
+    @NamedQuery(name = "DataverseRole.findCustomRoleByAliasAndOwner",
+            query = "SELECT r FROM DataverseRole r WHERE r.alias=:alias and (r.owner is null or r.owner.id=:ownerId)"),
+    @NamedQuery(name = "DataverseRole.listAll",
+            query = "SELECT r FROM DataverseRole r"),
+    @NamedQuery(name = "DataverseRole.deleteById",
+            query = "DELETE FROM DataverseRole r WHERE r.id=:id")
 })
 @Entity
 @Table(indexes = {@Index(columnList="owner_id")

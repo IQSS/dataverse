@@ -138,7 +138,7 @@ public class DataFileServiceBean implements java.io.Serializable {
      */
     public static final String MIME_TYPE_PACKAGE_FILE = "application/vnd.dataverse.file-package";
 
-    public static final String MIME_TYPE_GLOBUS_FILE = "application/vnd.dataverse.file-globus";
+
     
     public DataFile find(Object pk) {
         return em.find(DataFile.class, pk);
@@ -157,7 +157,15 @@ public class DataFileServiceBean implements java.io.Serializable {
     public DataFile findByGlobalId(String globalId) {
             return (DataFile) dvObjectService.findByGlobalId(globalId, DataFile.DATAFILE_DTYPE_STRING);
     }
-    
+
+    public List<DataFile> findByCreatorId(Long creatorId) {
+        return em.createNamedQuery("DataFile.findByCreatorId").setParameter("creatorId", creatorId).getResultList();
+    }
+
+    public List<DataFile> findByReleaseUserId(Long releaseUserId) {
+        return em.createNamedQuery("DataFile.findByReleaseUserId").setParameter("releaseUserId", releaseUserId).getResultList();
+    }
+
     public DataFile findReplacementFile(Long previousFileId){
         Query query = em.createQuery("select object(o) from DataFile as o where o.previousDataFileId = :previousFileId");
         query.setParameter("previousFileId", previousFileId);
@@ -1362,15 +1370,6 @@ public class DataFileServiceBean implements java.io.Serializable {
         return MIME_TYPE_PACKAGE_FILE.equalsIgnoreCase(contentType);
     }
 
-    public boolean isFileClassGlobus (DataFile file) {
-        if (file == null) {
-            return false;
-        }
-
-        String contentType = file.getContentType();
-
-        return MIME_TYPE_GLOBUS_FILE.equalsIgnoreCase(contentType);
-    }
     
     public void populateFileSearchCard(SolrSearchResult solrSearchResult) {
         solrSearchResult.setEntity(this.findCheapAndEasy(solrSearchResult.getEntityId()));

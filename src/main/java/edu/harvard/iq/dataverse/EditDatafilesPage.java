@@ -36,6 +36,8 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
+import edu.harvard.iq.dataverse.util.FileMetadataUtil;
+
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -796,8 +798,12 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // and let the delete be handled in the command (by adding it to the
                 // filesToBeDeleted list):
 
+                // ToDo - FileMetadataUtil.removeFileMetadataFromList should handle these two
+                // removes so they could be put after this if clause and the else clause could
+                // be removed.
                 dataset.getEditVersion().getFileMetadatas().remove(markedForDelete);
                 fileMetadatas.remove(markedForDelete);
+
                 filesToBeDeleted.add(markedForDelete);
             } else {
                 logger.fine("this is a brand-new (unsaved) filemetadata");
@@ -810,9 +816,9 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // fileMetadatas list. (but doing both just adds a no-op and won't cause an
                 // error)
                 // 1. delete the filemetadata from the local display list: 
-                removeFileMetadataFromList(fileMetadatas, markedForDelete);
+                FileMetadataUtil.removeFileMetadataFromList(fileMetadatas, markedForDelete);
                 // 2. delete the filemetadata from the version: 
-                removeFileMetadataFromList(dataset.getEditVersion().getFileMetadatas(), markedForDelete);
+                FileMetadataUtil.removeFileMetadataFromList(dataset.getEditVersion().getFileMetadatas(), markedForDelete);
             }
 
             if (markedForDelete.getDataFile().getId() == null) {
@@ -821,8 +827,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // removing it from the fileMetadatas lists (above), we also remove it from
                 // the newFiles list and the dataset's files, so it never gets saved.
 
-                removeDataFileFromList(dataset.getFiles(), markedForDelete.getDataFile());
-                removeDataFileFromList(newFiles, markedForDelete.getDataFile());
+                FileMetadataUtil.removeDataFileFromList(dataset.getFiles(), markedForDelete.getDataFile());
+                FileMetadataUtil.removeDataFileFromList(newFiles, markedForDelete.getDataFile());
                 FileUtil.deleteTempFile(markedForDelete.getDataFile(), dataset, ingestService);
                 // Also remove checksum from the list of newly uploaded checksums (perhaps odd
                 // to delete and then try uploading the same file again, but it seems like it
@@ -850,28 +856,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
     }
 
-
-    private void removeFileMetadataFromList(List<FileMetadata> fmds, FileMetadata fmToDelete) {
-        Iterator<FileMetadata> fmit = fmds.iterator();
-        while (fmit.hasNext()) {
-            FileMetadata fmd = fmit.next();
-            if (fmToDelete.getDataFile().getStorageIdentifier().equals(fmd.getDataFile().getStorageIdentifier())) {
-                fmit.remove();
-                break;
-                    }
-                }
-                }                
-                
-    private void removeDataFileFromList(List<DataFile> dfs, DataFile dfToDelete) {
-        Iterator<DataFile> dfit = dfs.iterator();
-        while (dfit.hasNext()) {
-            DataFile df = dfit.next();
-            if (dfToDelete.getStorageIdentifier().equals(df.getStorageIdentifier())) {
-                dfit.remove();
-                break;
-            }
-        }
-    }
 
     
     
@@ -941,8 +925,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress) || lockTest.isLockedFor(DatasetLock.Reason.EditInProgress)) {
                 logger.log(Level.INFO, "Couldn''t save dataset: {0}", "It is locked."
                         + "");
-                String rootDataverseName = dataverseService.findRootDataverse().getName();
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, getBundleString("dataset.locked.editInProgress.message"),BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details", Arrays.asList(BrandingUtil.getSupportTeamName(null, rootDataverseName))));
+                JH.addMessage(FacesMessage.SEVERITY_FATAL, getBundleString("dataset.locked.editInProgress.message"),BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details", Arrays.asList(BrandingUtil.getSupportTeamName(null))));
                 return null;
             }
         }
