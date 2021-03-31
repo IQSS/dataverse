@@ -786,4 +786,85 @@ public class AdminIT {
         assertEquals("OK", status);
         
     }
+    
+    @Test
+    public void testLicenses(){
+        
+        String pathToJsonFile = "scripts/api/data/license.json";
+        Response addLicenseResponse = UtilIT.addLicense(pathToJsonFile);
+        addLicenseResponse.prettyPrint();
+        String body = addLicenseResponse.getBody().asString();
+        String status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+        
+        pathToJsonFile = "scripts/api/data/licenseError.json";
+        Response addLicenseErrorResponse = UtilIT.addLicense(pathToJsonFile);
+        addLicenseErrorResponse.prettyPrint();
+        body = addLicenseErrorResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("ERROR", status);
+        
+        Response getLicensesResponse = UtilIT.getLicenses();
+        getLicensesResponse.prettyPrint();
+        body = getLicensesResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+        
+        Response getLicenseByIdResponse = UtilIT.getLicenseById(1L);
+        getLicenseByIdResponse.prettyPrint();
+        body = getLicenseByIdResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+        
+        Response getLicenseByNameResponse = UtilIT.getLicenseByName("");
+        getLicenseByNameResponse.prettyPrint();
+        body = getLicenseByNameResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+        
+        Response getLicenseErrorResponse = UtilIT.getLicenseById(10L);
+        getLicenseErrorResponse.prettyPrint();
+        body = getLicenseErrorResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("ERROR", status);
+        
+        pathToJsonFile = "scripts/api/data/licenseUpdate.json";
+        Response updateLicenseByIdResponse = UtilIT.updateLicenseById(pathToJsonFile, 1L);
+        updateLicenseByIdResponse.prettyPrint();
+        body = updateLicenseByIdResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+        
+        pathToJsonFile = "scripts/api/data/licenseUpdate.json";
+        Response updateLicenseByNameResponse = UtilIT.updateLicenseByName(pathToJsonFile, "");
+        updateLicenseByNameResponse.prettyPrint();
+        body = updateLicenseByNameResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+        
+        Response updateLicenseErrorResponse = UtilIT.updateLicenseById(pathToJsonFile, 10L);
+        updateLicenseErrorResponse.prettyPrint();
+        body = updateLicenseErrorResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("ERROR", status);
+        
+        Response deleteLicenseByIdResponse = UtilIT.deleteLicenseById(1L);
+        deleteLicenseByIdResponse.prettyPrint();
+        body = deleteLicenseByIdResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+        
+        Response deleteLicenseByNameResponse = UtilIT.deleteLicenseByName("");
+        deleteLicenseByNameResponse.prettyPrint();
+        body = deleteLicenseByNameResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("OK", status);
+        
+        Response deleteLicenseErrorResponse = UtilIT.deleteLicenseById(10L);
+        deleteLicenseErrorResponse.prettyPrint();
+        body = deleteLicenseErrorResponse.getBody().asString();
+        status = JsonPath.from(body).getString("status");
+        assertEquals("ERROR", status);
+        
+    }
 }

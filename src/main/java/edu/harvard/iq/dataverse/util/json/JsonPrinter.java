@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseTheme;
+import edu.harvard.iq.dataverse.License;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
@@ -44,6 +45,7 @@ import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectB
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
 
+import java.net.URISyntaxException;
 import java.util.*;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -774,6 +776,16 @@ public class JsonPrinter {
         return jsonObjectBuilder()
                     .add("id", String.valueOf(aFacet.getId())) // TODO should just be id I think
                     .add("name", aFacet.getDatasetFieldType().getDisplayName());
+    }
+
+    public static JsonObjectBuilder json(License license) {
+        return jsonObjectBuilder()
+            .add("id", license.getId())
+            .add("name", license.getName())
+            .add("shortDescription", license.getShortDescription())
+            .add("uri", license.getUri().toString())
+            .add("iconUrl", license.getIconUrl().toString())
+            .add("active", license.isActive());
     }
         
     public static Collector<String, JsonArrayBuilder, JsonArrayBuilder> stringsToJsonArray() {
