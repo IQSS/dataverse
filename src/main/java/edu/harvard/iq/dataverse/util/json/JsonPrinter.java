@@ -778,7 +778,7 @@ public class JsonPrinter {
                     .add("name", aFacet.getDatasetFieldType().getDisplayName());
     }
 
-    public static JsonObjectBuilder json(License license) throws URISyntaxException {
+    public static JsonObjectBuilder json(License license) {
         return jsonObjectBuilder()
             .add("id", license.getId())
             .add("name", license.getName())

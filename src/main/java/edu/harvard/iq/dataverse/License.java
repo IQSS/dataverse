@@ -89,16 +89,24 @@ public class License {
         this.shortDescription = shortDescription;
     }
 
-    public URI getUri() throws URISyntaxException {
-        return new URI(uri);
+    public URI getUri() {
+        try {
+            return new URI(uri);
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("Incorrect URI in JSON");
+        }
     }
 
     public void setUri(URI uri) {
         this.uri = uri.toASCIIString();
     }
 
-    public URI getIconUrl() throws URISyntaxException {
-        return new URI(iconUrl);
+    public URI getIconUrl() {
+        try {
+            return new URI(iconUrl);
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("Incorrect URI in JSON");
+        }
     }
 
     public void setIconUrl(URI iconUrl) {

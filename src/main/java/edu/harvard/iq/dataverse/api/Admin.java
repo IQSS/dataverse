@@ -44,7 +44,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveComma
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
-import java.net.URISyntaxException;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -1927,11 +1926,7 @@ public class Admin extends AbstractApiBean {
     public Response getLicenses() {
     	JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
 		for(License license : licenseService.listAll()) {
-			try {
-				arrayBuilder.add(JsonPrinter.json(license));
-			} catch (URISyntaxException e) {
-				return error(Status.INTERNAL_SERVER_ERROR, "Incorrect URI in JSON");
-			}
+			arrayBuilder.add(JsonPrinter.json(license));
 		}
         return ok(arrayBuilder);
     }
@@ -1944,8 +1939,6 @@ public class Admin extends AbstractApiBean {
         	return ok(json(license));
 		} catch (FetchException e) {
 			return error(Response.Status.NOT_FOUND, e.getMessage());
-		} catch (URISyntaxException e) {
-			return error(Response.Status.BAD_REQUEST, "Incorrect URI in JSON");
 		}
 	}
 
@@ -1957,8 +1950,6 @@ public class Admin extends AbstractApiBean {
         	return ok(json(license));
 		} catch (FetchException e) {
 			return error(Response.Status.NOT_FOUND, e.getMessage());
-		} catch (URISyntaxException e) {
-			return error(Response.Status.BAD_REQUEST, "Incorrect URI in JSON");
 		}
 	}
 
@@ -1982,8 +1973,6 @@ public class Admin extends AbstractApiBean {
 			licenseService.setById(id, license.getName(), license.getShortDescription(), license.getUri(), license.getIconUrl(), license.isActive());
 		} catch (UpdateException e) {
 			return error(Response.Status.BAD_REQUEST, e.getMessage());
-		} catch (URISyntaxException e) {
-			return error(Response.Status.BAD_REQUEST, "Incorrect URI in JSON");
 		}
 		return ok("License with ID " + id + " was replaced.");
     }
@@ -1995,8 +1984,6 @@ public class Admin extends AbstractApiBean {
 			licenseService.setByName(license.getName(), license.getShortDescription(), license.getUri(), license.getIconUrl(), license.isActive());
 		} catch (UpdateException e) {
 			return error(Response.Status.BAD_REQUEST, e.getMessage());
-		} catch (URISyntaxException e) {
-			return error(Response.Status.BAD_REQUEST, "Incorrect URI in JSON");
 		}
 		return ok("License with name " + name + " was replaced.");
     }
