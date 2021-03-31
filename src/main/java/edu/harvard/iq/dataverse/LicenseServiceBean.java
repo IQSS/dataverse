@@ -2,11 +2,11 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
+import edu.harvard.iq.dataverse.api.ConflictException;
 import edu.harvard.iq.dataverse.api.FetchException;
 import edu.harvard.iq.dataverse.api.RequestBodyException;
 import edu.harvard.iq.dataverse.api.UpdateException;
 import java.net.URI;
-import java.net.URL;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -52,13 +52,19 @@ public class LicenseServiceBean {
         return licenses.get(0);
     }
 
-    public License save(License license) throws PersistenceException, RequestBodyException {
-        if (license.getId() == null) {
-            em.persist(license);
-            return license;
-        } else {
+    public License save(License license) throws RequestBodyException, ConflictException {
+        if (license.getId() != null) {
             throw new RequestBodyException("There shouldn't be an ID in the request body");
         }
+        List<License> licenses = em.createNamedQuery("License.findByNameOrUri", License.class)
+            .setParameter("name", license.getName() )
+            .setParameter("uri", license.getUri().toASCIIString() )
+            .getResultList();
+        if (!licenses.isEmpty()) {
+            throw new ConflictException("A license with the same URI or name is already present.");
+        }
+        em.persist(license);
+        return license;
     }
 
     public void setById(long id, String name, String shortDescription, URI uri, URI iconUrl, boolean active) throws UpdateException {
@@ -81,13 +87,14 @@ public class LicenseServiceBean {
         }
     }
 
-    public void setByName(String name, String shortDescription, URI uri, URI iconUrl, boolean active) throws UpdateException {
+    public void setByName(String nameArg, String name, String shortDescription, URI uri, URI iconUrl, boolean active) throws UpdateException {
         List<License> licenses = em.createNamedQuery("License.findByName", License.class)
-                .setParameter("name", name )
+                .setParameter("name", nameArg )
                 .getResultList();
 
         if(licenses.size() > 0) {
             License license = licenses.get(0);
+            license.setName(name);
             license.setShortDescription(shortDescription);
             license.setUri(uri);
             license.setIconUrl(iconUrl);

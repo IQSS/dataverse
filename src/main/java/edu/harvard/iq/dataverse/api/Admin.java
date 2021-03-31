@@ -47,7 +47,6 @@ import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-import javax.persistence.PersistenceException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -1961,8 +1960,8 @@ public class Admin extends AbstractApiBean {
             return created("/api/admin/licenses", Json.createObjectBuilder().add("message", "License created"));
         } catch (RequestBodyException e) {
 			return error(Response.Status.BAD_REQUEST, e.getMessage());
-		} catch(PersistenceException e) {
-            return error(Response.Status.CONFLICT, "A license with the same URI or name is already present.");
+		} catch(ConflictException e) {
+            return error(Response.Status.CONFLICT, e.getMessage());
         }
 	}
 
@@ -1979,13 +1978,13 @@ public class Admin extends AbstractApiBean {
 
     @PUT
     @Path("/licenses/name/{name}")
-    public Response putLicenseByName(@PathParam("name") String name, License license) {
+    public Response putLicenseByName(@PathParam("name") String nameArg, License license) {
 		try {
-			licenseService.setByName(license.getName(), license.getShortDescription(), license.getUri(), license.getIconUrl(), license.isActive());
+			licenseService.setByName(nameArg, license.getName(), license.getShortDescription(), license.getUri(), license.getIconUrl(), license.isActive());
 		} catch (UpdateException e) {
 			return error(Response.Status.BAD_REQUEST, e.getMessage());
 		}
-		return ok("License with name " + name + " was replaced.");
+		return ok("License with name " + nameArg + " was replaced.");
     }
 
     @DELETE
