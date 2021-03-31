@@ -77,11 +77,9 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLComman
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetThumbnailCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ExportService;
-import edu.harvard.iq.dataverse.globus.fileDetailsHolder;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -132,7 +130,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.inject.Inject;
@@ -161,10 +158,7 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import com.amazonaws.services.s3.model.PartETag;
-import edu.harvard.iq.dataverse.FileMetadata;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -231,9 +225,6 @@ public class Datasets extends AbstractApiBean {
 
     @Inject
     DataverseRequestServiceBean dvRequestService;
-
-    @Context
-    protected HttpServletRequest httpRequest;
 
 
     /**
