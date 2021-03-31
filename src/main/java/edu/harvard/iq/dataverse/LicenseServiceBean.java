@@ -33,23 +33,23 @@ public class LicenseServiceBean {
     }
 
     public License getById(long id) throws FetchException {
-        List<License> tokens = em.createNamedQuery("License.findById", License.class)
+        List<License> licenses = em.createNamedQuery("License.findById", License.class)
                 .setParameter("id", id )
                 .getResultList();
-        if (tokens.isEmpty()) {
+        if (licenses.isEmpty()) {
             throw new FetchException("License with that ID doesn't exist.");
         }
-        return tokens.get(0);
+        return licenses.get(0);
     }
 
     public License getByName(String name) throws FetchException {
-        List<License> tokens = em.createNamedQuery("License.findByName", License.class)
+        List<License> licenses = em.createNamedQuery("License.findByName", License.class)
                 .setParameter("name", name )
                 .getResultList();
-        if (tokens.isEmpty()) {
+        if (licenses.isEmpty()) {
             throw new FetchException("License with that name doesn't exist.");
         }
-        return tokens.get(0);
+        return licenses.get(0);
     }
 
     public License save(License license) throws PersistenceException, RequestBodyException {
@@ -62,12 +62,12 @@ public class LicenseServiceBean {
     }
 
     public void setById(long id, String name, String shortDescription, URI uri, URI iconUrl, boolean active) throws UpdateException {
-        List<License> tokens = em.createNamedQuery("License.findById", License.class)
+        List<License> licenses = em.createNamedQuery("License.findById", License.class)
                 .setParameter("id", id )
                 .getResultList();
 
-        if(tokens.size() > 0) {
-            License license = tokens.get(0);
+        if(licenses.size() > 0) {
+            License license = licenses.get(0);
             license.setName(name);
             license.setShortDescription(shortDescription);
             license.setUri(uri);
@@ -82,12 +82,12 @@ public class LicenseServiceBean {
     }
 
     public void setByName(String name, String shortDescription, URI uri, URI iconUrl, boolean active) throws UpdateException {
-        List<License> tokens = em.createNamedQuery("License.findByName", License.class)
+        List<License> licenses = em.createNamedQuery("License.findByName", License.class)
                 .setParameter("name", name )
                 .getResultList();
 
-        if(tokens.size() > 0) {
-            License license = tokens.get(0);
+        if(licenses.size() > 0) {
+            License license = licenses.get(0);
             license.setShortDescription(shortDescription);
             license.setUri(uri);
             license.setIconUrl(iconUrl);
