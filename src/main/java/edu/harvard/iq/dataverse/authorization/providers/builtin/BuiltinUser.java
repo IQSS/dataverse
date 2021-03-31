@@ -187,8 +187,4 @@ public class BuiltinUser implements Serializable {
     public AuthenticatedUserDisplayInfo getDisplayInfoForApiCreation() {
         return new AuthenticatedUserDisplayInfo(firstName, lastName, email, affiliation, position );
     }
-
-    public AuthenticatedUserDisplayInfo getDisplayInfo() {
-        return new AuthenticatedUserDisplayInfo(firstName, lastName, email, affiliation, position );
-    }
 }
