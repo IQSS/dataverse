@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
+import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -14,11 +15,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class StandardCitationFormatsConverterTest {
 
+    private static final Locale TEST_LOCALE = Locale.ENGLISH;
+
     private StandardCitationFormatsConverter converter = new StandardCitationFormatsConverter();
 
     private CitationDataExtractor dataExtractor = new CitationDataExtractor();
 
     private CitationTestUtils utils = new CitationTestUtils();
+
 
     // -------------------- TESTS --------------------
 
@@ -32,7 +36,7 @@ class StandardCitationFormatsConverterTest {
 
         // when
 
-        String bibtex = converter.toBibtexString(citationData);
+        String bibtex = converter.toBibtexString(citationData, TEST_LOCALE);
 
         // then
         assertThat(bibtex).isEqualTo("@data{LK0D1H_1955,\r\n"
@@ -55,7 +59,7 @@ class StandardCitationFormatsConverterTest {
         CitationData citationData = dataExtractor.create(datasetVersion);
 
         // when
-        String bibtex = converter.toBibtexString(citationData);
+        String bibtex = converter.toBibtexString(citationData, TEST_LOCALE);
 
         // then
         assertThat(bibtex).isEqualTo("@data{LK0D1H_1955,\r\n"
@@ -78,7 +82,7 @@ class StandardCitationFormatsConverterTest {
         CitationData citationData = dataExtractor.create(datasetVersion);
 
         // when
-        String bibtex = converter.toBibtexString(citationData);
+        String bibtex = converter.toBibtexString(citationData, TEST_LOCALE);
 
         // then
         assertThat(bibtex).isEqualTo("@data{LK0D1H_1955,\r\n"
@@ -101,7 +105,7 @@ class StandardCitationFormatsConverterTest {
         CitationData citationData = dataExtractor.create(datasetVersion);
 
         // when
-        String bibtex = converter.toBibtexString(citationData);
+        String bibtex = converter.toBibtexString(citationData, TEST_LOCALE);
 
         // then
         assertThat(bibtex).isEqualTo("@data{LK0D1H_1955,\r\n"
@@ -124,7 +128,7 @@ class StandardCitationFormatsConverterTest {
         CitationData citationData = dataExtractor.create(datasetVersion);
 
         // when
-        String bibtex = converter.toBibtexString(citationData);
+        String bibtex = converter.toBibtexString(citationData, TEST_LOCALE);
 
         // then
         assertThat(bibtex).isEqualTo("@data{LK0D1H_1955,\r\n"
@@ -147,7 +151,7 @@ class StandardCitationFormatsConverterTest {
         CitationData citationData = dataExtractor.create(datasetVersion);
 
         // when
-        String ris = converter.toRISString(citationData);
+        String ris = converter.toRISString(citationData, TEST_LOCALE);
 
         // then
         assertThat(ris).isEqualTo("Provider: LibraScholar\r\n" +
@@ -173,7 +177,7 @@ class StandardCitationFormatsConverterTest {
         CitationData citationData = dataExtractor.create(datasetVersion);
 
         // when
-        String ris = converter.toRISString(citationData);
+        String ris = converter.toRISString(citationData, TEST_LOCALE);
 
         // then
         assertThat(ris).isEqualTo("Provider: LibraScholar\r\n" +
@@ -198,7 +202,7 @@ class StandardCitationFormatsConverterTest {
         CitationData citationData = dataExtractor.create(datasetVersion);
 
         // when
-        String endNote = converter.toEndNoteString(citationData);
+        String endNote = converter.toEndNoteString(citationData, TEST_LOCALE);
 
         // then
         assertThat(endNote).isEqualTo("<?xml version='1.0' encoding='UTF-8'?>" +
@@ -230,7 +234,7 @@ class StandardCitationFormatsConverterTest {
         CitationData citationData = dataExtractor.create(datasetVersion);
 
         // when
-        String endNote = converter.toEndNoteString(citationData);
+        String endNote = converter.toEndNoteString(citationData, TEST_LOCALE);
 
         // then
         assertThat(endNote).isEqualTo("<?xml version='1.0' encoding='UTF-8'?>" +
@@ -260,7 +264,7 @@ class StandardCitationFormatsConverterTest {
         CitationData citationData = dataExtractor.create(datasetVersion);
 
         // when
-        String citation = converter.toString(citationData, false);
+        String citation = converter.toString(citationData, TEST_LOCALE, false);
 
         // then
         assertThat(citation)
@@ -276,7 +280,7 @@ class StandardCitationFormatsConverterTest {
         CitationData citationData = dataExtractor.create(datasetVersion);
 
         // when
-        String citation = converter.toString(citationData, false);
+        String citation = converter.toString(citationData, TEST_LOCALE, false);
 
         // then
         assertThat(citation)
@@ -292,7 +296,7 @@ class StandardCitationFormatsConverterTest {
         CitationData citationData = dataExtractor.create(datasetVersion);
 
         // when
-        String citation = converter.toString(citationData, true);
+        String citation = converter.toString(citationData, TEST_LOCALE, true);
 
         // then
         assertThat(citation).isEqualTo("First Last, 1955, \"Dataset Title\"," +
@@ -309,7 +313,7 @@ class StandardCitationFormatsConverterTest {
         CitationData citationData = dataExtractor.create(datasetVersion);
 
         // when
-        String citation = converter.toString(citationData, true);
+        String citation = converter.toString(citationData, TEST_LOCALE, true);
 
         // then
         assertThat(citation).isEqualTo("1955," +

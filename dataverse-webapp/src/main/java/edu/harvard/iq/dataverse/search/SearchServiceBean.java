@@ -81,24 +81,24 @@ public class SearchServiceBean {
     public enum SortOrder {
 
         asc, desc;
-        
-        
+
+
         public static Optional<SortOrder> fromString(String sortOrderString) {
             return Try.of(() -> SortOrder.valueOf(sortOrderString))
                     .toJavaOptional();
-                    
+
         }
-        
+
         public static List<String> allowedOrderStrings() {
             return Lists.newArrayList(SortOrder.values()).stream()
-                    .map(so -> so.name())
+                    .map(Enum::name)
                     .collect(Collectors.toList());
         }
     }
 
-    /**
-     * We're trying to make the SearchServiceBean lean, mean, and fast, with as
-     * few injections of EJBs as possible.
+    /*
+      We're trying to make the SearchServiceBean lean, mean, and fast, with as
+      few injections of EJBs as possible.
      */
     /**
      * @todo Can we do without the DatasetFieldServiceBean?
@@ -120,38 +120,12 @@ public class SearchServiceBean {
     @Inject
     private SolrQuerySanitizer querySanitizer;
 
-    /**
-     *
-     * @param dataverseRequest
-     * @param dataverses
-     * @param query
-     * @param filterQueries
-     * @param sortField
-     * @param sortOrder
-     * @param paginationStart
-     * @param onlyDatatRelatedToMe
-     * @param numResultsPerPage
-     * @return
-     * @throws SearchException
-     */
     public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, SearchForTypes typesToSearch, List<String> filterQueries, String sortField, SortOrder sortOrder, int paginationStart, int numResultsPerPage) throws SearchException {
         return search(dataverseRequest, dataverses, query, typesToSearch, filterQueries, sortField, sortOrder, paginationStart, numResultsPerPage, true);
     }
 
     /**
-     *
-     * @param dataverseRequest
-     * @param dataverses
-     * @param query
-     * @param filterQueries
-     * @param sortField
-     * @param sortOrder
-     * @param paginationStart
-     * @param onlyDatatRelatedToMe
-     * @param numResultsPerPage
      * @param retrieveEntities     - look up dvobject entities with .find() (potentially expensive!)
-     * @return
-     * @throws SearchException
      */
     public SolrQueryResponse search(DataverseRequest dataverseRequest, List<Dataverse> dataverses, String query, SearchForTypes typesToSearch,
                                     List<String> filterQueries, String sortField, SortOrder sortOrder, int paginationStart,
@@ -164,17 +138,17 @@ public class SearchServiceBean {
         if (numResultsPerPage < 1) {
             throw new IllegalArgumentException("numResultsPerPage must be 1 or greater");
         }
-        
+
         SolrQuery solrQuery = new SolrQuery();
-        
+
         query = querySanitizer.sanitizeQuery(query);
         solrQuery.setQuery(query);
-        
+
         solrQuery.setSort(new SortClause(sortField, sortOrder == SortOrder.asc ? ORDER.asc : ORDER.desc));
         solrQuery.setHighlight(true).setHighlightSnippets(1);
         Integer fragSize = settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.SearchHighlightFragmentSize);
         if (fragSize != null) {
-            solrQuery.setHighlightFragsize(fragSize.intValue());
+            solrQuery.setHighlightFragsize(fragSize);
         }
         solrQuery.setHighlightSimplePre("<span class=\"search-term-match\">");
         solrQuery.setHighlightSimplePost("</span>");
@@ -189,16 +163,16 @@ public class SearchServiceBean {
         solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PUBLICATION_DATE, BundleUtil.getStringFromBundle("dataset.metadata.publicationYear"));
         solrFieldsToHightlightOnMap.put(SearchFields.DATASET_PERSISTENT_ID, BundleUtil.getStringFromBundle("advanced.search.datasets.persistentId"));
         solrFieldsToHightlightOnMap.put(SearchFields.FILE_PERSISTENT_ID, BundleUtil.getStringFromBundle("advanced.search.files.persistentId"));
-        /**
-         * @todo Dataverse subject and affiliation should be highlighted but
+        /*
+          @todo Dataverse subject and affiliation should be highlighted but
          * this is commented out right now because the "friendly" names are not
          * being shown on the dataverse cards. See also
          * https://github.com/IQSS/dataverse/issues/1431
          */
 //        solrFieldsToHightlightOnMap.put(SearchFields.DATAVERSE_SUBJECT, "Subject");
 //        solrFieldsToHightlightOnMap.put(SearchFields.DATAVERSE_AFFILIATION, "Affiliation");
-        /**
-         * @todo: show highlight on file card?
+        /*
+          @todo: show highlight on file card?
          * https://redmine.hmdc.harvard.edu/issues/3848
          */
         solrFieldsToHightlightOnMap.put(SearchFields.FILENAME_WITHOUT_EXTENSION, BundleUtil.getStringFromBundle("facets.search.fieldtype.fileNameWithoutExtension.label"));
@@ -223,9 +197,7 @@ public class SearchServiceBean {
         solrQuery.setParam("fl", "*,score");
         solrQuery.setParam("qt", "/select");
         solrQuery.setParam("facet", "true");
-        /**
-         * @todo: do we need facet.query?
-         */
+        //  @todo: do we need facet.query?
         solrQuery.setParam("facet.query", "*");
 
 
@@ -246,8 +218,8 @@ public class SearchServiceBean {
         solrQuery.addFacetField(SearchFields.DATAVERSE_CATEGORY);
         solrQuery.addFacetField(SearchFields.METADATA_SOURCE);
         solrQuery.addFacetField(SearchFields.PUBLICATION_YEAR);
-        /**
-         * @todo when a new method on datasetFieldService is available
+        /*
+          @todo when a new method on datasetFieldService is available
          * (retrieveFacetsByDataverse?) only show the facets that the dataverse
          * in question wants to show (and in the right order):
          * https://redmine.hmdc.harvard.edu/issues/3490
@@ -255,7 +227,7 @@ public class SearchServiceBean {
          * also, findAll only returns advancedSearchField = true... we should
          * probably introduce the "isFacetable" boolean rather than caring about
          * if advancedSearchField is true or false
-         *
+
          */
 
         if (dataverseRequest.getUser().isAuthenticated()) {
@@ -278,53 +250,28 @@ public class SearchServiceBean {
         }
 
         solrQuery.addFacetField(SearchFields.FILE_TYPE);
-        /**
-         * @todo: hide the extra line this shows in the GUI... at least it's
-         * last...
-         */
+        // @todo: hide the extra line this shows in the GUI... at least it's
         solrQuery.addFacetField(SearchFields.TYPE);
         solrQuery.addFacetField(SearchFields.FILE_TAG);
         if (!settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall)) {
             solrQuery.addFacetField(SearchFields.ACCESS);
         }
-        /**
-         * @todo: do sanity checking... throw error if negative
-         */
+        // @todo: do sanity checking... throw error if negative
         solrQuery.setStart(paginationStart);
-        /**
-         * @todo: decide if year CITATION_YEAR is good enough or if we should
-         * support CITATION_DATE
-         */
+        // @todo: decide if year CITATION_YEAR is good enough or if we should support CITATION_DATE
+
 //        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"), Locale.UK);
 //        calendar.set(2010, 1, 1);
 //        Date start = calendar.getTime();
 //        calendar.set(2013, 1, 1);
 //        Date end = calendar.getTime();
 //        solrQuery.addDateRangeFacet(SearchFields.CITATION_DATE, start, end, "+1MONTH");
-        /**
-         * @todo make this configurable
-         */
+        //  @todo make this configurable
         int thisYear = Calendar.getInstance().get(Calendar.YEAR);
-        /**
-         * @todo: odd or even makes a difference. Couldn't find value of 2014
-         * when this was set to 2000
-         */
-        final int citationYearRangeStart = 1901;
-        final int citationYearRangeEnd = thisYear;
-        final int citationYearRangeSpan = 2;
-        /**
-         * @todo: these are dates and should be "range facets" not "field
-         * facets"
-         *
-         * right now they are lumped in with the datasetFieldService.findAll()
-         * above
-         */
-//        solrQuery.addNumericRangeFacet(SearchFields.PRODUCTION_DATE_YEAR_ONLY, citationYearRangeStart, citationYearRangeEnd, citationYearRangeSpan);
-//        solrQuery.addNumericRangeFacet(SearchFields.DISTRIBUTION_DATE_YEAR_ONLY, citationYearRangeStart, citationYearRangeEnd, citationYearRangeSpan);
         solrQuery.setRows(numResultsPerPage);
         logger.fine("Solr query:" + solrQuery);
 
-        // -----------------------------------  
+        // -----------------------------------
         // Make the solr query
         // -----------------------------------
         QueryResponse queryResponse = null;
@@ -337,8 +284,8 @@ public class SearchServiceBean {
         SolrDocumentList docs = queryResponse.getResults();
         List<SolrSearchResult> solrSearchResults = new ArrayList<>();
 
-        /**
-         * @todo refactor SearchFields to a hashmap (or something? put in
+        /*
+          @todo refactor SearchFields to a hashmap (or something? put in
          * database? internationalize?) to avoid the crazy reflection and string
          * manipulation below
          */
@@ -375,15 +322,14 @@ public class SearchServiceBean {
             float score = (Float) solrDocument.getFieldValue(SearchFields.RELEVANCE);
             logger.fine("score for " + id + ": " + score);
             String identifier = (String) solrDocument.getFieldValue(SearchFields.IDENTIFIER);
-            String citation = (String) solrDocument.getFieldValue(SearchFields.DATASET_CITATION);
-            String citationPlainHtml = (String) solrDocument.getFieldValue(SearchFields.DATASET_CITATION_HTML);
+            String citation = getLocalizedValueWithFallback(solrDocument, SearchFields.DATASET_CITATION);
+            String citationPlainHtml = getLocalizedValueWithFallback(solrDocument, SearchFields.DATASET_CITATION_HTML);
             String persistentUrl = (String) solrDocument.getFieldValue(SearchFields.PERSISTENT_URL);
             String name = (String) solrDocument.getFieldValue(SearchFields.NAME);
             String nameSort = (String) solrDocument.getFieldValue(SearchFields.NAME_SORT);
             ArrayList titles = (ArrayList) solrDocument.getFieldValues(titleSolrField);
             Long datasetVersionId = (Long) solrDocument.getFieldValue(SearchFields.DATASET_VERSION_ID);
             String deaccessionReason = (String) solrDocument.getFieldValue(SearchFields.DATASET_DEACCESSION_REASON);
-            String filetype = (String) solrDocument.getFieldValue(SearchFields.FILE_TYPE_FRIENDLY);
             String fileContentType = (String) solrDocument.getFieldValue(SearchFields.FILE_CONTENT_TYPE);
             Date release_or_create_date = (Date) solrDocument.getFieldValue(SearchFields.RELEASE_OR_CREATE_DATE);
             String dateToDisplayOnCard = (String) solrDocument.getFirstValue(SearchFields.RELEASE_OR_CREATE_DATE_SEARCHABLE_TEXT);
@@ -404,8 +350,8 @@ public class SearchServiceBean {
                     List<String> highlightSnippets = queryResponse.getHighlighting().get(id).get(field);
                     if (highlightSnippets != null) {
                         matchedFields.add(field);
-                        /**
-                         * @todo only SolrField.SolrType.STRING? that's not
+                        /*
+                          @todo only SolrField.SolrType.STRING? that's not
                          * right... knit the SolrField object more into the
                          * highlighting stuff
                          */
@@ -420,9 +366,7 @@ public class SearchServiceBean {
 
             }
             SolrSearchResult solrSearchResult = new SolrSearchResult(query, name);
-            /**
-             * @todo put all this in the constructor?
-             */
+            // @todo put all this in the constructor?
             List<String> states = (List<String>) solrDocument.getFieldValue(SearchFields.PUBLICATION_STATUS);
             if (states != null) {
                 // set list of all statuses
@@ -432,7 +376,6 @@ public class SearchServiceBean {
                         .collect(Collectors.toList());
                 solrSearchResult.setPublicationStatuses(publicationStates);
             }
-//            logger.info(id + ": " + description);
             solrSearchResult.setId(id);
             solrSearchResult.setEntityId(entityid);
             if (retrieveEntities) {
@@ -465,10 +408,10 @@ public class SearchServiceBean {
                 solrSearchResult.setHtmlUrl(baseUrl + SystemConfig.DATAVERSE_PATH + identifier);
                 // Do not set the ImageUrl, let the search include fragment fill in
                 // the thumbnail, similarly to how the dataset and datafile cards
-                // are handled. 
+                // are handled.
                 //solrSearchResult.setImageUrl(baseUrl + "/api/access/dvCardImage/" + entityid);
-                /**
-                 * @todo Expose this API URL after "dvs" is changed to
+                /*
+                  @todo Expose this API URL after "dvs" is changed to
                  * "dataverses". Also, is an API token required for published
                  * dataverses? Michael: url changed.
                  */
@@ -478,16 +421,15 @@ public class SearchServiceBean {
                 solrSearchResult.setApiUrl(baseUrl + "/api/datasets/" + entityid);
                 //Image url now set via thumbnail api
                 //solrSearchResult.setImageUrl(baseUrl + "/api/access/dsCardImage/" + datasetVersionId);
-                // No, we don't want to set the base64 thumbnails here. 
-                // We want to do it inside SearchIncludeFragment, AND ONLY once the rest of the 
+                // No, we don't want to set the base64 thumbnails here.
+                // We want to do it inside SearchIncludeFragment, AND ONLY once the rest of the
                 // page has already loaded.
                 //DatasetVersion datasetVersion = datasetVersionService.find(datasetVersionId);
-                //if (datasetVersion != null){                    
+                //if (datasetVersion != null){
                 //    solrSearchResult.setDatasetThumbnail(datasetVersion.getDataset().getDatasetThumbnail(datasetVersion));
                 //}
-                /**
-                 * @todo Could use getFieldValues (plural) here.
-                 */
+
+                // @todo Could use getFieldValues (plural) here.
                 List<String> datasetDescriptions = (List) solrDocument.getFieldValues(SearchFields.DATASET_DESCRIPTION);
                 if (datasetDescriptions != null) {
                     String firstDatasetDescription = datasetDescriptions.get(0);
@@ -522,8 +464,8 @@ public class SearchServiceBean {
                 }
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?persistentId=" + parentGlobalId);
                 solrSearchResult.setDownloadUrl(baseUrl + "/api/access/datafile/" + entityid);
-                /**
-                 * @todo We are not yet setting the API URL for files because
+                /*
+                  @todo We are not yet setting the API URL for files because
                  * not all files have metadata. Only subsettable files (those
                  * with a datatable) seem to have metadata. Furthermore, the
                  * response is in XML whereas the rest of the Search API returns
@@ -562,19 +504,17 @@ public class SearchServiceBean {
                     solrSearchResult.setTabularDataTags(tabularDataTags);
                 }
                 String filePID = (String) solrDocument.getFieldValue(SearchFields.FILE_PERSISTENT_ID);
-                if (null != filePID && !"".equals(filePID) && !"".equals("null")) {
+                if (null != filePID && !"".equals(filePID)) {
                     solrSearchResult.setFilePersistentId(filePID);
                 }
 
                 String fileAccess = (String) solrDocument.getFirstValue(SearchFields.ACCESS);
                 solrSearchResult.setFileAccess(fileAccess);
             }
-            /**
-             * @todo store PARENT_ID as a long instead and cast as such
-             */
+            // @todo store PARENT_ID as a long instead and cast as such
             parent.put("id", (String) solrDocument.getFieldValue(SearchFields.PARENT_ID));
             parent.put("name", (String) solrDocument.getFieldValue(SearchFields.PARENT_NAME));
-            parent.put("citation", (String) solrDocument.getFieldValue(SearchFields.PARENT_CITATION));
+            parent.put("citation", getLocalizedValueWithFallback(solrDocument, SearchFields.PARENT_CITATION));
             solrSearchResult.setParent(parent);
             solrSearchResults.add(solrSearchResult);
         }
@@ -598,10 +538,7 @@ public class SearchServiceBean {
             List<FacetLabel> facetLabelList = new ArrayList<>();
             int numMetadataSources = 0;
             for (FacetField.Count facetFieldCount : facetField.getValues()) {
-                /**
-                 * @todo we do want to show the count for each facet
-                 */
-//                logger.info("field: " + facetField.getName() + " " + facetFieldCount.getName() + " (" + facetFieldCount.getCount() + ")");
+                // @todo we do want to show the count for each facet
                 if (facetFieldCount.getCount() > 0) {
                     FacetLabel facetLabel = new FacetLabel(facetFieldCount.getName(),
                             getLocaleFacetLabelName(facetFieldCount.getName(), facetField.getName()),
@@ -630,8 +567,8 @@ public class SearchServiceBean {
             // hopefully people will never see the raw facetField.getName() because it may well have an _s at the end
             facetCategory.setFriendlyName(facetField.getName());
             // try to find a friendlier name to display as a facet
-            /**
-             * @todo hmm, we thought we wanted the datasetFields array to go
+            /*
+              @todo hmm, we thought we wanted the datasetFields array to go
              * away once we have more granularity than findAll() available per
              * the todo above but we need a way to lookup by Solr field, so
              * we'll build a hashmap
@@ -652,13 +589,12 @@ public class SearchServiceBean {
                 }
                 datasetfieldFriendlyNamesBySolrField.put(dsfSolrField.getNameFacetable(), friendlyName);
             }
-            /**
-             * @todo get rid of this crazy reflection, per todo above... or
+            /*
+              @todo get rid of this crazy reflection, per todo above... or
              * should we... let's put into a hash the friendly names of facet
              * categories, indexed by Solr field
              */
             for (Field fieldObject : staticSearchFields) {
-                String name = fieldObject.getName();
                 String staticSearchField = null;
                 try {
                     staticSearchField = (String) fieldObject.get(searchFieldsObject);
@@ -905,9 +841,16 @@ public class SearchServiceBean {
     private void addDvObjectTypeFilterQuery(SolrQuery query, SearchForTypes typesToSearch) {
         String filterValue = typesToSearch.getTypes().stream()
                 .sorted()
-                .map(t -> t.getSolrValue())
+                .map(SearchObjectType::getSolrValue)
                 .collect(Collectors.joining(" OR "));
 
         query.addFilterQuery(SearchFields.TYPE + ":(" + filterValue + ")");
+    }
+
+    private String getLocalizedValueWithFallback(SolrDocument document, String fieldName) {
+        String suffix = "_" + BundleUtil.getCurrentLocale().getLanguage();
+        return (String) (document.containsKey(fieldName + suffix)
+                ? document.getFieldValue(fieldName + suffix)
+                : document.getFieldValue(fieldName + "_en"));
     }
 }

@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -30,7 +31,7 @@ public class StandardCitationFormatsConverter extends AbstractCitationFormatsCon
     // -------------------- LOGIC --------------------
 
     @Override
-    public String toString(CitationData data, boolean escapeHtml) {
+    public String toString(CitationData data, Locale locale, boolean escapeHtml) {
         CitationBuilder citation = new CitationBuilder(escapeHtml);
 
         citation.value(data.getAuthorsString()).endPart()
@@ -56,7 +57,7 @@ public class StandardCitationFormatsConverter extends AbstractCitationFormatsCon
     }
 
     @Override
-    public String toBibtexString(CitationData data) {
+    public String toBibtexString(CitationData data, Locale locale) {
         GlobalId pid = data.getPersistentId();
         BibTeXCitationBuilder bibtex = new BibTeXCitationBuilder()
                 .add(data.getFileTitle() != null && data.isDirect() ? "@incollection{" : "@data{")
@@ -85,7 +86,7 @@ public class StandardCitationFormatsConverter extends AbstractCitationFormatsCon
     }
 
     @Override
-    public String toRISString(CitationData data) {
+    public String toRISString(CitationData data, Locale locale) {
         RISCitationBuilder ris = new RISCitationBuilder()
                 .line("Provider: " + data.getPublisher())
                 .line("Content: text/plain; charset=\"utf-8\"");
@@ -130,7 +131,7 @@ public class StandardCitationFormatsConverter extends AbstractCitationFormatsCon
     }
 
     @Override
-    public String toEndNoteString(CitationData data) {
+    public String toEndNoteString(CitationData data, Locale locale) {
         XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
         XMLStreamWriter xmlw = null;
         try (ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
