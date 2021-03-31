@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.io.File;
@@ -725,6 +726,27 @@ public class DatasetServiceBean implements java.io.Serializable {
             fileHandler.close();
         }
 
+    }
+    
+    //get a string to add to save success message
+    //depends on dataset state and user privleges
+    public String getReminderString(Dataset dataset, boolean canPublishDataset) {
+
+        if(!dataset.isReleased() ){
+            //messages for draft state.
+            if (canPublishDataset){
+                return BundleUtil.getStringFromBundle("dataset.message.publish.remind.draft");
+            } else {
+                return BundleUtil.getStringFromBundle("dataset.message.submit.remind.draft");
+            }            
+        } else{
+            //messages for new version - post-publish
+            if (canPublishDataset){
+                return BundleUtil.getStringFromBundle("dataset.message.publish.remind.version");
+            } else {
+                return BundleUtil.getStringFromBundle("dataset.message.submit.remind.version");
+            }           
+        }             
     }
     
     public void updateLastExportTimeStamp(Long datasetId) {
