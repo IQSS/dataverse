@@ -6,7 +6,7 @@
      xmlns:p="http://primefaces.org/ui"
      xmlns:o="http://omnifaces.org/ui"
      xmlns:jsf="http://xmlns.jcp.org/jsf">
-    
+
     <div class="row citation-block">
         <div class="col-xs-12  #{DatasetPage.workingVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
             <div class="row ">
@@ -15,11 +15,11 @@
                         <span class="citation-select" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
                             <h:outputText value="#{DatasetPage.displayCitation}" escape="false"/>
                         </span>
-                        <span class="glyphicon glyphicon-question-sign text-primary" tabindex="0" role="button" jsf:rendered="#{!DatasetPage.dataset.released}" 
+                        <span class="glyphicon glyphicon-question-sign text-primary" tabindex="0" role="button" jsf:rendered="#{!DatasetPage.dataset.released}"
                             data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
-                        <span class="glyphicon glyphicon-question-sign text-primary" tabindex="0" role="button" jsf:rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion.draft}" 
+                        <span class="glyphicon glyphicon-question-sign text-primary" tabindex="0" role="button" jsf:rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion.draft}"
                             data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
-                        <span class="glyphicon glyphicon-question-sign text-primary" tabindex="0" role="button" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}" 
+                        <span class="glyphicon glyphicon-question-sign text-primary" tabindex="0" role="button" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}"
                             data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
                     </p>
                 </div>
@@ -30,17 +30,17 @@
                         </button>
                         <ul class="dropdown-menu pull-right text-left" role="menu">
                             <li>
-                                <a jsf:id="endNoteLink" jsf:action="#{fileDownloadService.downloadDatasetCitationXML(DatasetPage.dataset)}" >
+                                <a jsf:id="endNoteLink" jsf:action="#{fileDownloadService.downloadDatasetCitationXML(DatasetPage.workingVersion)}" >
                                     #{bundle['dataset.cite.downloadBtn.xml']}
                                 </a>
                             </li>
                             <li>
-                                <a jsf:id="risLink" jsf:actionListener="#{fileDownloadService.downloadDatasetCitationRIS(DatasetPage.dataset)}">
+                                <a jsf:id="risLink" jsf:actionListener="#{fileDownloadService.downloadDatasetCitationRIS(DatasetPage.workingVersion)}">
                                     #{bundle['dataset.cite.downloadBtn.ris']}
                                 </a>
                             </li>
                             <li>
-                                <a jsf:id="bibLink" jsf:actionListener="#{fileDownloadService.downloadDatasetCitationBibtex(DatasetPage.dataset)}" target="_blank">
+                                <a jsf:id="bibLink" jsf:actionListener="#{fileDownloadService.downloadDatasetCitationBibtex(DatasetPage.workingVersion)}" target="_blank">
                                     #{bundle['dataset.cite.downloadBtn.bib']}
                                 </a>
                             </li>

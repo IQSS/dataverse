@@ -256,19 +256,19 @@
                                                     </button>
                                                     <ul id="downloadDatasetCitationMenu" class="dropdown-menu pull-right text-left" role="menu" aria-labelledby="downloadDatasetCitation">
                                                         <li role="none">
-                                                            <a jsf:id="endNoteLink" jsf:action="#{fileDownloadService.downloadDatasetCitationXML(FilePage.fileMetadata.datasetVersion.dataset)}"
+                                                            <a jsf:id="endNoteLink" jsf:action="#{fileDownloadService.downloadDatasetCitationXML(FilePage.fileMetadata.datasetVersion)}"
                                                                     role="menuitem" >
                                                                 #{bundle['dataset.cite.downloadBtn.xml']}
                                                             </a>
                                                         </li>
                                                         <li role="none">
-                                                            <a jsf:id="risLink" jsf:actionListener="#{fileDownloadService.downloadDatasetCitationRIS(FilePage.fileMetadata.datasetVersion.dataset)}"
+                                                            <a jsf:id="risLink" jsf:actionListener="#{fileDownloadService.downloadDatasetCitationRIS(FilePage.fileMetadata.datasetVersion)}"
                                                                     role="menuitem">
                                                                 #{bundle['dataset.cite.downloadBtn.ris']}
                                                             </a>
                                                         </li>
                                                         <li role="none">
-                                                            <a jsf:id="bibLink" jsf:actionListener="#{fileDownloadService.downloadDatasetCitationBibtex(FilePage.fileMetadata.datasetVersion.dataset)}" target="_blank"
+                                                            <a jsf:id="bibLink" jsf:actionListener="#{fileDownloadService.downloadDatasetCitationBibtex(FilePage.fileMetadata.datasetVersion)}" target="_blank"
                                                                     role="menuitem">
                                                                 #{bundle['dataset.cite.downloadBtn.bib']}
                                                             </a>
