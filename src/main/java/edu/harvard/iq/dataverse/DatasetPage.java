@@ -2883,7 +2883,30 @@ public class DatasetPage implements java.io.Serializable {
         boolean original = false;
         return DatasetUtil.getDownloadSize(workingVersion, original);
     }
+    
+    public Long getSizeOfDatasetNumeric() {
+        boolean original = false;
+        return DatasetUtil.getDownloadSizeNumeric(workingVersion, original);
+    }
+    
+    public Long getSizeOfDatasetOrigNumeric() {
+        boolean original = true;
+        return DatasetUtil.getDownloadSizeNumeric(workingVersion, original);
+    }
 
+    
+    public Long getSizeOfSelectedOrigNumeric(){
+        boolean original = true;
+        return DatasetUtil.getDownloadSizeNumericBySelectedFiles(selectedFiles, original);
+        
+    }
+    
+    public Long getSizeOfSelectedArchivalNumeric(){
+        boolean original = false;
+        return DatasetUtil.getDownloadSizeNumericBySelectedFiles(selectedFiles, original);
+        
+    }
+    
     public String getSizeOfDatasetOrig() {
         boolean original = true;
         return DatasetUtil.getDownloadSize(workingVersion, original);
@@ -3048,6 +3071,11 @@ public class DatasetPage implements java.io.Serializable {
     public void setSelectAllFiles(boolean selectAllFiles) {
         this.selectAllFiles = selectAllFiles;
     }
+    
+    public void handleFileSelectClick(){
+        setSelectAllFiles(false);
+        
+    }
 
     public void toggleAllSelected(){
         //This is here so that if the user selects all on the dataset page
@@ -3097,6 +3125,9 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
     
+    
+    private Long originalSelectedFileSize;
+    private Long archivalSelectedFileSize;
 
     private List<String> getSuccessMessageArguments() {
         List<String> arguments = new ArrayList<>();

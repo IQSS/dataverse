@@ -147,10 +147,10 @@
                                                     <ul class="dropdown-menu pull-right text-left">
 
                                                         <!-- DOWNLOAD -->
-                                                        <ui:fragment rendered="#{DatasetPage.canDownloadFiles()}">
+                                                        <ui:fragment rendered="#{DatasetPage.canDownloadFiles()  and !(DatasetPage.sizeOfDatasetNumeric > settingsWrapper.zipDownloadLimit) }">
                                                             <li class="dropdown-header">#{bundle['dataset.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
                                                             <!-- NORMAL DOWNLOAD BUTTON (NO TABULAR FILES) -->
-                                                            <li jsf:rendered="#{!DatasetPage.versionHasTabular}">
+                                                            <li jsf:rendered="#{!DatasetPage.versionHasTabular and !(DatasetPage.sizeOfDatasetNumeric > settingsWrapper.zipDownloadLimit)}">                 
                                                                 <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadArchival()}" styleClass="btn-download">
                                                                     #{bundle.download}
                                                                     <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
@@ -158,6 +158,11 @@
                                                                     </h:outputFormat>
                                                                 </p:commandLink>
                                                             </li>
+                                                            <ui:fragment rendered="#{DatasetPage.canDownloadFiles()  and (DatasetPage.getSizeOfDatasetOrigNumeric > settingsWrapper.zipDownloadLimit) }">                                                                                                                               
+                                                                    <h:outputText value="#{bundle['dataset.accessBtn.too.big']}">                                           
+                                                                    </h:outputText>                                                            
+                                                            </ui:fragment> 
+                                                            
                                                             <!-- DOWNLOAD ORIGINAL BUTTON (TABULAR FILES PRESENT) -->
                                                             <li jsf:rendered="#{DatasetPage.versionHasTabular and DatasetPage.sizeOfDatasetOrig != '0 B' }">
                                                                 <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadOriginal()}" styleClass="btn-download">
@@ -177,8 +182,16 @@
                                                                 </p:commandLink>
                                                             </li>
                                                         </ui:fragment>
+                                                        
+                                                     
                                                         <!-- END: DOWNLOAD -->
-
+                                                        
+                                                        <!-- Download either format too big-->
+                                                        <ui:fragment rendered="#{DatasetPage.canDownloadFiles()  and (DatasetPage.sizeOfDatasetNumeric > settingsWrapper.zipDownloadLimit) }">                                                                                                                               
+                                                                    <h:outputText value="#{bundle['dataset.accessBtn.too.big']}">                                           
+                                                                    </h:outputText>                                                            
+                                                        </ui:fragment>                                                        
+                                                        
                                                         <!-- EXPLORE -->
                                                         <ui:fragment rendered="#{DatasetPage.datasetExploreTools.size() >= 1}">
                                                             <li class="dropdown-header">#{bundle['dataset.accessBtn.header.explore']} <span class="glyphicon glyphicon-equalizer"/></li>

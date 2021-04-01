@@ -477,4 +477,30 @@ public class DatasetUtil {
         }
         return FileSizeChecker.bytesToHumanReadable(bytes);
     }
+    
+    public static Long getDownloadSizeNumeric(DatasetVersion dsv, boolean original) {
+        long bytes = 0l;
+        for (FileMetadata fileMetadata : dsv.getFileMetadatas()) {
+            DataFile dataFile = fileMetadata.getDataFile();
+            if (original && dataFile.isTabularData()) {                
+                bytes += dataFile.getOriginalFileSize() == null ? 0 : dataFile.getOriginalFileSize();
+            } else {
+                bytes += dataFile.getFilesize();
+            }
+        }
+        return bytes;
+    }
+    
+    public static Long getDownloadSizeNumericBySelectedFiles(List<FileMetadata> fileMetadatas, boolean original) {
+        long bytes = 0l;
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            DataFile dataFile = fileMetadata.getDataFile();
+            if (original && dataFile.isTabularData()) {                
+                bytes += dataFile.getOriginalFileSize() == null ? 0 : dataFile.getOriginalFileSize();
+            } else {
+                bytes += dataFile.getFilesize();
+            }
+        }
+        return bytes;
+    }
 }
