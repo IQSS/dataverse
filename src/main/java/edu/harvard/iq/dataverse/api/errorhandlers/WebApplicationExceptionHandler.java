@@ -43,8 +43,11 @@ public class WebApplicationExceptionHandler implements ExceptionMapper<WebApplic
         switch (ex.getResponse().getStatus()) {
             // BadRequest
             case 400:
+                // It's strange to have these "startsWith" conditionals here. They both come from Access.java.
                 if ( (ex.getMessage()+"").toLowerCase().startsWith("tabular data required")) {
                     jrb.message(BundleUtil.getStringFromBundle("access.api.exception.metadata.not.available.for.nontabular.file"));
+                } else if ((ex.getMessage() + "").toLowerCase().startsWith("no permission to download file")) {
+                    jrb.message(BundleUtil.getStringFromBundle("access.api.exception.metadata.restricted.no.permission"));
                 } else {
                     jrb.message("Bad Request. The API request cannot be completed with the parameters supplied. Please check your code for typos, or consult our API guide at http://guides.dataverse.org.");
                     jrb.request(request);

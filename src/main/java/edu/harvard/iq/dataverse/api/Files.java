@@ -212,8 +212,8 @@ public class Files extends AbstractApiBean {
                 } catch (DataFileTagException ex) {
                     return error(Response.Status.BAD_REQUEST, ex.getMessage());
                 }
-            } catch (ClassCastException ex) {
-                logger.info("Exception parsing string '" + jsonData + "': " + ex);
+            } catch (ClassCastException | com.google.gson.JsonParseException ex) {
+                return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("file.addreplace.error.parsing"));
             }
         }
 
@@ -357,7 +357,7 @@ public class Files extends AbstractApiBean {
                         return error(Response.Status.BAD_REQUEST, ex.getMessage());
                     }
                 } catch (ClassCastException | com.google.gson.JsonParseException ex) {
-                    return error(Response.Status.BAD_REQUEST, "Exception parsing provided json");
+                    return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("file.addreplace.error.parsing"));
                 }
             }
 

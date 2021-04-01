@@ -54,6 +54,8 @@ import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.workflows.WorkflowComment;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -1280,6 +1282,10 @@ public class DatasetPage implements java.io.Serializable {
     public boolean canPublishDataverse() {
         return permissionsWrapper.canIssuePublishDataverseCommand(dataset.getOwner());
     }
+    
+    public boolean canPublishDataset(){
+        return permissionsWrapper.canIssuePublishDatasetCommand(dataset);
+    }
 
     public boolean canViewUnpublishedDataset() {
         return permissionsWrapper.canViewUnpublishedDataset( dvRequestService.getDataverseRequest(), dataset);
@@ -1856,7 +1862,9 @@ public class DatasetPage implements java.io.Serializable {
                 MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, workingVersion);
                 mdcLogService.logEntry(entry);
             }
-
+            displayWorkflowComments();
+            
+            
             if (initFull) {
                 // init the list of FileMetadatas
                 if (workingVersion.isDraft() && canUpdateDataset()) {
@@ -2016,6 +2024,22 @@ public class DatasetPage implements java.io.Serializable {
         return null;
     }
     
+    private void displayWorkflowComments() {
+        List<WorkflowComment> comments = workingVersion.getWorkflowComments();
+        for (WorkflowComment wfc : comments) {
+            if (wfc.isToBeShown() && wfc.getDatasetVersion().equals(workingVersion)
+                    && wfc.getAuthenticatedUser().equals(session.getUser())) {
+                if (wfc.getType() == WorkflowComment.Type.WORKFLOW_SUCCESS) {
+                    JsfHelper.addSuccessMessage(wfc.getMessage());
+
+                } else if (wfc.getType() == WorkflowComment.Type.WORKFLOW_FAILURE) {
+                    JsfHelper.addWarningMessage(wfc.getMessage());
+                }
+                datasetService.markWorkflowCommentAsRead(wfc);
+            }
+        }
+    }
+
     private void displayLockInfo(Dataset dataset) {
         // Various info messages, when the dataset is locked (for various reasons):
         if (dataset.isLocked() && canUpdateDataset()) {
@@ -2702,6 +2726,8 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
 
+        displayWorkflowComments();
+        
         return "";
     }
     
@@ -3346,6 +3372,8 @@ public class DatasetPage implements java.io.Serializable {
             return "";
         }
         
+
+        
         // Use the Create or Update command to save the dataset: 
         Command<Dataset> cmd;
         Map<Long, String> deleteStorageLocations = null;
@@ -3448,7 +3476,7 @@ public class DatasetPage implements java.io.Serializable {
                     }
                     if (addFilesSuccess && dataset.getFiles().size() > 0) {
                         if (nNewFiles == dataset.getFiles().size()) {
-                            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess"));
+                            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess").concat(" ").concat(datasetService.getReminderString(dataset, canPublishDataset())));
                         } else {
                             String partialSuccessMessage = BundleUtil.getStringFromBundle("dataset.message.createSuccess.partialSuccessSavingFiles");
                             partialSuccessMessage = partialSuccessMessage.replace("{0}", "" + dataset.getFiles().size() + "");
@@ -3458,26 +3486,26 @@ public class DatasetPage implements java.io.Serializable {
                     } else {
                         JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess.failedToSaveFiles"));
                     }
-                } else {
-                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess"));
+                } else {                    
+                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess").concat(" ").concat(datasetService.getReminderString(dataset, canPublishDataset())));
                 }
             }
             if (editMode.equals(EditMode.METADATA)) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.metadataSuccess"));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.metadataSuccess").concat(" ").concat(datasetService.getReminderString(dataset, canPublishDataset())));
             }
             if (editMode.equals(EditMode.LICENSE)) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.termsSuccess"));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.termsSuccess").concat(" ").concat(datasetService.getReminderString(dataset, canPublishDataset())));
             }
             if (editMode.equals(EditMode.FILE)) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.filesSuccess"));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.filesSuccess").concat(" ").concat(datasetService.getReminderString(dataset, canPublishDataset())));
             }
 
         } else {
             // must have been a bulk file update or delete:
             if (bulkFileDeleteInProgress) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileDeleteSuccess"));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileDeleteSuccess").concat(" ").concat(datasetService.getReminderString(dataset, canPublishDataset())));
             } else {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileUpdateSuccess"));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileUpdateSuccess").concat(" ").concat(datasetService.getReminderString(dataset, canPublishDataset())));
             }
         }
 
@@ -5458,5 +5486,14 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setFileAccessRequest(boolean fileAccessRequest) {
         this.fileAccessRequest = fileAccessRequest;
+    }
+
+    // wrapper method to see if the file has been deleted (or replaced) in the current version   
+    public boolean isFileDeleted (DataFile dataFile) {
+        if (dataFile.getDeleted() == null) {
+            dataFile.setDeleted(datafileService.hasBeenDeleted(dataFile));
+        }
+        
+        return dataFile.getDeleted();
     }
 }

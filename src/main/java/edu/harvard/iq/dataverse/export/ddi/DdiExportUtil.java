@@ -1404,6 +1404,17 @@ public class DdiExportUtil {
         for (FileMetadata fileMetadata : datasetVersion.getFileMetadatas()) {
             DataFile dataFile = fileMetadata.getDataFile();
 
+            /**
+             * Previously (in Dataverse 5.3 and below) the dataDscr section was
+             * included for restricted files but that meant that summary
+             * statistics were exposed. (To get at these statistics, API users
+             * should instead use the "Data Variable Metadata Access" endpoint.)
+             * These days we return early to avoid this exposure.
+             */
+            if (dataFile.isRestricted()) {
+                return;
+            }
+
             if (dataFile != null && dataFile.isTabularData()) {
                 if (!tabularData) {
                     xmlw.writeStartElement("dataDscr");

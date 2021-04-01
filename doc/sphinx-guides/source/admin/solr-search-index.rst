@@ -67,13 +67,13 @@ Reindexing Dataverse Collections
 
 Dataverse collections must be referenced by database object ID. If you have direct database access an SQL query such as
 
-``select id from dataverse where alias='datavarsealias';``
+``select id from dataverse where alias='dataversealias';``
 
 should work, or you may click the Dataverse Software's "Edit" menu and look for dataverseId= in the URLs produced by the drop-down. Then, to re-index:
 
 ``curl http://localhost:8080/api/admin/index/dataverses/135``
 
-which should return: _{"status":"OK","data":{"message":"starting reindex of dataverse 135"}}_
+which should return: *{"status":"OK","data":{"message":"starting reindex of dataverse 135"}}*
 
 Reindexing Datasets
 ++++++++++++++++++++
