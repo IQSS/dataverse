@@ -5518,4 +5518,13 @@ public class DatasetPage implements java.io.Serializable {
     public void setFileAccessRequest(boolean fileAccessRequest) {
         this.fileAccessRequest = fileAccessRequest;
     }
+
+    // wrapper method to see if the file has been deleted (or replaced) in the current version   
+    public boolean isFileDeleted (DataFile dataFile) {
+        if (dataFile.getDeleted() == null) {
+            dataFile.setDeleted(datafileService.hasBeenDeleted(dataFile));
+        }
+        
+        return dataFile.getDeleted();
+    }
 }
