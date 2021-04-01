@@ -115,6 +115,7 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -160,6 +161,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import javax.ws.rs.core.UriInfo;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -1211,12 +1214,14 @@ public class Datasets extends AbstractApiBean {
                 JsonObject metadata = JSONLDUtil.decontextualizeJsonLD(jsonldBody);
                 String pubDate = metadata.getString(JsonLDTerm.schemaOrg("datePublished").getUrl());
                 logger.fine("Submitted date: " + pubDate);
-                LocalDateTime dateTime = JSONLDUtil.getDateTimeFrom(pubDate);
+                LocalDateTime dateTime = null;
+                if(!StringUtils.isEmpty(pubDate)) {
+                    dateTime = JSONLDUtil.getDateTimeFrom(pubDate);
+                    final Timestamp time = Timestamp.valueOf(dateTime);
+                    //Set version release date
+                    ds.getLatestVersion().setReleaseTime(new Date(time.getTime()));
+                }
                 // dataset.getPublicationDateFormattedYYYYMMDD())
-                ds.setPublicationDate(Timestamp.valueOf(dateTime));
-                // Release User is only set in FinalizeDatasetPublicationCommand if the pub date
-                // is null, so set it here.
-                ds.setReleaseUser((AuthenticatedUser) user);
                 // Assign a version number if not set
                 if (ds.getLatestVersion().getVersionNumber() == null) {
 
@@ -1224,6 +1229,13 @@ public class Datasets extends AbstractApiBean {
                         // First Release
                         ds.getLatestVersion().setVersionNumber(new Long(1));
                         ds.getLatestVersion().setMinorVersionNumber(new Long(0));
+                        //Also set publication date if this is the first 
+                        if(dateTime != null) {
+                          ds.setPublicationDate(Timestamp.valueOf(dateTime));
+                        }
+                        // Release User is only set in FinalizeDatasetPublicationCommand if the pub date
+                        // is null, so set it here.
+                        ds.setReleaseUser((AuthenticatedUser) user);
 
                     } else if (ds.getLatestVersion().isMinorUpdate()) {
                         ds.getLatestVersion().setVersionNumber(new Long(ds.getVersionNumber()));
@@ -1234,6 +1246,7 @@ public class Datasets extends AbstractApiBean {
                         ds.getLatestVersion().setVersionNumber(new Long(ds.getVersionNumber() + 1));
                         ds.getLatestVersion().setMinorVersionNumber(new Long(0));
                     }
+                    
                 }
             } catch (Exception e) {
                 logger.fine(e.getMessage());
