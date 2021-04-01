@@ -71,7 +71,7 @@ public class AuxiliaryFilesIT {
         String formatTagJson = "dpJson";
         String formatVersionJson = "0.1";
         String mimeTypeJson = "application/json";
-        Response uploadAuxFileJson = UtilIT.uploadAuxFile(fileId, pathToAuxFileJson.toString(), formatTagJson, formatVersionJson, mimeTypeJson, apiToken);
+        Response uploadAuxFileJson = UtilIT.uploadAuxFile(fileId, pathToAuxFileJson.toString(), formatTagJson, formatVersionJson, mimeTypeJson, true, apiToken);
         uploadAuxFileJson.prettyPrint();
         uploadAuxFileJson.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -82,7 +82,7 @@ public class AuxiliaryFilesIT {
         String formatTagXml = "dpXml";
         String formatVersionXml = "0.1";
         String mimeTypeXml = "application/xml";
-        Response uploadAuxFileXml = UtilIT.uploadAuxFile(fileId, pathToAuxFileXml.toString(), formatTagXml, formatVersionXml, mimeTypeXml, apiToken);
+        Response uploadAuxFileXml = UtilIT.uploadAuxFile(fileId, pathToAuxFileXml.toString(), formatTagXml, formatVersionXml, mimeTypeXml, true, apiToken);
         uploadAuxFileXml.prettyPrint();
         uploadAuxFileXml.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -93,7 +93,7 @@ public class AuxiliaryFilesIT {
         String formatTagPdf = "dpPdf";
         String formatVersionPdf = "0.1";
         String mimeTypePdf = "application/xml";
-        Response uploadAuxFilePdf = UtilIT.uploadAuxFile(fileId, pathToAuxFilePdf.toString(), formatTagPdf, formatVersionPdf, mimeTypePdf, apiToken);
+        Response uploadAuxFilePdf = UtilIT.uploadAuxFile(fileId, pathToAuxFilePdf.toString(), formatTagPdf, formatVersionPdf, mimeTypePdf, true, apiToken);
         uploadAuxFilePdf.prettyPrint();
         uploadAuxFilePdf.then().assertThat().statusCode(OK.getStatusCode());
 
@@ -104,7 +104,7 @@ public class AuxiliaryFilesIT {
         String formatTagMd = "README";
         String formatVersionDp = "0.1";
         String mimeTypeMd = "application/xml";
-        Response uploadAuxFileMd = UtilIT.uploadAuxFile(fileId, pathToAuxFileMd.toString(), formatTagMd, formatVersionDp, mimeTypeMd, apiToken);
+        Response uploadAuxFileMd = UtilIT.uploadAuxFile(fileId, pathToAuxFileMd.toString(), formatTagMd, formatVersionDp, mimeTypeMd, true, apiToken);
         uploadAuxFileMd.prettyPrint();
         uploadAuxFileMd.then().assertThat().statusCode(OK.getStatusCode());
 
