@@ -1044,14 +1044,14 @@ public class DatasetServiceBean implements java.io.Serializable {
 
 
     @Asynchronous
-    public void globusAsyncCall(String jsonData, ApiToken token, Dataset dataset, String httpRequestUrl, User authUser) throws ExecutionException, InterruptedException, MalformedURLException {
+    public void globusUpload(String jsonData, ApiToken token, Dataset dataset, String httpRequestUrl, User authUser) throws ExecutionException, InterruptedException, MalformedURLException {
 
         String logTimestamp = logFormatter.format(new Date());
         Logger globusLogger = Logger.getLogger("edu.harvard.iq.dataverse.upload.client.DatasetServiceBean." + "GlobusUpload" + logTimestamp);
 
         //Logger.getLogger(DatasetServiceBean.class.getCanonicalName());
         //Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.DatasetServiceBean." + "ExportAll" + logTimestamp);
-        String logFileName = "../logs" + File.separator + "globus_" + logTimestamp + ".log";
+        String logFileName = "../logs" + File.separator + "globusUpload" + dataset.getId()+"_"+authUser.getIdentifier()+"_"+ logTimestamp + ".log";
         FileHandler fileHandler;
         boolean fileHandlerSuceeded;
         try {
@@ -1069,7 +1069,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             globusLogger = logger;
         }
 
-        globusLogger.info("Starting an globusAsyncCall ");
+        globusLogger.info("Starting an globusUpload ");
 
         String datasetIdentifier = dataset.getStorageIdentifier();
 
@@ -1368,6 +1368,53 @@ public class DatasetServiceBean implements java.io.Serializable {
         return status;
     }
 
+    @Asynchronous
+    public void globusDownload(String jsonData, Dataset dataset, User authUser) throws MalformedURLException {
 
+        String logTimestamp = logFormatter.format(new Date());
+        Logger globusLogger = Logger.getLogger("edu.harvard.iq.dataverse.upload.client.DatasetServiceBean." + "GlobusDownload" + logTimestamp);
 
+        String logFileName = "../logs" + File.separator + "globusDownload_" + dataset.getId()+"_"+authUser.getIdentifier()+"_"+logTimestamp + ".log";
+        FileHandler fileHandler;
+        boolean fileHandlerSuceeded;
+        try {
+            fileHandler = new FileHandler(logFileName);
+            globusLogger.setUseParentHandlers(false);
+            fileHandlerSuceeded = true;
+        } catch (IOException | SecurityException ex) {
+            Logger.getLogger(DatasetServiceBean.class.getName()).log(Level.SEVERE, null, ex);
+            return;
+        }
+
+        if (fileHandlerSuceeded) {
+            globusLogger.addHandler(fileHandler);
+        } else {
+            globusLogger = logger;
+        }
+
+        globusLogger.info("Starting an globusDownload ");
+
+        JsonObject jsonObject = null;
+        try (StringReader rdr = new StringReader(jsonData)) {
+            jsonObject = Json.createReader(rdr).readObject();
+        } catch (Exception jpe) {
+            jpe.printStackTrace();
+            globusLogger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}");
+        }
+
+        String taskIdentifier = jsonObject.getString("taskIdentifier");
+        String ruleId = jsonObject.getString("ruleId");
+
+        //  globus task status check
+        globusStatusCheck(taskIdentifier,globusLogger);
+
+        // what if some files failed during download?
+
+        if(ruleId.length() > 0) {
+            globusServiceBean.deletePermision(ruleId, globusLogger);
+        }
+
+        userNotificationService.sendNotification((AuthenticatedUser) authUser, new Timestamp(new Date().getTime()), UserNotification.Type.GLOBUSDOWNLOADSUCCESS, dataset.getId());
+
+    }
 }

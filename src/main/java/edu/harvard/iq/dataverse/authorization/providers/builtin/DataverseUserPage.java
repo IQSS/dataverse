@@ -511,6 +511,10 @@ public class DataverseUserPage implements java.io.Serializable {
                     userNotification.setTheObject(datasetService.find(userNotification.getObjectId()));
                     break;
 
+                case GLOBUSDOWNLOADSUCCESS:
+                    userNotification.setTheObject(datasetService.find(userNotification.getObjectId()));
+                    break;
+
                 case CHECKSUMIMPORT:
                     userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
                     break;

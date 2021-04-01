@@ -2764,26 +2764,6 @@ public class Datasets extends AbstractApiBean {
 
         logger.info(" ====  (api addGlobusFilesToDataset) jsonData   ====== " + jsonData);
 
-        if(uriInfo != null) {
-            logger.info(" ====  (api uriInfo.getRequestUri()) jsonData   ====== " + uriInfo.getRequestUri().toString());
-          }
-
-        //logger.info(" ====  (api uriInfo.getRequestUri()) jsonData   ====== " + headers.getRequestHeaders()
-
-        MultivaluedMap<String, String> multivaluedMap = headers.getRequestHeaders();
-
-        Map<String, Object> result = new HashMap<>();
-        multivaluedMap.forEach((name, values) -> {
-            if (!CollectionUtils.isEmpty(values)) {
-                result.put(name, (values.size() != 1) ? values : values.get(0));
-                logger.info(" headers ==== " + name + " ==== "+ values );
-            }
-        });
-
-        logger.info(" ====  headers.getRequestHeader(origin)   ====== " + headers.getRequestHeader("origin") );
-        logger.info(" ====  headers.getRequestHeader(referer)    ====== " + headers.getRequestHeader("referer") );
-
-
         if (!systemConfig.isHTTPUpload()) {
             return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
         }
@@ -2834,31 +2814,13 @@ public class Datasets extends AbstractApiBean {
 
         ApiToken token = authSvc.findApiTokenByUser((AuthenticatedUser) authUser);
 
-
-
-        /*
-
-       String xfp = httpRequest.getHeader("X-Forwarded-Proto");
-        //String requestUrl =  xfp +"://"+httpRequest.getServerName();
-
-        x-forwarded-proto
-        String requestUrl =  httpRequest.getProtocol().toLowerCase().split("/")[0]+"://"+httpRequest.getServerName();
-
-        if( httpRequest.getServerPort() > 0 )
-        {
-            requestUrl = requestUrl + ":"+ httpRequest.getServerPort();
-        }
-
-        */
-
-        //String requestUrl = "http://localhost:8080";
-        String requestUrl = "https://dvdev.scholarsportal.info" ;
+        String requestUrl = headers.getRequestHeader("origin").get(0);
 
         // Async Call
-        datasetService.globusAsyncCall(jsonData, token, dataset, requestUrl, authUser);
+        datasetService.globusUpload(jsonData, token, dataset, requestUrl, authUser);
 
+        return ok("Async call to Globus Upload started ");
 
-        return ok("Globus Task successfully completed ");
     }
 
 
@@ -3078,24 +3040,45 @@ public class Datasets extends AbstractApiBean {
 
 
     @POST
-    @Path("/deleteglobusRule")
+    @Path("{id}/deleteglobusRule")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response deleteglobusRule(@FormDataParam("jsonData") String jsonData
+    public Response deleteglobusRule(@PathParam("id") String datasetId,@FormDataParam("jsonData") String jsonData
     ) throws IOException, ExecutionException, InterruptedException {
 
-        msgt("******* (api deleteglobusRule) jsonData : " + jsonData.toString());
 
-        JsonObject jsonObject = null;
-        try (StringReader rdr = new StringReader(jsonData)) {
-            jsonObject = Json.createReader(rdr).readObject();
-        } catch (Exception jpe) {
-            jpe.printStackTrace();
-            logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}");
+        logger.info(" ====  (api deleteglobusRule) jsonData   ====== " + jsonData);
+
+
+        if (!systemConfig.isHTTPUpload()) {
+            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
         }
 
-        String ruleId = jsonObject.getString("ruleId");
+        // -------------------------------------
+        // (1) Get the user from the API key
+        // -------------------------------------
+        User authUser;
+        try {
+            authUser = findUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("file.addreplace.error.auth")
+            );
+        }
 
-        globusServiceBean.deletePermision(ruleId,logger);
-        return ok("Globus Rule deleted successfully ");
+        // -------------------------------------
+        // (2) Get the Dataset Id
+        // -------------------------------------
+        Dataset dataset;
+
+        try {
+            dataset = findDatasetOrDie(datasetId);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+        // Async Call
+        datasetService.globusDownload(jsonData, dataset, authUser);
+
+        return ok("Async call to Globus Download started");
+
     }
 }
