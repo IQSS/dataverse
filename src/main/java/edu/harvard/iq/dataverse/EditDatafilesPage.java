@@ -1120,7 +1120,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         } else {
             int nFilesTotal = workingVersion.getFileMetadatas().size();
             if (nNewFiles == 0 || nFilesTotal == nExpectedFilesTotal) {
-                JsfHelper.addSuccessMessage(getBundleString("dataset.message.filesSuccess"));
+                JsfHelper.addSuccessMessage(getBundleString("dataset.message.filesSuccess").concat(" ").concat(datasetService.getReminderString(dataset, canPublishDataset())));
             } else if (nFilesTotal == nOldFiles) {
                 JsfHelper.addErrorMessage(getBundleString("dataset.message.addFiles.Failure"));
             } else {
@@ -1148,6 +1148,10 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         logger.fine("Redirecting to the dataset page, from the edit/upload page.");
         return returnToDraftVersion();
+    }
+    
+    public boolean canPublishDataset(){
+        return permissionsWrapper.canIssuePublishDatasetCommand(dataset);
     }
     
     private void populateDatasetUpdateFailureMessage(){
