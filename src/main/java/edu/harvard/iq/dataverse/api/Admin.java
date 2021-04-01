@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.google.common.net.UrlEscapers;
 import edu.harvard.iq.dataverse.BannerMessage;
 import edu.harvard.iq.dataverse.BannerMessageServiceBean;
 import edu.harvard.iq.dataverse.BannerMessageText;
@@ -1958,7 +1959,8 @@ public class Admin extends AbstractApiBean {
     public Response addLicense(License license) {
         try {
             licenseService.save(license);
-            return created("/api/admin/licenses", Json.createObjectBuilder().add("message", "License created"));
+			String location = "/api/admin/licenses/name/" + UrlEscapers.urlFragmentEscaper().escape(license.getName());
+			return created(location, Json.createObjectBuilder().add("message", "License created"));
         } catch (RequestBodyException e) {
 			return error(Response.Status.BAD_REQUEST, e.getMessage());
 		} catch(PersistenceException e) {

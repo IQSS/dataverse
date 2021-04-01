@@ -52,10 +52,9 @@ public class LicenseServiceBean {
         return licenses.get(0);
     }
 
-    public License save(License license) throws PersistenceException, RequestBodyException {
+    public void save(License license) throws PersistenceException, RequestBodyException {
         if (license.getId() == null) {
             em.persist(license);
-            return license;
         } else {
             throw new RequestBodyException("There shouldn't be an ID in the request body");
         }
