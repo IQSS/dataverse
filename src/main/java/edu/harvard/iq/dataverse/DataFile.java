@@ -243,13 +243,13 @@ public class DataFile extends DvObject implements Comparable {
     */
    
     @Transient
-    private boolean deleted;
+    private Boolean deleted;
 
-    public boolean isDeleted() {
+    public Boolean getDeleted() {
         return deleted;
     }
 
-    public void setDeleted(boolean deleted) {
+    public void setDeleted(Boolean deleted) {
         this.deleted = deleted;
     }
     
