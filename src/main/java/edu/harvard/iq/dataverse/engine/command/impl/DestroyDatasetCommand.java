@@ -118,6 +118,8 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         datasetAndFileSolrIdsToDelete.add(solrIdOfPublishedDatasetVersion);
         String solrIdOfDraftDatasetVersion = IndexServiceBean.solrDocIdentifierDataset + doomed.getId() + IndexServiceBean.draftSuffix;
         datasetAndFileSolrIdsToDelete.add(solrIdOfDraftDatasetVersion);
+        String solrIdOfDraftDatasetVersionPermission = solrIdOfDraftDatasetVersion + IndexServiceBean.discoverabilityPermissionSuffix;
+        datasetAndFileSolrIdsToDelete.add(solrIdOfDraftDatasetVersionPermission);
         String solrIdOfDeaccessionedDatasetVersion = IndexServiceBean.solrDocIdentifierDataset + doomed.getId() + IndexServiceBean.deaccessionedSuffix;
         datasetAndFileSolrIdsToDelete.add(solrIdOfDeaccessionedDatasetVersion);
         IndexResponse resultOfSolrDeletionAttempt = ctxt.solrIndex().deleteMultipleSolrIds(datasetAndFileSolrIdsToDelete);

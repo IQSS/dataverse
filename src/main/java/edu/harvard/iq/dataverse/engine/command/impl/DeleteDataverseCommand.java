@@ -13,7 +13,10 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissionsMap;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.search.DvObjectSolrDoc;
+import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Deletes a {@link Dataverse} - but only if it is empty.
@@ -38,7 +41,7 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
         if (doomed.getOwner() == null) {
             throw new IllegalCommandException("Cannot delete the root dataverse", this);
         }
-
+        
         // make sure the dataverse is emptyw
         if (ctxt.dvObjects().hasData(doomed)) {
             throw new IllegalCommandException("Cannot delete non-empty dataverses", this);
@@ -80,5 +83,11 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
         ctxt.em().remove(doomedAndMerged);
         // Remove from index        
         ctxt.index().delete(doomed);
+        List<String> solrIdsToDelete = new ArrayList<>();
+        List<DvObjectSolrDoc> definitionPoints = ctxt.solrIndex().determineSolrDocs(doomed);
+        definitionPoints.forEach(dvObjectSolrDoc -> {
+            boolean add = solrIdsToDelete.add(dvObjectSolrDoc.getSolrId() + IndexServiceBean.discoverabilityPermissionSuffix);
+        });
+        var deleteMultipleSolrIds = ctxt.solrIndex().deleteMultipleSolrIds(solrIdsToDelete);
     }
 }

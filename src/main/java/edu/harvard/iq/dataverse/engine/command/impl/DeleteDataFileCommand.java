@@ -24,9 +24,6 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
-import edu.harvard.iq.dataverse.UserNotification;
-import java.sql.Timestamp;
-import java.util.Date;
 
 /**
  * Deletes a data file, both DB entity and filesystem object.
@@ -230,7 +227,8 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
          *
          * See also https://redmine.hmdc.harvard.edu/issues/3786
          */
-        String indexingResult = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + "_draft");
+        String indexingResult = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + IndexServiceBean.draftSuffix);
+        String indexingResult2 = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + IndexServiceBean.draftSuffix + IndexServiceBean.discoverabilityPermissionSuffix);
         /**
          * @todo check indexing result for success or failure. Really, we need
          * an indexing queuing system:
