@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetService;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnailService;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
+import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.datasetutility.VirusFoundException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
@@ -53,7 +54,6 @@ import org.primefaces.model.file.UploadedFile;
 
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
@@ -936,7 +936,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 //datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
                 datafiles = datafileDao.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
 
-            } catch (IOException ex) {
+            } catch (IOException | FileExceedsMaxSizeException ex) {
                 logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
                 continue;
             } catch (VirusFoundException e) {
@@ -1174,8 +1174,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             // zip file. 
             dFileList = datafileDao.createDataFiles(workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType());
 
-        } catch (IOException ioex) {
-            logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ioex.getMessage());
+        } catch (IOException | FileExceedsMaxSizeException ex) {
+            logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ex.getMessage());
             return;
         } catch (VirusFoundException e) {
             uploadWarningMessage = BundleUtil.getStringFromBundle("dataset.file.uploadScannerWarning");

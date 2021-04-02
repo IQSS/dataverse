@@ -25,7 +25,6 @@ import javax.json.JsonObjectBuilder;
 import javax.validation.ConstraintViolation;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -737,7 +736,7 @@ public class AddReplaceFileHelper {
                                                           this.newFileName,
                                                           this.newFileContentType);
 
-        } catch (IOException ex) {
+        } catch (IOException | FileExceedsMaxSizeException ex) {
             if (!Strings.isNullOrEmpty(ex.getMessage())) {
                 this.addErrorSevere(getBundleErr("ingest_create_file_err") + " " + ex.getMessage());
             } else {

@@ -18,7 +18,6 @@ import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -173,7 +172,7 @@ public class ReplaceFileHandler implements Serializable {
                                                                                newFileName,
                                                                                newFileContentType))
                 .onFailure(throwable -> cleanupTemporaryDatasetFiles(datasetDraft, dataset))
-                .getOrElseThrow(throwable -> mapCreateDataFilesException(throwable));
+                .getOrElseThrow(this::mapCreateDataFilesException);
         return dataFile.get(0);
     }
 

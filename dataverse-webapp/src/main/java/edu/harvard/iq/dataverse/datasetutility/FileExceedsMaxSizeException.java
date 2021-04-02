@@ -5,10 +5,13 @@
  */
 package edu.harvard.iq.dataverse.datasetutility;
 
+import javax.ejb.ApplicationException;
+
 /**
  * @author rmp553
  */
-public class FileExceedsMaxSizeException extends Exception {
+@ApplicationException(rollback = true)
+public class FileExceedsMaxSizeException extends RuntimeException {
 
     public FileExceedsMaxSizeException(String message) {
         super(message);

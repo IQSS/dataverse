@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.datasetutility.VirusFoundException;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -36,7 +37,6 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -307,7 +307,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             try {
                 try {
                     dataFiles = dataFileService.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe);
-                } catch (EJBException ex) {
+                } catch (EJBException | FileExceedsMaxSizeException ex) {
                     Throwable cause = ex.getCause();
                     if (cause != null) {
                         if (cause instanceof IllegalArgumentException) {
