@@ -210,15 +210,15 @@
                                                 <!-- Edit Button Group -->
                                                 <div class="btn-group" jsf:rendered="#{dataverseSession.user.authenticated
                                                                          and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) 
-                                                                         and (dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}">
-                                                    <p:commandLink styleClass="btn btn-default btn-access btn-edit" onclick="PF('fileAlreadyReplacedPrevious').show()"
+                                                                         and FilePage.deletedFile}">
+                                                    <p:commandLink styleClass="btn btn-default btn-access btn-edit" onclick="PF('fileAlreadyDeletedPrevious').show()"
                                                                    title="#{bundle['file.editBtn']}">
                                                         #{bundle['file.editBtn']}
-                                                    </p:commandLink>
+                                                    </p:commandLink>                                                   
                                                 </div>
                                                 <div class="btn-group" jsf:rendered="#{dataverseSession.user.authenticated
                                                                          and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)
-                                                                         and !(dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile))}">
+                                                                         and !FilePage.deletedFile}">
                                                     <button type="button" id="editFile" class="btn btn-default btn-access btn-edit dropdown-toggle #{FilePage.lockedFromEdits ? 'disabled' : ''}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
                                                             disabled="#{FilePage.lockedFromEdits ? 'disabled' : ''}">
                                                         #{bundle['file.editBtn']} <span class="caret"></span>
@@ -227,7 +227,6 @@
                                                         <ui:include src="file-edit-button-fragment.xhtml">
                                                             <ui:param name="datasetVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
                                                             <ui:param name="fileMetadata" value="#{FilePage.fileMetadata}"/>
-                                                            <ui:param name="isDraftReplacementFile" value="#{FilePage.draftReplacementFile}"/>
                                                             <ui:param name="configureTools" value="#{FilePage.configureTools}"/>
                                                             <ui:param name="bean" value="#{FilePage}"/>
                                                             <ui:param name="unrestrictFileAction" value="restrictFile"/>
@@ -407,17 +406,17 @@
                                 <div class="button-block tab-header margin-bottom text-right">
                                     <!-- Add + Edit Metadata Button -->
                                     <h:outputLink styleClass="btn btn-default btn-access #{FilePage.lockedFromEdits ? 'disabled' : ''}"
-                                                  value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;mode=SINGLE"
+                                                  value="/editdatafiles.xhtml?selectedFileIds=#{FilePage.fileMetadata.dataFile.id}&#38;datasetId=#{FilePage.fileMetadata.datasetVersion.dataset.id}&#38;referrer=FILE"
                                                   rendered="#{!widgetWrapper.widgetView and (dataverseSession.user.authenticated
                                                      and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)
-                                                     and !(dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile)))}"
+                                                     and !FilePage.deletedFile)}"
                                                   disabled="#{FilePage.lockedFromEdits ? 'disabled' : ''}">
                                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
                                     </h:outputLink>
                                     <div class="btn-group" jsf:rendered="#{!widgetWrapper.widgetView and (dataverseSession.user.authenticated
                                                          and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset) 
-                                                         and (dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) or dataFileServiceBean.hasBeenDeleted(FilePage.fileMetadata.dataFile)))}">
-                                        <button class="btn btn-default btn-access #{FilePage.lockedFromEdits ? 'disabled' : ''}" onclick="PF('fileAlreadyReplacedPrevious').show()" type="button"
+                                                         and (FilePage.deletedFile))}">
+                                        <button class="btn btn-default btn-access #{FilePage.lockedFromEdits ? 'disabled' : ''}" onclick="PF('fileAlreadyDeletedPrevious').show()" type="button"
                                                 disabled="#{FilePage.lockedFromEdits ? 'disabled' : ''}">
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['file.dataFilesTab.metadata.addBtn']}
                                         </button>
@@ -642,31 +641,7 @@
                                 #{bundle.close}
                             </button>
                         </div>
-                    </p:dialog>
-                    <p:dialog id="fileAlreadyReplacedDraft" styleClass="smallPopUp"
-                              header="#{bundle['file.replaced.warning.header']}" widgetVar="fileAlreadyReplacedDraft" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.replaced.warning.draft.warningMessage']}</p>
-                        <div class="button-block">
-                            <button class="btn btn-default" onclick="PF('fileAlreadyReplacedDraft').hide();" type="button">
-                                #{bundle.close}
-                            </button>
-                        </div>
-                    </p:dialog>                     
-                    <!-- TODO REVIEW THIS POPUP -->
-                    <p:dialog id="fileAlreadyReplacedPrevious" styleClass="smallPopUp"
-                              header="#{bundle['file.replaced.warning.header']}" widgetVar="fileAlreadyReplacedPrevious" modal="true">
-                        <ui:fragment rendered="#{dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile) }">
-                            <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.replaced.warning.previous.warningMessage']}</p>
-                        </ui:fragment>
-                        <ui:fragment rendered="#{!dataFileServiceBean.hasReplacement(FilePage.fileMetadata.dataFile)}">
-                            <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.alreadyDeleted.previous.warningMessage']}</p>
-                        </ui:fragment>
-                        <div class="button-block">
-                            <button class="btn btn-default" onclick="PF('fileAlreadyReplacedPrevious').hide();" type="button">
-                                #{bundle.close}
-                            </button>
-                        </div>
-                    </p:dialog>                    
+                    </p:dialog>                 
                     <p:dialog id="computeAccessDenied" styleClass="smallPopUp" header="#{bundle['dataset.compute.computeBtn']}" widgetVar="computeAccessDeniedPopup" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.compute.fileAccessDenied']}</p>
                         <div class="button-block">
