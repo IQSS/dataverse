@@ -62,7 +62,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         if (authorString.isEmpty() || authorString.contains(DatasetField.NA_VALUE)) {
             authorString = UNAVAILABLE;
         }
-        //QDRREMOVE - use institution name
+
         String producerString = BrandingUtil.getInstallationBrandName();
 
         if (producerString.isEmpty() || producerString.equals(DatasetField.NA_VALUE)) {

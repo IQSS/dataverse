@@ -38,7 +38,6 @@ public class BrandingUtil {
                 return personalName;
             }
         }
-        //QDRREMOVE
         String brandName=getInstallationBrandName();
         if (brandName != null && !brandName.isEmpty()) {
             return brandName + " " + BundleUtil.getStringFromBundle("contact.support");
