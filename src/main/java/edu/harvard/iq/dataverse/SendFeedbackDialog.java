@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.List;
 import java.util.Random;
-import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -131,7 +130,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
 
     public String getMessageTo() {
         if (recipient == null) {
-            return BrandingUtil.getSupportTeamName(systemAddress, BundleUtil.getStringFromBundle("institution.acronym"));
+            return BrandingUtil.getSupportTeamName(systemAddress);
         } else if (recipient.isInstanceofDataverse()) {
             return ((Dataverse) recipient).getDisplayName() + " " + BundleUtil.getStringFromBundle("contact.contact");
         } else {
@@ -141,7 +140,7 @@ public class SendFeedbackDialog implements java.io.Serializable {
 
     public String getFormHeader() {
         if (recipient == null) {
-            return BrandingUtil.getContactHeader(systemAddress, dataverseService.findRootDataverse().getName());
+            return BrandingUtil.getContactHeader(systemAddress);
         } else if (recipient.isInstanceofDataverse()) {
             return BundleUtil.getStringFromBundle("contact.dataverse.header");
         } else {
@@ -199,10 +198,8 @@ public class SendFeedbackDialog implements java.io.Serializable {
     }
 
     public String sendMessage() {
-
-        String institution = BundleUtil.getStringFromBundle("institution.acronym");
-        String installationBrandName = BrandingUtil.getInstallationBrandName(institution);
-        String supportTeamName = BrandingUtil.getSupportTeamName(systemAddress, institution);
+        String installationBrandName = BrandingUtil.getInstallationBrandName();
+        String supportTeamName = BrandingUtil.getSupportTeamName(systemAddress);
         List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(recipient, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, systemConfig.getDataverseSiteUrl(), installationBrandName, supportTeamName);
         if (feedbacks.isEmpty()) {
             logger.warning("No feedback has been sent!");

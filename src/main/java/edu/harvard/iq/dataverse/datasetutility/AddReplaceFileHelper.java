@@ -1094,7 +1094,6 @@ public class AddReplaceFileHelper{
         if (!step_015_auto_check_permissions(existingFile.getOwner())){
             return false;
         };
-
         // Is the file in the latest dataset version?
         //
         if (!step_007_auto_isReplacementInLatestVersion(existingFile)){

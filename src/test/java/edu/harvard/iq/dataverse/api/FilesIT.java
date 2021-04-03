@@ -749,7 +749,7 @@ public class FilesIT {
         .body("data.files[0].dataFile.contentType", equalTo("image/png"))
         .body("data.files[0].label", equalTo("cc0.png"))
         .statusCode(OK.getStatusCode());
-       
+        
         // -------------------------
         // Publish dataset
         // -------------------------

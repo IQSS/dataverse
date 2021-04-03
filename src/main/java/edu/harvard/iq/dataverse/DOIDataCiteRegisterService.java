@@ -6,7 +6,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.AbstractGlobalIdServiceBean.GlobalIdMetadataTemplate;
-import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -245,8 +245,7 @@ public class DOIDataCiteRegisterService {
         }
         
         metadataTemplate.setTitle(title);
-        //QDR use institution name
-        String producerString = BundleUtil.getStringFromBundle("institution.name");
+        String producerString = BrandingUtil.getRootDataverseCollectionName();
         if (producerString.isEmpty() || producerString.equals(DatasetField.NA_VALUE)) {
             producerString = AbstractGlobalIdServiceBean.UNAVAILABLE;
         }
@@ -254,7 +253,7 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setPublisherYear(metadata.get("datacite.publicationyear"));
 
         String xmlMetadata = metadataTemplate.generateXML(dvObject);
-        logger.log(Level.INFO, "XML to send to DataCite: {0}", xmlMetadata);
+        logger.log(Level.FINE, "XML to send to DataCite: {0}", xmlMetadata);
         return xmlMetadata;
     }
 

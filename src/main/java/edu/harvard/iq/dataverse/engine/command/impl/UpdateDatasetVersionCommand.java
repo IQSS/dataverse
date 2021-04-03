@@ -95,7 +95,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
 
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
-        if (!(getUser() instanceof AuthenticatedUser)) {
+        if ( ! (getUser() instanceof AuthenticatedUser) ) {
             throw new IllegalCommandException("Only authenticated users can update datasets", this);
         }
 
@@ -180,7 +180,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
              * This code has to handle many cases, and anyone making changes should
              * carefully check tests and basic methods that update the dataset version. The
              * differences between the cases stem primarily from differences in whether the
-             * files to add, and there filemetadata, and files to delete, and their
+             * files to add, and their filemetadata, and files to delete, and their
              * filemetadata have been persisted at this point, which manifests itself as to
              * whether they have id numbers or not, and apparently, whether or not they
              * exists in lists, e.g. the getFileMetadatas() list of a datafile.

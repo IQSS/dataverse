@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.InputStream;
 
@@ -62,8 +62,8 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         if (authorString.isEmpty() || authorString.contains(DatasetField.NA_VALUE)) {
             authorString = UNAVAILABLE;
         }
-        //QDR - use institution name
-        String producerString = BundleUtil.getStringFromBundle("institution.name");
+        //QDRREMOVE - use institution name
+        String producerString = BrandingUtil.getInstallationBrandName();
 
         if (producerString.isEmpty() || producerString.equals(DatasetField.NA_VALUE)) {
             producerString = UNAVAILABLE;
@@ -438,7 +438,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
         metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
         metadataTemplate.setTitle(dvObject.getCurrentName());
-        String producerString = dataverseService.findRootDataverse().getName();
+        String producerString = dataverseService.getRootDataverseName();
         if (producerString.isEmpty()  || producerString.equals(DatasetField.NA_VALUE) ) {
             producerString = UNAVAILABLE;
         }

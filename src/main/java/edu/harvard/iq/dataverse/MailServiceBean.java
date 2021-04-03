@@ -121,15 +121,11 @@ public class MailServiceBean implements java.io.Serializable {
 
 
         boolean sent = false;
-
-        // QDR - uses the institution name rather than a dataverse/collection name in
-        // email subject
-        InternetAddress systemAddress = getSystemAddress();
-        //TODO: Replace with new InstallationName setting
-        String installationName = BundleUtil.getStringFromBundle("institution.name");
+        InternetAddress systemAddress = getSystemAddress(); 
+        
         String body = messageText
-                + (isHtmlContent ? BundleUtil.getStringFromBundle("notification.email.closing.html", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), installationName))
-                        : BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), installationName)));
+                + (isHtmlContent ? BundleUtil.getStringFromBundle("notification.email.closing.html", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress)))
+                        : BundleUtil.getStringFromBundle("notification.email.closing", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress))));
        
         logger.fine("Sending email to " + to + ". Subject: <<<" + subject + ">>>. Body: " + body);
         try {
@@ -248,12 +244,7 @@ public class MailServiceBean implements java.io.Serializable {
            Object objectOfNotification =  getObjectOfNotification(notification);
            if (objectOfNotification != null){
                String messageText = getMessageTextBasedOnNotification(notification, objectOfNotification, comment, requestor, isHtmlContent);
-                // QDR - uses the institution name rather than a dataverse/collection name in
-                // email subject
-                String institutionName = BundleUtil.getStringFromBundle("institution.acronym");
-                ;
-                String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, institutionName,
-                        objectOfNotification);
+                String subjectText = MailUtil.getSubjectTextBasedOnNotification(notification, objectOfNotification);
                if (!(messageText.isEmpty() || subjectText.isEmpty())){
                    retval = sendSystemEmail(emailAddress, subjectText, messageText, isHtmlContent);
                } else {
@@ -490,18 +481,37 @@ public class MailServiceBean implements java.io.Serializable {
                     version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner()), optionalReturnReason};
                 messageText += MessageFormat.format(pattern, paramArrayReturnedDataset);
                 return messageText;
+                
+            case WORKFLOW_SUCCESS:
+                version =  (DatasetVersion) targetObject;
+                pattern = BundleUtil.getStringFromBundle("notification.email.workflow.success");
+                
+                if (comment == null) {
+                    comment = BundleUtil.getStringFromBundle("notification.email.workflow.nullMessage");
+                }
+                String[] paramArrayWorkflowSuccess = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()), comment};
+                messageText += MessageFormat.format(pattern, paramArrayWorkflowSuccess);
+                return messageText;
+            case WORKFLOW_FAILURE:
+                version =  (DatasetVersion) targetObject;
+                pattern = BundleUtil.getStringFromBundle("notification.email.workflow.failure");
+                if (comment == null) {
+                    comment = BundleUtil.getStringFromBundle("notification.email.workflow.nullMessage");
+                }
+                String[] paramArrayWorkflowFailure = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()), comment};
+                messageText += MessageFormat.format(pattern, paramArrayWorkflowFailure);
+                return messageText;
             case CREATEACC:
-                String rootDataverseName = dataverseService.findRootDataverse().getName();
                 InternetAddress systemAddress = getSystemAddress();
-            // QDR
-            String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome",
-                    Arrays.asList(BundleUtil.getStringFromBundle("institution.acronym"),
+                // QDR
+                String accountCreatedMessage = BundleUtil.getStringFromBundle("notification.email.welcome",
+                    Arrays.asList(
+                            BrandingUtil.getInstallationBrandName(),
                             BundleUtil.getStringFromBundle("header.guides.user"),
                             settingsService.getValueForKey(SettingsServiceBean.Key.QDRDrupalSiteURL, "") + "/deposit",
-                            BrandingUtil.getSupportTeamName(systemAddress,
-                                    BundleUtil.getStringFromBundle("institution.acronym")),
+                            BrandingUtil.getSupportTeamName(systemAddress),
                             BrandingUtil.getSupportTeamEmailAddress(systemAddress)));
-            String optionalConfirmEmailAddon = confirmEmailService
+                String optionalConfirmEmailAddon = confirmEmailService
                     .optionalConfirmEmailAddonMsg(userNotification.getUser());
                 accountCreatedMessage += optionalConfirmEmailAddon;
                 logger.fine("accountCreatedMessage: " + accountCreatedMessage);
@@ -590,6 +600,8 @@ public class MailServiceBean implements java.io.Serializable {
             case PUBLISHEDDS:
             case PUBLISHFAILED_PIDREG:
             case RETURNEDDS:
+            case WORKFLOW_SUCCESS:
+            case WORKFLOW_FAILURE:
                 return versionService.find(userNotification.getObjectId());
             case CREATEACC:
                 return userNotification.getUser();

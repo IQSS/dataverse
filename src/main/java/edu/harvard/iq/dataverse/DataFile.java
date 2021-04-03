@@ -57,6 +57,10 @@ import org.hibernate.validator.constraints.NotBlank;
 @NamedQueries({
 	@NamedQuery( name="DataFile.removeFromDatasetVersion",
 		query="DELETE FROM FileMetadata f WHERE f.datasetVersion.id=:versionId and f.dataFile.id=:fileId"),
+        @NamedQuery(name = "DataFile.findByCreatorId",
+                query = "SELECT o FROM DataFile o WHERE o.creator.id=:creatorId"),
+        @NamedQuery(name = "DataFile.findByReleaseUserId",
+                query = "SELECT o FROM DataFile o WHERE o.releaseUser.id=:releaseUserId"),
         @NamedQuery(name="DataFile.findDataFileByIdProtocolAuth", 
                 query="SELECT s FROM DataFile s WHERE s.identifier=:identifier AND s.protocol=:protocol AND s.authority=:authority"),
         @NamedQuery(name="DataFile.findDataFileThatReplacedId", 
@@ -239,13 +243,13 @@ public class DataFile extends DvObject implements Comparable {
     */
    
     @Transient
-    private boolean deleted;
+    private Boolean deleted;
 
-    public boolean isDeleted() {
+    public Boolean getDeleted() {
         return deleted;
     }
 
-    public void setDeleted(boolean deleted) {
+    public void setDeleted(Boolean deleted) {
         this.deleted = deleted;
     }
     
