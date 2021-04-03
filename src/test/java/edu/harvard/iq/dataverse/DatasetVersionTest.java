@@ -205,8 +205,7 @@ public class DatasetVersionTest {
         assertEquals("Organization", obj.getJsonObject("publisher").getString("@type"));
         assertEquals("LibraScholar", obj.getJsonObject("publisher").getString("name"));
         assertEquals("Organization", obj.getJsonObject("provider").getString("@type"));
-        String orgName = BundleUtil.getStringFromBundle("institution.name"); 
-        assertEquals(orgName, obj.getJsonObject("provider").getString("name"));
+        assertEquals("LibraScholar", obj.getJsonObject("provider").getString("name"));
         assertEquals("LibraScholar", obj.getJsonObject("includedInDataCatalog").getString("name"));
     }
 
