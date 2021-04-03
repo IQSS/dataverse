@@ -146,7 +146,8 @@ public class DDIExporterTest {
         String citation = version.getCitation();
         System.out.println("citation: " + citation);
         int currentYear = Year.now().getValue();
-        assertEquals("Finch, Fiona. "+ currentYear + ". \"Darwin's Finches\". Qualitative Data Repository. LibraScholar. DRAFT VERSION", citation);
+        //QDR - note first LibraScholar is from the installation name while the second is from root dataverse collection
+        assertEquals("Finch, Fiona. "+ currentYear + ". \"Darwin's Finches\". LibraScholar. LibraScholar. DRAFT VERSION", citation);
     }
 
     @Test

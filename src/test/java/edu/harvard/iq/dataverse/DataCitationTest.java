@@ -279,7 +279,7 @@ public class DataCitationTest {
         DatasetVersion datasetVersion = createATestDatasetVersion("Dataset Title", true);
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
-           "First Last. 1955. \"Dataset Title\". Qualitative Data Repository. https://doi.org/10.5072/FK2/LK0D1H. LibraScholar. V1",
+           "First Last. 1955. \"Dataset Title\". LibraScholar. https://doi.org/10.5072/FK2/LK0D1H. LibraScholar. V1",
            dataCitation.toString()
         );
     }
@@ -290,7 +290,7 @@ public class DataCitationTest {
         DatasetVersion datasetVersion = createATestDatasetVersion(nullDatasetTitle, false);
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
-           "1955. Qualitative Data Repository. https://doi.org/10.5072/FK2/LK0D1H. LibraScholar. V1",
+           "1955. LibraScholar. https://doi.org/10.5072/FK2/LK0D1H. LibraScholar. V1",
            dataCitation.toString()
         );
     }
@@ -300,7 +300,7 @@ public class DataCitationTest {
         DatasetVersion datasetVersion = createATestDatasetVersion("Dataset Title", true);
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
-           "First Last. 1955. \"Dataset Title\". Qualitative Data Repository." +
+           "First Last. 1955. \"Dataset Title\". LibraScholar." +
            " <a href=\"https://doi.org/10.5072/FK2/LK0D1H\" target=\"_blank\">https://doi.org/10.5072/FK2/LK0D1H</a>." +
            " LibraScholar. V1",
            dataCitation.toString(true)
@@ -313,7 +313,7 @@ public class DataCitationTest {
         DatasetVersion datasetVersion = createATestDatasetVersion(nullDatasetTitle, false);
         DataCitation dataCitation = new DataCitation(datasetVersion);
         assertEquals(
-           "1955. Qualitative Data Repository." +
+           "1955. LibraScholar." +
            " <a href=\"https://doi.org/10.5072/FK2/LK0D1H\" target=\"_blank\">https://doi.org/10.5072/FK2/LK0D1H</a>." +
            " LibraScholar. V1",
            dataCitation.toString(true)
