@@ -199,7 +199,7 @@ public class DataCitation {
         }
 
         // QDRCustom: Use "Qualitative Data Repository" as distributor name
-        citationList.add(formatString("Qualitative Data Repository", html));
+        citationList.add(formatString(BrandingUtil.getInstallationBrandName(), html));
         // QDRCustom: Show persistentID after distributor name
         if (persistentId != null) {
         	// always show url format
@@ -751,7 +751,8 @@ public class DataCitation {
 
     private String getPublisherFrom(DatasetVersion dsv) {
         if (!dsv.getDataset().isHarvested()) {
-            return BrandingUtil.getInstallationBrandName();
+            //QDR - already includes the installation name in the citation, so want to keep the collection name here
+            return BrandingUtil.getRootDataverseCollectionName();
         } else {
             return dsv.getDistributorName();
             // remove += [distributor] SEK 8-18-2016
