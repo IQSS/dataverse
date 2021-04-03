@@ -475,7 +475,7 @@ public class FilePage implements java.io.Serializable {
         editDataset = file.getOwner();
         if (editDataset.isReleased()) {
             try {
-                ExportService instance = ExportService.getInstance(settingsService);
+                ExportService instance = ExportService.getInstance();
                 instance.exportAllFormats(editDataset);
 
             } catch (ExportException ex) {
