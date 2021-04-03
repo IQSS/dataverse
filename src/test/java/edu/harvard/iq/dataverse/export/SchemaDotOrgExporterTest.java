@@ -326,8 +326,7 @@ public class SchemaDotOrgExporterTest {
         assertEquals("LibraScholar", json2.getJsonObject("includedInDataCatalog").getString("name"));
         assertEquals("https://librascholar.org", json2.getJsonObject("includedInDataCatalog").getString("url"));
         assertEquals("Organization", json2.getJsonObject("publisher").getString("@type"));
-        String orgName = BundleUtil.getStringFromBundle("institution.name"); 
-        assertEquals(orgName, json2.getJsonObject("provider").getString("name"));
+        assertEquals("LibraScholar", json2.getJsonObject("provider").getString("name"));
         assertEquals("Organization", json2.getJsonObject("provider").getString("@type"));
         assertEquals("Organization", json2.getJsonArray("funder").getJsonObject(0).getString("@type"));
         assertEquals("National Science Foundation", json2.getJsonArray("funder").getJsonObject(0).getString("name"));
