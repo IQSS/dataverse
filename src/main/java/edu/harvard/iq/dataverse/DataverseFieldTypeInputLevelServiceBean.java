@@ -77,11 +77,7 @@ public class DataverseFieldTypeInputLevelServiceBean {
             return null;
         }    
     }
-            //     
-    
-    //    Query query = em.createQuery("select object(o) from MapLayerMetadata as o where o.dataset=:dataset");// order by o.name");
-    //    query.setParameter("dataset", dataset);
-    
+
     public DataverseFieldTypeInputLevel findByDataverseIdDatasetFieldTypeId(Long dataverseId, Long datasetFieldTypeId) {
         Query query = em.createNamedQuery("DataverseFieldTypeInputLevel.findByDataverseIdDatasetFieldTypeId", DataverseFieldTypeInputLevel.class);
         query.setParameter("dataverseId", dataverseId);

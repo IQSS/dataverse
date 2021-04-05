@@ -22,7 +22,6 @@ import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteMapLayerMetadataCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDraftFileMetadataIfAvailableCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RedetectFileTypeCommand;
@@ -213,8 +212,8 @@ public class Files extends AbstractApiBean {
                 } catch (DataFileTagException ex) {
                     return error(Response.Status.BAD_REQUEST, ex.getMessage());
                 }
-            } catch (ClassCastException ex) {
-                logger.info("Exception parsing string '" + jsonData + "': " + ex);
+            } catch (ClassCastException | com.google.gson.JsonParseException ex) {
+                return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("file.addreplace.error.parsing"));
             }
         }
 
@@ -358,7 +357,7 @@ public class Files extends AbstractApiBean {
                         return error(Response.Status.BAD_REQUEST, ex.getMessage());
                     }
                 } catch (ClassCastException | com.google.gson.JsonParseException ex) {
-                    return error(Response.Status.BAD_REQUEST, "Exception parsing provided json");
+                    return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("file.addreplace.error.parsing"));
                 }
             }
 
@@ -468,31 +467,7 @@ public class Files extends AbstractApiBean {
     public Response getFileMetadataDraft(@PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
         return getFileMetadata(fileIdOrPersistentId, versionId, uriInfo, headers, response, true);
     }
-    
-    // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
-    // TODO: Rename this start with "delete" rather than "get".
-    @DELETE
-    @Path("{id}/map")
-    public Response getMapLayerMetadatas(@PathParam("id") Long idSupplied) {
-        DataverseRequest dataverseRequest = null;
-        try {
-            dataverseRequest = createDataverseRequest(findUserOrDie());
-        } catch (WrappedResponse wr) {
-            return error(BAD_REQUEST, "Couldn't find user to execute command: " + wr.getLocalizedMessage());
-        }
-        DataFile dataFile = fileService.find(idSupplied);
-        try {
-            boolean deleted = engineSvc.submit(new DeleteMapLayerMetadataCommand(dataverseRequest, dataFile));
-            if (deleted) {
-                return ok("Map deleted from file id " + dataFile.getId());
-            } else {
-                return error(BAD_REQUEST, "Could not delete map from file id " + dataFile.getId());
-            }
-        } catch (CommandException ex) {
-            return error(BAD_REQUEST, "Problem trying to delete map from file id " + dataFile.getId() + ": " + ex.getLocalizedMessage());
-        }
-    }
-    
+
     @Path("{id}/uningest")
     @POST
     public Response uningestDatafile(@PathParam("id") String id) {
@@ -626,7 +601,7 @@ public class Files extends AbstractApiBean {
     private void exportDatasetMetadata(SettingsServiceBean settingsServiceBean, Dataset theDataset) {
 
         try {
-            ExportService instance = ExportService.getInstance(settingsServiceBean);
+            ExportService instance = ExportService.getInstance();
             instance.exportAllFormats(theDataset);
 
         } catch (ExportException ex) {

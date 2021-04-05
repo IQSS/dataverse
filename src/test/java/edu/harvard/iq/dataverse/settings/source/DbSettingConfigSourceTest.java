@@ -36,7 +36,7 @@ class DbSettingConfigSourceTest {
     @Test
     @Order(2)
     void testDataRetrieval() {
-        Set<Setting> settings = new HashSet<>(Arrays.asList(new Setting("FooBar", "hello"), new Setting("FooBarI18N", "de", "hallo")));
+        Set<Setting> settings = new HashSet<>(Arrays.asList(new Setting(":FooBar", "hello"), new Setting(":FooBarI18N", "de", "hallo")));
         Mockito.when(settingsSvc.listAll()).thenReturn(settings);
     
         DbSettingConfigSource.injectSettingsService(settingsSvc);

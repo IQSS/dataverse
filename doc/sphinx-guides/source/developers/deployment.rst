@@ -2,15 +2,15 @@
 Deployment
 ==========
 
-Developers often only deploy Dataverse to their :doc:`dev-environment` but it can be useful to deploy Dataverse to cloud services such as Amazon Web Services (AWS).
+Developers often only deploy the Dataverse Software to their :doc:`dev-environment` but it can be useful to deploy the Dataverse Software to cloud services such as Amazon Web Services (AWS).
 
 .. contents:: |toctitle|
 	:local:
 
-Deploying Dataverse to Amazon Web Services (AWS)
-------------------------------------------------
+Deploying the Dataverse Software to Amazon Web Services (AWS)
+-------------------------------------------------------------
 
-We have written scripts to deploy Dataverse to Amazon Web Services (AWS) but they require some setup.
+We have written scripts to deploy the Dataverse Software to Amazon Web Services (AWS) but they require some setup.
 
 Install AWS CLI
 ~~~~~~~~~~~~~~~
@@ -73,14 +73,14 @@ If you are having trouble configuring the files manually as described above, see
 Configure Ansible File (Optional)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In order to configure Dataverse settings such as the password of the dataverseAdmin user, download https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/defaults/main.yml and edit the file to your liking.
+In order to configure Dataverse installation settings such as the password of the dataverseAdmin user, download https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/defaults/main.yml and edit the file to your liking.
 
 You can skip this step if you're fine with the values in the "main.yml" file in the link above.
 
 Download and Run the "Create Instance" Script
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Once you have done the configuration above, you are ready to try running the "ec2-create-instance.sh" script to spin up Dataverse in AWS.
+Once you have done the configuration above, you are ready to try running the "ec2-create-instance.sh" script to spin up a Dataverse installation in AWS.
 
 Download `ec2-create-instance.sh`_ and put it somewhere reasonable. For the purpose of these instructions we'll assume it's in the "Downloads" directory in your home directory.
 
@@ -98,7 +98,7 @@ ec2-create-instance accepts a number of command-line switches, including:
 
 ``bash ~/Downloads/ec2-create-instance.sh -b develop -r https://github.com/scholarsportal/dataverse.git -g main.yml``
 
-You will need to wait for 15 minutes or so until the deployment is finished, longer if you've enabled sample data and/or the API test suite. Eventually, the output should tell you how to access the installation of Dataverse in a web browser or via SSH. It will also provide instructions on how to delete the instance when you are finished with it. Please be aware that AWS charges per minute for a running instance. You may also delete your instance from https://console.aws.amazon.com/console/home?region=us-east-1 .
+You will need to wait for 15 minutes or so until the deployment is finished, longer if you've enabled sample data and/or the API test suite. Eventually, the output should tell you how to access the Dataverse installation in a web browser or via SSH. It will also provide instructions on how to delete the instance when you are finished with it. Please be aware that AWS charges per minute for a running instance. You may also delete your instance from https://console.aws.amazon.com/console/home?region=us-east-1 .
 
 Caveat Recipiens
 ~~~~~~~~~~~~~~~~
@@ -111,7 +111,7 @@ Migrating Datafiles from Local Storage to S3
 
 A number of pilot Dataverse installations start on local storage, then administrators are tasked with migrating datafiles into S3 or similar object stores. The files may be copied with a command-line utility such as `s3cmd<https://s3tools.org/s3cmd>`. You will want to retain the local file hierarchy, keeping the authority (for example: 10.5072) at the bucket "root."
 
-The below example queries may assist with updating dataset and datafile locations in the Dataverse PostgresQL database. Depending on the initial version of Dataverse and subsequent upgrade path, Datafile storage identifiers may or may not include a ``file://`` prefix, so you'll want to catch both cases.
+The below example queries may assist with updating dataset and datafile locations in the Dataverse installation's PostgresQL database. Depending on the initial version of the Dataverse Software and subsequent upgrade path, Datafile storage identifiers may or may not include a ``file://`` prefix, so you'll want to catch both cases.
 
 To Update Dataset Location to S3, Assuming a ``file://`` Prefix
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -36,7 +36,10 @@ import static edu.harvard.iq.dataverse.authorization.AuthenticationResponse.Stat
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.json.Json;
@@ -53,6 +56,7 @@ import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
+import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import org.junit.After;
@@ -2039,6 +2043,125 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         linkDataset.then().assertThat()
                 .statusCode(OK.getStatusCode());
          */
+    }
+
+    /**
+     * In this test we are restricting a file and testing "export DDI" at the
+     * dataset level as well as getting the DDI at the file level.
+     *
+     * Export at the dataset level is always the public version.
+     *
+     * At the file level, you can still get summary statistics (and friends,
+     * "dataDscr") if you have access to download the file. If you don't have
+     * access, you get an error.
+     */
+    @Test
+    public void testRestrictFileExportDdi() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String authorUsername = UtilIT.getUsernameFromResponse(createUser);
+        String authorApiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(authorApiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, authorApiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+
+        Path pathToFile = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.csv");
+        String contentOfCsv = ""
+                + "name,pounds,species\n"
+                + "Marshall,40,dog\n"
+                + "Tiger,17,cat\n"
+                + "Panther,21,cat\n";
+        java.nio.file.Files.write(pathToFile, contentOfCsv.getBytes());
+
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile.toString(), authorApiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data.csv"));
+
+        String fileId = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
+
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", authorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        Response restrictFile = UtilIT.restrictFile(fileId, true, authorApiToken);
+        restrictFile.prettyPrint();
+        restrictFile.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, authorApiToken);
+        publishDataverse.then().assertThat().statusCode(OK.getStatusCode());
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", authorApiToken);
+        publishDataset.then().assertThat().statusCode(OK.getStatusCode());
+
+        // We're testing export here, which is at dataset level.
+        // Guest/public version
+        Response exportByGuest = UtilIT.exportDataset(datasetPid, "ddi");
+        exportByGuest.prettyPrint();
+        exportByGuest.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("codeBook.fileDscr.fileTxt.fileName", equalTo("data.tab"));
+
+        // Here we are asserting that dataDscr is empty. TODO: Do this in REST Assured.
+        String dataDscrForGuest = XmlPath.from(exportByGuest.asString()).getString("codeBook.dataDscr");
+        Assert.assertEquals("", dataDscrForGuest);
+
+        // Author export (has access)
+        Response exportByAuthor = UtilIT.exportDataset(datasetPid, "ddi", authorApiToken);
+        exportByAuthor.prettyPrint();
+        exportByAuthor.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("codeBook.fileDscr.fileTxt.fileName", equalTo("data.tab"));
+
+        // Here we are asserting that dataDscr is empty. TODO: Do this in REST Assured.
+        String dataDscrForAuthor = XmlPath.from(exportByAuthor.asString()).getString("codeBook.dataDscr");
+        Assert.assertEquals("", dataDscrForAuthor);
+
+        // Now we are testing file-level retrieval.
+        // The author has access to a restricted file and gets all the metadata.
+        Response fileMetadataDdiAuthor = UtilIT.getFileMetadata(fileId, "ddi", authorApiToken);
+        fileMetadataDdiAuthor.prettyPrint();
+        fileMetadataDdiAuthor.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("codeBook.fileDscr.fileTxt.fileName", equalTo("data.tab"))
+                //                .body("codeBook", containsString("dataDscr"))
+                // The names of all these variables (name, pounds, species) should be visible.
+                .body("codeBook.dataDscr", CoreMatchers.not(equalTo(null)))
+                //                .body("codeBook.dataDscr", equalTo(null))
+                .body("codeBook.dataDscr.var[0].@name", equalTo("name"))
+                .body("codeBook.dataDscr.var[1].@name", equalTo("pounds"))
+                // This is an example of a summary stat (max) that should be visible.
+                .body("codeBook.dataDscr.var[1].sumStat.find { it.@type == 'max' }", equalTo("40.0"))
+                .body("codeBook.dataDscr.var[2].@name", equalTo("species"));
+
+        Response createUserNoAuth = UtilIT.createRandomUser();
+        createUserNoAuth.prettyPrint();
+        String usernameNoAuth = UtilIT.getUsernameFromResponse(createUserNoAuth);
+        String apiTokenNoAuth = UtilIT.getApiTokenFromResponse(createUserNoAuth);
+
+        // Users with no access to the restricted file are blocked.
+        Response fileMetadataDdiUserNoAuth = UtilIT.getFileMetadata(fileId, "ddi", apiTokenNoAuth);
+        fileMetadataDdiUserNoAuth.prettyPrint();
+        fileMetadataDdiUserNoAuth.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("You do not have permission to download this file."));
+
+        // Guest users (not logged in) are also blocked.
+        Response fileMetadataDdiGuest = UtilIT.getFileMetadata(fileId, "ddi");
+        fileMetadataDdiGuest.prettyPrint();
+        fileMetadataDdiGuest.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("You do not have permission to download this file."));
     }
 
 }
