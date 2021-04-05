@@ -2225,6 +2225,8 @@ This is the local file system path to be used with the LocalSubmitToArchiveComma
 
 These are the bucket and project names to be used with the GoogleCloudSubmitToArchiveCommand class. Further information is in the :ref:`Google Cloud Configuration` section above.
 
+.. _:InstallationName:
+
 :InstallationName
 +++++++++++++++++
 
