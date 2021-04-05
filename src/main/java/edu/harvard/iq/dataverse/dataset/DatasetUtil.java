@@ -466,16 +466,7 @@ public class DatasetUtil {
      * size for tabular files.
      */
     public static String getDownloadSize(DatasetVersion dsv, boolean original) {
-        long bytes = 0l;
-        for (FileMetadata fileMetadata : dsv.getFileMetadatas()) {
-            DataFile dataFile = fileMetadata.getDataFile();
-            if (original && dataFile.isTabularData()) {                
-                bytes += dataFile.getOriginalFileSize() == null ? 0 : dataFile.getOriginalFileSize();
-            } else {
-                bytes += dataFile.getFilesize();
-            }
-        }
-        return FileSizeChecker.bytesToHumanReadable(bytes);
+        return FileSizeChecker.bytesToHumanReadable(getDownloadSizeNumeric(dsv, original));
     }
     
     public static Long getDownloadSizeNumeric(DatasetVersion dsv, boolean original) {

@@ -151,21 +151,23 @@
                                                             <li class="dropdown-header">#{bundle['dataset.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
                                                             <!-- NORMAL DOWNLOAD BUTTON (NO TABULAR FILES) -->
                                                             <li jsf:rendered="#{!DatasetPage.versionHasTabular and !(DatasetPage.sizeOfDatasetNumeric > settingsWrapper.zipDownloadLimit)}">                 
-                                                                <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadArchival()}" styleClass="btn-download">
+                                                                <p:commandLink update="@form, @([id$=downloadMixed]) " actionListener="#{DatasetPage.validateAllFilesForDownloadArchival()}" styleClass="btn-download">
                                                                     #{bundle.download}
                                                                     <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
                                                                         <f:param value="#{DatasetPage.sizeOfDataset}" />
                                                                     </h:outputFormat>
                                                                 </p:commandLink>
                                                             </li>
-                                                            <ui:fragment rendered="#{DatasetPage.canDownloadFiles()  and (DatasetPage.getSizeOfDatasetOrigNumeric > settingsWrapper.zipDownloadLimit) }">                                                                                                                               
+                                                            <ui:fragment rendered="#{DatasetPage.canDownloadFiles()  and (DatasetPage.sizeOfDatasetOrigNumeric > settingsWrapper.zipDownloadLimit) }">                                                                                                                               
                                                                     <h:outputText value="#{bundle['dataset.accessBtn.too.big']}">                                           
                                                                     </h:outputText>                                                            
                                                             </ui:fragment> 
                                                             
                                                             <!-- DOWNLOAD ORIGINAL BUTTON (TABULAR FILES PRESENT) -->
                                                             <li jsf:rendered="#{DatasetPage.versionHasTabular and DatasetPage.sizeOfDatasetOrig != '0 B' }">
-                                                                <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadOriginal()}" styleClass="btn-download">
+                                                                <p:commandLink update="@form,  @([id$=downloadMixed])" actionListener="#{DatasetPage.validateAllFilesForDownloadOriginal()}" 
+                                                                               oncomplete="bind_bsui_components();"
+                                                                               styleClass="btn-download">
                                                                     #{bundle.downloadOriginal}
                                                                     <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
                                                                         <f:param value="#{DatasetPage.sizeOfDatasetOrig}" />
@@ -174,7 +176,8 @@
                                                             </li>
                                                             <!-- DOWNLOAD ARCHIVAL FILES (TABULAR FILES PRESENT) -->
                                                             <li jsf:rendered="#{DatasetPage.versionHasTabular}">
-                                                                <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadArchival()}" styleClass="btn-download">
+                                                                <p:commandLink update="@form,  @([id$=downloadMixed])" oncomplete="bind_bsui_components();" 
+                                                                               actionListener="#{DatasetPage.validateAllFilesForDownloadArchival()}" styleClass="btn-download">
                                                                     #{bundle.downloadArchival}
                                                                     <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
                                                                         <f:param value="#{DatasetPage.sizeOfDataset}" />
@@ -900,6 +903,7 @@
                     </p:dialog>
                     <p:dialog id="downloadMixed" styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadMixed" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.mixedSelectedFilesForDownload']}</p>
+                        #{DatasetPage.selectedNonDownloadableFiles.size()}
                         <table>
                             <ui:repeat var="resFile" value="#{DatasetPage.selectedNonDownloadableFiles}" >
                                 <tr>
@@ -916,28 +920,6 @@
                                              rendered="#{DatasetPage.downloadPopupRequired and !settingsWrapper.rsyncDownload}"
                                              action="#{DatasetPage.openDownloadPopupForMultipleFileDownload()}" update="@form"/>
                             <button class="btn btn-link" onclick="PF('downloadMixed').hide();" type="button">
-                                #{bundle.cancel}
-                            </button>
-                        </div>
-                    </p:dialog>
-                    <p:dialog id="downloadAllMixed" styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadAllMixed" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.mixedSelectedFilesForDownload']}</p>
-                        <table>
-                            <ui:repeat var="resFile" value="#{DatasetPage.selectedNonDownloadallableFiles}" >
-                                <tr>
-                                    <td>#{resFile.label}</td>
-                                </tr>
-                            </ui:repeat>
-                        </table>
-                        <div class="button-block">
-                            <p class="help-block">#{bundle['dataset.downloadUnrestricted']}</p>
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('downloadAllMixed').hide()"
-                                             rendered="#{!DatasetPage.downloadPopupRequired}"
-                                             action="#{DatasetPage.startMultipleFileDownload()}"/>
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('downloadAllMixed').hide()"
-                                             rendered="#{DatasetPage.downloadPopupRequired and !settingsWrapper.rsyncDownload}"
-                                             action="#{DatasetPage.openDownloadPopupForDownloadAll()}" update="@form"/>
-                            <button class="btn btn-link" onclick="PF('downloadAllMixed').hide();" type="button">
                                 #{bundle.cancel}
                             </button>
                         </div>

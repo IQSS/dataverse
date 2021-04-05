@@ -96,7 +96,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
     public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse, Boolean doNotSaveGuestbookRecord){
-         
+        System.out.print(guestbookResponse.getSelectedFileIds());
         if (guestbookResponse == null || guestbookResponse.getSelectedFileIds() == null) {
             return;
         }

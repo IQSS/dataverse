@@ -331,6 +331,18 @@
                     </p>
                 </div>
             </div>
+            <div class="row" jsf:rendered="#{DatasetPage.sizeOfDatasetNumeric > settingsWrapper.zipDownloadLimit and (DatasetPage.sizeOfSelectedOrigNumeric gt 0)
+                                             and DatasetPage.selectedFiles.size() > 1}">
+                <div class="col-xs-12 bg-warning text-left" style="font-weight:normal;padding-top:.5em;">
+                    <!-- SELECTION MESSAGE -->
+                    <p>
+                        <h:outputText value="#{DatasetPage.sizeOfSelectedAsString}"/>
+                    </p>
+                    <p>
+                        <h:outputText value="#{settingsWrapper.zipDownloadLimit}"/>
+                    </p>
+                </div>
+            </div>
         </f:facet>
 
         <p:column selectionMode="multiple" class="text-center" ariaHeaderText="#{bundle['file.select.tooltip']}"/>
