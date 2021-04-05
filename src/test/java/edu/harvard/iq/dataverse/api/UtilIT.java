@@ -36,6 +36,7 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import static com.jayway.restassured.path.xml.XmlPath.from;
 import static com.jayway.restassured.RestAssured.given;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.StringReader;
 import javax.json.JsonArray;
 import static org.junit.Assert.assertEquals;
@@ -641,6 +642,16 @@ public class UtilIT {
         }
         return requestSpecification.post("/api/datasets/" + datasetId + "/add");
     }
+    
+    static Response getCrawlableFileAccess(String datasetId, String folderName, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken);
+        String apiPath = "/api/datasets/" + datasetId + "/dirindex?version=:draft";
+        if (StringUtil.nonEmpty(folderName)) {
+            apiPath = apiPath.concat("&folder="+folderName);
+        }
+        return requestSpecification.get(apiPath);
+    }
 
     static Response replaceFile(String fileIdOrPersistentId, String pathToFile, String apiToken) {
         String jsonAsString = null;
@@ -823,6 +834,22 @@ public class UtilIT {
                 .get("/api/access/datafile/" + idInPath + "/metadata" + optionalFormatInPath + "?key=" + apiToken + optionalQueryParam);
     }
 
+    static Response getFileMetadata(String fileIdOrPersistentId, String optionalFormat) {
+        String idInPath = fileIdOrPersistentId; // Assume it's a number.
+        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
+        if (!NumberUtils.isNumber(fileIdOrPersistentId)) {
+            idInPath = ":persistentId";
+            optionalQueryParam = "?persistentId=" + fileIdOrPersistentId;
+        }
+        String optionalFormatInPath = "";
+        if (optionalFormat != null) {
+            optionalFormatInPath = "/" + optionalFormat;
+        }
+        return given()
+                .urlEncodingEnabled(false)
+                .get("/api/access/datafile/" + idInPath + "/metadata" + optionalFormatInPath + optionalQueryParam);
+    }
+
     static Response testIngest(String fileName, String fileType) {
         return given()
                 .get("/api/ingest/test/file?fileName=" + fileName + "&fileType=" + fileType);
@@ -950,10 +977,36 @@ public class UtilIT {
                 .post("api/dataverses/" + definitionPoint + "/assignments?key=" + apiToken);
     }
 
+    public static Response deactivateUser(String username) {
+        Response deactivateUserResponse = given()
+                .post("/api/admin/authenticatedUsers/" + username + "/deactivate");
+        return deactivateUserResponse;
+    }
+
+    public static Response deactivateUser(Long userId) {
+        Response deactivateUserResponse = given()
+                .post("/api/admin/authenticatedUsers/id/" + userId + "/deactivate");
+        return deactivateUserResponse;
+    }
+
     public static Response deleteUser(String username) {
         Response deleteUserResponse = given()
                 .delete("/api/admin/authenticatedUsers/" + username + "/");
         return deleteUserResponse;
+    }
+
+    public static Response deleteUserRoles(String username, String apiToken) {
+        Response deleteUserResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/users/" + username + "/removeRoles");
+        return deleteUserResponse;
+    }
+
+    public static Response getUserTraces(String username, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/users/" + username + "/traces");
+        return response;
     }
 
     public static Response reingestFile(Long fileId, String apiToken) {
@@ -1174,6 +1227,7 @@ public class UtilIT {
         return response;
     }
 
+    // TODO: Consider removing apiToken since it isn't used by the API itself.
     static Response getAuthenticatedUser(String userIdentifier, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -1623,11 +1677,19 @@ public class UtilIT {
 //        }
 //        return requestSpecification.delete("/api/files/" + idInPath + "/prov-freeform" + optionalQueryParam);
 //    }
+    static Response exportDataset(String datasetPersistentId, String exporter) {
+        return exportDataset(datasetPersistentId, exporter, null);
+    }
 
     static Response exportDataset(String datasetPersistentId, String exporter, String apiToken) {
 //        http://localhost:8080/api/datasets/export?exporter=dataverse_json&persistentId=doi%3A10.5072/FK2/W6WIMQ
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
+        RequestSpecification requestSpecification = given();
+        if (apiToken != null) {
+            requestSpecification = given()
+                    .header(UtilIT.API_TOKEN_HTTP_HEADER, apiToken);
+        }
+        return requestSpecification
+                //                .header(API_TOKEN_HTTP_HEADER, apiToken)
                 //                .get("/api/datasets/:persistentId/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
                 .get("/api/datasets/export" + "?persistentId=" + datasetPersistentId + "&exporter=" + exporter);
     }
@@ -1843,40 +1905,6 @@ public class UtilIT {
             logger.fine("In inputStreamToBytes but caught an IOUtils.toByteArray Returning null.");
             return null;
         }
-    }
-
-    static Response listMapLayerMetadatas() {
-        return given().get("/api/admin/geoconnect/mapLayerMetadatas");
-    }
-
-    static Response checkMapLayerMetadatas(String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .post("/api/admin/geoconnect/mapLayerMetadatas/check");
-    }
-
-    static Response checkMapLayerMetadatas(Long mapLayerMetadataId, String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .post("/api/admin/geoconnect/mapLayerMetadatas/check/" + mapLayerMetadataId);
-    }
-
-    static Response getMapFromFile(long fileId, String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/files/" + fileId + "/map");
-    }
-
-    static Response checkMapFromFile(long fileId, String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/files/" + fileId + "/map/check");
-    }
-
-    static Response deleteMapFromFile(long fileId, String apiToken) {
-        return given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .delete("/api/files/" + fileId + "/map?key=" + apiToken);
     }
 
     static Response getRsyncScript(String datasetPersistentId, String apiToken) {
@@ -2231,7 +2259,7 @@ public class UtilIT {
             } catch (InterruptedException ex) {
                 Logger.getLogger(UtilIT.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } while (lockedForIngest.body().prettyPrint().contains(lockType));
+        } while (lockedForIngest.body().jsonPath().getList("data").size() >0 && (lockType==null || lockedForIngest.body().prettyPrint().contains(lockType)));
 
         return i <= duration;
 
@@ -2491,6 +2519,66 @@ public class UtilIT {
                 .body(jsonIn)
                 .contentType("application/json")
                 .post("/api/admin/bannerMessage");
+        return addBannerMessageResponse;
+    }
+    
+    static Response addBuiltInRole(String pathToJsonFile) {
+        String jsonIn = getDatasetJson(pathToJsonFile);
+
+        Response addBannerMessageResponse = given()
+                .body(jsonIn)
+                .contentType("application/json")
+                .post("/api/admin/roles");
+        return addBannerMessageResponse;
+    }
+
+    static Response deleteBuiltInRole(String roleAlias) {
+
+        Response addBannerMessageResponse = given()
+                .delete("/api/admin/roles/:alias?alias=" +roleAlias);
+        return addBannerMessageResponse;
+    }
+
+    static Response addDataverseRole(String pathToJsonFile, String dvAlias, String apiToken) {
+        String jsonIn = getDatasetJson(pathToJsonFile);
+
+        Response addBannerMessageResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonIn)
+                .contentType("application/json")
+                .post("/api/roles?dvo="+dvAlias);
+        return addBannerMessageResponse;
+    }
+
+    static Response deleteDataverseRole( String roleAlias, String apiToken) {
+
+        Response addBannerMessageResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/roles/:alias?alias="+roleAlias);
+        return addBannerMessageResponse;
+    }
+    
+    static Response deleteDataverseRoleById( String id, String apiToken) {
+
+        Response addBannerMessageResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/roles/"+id);
+        return addBannerMessageResponse;
+    }
+    
+    static Response viewDataverseRole( String roleAlias, String apiToken) {
+
+        Response addBannerMessageResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/roles/:alias?alias="+roleAlias);
+        return addBannerMessageResponse;
+    }
+    
+    static Response viewDataverseRoleById( String id, String apiToken) {
+
+        Response addBannerMessageResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/roles/"+id);
         return addBannerMessageResponse;
     }
     

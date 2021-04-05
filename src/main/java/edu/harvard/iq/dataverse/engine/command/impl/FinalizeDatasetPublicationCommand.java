@@ -180,31 +180,29 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
         
         final Dataset ds = ctxt.em().merge(theDataset);
+        //Remove any pre-pub workflow lock (not needed as WorkflowServiceBean.workflowComplete() should already have removed it after setting the finalizePublication lock?)
+        ctxt.datasets().removeDatasetLocks(ds, DatasetLock.Reason.Workflow);
         
+        //Should this be in onSuccess()?
         ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
             try {
-                ctxt.workflows().start(wf, buildContext(ds, TriggerType.PostPublishDataset, datasetExternallyReleased));
+                ctxt.workflows().start(wf, buildContext(ds, TriggerType.PostPublishDataset, datasetExternallyReleased), false);
             } catch (CommandException ex) {
+                ctxt.datasets().removeDatasetLocks(ds, DatasetLock.Reason.Workflow);
                 logger.log(Level.SEVERE, "Error invoking post-publish workflow: " + ex.getMessage(), ex);
             }
         });
-        
-        Dataset readyDataset = ctxt.em().merge(theDataset);
-        
-        if ( readyDataset != null ) {
-            // Success! - send notification: 
-            notifyUsersDatasetPublishStatus(ctxt, theDataset, UserNotification.Type.PUBLISHEDDS);
-        }
-        
-        // Finally, unlock the dataset:
-        ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.Workflow);
-        ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.finalizePublication);
-        if ( theDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
-            ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.InReview);
-        }
-        
-        logger.info("Successfully published the dataset "+theDataset.getGlobalId().asString());
 
+        Dataset readyDataset = ctxt.em().merge(ds);
+        
+        // Finally, unlock the dataset (leaving any post-publish workflow lock in place)
+        ctxt.datasets().removeDatasetLocks(readyDataset, DatasetLock.Reason.finalizePublication);
+        if (readyDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
+            ctxt.datasets().removeDatasetLocks(readyDataset, DatasetLock.Reason.InReview);
+        }
+        
+        logger.info("Successfully published the dataset "+readyDataset.getGlobalId().asString());
+        readyDataset = ctxt.em().merge(readyDataset);
         
         return readyDataset;
     }
@@ -219,6 +217,12 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             dataset  = ((PublishDatasetResult) r).getDataset();
         }
         
+        try {
+            // Success! - send notification:
+            notifyUsersDatasetPublishStatus(ctxt, dataset, UserNotification.Type.PUBLISHEDDS);
+        } catch (Exception e) {
+            logger.warning("Failure to send dataset published messages for : " + dataset.getId() + " : " + e.getMessage());
+        }
         try {
             Future<String> indexString = ctxt.index().indexDataset(dataset, true);                   
         } catch (IOException | SolrServerException e) {    
@@ -242,7 +246,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             }
         }
 
-        exportMetadata(dataset, ctxt.settings());
+        exportMetadata(dataset);
                 
         ctxt.datasets().updateLastExportTimeStamp(dataset.getId());
 
@@ -253,10 +257,10 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
      * Attempting to run metadata export, for all the formats for which we have
      * metadata Exporters.
      */
-    private void exportMetadata(Dataset dataset, SettingsServiceBean settingsServiceBean) {
+    private void exportMetadata(Dataset dataset) {
 
         try {
-            ExportService instance = ExportService.getInstance(settingsServiceBean);
+            ExportService instance = ExportService.getInstance();
             instance.exportAllFormats(dataset);
 
         } catch (Exception ex) {
@@ -407,45 +411,11 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             
             
             if (dataFile.isRestricted()) {
-                // A couple things need to happen if the file has been restricted: 
-                // 1. If there's a map layer associated with this shape file, or 
-                //    tabular-with-geo-tag file, all that map layer data (that 
-                //    includes most of the actual data in the file!) need to be
-                //    removed from WorldMap and GeoConnect, since anyone can get 
-                //    download the data from there;
-                // 2. If this (image) file has been assigned as the dedicated 
+                // If the file has been restricted: 
+                //    If this (image) file has been assigned as the dedicated 
                 //    thumbnail for the dataset, we need to remove that assignment, 
                 //    now that the file is restricted. 
-
-                // Map layer: 
-                
-                if (ctxt.mapLayerMetadata().findMetadataByDatafile(dataFile) != null) {
-                    // (We need an AuthenticatedUser in order to produce a WorldMap token!)
-                    String id = getUser().getIdentifier();
-                    id = id.startsWith("@") ? id.substring(1) : id;
-                    AuthenticatedUser authenticatedUser = ctxt.authentication().getAuthenticatedUser(id);
-                    try {
-                        ctxt.mapLayerMetadata().deleteMapLayerFromWorldMap(dataFile, authenticatedUser);
-
-                        // If that was successful, delete the layer on the Dataverse side as well:
-                        //SEK 4/20/2017                
-                        //Command to delete from Dataverse side
-                        ctxt.engine().submit(new DeleteMapLayerMetadataCommand(this.getRequest(), dataFile));
-
-                        // RP - Bit of hack, update the datafile here b/c the reference to the datafile 
-                        // is not being passed all the way up/down the chain.   
-                        //
-                        dataFile.setPreviewImageAvailable(false);
-
-                    } catch (IOException ioex) {
-                        // We are not going to treat it as a fatal condition and bail out, 
-                        // but we will send a notification to the user, warning them about
-                        // the layer still being out there, un-deleted:
-                        ctxt.notifications().sendNotification(authenticatedUser, getTimestamp(), UserNotification.Type.MAPLAYERDELETEFAILED, dataFile.getFileMetadata().getId());
-                    }
-
-                }
-                
+               
                 // Dataset thumbnail assignment: 
                 
                 if (dataFile.equals(getDataset().getThumbnailFile())) {

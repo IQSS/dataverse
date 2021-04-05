@@ -6,6 +6,7 @@
 package edu.harvard.iq.dataverse.datasetutility;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.FileMetadata;
 import java.io.InputStream;
@@ -18,7 +19,7 @@ import java.util.List;
  * Phase 1: File successfully uploaded and unpersisted DataFile is in memory
  * Phase 2: Save the files
  * 
-  http://localhost:8080/editdatafiles.xhtml?mode=SINGLE_REPLACE&datasetId=26&fid=726
+  http://localhost:8080/editdatafiles.xhtml?mode=REPLACE&datasetId=26&fid=726
  * This is messy, trying to contain some of it--give me APIs or more time, more time:)
  * 
  * @author rmp553
@@ -93,7 +94,7 @@ public class FileReplacePageHelper {
      * @param checkSum 
      * @param event 
      */
-    public boolean handleNativeFileUpload(InputStream inputStream, String fullStorageId, String fileName, String fileContentType, String checkSum) {
+    public boolean handleNativeFileUpload(InputStream inputStream, String fullStorageId, String fileName, String fileContentType, String checkSumValue, ChecksumType checkSumType) {
                 
         phase1Success = false;
         
@@ -110,14 +111,9 @@ public class FileReplacePageHelper {
         }
         
         OptionalFileParams ofp = null;
-        if(checkSum != null) {
-        	try {
-				ofp = new OptionalFileParams(null);
-			} catch (DataFileTagException e) {
-				//Shouldn't happen with null input
-				e.printStackTrace();
-			}
-        	ofp.setCheckSum(checkSum);
+        ofp = new OptionalFileParams();
+        if(checkSumValue != null) {
+            ofp.setCheckSum(checkSumValue, checkSumType);
         }
         // Run 1st phase of replace
         //

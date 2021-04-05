@@ -4,9 +4,7 @@ TwoRavens
 =========
 
 TwoRavens is a web application for tabular data exploration and statistical analysis.
-It can be integrated with Dataverse, as an **optional** component.  While TwoRavens was originally created at IQSS, its developers have since left the organization. Plans
-for the future of the Dataverse/TwoRavens collaboration are still being worked out. As
-such, **support for TwoRavens is somewhat limited at the
+It can be integrated with your Dataverse installation, as an **optional** component.  While TwoRavens was originally created at IQSS, its developers have since left the organization. Plans for the future of the Dataverse Project/TwoRavens collaboration are still being worked out. As such, **support for TwoRavens is somewhat limited at the
 moment (as of Spring of 2017).**
 
 Please note that in the text below, Glassfish was changed to Payara but not tested.
@@ -17,17 +15,17 @@ application.  The `TwoRavens GitHub repository
 <https://github.com/IQSS/TwoRavens>`_ and the `TwoRavens project page
 <http://2ra.vn/community/index.html>`_ are good places to start.
 
-For now, the Dataverse project will continue providing 
+For now, the Dataverse Project team will continue providing 
 installation and integration support. We have created a new (as
-of Dataverse v.4.6.1) version of the installer scripts and updated this guide. We have tried to improve and simplify the
+of Dataverse Software 4.6.1) version of the installer scripts and updated this guide. We have tried to improve and simplify the
 installation process, particularly the difficult process of installing
 correct versions of the required third party R packages.
 
-**Note that the installation process below supercedes the basic R
+**Note that the installation process below supersedes the basic R
 setup described in the "Prerequisites" portion of the Installation
 Guide. Meaning that once completed, it installs everything needed to
 run TwoRavens, PLUS all the libraries and components required to
-ingest RData files, export as RData, and use Data Explorer.**
+ingest RData files and export as RData.**
 
 
 
@@ -39,7 +37,7 @@ Please be warned:
   easier to get it all installed on MacOS X (because
   MacOS X versions of third party R packages are available
   pre-compiled), or even on Windows. But it hasn't been attempted, and
-  is not supported by the Dataverse team.
+  is not supported by the Dataverse Project team.
 
 In addition to the TwoRavens web application proper, several required
 components need to be installed and configured. This includes R,
@@ -64,19 +62,17 @@ that the browser application can talk to R over HTTP.
 See the :ref:`advanced` section of :doc:`prep` for an example of running various components on more than one server.
 
 TwoRavens will need to obtain some tabular-data-specific metadata from 
-Dataverse -- the DDI fragment that describes the variables and some pre-processed
-summary statistics for the data vectors. In order to produce the latter, the Dataverse
-application also needs to be able to execute some R code on the server. Instead of 
-``rApache``, Dataverse uses `Rserve <https://rforge.net/Rserve/>`_ to 
+the Dataverse installation -- the DDI fragment that describes the variables and some pre-processed summary statistics for the data vectors. In order to produce the latter, the Dataverse Software application also needs to be able to execute some R code on the server. Instead of 
+``rApache``, the Dataverse Software uses `Rserve <https://rforge.net/Rserve/>`_ to 
 communicate to R. Rserve is installed as a "contributor" R package. It runs as a 
 daemon process on the server, accepting network connections on a dedicated port. 
-Dataverse project supplies an :fixedwidthplain:`init.d`-style startup file for the 
+The Dataverse Software supplies an :fixedwidthplain:`init.d`-style startup file for the 
 daemon. The R setup in step ``2.`` will set it up so that the daemon gets started
 automatically when the system boots. 
 
 When a user requests to run 
 a statistical model on a data file, TwoRavens will instruct the R code on the 
-server to download the file **directly from the Dataverse application**. Access 
+server to download the file **directly from the Dataverse Software application**. Access 
 URLs need to be configured for this to work properly (this is done by the TwoRavens 
 installer script in step ``3.``)  
 
@@ -214,7 +210,7 @@ Depending on how your system was originally set up, you may end up needing to in
 2. Install Extra R Packages
 +++++++++++++++++++++++++++
 
-We provide a shell script (``r-setup.sh``) that will try to install all the needed packages. **Note:** the script is now part of the TwoRavens distribution (it **used to be** in the Dataverse source tree). 
+We provide a shell script (``r-setup.sh``) that will try to install all the needed packages. **Note:** the script is now part of the TwoRavens distribution (it **used to be** in the Dataverse Software source tree). 
 
 
 The script will attempt to download the packages from CRAN (or a mirror), so the system must have access to the Internet.
@@ -250,7 +246,7 @@ still a good idea **to change the password**. The password is specified in ``/et
 Please see `Rserve documentation <https://rforge.net/Rserve/doc.html>`_ for more 
 information on password encryption and access security. 
  
-Make sure the rserve password is correctly specified in the ``domain.xml`` of your Dataverse::
+Make sure the rserve password is correctly specified in the ``domain.xml`` of your Dataverse installation::
 
         <jvm-options>-Ddataverse.rserve.password=...</jvm-options>
 
@@ -287,16 +283,16 @@ TwoRavens directory   ``/var/www/html/dataexplore``       File directory where T
 Apache config dir.    ``/etc/httpd``                      rApache config file for TwoRavens will be placed under ``conf.d/`` there.
 Apache web dir.       ``/var/www/html``                   
 rApache/TwoRavens URL ``http://{your hostname}:80``       URL of the Apache server hosting TwoRavens and rApache.
-Dataverse URL         ``http://{your hostname}:8080``     URL of the Dataverse that integrates with this TwoRavens installation.
+Dataverse URL         ``http://{your hostname}:8080``     URL of the Dataverse installation that integrates with this TwoRavens installation.
 ===================== ================================    =========== 
 
 Please note the default values above. The installer assumes 
 
-- that you are running both the Dataverse and TwoRavens/rApache on the same host; 
-- the default ports for Apache (80) and the app server that is serving your Dataverse (8080); 
+- that you are running both the Dataverse installation and TwoRavens/rApache on the same host; 
+- the default ports for Apache (80) and the app server that is serving your Dataverse installation (8080); 
 - ``http`` (not ``https``!) for both . 
 
-This configuration is recommended if you are simply trying out/testing Dataverse 
+This configuration is recommended if you are simply trying out/testing Dataverse Software
 and TwoRavens. Accept all the defaults, and you should have a working installation 
 in no time.
 
@@ -325,7 +321,7 @@ d. Version conflict check  (preprocess.R)
 -----------------------------------------
 
 One of the R files in the TwoRavens distribution, ``rook/preprocess/preprocess.R`` is used by both TwoRavens and 
-Dataverse. Dataverse application maintains its own copy of the file, ``<DOMAIN DIRECTORY>/applications/dataverse-<VERSION>/WEB-INF/classes/edu/harvard/iq/dataverse/rserve/scripts/preprocess.R``. 
+the Dataverse installation. The Dataverse installation maintains its own copy of the file, ``<DOMAIN DIRECTORY>/applications/dataverse-<VERSION>/WEB-INF/classes/edu/harvard/iq/dataverse/rserve/scripts/preprocess.R``. 
 (Why not share the file from the same location? Because the two applications 
 can potentially be installed on 2 different servers).
 Compare the two files. **It is important that the two copies are identical**. 
@@ -340,16 +336,16 @@ Compare the two files. **It is important that the two copies are identical**.
         find . -name '*.prep' | while read file; do /bin/rm $file; done
 
 *(Yes, this is a HACK! We are working on finding a better way to ensure this compatibility between 
-TwoRavens and Dataverse!)*
+TwoRavens and the Dataverse Software!)*
 
-e. Enable TwoRavens in Dataverse
---------------------------------
+e. Enable TwoRavens in a Dataverse Installation
+-----------------------------------------------
 
 Now that you have installed TwoRavens, you can make it available to your users by adding it an "external tool" for your Dataverse installation. (For more on external tools in general, see the :doc:`/admin/external-tools` section of the Admin Guide.)
 
 First, download :download:`twoRavens.json <../_static/installation/files/root/external-tools/twoRavens.json>` as a starting point and edit ``toolUrl`` in that external tool manifest file to be the URL where you want TwoRavens to run. This is the URL reported by the installer script (as in the example at the end of step ``c.``, above).
 
-Once you have made your edits, make the tool available within Dataverse with the following curl command (assuming ``twoRavens.json`` is in your current working directory):
+Once you have made your edits, make the tool available within your Dataverse installation with the following curl command (assuming ``twoRavens.json`` is in your current working directory):
 
 ``curl -X POST -H 'Content-type: application/json' --upload-file twoRavens.json http://localhost:8080/api/admin/externalTools``
 
@@ -358,8 +354,7 @@ Once enabled, TwoRavens will display as an explore tool option for tabular data 
 f. Perform a quick test of TwoRavens functionality
 --------------------------------------------------
 
-Ingest the dummy data file ``50by1000.dta`` (supplied in the Dataverse source tree in 
-``dataverse/scripts/search/data/tabular``). If successfully ingested as tabular data, 
+Ingest the dummy data file ``50by1000.dta`` (supplied in the Dataverse Software source tree in ``dataverse/scripts/search/data/tabular``). If successfully ingested as tabular data, 
 the file should appear on the Dataset page as follows: 
 
 |tworavens_test_file_ingested|
@@ -404,13 +399,13 @@ Symptom: instead of the "data pebbles" display shown in the second image, above,
 
 |tworavens_test_empty|
 
-A very likely cause of this condition is TwoRavens not being able to obtain the metadata describing the variables from your Dataverse. 
+A very likely cause of this condition is TwoRavens not being able to obtain the metadata describing the variables from your Dataverse installation. 
 Specifically, the "preprocessed summary statistics". 
 
 To diagnose: note the value of the ``dfId`` URL parameter in the view above. 
 Try to request the preprocessed fragment by going to the API end point directly:: 
 
-        <YOUR DATAVERSE URL>/api/access/datafile/<FILE ID>?format=prep
+        <YOUR DATAVERSE INSTALLATION URL>/api/access/datafile/<FILE ID>?format=prep
 
 Where the :fixedwidthplain:`<FILE ID>` is the value of the :fixedwidthplain:`dfId` parameter from the previous view. 
 You should get the output that looks like this::
@@ -429,7 +424,7 @@ If you ARE getting JSON output, but the TwoRavens view is still broken:
 
 - Look closely at the very beginning of the JSON fragment. Does it have the ``{"private":false}`` entry, as shown in the example above? If not, this likely an R code version mismatch, described in section ``3.d.``, above. Correct the problem as described there, then try again. 
 
-- If the JSON looks *exactly* as the fragment above, yet still no data pebbles - enable the JavaScript error console in the TwoRavens window, and try again. Look for any error messages; and, specifically, for any URLs that TwoRavens is failing to access. Look for the debugging entry that shows TwoRavens attempting to download the ``format=prep`` fragment. Does the URL have the correct host name, port and/or the protocol (http vs. https)? If not, re-run the installer, specifying the correct Dataverse URL, and try again. 
+- If the JSON looks *exactly* as the fragment above, yet still no data pebbles - enable the JavaScript error console in the TwoRavens window, and try again. Look for any error messages; and, specifically, for any URLs that TwoRavens is failing to access. Look for the debugging entry that shows TwoRavens attempting to download the ``format=prep`` fragment. Does the URL have the correct host name, port and/or the protocol (http vs. https)? If not, re-run the installer, specifying the correct Dataverse installation URL, and try again. 
 
 Symptom: the variables view is initialized properly, but no model output appears when you click ``Estimate``, with or without error messages. 
 
@@ -447,18 +442,17 @@ I. Ports configuration discussion
 
 By default, the app server will install itself on ports 8080 and 8181 (for
 ``HTTP`` and ``HTTPS``, respectively). Apache will install itself on port 80 
-(the default port for ``HTTP``). Under this configuration, your Dataverse will 
+(the default port for ``HTTP``). Under this configuration, your Dataverse installation will 
 be accessible at ``http://{your host}:8080``, and rApache at 
 ``http://{your host}/``. The TwoRavens installer, above, will default to these 
-values (and assume you are running both the Dataverse and TwoRavens/rApache on 
+values (and assume you are running both the Dataverse installation and TwoRavens/rApache on 
 the same host).
 
 This configuration is the easiest to set up if you are simply
-trying out/testing the Dataverse and TwoRavens integration. Accept all the
+trying out/testing the Dataverse Software and TwoRavens integration. Accept all the
 defaults, and you should have a working installation in no
 time. However, if you are planning to use this installation to
-actually serve data to real users, you will most likely want to run your Dataverse 
-on a standard port; and to use ``HTTPS``. It is definitely possible to configure 
+actually serve data to real users, you will most likely want to run your Dataverse installation on a standard port; and to use ``HTTPS``. It is definitely possible to configure 
 the app server to serve the application under ``HTTPS`` on port 443. However, we 
 **do not recommend** this setup! For at least 2 reasons: 1. Running the app server on 
 port 443 will require you to **run it as root** user; which should be avoided, 
@@ -481,8 +475,8 @@ II. What the r-setup.sh script does:
 
 The script uses the list of 45 R library packages and specified
 package versions, supplied in ``TwoRavens/r-setup/package-versions.txt`` to 
-replicate the library environment that has been proven to work on the Dataverse
-servers. 
+replicate the library environment that has been proven to work on Dataverse
+installations.
 
 If any packages fail to build, the script will alert the user. 
 
@@ -516,7 +510,7 @@ edited:**
 
 2. ``hostname="localhost:8080";``
 
-   changed to point to the dataverse app, from which TwoRavens will be obtaining the metadata and data files. (don't forget to change 8080 to the correct port number!)
+   changed to point to the Dataverse installation, from which TwoRavens will be obtaining the metadata and data files. (don't forget to change 8080 to the correct port number!)
 
 3. ``var rappURL = "http://0.0.0.0:8000/custom/";``
 

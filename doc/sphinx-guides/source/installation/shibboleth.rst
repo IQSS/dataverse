@@ -7,7 +7,7 @@ Shibboleth
 Introduction
 ------------
 
-By configuring and enabling Shibboleth support in Dataverse, your users will be able to log in using the identity system managed by their institution ("single sign on", or at least "single password") rather than having to create yet another password local to your Dataverse installation. Typically, users know their login system by some sort of internal branding such as "HarvardKey" or "Touchstone" (MIT) but within the Dataverse application, the Shibboleth feature is known as :ref:`institutional-log-in` as explained to end users in the :doc:`/user/account` section of the User Guide.
+By configuring and enabling Shibboleth support in your Dataverse installation, your users will be able to log in using the identity system managed by their institution ("single sign on", or at least "single password") rather than having to create yet another password local to your Dataverse installation. Typically, users know their login system by some sort of internal branding such as "HarvardKey" or "Touchstone" (MIT) but within the Dataverse Software application, the Shibboleth feature is known as :ref:`institutional-log-in` as explained to end users in the :doc:`/user/account` section of the User Guide.
 
 Shibboleth is an implementation of the `Security Assertion Markup Language (SAML) <https://en.wikipedia.org/wiki/Security_Assertion_Markup_Language>`_ protocol which is similar in spirit to systems used by many webapps that allow you to log in via Google, Facebook, or Twitter.
 
@@ -21,9 +21,9 @@ We assume you've already gone through a basic installation as described in the :
 System Requirements
 ~~~~~~~~~~~~~~~~~~~
 
-Support for Shibboleth in Dataverse is built on the popular `"mod_shib" Apache module, "shibd" daemon <https://shibboleth.net/products/service-provider.html>`_, and the `Embedded Discovery Service (EDS) <https://shibboleth.net/products/embedded-discovery-service.html>`_ Javascript library, all of which are distributed by the `Shibboleth Consortium <https://shibboleth.net>`_. EDS is bundled with Dataverse, but ``mod_shib`` and ``shibd`` must be installed and configured per below.
+Support for Shibboleth in the Dataverse Software is built on the popular `"mod_shib" Apache module, "shibd" daemon <https://shibboleth.net/products/service-provider.html>`_, and the `Embedded Discovery Service (EDS) <https://shibboleth.net/products/embedded-discovery-service.html>`_ Javascript library, all of which are distributed by the `Shibboleth Consortium <https://shibboleth.net>`_. EDS is bundled with the Dataverse Software, but ``mod_shib`` and ``shibd`` must be installed and configured per below.
 
-Only Red Hat Enterprise Linux (RHEL) and derivatives such as CentOS have been tested (x86_64 versions) by the Dataverse team. See https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPLinuxInstall for details and note that (according to that page) as of this writing Ubuntu and Debian are not offically supported by the Shibboleth project.
+Only Red Hat Enterprise Linux (RHEL) and derivatives such as CentOS have been tested (x86_64 versions) by the Dataverse Project team. See https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPLinuxInstall for details and note that (according to that page) as of this writing Ubuntu and Debian are not offically supported by the Shibboleth project.
 
 Install Apache
 ~~~~~~~~~~~~~~
@@ -166,7 +166,7 @@ Specific Identity Provider(s)
 
 When configuring the ``MetadataProvider`` section of ``shibboleth2.xml`` you should consider if your users will all come from the same Identity Provider (IdP) or not.
 
-Most Dataverse installations will probably only want to authenticate users via Shibboleth using their home institution's Identity Provider (IdP).  The configuration above in ``shibboleth2.xml`` looks for the metadata for the Identity Providers (IdPs) in a file at ``/etc/shibboleth/dataverse-idp-metadata.xml``.  You can download a :download:`sample dataverse-idp-metadata.xml file <../_static/installation/files/etc/shibboleth/dataverse-idp-metadata.xml>` and that includes the SAMLtest IdP from https://samltest.id but you will want to edit this file to include the metadata from the Identity Provider you care about. The identity people at your institution will be able to provide you with this metadata and they will very likely ask for a list of attributes that Dataverse requires, which are listed at :ref:`shibboleth-attributes`.
+Most Dataverse installations will probably only want to authenticate users via Shibboleth using their home institution's Identity Provider (IdP).  The configuration above in ``shibboleth2.xml`` looks for the metadata for the Identity Providers (IdPs) in a file at ``/etc/shibboleth/dataverse-idp-metadata.xml``.  You can download a :download:`sample dataverse-idp-metadata.xml file <../_static/installation/files/etc/shibboleth/dataverse-idp-metadata.xml>` and that includes the SAMLtest IdP from https://samltest.id but you will want to edit this file to include the metadata from the Identity Provider you care about. The identity people at your institution will be able to provide you with this metadata and they will very likely ask for a list of attributes that the Dataverse Software requires, which are listed at :ref:`shibboleth-attributes`.
 
 Identity Federation
 ^^^^^^^^^^^^^^^^^^^
@@ -197,11 +197,11 @@ See also https://www.incommon.org/federation/attributesummary.html and https://w
 attribute-map.xml
 ~~~~~~~~~~~~~~~~~
 
-By default, some attributes ``/etc/shibboleth/attribute-map.xml`` are commented out and "subject-id" is used instead of "eppn". We recommend downloading and using :download:`attribute-map.xml<../_static/installation/files/etc/shibboleth/attribute-map.xml>` instead which has these changes and should be compatible with Dataverse.
+By default, some attributes ``/etc/shibboleth/attribute-map.xml`` are commented out and "subject-id" is used instead of "eppn". We recommend downloading and using :download:`attribute-map.xml<../_static/installation/files/etc/shibboleth/attribute-map.xml>` instead which has these changes and should be compatible with the Dataverse installation.
 
 Shibboleth and ADFS
 ~~~~~~~~~~~~~~~~~~~
-With appropriate configuration, Dataverse and Shibboleth can make use of "single sign on" using Active Directory.
+With appropriate configuration, your Dataverse installation and Shibboleth can make use of "single sign on" using Active Directory.
 This requires configuring ``shibd`` and ``httpd`` to load appropriate libraries, and insuring that the attribute mapping matches those provided.
 Example configuration files for :download:`shibboleth2.xml <../_static/installation/files/etc/shibboleth/shibboleth2_adfs.xml>` and :download:`attribute-map.xml <../_static/installation/files/etc/shibboleth/attribute-map_adfs.xml>` may be helpful.
 Note that your ADFS server hostname goes in the file referenced under "MetadataProvider" in your shibboleth2.xml file.
@@ -299,21 +299,21 @@ As a sanity check, visit the following URLs (substituting your hostname) to make
 
 The JSON in ``DiscoFeed`` comes from the list of IdPs you configured in the ``MetadataProvider`` section of ``shibboleth2.xml`` and will form a dropdown list on the Login Page.
 
-Add the Shibboleth Authentication Provider to Dataverse
--------------------------------------------------------
+Add the Shibboleth Authentication Provider to Your Dataverse Installation
+-------------------------------------------------------------------------
 
-Now that you've configured your app server, Apache, and ``shibd``, you are ready to turn your attention back to Dataverse to enable Shibboleth as an "authentication provider." You will be using ``curl`` to POST the `following JSON file <../_static/installation/files/etc/shibboleth/shibAuthProvider.json>`_ to the ``authenticationProviders`` endpoint of the :doc:`/api/native-api`.
+Now that you've configured your app server, Apache, and ``shibd``, you are ready to turn your attention back to the Dataverse installation to enable Shibboleth as an "authentication provider." You will be using ``curl`` to POST the `following JSON file <../_static/installation/files/etc/shibboleth/shibAuthProvider.json>`_ to the ``authenticationProviders`` endpoint of the :doc:`/api/native-api`.
 
 .. literalinclude:: ../_static/installation/files/etc/shibboleth/shibAuthProvider.json
    :language: json
 
 ``curl -X POST -H 'Content-type: application/json' --upload-file shibAuthProvider.json http://localhost:8080/api/admin/authenticationProviders``
 
-Now that you've added the Shibboleth authentication provider to Dataverse, as described in the :doc:`/user/account` section of the User Guide, you should see a new "Your Institution" button under "Other Log In Options" on the Log In page. After clicking "Your Institution", you should see the institutions you configured in ``/etc/shibboleth/shibboleth2.xml`` above. If not, double check the content of the ``DiscoFeed`` URL above. If you don't see the "Your Institution" button, confirm that the the "shib" authentication provider has been added by listing all the authentication providers Dataverse knows about:
+Now that you've added the Shibboleth authentication provider to your Dataverse installation, as described in the :doc:`/user/account` section of the User Guide, you should see a new "Your Institution" button under "Other Log In Options" on the Log In page. After clicking "Your Institution", you should see the institutions you configured in ``/etc/shibboleth/shibboleth2.xml`` above. If not, double check the content of the ``DiscoFeed`` URL above. If you don't see the "Your Institution" button, confirm that the the "shib" authentication provider has been added by listing all the authentication providers the Dataverse installation knows about:
 
 ``curl http://localhost:8080/api/admin/authenticationProviders``
 
-Once you have confirmed that the Dataverse web interface is listing the institutions you expect, you'll want to temporarily remove the Shibboleth authentication provider you just added because users won't be able to log in via their institution until you have exchanged metadata with one or more Identity Providers (IdPs), which is described below.  As explained in the section of the :doc:`/api/native-api` of the API Guide, you can delete an authentication provider by passing its ``id``:
+Once you have confirmed that the Dataverse installation's web interface is listing the institutions you expect, you'll want to temporarily remove the Shibboleth authentication provider you just added because users won't be able to log in via their institution until you have exchanged metadata with one or more Identity Providers (IdPs), which is described below.  As explained in the section of the :doc:`/api/native-api` of the API Guide, you can delete an authentication provider by passing its ``id``:
 
 ``curl -X DELETE http://localhost:8080/api/admin/authenticationProviders/shib``
 
@@ -322,7 +322,7 @@ Before contacting your actual Identity Provider, we recommend testing first with
 Exchange Metadata with Your Identity Provider
 ---------------------------------------------
 
-https://samltest.id (SAMLtest) is a fantastic resource for testing Shibboleth configurations. Depending on your relationship with your identity people you may want to avoid bothering them until you have tested your Dataverse configuration with the SAMLtest Identity Provider (IdP). This process is explained below.
+https://samltest.id (SAMLtest) is a fantastic resource for testing Shibboleth configurations. Depending on your relationship with your identity people you may want to avoid bothering them until you have tested your Dataverse installation configuration with the SAMLtest Identity Provider (IdP). This process is explained below.
 
 If you've temporarily configured your ``MetadataProvider`` to use the SAMLtest Identity Provider (IdP) as outlined above, you can download your metadata like this (substituting your hostname in both places):
 
@@ -330,7 +330,7 @@ If you've temporarily configured your ``MetadataProvider`` to use the SAMLtest I
 
 Then upload your metadata to https://samltest.id/upload.php (or click "Fetch").
 
-Then try to log in to Dataverse using the SAMLtest IdP. After logging in, you can visit the https://dataverse.example.edu/Shibboleth.sso/Session (substituting your hostname) to troubleshoot which attributes are being received. You should see something like the following:
+Then try to log in to your Dataverse installation using the SAMLtest IdP. After logging in, you can visit the https://dataverse.example.edu/Shibboleth.sso/Session (substituting your hostname) to troubleshoot which attributes are being received. You should see something like the following:
 
 .. code-block:: none
 
@@ -362,8 +362,8 @@ If your Dataverse installation is working with SAMLtest it **should** work with 
 
 - Send your identity people your metadata file above (or a link to download it themselves). From their perspective you are a Service Provider (SP).
 - Ask your identity people to send you the metadata for the Identity Provider (IdP) they operate. See the section above on ``shibboleth2.xml`` and ``MetadataProvider`` for what to do with the IdP metadata. Restart ``shibd`` and ``httpd`` as necessary.
-- Re-add Shibboleth as an authentication provider to Dataverse as described above.
-- Test login to Dataverse via your institution's Identity Provider (IdP).
+- Re-add Shibboleth as an authentication provider to your Dataverse installation as described above.
+- Test login to your Dataverse installation via your institution's Identity Provider (IdP).
 
 Backup sp-cert.pem and sp-key.pem Files
 ---------------------------------------
@@ -411,9 +411,9 @@ Converting Shibboleth Users to Local
 
 Whereas users convert their own accounts from local to Shibboleth as described above, conversion in the opposite direction is performed by a sysadmin. A common scenario may be as follows:
 
-- A user emails Support saying, "I left the university (or wherever) and can't log in to Dataverse anymore. What should I do?"
-- Support replies asking the user for a new email address (Gmail, new institution email, etc.) to associate with their Dataverse account.
-- The user replies with a new email address to associate with their Dataverse account.
+- A user emails Support saying, "I left the university (or wherever) and can't log in to the Dataverse installation anymore. What should I do?"
+- Support replies asking the user for a new email address (Gmail, new institution email, etc.) to associate with their Dataverse installation account.
+- The user replies with a new email address to associate with their Dataverse installation account.
 - Support runs the curl command below, supplying the database id of the user to convert and the new email address and notes the username returned.
 - Support emails the user and indicates that that they should use the password reset feature to set a new password and to make sure to take note of their username under Account Information (or the password reset confirmation email) since the user never had a username before.
 - The user resets password and is able to log in with their local account. All permissions have been preserved with the exception of any permissions assigned to an institution-wide Shibboleth group to which the user formerly belonged.
@@ -431,7 +431,7 @@ Per above, you now need to tell the user to use the password reset feature to se
 Institution-Wide Shibboleth Groups
 ----------------------------------
 
-Dataverse allows you to optionally define "institution-wide Shibboleth groups" based on the the entityID of the Identity Provider (IdP) used to authenticate. For example, an "institution-wide Shibboleth group" with ``https://samltest.id/saml/idp`` as the IdP would include everyone who logs in via the SAMLtest IdP mentioned above.
+The Dataverse Software allows you to optionally define "institution-wide Shibboleth groups" based on the the entityID of the Identity Provider (IdP) used to authenticate. For example, an "institution-wide Shibboleth group" with ``https://samltest.id/saml/idp`` as the IdP would include everyone who logs in via the SAMLtest IdP mentioned above.
 
 To create an institution-wide Shibboleth groups, create a JSON file like :download:`shibGroupSAMLtest.json<../_static/installation/files/etc/shibboleth/shibGroupSAMLtest.json>` as below and issue this curl command:
 
