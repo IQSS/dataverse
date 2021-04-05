@@ -1,21 +1,32 @@
 package edu.harvard.iq.dataverse.branding;
 
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 import javax.mail.internet.InternetAddress;
 
 public class BrandingUtil {
 
+    private static final Logger logger = Logger.getLogger(BrandingUtil.class.getCanonicalName());
+    
     private static DataverseServiceBean dataverseService;
-    
+    private static SettingsServiceBean settingsService;
+
     public static String getInstallationBrandName() {
-        //ToDo #7387 which will make this call return something different than getRootDataverseCollectionName() 
-        return dataverseService.getRootDataverseName();
+        
+        String brandName = settingsService.getValueForKey(SettingsServiceBean.Key.InstallationName);
+        //Separate if statement simplifies test setup, otherwise could use the getValueForKey method with a default param
+        if(brandName==null) {
+            brandName = dataverseService.getRootDataverseName();
+        }
+        return brandName;
     }
-    
-    //Convenience to access root name without injecting dataverseService (e.g. in DatasetVersion)
+
+    // Convenience to access root name without injecting dataverseService (e.g. in
+    // DatasetVersion)
     public static String getRootDataverseCollectionName() {
         return dataverseService.getRootDataverseName();
     }
@@ -46,7 +57,8 @@ public class BrandingUtil {
         return BundleUtil.getStringFromBundle("contact.header", Arrays.asList(getSupportTeamName(systemAddress)));
     }
 
-    public static void injectDataverseService(DataverseServiceBean dataverseService) {
-        BrandingUtil.dataverseService = dataverseService;
+    public static void injectServices(DataverseServiceBean dataverseSvc, SettingsServiceBean settingsSvc) {
+        dataverseService = dataverseSvc;
+        settingsService = settingsSvc;
     }
 }

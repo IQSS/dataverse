@@ -86,8 +86,7 @@ import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.MergeInAccountCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.ChangeUserIdentifierCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeactivateUserCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -383,9 +382,40 @@ public class Admin extends AbstractApiBean {
         return ok("AuthenticatedUser " + au.getIdentifier() + " deleted. ");
 
     }  
-    
 
-        
+    @POST
+    @Path("authenticatedUsers/{identifier}/deactivate")
+    public Response deactivateAuthenticatedUser(@PathParam("identifier") String identifier) {
+        AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
+        if (user != null) {
+            return deactivateAuthenticatedUser(user);
+        }
+        return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
+    }
+
+    @POST
+    @Path("authenticatedUsers/id/{id}/deactivate")
+    public Response deactivateAuthenticatedUserById(@PathParam("id") Long id) {
+        AuthenticatedUser user = authSvc.findByID(id);
+        if (user != null) {
+            return deactivateAuthenticatedUser(user);
+        }
+        return error(Response.Status.BAD_REQUEST, "User " + id + " not found.");
+    }
+
+    private Response deactivateAuthenticatedUser(AuthenticatedUser userToDisable) {
+        AuthenticatedUser superuser = authSvc.getAdminUser();
+        if (superuser == null) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Cannot find superuser to execute DeactivateUserCommand.");
+        }
+        try {
+            execCommand(new DeactivateUserCommand(createDataverseRequest(superuser), userToDisable));
+            return ok("User " + userToDisable.getIdentifier() + " deactivated.");
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
 	@POST
 	@Path("publishDataverseAsCreator/{id}")
 	public Response publishDataverseAsCreator(@PathParam("id") long id) {
@@ -659,6 +689,10 @@ public class Admin extends AbstractApiBean {
 			boolean knowsExistingPassword = false;
 			BuiltinUser oldBuiltInUser = builtinUserService.findByUserName(builtInUserToConvert.getUserIdentifier());
 			if (oldBuiltInUser != null) {
+                                if (builtInUserToConvert.isDeactivated()) {
+                                        problems.add("builtin account has been deactivated");
+                                        return error(Status.BAD_REQUEST, problems.build().toString());
+                                }
 				String usernameOfBuiltinAccountToConvert = oldBuiltInUser.getUserName();
 				response.add("old username", usernameOfBuiltinAccountToConvert);
 				AuthenticatedUser authenticatedUser = authSvc.canLogInAsBuiltinUser(usernameOfBuiltinAccountToConvert,
@@ -911,6 +945,9 @@ public class Admin extends AbstractApiBean {
 				.setInfo(identifier);
 		try {
 			AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
+                        if (user.isDeactivated()) {
+                            return error(Status.BAD_REQUEST, "You cannot make a deactivated user a superuser.");
+                        }
 
 			user.setSuperuser(!user.isSuperuser());
 
@@ -1699,7 +1736,7 @@ public class Admin extends AbstractApiBean {
 			// DataverseRequest and is sent to the back-end command where it is used to get
 			// the API Token which is then used to retrieve files (e.g. via S3 direct
 			// downloads) to create the Bag
-            session.setUser(au);
+            session.setUser(au); // TODO: Stop using session. Use createDataverseRequest instead.
             Dataset ds = findDatasetOrDie(dsid);
 
             DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);

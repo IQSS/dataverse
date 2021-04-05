@@ -173,6 +173,14 @@ public class DataverseServiceBean implements java.io.Serializable {
         
     }
 
+    public List<Dataverse> findByCreatorId(Long creatorId) {
+        return em.createNamedQuery("Dataverse.findByCreatorId").setParameter("creatorId", creatorId).getResultList();
+    }
+
+    public List<Dataverse> findByReleaseUserId(Long releaseUserId) {
+        return em.createNamedQuery("Dataverse.findByReleaseUserId").setParameter("releaseUserId", releaseUserId).getResultList();
+    }
+
     public List<Dataverse> findByOwnerId(Long ownerId) {
         return em.createNamedQuery("Dataverse.findByOwnerId").setParameter("ownerId", ownerId).getResultList();
     }
