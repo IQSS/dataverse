@@ -97,7 +97,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             // For admins, an override of the external validation step may be enabled: 
             if (!(getUser().isSuperuser() && ctxt.systemConfig().isExternalValidationAdminOverrideEnabled())) {
                 String executable = ctxt.systemConfig().getDatasetValidationExecutable();
-                boolean result = validateDatasetMetadataExternally(theDataset, executable);
+                boolean result = validateDatasetMetadataExternally(theDataset, executable, getRequest());
             
                 if (!result) {
                     String rejectionMessage = ctxt.systemConfig().getDatasetValidationFailureMsg();
