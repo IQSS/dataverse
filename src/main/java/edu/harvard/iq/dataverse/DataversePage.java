@@ -705,9 +705,8 @@ public class DataversePage implements java.io.Serializable {
             String failureMessage = e.getMessage() == null 
                         ? errMsg
                         : e.getMessage();
-            //JsfHelper.addErrorMessage(failureMessage);
+            JsfHelper.addErrorMessage(failureMessage);
             
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, failureMessage);
             return null;
         }
     }
