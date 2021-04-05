@@ -225,32 +225,20 @@
     <ui:fragment rendered="#{not empty auxiliaryFileServiceBean.findAuxiliaryFiles(fileMetadata.dataFile)}">
         <!-- Download Auxiliary Files -->
         <li class="dropdown-header">#{bundle['file.auxfiles.download.header']} <span class="glyphicon glyphicon-download-alt"/></li>
-        <!--Differentially Private Statistics-->
-        <li class="dropdown-submenu pull-left" jsf:rendered="#{not empty auxiliaryFileServiceBean.findAuxiliaryFilesStartingWith(fileMetadata.dataFile, 'dp')}">
-            <a tabindex="-1" href="javascript:void(0);">#{bundle['file.auxfiles.types.differentiallyPrivateStatistics']}</a>
-            <ul class="dropdown-menu">
-                <ui:repeat var="auxFile" value="#{auxiliaryFileServiceBean.findAuxiliaryFilesStartingWith(fileMetadata.dataFile, 'dp')}">
-                    <li>
-                        <p:commandLink styleClass="btn-download" action="#{fileDownloadService.redirectToAuxFileDownloadAPI(fileMetadata.dataFile.id, auxFile.formatTag, auxFile.formatVersion)}">
-                            <h:outputText value="#{auxFile.formatTag} (#{auxFile.formatVersion})"/>
-                        </p:commandLink>
-                    </li>
-                </ui:repeat>
-            </ul>
-        </li>
-        <!--Other aux files (not Differentially Private Statistics)-->
-        <li class="dropdown-submenu pull-left" jsf:rendered="#{not empty auxiliaryFileServiceBean.findAuxiliaryFilesNotStartingWith(fileMetadata.dataFile, 'dp')}">
-            <a tabindex="-1" href="javascript:void(0);">#{bundle['file.auxfiles.types.other']}</a>
-            <ul class="dropdown-menu">
-                <ui:repeat var="auxFile" value="#{auxiliaryFileServiceBean.findAuxiliaryFilesNotStartingWith(fileMetadata.dataFile, 'dp')}">
-                    <li>
-                        <p:commandLink styleClass="btn-download" action="#{fileDownloadService.redirectToAuxFileDownloadAPI(fileMetadata.dataFile.id, auxFile.formatTag, auxFile.formatVersion)}">
-                            <h:outputText value="#{auxFile.formatTag} (#{auxFile.formatVersion})"/>
-                        </p:commandLink>
-                    </li>
-                </ui:repeat>
-            </ul>
-        </li>
+        <ui:repeat var="auxFileType" value="#{auxiliaryFileServiceBean.findAuxiliaryFileTypes(fileMetadata.dataFile)}">
+            <li class="dropdown-submenu pull-left">
+                <a tabindex="-1" href="javascript:void(0);">#{auxiliaryFileServiceBean.getFriendlyNameForType(auxFileType)}</a>
+                <ul class="dropdown-menu">
+                    <ui:repeat var="auxFile" value="#{auxiliaryFileServiceBean.findAuxiliaryFilesByType(fileMetadata.dataFile, auxFileType)}">
+                        <li>
+                            <p:commandLink styleClass="btn-download" action="#{fileDownloadService.redirectToAuxFileDownloadAPI(fileMetadata.dataFile.id, auxFile.formatTag, auxFile.formatVersion)}">
+                                <h:outputText value="#{auxFile.formatTag} (#{auxFile.formatVersion})"/>
+                            </p:commandLink>
+                        </li>
+                    </ui:repeat>
+                </ul>
+            </li>
+        </ui:repeat>
         <!-- UI HACK FIX SUBMENU PULL-FLOAT FIX -->
         <li role="presentation" class="clearfix"></li>
     </ui:fragment>

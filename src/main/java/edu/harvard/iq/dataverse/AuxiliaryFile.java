@@ -1,8 +1,12 @@
 
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.Serializable;
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -43,6 +47,29 @@ public class AuxiliaryFile implements Serializable {
     private Long fileSize; 
     
     private String checksum;
+
+    /**
+     * A way of grouping similar auxiliary files together. The type could be
+     * "DP" for "Differentially Private Statistics", for example.
+     */
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Type type;
+
+    public enum Type {
+        // Differentially Private Statistics
+        DP,
+        // Future Type 1
+        //
+        // Future Type 2
+        //
+        // Catch-all for any not enumerated above
+        OTHER;
+
+        public String toStringFriendly() {
+            return BundleUtil.getStringFromBundle("file.auxfiles.types." + this.name());
+        }
+    }
 
     public Long getId() {
         return id;
@@ -115,6 +142,25 @@ public class AuxiliaryFile implements Serializable {
     public void setChecksum(String checksum) {
         this.checksum = checksum;
     }
-    
-    
+
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    /**
+     * @return "Differentially Private Statistics" (or the equivalent in French,
+     * etc.) rather than "DP" or null if this.type is null.
+     */
+    public String getTypeFriendly() {
+        if (this.type == null) {
+            return null;
+        } else {
+            return this.type.toStringFriendly();
+        }
+    }
+
 }

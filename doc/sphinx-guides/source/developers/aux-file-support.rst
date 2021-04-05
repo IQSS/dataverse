@@ -5,7 +5,7 @@ Auxiliary file support is experimental. Auxiliary files in the Dataverse Softwar
 
 Adding an Auxiliary File to a Datafile
 --------------------------------------
-To add an auxiliary file, specify the primary key of the datafile (FILE_ID), and the formatTag and formatVersion (if applicable) associated with the auxiliary file. There are two form parameters. "Origin" specifies the application/entity that created the auxiliary file, an "isPublic" controls access to downloading the file. If "isPublic" is true, any user can download the file, else, access authorization is based on the access rules as defined for the DataFile itself.
+To add an auxiliary file, specify the primary key of the datafile (FILE_ID), and the formatTag and formatVersion (if applicable) associated with the auxiliary file. There are multiple form parameters. "Origin" specifies the application/entity that created the auxiliary file, an "isPublic" controls access to downloading the file. If "isPublic" is true, any user can download the file, else, access authorization is based on the access rules as defined for the DataFile itself. The "type" parameter can be "DP" (for Differentially Private Statistics) or "OTHER" and the latter will be selected for you if don't specify a type.
 
 .. code-block:: bash
 
@@ -14,9 +14,10 @@ To add an auxiliary file, specify the primary key of the datafile (FILE_ID), and
   export FILE_ID='12345'
   export FORMAT_TAG='dpJson'
   export FORMAT_VERSION='v1'
+  export TYPE='DP'
   export SERVER_URL=https://demo.dataverse.org
  
-  curl -H X-Dataverse-key:$API_TOKEN -X POST -F "file=@$FILENAME" -F 'origin=myApp' -F 'isPublic=true' "$SERVER_URL/api/access/datafile/$FILE_ID/metadata/$FORMAT_TAG/$FORMAT_VERSION"
+  curl -H X-Dataverse-key:$API_TOKEN -X POST -F "file=@$FILENAME" -F 'origin=myApp' -F 'isPublic=true' -F "type=$TYPE" "$SERVER_URL/api/access/datafile/$FILE_ID/metadata/$FORMAT_TAG/$FORMAT_VERSION"
 
 You should expect a 200 ("OK") response and JSON with information about your newly uploaded auxiliary file.
 

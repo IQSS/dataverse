@@ -184,7 +184,7 @@ public class AccessIT {
         String formatTag = "dpJSON";
         String formatVersion = "v1";
 
-        Response uploadResponse = UtilIT.uploadAuxFile(tabFile3IdRestricted.longValue(), pathToFile, formatTag, formatVersion, mimeType, apiToken);
+        Response uploadResponse = UtilIT.uploadAuxFile(tabFile3IdRestricted.longValue(), pathToFile, formatTag, formatVersion, mimeType, true, null, apiToken);
         uploadResponse.prettyPrint();
         uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
 

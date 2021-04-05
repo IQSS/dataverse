@@ -116,6 +116,9 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import javax.ws.rs.core.StreamingOutput;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.net.URISyntaxException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.RedirectionException;
 import javax.ws.rs.core.MediaType;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
@@ -1153,6 +1156,7 @@ public class Access extends AbstractApiBean {
      * @param formatVersion
      * @param origin
      * @param isPublic
+     * @param type
      * @param fileInputStream
      * @param contentDispositionHeader
      * @param formDataBodyPart
@@ -1167,6 +1171,7 @@ public class Access extends AbstractApiBean {
             @PathParam("formatVersion") String formatVersion,
             @FormDataParam("origin") String origin,
             @FormDataParam("isPublic") boolean isPublic,
+            @FormDataParam("type") String type,
             @FormDataParam("file") InputStream fileInputStream
           
     ) {
@@ -1189,9 +1194,20 @@ public class Access extends AbstractApiBean {
         if (!dataFile.isTabularData()) {
             return error(BAD_REQUEST, "Not a tabular DataFile (db id=" + fileId + ")");
         }
-         
 
-        AuxiliaryFile saved = auxiliaryFileService.processAuxiliaryFile(fileInputStream, dataFile, formatTag, formatVersion, origin, isPublic);
+        // Initialize as the default type, OTHER.
+        AuxiliaryFile.Type typeFinal = AuxiliaryFile.Type.OTHER;
+        try {
+            typeFinal = AuxiliaryFile.Type.valueOf(type);
+        } catch (NullPointerException ex) {
+            // No type given. Set it to OTHER.
+            typeFinal = AuxiliaryFile.Type.OTHER;
+        } catch (IllegalArgumentException ex) {
+            // Invalid type (not in the enum). Tell the user the valid types.
+            return error(BAD_REQUEST, "Invalid type. Must be one of: " + Stream.of(AuxiliaryFile.Type.values()).map(String::valueOf).collect(Collectors.joining(", ")));
+        }
+
+        AuxiliaryFile saved = auxiliaryFileService.processAuxiliaryFile(fileInputStream, dataFile, formatTag, formatVersion, origin, isPublic, typeFinal);
       
         if (saved!=null) {
             return ok(json(saved));

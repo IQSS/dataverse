@@ -643,13 +643,15 @@ public class UtilIT {
         return requestSpecification.post("/api/datasets/" + datasetId + "/add");
     }
 
-    static Response uploadAuxFile(Long fileId, String pathToFile, String formatTag, String formatVersion, String mimeType, boolean isPublic, String apiToken) {
-        Response response = given()
+    static Response uploadAuxFile(Long fileId, String pathToFile, String formatTag, String formatVersion, String mimeType, boolean isPublic, String type, String apiToken) {
+        RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .multiPart("file", new File(pathToFile), mimeType)
-                .multiPart("isPublic", isPublic)
-                .post("/api/access/datafile/" + fileId + "/metadata/" + formatTag + "/" + formatVersion);
-        return response;
+                .multiPart("isPublic", isPublic);
+        if (type != null) {
+            requestSpecification.multiPart("type", type);
+        }
+        return requestSpecification.post("/api/access/datafile/" + fileId + "/metadata/" + formatTag + "/" + formatVersion);
     }
 
     static Response downloadAuxFile(Long fileId, String formatTag, String formatVersion, String apiToken) {

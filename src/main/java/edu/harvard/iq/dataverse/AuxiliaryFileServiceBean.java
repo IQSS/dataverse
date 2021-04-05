@@ -56,9 +56,11 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
      * @param formatVersion - to distinguish between multiple versions of a file
      * @param origin - name of the tool/system that created the file
      * @param isPublic boolean - is this file available to any user?
+     * @param type how to group the files such as under "Differentially Private
+     * Statistics". Must not be null.
      * @return success boolean - returns whether the save was successful
      */
-    public AuxiliaryFile processAuxiliaryFile(InputStream fileInputStream, DataFile dataFile, String formatTag, String formatVersion, String origin, boolean isPublic) {
+    public AuxiliaryFile processAuxiliaryFile(InputStream fileInputStream, DataFile dataFile, String formatTag, String formatVersion, String origin, boolean isPublic, AuxiliaryFile.Type type) {
     
         StorageIO<DataFile> storageIO =null;
         AuxiliaryFile auxFile = new AuxiliaryFile();
@@ -83,6 +85,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             auxFile.setFormatVersion(formatVersion);
             auxFile.setOrigin(origin);
             auxFile.setIsPublic(isPublic);
+            auxFile.setType(type);
             auxFile.setDataFile(dataFile);         
             auxFile.setFileSize(storageIO.getAuxObjectSize(auxExtension));
             auxFile = save(auxFile);
@@ -122,18 +125,26 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
         return query.getResultList();
     }
 
-    public List<AuxiliaryFile> findAuxiliaryFilesStartingWith(DataFile dataFile, String tagPrefix) {
-        TypedQuery query = em.createQuery("select object(o) from AuxiliaryFile as o where o.dataFile.id = :dataFileId and o.formatTag like CONCAT(:tagPrefix,'%')", AuxiliaryFile.class);
-        query.setParameter("dataFileId", dataFile.getId());
-        query.setParameter("tagPrefix", tagPrefix);
+    public List<String> findAuxiliaryFileTypes(DataFile dataFile) {
+        Query query = em.createNativeQuery("select distinct type from auxiliaryfile where datafile_id = ?1");
+        query.setParameter(1, dataFile.getId());
         return query.getResultList();
     }
 
-    public List<AuxiliaryFile> findAuxiliaryFilesNotStartingWith(DataFile dataFile, String tagPrefix) {
-        TypedQuery query = em.createQuery("select object(o) from AuxiliaryFile as o where o.dataFile.id = :dataFileId and o.formatTag not like CONCAT(:tagPrefix,'%')", AuxiliaryFile.class);
+    public List<AuxiliaryFile> findAuxiliaryFilesByType(DataFile dataFile, String typeString) {
+        TypedQuery query = em.createQuery("select object(o) from AuxiliaryFile as o where o.dataFile.id = :dataFileId and o.type like :type", AuxiliaryFile.class);
         query.setParameter("dataFileId", dataFile.getId());
-        query.setParameter("tagPrefix", tagPrefix);
+        query.setParameter("type", typeString);
         return query.getResultList();
+    }
+
+    public String getFriendlyNameForType(String typeIn) {
+        try {
+            AuxiliaryFile.Type type = AuxiliaryFile.Type.valueOf(typeIn);
+            return type.toStringFriendly();
+        } catch (NullPointerException | IllegalArgumentException ex) {
+            return null;
+        }
     }
 
 }
