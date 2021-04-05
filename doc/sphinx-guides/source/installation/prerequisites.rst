@@ -229,6 +229,27 @@ Securing Solr
 
 Our sample init script and systemd service file linked above tell Solr to only listen on localhost (127.0.0.1). We strongly recommend that you also use a firewall to block access to the Solr port (8983) from outside networks, for added redundancy.
 
+
+To start Solr Apache in external use mode, you must access the Solr example directory:
+
+# cd /usr/local/solr-7.7.2/bin/
+
+# ./solr start -j "-Djetty.host = DNS” -force
+
+Right after that you should use the iptables blocking rule
+
+# iptables -A INPUT -s ip address / 32 -p tcp -m tcp --dport 8983 -j ACCEPT
+
+# iptables -A INPUT -p tcp -m tcp --dport 8983 -j DROP
+
+As a result, your application will reject Solr's external access, assuring connections only through Dataverse.
+
+If you want to upload Solr Apache without a GUI prompt, use it as follows:
+
+# ./solr start -j "-Djetty.host = hostaname" -noprompt
+
+With that application will work on localhost without access to GUI.
+
 It is **very important** not to allow direct access to the Solr API from outside networks! Otherwise, any host that can reach the Solr port (8983 by default) can add or delete data, search unpublished data, and even reconfigure Solr. For more information, please see https://lucene.apache.org/solr/guide/7_3/securing-solr.html. A particularly serious security issue that has been identified recently allows a potential intruder to remotely execute arbitrary code on the system. See `RCE in Solr via Velocity Template <https://github.com/veracode-research/solr-injection#7-cve-2019-xxxx-rce-via-velocity-template-by-_s00py>`_ for more information.
 
 If you're running your Dataverse installation across multiple service hosts you'll want to remove the jetty.host argument (``-j jetty.host=127.0.0.1``) from the startup command line, but make sure Solr is behind a firewall and only accessible by the Dataverse installation host(s), by specific ip address(es).
