@@ -565,6 +565,7 @@ public class JsonPrinter {
                 .add("origin", auxFile.getOrigin()) 
                 .add("isPublic", auxFile.getIsPublic())
                 .add("type", auxFile.getTypeFriendly())
+                .add("contentType", auxFile.getContentType())
                 .add("fileSize", auxFile.getFileSize())
                 .add("checksum", auxFile.getChecksum())
                 .add("dataFile", JsonPrinter.json(auxFile.getDataFile()));

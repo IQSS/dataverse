@@ -12,6 +12,7 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.hamcrest.Matchers;
+import org.junit.Assert;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -79,7 +80,9 @@ public class AuxiliaryFilesIT {
         uploadAuxFileJson.prettyPrint();
         uploadAuxFileJson.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.type", equalTo("Differentially Private Statistics"));
+                .body("data.type", equalTo("Differentially Private Statistics"))
+                // FIXME: application/json would be better
+                .body("data.contentType", equalTo("text/plain"));
 
         // XML aux file
         Path pathToAuxFileXml = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.xml");
@@ -90,18 +93,57 @@ public class AuxiliaryFilesIT {
         String mimeTypeXml = "application/xml";
         Response uploadAuxFileXml = UtilIT.uploadAuxFile(fileId, pathToAuxFileXml.toString(), formatTagXml, formatVersionXml, mimeTypeXml, true, dpType, apiToken);
         uploadAuxFileXml.prettyPrint();
-        uploadAuxFileXml.then().assertThat().statusCode(OK.getStatusCode());
+        uploadAuxFileXml.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                // FIXME: application/xml would be better
+                .body("data.contentType", equalTo("text/plain"));
 
         // PDF aux file
         Path pathToAuxFilePdf = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.pdf");
-        String contentOfPdf = "";
+        // PDF content from https://stackoverflow.com/questions/17279712/what-is-the-smallest-possible-valid-pdf/32142316#32142316
+        String contentOfPdf = "%PDF-1.2 \n"
+                + "9 0 obj\n"
+                + "<<\n"
+                + ">>\n"
+                + "stream\n"
+                + "BT/ 9 Tf(Test)' ET\n"
+                + "endstream\n"
+                + "endobj\n"
+                + "4 0 obj\n"
+                + "<<\n"
+                + "/Type /Page\n"
+                + "/Parent 5 0 R\n"
+                + "/Contents 9 0 R\n"
+                + ">>\n"
+                + "endobj\n"
+                + "5 0 obj\n"
+                + "<<\n"
+                + "/Kids [4 0 R ]\n"
+                + "/Count 1\n"
+                + "/Type /Pages\n"
+                + "/MediaBox [ 0 0 99 9 ]\n"
+                + ">>\n"
+                + "endobj\n"
+                + "3 0 obj\n"
+                + "<<\n"
+                + "/Pages 5 0 R\n"
+                + "/Type /Catalog\n"
+                + ">>\n"
+                + "endobj\n"
+                + "trailer\n"
+                + "<<\n"
+                + "/Root 3 0 R\n"
+                + ">>\n"
+                + "%%EOF";
         java.nio.file.Files.write(pathToAuxFilePdf, contentOfPdf.getBytes());
         String formatTagPdf = "dpPdf";
         String formatVersionPdf = "0.1";
-        String mimeTypePdf = "application/xml";
+        String mimeTypePdf = "application/pdf";
         Response uploadAuxFilePdf = UtilIT.uploadAuxFile(fileId, pathToAuxFilePdf.toString(), formatTagPdf, formatVersionPdf, mimeTypePdf, true, dpType, apiToken);
         uploadAuxFilePdf.prettyPrint();
-        uploadAuxFilePdf.then().assertThat().statusCode(OK.getStatusCode());
+        uploadAuxFilePdf.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.contentType", equalTo(mimeTypePdf));
 
         // Non-DP file file, no type specified
         Path pathToAuxFileMd = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "README.md");
@@ -114,7 +156,8 @@ public class AuxiliaryFilesIT {
         uploadAuxFileMd.prettyPrint();
         uploadAuxFileMd.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.type", equalTo("Other Auxiliary Files"));
+                .body("data.type", equalTo("Other Auxiliary Files"))
+                .body("data.contentType", equalTo("text/plain"));
 
         // Invalid type
         Path pathToAuxFileTxt = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "foo.txt");
@@ -130,9 +173,27 @@ public class AuxiliaryFilesIT {
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", Matchers.startsWith("Invalid type"));
 
-        // Test download of one of the aux files.
+        // Download JSON aux file.
         Response downloadAuxFileJson = UtilIT.downloadAuxFile(fileId, formatTagJson, formatVersionJson, apiToken);
         downloadAuxFileJson.then().assertThat().statusCode(OK.getStatusCode());
+        // FIXME: This should be ".json" instead of ".txt"
+        Assert.assertEquals("attachment; filename=\"data.tab.dpJson_0.1.txt\"", downloadAuxFileJson.header("Content-disposition"));
+
+        // Download XML aux file.
+        Response downloadAuxFileXml = UtilIT.downloadAuxFile(fileId, formatTagXml, formatVersionXml, apiToken);
+        downloadAuxFileXml.then().assertThat().statusCode(OK.getStatusCode());
+        // FIXME: This should be ".xml" instead of ".txt"
+        Assert.assertEquals("attachment; filename=\"data.tab.dpXml_0.1.txt\"", downloadAuxFileXml.header("Content-disposition"));
+
+        // Download PDF aux file.
+        Response downloadAuxFilePdf = UtilIT.downloadAuxFile(fileId, formatTagPdf, formatVersionPdf, apiToken);
+        downloadAuxFilePdf.then().assertThat().statusCode(OK.getStatusCode());
+        Assert.assertEquals("attachment; filename=\"data.tab.dpPdf_0.1.pdf\"", downloadAuxFilePdf.header("Content-disposition"));
+
+        // Download Markdown aux file.
+        Response downloadAuxFileMd = UtilIT.downloadAuxFile(fileId, formatTagMd, formatVersionMd, apiToken);
+        downloadAuxFileMd.then().assertThat().statusCode(OK.getStatusCode());
+        Assert.assertEquals("attachment; filename=\"data.tab.README_0.1.txt\"", downloadAuxFileMd.header("Content-disposition"));
 
     }
 }

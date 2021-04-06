@@ -42,6 +42,9 @@ import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.RedirectionException;
 import javax.ws.rs.ServiceUnavailableException;
+import org.apache.tika.mime.MimeType;
+import org.apache.tika.mime.MimeTypeException;
+import org.apache.tika.mime.MimeTypes;
 
 /**
  *
@@ -238,7 +241,18 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     }
                     long auxFileSize = di.getAuxiliaryFile().getFileSize();
                     InputStreamIO auxStreamIO = new InputStreamIO(storageIO.getAuxFileAsInputStream(auxTag), auxFileSize);
-                    auxStreamIO.setFileName(storageIO.getFileName() + "." + auxTag);
+                    String fileExtension = "";
+                    String contentType = di.getAuxiliaryFile().getContentType();
+                    if (contentType != null) {
+                        MimeTypes allTypes = MimeTypes.getDefaultMimeTypes();
+                        MimeType mimeType = null;
+                        try {
+                            mimeType = allTypes.forName(contentType);
+                            fileExtension = mimeType.getExtension();
+                        } catch (MimeTypeException ex) {
+                        }
+                    }
+                    auxStreamIO.setFileName(storageIO.getFileName() + "." + auxTag + fileExtension);
                     auxStreamIO.setMimeType(di.getAuxiliaryFile().getContentType());
                     storageIO = auxStreamIO;
                     
