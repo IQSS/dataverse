@@ -88,6 +88,7 @@ import javax.inject.Inject;
 import javax.json.Json;
 import java.net.URI;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.TypedQuery;
 
 import javax.ws.rs.GET;
@@ -122,6 +123,8 @@ import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+
+import com.google.gson.JsonObject;
 
 /*
     Custom API exceptions [NOT YET IMPLEMENTED]
@@ -533,6 +536,48 @@ public class Access extends AbstractApiBean {
         return retValue; 
     }
     
+    
+    /*
+     * GET method for retrieving various auxiliary files associated with 
+     * a tabular datafile.
+     */
+    
+    @Path("datafile/{fileId}/metadata/aux")
+    @GET
+    public Response listDatafileMetadataAux(@PathParam("fileId") String fileId,
+            @PathParam("origin") String origin,
+            @QueryParam("key") String apiToken,
+            @Context UriInfo uriInfo,
+            @Context HttpHeaders headers,
+            @Context HttpServletResponse response) throws ServiceUnavailableException {
+
+        DataFile df = findDataFileOrDieWrapper(fileId);
+
+        if (apiToken == null || apiToken.equals("")) {
+            apiToken = headers.getHeaderString(API_KEY_HEADER);
+        }
+
+        List<AuxiliaryFile> auxFileList = auxiliaryFileService.listAuxiliaryFiles(df, origin);
+
+        if (auxFileList == null || auxFileList.isEmpty()) {
+            throw new NotFoundException("No Auxiliary files exist for datafile " + fileId + " and the specified origin");
+        }
+        boolean isAccessAllowed = isAccessAuthorized(df, apiToken);
+        JsonArrayBuilder jab = Json.createArrayBuilder();
+        auxFileList.forEach(auxFile -> {
+            if (isAccessAllowed || auxFile.getIsPublic()) {
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                job.add("formatTag", auxFile.getFormatTag());
+                job.add("formatVersion", auxFile.getFormatVersion());
+                job.add("fileSize", auxFile.getFileSize());
+                job.add("contentType", auxFile.getContentType());
+                job.add("isPublic", auxFile.getIsPublic());
+                jab.add(job);
+            }
+        });
+        return ok(jab);
+    }
+
     /*
      * GET method for retrieving various auxiliary files associated with 
      * a tabular datafile.

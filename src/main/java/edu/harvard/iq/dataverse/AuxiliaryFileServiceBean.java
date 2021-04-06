@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -123,6 +124,21 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
         query.setParameter("formatVersion", formatVersion);
         try {
             AuxiliaryFile retVal = (AuxiliaryFile)query.getSingleResult();
+            return retVal;
+        } catch(Exception ex) {
+            return null;
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<AuxiliaryFile> listAuxiliaryFiles(DataFile dataFile, String origin) {
+        
+        Query query = em.createQuery("select object(o) from AuxiliaryFile as o where o.dataFile.id = :dataFileId and o.origin = :origin");
+                
+        query.setParameter("dataFileId", dataFile.getId());
+        query.setParameter("origin", origin);
+        try {
+            List<AuxiliaryFile> retVal = (List<AuxiliaryFile>)query.getResultList();
             return retVal;
         } catch(Exception ex) {
             return null;
