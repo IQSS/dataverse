@@ -542,7 +542,7 @@ public class Access extends AbstractApiBean {
      * a tabular datafile.
      */
     
-    @Path("datafile/{fileId}/metadata/aux")
+    @Path("datafile/{fileId}/metadata/aux/{origin}")
     @GET
     public Response listDatafileMetadataAux(@PathParam("fileId") String fileId,
             @PathParam("origin") String origin,
