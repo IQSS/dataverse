@@ -57,8 +57,7 @@ The Metrics API includes several categories of endpoints that provide different 
 
     Return: A JSON Array or CSV file with an array of counts per month. Variants of this this category that provide a time series per object return that information in the same formats (JSON array, CSV) with one time-series column per item (see Return Formats below).
 
-* Tree - endpoints that describe the structure of the tree of published Dataverses, as of now or as of the end of a specified month. The monthly version could be used to show growth of the Dataverse instance over time, but the initial use case for these endpoints was to provide a means to list the tree in a selection widget to scope the metrics displayed in the local Dataverse metrics page in the `dataverse-metrics app <https://github.com/IQSS/dataverse-metrics>`_
-](http://github.com/IQSS/dataverse-metrics ).
+* Tree - endpoints that describe the structure of the tree of published Dataverses, as of now or as of the end of a specified month. The monthly version could be used to show growth of the Dataverse instance over time, but the initial use case for these endpoints was to provide a means to list the tree in a selection widget to scope the metrics displayed in the local Dataverse metrics page in the `dataverse-metrics app <https://github.com/IQSS/dataverse-metrics>`_.
 
     Form: GET https://$SERVER/api/info/metrics/tree
           GET https://$SERVER/api/info/metrics/tree/toMonth/$YYYY-DD
@@ -68,7 +67,7 @@ The Metrics API includes several categories of endpoints that provide different 
     Return: A nested JSON array containing JSON objects for each Dataverse collection with key/values for id, ownerId, alias, depth, and name, and a JSON array containing analogous objects for Dataverse collections within the current one.
 
 Return Formats
-----------------
+--------------
 
 There are a number of API calls that provide time series, information reported per item (e.g. per dataset, per file, by subject, by category, and by file Mimetype), or both (time series per item). Because these calls all report more than a single number, the API provides two optional formats for the return that can be selected by specifying an HTTP Accept Header for the desired format:
 
