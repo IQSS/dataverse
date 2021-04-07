@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.hamcrest.Matchers;
@@ -145,7 +146,7 @@ public class AuxiliaryFilesIT {
                 .statusCode(OK.getStatusCode())
                 .body("data.contentType", equalTo(mimeTypePdf));
 
-        // Non-DP file file, no type specified
+        // Non-DP aux file, no type specified
         Path pathToAuxFileMd = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "README.md");
         String contentOfMd = "This is my README.";
         java.nio.file.Files.write(pathToAuxFileMd, contentOfMd.getBytes());
@@ -173,6 +174,20 @@ public class AuxiliaryFilesIT {
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", Matchers.startsWith("Invalid type"));
 
+        // rst aux file with public=false
+        Path pathToAuxFileRst = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "nonpublic.rst");
+        String contentOfRst = "Nonpublic stuff in here..";
+        java.nio.file.Files.write(pathToAuxFileRst, contentOfRst.getBytes());
+        String formatTagRst = "nonPublic";
+        String formatVersionRst = "0.1";
+        String mimeTypeRst = "text/plain";
+        Response uploadAuxFileRst = UtilIT.uploadAuxFile(fileId, pathToAuxFileRst.toString(), formatTagRst, formatVersionRst, mimeTypeRst, false, null, apiToken);
+        uploadAuxFileRst.prettyPrint();
+        uploadAuxFileRst.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.type", equalTo("Other Auxiliary Files"))
+                .body("data.contentType", equalTo("text/plain"));
+
         // Download JSON aux file.
         Response downloadAuxFileJson = UtilIT.downloadAuxFile(fileId, formatTagJson, formatVersionJson, apiToken);
         downloadAuxFileJson.then().assertThat().statusCode(OK.getStatusCode());
@@ -194,6 +209,28 @@ public class AuxiliaryFilesIT {
         Response downloadAuxFileMd = UtilIT.downloadAuxFile(fileId, formatTagMd, formatVersionMd, apiToken);
         downloadAuxFileMd.then().assertThat().statusCode(OK.getStatusCode());
         Assert.assertEquals("attachment; filename=\"data.tab.README_0.1.txt\"", downloadAuxFileMd.header("Content-disposition"));
+
+        Response createUserNoPrivs = UtilIT.createRandomUser();
+        createUserNoPrivs.then().assertThat().statusCode(OK.getStatusCode());
+        String apiTokenNoPrivs = UtilIT.getApiTokenFromResponse(createUserNoPrivs);
+
+        // This fails because the dataset hasn't been published.
+        Response failToDownloadAuxFileJson = UtilIT.downloadAuxFile(fileId, formatTagJson, formatVersionJson, apiTokenNoPrivs);
+        failToDownloadAuxFileJson.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+
+        Response failToDownloadAuxFileRstBeforePublish = UtilIT.downloadAuxFile(fileId, formatTagRst, formatVersionRst, apiTokenNoPrivs);
+        failToDownloadAuxFileRstBeforePublish.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        // isPublic=false so publishing the dataset doesn't let a "no privs" account download the file.
+        Response failToDownloadAuxFileRstAfterPublish = UtilIT.downloadAuxFile(fileId, formatTagRst, formatVersionRst, apiTokenNoPrivs);
+        failToDownloadAuxFileRstAfterPublish.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+
+        Response creatorCanDownloadNonPublicAuxFile = UtilIT.downloadAuxFile(fileId, formatTagRst, formatVersionRst, apiToken);
+        creatorCanDownloadNonPublicAuxFile.then().assertThat().statusCode(OK.getStatusCode());
 
     }
 }

@@ -587,7 +587,13 @@ public class Access extends AbstractApiBean {
             }
             
             if (auxFile.getIsPublic()) {
-                publiclyAvailable = true;
+                // Require at least one published version for isPublic to be true.
+                for (FileMetadata fm : df.getFileMetadatas()) {
+                    if (fm.getDatasetVersion().isPublished()) {
+                        publiclyAvailable = true;
+                        break;
+                    }
+                }
             }
             downloadInstance = new DownloadInstance(dInfo);
             downloadInstance.setAuxiliaryFile(auxFile);

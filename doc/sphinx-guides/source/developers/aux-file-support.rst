@@ -5,7 +5,7 @@ Auxiliary file support is experimental. Auxiliary files in the Dataverse Softwar
 
 Adding an Auxiliary File to a Datafile
 --------------------------------------
-To add an auxiliary file, specify the primary key of the datafile (FILE_ID), and the formatTag and formatVersion (if applicable) associated with the auxiliary file. There are multiple form parameters. "Origin" specifies the application/entity that created the auxiliary file, an "isPublic" controls access to downloading the file. If "isPublic" is true, any user can download the file, else, access authorization is based on the access rules as defined for the DataFile itself. The "type" parameter can be "DP" (for Differentially Private Statistics) or "OTHER" and the latter will be selected for you if don't specify a type.
+To add an auxiliary file, specify the primary key of the datafile (FILE_ID), and the formatTag and formatVersion (if applicable) associated with the auxiliary file. There are multiple form parameters. "Origin" specifies the application/entity that created the auxiliary file, and "isPublic" controls access to downloading the file. If "isPublic" is true, any user can download the file if the dataset has been published, else, access authorization is based on the access rules as defined for the DataFile itself. The "type" parameter can be "DP" (for Differentially Private Statistics) or "OTHER" and the latter will be selected for you if don't specify a type.
 
 .. code-block:: bash
 
