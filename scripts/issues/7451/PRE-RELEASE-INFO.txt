@@ -15,17 +15,20 @@ database. You will need to edit the credentials at the top of the script
 to match your database configuration.
 
 The script will check your database for any duplicated storage
-identifiers that would violate the new constraint. It will resolve any
-such conflicts found in harvested files; but for any duplicated local
-files, it will not attempt to make any changes right away (this being
-an issue of data integrity with a potential to affect your users).
-The script would then instruct you to send the produced diagnostic
-information to support@dataverse.org so that we could assist you in
-resolving the issues in your database. If no inconsistencies are
-found, the script will report that the database is ready to be
-upgraded to the next release.
+identifiers that would violate the new constraint. 
 
-Please note that there's a very good chance that your database does
+For harvested files,  it will directly resolve any conflicts.
+
+For local files, rather than attempt to make any changes right away 
+(this being an issue of data integrity with a potential to affect your 
+users) it will instruct you to send the produced diagnostic 
+information to support@dataverse.org so that we can assist you 
+in resolving the issues in your database. 
+
+If no inconsistencies are found, the script will report that the database 
+is ready to be upgraded to the next release.
+
+(Please note that there's a very good chance that your database does
 not have any conflicts of this nature. But we want to do this to be
-absolutely sure. We apologize for any inconvenience.
+absolutely sure. We apologize for any inconvenience.)
 
