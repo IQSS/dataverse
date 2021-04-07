@@ -2866,6 +2866,10 @@ public class DatasetPage implements java.io.Serializable {
         return FileSizeChecker.bytesToHumanReadable(getSizeOfSelectedOrigNumeric());
     }
     
+    public String getZipDownloadLimitAsString(){
+        return FileSizeChecker.bytesToHumanReadable(settingsWrapper.getZipDownloadLimit());
+    }
+    
     public Long getSizeOfSelectedOrigNumeric(){
         boolean original = true;
         return DatasetUtil.getDownloadSizeNumericBySelectedFiles(selectedFiles, original);
@@ -2895,6 +2899,7 @@ public class DatasetPage implements java.io.Serializable {
      * it's safer to use validateAllFilesForDownloadArchival.
      */
     public void validateAllFilesForDownloadOriginal() {
+        //set all files as selected
         this.setSelectedFiles(workingVersion.getFileMetadatas());
         boolean guestbookRequired = isDownloadPopupRequired();
         boolean downloadOriginal = true;
@@ -2905,17 +2910,34 @@ public class DatasetPage implements java.io.Serializable {
         setSelectedDownloadableFiles(new ArrayList<>());
         setSelectedNonDownloadableFiles(new ArrayList<>());
         
+        Long bytes = (long) 0;
+        
         if (this.selectedFiles.isEmpty()) {
-            //RequestContext requestContext = RequestContext.getCurrentInstance();
             PrimeFaces.current().executeScript("PF('selectFilesForDownload').show()");
             return;
         }
-        for (FileMetadata fmd : this.selectedFiles){
-            if(this.fileDownloadHelper.canDownloadFile(fmd)){
+        
+        for (FileMetadata fmd : this.selectedFiles) {
+            if (this.fileDownloadHelper.canDownloadFile(fmd)) {
                 getSelectedDownloadableFiles().add(fmd);
+                DataFile dataFile = fmd.getDataFile();
+                if (downloadOriginal && dataFile.isTabularData()) {
+                    bytes += dataFile.getOriginalFileSize() == null ? 0 : dataFile.getOriginalFileSize();
+                } else {
+                    bytes += dataFile.getFilesize();
+                }
             } else {
                 getSelectedNonDownloadableFiles().add(fmd);
             }
+        }
+        
+        //need to do something with bytes here
+        
+        System.out.print("Bytes: " + bytes);
+        
+        if (bytes > settingsWrapper.getZipDownloadLimit() ){
+            PrimeFaces.current().executeScript("PF('downloadTooLarge').show()");
+            return;
         }
         
         // If some of the files were restricted and we had to drop them off the 
@@ -3032,7 +3054,25 @@ public class DatasetPage implements java.io.Serializable {
     
     
     private Long originalSelectedFileSize;
+    
     private Long archivalSelectedFileSize;
+
+    public Long getOriginalSelectedFileSize() {
+        return originalSelectedFileSize;
+    }
+
+    public void setOriginalSelectedFileSize(Long originalSelectedFileSize) {
+        this.originalSelectedFileSize = originalSelectedFileSize;
+    }
+
+    public Long getArchivalSelectedFileSize() {
+        return archivalSelectedFileSize;
+    }
+
+    public void setArchivalSelectedFileSize(Long archivalSelectedFileSize) {
+        this.archivalSelectedFileSize = archivalSelectedFileSize;
+    }
+
 
     private List<String> getSuccessMessageArguments() {
         List<String> arguments = new ArrayList<>();
