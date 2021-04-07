@@ -4,9 +4,12 @@ import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServi
 import edu.harvard.iq.dataverse.PermissionServiceBean.StaticPermissionQuery;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SessionUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
@@ -54,7 +57,10 @@ public class DataverseSession implements Serializable{
     
     @EJB
     BannerMessageServiceBean bannerMessageService;
-    
+
+    @EJB
+    AuthenticationServiceBean authenticationService;
+
     private static final Logger logger = Logger.getLogger(DataverseSession.class.getCanonicalName());
     
     private boolean statusDismissed = false;
@@ -84,19 +90,57 @@ public class DataverseSession implements Serializable{
     private Boolean debug;
     
     public User getUser() {
+        return getUser(false);
+    }
+
+    /**
+     * For performance reasons, we only lookup the authenticated user again (to
+     * check if it has been deleted or deactivated, for example) when we have
+     * to.
+     *
+     * @param lookupAuthenticatedUserAgain A boolean to indicate if we should go
+     * to the database again to lookup the user to get the latest values that
+     * may have been updated outside the session.
+     */
+    public User getUser(boolean lookupAuthenticatedUserAgain) {
         if ( user == null ) {
             user = GuestUser.get();
         }
- 
+        if (lookupAuthenticatedUserAgain && user instanceof AuthenticatedUser) {
+            AuthenticatedUser auFromSession = (AuthenticatedUser) user;
+            AuthenticatedUser auFreshLookup = authenticationService.findByID(auFromSession.getId());
+            if (auFreshLookup == null) {
+                logger.fine("getUser found user no longer exists (was deleted). Returning GuestUser.");
+                user = GuestUser.get();
+            } else {
+                if (auFreshLookup.isDeactivated()) {
+                    logger.fine("getUser found user is deactivated. Returning GuestUser.");
+                    user = GuestUser.get();
+                }
+            }
+        }
         return user;
     }
 
+    /**
+     * Sets the user and configures the session timeout.
+     */
     public void setUser(User aUser) {
-        
+        // We check for deactivated status here in "setUser" to ensure a common user
+        // experience across Builtin, Shib, OAuth, and OIDC users.
+        // If we want a different user experience for Builtin users, we can
+        // modify getUpdateAuthenticatedUser in AuthenticationServiceBean
+        // (and probably other places).
+        if (aUser instanceof AuthenticatedUser && aUser.isDeactivated()) {
+            logger.info("Login attempt by deactivated user " + aUser.getIdentifier() + ".");
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("deactivated.error"));
+            return;
+        }
         FacesContext context = FacesContext.getCurrentInstance();
 		// Log the login/logout and Change the session id if we're using the UI and have
 		// a session, versus an API call with no session - (i.e. /admin/submitToArchive()
 		// which sets the user in the session to pass it through to the underlying command)
+        // TODO: reformat to remove tabs etc.
 		if(context != null) {
           logSvc.log( 
                       new ActionLogRecord(ActionLogRecord.ActionType.SessionManagement,(aUser==null) ? "logout" : "login")
@@ -104,6 +148,12 @@ public class DataverseSession implements Serializable{
 
           //#3254 - change session id when user changes
           SessionUtil.changeSessionId((HttpServletRequest) context.getExternalContext().getRequest());
+            HttpSession httpSession = (HttpSession) context.getExternalContext().getSession(false);
+            if (httpSession != null) {
+                // Configure session timeout.
+                logger.fine("jsession: " + httpSession.getId() + " setting the lifespan of the session to " + systemConfig.getLoginSessionTimeout() + " minutes");
+                httpSession.setMaxInactiveInterval(systemConfig.getLoginSessionTimeout() * 60); // session timeout, in seconds
+            }
         }
         this.user = aUser;
     }
@@ -205,16 +255,6 @@ public class DataverseSession implements Serializable{
 
         } else {
             dismissedMessages.add(message);
-        }
-        
-    }
-    
-    public void configureSessionTimeout() {
-        HttpSession httpSession = (HttpSession) FacesContext.getCurrentInstance().getExternalContext().getSession(false);
-        
-        if (httpSession != null) {
-            logger.fine("jsession: "+httpSession.getId()+" setting the lifespan of the session to " + systemConfig.getLoginSessionTimeout() + " minutes");
-            httpSession.setMaxInactiveInterval(systemConfig.getLoginSessionTimeout() * 60); // session timeout, in seconds
         }
         
     }

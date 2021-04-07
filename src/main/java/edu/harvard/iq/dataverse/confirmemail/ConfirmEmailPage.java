@@ -55,7 +55,6 @@ public class ConfirmEmailPage implements java.io.Serializable {
             if (confirmEmailData != null) {
                 user = confirmEmailData.getAuthenticatedUser();
                 session.setUser(user);
-                session.configureSessionTimeout(); // TODO: is this needed here? (it can't hurt, but still)
                 JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("confirmEmail.details.success"));
                 return "/dataverse.xhtml?faces-redirect=true";
             }
