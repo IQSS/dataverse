@@ -94,9 +94,9 @@ To install Payara, run the following commands:
 Install PostgreSQL
 ~~~~~~~~~~~~~~~~~~
 
-PostgreSQL 9.6 is recommended to match the version in the Installation Guide.
+For the past few release cycles much of the development has been done under PostgreSQL 9.6. While that version is known to be very stable, it is nearing its end-of-life (in Nov. 2021). The Dataverse Software has now been tested with versions up to 13 (13.2 is the latest released version as of writing this).  
 
-On Mac, go to https://www.postgresql.org/download/macosx/ and choose "Interactive installer by EDB" option. We've tested version 9.6.19. When prompted to set a password for the "database superuser (postgres)" just enter "password".
+On Mac, go to https://www.postgresql.org/download/macosx/ and choose "Interactive installer by EDB" option. Note that version 9.6 is used in the command line examples below, but the process will be identical for any version up to 13. When prompted to set a password for the "database superuser (postgres)" just enter "password".
 
 After installation is complete, make a backup of the ``pg_hba.conf`` file like this:
 
@@ -112,12 +112,12 @@ In the Finder, click "Applications" then "PostgreSQL 9.6" and launch the "Reload
 
 Next, to confirm the edit worked, launch the "pgAdmin" application from the same folder. Under "Browser", expand "Servers" and double click "PostgreSQL 9.6". When you are prompted for a password, leave it blank and click "OK". If you have successfully edited "pg_hba.conf", you can get in without a password.
 
-On Linux, you should just install PostgreSQL from your package manager without worrying about the version as long as it's 9.x. Find ``pg_hba.conf`` and set the authentication method to "trust" and restart PostgreSQL.
+On Linux, you should just install PostgreSQL using your favorite package manager, such as ``yum``. (Consult the PostgreSQL section of :doc:`/installation/prerequisites` in the main Installation guide for more info and command line examples). Find ``pg_hba.conf`` and set the authentication method to "trust" and restart PostgreSQL.
 
 Install Solr
 ~~~~~~~~~~~~
 
-`Solr <http://lucene.apache.org/solr/>`_ 7.7.2 is required.
+`Solr <http://lucene.apache.org/solr/>`_ 8.8.1 is required.
 
 To install Solr, execute the following commands:
 
@@ -127,27 +127,27 @@ To install Solr, execute the following commands:
 
 ``cd /usr/local/solr``
 
-``curl -O http://archive.apache.org/dist/lucene/solr/7.7.2/solr-7.7.2.tgz``
+``curl -O http://archive.apache.org/dist/lucene/solr/8.8.1/solr-8.8.1.tgz``
 
-``tar xvfz solr-7.7.2.tgz``
+``tar xvfz solr-8.8.1.tgz``
 
-``cd solr-7.7.2/server/solr``
+``cd solr-8.8.1/server/solr``
 
 ``cp -r configsets/_default collection1``
 
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.7.2/schema.xml``
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/8.8.1/schema.xml``
 
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.7.2/schema_dv_mdb_fields.xml``
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/8.8.1/schema_dv_mdb_fields.xml``
 
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.7.2/schema_dv_mdb_copies.xml``
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/8.8.1/schema_dv_mdb_copies.xml``
 
 ``mv schema*.xml collection1/conf``
 
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/7.7.2/solrconfig.xml``
+``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/8.8.1/solrconfig.xml``
 
 ``mv solrconfig.xml collection1/conf/solrconfig.xml``
 
-``cd /usr/local/solr/solr-7.7.2``
+``cd /usr/local/solr/solr-8.8.1``
 
 (Please note that the extra jetty argument below is a security measure to limit connections to Solr to only your computer. For extra security, run a firewall.)
 

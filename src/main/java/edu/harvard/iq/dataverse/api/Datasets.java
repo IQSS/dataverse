@@ -112,6 +112,8 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -265,7 +267,7 @@ public class Datasets extends AbstractApiBean {
                 return error(Response.Status.NOT_FOUND, "A dataset with the persistentId " + persistentId + " could not be found.");
             }
             
-            ExportService instance = ExportService.getInstance(settingsSvc);
+            ExportService instance = ExportService.getInstance();
             
             InputStream is = instance.getExport(dataset, exporter);
            
@@ -805,11 +807,16 @@ public class Datasets extends AbstractApiBean {
     
     @PUT
     @Path("{id}/editMetadata")
-    public Response editVersionMetadata(String jsonBody, @PathParam("id") String id, @QueryParam("replace") Boolean replace) throws WrappedResponse{
+    public Response editVersionMetadata(String jsonBody, @PathParam("id") String id, @QueryParam("replace") Boolean replace) {
 
         Boolean replaceData = replace != null;
-
-        DataverseRequest req = createDataverseRequest(findUserOrDie());
+        DataverseRequest req = null;
+        try {
+         req = createDataverseRequest(findUserOrDie());
+        } catch (WrappedResponse ex) {
+            logger.log(Level.SEVERE, "Edit metdata error: " + ex.getMessage(), ex);
+            return ex.getResponse();
+        }
 
         return processDatasetUpdate(jsonBody, id, req, replaceData);
     }
@@ -969,12 +976,12 @@ public class Datasets extends AbstractApiBean {
     @Deprecated
     public Response publishDataseUsingGetDeprecated( @PathParam("id") String id, @QueryParam("type") String type ) {
         logger.info("publishDataseUsingGetDeprecated called on id " + id + ". Encourage use of POST rather than GET, which is deprecated.");
-        return publishDataset(id, type);
+        return publishDataset(id, type, false);
     }
 
     @POST
     @Path("{id}/actions/:publish")
-    public Response publishDataset(@PathParam("id") String id, @QueryParam("type") String type) {
+    public Response publishDataset(@PathParam("id") String id, @QueryParam("type") String type, @QueryParam("assureIsIndexed") boolean mustBeIndexed) {
         try {
             if (type == null) {
                 return error(Response.Status.BAD_REQUEST, "Missing 'type' parameter (either 'major','minor', or 'updatecurrent').");
@@ -1002,6 +1009,29 @@ public class Datasets extends AbstractApiBean {
             }
 
             Dataset ds = findDatasetOrDie(id);
+            if (mustBeIndexed) {
+                logger.fine("IT: " + ds.getIndexTime());
+                logger.fine("MT: " + ds.getModificationTime());
+                logger.fine("PIT: " + ds.getPermissionIndexTime());
+                logger.fine("PMT: " + ds.getPermissionModificationTime());
+                if (ds.getIndexTime() != null && ds.getModificationTime() != null) {
+                    logger.fine("ITMT: " + (ds.getIndexTime().compareTo(ds.getModificationTime()) <= 0));
+                }
+                /*
+                 * Some calls, such as the /datasets/actions/:import* commands do not set the
+                 * modification or permission modification times. The checks here are trying to
+                 * see if indexing or permissionindexing could be pending, so they check to see
+                 * if the relevant modification time is set and if so, whether the index is also
+                 * set and if so, if it after the modification time. If the modification time is
+                 * set and the index time is null or is before the mod time, the 409/conflict
+                 * error is returned.
+                 * 
+                 */
+                if ((ds.getModificationTime()!=null && (ds.getIndexTime() == null || (ds.getIndexTime().compareTo(ds.getModificationTime()) <= 0))) ||
+                        (ds.getPermissionModificationTime()!=null && (ds.getPermissionIndexTime() == null || (ds.getPermissionIndexTime().compareTo(ds.getPermissionModificationTime()) <= 0)))) {
+                    return error(Response.Status.CONFLICT, "Dataset is awaiting indexing");
+                }
+            }
             if (updateCurrent) {
                 /*
                  * Note: The code here mirrors that in the
@@ -1809,6 +1839,9 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         } catch (DataFileTagException ex) {
             return error( Response.Status.BAD_REQUEST, ex.getMessage());            
         }
+        catch (ClassCastException | com.google.gson.JsonParseException ex) {
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("file.addreplace.error.parsing"));
+        }
         
         // -------------------------------------
         // (3) Get the file name and content type
@@ -2324,5 +2357,76 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         datasetService.merge(dataset);
     	return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
     }
-}
 
+    @GET
+    @Path("{identifier}/timestamps")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getTimestamps(@PathParam("identifier") String id) {
+
+        Dataset dataset = null;
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+        try {
+            dataset = findDatasetOrDie(id);
+            User u = findUserOrDie();
+            Set<Permission> perms = new HashSet<Permission>();
+            perms.add(Permission.ViewUnpublishedDataset);
+            boolean canSeeDraft = permissionSvc.hasPermissionsFor(u, dataset, perms);
+            JsonObjectBuilder timestamps = Json.createObjectBuilder();
+            logger.fine("CSD: " + canSeeDraft);
+            logger.fine("IT: " + dataset.getIndexTime());
+            logger.fine("MT: " + dataset.getModificationTime());
+            logger.fine("PIT: " + dataset.getPermissionIndexTime());
+            logger.fine("PMT: " + dataset.getPermissionModificationTime());
+            // Basic info if it's released
+            if (dataset.isReleased() || canSeeDraft) {
+                timestamps.add("createTime", formatter.format(dataset.getCreateDate().toLocalDateTime()));
+                if (dataset.getPublicationDate() != null) {
+                    timestamps.add("publicationTime", formatter.format(dataset.getPublicationDate().toLocalDateTime()));
+                }
+
+                if (dataset.getLastExportTime() != null) {
+                    timestamps.add("lastMetadataExportTime",
+                            formatter.format(dataset.getLastExportTime().toInstant().atZone(ZoneId.systemDefault())));
+                }
+
+                if (dataset.getMostRecentMajorVersionReleaseDate() != null) {
+                    timestamps.add("lastMajorVersionReleaseTime", formatter.format(
+                            dataset.getMostRecentMajorVersionReleaseDate().toInstant().atZone(ZoneId.systemDefault())));
+                }
+                // If the modification/permissionmodification time is
+                // set and the index time is null or is before the mod time, the relevant index is stale
+                timestamps.add("hasStaleIndex",
+                        (dataset.getModificationTime() != null && (dataset.getIndexTime() == null
+                                || (dataset.getIndexTime().compareTo(dataset.getModificationTime()) <= 0))) ? true
+                                        : false);
+                timestamps.add("hasStalePermissionIndex",
+                        (dataset.getPermissionModificationTime() != null && (dataset.getIndexTime() == null
+                                || (dataset.getIndexTime().compareTo(dataset.getModificationTime()) <= 0))) ? true
+                                        : false);
+            }
+            // More detail if you can see a draft
+            if (canSeeDraft) {
+                timestamps.add("lastUpdateTime", formatter.format(dataset.getModificationTime().toLocalDateTime()));
+                if (dataset.getIndexTime() != null) {
+                    timestamps.add("lastIndexTime", formatter.format(dataset.getIndexTime().toLocalDateTime()));
+                }
+                if (dataset.getPermissionModificationTime() != null) {
+                    timestamps.add("lastPermissionUpdateTime",
+                            formatter.format(dataset.getPermissionModificationTime().toLocalDateTime()));
+                }
+                if (dataset.getPermissionIndexTime() != null) {
+                    timestamps.add("lastPermissionIndexTime",
+                            formatter.format(dataset.getPermissionIndexTime().toLocalDateTime()));
+                }
+                if (dataset.getGlobalIdCreateTime() != null) {
+                    timestamps.add("globalIdCreateTime", formatter
+                            .format(dataset.getGlobalIdCreateTime().toInstant().atZone(ZoneId.systemDefault())));
+                }
+
+            }
+            return ok(timestamps);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+}

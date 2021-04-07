@@ -19,7 +19,7 @@ import java.util.List;
  * Phase 1: File successfully uploaded and unpersisted DataFile is in memory
  * Phase 2: Save the files
  * 
-  http://localhost:8080/editdatafiles.xhtml?mode=SINGLE_REPLACE&datasetId=26&fid=726
+  http://localhost:8080/editdatafiles.xhtml?mode=REPLACE&datasetId=26&fid=726
  * This is messy, trying to contain some of it--give me APIs or more time, more time:)
  * 
  * @author rmp553
@@ -111,13 +111,8 @@ public class FileReplacePageHelper {
         }
         
         OptionalFileParams ofp = null;
+        ofp = new OptionalFileParams();
         if(checkSumValue != null) {
-            try {
-                ofp = new OptionalFileParams(null);
-            } catch (DataFileTagException e) {
-                // Shouldn't happen with null input
-                e.printStackTrace();
-            }
             ofp.setCheckSum(checkSumValue, checkSumType);
         }
         // Run 1st phase of replace

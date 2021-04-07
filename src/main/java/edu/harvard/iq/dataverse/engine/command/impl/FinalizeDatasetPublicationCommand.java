@@ -181,26 +181,29 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
         
         final Dataset ds = ctxt.em().merge(theDataset);
+        //Remove any pre-pub workflow lock (not needed as WorkflowServiceBean.workflowComplete() should already have removed it after setting the finalizePublication lock?)
+        ctxt.datasets().removeDatasetLocks(ds, DatasetLock.Reason.Workflow);
         
+        //Should this be in onSuccess()?
         ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
             try {
-                ctxt.workflows().start(wf, buildContext(ds, TriggerType.PostPublishDataset, datasetExternallyReleased));
+                ctxt.workflows().start(wf, buildContext(ds, TriggerType.PostPublishDataset, datasetExternallyReleased), false);
             } catch (CommandException ex) {
+                ctxt.datasets().removeDatasetLocks(ds, DatasetLock.Reason.Workflow);
                 logger.log(Level.SEVERE, "Error invoking post-publish workflow: " + ex.getMessage(), ex);
             }
         });
+
+        Dataset readyDataset = ctxt.em().merge(ds);
         
-        Dataset readyDataset = ctxt.em().merge(theDataset);
-        
-        // Finally, unlock the dataset:
-        ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.Workflow);
-        ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.finalizePublication);
-        if ( theDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
-            ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.InReview);
+        // Finally, unlock the dataset (leaving any post-publish workflow lock in place)
+        ctxt.datasets().removeDatasetLocks(readyDataset, DatasetLock.Reason.finalizePublication);
+        if (readyDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
+            ctxt.datasets().removeDatasetLocks(readyDataset, DatasetLock.Reason.InReview);
         }
         
-        logger.info("Successfully published the dataset "+theDataset.getGlobalId().asString());
-
+        logger.info("Successfully published the dataset "+readyDataset.getGlobalId().asString());
+        readyDataset = ctxt.em().merge(readyDataset);
         
         return readyDataset;
     }
@@ -244,7 +247,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             }
         }
 
-        exportMetadata(dataset, ctxt.settings());
+        exportMetadata(dataset);
                 
         ctxt.datasets().updateLastExportTimeStamp(dataset.getId());
 
@@ -255,10 +258,10 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
      * Attempting to run metadata export, for all the formats for which we have
      * metadata Exporters.
      */
-    private void exportMetadata(Dataset dataset, SettingsServiceBean settingsServiceBean) {
+    private void exportMetadata(Dataset dataset) {
 
         try {
-            ExportService instance = ExportService.getInstance(settingsServiceBean);
+            ExportService instance = ExportService.getInstance();
             instance.exportAllFormats(dataset);
 
         } catch (Exception ex) {

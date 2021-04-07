@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
@@ -57,7 +58,15 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
     
     @Override
     protected void executeImpl(CommandContext ctxt) throws CommandException {
-        
+
+        if (consumedAU.getId() == ongoingAU.getId()) {
+            throw new IllegalCommandException("You cannot merge an account into itself.", this);
+        }
+
+        if (consumedAU.isDeactivated() && !ongoingAU.isDeactivated() || !consumedAU.isDeactivated() && ongoingAU.isDeactivated()) {
+            throw new IllegalCommandException("User accounts can only be merged if they are either both active or both deactivated.", this);
+        }
+
         List<RoleAssignment> baseRAList = ctxt.roleAssignees().getAssignmentsFor(ongoingAU.getIdentifier());
         List<RoleAssignment> consumedRAList = ctxt.roleAssignees().getAssignmentsFor(consumedAU.getIdentifier());
         
@@ -185,8 +194,8 @@ public class MergeInAccountCommand extends AbstractVoidCommand {
         ctxt.em().remove(consumedAUL);
         ctxt.em().remove(consumedAU);
         BuiltinUser consumedBuiltinUser = ctxt.builtinUsers().findByUserName(consumedAU.getUserIdentifier());
-        if (consumedBuiltinUser != null){
-            ctxt.em().remove(consumedBuiltinUser); 
+        if (consumedBuiltinUser != null) {
+            ctxt.builtinUsers().removeUser(consumedBuiltinUser.getUserName());
         }
         
         

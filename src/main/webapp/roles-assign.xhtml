@@ -16,10 +16,10 @@
             <div class="form-horizontal">
                 <p class="help-block">#{bundle['dataverse.permissions.usersOrGroups.assignDialog.description']}</p>
                 <div class="form-group">
-                    <label for="userGroupAccessInput" class="col-sm-2 control-label">
+                    <label for="userGroupAccessInput" class="col-md-2 control-label">
                         #{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                     </label>
-                    <div class="col-sm-9">
+                    <div class="col-md-9">
                         <p:autoComplete id="userGroupNameAssign" placeholder="#{bundle['dataverse.permissions.usersOrGroups.assignDialog.userOrGroup.enterName']}"
                                         multiple="true" scrollHeight="180" forceSelection="true"
                                         minQueryLength="2" queryDelay="1000"                                      
@@ -40,18 +40,15 @@
                             <p:ajax process="@this" event="itemSelect" />
                             <p:ajax process="@this" event="itemUnselect" />
                         </p:autoComplete>
-                        <script>
-                            handle_dropdown_popup_scroll();
-                        </script>
                         <p:message for="userGroupNameAssign" display="text"/>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="assignRoleRadios" class="col-sm-2 control-label">
+                    <label for="assignRoleRadios" class="col-md-2 control-label">
                         #{bundle['dataverse.permissions.usersOrGroups.tabHeader.role']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                     </label>
-                    <div class="col-sm-10 form-group">
-                        <div class="col-sm-5">
+                    <div class="col-md-9">
+                        <div class="col-xs-6">
                             <p:fragment id="availableRoles">
                                 <p:selectOneRadio id="assignRoleRadios" layout="pageDirection"
                                                   value="#{managePermissionsPage.selectedRoleId}"
@@ -63,7 +60,7 @@
                                 <p:message for="assignRoleRadios" display="text"/>
                             </p:fragment>
                         </div>
-                        <div class="col-sm-7 bg-muted">
+                        <div class="col-xs-6 bg-muted">
                             <p:fragment id="roleDetails">
                                 <div id="assignRolePermissionLabels">
                                     <p class="help-block">#{bundle['dataverse.permissions.usersOrGroups.assignDialog.role.description']}</p>

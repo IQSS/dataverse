@@ -35,7 +35,7 @@ public class HtmlCodeBookExporter implements Exporter {
         try {
             InputStream ddiInputStream;
             try {
-                ddiInputStream = ExportService.getInstance(ExportService.settingsService).getExport(version.getDataset(), "ddi");
+                ddiInputStream = ExportService.getInstance().getExport(version.getDataset(), "ddi");
             } catch(ExportException | IOException e) {
                 throw new ExportException ("Cannot open export_ddi cached file");
             }

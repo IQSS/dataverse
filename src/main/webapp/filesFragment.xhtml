@@ -530,7 +530,18 @@
                 <!-- File Options -->
                 <div class="btn-group" jsf:rendered="#{!widgetWrapper.widgetView 
                                                         and DatasetPage.sessionUserAuthenticated 
-                                                        and DatasetPage.canUpdateDataset()}">
+                                                        and DatasetPage.canUpdateDataset()
+                                                        and DatasetPage.isFileDeleted(fileMetadata.dataFile)}">
+                    <a type="button" class="btn-file-options btn btn-link bootstrap-button-tooltip dropdown-toggle #{DatasetPage.lockedFromEdits ? 'disabled' : ''}" 
+                       disabled="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}"
+                       title="#{bundle['file.optionsBtn']}" onclick="PF('fileAlreadyDeletedPrevious').show()">                        
+                        <span class="glyphicon glyphicon-option-vertical"/><span class="sr-only">#{bundle['file.optionsBtn']}</span>
+                    </a>                    
+                </div>                
+                <div class="btn-group" jsf:rendered="#{!widgetWrapper.widgetView 
+                                                        and DatasetPage.sessionUserAuthenticated 
+                                                        and DatasetPage.canUpdateDataset()
+                                                        and !DatasetPage.isFileDeleted(fileMetadata.dataFile)}">
                     <!-- Kebab / Edit / File Options Dropdown -->
                     <a type="button" class="btn-file-options btn btn-link bootstrap-button-tooltip dropdown-toggle #{DatasetPage.lockedFromEdits ? 'disabled' : ''}" 
                        disabled="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}"
