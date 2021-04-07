@@ -87,13 +87,13 @@
                             </p:column>
                         </p:dataTable>
                     </div>
-                    <p:dialog id="deleteGroupConfirm" rendered="#{manageGroupsPage.showDeletePopup}" header="#{bundle['dataverse.manageGroups.tab.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation" modal="true">
+                    <p:dialog id="deleteGroupConfirm" header="#{bundle['dataverse.manageGroups.tab.action.btn.delete.dialog.header']}" widgetVar="deleteConfirmation" modal="true">
                         <p class="help-block">
                             <span class="glyphicon glyphicon-warning-sign text-warning"/> <span class="text-warning">#{bundle['dataverse.manageGroups.tab.action.btn.delete.dialog.tip']}</span>
                         </p>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageGroupsPage.deleteGroup()}" update="@all"/>
-                            <p:commandButton styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()" action="#{manageGroupsPage.unrenderDeletePopup()}" update="@all"/>
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{manageGroupsPage.deleteGroup()}" update="manageGroupsForm,messagePanel"/>
+                            <p:commandButton styleClass="btn btn-link" value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide()"/>
                         </div>
                     </p:dialog>
                     <p:dialog id="viewGroup" styleClass="largePopUp" header="#{bundle['dataverse.manageGroups.tab.action.btn.view.dialog.header']}" widgetVar="viewGroup" modal="true">
@@ -134,9 +134,6 @@
                                         <p:ajax process="@this" event="itemSelect" />
                                         <p:ajax process="@this" event="itemUnselect" />
                                     </p:autoComplete>
-                                    <script>
-                                        handle_dropdown_popup_scroll();
-                                    </script>
                                     <!-- <p:message for="roleAssigneeName" display="text"/> -->
                                 </div>
                             </div>
@@ -171,7 +168,7 @@
                             <p:commandButton id="saveGroup" styleClass="btn btn-default"
                                            actionListener="#{manageGroupsPage.saveExplicitGroup}"
                                            value="#{bundle.saveChanges}"
-                                           update="@all">
+                                           update="manageGroupsForm,messagePanel">
                             </p:commandButton>
                             <button class="btn btn-link" onclick="PF('viewGroup').hide()" type="button">
                                 #{bundle.cancel}

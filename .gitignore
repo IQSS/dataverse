@@ -48,8 +48,8 @@ conf/docker-aio/dv/install/dvinstall.zip
 # or copy of test data
 conf/docker-aio/testdata/
 
-# file contains environment variables for docker
-conf/docker-aio/env-var-4-docker.config
+# docker-aio creates maven/ which reports 86 new files. ignore this wd.
+maven/
 
 scripts/installer/default.config
 *.pem

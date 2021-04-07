@@ -1,0 +1,33 @@
+= Modifications for Local Testing
+* last updated: 2021-04-06
+
+This document summarizes local modifications to run `docker-aio` instance with Odum's local settings.
+
+== Modifications for monitoring, etc.
+
+* `c8.dockerfile`
+
+Add the following lines to let a local DB tool to access the DB tables running inside the container.
+----
+RUN cp /tmp/dv/postgresql.conf /var/lib/pgsql/data/
+RUN sed -i 's/#log_lock_waits\ \=\ off/log_lock_waits\ \=\ on/g' /var/lib/pgsql/data/postgresql.conf
+----
+Note:: `postgresql.conf` must be copied to `./docker-aio/dv` before building the docker image.
+
+
+== Typo corrections 
+
+* make sure that typos in the upstream version of `configure_doi.bash` are corrected
+
+* make sure that the following line in the upstream version of `post` is commented out
+----
+psql -U dvnapp dvndb -f scripts/database/reference_data.sql
+----
+Note:: The above `sql` file no longer exists in the upstream source tree
+
+* To check the effects of the above missing `sql` file on the integration test (`setupIT.bash`), +
+add `reference_data.sql` to `dataverse/scripts/database` before running `1prep.sh`
+
+== JAVA_HOME setting 
+* Before `1prep.sh` is run, make sure that the terminal window where the script is to be run sets `JAVA_HOME` to a Java 11 binary 
+* If `1prep.sh` failed for some reason and is to be re-run again, make sure that a downloaded maven archive file and maven-related directories were deleted. 

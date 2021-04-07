@@ -74,7 +74,7 @@ When logged in, the account name is a dropdown menu, linking the user to account
 Breadcrumbs
 ===========
 
-The breadcrumbs are displayed under the header, and provide a trail of links for users to navigate the hierarchy of containing objects, from file to dataset to dataverse. It utilizes a JSF `repeat component <http://docs.oracle.com/javaee/6/javaserverfaces/2.0/docs/pdldocs/facelets/ui/repeat.html>`_ to iterate through the breadcrumbs.
+The breadcrumbs are displayed under the header, and provide a trail of links for users to navigate the hierarchy of containing objects, from file to dataset to Dataverse collection. It utilizes a JSF `repeat component <http://docs.oracle.com/javaee/6/javaserverfaces/2.0/docs/pdldocs/facelets/ui/repeat.html>`_ to iterate through the breadcrumbs.
 
 .. raw:: html
 
@@ -82,11 +82,11 @@ The breadcrumbs are displayed under the header, and provide a trail of links for
 	<div class="panel-body">
             <div id="breadcrumbNavBlock" class="container" style="width:auto !important;">
                 <div class="breadcrumbBlock">
-                    <a id="breadcrumbLnk0" href="#" onclick="return false;">Name of a Dataverse</a>
+                    <a id="breadcrumbLnk0" href="#" onclick="return false;">Name of a Dataverse collection</a>
                 </div>
                 <span class="breadcrumbCarrot"> &gt; </span>
                 <div class="breadcrumbBlock">
-                    <a id="breadcrumbLnk1" href="#" onclick="return false;">Name of Another Dataverse</a>
+                    <a id="breadcrumbLnk1" href="#" onclick="return false;">Name of Another Dataverse collection</a>
                 </div>
                 <span class="breadcrumbCarrot"> &gt; </span>
             </div>
@@ -587,7 +587,7 @@ Another variation of icon-only buttons uses the ``.btn-link`` style class from B
                         </li>
                         <li>
                             <a href="#" rel="noopener" class="ui-commandlink ui-widget" onclick="return false;">
-                                WorldMap
+                                Data Explorer
                             </a>
                         </li>
                     </ul>
@@ -816,7 +816,7 @@ Style classes can be added to ``p``, ``div``, ``span`` and other elements to add
     <div class="panel-body">
 
       <p class="help-block">
-        <span class="text-muted">Select dataverses to feature on the homepage of this dataverse.</span>
+        <span class="text-muted">Select Dataverse collections to feature on the homepage of this Dataverse collection.</span>
       </p>
 
       <p class="help-block">
@@ -824,7 +824,7 @@ Style classes can be added to ``p``, ``div``, ``span`` and other elements to add
       </p>
 
       <p class="help-block">
-        <span class="glyphicon glyphicon-asterisk text-info"></span> <span class="text-info">Permissions with an asterisk icon indicate actions that can be performed by users not logged into Dataverse.</span>
+        <span class="glyphicon glyphicon-asterisk text-info"></span> <span class="text-info">Permissions with an asterisk icon indicate actions that can be performed by users not logged into the Dataverse installation.</span>
       </p>
 
       <p class="help-block">
