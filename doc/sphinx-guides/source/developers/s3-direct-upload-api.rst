@@ -1,0 +1,111 @@
+Direct DataFile Upload API
+==========================
+
+The direct Datafile Upload API is used internally to support direct upload of files to S3 storage and by tools such as the DVUploader.
+
+Direct upload involves a series of three activities, each involving interacting with the server for a Dataverse installation:
+
+* Requesting initiation of a transfer from the server
+* Use of the pre-signed URL(s) returned in that call to perform an upload/multipart-upload of the file to S3
+* A call to the server to register the file as part of the dataset and/or to cancel the transfer
+
+This API is only enabled when a Dataset is configured with a data store supporting direct S3 upload.
+Administrators should be aware that partial transfers, where a client starts uploading the file/parts of the file and does not contact the server to complete/cancel the transfer, will result in data stored in S3 that is not referenced in the Dataverse installation (e.g. should be considered temporary and deleted.)
+
+ 
+Requesting Direct Upload of a DataFile
+--------------------------------------
+To initiate a transfer of a file to S3, make a call to the Dataverse installation indicating the size of the file to upload. The response will include a pre-signed URL(s) that allow the client to transfer the file. Pre-signed URLs include a short-lived token authorizing the action represented by the URL.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK27U7YBV
+  export SIZE=1000000000
+ 
+  curl -H 'X-Dataverse-key:$API_TOKEN' "$SERVER_URL/api/datasets/:persistentId/uploadurls?persistentId=$PERSISTENT_IDENTIFIER&size=$SIZE"
+
+The response to this call, assuming direct uploads are enabled, will be one of two forms:
+
+Single URL: when the file is smaller than the size at which uploads must be broken into multiple parts
+
+.. code-block:: bash
+
+  {
+    "status":"OK",
+    "data":{
+      "url":"...",
+      "partSize":1073741824,
+      "storageIdentifier":"s3://demo-dataverse-bucket:177883619b8-892ca9f7112e"
+    }
+  }
+
+Multiple URLs: when the file must be uploaded in multiple parts. The part size is set by the Dataverse installation and, for AWS-based storage, range from 5 MB to 5 GB
+
+.. code-block:: bash
+
+  {
+    "status":"OK",
+    "data":{
+    "urls":{
+      "1":"...",
+      "2":"...",
+      "3":"...",
+      "4":"...",
+      "5":"..."
+    }
+    "abort":"/api/datasets/mpupload?...",
+    "complete":"/api/datasets/mpupload?..."
+    "partSize":1073741824,
+    "storageIdentifier":"s3://demo-dataverse-bucket:177883b000e-49cedef268ac"
+  }
+
+In the example responses above, the URLs, which are very long, have been omitted. These URLs reference the S3 server and the specific object identifier that will be used, starting with, for example, https://demo-dataverse-bucket.s3.amazonaws.com/10.5072/FK2FOQPJS/177883b000e-49cedef268ac?...
+
+The client must then use the URL(s) to POST the file, or if the file is larger than the specified partSize, parts of the file. 
+
+In the multipart case, the client must send each part and collect the 'eTag' responses from the server. To successfully conclude the multipart upload, the client must call the 'complete' URI, sending a json object including the part eTags:
+
+.. code-block:: bash
+
+    curl -X PUT "$SERVER_URL/api/datasets/mpload?..." -d '{"1":"\<eTag1 string\>","2":"\<eTag2 string\>","3":"\<eTag3 string\>","4":"\<eTag4 string\>","5":"\<eTag5 string\>"}'
+  
+If the client is unable to complete the multipart upload, it should call the abort URL:
+
+.. code-block:: bash
+  
+    curl -X DELETE "$SERVER_URL/api/datasets/mpload?..."
+   
+  
+Adding the Uploaded file to the Dataset
+---------------------------------------
+
+Once the file exists in the s3 bucket, a final API call is needed to add it to the Dataset. This call is the same call used to upload a file to a Dataverse installation but, rather than sending the file bytes, additional metadata is added using the "jsonData" parameter.
+jsonData normally includes information such as a file description, tags, provenance, whether the file is restricted, etc. For direct uploads, the jsonData object must also include values for:
+
+* "storageIdentifier" - String, as specified in prior calls
+* "fileName" - String
+* "mimeType" - String
+* "fileSize" - number of bytes
+* fixity/checksum: either: 
+
+  * "md5Hash" - String with MD5 hash value, or
+  * "checksum" - Json Object with "@type" field specifying the algorithm used and "@value" field with the value from that algorithm, both Strings 
+
+The allowed checksum algorithms are defined by the edu.harvard.iq.dataverse.DataFile.CheckSumType class and currently include MD5, SHA-1, SHA-256, and SHA-512
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK27U7YBV
+  export JSON_DATA={"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false", "storageIdentifier":"s3://demo-dataverse-bucket:176e28068b0-1c3f80357c42", "fileName":"file1.txt", "mimeType":"text/plain", "fileSize":"27", "checksum": {"@type": "SHA-1", "@value": "123456"}}
+
+  curl -X POST -H 'X-Dataverse-key: $API_TOKEN' "$SERVER_URL/api/datasets/:persistentId/add?persistentId=#PERSISTENT_IDENTIFIER" -F 'jsonData=$JSON_DATA'
+  
+Note that this API call can be used independently of the others, e.g. supporting use cases in which the file already exists in S3/has been uploaded via some out-of-band method. 
+With current S3 stores the object identifier must be in the correct bucket for the store, include the PID authority/identifier of the parent dataset, and be guaranteed unique, and the supplied storage identifer must be prefaced with the store identifier used in the Dataverse installation, as with the internally generated examples above.
+
+  
+  

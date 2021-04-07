@@ -9,8 +9,9 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.export.OAI_OREExporter;
-import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
@@ -20,7 +21,6 @@ import java.io.OutputStream;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
@@ -33,14 +33,21 @@ import javax.json.JsonValue;
 
 public class OREMap {
 
+    static SettingsServiceBean settingsService;
+    
     public static final String NAME = "OREMap";
     private Map<String, String> localContext = new TreeMap<String, String>();
     private DatasetVersion version;
-    private boolean excludeEmail = false;
+    private Boolean excludeEmail = null;
 
-    public OREMap(DatasetVersion version, boolean excludeEmail) {
+    public OREMap(DatasetVersion version) {
         this.version = version;
-        this.excludeEmail = excludeEmail;
+    }
+
+    //Used when the ExcludeEmailFromExport needs to be overriden, i.e. for archiving
+    public OREMap(DatasetVersion dv, boolean exclude) {
+        this.version = dv;
+        this.excludeEmail = exclude;
     }
 
     public void writeOREMap(OutputStream outputStream) throws Exception {
@@ -58,6 +65,11 @@ public class OREMap {
     
     public JsonObjectBuilder getOREMapBuilder(boolean aggregationOnly) throws Exception {
 
+        //Set this flag if it wasn't provided
+        if(excludeEmail==null) {
+            excludeEmail = settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false);
+        }
+        
         // Add namespaces we'll definitely use to Context
         // Additional namespaces are added as needed below
         localContext.putIfAbsent(JsonLDNamespace.ore.getPrefix(), JsonLDNamespace.ore.getUrl());
@@ -174,7 +186,7 @@ public class OREMap {
         }
 
         aggBuilder.add(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel(),
-                dataset.getDataverseContext().getDisplayName());
+                BrandingUtil.getRootDataverseCollectionName());
 
         // The aggregation aggregates aggregatedresources (Datafiles) which each have
         // their own entry and metadata
@@ -259,7 +271,7 @@ public class OREMap {
             // Now create the overall map object with it's metadata
             JsonObjectBuilder oremapBuilder = Json.createObjectBuilder()
                     .add(JsonLDTerm.dcTerms("modified").getLabel(), LocalDate.now().toString())
-                    .add(JsonLDTerm.dcTerms("creator").getLabel(), BundleUtil.getStringFromBundle("institution.name"))
+                    .add(JsonLDTerm.dcTerms("creator").getLabel(), BrandingUtil.getInstallationBrandName())
                     .add("@type", JsonLDTerm.ore("ResourceMap").getLabel())
                     // Define an id for the map itself (separate from the @id of the dataset being
                     // described
@@ -392,4 +404,7 @@ public class OREMap {
         return null;
     }
 
+    public static void injectSettingsService(SettingsServiceBean settingsSvc) {
+        settingsService = settingsSvc;
+    }
 }

@@ -1391,21 +1391,6 @@ public class DatasetVersion implements Serializable {
         }
         return null;
     }
-    
-    // TODO: Consider renaming this method since it's also used for getting the "provider" for Schema.org JSON-LD.
-    public String getRootDataverseNameforCitation(){
-                    //Get root dataverse name for Citation
-        Dataverse root = this.getDataset().getOwner();
-        while (root.getOwner() != null) {
-            root = root.getOwner();
-        }
-        String rootDataverseName = root.getName();
-        if (!StringUtil.isEmpty(rootDataverseName)) {
-            return rootDataverseName;
-        } else {
-            return "";
-        }
-    }
 
     public List<DatasetDistributor> getDatasetDistributors() {
         //todo get distributors from DatasetfieldValues
@@ -1888,11 +1873,11 @@ public class DatasetVersion implements Serializable {
         
         job.add("includedInDataCatalog", Json.createObjectBuilder()
                 .add("@type", "DataCatalog")
-                .add("name", this.getRootDataverseNameforCitation())
+                .add("name", BrandingUtil.getRootDataverseCollectionName())
                 .add("url", SystemConfig.getDataverseSiteUrlStatic())
         );
 
-        String installationBrandName = BrandingUtil.getInstallationBrandName(getRootDataverseNameforCitation());
+        String installationBrandName = BrandingUtil.getInstallationBrandName();
         /**
          * Both "publisher" and "provider" are included but they have the same
          * values. Some services seem to prefer one over the other.
