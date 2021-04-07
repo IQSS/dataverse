@@ -33,7 +33,7 @@ import javax.persistence.*;
     @NamedQuery(name = "DvObject.findByProtocolIdentifierAuthority",
             query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol"),
     @NamedQuery(name = "DvObject.findByOwnerId", 
-                query = "SELECT o FROM DvObject o WHERE o.owner.id=:ownerId"),
+                query = "SELECT o FROM DvObject o WHERE o.owner.id=:ownerId  order by o.dtype desc, o.id"),
     @NamedQuery(name = "DvObject.findByAuthenticatedUserId", 
                 query = "SELECT o FROM DvObject o WHERE o.creator.id=:ownerId or o.releaseUser.id=:releaseUserId")
 })
