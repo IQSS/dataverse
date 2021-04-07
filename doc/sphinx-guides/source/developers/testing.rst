@@ -166,7 +166,7 @@ Near the beginning and at the end of the ec2-create-instance.sh output you will 
 Running the full API test suite using Docker
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To run the full suite of integration tests on your laptop, we recommend using the "all in one" Docker configuration described in ``conf/docker-aio/readme.txt`` in the root of the repo.
+To run the full suite of integration tests on your laptop, we recommend using the "all in one" Docker configuration described in ``conf/docker-aio/readme.md`` in the root of the repo.
 
 Alternatively, you can run tests against the app server running on your laptop by following the "getting set up" steps below.
 
@@ -446,7 +446,7 @@ How to Run the Phoenix Tests
 List of Tests Run Against the Phoenix Server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We haven't thought much about a good way to publicly list the "IT" classes that are executed against the phoenix server. (Currently your best bet is to look at the ``Executing Maven`` line at the top of the "Full Log" of "Console Output" of ``phoenix.dataverse.org-apitest-develop`` Jenkins job mentioned above.) We endeavor to keep the list of tests in the "all-in-one" Docker environment described above in sync with the list of tests configured in Jenkins. That is to say, refer to :download:`run-test-suite.sh <../../../../conf/docker-aio/run-test-suite.sh>` mentioned in ``conf/docker-aio/readme.txt`` for the current list of IT tests that are expected to pass. Here's a dump of that file:
+We haven't thought much about a good way to publicly list the "IT" classes that are executed against the phoenix server. (Currently your best bet is to look at the ``Executing Maven`` line at the top of the "Full Log" of "Console Output" of ``phoenix.dataverse.org-apitest-develop`` Jenkins job mentioned above.) We endeavor to keep the list of tests in the "all-in-one" Docker environment described above in sync with the list of tests configured in Jenkins. That is to say, refer to :download:`run-test-suite.sh <../../../../conf/docker-aio/run-test-suite.sh>` mentioned in ``conf/docker-aio/readme.md`` for the current list of IT tests that are expected to pass. Here's a dump of that file:
 
 .. literalinclude:: ../../../../conf/docker-aio/run-test-suite.sh
 
