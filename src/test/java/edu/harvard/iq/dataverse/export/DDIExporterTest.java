@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse.export;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
@@ -17,9 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Year;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -145,12 +142,11 @@ public class DDIExporterTest {
         version.setVersionState(DatasetVersion.VersionState.DRAFT);
         Dataset dataset = new Dataset();
         version.setDataset(dataset);
-        Dataverse dataverse = new Dataverse();
-        dataset.setOwner(dataverse);
+        dataset.setOwner(new Dataverse());
         String citation = version.getCitation();
         System.out.println("citation: " + citation);
         int currentYear = Year.now().getValue();
-        assertEquals("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", DRAFT VERSION", citation);
+        assertEquals("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", LibraScholar, DRAFT VERSION", citation);
     }
 
     @Test

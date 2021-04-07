@@ -27,6 +27,7 @@ public class ThrowableHandler implements ExceptionMapper<Throwable>{
     
     @Override
     public Response toResponse(Throwable ex){
+        ex.printStackTrace();
         return JsonResponseBuilder.error(Response.Status.INTERNAL_SERVER_ERROR)
             .randomIncidentId()
             .internalError(ex)

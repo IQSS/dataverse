@@ -7,7 +7,7 @@
     -->
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>5.3</version>
+    <version>5.4</version>
     <packaging>war</packaging>
     <name>dataverse</name>
     <properties>
@@ -27,7 +27,7 @@
     
         <jakartaee-api.version>8.0.0</jakartaee-api.version>
         <payara.version>5.2020.6</payara.version>
-        <postgresql.version>42.2.18</postgresql.version>
+        <postgresql.version>42.2.19</postgresql.version>
         <aws.version>1.11.762</aws.version>
         <commons.logging.version>1.2</commons.logging.version>
         <httpcomponents.client.version>4.5.5</httpcomponents.client.version>
@@ -325,7 +325,7 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-solrj</artifactId>
-            <version>7.7.2</version>
+            <version>8.8.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

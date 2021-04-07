@@ -98,25 +98,16 @@ PostgreSQL
 Installing PostgreSQL
 =======================
 
-Version 9.6 is strongly recommended because it is the version developers and QA test with::
+The application has been tested with PostgreSQL versions up to 13. We recommend installing the latest version that is available for your OS distribution. *For example*, to install PostgreSQL 13 under RHEL/CentOS 7::
 
 	# yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 	# yum makecache fast
-	# yum install -y postgresql96-server
-	# /usr/pgsql-9.6/bin/postgresql96-setup initdb
-	# /usr/bin/systemctl start postgresql-9.6
-	# /usr/bin/systemctl enable postgresql-9.6
+	# yum install -y postgresql13-server
+	# /usr/pgsql-13/bin/postgresql-13-setup initdb
+	# /usr/bin/systemctl start postgresql-13
+	# /usr/bin/systemctl enable postgresql-13
 
-The above steps are specific to RHEL/CentOS 7. For RHEL/CentOS 8 you must install Postgres 10 or higher::
-
-	# yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
-	# yum makecache fast
-	# yum install -y postgresql10-server
-	# /usr/pgsql-10/bin/postgresql-10-setup initdb
-	# systemctl start postgresql-10
-	# systemctl enable postgresql-10
-
-Note that the Dataverse Software installer includes its own Postgres JDBC driver. If you choose to install the newest version of Postgres (12 as of this writing), you may need to grab a current JDBC driver from https://jdbc.postgresql.org/download.html before launching the install script.
+For RHEL/CentOS 8 the process would be identical, except for the very first command - you would need to install the "EL-8" yum repository configuration instead. 
 
 Configuring Database Access for the Dataverse Installation (and the Dataverse Software Installer)
 =================================================================================================
@@ -152,7 +143,7 @@ Configuring Database Access for the Dataverse Installation (and the Dataverse So
 
 - **Important: PostgreSQL must be restarted** for the configuration changes to take effect! On RHEL/CentOS 7 and similar (provided you installed Postgres as instructed above)::
 
-        # systemctl restart postgresql-9.6
+        # systemctl restart postgresql-13
 
   On MacOS X a "Reload Configuration" icon is usually supplied in the PostgreSQL application folder. Or you could look up the process id of the PostgreSQL postmaster process, and send it the SIGHUP signal::
 
@@ -166,7 +157,7 @@ The Dataverse Software search index is powered by Solr.
 Supported Versions
 ==================
 
-The Dataverse Software has been tested with Solr version 7.7.2. Future releases in the 7.x series are likely to be compatible; however, this cannot be confirmed until they are officially tested. Major releases above 7.x (e.g. 8.x) are not supported.
+The Dataverse Software has been tested with Solr version 8.8.1. Future releases in the 8.x series are likely to be compatible; however, this cannot be confirmed until they are officially tested. Major releases above 8.x (e.g. 9.x) are not supported.
 
 Installing Solr
 ===============
@@ -181,19 +172,19 @@ Become the ``solr`` user and then download and configure Solr::
 
         su - solr
         cd /usr/local/solr
-        wget https://archive.apache.org/dist/lucene/solr/7.7.2/solr-7.7.2.tgz
-        tar xvzf solr-7.7.2.tgz
-        cd solr-7.7.2
+        wget https://archive.apache.org/dist/lucene/solr/8.8.1/solr-8.8.1.tgz
+        tar xvzf solr-8.8.1.tgz
+        cd solr-8.8.1
         cp -r server/solr/configsets/_default server/solr/collection1
 
 You should already have a "dvinstall.zip" file that you downloaded from https://github.com/IQSS/dataverse/releases . Unzip it into ``/tmp``. Then copy the files into place::
 
-        cp /tmp/dvinstall/schema*.xml /usr/local/solr/solr-7.7.2/server/solr/collection1/conf
-        cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-7.7.2/server/solr/collection1/conf
+        cp /tmp/dvinstall/schema*.xml /usr/local/solr/solr-8.8.1/server/solr/collection1/conf
+        cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-8.8.1/server/solr/collection1/conf
 
 Note: The Dataverse Project team has customized Solr to boost results that come from certain indexed elements inside the Dataverse installation, for example prioritizing results from Dataverse collections over Datasets. If you would like to remove this, edit your ``solrconfig.xml`` and remove the ``<str name="qf">`` element and its contents. If you have ideas about how this boosting could be improved, feel free to contact us through our Google Group https://groups.google.com/forum/#!forum/dataverse-dev .
 
-A Dataverse installation requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-7.7.2/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
+A Dataverse installation requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-8.8.1/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
 
 Solr will warn about needing to increase the number of file descriptors and max processes in a production environment but will still run with defaults. We have increased these values to the recommended levels by adding ulimit -n 65000 to the init script, and the following to ``/etc/security/limits.conf``::
 
@@ -212,7 +203,7 @@ Solr launches asynchronously and attempts to use the ``lsof`` binary to watch fo
 
 Finally, you need to tell Solr to create the core "collection1" on startup::
 
-        echo "name=collection1" > /usr/local/solr/solr-7.7.2/server/solr/collection1/core.properties
+        echo "name=collection1" > /usr/local/solr/solr-8.8.1/server/solr/collection1/core.properties
 
 Solr Init Script
 ================

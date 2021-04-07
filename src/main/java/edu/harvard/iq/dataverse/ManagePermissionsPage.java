@@ -590,7 +590,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
             } catch (PermissionException ex) {
                 JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.roleNotSaved"), BundleUtil.getStringFromBundle("permission.permissionsMissing", Arrays.asList(ex.getRequiredPermissions().toString())));
             } catch (CommandException ex) {
-                JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("permission.roleNotSaved"));
+                JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.roleNotSaved").concat(" " + ex.getMessage()) );
                 logger.log(Level.SEVERE, "Error saving role: " + ex.getMessage(), ex);
             }
         }

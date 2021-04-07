@@ -130,7 +130,7 @@ The fully expanded example above (without environment variables) looks like this
 Show Contents of a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Lists all the Dataverse collections and datasets directly under a Dataverse collection (direct children only, not recursive) specified by database id or alias. If you pass your API token and have access, unpublished Dataverse collections and datasets will be included in the response.
+|CORS| Lists all the Dataverse collections and datasets directly under a Dataverse collection (direct children only, not recursive) specified by database id or alias. If you pass your API token and have access, unpublished Dataverse collections and datasets will be included in the response. The list will be ordered by database id within type of object. That is, all Dataverse collections will be listed first and ordered by database id, then all datasets will be listed ordered by database id.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
 
@@ -246,7 +246,7 @@ The fully expanded example above (without environment variables) looks like this
 
 .. code-block:: bash
 
-  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST https://demo.dataverse.org/api/dataverses/root/roles --upload-file roles.json
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -H "Content-type:application/json" https://demo.dataverse.org/api/dataverses/root/roles --upload-file roles.json
 
 Where ``roles.json`` looks like this::
 
@@ -258,6 +258,8 @@ Where ``roles.json`` looks like this::
       "AddDataset"
     ]
   } 
+
+.. note:: Only a Dataverse installation account with superuser permissions is allowed to create roles in a Dataverse Collection.
 
 .. _list-role-assignments-on-a-dataverse-api:
 
@@ -1020,6 +1022,8 @@ When publishing a dataset it's good to be aware of the Dataverse Software's vers
 
 If this is the first version of the dataset, its version number will be set to ``1.0``. Otherwise, the new dataset version number is determined by the most recent version number and the ``type`` parameter. Passing ``type=minor`` increases the minor version number (2.3 is updated to 2.4). Passing ``type=major`` increases the major version number (2.3 is updated to 3.0). (Superusers can pass ``type=updatecurrent`` to update metadata without changing the version number.)
 
+This call also supports an optional boolean query parameter: ``assureIsIndexed``. If true, the call will fail with a 409 ("CONFLICT") response if the dataset is awaiting re-indexing. If indexing occurs during publishing it could cause the publish request to fail, after a 202 response has been received. Using this parameter allows the caller to wait for indexing to occur and avoid this possibility. It is most useful in situations where edits are made immediately before publication.
+
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
 
 .. code-block:: bash
@@ -1039,7 +1043,7 @@ The fully expanded example above (without environment variables) looks like this
 
 The quotes around the URL are required because there is more than one query parameter separated by an ampersand (``&``), which has special meaning to Unix shells such as Bash. Putting the ``&`` in quotes ensures that "type" is interpreted as one of the query parameters.
 
-You should expect JSON output and a 200 ("OK") response in most cases. If you receive a 202 ("ACCEPTED") response, this is normal for installations that have workflows configured. Workflows are described in the :doc:`/developers/workflows` section of the Developer Guide.
+You should expect JSON output and a 200 ("OK") response in most cases. If you receive a 202 ("ACCEPTED") response, this is normal for installations that have workflows configured. Workflows are described in the :doc:`/developers/workflows` section of the Developer Guide. A 409 ("CONFLICT") response is also possible if you set ``assureIsIndexed=true``. (In this case, one could then repeat the call until a 200/202 response is sent.)
 
 .. note:: POST should be used to publish a dataset. GET is supported for backward compatibility but is deprecated and may be removed: https://github.com/IQSS/dataverse/issues/2431
 
@@ -1518,7 +1522,7 @@ The API will output the list of locks, for example::
 
 If the dataset is not locked (or if there is no lock of the requested type), the API will return an empty list. 
 
-The following API end point will lock a Dataset with a lock of specified type:
+The following API end point will lock a Dataset with a lock of specified type. Note that this requires “superuser” credentials:
 
 .. code-block:: bash
 
@@ -1535,7 +1539,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST https://demo.dataverse.org/api/datasets/24/lock/Ingest
 
-Use the following API to unlock the dataset, by deleting all the locks currently on the dataset:
+Use the following API to unlock the dataset, by deleting all the locks currently on the dataset. Note that this requires “superuser” credentials:
 
 .. code-block:: bash
 
@@ -1551,7 +1555,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/datasets/24/locks
 
-Or, to delete a lock of the type specified only:
+Or, to delete a lock of the type specified only. Note that this requires “superuser” credentials:
 
 .. code-block:: bash
 
@@ -1741,6 +1745,15 @@ Configure a Dataset to Use a Specific File Store
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``/api/datasets/$dataset-id/storageDriver`` can be used to check, configure or reset the designated file store (storage driver) for a dataset. Please see the :doc:`/admin/dataverses-datasets` section of the guide for more information on this API.
+
+View the Timestamps on a Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``/api/datasets/$dataset-id/timestamps`` can be used to view timestamps associated with various events in the dataset's lifecycle. For published datasets, this API call provides the ``createTime``, ``publicationTime``, ``lastMetadataExportTime`` and ``lastMajorVersionReleaseTime``, as well as two booleans - ``hasStaleIndex`` and ``hasStalePermissionIndex`` - which, if false, indicate the Dataverse displays for the dataset are up-to-date. The response is ``application/json`` with the timestamps included in the returned ``data`` object.
+
+When called by a user who can view the draft version of the dataset, additional timestamps are reported: ``lastUpdateTime``, ``lastIndexTime``, ``lastPermissionUpdateTime``, and ``globalIdCreateTime``.
+
+One use case where this API call could be useful is in allowing an external application to poll and wait for changes being made by the Dataverse software or other external tool to complete prior to continuing its own processing.
 
 Files
 -----
@@ -2407,9 +2420,35 @@ Roles
 Create a New Role in a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Creates a new role in Dataverse collection object whose Id is ``dataverseIdtf`` (that's an id/alias)::
+Creates a new role under Dataverse collection ``id``. Needs a json file with the role description:
 
-  POST http://$SERVER/api/roles?dvo=$dataverseIdtf&key=$apiKey
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=root
+
+  curl -H X-Dataverse-key:$API_TOKEN -X POST -H "Content-type:application/json" $SERVER_URL/api/dataverses/$ID/roles --upload-file roles.json
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST -H "Content-type:application/json" https://demo.dataverse.org/api/dataverses/root/roles --upload-file roles.json
+
+Where ``roles.json`` looks like this::
+
+  {
+    "alias": "sys1",
+    "name": “Restricted System Role”,
+    "description": “A person who may only add datasets.”,
+    "permissions": [
+      "AddDataset"
+    ]
+  } 
+
+.. note:: Only a Dataverse installation account with superuser permissions is allowed to create roles in a Dataverse Collection.
+
 
 Show Role
 ~~~~~~~~~
@@ -2421,9 +2460,38 @@ Shows the role with ``id``::
 Delete Role
 ~~~~~~~~~~~
 
-Deletes the role with ``id``::
+A curl example using an ``ID``
 
-  DELETE http://$SERVER/api/roles/$id
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE $SERVER_URL/api/roles/$ID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/roles/24
+
+A curl example using a Role alias ``ALIAS``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ALIAS=roleAlias
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/roles/:alias?alias=$ALIAS"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/roles/:alias?alias=roleAlias
+
 
 Explicit Groups
 ---------------
@@ -2863,6 +2931,41 @@ Create Global Role
 Creates a global role in the Dataverse installation. The data POSTed are assumed to be a role JSON. ::
 
     POST http://$SERVER/api/admin/roles
+    
+Delete Global Role
+~~~~~~~~~~~~~~~~~~
+
+A curl example using an ``ID``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ID=24
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE $SERVER_URL/api/admin/roles/$ID
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/admin/roles/24
+
+A curl example using a Role alias ``ALIAS``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export ALIAS=roleAlias
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X DELETE "$SERVER_URL/api/admin/roles/:alias?alias=$ALIAS"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/admin/roles/:alias?alias=roleAlias    
 
 List Users
 ~~~~~~~~~~
@@ -3044,6 +3147,8 @@ Example: ``curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://demo.dataverse.o
 
 This action moves account data from jsmith2 into the account jsmith and deletes the account of jsmith2.
 
+Note: User accounts can only be merged if they are either both active or both deactivated. See :ref:`deactivate a user<deactivate-a-user>`.
+
 .. _change-identifier-label:
 
 Change User Identifier
@@ -3063,7 +3168,9 @@ Make User a SuperUser
 Toggles superuser mode on the ``AuthenticatedUser`` whose ``identifier`` (without the ``@`` sign) is passed. ::
 
     POST http://$SERVER/api/admin/superuser/$identifier
-    
+
+.. _delete-a-user:
+
 Delete a User
 ~~~~~~~~~~~~~
 
@@ -3075,9 +3182,104 @@ Deletes an ``AuthenticatedUser`` whose ``id``  is passed. ::
 
     DELETE http://$SERVER/api/admin/authenticatedUsers/id/$id
     
-Note: If the user has performed certain actions such as creating or contributing to a Dataset or downloading a file they cannot be deleted.
-    
-    
+Note: If the user has performed certain actions such as creating or contributing to a Dataset or downloading a file they cannot be deleted. To see where in the database these actions are stored you can use the :ref:`show-user-traces-api` API. If a user cannot be deleted for this reason, you can choose to :ref:`deactivate a user<deactivate-a-user>`.
+
+.. _deactivate-a-user:
+
+Deactivate a User
+~~~~~~~~~~~~~~~~~
+
+Deactivates a user. A superuser API token is not required but the command will operate using the first superuser it finds.
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export SERVER_URL=http://localhost:8080
+  export USERNAME=jdoe
+
+  curl -X POST $SERVER_URL/api/admin/authenticatedUsers/$USERNAME/deactivate
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -X POST http://localhost:8080/api/admin/authenticatedUsers/jdoe/deactivate
+
+The database ID of the user can be passed instead of the username.
+
+.. code-block:: bash
+
+  export SERVER_URL=http://localhost:8080
+  export USERID=42
+
+  curl -X POST $SERVER_URL/api/admin/authenticatedUsers/id/$USERID/deactivate
+
+Note: A primary purpose of most Dataverse installations is to serve an archive. In the archival space, there are best practices around the tracking of data access and the tracking of modifications to data and metadata. In support of these key workflows, a simple mechanism to delete users that have performed edit or access actions in the system is not provided. Providing a Deactivate User endpoint for users who have taken certain actions in the system alongside a Delete User endpoint to remove users that haven't taken certain actions in the system is by design.
+
+This is an irreversible action. There is no option to undeactivate a user.
+
+Deactivating a user with this endpoint will:
+
+- Deactivate the user's ability to log in to the Dataverse installation. A message will be shown, stating that the account has been deactivated. The user will not able to create a new account with the same email address, ORCID, Shibboleth, or other login type.
+- Deactivate the user's ability to use the API
+- Remove the user's access from all Dataverse collections, datasets and files
+- Prevent a user from being assigned any roles
+- Cancel any pending file access requests generated by the user
+- Remove the user from all groups
+- No longer have notifications generated or sent by the Dataverse installation
+- Prevent the account from being converted into an OAuth or Shibboleth account.
+- Prevent the user from becoming a superuser.
+
+Deactivating a user with this endpoint will keep:
+
+- The user's contributions to datasets, including dataset creation, file uploads, and publishing.
+- The user's access history to datafiles in the Dataverse installation, including guestbook records.
+- The user's account information (specifically name, email, affiliation, and position)
+
+.. _show-user-traces-api:
+
+Show User Traces
+~~~~~~~~~~~~~~~~
+
+Show the traces that the user has left in the system, such as datasets created, guestbooks filled out, etc. This can be useful for understanding why a user cannot be deleted. A superuser API token is required.
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export USERNAME=jdoe
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X GET $SERVER_URL/api/users/$USERNAME/traces
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X GET https://demo.dataverse.org/api/users/jdoe/traces
+
+Remove All Roles from a User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Removes all roles from the user. This is equivalent of clicking the "Remove All Roles" button in the superuser dashboard. Note that you can preview the roles that will be removed with the :ref:`show-user-traces-api` API. A superuser API token is required.
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export USERNAME=jdoe
+
+  curl -H "X-Dataverse-key:$API_TOKEN" -X POST $SERVER_URL/api/users/$USERNAME/removeRoles
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -X POST http://localhost:8080/api/users/jdoe/removeRoles
 
 List Role Assignments of a Role Assignee
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

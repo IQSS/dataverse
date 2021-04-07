@@ -9,13 +9,19 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
+import edu.harvard.iq.dataverse.engine.TestEntityManager;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
+import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  *
@@ -35,6 +41,12 @@ public class CreateRoleCommandTest {
                     return aRole;
                 }
             };
+        }
+        
+        @Override 
+        public EntityManager em() {
+            return new LocalTestEntityManager();
+            
         }
     });
     
@@ -92,6 +104,35 @@ public class CreateRoleCommandTest {
         
         CreateRoleCommand sut = new CreateRoleCommand(dvr, new DataverseRequest(GuestUser.get(),IpAddress.valueOf("89.17.33.33")), dv);
         engine.submit(sut);    
+    }
+    
+    private class LocalTestEntityManager extends TestEntityManager {
+
+        @Override
+        public <T> T merge(T entity) {
+            return entity;
+        }
+
+        @Override
+        public void persist(Object entity) {
+            //
+        }
+
+        @Override
+        public void flush() {
+            //nothing to do here
+        }
+
+        @Override
+        public <T> TypedQuery<T> createNamedQuery(String name, Class<T> resultClass) {
+            //Mocking a query to return no results when 
+            //checking for existing role in DB
+            TypedQuery mockedQuery = mock(TypedQuery.class);
+            when(mockedQuery.setParameter(Matchers.anyString(), Matchers.anyObject())).thenReturn(mockedQuery);
+            when(mockedQuery.getSingleResult()).thenReturn(null);
+            return mockedQuery;
+        }
+
     }
     
 }
