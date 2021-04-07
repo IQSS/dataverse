@@ -746,7 +746,7 @@ public class DataCitation {
 
     private String getPublisherFrom(DatasetVersion dsv) {
         if (!dsv.getDataset().isHarvested()) {
-            return BrandingUtil.getRootDataverseCollectionName();
+            return BrandingUtil.getInstallationBrandName();
         } else {
             return dsv.getDistributorName();
             // remove += [distributor] SEK 8-18-2016
