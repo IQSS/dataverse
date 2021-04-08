@@ -131,7 +131,10 @@ public class SignpostingResources {
                 + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() + ">;rel=\"describedby\"" + ";type=\"application/json+ld\"";
         valueList.add(describedby);
 
-        String type = "<https://schema.org/AboutPage>;rel=\"type\"";
+        String type = "<https://schema.org/AboutPage>;rel=\"type\"";;
+        if (useDefaultFileType) {
+            type = "<https://schema.org/AboutPage>;rel=\"type\",<https://schema.org/Dataset>;rel=\"type\"";
+        }
         valueList.add(type);
 
         // TODO: support only CC0 now, should add flexible license support when flex-terms is ready
@@ -239,6 +242,8 @@ public class SignpostingResources {
                 .add("anchor", landingPage)
                 .add("cite-as", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", ds.getPersistentURL())))
                 .add("type", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", "https://schema.org/AboutPage")));
+
+        if (useDefaultFileType) mandatory.add("type", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", defaultFileTypeValue)));
 
         if (authors != null) {
             mandatory.add("author", authors);
