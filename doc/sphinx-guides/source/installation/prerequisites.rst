@@ -234,7 +234,7 @@ To start Solr Apache in external use mode, you must access the Solr example dire
 
 # cd /usr/local/solr/solr-8.8.1/bin
 
-# ./solr start -j "-Djetty.host = DNS” -force
+# ./solr start -j "-Djetty.host = DNS" -force
 
 Right after that you should use the iptables rules below.
 
