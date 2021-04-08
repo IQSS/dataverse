@@ -242,7 +242,7 @@ Right after that you should use the iptables rules below.
 
 # iptables -A INPUT -p tcp -m tcp --dport 8983 -j DROP
 
-As a result, your application will reject Solr's external access, assuring connections only through Dataverse.
+As a result, Solr's external access will be blocked except from your Dataverse installation.
 
 If you want to upload Solr Apache without a GUI prompt, use it as follows:
 
