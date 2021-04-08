@@ -2930,12 +2930,10 @@ public class DatasetPage implements java.io.Serializable {
                 getSelectedNonDownloadableFiles().add(fmd);
             }
         }
-        
-        //need to do something with bytes here
-        
-        System.out.print("Bytes: " + bytes);
-        
-        if (bytes > settingsWrapper.getZipDownloadLimit() ){
+       
+        //if there are two or more files with a total size 
+        //over the zip limit post a "too large" popup 
+        if (bytes > settingsWrapper.getZipDownloadLimit() && selectedDownloadableFiles.size() > 1 ){
             PrimeFaces.current().executeScript("PF('downloadTooLarge').show()");
             return;
         }
