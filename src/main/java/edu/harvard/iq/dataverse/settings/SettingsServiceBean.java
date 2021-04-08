@@ -228,6 +228,10 @@ public class SettingsServiceBean {
         SPSS/sav format, "RData" for R, etc.
         for example: :TabularIngestSizeLimit:RData */
         TabularIngestSizeLimit,
+        /* dataset size limit for checksum validation */
+        ChecksumDatasetSizeLimit,
+        /* file size limit for checksum validation */
+        ChecksumFileSizeLimit,
         /**
          The message added to a popup upon dataset publish
          * 

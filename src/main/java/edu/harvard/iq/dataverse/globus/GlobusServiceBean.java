@@ -286,18 +286,19 @@ public class GlobusServiceBean implements java.io.Serializable{
 
     public void deletePermision(String ruleId, Logger globusLogger) throws MalformedURLException {
 
-        AccessToken clientTokenUser = getClientToken();
-        globusLogger.info("Start deleting permissions."  );
-        String globusEndpoint = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusEndpoint, "");
+        if(ruleId.length() > 0 ) {
+            AccessToken clientTokenUser = getClientToken();
+            globusLogger.info("Start deleting permissions.");
+            String globusEndpoint = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusEndpoint, "");
 
-        URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + globusEndpoint + "/access/" + ruleId);
-        //logger.info("https://transfer.api.globusonline.org/v0.10/endpoint/" + globusEndpoint + "/access/" + ruleId);
-        MakeRequestResponse result = makeRequest(url, "Bearer",
-                clientTokenUser.getOtherTokens().get(0).getAccessToken(),"DELETE",  null);
-        if (result.status != 200) {
-            globusLogger.warning("Cannot delete access rule " + ruleId);
-        } else {
-            globusLogger.info("Access rule " + ruleId + " was deleted successfully");
+            URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + globusEndpoint + "/access/" + ruleId);
+            MakeRequestResponse result = makeRequest(url, "Bearer",
+                    clientTokenUser.getOtherTokens().get(0).getAccessToken(), "DELETE", null);
+            if (result.status != 200) {
+                globusLogger.warning("Cannot delete access rule " + ruleId);
+            } else {
+                globusLogger.info("Access rule " + ruleId + " was deleted successfully");
+            }
         }
 
     }

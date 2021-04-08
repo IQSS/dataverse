@@ -2814,7 +2814,31 @@ public class Datasets extends AbstractApiBean {
 
         ApiToken token = authSvc.findApiTokenByUser((AuthenticatedUser) authUser);
 
+        if(uriInfo != null) {
+            logger.info(" ====  (api uriInfo.getRequestUri()) jsonData   ====== " + uriInfo.getRequestUri().toString());
+        }
+
+        //logger.info(" ====  (api uriInfo.getRequestUri()) jsonData   ====== " + headers.getRequestHeaders()
+
+        MultivaluedMap<String, String> multivaluedMap = headers.getRequestHeaders();
+
+        Map<String, Object> result = new HashMap<>();
+        multivaluedMap.forEach((name, values) -> {
+            if (!CollectionUtils.isEmpty(values)) {
+                result.put(name, (values.size() != 1) ? values : values.get(0));
+                logger.info(" headers ==== " + name + " ==== "+ values );
+            }
+        });
+
+        logger.info(" ====  headers.getRequestHeader(origin)   ====== " + headers.getRequestHeader("origin") );
+        logger.info(" ====  headers.getRequestHeader(referer)    ====== " + headers.getRequestHeader("referer") );
+
+
         String requestUrl = headers.getRequestHeader("origin").get(0);
+
+        if(requestUrl.contains("localhost")){
+            requestUrl = "http://localhost:8080";
+        }
 
         // Async Call
         datasetService.globusUpload(jsonData, token, dataset, requestUrl, authUser);

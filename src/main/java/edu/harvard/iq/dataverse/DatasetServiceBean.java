@@ -59,7 +59,6 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.ocpsoft.common.util.Strings;
 
-import javax.servlet.http.HttpServletRequest;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
@@ -1049,6 +1048,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         String logTimestamp = logFormatter.format(new Date());
         Logger globusLogger = Logger.getLogger("edu.harvard.iq.dataverse.upload.client.DatasetServiceBean." + "GlobusUpload" + logTimestamp);
 
+
         //Logger.getLogger(DatasetServiceBean.class.getCanonicalName());
         //Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.DatasetServiceBean." + "ExportAll" + logTimestamp);
         String logFileName = "../logs" + File.separator + "globusUpload" + dataset.getId()+"_"+authUser.getIdentifier()+"_"+ logTimestamp + ".log";
@@ -1088,7 +1088,13 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
 
         String taskIdentifier = jsonObject.getString("taskIdentifier");
-        String ruleId = jsonObject.getString("ruleId");
+
+        String ruleId = "" ;
+        try {
+            jsonObject.getString("ruleId");
+        }catch (NullPointerException npe){
+
+        }
 
         //  globus task status check
         globusStatusCheck(taskIdentifier,globusLogger);
@@ -1403,7 +1409,13 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
 
         String taskIdentifier = jsonObject.getString("taskIdentifier");
-        String ruleId = jsonObject.getString("ruleId");
+        String ruleId = "";
+
+        try {
+            jsonObject.getString("ruleId");
+        }catch (NullPointerException npe){
+
+        }
 
         //  globus task status check
         globusStatusCheck(taskIdentifier,globusLogger);
