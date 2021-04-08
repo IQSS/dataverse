@@ -232,7 +232,7 @@ Our sample init script and systemd service file linked above tell Solr to only l
 
 To start Solr Apache in external use mode, you must access the Solr example directory:
 
-# cd /usr/local/solr-7.7.2/bin/
+# cd /usr/local/solr/solr-8.8.1/bin
 
 # ./solr start -j "-Djetty.host = DNS” -force
 
