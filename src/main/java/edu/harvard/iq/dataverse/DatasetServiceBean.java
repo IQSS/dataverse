@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.globus.fileDetailsHolder;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
@@ -745,6 +746,27 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     }
     
+    //get a string to add to save success message
+    //depends on dataset state and user privleges
+    public String getReminderString(Dataset dataset, boolean canPublishDataset) {
+
+        if(!dataset.isReleased() ){
+            //messages for draft state.
+            if (canPublishDataset){
+                return BundleUtil.getStringFromBundle("dataset.message.publish.remind.draft");
+            } else {
+                return BundleUtil.getStringFromBundle("dataset.message.submit.remind.draft");
+            }
+        } else{
+            //messages for new version - post-publish
+            if (canPublishDataset){
+                return BundleUtil.getStringFromBundle("dataset.message.publish.remind.version");
+            } else {
+                return BundleUtil.getStringFromBundle("dataset.message.submit.remind.version");
+            }
+        }
+    }
+
     public void updateLastExportTimeStamp(Long datasetId) {
         Date now = new Date();
         em.createNativeQuery("UPDATE Dataset SET lastExportTime='"+now.toString()+"' WHERE id="+datasetId).executeUpdate();
@@ -1036,7 +1058,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             hdLogger.info("Successfully destroyed the dataset");
         } catch (Exception ex) {
             hdLogger.warning("Failed to destroy the dataset");
-        }
+        } 
     }
 
 

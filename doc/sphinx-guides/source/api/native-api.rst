@@ -1522,7 +1522,7 @@ The API will output the list of locks, for example::
 
 If the dataset is not locked (or if there is no lock of the requested type), the API will return an empty list. 
 
-The following API end point will lock a Dataset with a lock of specified type:
+The following API end point will lock a Dataset with a lock of specified type. Note that this requires “superuser” credentials:
 
 .. code-block:: bash
 
@@ -1539,7 +1539,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST https://demo.dataverse.org/api/datasets/24/lock/Ingest
 
-Use the following API to unlock the dataset, by deleting all the locks currently on the dataset:
+Use the following API to unlock the dataset, by deleting all the locks currently on the dataset. Note that this requires “superuser” credentials:
 
 .. code-block:: bash
 
@@ -1555,7 +1555,7 @@ The fully expanded example above (without environment variables) looks like this
 
   curl -H "X-Dataverse-key: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE https://demo.dataverse.org/api/datasets/24/locks
 
-Or, to delete a lock of the type specified only:
+Or, to delete a lock of the type specified only. Note that this requires “superuser” credentials:
 
 .. code-block:: bash
 
