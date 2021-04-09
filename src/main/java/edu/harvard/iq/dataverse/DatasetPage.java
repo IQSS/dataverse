@@ -2871,6 +2871,10 @@ public class DatasetPage implements java.io.Serializable {
         return FileSizeChecker.bytesToHumanReadable(getSizeOfSelectedOrigNumeric());
     }
     
+    public String getSizeOfSelectedMaxAsString(){
+        return FileSizeChecker.bytesToHumanReadable(Math.max(getSizeOfSelectedOrigNumeric(), getSizeOfDatasetArchivalNumeric()) );
+    }
+    
     public String getZipDownloadLimitAsString(){
         return FileSizeChecker.bytesToHumanReadable(settingsWrapper.getZipDownloadLimit());
     }

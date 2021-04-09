@@ -331,11 +331,11 @@
                     </p>
                 </div>
             </div>
-            <div class="row" jsf:rendered="#{(DatasetPage.sizeOfSelectedOrigNumeric gt settingsWrapper.zipDownloadLimit)
+            <div class="row" jsf:rendered="#{(DatasetPage.sizeOfSelectedArchivalNumeric gt settingsWrapper.zipDownloadLimit)
                                              and DatasetPage.selectedFiles.size() > 1}">
                 <div class="col-xs-12 bg-warning text-left" style="font-weight:normal;padding-top:.5em;">
                     <h:outputFormat value="#{bundle['file.zip.download.exceeds.limit']}">
-                        <f:param value="#{DatasetPage.sizeOfSelectedAsString}"/>
+                        <f:param value="#{DatasetPage.sizeOfSelectedMaxAsString}"/>
                         <f:param value="#{DatasetPage.zipDownloadLimitAsString}"/>
                     </h:outputFormat>
                 </div>

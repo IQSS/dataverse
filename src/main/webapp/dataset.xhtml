@@ -158,11 +158,12 @@
                                                                     </h:outputFormat>
                                                                 </p:commandLink>
                                                             </li>
+                                                            <div>
                                                             <ui:fragment rendered="#{DatasetPage.canDownloadFiles()  and (DatasetPage.sizeOfDatasetOrigNumeric > settingsWrapper.zipDownloadLimit) }">                                                                                                                               
                                                                     <h:outputText value="#{bundle['dataset.accessBtn.too.big']}">                                           
                                                                     </h:outputText>                                                            
                                                             </ui:fragment> 
-                                                            
+                                                            </div>
                                                             <!-- DOWNLOAD ORIGINAL BUTTON (TABULAR FILES PRESENT) -->
                                                             <li jsf:rendered="#{DatasetPage.versionHasTabular and DatasetPage.sizeOfDatasetOrig != '0 B'  and !(DatasetPage.sizeOfDatasetOrigNumeric > settingsWrapper.zipDownloadLimit) }">
                                                                 <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadOriginal()}" 
@@ -913,16 +914,12 @@
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> 
                             
                                 <h:outputFormat value="#{bundle['file.zip.download.exceeds.limit']}">
-                                    <f:param value="#{DatasetPage.sizeOfSelectedAsString}"/>
+                                    <f:param value="#{DatasetPage.sizeOfSelectedMaxAsString}"/>
                                     <f:param value="#{DatasetPage.zipDownloadLimitAsString}"/>
                                 </h:outputFormat>
-                            
+                                
                         </p>    
-                        <div class="button-block">
-                            <button class="btn btn-default" onclick="PF('downloadTooLarge').hide();" type="button">
-                                #{bundle.close}
-                            </button>
-                        </div>
+
                     </p:dialog>
                     <p:dialog id="downloadMixed" styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadMixed" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.mixedSelectedFilesForDownload']}</p>
