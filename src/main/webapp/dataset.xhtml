@@ -164,7 +164,7 @@
                                                             </ui:fragment> 
                                                             
                                                             <!-- DOWNLOAD ORIGINAL BUTTON (TABULAR FILES PRESENT) -->
-                                                            <li jsf:rendered="#{DatasetPage.versionHasTabular and DatasetPage.sizeOfDatasetOrig != '0 B' }">
+                                                            <li jsf:rendered="#{DatasetPage.versionHasTabular and DatasetPage.sizeOfDatasetOrig != '0 B'  and !(DatasetPage.sizeOfDatasetOrigNumeric > settingsWrapper.zipDownloadLimit) }">
                                                                 <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadOriginal()}" 
                                                                                oncomplete="bind_bsui_components();"
                                                                                styleClass="btn-download">
@@ -174,8 +174,12 @@
                                                                     </h:outputFormat>
                                                                 </p:commandLink>
                                                             </li>
+                                                            <ui:fragment rendered="#{DatasetPage.canDownloadFiles()  and (DatasetPage.sizeOfDatasetOrigNumeric > settingsWrapper.zipDownloadLimit) }">                                                                                                                               
+                                                                    <h:outputText value="#{bundle['dataset.accessBtn.original.too.big']}">                                           
+                                                                    </h:outputText>                                                            
+                                                            </ui:fragment>
                                                             <!-- DOWNLOAD ARCHIVAL FILES (TABULAR FILES PRESENT) -->
-                                                            <li jsf:rendered="#{DatasetPage.versionHasTabular}">
+                                                            <li jsf:rendered="#{DatasetPage.versionHasTabular and !(DatasetPage.sizeOfDatasetArchivalNumeric > settingsWrapper.zipDownloadLimit)}">
                                                                 <p:commandLink update="@form" oncomplete="bind_bsui_components();" 
                                                                                actionListener="#{DatasetPage.validateAllFilesForDownloadArchival()}" styleClass="btn-download">
                                                                     #{bundle.downloadArchival}
@@ -184,6 +188,10 @@
                                                                     </h:outputFormat>
                                                                 </p:commandLink>
                                                             </li>
+                                                            <ui:fragment rendered="#{DatasetPage.versionHasTabular  and (DatasetPage.sizeOfDatasetArchivalNumeric > settingsWrapper.zipDownloadLimit) }">                                                                                                                               
+                                                                    <h:outputText value="#{bundle['dataset.accessBtn.archival.too.big']}">                                           
+                                                                    </h:outputText>                                                            
+                                                            </ui:fragment>
                                                         </ui:fragment>
                                                         
                                                      

@@ -2853,12 +2853,17 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public Long getSizeOfDatasetNumeric() {
-        boolean original = false;
-        return DatasetUtil.getDownloadSizeNumeric(workingVersion, original);
+        //get min of orig/archival
+        return Math.min(DatasetUtil.getDownloadSizeNumeric(workingVersion, true), DatasetUtil.getDownloadSizeNumeric(workingVersion, false)) ;
     }
     
     public Long getSizeOfDatasetOrigNumeric() {
         boolean original = true;
+        return DatasetUtil.getDownloadSizeNumeric(workingVersion, original);
+    }
+    
+    public Long getSizeOfDatasetArchivalNumeric() {
+        boolean original = false;
         return DatasetUtil.getDownloadSizeNumeric(workingVersion, original);
     }
     
@@ -2933,6 +2938,7 @@ public class DatasetPage implements java.io.Serializable {
        
         //if there are two or more files with a total size 
         //over the zip limit post a "too large" popup 
+        System.out.print("bytes: " + bytes);
         if (bytes > settingsWrapper.getZipDownloadLimit() && selectedDownloadableFiles.size() > 1 ){
             PrimeFaces.current().executeScript("PF('downloadTooLarge').show()");
             return;
