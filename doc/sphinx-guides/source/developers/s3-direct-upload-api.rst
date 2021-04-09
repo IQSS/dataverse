@@ -97,7 +97,6 @@ jsonData normally includes information such as a file description, tags, provena
 * "storageIdentifier" - String, as specified in prior calls
 * "fileName" - String
 * "mimeType" - String
-* "fileSize" - number of bytes
 * fixity/checksum: either: 
 
   * "md5Hash" - String with MD5 hash value, or
@@ -126,7 +125,6 @@ jsonData normally includes information such as a file description, tags, provena
 * "storageIdentifier" - String, as specified in prior calls
 * "fileName" - String
 * "mimeType" - String
-* "fileSize" - number of bytes
 * fixity/checksum: either: 
 
   * "md5Hash" - String with MD5 hash value, or
