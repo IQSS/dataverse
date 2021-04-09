@@ -55,6 +55,7 @@ public class LicenseServiceBean {
     public License save(License license) throws PersistenceException, RequestBodyException {
         if (license.getId() == null) {
             em.persist(license);
+            em.flush();
             return license;
         } else {
             throw new RequestBodyException("There shouldn't be an ID in the request body");
