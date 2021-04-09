@@ -1957,8 +1957,8 @@ public class Admin extends AbstractApiBean {
     @Path("/licenses")
     public Response addLicense(JsonObject jsonObject) {
         try {
-        	License license = new License();
-			license.setName(jsonObject.getString("name"));
+            License license = new License();
+            license.setName(jsonObject.getString("name"));
             license.setShortDescription(jsonObject.getString("shortDescription"));
             license.setUri(new URI(jsonObject.getString("uri")));
             license.setIconUrl(new URI(jsonObject.getString("iconUrl")));
@@ -1966,8 +1966,8 @@ public class Admin extends AbstractApiBean {
             licenseService.save(license);
             return created("/api/admin/licenses", Json.createObjectBuilder().add("message", "License created"));
         } catch (RequestBodyException e) {
-			return error(Response.Status.BAD_REQUEST, e.getMessage());
-		} catch (Exception e) {
+            return error(Response.Status.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
             return error(Response.Status.BAD_REQUEST, "Something went wrong.");
         }
 	}
