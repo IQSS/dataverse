@@ -25,7 +25,6 @@ import java.util.Properties;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.annotation.Resource;
@@ -88,8 +87,8 @@ public class MailServiceBean implements java.io.Serializable {
             String[] recipientStrings = to.split(",");
             InternetAddress[] recipients = new InternetAddress[recipientStrings.length];
             try {
-            	InternetAddress fromAddress=getSystemAddress();
-                setSender(reply, fromAddress);
+            	InternetAddress fromAddress = getSystemAddress();
+                setContactDelegation(reply, fromAddress);
                 msg.setFrom(fromAddress);
                 msg.setReplyTo(new Address[] {new InternetAddress(reply, charset)});
                 for (int i = 0; i < recipients.length; i++) {
@@ -169,7 +168,7 @@ public class MailServiceBean implements java.io.Serializable {
     }
 
     private InternetAddress getSystemAddress() {
-       String systemEmail =  settingsService.getValueForKey(Key.SystemEmail);
+       String systemEmail = settingsService.getValueForKey(Key.SystemEmail);
        return MailUtil.parseSystemAddress(systemEmail);
     }
 
@@ -182,9 +181,9 @@ public class MailServiceBean implements java.io.Serializable {
         try {
             MimeMessage msg = new MimeMessage(session);
             // Always send from system address to avoid email being blocked
-            InternetAddress fromAddress=getSystemAddress();
+            InternetAddress fromAddress = getSystemAddress();
             try {
-                setSender(reply, fromAddress);
+                setContactDelegation(reply, fromAddress);
             } catch (UnsupportedEncodingException ex) {
                 logger.severe(ex.getMessage());
             }
@@ -219,7 +218,14 @@ public class MailServiceBean implements java.io.Serializable {
         }
     }
 
-    private void setSender(String reply, InternetAddress fromAddress) throws UnsupportedEncodingException {
+    /**
+     * Set the contact delegation as "[dataverse team] on behalf of [user email]"
+     * @param reply The user's email address as give via the contact form
+     * @param fromAddress The system email address
+     * @throws UnsupportedEncodingException
+     */
+    public void setContactDelegation(String reply, InternetAddress fromAddress)
+            throws UnsupportedEncodingException {
         String personal = fromAddress.getPersonal();
         if (personal == null)
             personal = "Dataverse administrator";
@@ -231,7 +237,7 @@ public class MailServiceBean implements java.io.Serializable {
         );
     }
 
-    public Boolean sendNotificationEmail(UserNotification notification){  
+    public Boolean sendNotificationEmail(UserNotification notification){
         return sendNotificationEmail(notification, "");
     }
 
