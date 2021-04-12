@@ -133,7 +133,7 @@ public class SignpostingResources {
 
         String type = "<https://schema.org/AboutPage>;rel=\"type\"";;
         if (useDefaultFileType) {
-            type = "<https://schema.org/AboutPage>;rel=\"type\",<https://schema.org/Dataset>;rel=\"type\"";
+            type = "<https://schema.org/AboutPage>;rel=\"type\",<" + defaultFileTypeValue + ">;rel=\"type\"";
         }
         valueList.add(type);
 
@@ -181,10 +181,8 @@ public class SignpostingResources {
             DataFile df = fm.getDataFile();
             if (Objects.equals(result, "")) {
                  result = "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"" + df.getContentType() + "\"";
-//                result = "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"https://schema.org/Dataset\"";
             } else {
                  result = String.join(",", result, "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"" + df.getContentType() + "\"");
-//                result = String.join(",", result, "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"https://schema.org/Dataset\"");
             }
         }
         return result;
