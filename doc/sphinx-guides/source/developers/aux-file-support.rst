@@ -34,6 +34,6 @@ formatTag and formatVersion (if applicable) associated with the auxiliary file:
   export FORMAT_TAG='dpJson'
   export FORMAT_VERSION='v1'
 
-  curl "$SERVER_URL/api/access/datafile/$FILE_ID/$FORMAT_TAG/$FORMAT_VERSION"
+  curl "$SERVER_URL/api/access/datafile/$FILE_ID/metadata/$FORMAT_TAG/$FORMAT_VERSION"
 
 It is also possible to download the auxiliary file from the web interface. Auxiliary files that have a tag beginning with "dp" appear under "Differentially Private Statistics". The rest appear under "Other Auxiliary Files".
