@@ -564,7 +564,7 @@ public class JsonPrinter {
                 .add("formatVersion", auxFile.getFormatVersion()) // "label" is the filename
                 .add("origin", auxFile.getOrigin()) 
                 .add("isPublic", auxFile.getIsPublic())
-                .add("type", auxFile.getTypeFriendly())
+                .add("type", auxFile.getType())
                 .add("contentType", auxFile.getContentType())
                 .add("fileSize", auxFile.getFileSize())
                 .add("checksum", auxFile.getChecksum())

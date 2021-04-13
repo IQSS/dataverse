@@ -5,7 +5,7 @@ Auxiliary file support is experimental. Auxiliary files in the Dataverse Softwar
 
 Adding an Auxiliary File to a Datafile
 --------------------------------------
-To add an auxiliary file, specify the primary key of the datafile (FILE_ID), and the formatTag and formatVersion (if applicable) associated with the auxiliary file. There are multiple form parameters. "Origin" specifies the application/entity that created the auxiliary file, and "isPublic" controls access to downloading the file. If "isPublic" is true, any user can download the file if the dataset has been published, else, access authorization is based on the access rules as defined for the DataFile itself. The "type" parameter is used to group similar auxiliary files in the UI under "Differentially Private Statistics" if you use a type of "DP". All other auxiliary files appear under "Other Auxiliary Files".
+To add an auxiliary file, specify the primary key of the datafile (FILE_ID), and the formatTag and formatVersion (if applicable) associated with the auxiliary file. There are multiple form parameters. "Origin" specifies the application/entity that created the auxiliary file, and "isPublic" controls access to downloading the file. If "isPublic" is true, any user can download the file if the dataset has been published, else, access authorization is based on the access rules as defined for the DataFile itself. The "type" parameter can be "DP" (for Differentially Private Statistics), "OTHER" (this will be selected for you if don't specify a type), or a type of your own choosing (which will be displayed along side "OTHER" auxiliary files until a friendly name is added to a properties file).
 
 .. code-block:: bash
 
@@ -34,4 +34,6 @@ formatTag and formatVersion (if applicable) associated with the auxiliary file:
   export FORMAT_TAG='dpJson'
   export FORMAT_VERSION='v1'
 
-  curl "$SERVER_URL/api/access/datafile/$FILE_ID/metadata/$FORMAT_TAG/$FORMAT_VERSION"
+  curl "$SERVER_URL/api/access/datafile/$FILE_ID/$FORMAT_TAG/$FORMAT_VERSION"
+
+It is also possible to download the auxiliary file from the web interface. Auxiliary files that have type=DP appear under "Differentially Private Statistics". The rest appear under "Other Auxiliary Files".

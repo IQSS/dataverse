@@ -7,12 +7,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
-import org.hamcrest.Matchers;
 import org.junit.Assert;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
@@ -81,7 +79,7 @@ public class AuxiliaryFilesIT {
         uploadAuxFileJson.prettyPrint();
         uploadAuxFileJson.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.type", equalTo("Differentially Private Statistics"))
+                .body("data.type", equalTo("DP"))
                 // FIXME: application/json would be better
                 .body("data.contentType", equalTo("text/plain"));
 
@@ -96,6 +94,7 @@ public class AuxiliaryFilesIT {
         uploadAuxFileXml.prettyPrint();
         uploadAuxFileXml.then().assertThat()
                 .statusCode(OK.getStatusCode())
+                .body("data.type", equalTo("DP"))
                 // FIXME: application/xml would be better
                 .body("data.contentType", equalTo("text/plain"));
 
@@ -144,6 +143,7 @@ public class AuxiliaryFilesIT {
         uploadAuxFilePdf.prettyPrint();
         uploadAuxFilePdf.then().assertThat()
                 .statusCode(OK.getStatusCode())
+                .body("data.type", equalTo("DP"))
                 .body("data.contentType", equalTo(mimeTypePdf));
 
         // Non-DP aux file, no type specified
@@ -157,26 +157,42 @@ public class AuxiliaryFilesIT {
         uploadAuxFileMd.prettyPrint();
         uploadAuxFileMd.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.type", equalTo("Other Auxiliary Files"))
+                .body("data.type", equalTo(null))
                 .body("data.contentType", equalTo("text/plain"));
 
-        // Invalid type
-        Path pathToAuxFileTxt = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "foo.txt");
-        String contentOfTxt = "Just testing an invalid type.";
+        // Unknown type
+        Path pathToAuxFileTxt = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "nbt.txt");
+        String contentOfTxt = "It's gonna be huge.";
         java.nio.file.Files.write(pathToAuxFileTxt, contentOfTxt.getBytes());
-        String formatTagTxt = "justTesting";
+        String formatTagTxt = "gonnaBeHuge";
         String formatVersionTxt = "0.1";
         String mimeTypeTxt = "text/plain";
-        String typeTxt = "JUNK";
+        String typeTxt = "NEXT_BIG_THING";
         Response uploadAuxFileTxt = UtilIT.uploadAuxFile(fileId, pathToAuxFileTxt.toString(), formatTagTxt, formatVersionTxt, mimeTypeTxt, true, typeTxt, apiToken);
         uploadAuxFileTxt.prettyPrint();
         uploadAuxFileTxt.then().assertThat()
-                .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", Matchers.startsWith("Invalid type"));
+                .statusCode(OK.getStatusCode())
+                //                .body("data.type", equalTo("Other Auxiliary Files"));
+                .body("data.type", equalTo("NEXT_BIG_THING"));
+
+        // Another Unknown type
+        Path pathToAuxFileTxt2 = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "future.txt");
+        String contentOfTxt2 = "The future's so bright I have to wear shades.";
+        java.nio.file.Files.write(pathToAuxFileTxt2, contentOfTxt2.getBytes());
+        String formatTagTxt2 = "soBright";
+        String formatVersionTxt2 = "0.1";
+        String mimeTypeTxt2 = "text/plain";
+        String typeTxt2 = "FUTURE_FUN";
+        Response uploadAuxFileTxt2 = UtilIT.uploadAuxFile(fileId, pathToAuxFileTxt2.toString(), formatTagTxt2, formatVersionTxt2, mimeTypeTxt2, true, typeTxt2, apiToken);
+        uploadAuxFileTxt2.prettyPrint();
+        uploadAuxFileTxt2.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                //                .body("data.type", equalTo("Other Auxiliary Files"));
+                .body("data.type", equalTo("FUTURE_FUN"));
 
         // rst aux file with public=false
         Path pathToAuxFileRst = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "nonpublic.rst");
-        String contentOfRst = "Nonpublic stuff in here..";
+        String contentOfRst = "Nonpublic stuff in here.";
         java.nio.file.Files.write(pathToAuxFileRst, contentOfRst.getBytes());
         String formatTagRst = "nonPublic";
         String formatVersionRst = "0.1";
@@ -185,7 +201,7 @@ public class AuxiliaryFilesIT {
         uploadAuxFileRst.prettyPrint();
         uploadAuxFileRst.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body("data.type", equalTo("Other Auxiliary Files"))
+                .body("data.type", equalTo(null))
                 .body("data.contentType", equalTo("text/plain"));
 
         // Download JSON aux file.
