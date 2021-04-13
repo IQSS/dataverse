@@ -33,7 +33,7 @@ class MailServiceBeanTest {
         try {
             mailServiceBean.setContactDelegation("user@example.edu", fromAddress);
             assertEquals(
-                "Dataverse administrator on behalf of user@example.edu",
+                "Dataverse Installation Admin on behalf of user@example.edu",
                 fromAddress.getPersonal()
             );
         } catch (UnsupportedEncodingException e) {

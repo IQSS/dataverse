@@ -226,9 +226,11 @@ public class MailServiceBean implements java.io.Serializable {
      */
     public void setContactDelegation(String reply, InternetAddress fromAddress)
             throws UnsupportedEncodingException {
-        String personal = fromAddress.getPersonal();
-        if (personal == null)
-            personal = "Dataverse administrator";
+        String personal = fromAddress.getPersonal() != null
+            ? fromAddress.getPersonal()
+            : BrandingUtil.getInstallationBrandName() != null
+                ? BrandingUtil.getInstallationBrandName()
+                : BundleUtil.getStringFromBundle("contact.delegation.default_personal");
         fromAddress.setPersonal(
             BundleUtil.getStringFromBundle(
                 "contact.delegation",
