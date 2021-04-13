@@ -98,25 +98,16 @@ PostgreSQL
 Installing PostgreSQL
 =======================
 
-Version 9.6 is strongly recommended because it is the version developers and QA test with::
+The application has been tested with PostgreSQL versions up to 13. We recommend installing the latest version that is available for your OS distribution. *For example*, to install PostgreSQL 13 under RHEL/CentOS 7::
 
 	# yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 	# yum makecache fast
-	# yum install -y postgresql96-server
-	# /usr/pgsql-9.6/bin/postgresql96-setup initdb
-	# /usr/bin/systemctl start postgresql-9.6
-	# /usr/bin/systemctl enable postgresql-9.6
+	# yum install -y postgresql13-server
+	# /usr/pgsql-13/bin/postgresql-13-setup initdb
+	# /usr/bin/systemctl start postgresql-13
+	# /usr/bin/systemctl enable postgresql-13
 
-The above steps are specific to RHEL/CentOS 7. For RHEL/CentOS 8 you must install Postgres 10 or higher::
-
-	# yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
-	# yum makecache fast
-	# yum install -y postgresql10-server
-	# /usr/pgsql-10/bin/postgresql-10-setup initdb
-	# systemctl start postgresql-10
-	# systemctl enable postgresql-10
-
-Note that the Dataverse Software installer includes its own Postgres JDBC driver. If you choose to install the newest version of Postgres (12 as of this writing), you may need to grab a current JDBC driver from https://jdbc.postgresql.org/download.html before launching the install script.
+For RHEL/CentOS 8 the process would be identical, except for the very first command - you would need to install the "EL-8" yum repository configuration instead. 
 
 Configuring Database Access for the Dataverse Installation (and the Dataverse Software Installer)
 =================================================================================================
@@ -152,7 +143,7 @@ Configuring Database Access for the Dataverse Installation (and the Dataverse So
 
 - **Important: PostgreSQL must be restarted** for the configuration changes to take effect! On RHEL/CentOS 7 and similar (provided you installed Postgres as instructed above)::
 
-        # systemctl restart postgresql-9.6
+        # systemctl restart postgresql-13
 
   On MacOS X a "Reload Configuration" icon is usually supplied in the PostgreSQL application folder. Or you could look up the process id of the PostgreSQL postmaster process, and send it the SIGHUP signal::
 

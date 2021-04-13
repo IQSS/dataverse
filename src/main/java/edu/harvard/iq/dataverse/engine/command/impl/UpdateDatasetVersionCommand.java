@@ -9,6 +9,8 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.util.FileMetadataUtil;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -165,38 +167,77 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
             }
             // we have to merge to update the database but not flush because
             // we don't want to create two draft versions!
-            // Dataset tempDataset = ctxt.em().merge(theDataset);
-            //SEK 5/30/2019
-            // This interim merge is causing:
-            // java.lang.IllegalArgumentException: Cannot merge an entity that has been removed: edu.harvard.iq.dvn.core.study.FileMetadata
-            // at the merge at line 177
-            //Is this merge needed to add the lock?  - seems to be 'no' so what is it needed for?
-            
-        //    theDataset = ctxt.em().merge(theDataset);
+            // Although not completely tested, it looks like this merge handles the
+            // thumbnail case - if the filemetadata is removed from the context below and
+            // the dataset still references it, that could cause an issue. Merging here
+            // avoids any reference from it being the dataset thumbnail
+            theDataset = ctxt.em().merge(theDataset);
 
+            /*
+             * This code has to handle many cases, and anyone making changes should
+             * carefully check tests and basic methods that update the dataset version. The
+             * differences between the cases stem primarily from differences in whether the
+             * files to add, and their filemetadata, and files to delete, and their
+             * filemetadata have been persisted at this point, which manifests itself as to
+             * whether they have id numbers or not, and apparently, whether or not they
+             * exists in lists, e.g. the getFileMetadatas() list of a datafile.
+             *
+             * To handle this, the code is carefully checking to make sure that deletions
+             * are deleting the right things and not, for example, doing a remove(fmd) when
+             * the fmd.getId() is null, which just removes the first element found.
+             */
             for (FileMetadata fmd : filesToDelete) {
-                if (!fmd.getDataFile().isReleased()) {
-                    // if file is draft (ie. new to this version, delete; otherwise just remove
-                    // filemetadata object)
-                    ctxt.engine().submit(new DeleteDataFileCommand(fmd.getDataFile(), getRequest()));
-                    theDataset.getFiles().remove(fmd.getDataFile());
-                    theDataset.getEditVersion().getFileMetadatas().remove(fmd);
-                    // added this check to handle issue where you could not deleter a file that
-                    // shared a category with a new file
-                    // the relation ship does not seem to cascade, yet somehow it was trying to
-                    // merge the filemetadata
-                    // todo: clean this up some when we clean the create / update dataset methods
-                    for (DataFileCategory cat : theDataset.getCategories()) {
-                        cat.getFileMetadatas().remove(fmd);
+                logger.fine("Deleting fmd: " + fmd.getId() + " for file: " + fmd.getDataFile().getId());
+                // if file is draft (ie. new to this version), delete it. Otherwise just remove
+                // filemetadata object)
+                // There are a few cases to handle:
+                // * the fmd has an id (has been persisted) and is the one in the current
+                // (draft) version
+                // * the fmd has an id (has been persisted) but it is from a published version
+                // so we need the corresponding one from the draft version (i.e. created during
+                // a getEditVersion call)
+                // * the fmd has no id (hasn't been persisted) so we have to use non-id based
+                // means to identify it and remove it from lists
+
+                if (fmd.getId() != null) {
+                    // If the datasetversion doesn't match, we have the fmd from a published version
+                    // and we need to remove the one for the newly created draft instead, so we find
+                    // it here
+                    logger.fine("Edit ver: " + theDataset.getEditVersion().getId());
+                    logger.fine("fmd ver: " + fmd.getDatasetVersion().getId());
+                    if (!theDataset.getEditVersion().equals(fmd.getDatasetVersion())) {
+                        fmd = FileMetadataUtil.getFmdForFileInEditVersion(fmd, theDataset.getEditVersion());
                     }
+                } 
+                fmd = ctxt.em().merge(fmd);
+
+                // There are two datafile cases as well - the file has been released, so we're
+                // just removing it from the current draft version or it is only in the draft
+                // version and we completely remove the file.
+                if (!fmd.getDataFile().isReleased()) {
+                    // remove the file
+                    ctxt.engine().submit(new DeleteDataFileCommand(fmd.getDataFile(), getRequest()));
+                    // and remove the file from the dataset's list
+                    theDataset.getFiles().remove(fmd.getDataFile());
                 } else {
-                    FileMetadata mergedFmd = ctxt.em().merge(fmd);
-                    ctxt.em().remove(mergedFmd);
-                    fmd.getDataFile().getFileMetadatas().remove(mergedFmd);
-                    theDataset.getEditVersion().getFileMetadatas().remove(mergedFmd);
+                    // if we aren't removing the file, we need to explicitly remove the fmd from the
+                    // context and then remove it from the datafile's list
+                    ctxt.em().remove(fmd);
+                    FileMetadataUtil.removeFileMetadataFromList(fmd.getDataFile().getFileMetadatas(), fmd);
+                }
+                // In either case, to fully remove the fmd, we have to remove any other possible
+                // references
+                // From the datasetversion
+                FileMetadataUtil.removeFileMetadataFromList(theDataset.getEditVersion().getFileMetadatas(), fmd);
+                // and from the list associated with each category
+                for (DataFileCategory cat : theDataset.getCategories()) {
+                    FileMetadataUtil.removeFileMetadataFromList(cat.getFileMetadatas(), fmd);
                 }
             }
-
+            for(FileMetadata fmd: theDataset.getEditVersion().getFileMetadatas()) {
+                logger.fine("FMD: " + fmd.getId() + " for file: " + fmd.getDataFile().getId() + "is in final draft version");    
+            }
+            
             if (recalculateUNF) {
                 ctxt.ingest().recalculateDatasetVersionUNF(theDataset.getEditVersion());
             }

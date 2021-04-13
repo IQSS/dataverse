@@ -96,7 +96,7 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             // We start a workflow
             theDataset = ctxt.em().merge(theDataset);
             ctxt.em().flush();
-            ctxt.workflows().start(prePubWf.get(), buildContext(theDataset, TriggerType.PrePublishDataset, datasetExternallyReleased));
+            ctxt.workflows().start(prePubWf.get(), buildContext(theDataset, TriggerType.PrePublishDataset, datasetExternallyReleased), true);
             return new PublishDatasetResult(theDataset, Status.Workflow);
             
         } else{
