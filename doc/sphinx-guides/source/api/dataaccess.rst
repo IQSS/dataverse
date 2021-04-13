@@ -87,7 +87,7 @@ Basic access URI:
 
   Example: Getting the file whose DOI is *10.5072/FK2/J8SJZB* ::
 
-    GET http://$SERVER/api/access/datafile/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
+    GET http://$SERVER/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/J8SJZB
 
 
 Parameters:

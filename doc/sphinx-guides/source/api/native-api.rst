@@ -1246,6 +1246,8 @@ When adding a file to a dataset, you can optionally specify the following:
 - The "File Path" of the file, indicating which folder the file should be uploaded to within the dataset.
 - Whether or not the file is restricted.
 
+Note that when a Dataverse instance is configured to use S3 storage with direct upload enabled, there is API support to send a file directly to S3. This is more complex and is described in the :doc:`/developers/s3-direct-upload-api` guide.
+ 
 In the curl example below, all of the above are specified but they are optional.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
@@ -1958,6 +1960,8 @@ Replacing Files
 ~~~~~~~~~~~~~~~
 
 Replace an existing file where ``ID`` is the database id of the file to replace or ``PERSISTENT_ID`` is the persistent id (DOI or Handle) of the file. Requires the ``file`` to be passed as well as a ``jsonString`` expressing the new metadata.  Note that metadata such as description, directoryLabel (File Path) and tags are not carried over from the file being replaced.
+
+Note that when a Dataverse instance is configured to use S3 storage with direct upload enabled, there is API support to send a replacement file directly to S3. This is more complex and is described in the :doc:`/developers/s3-direct-upload-api` guide.
 
 A curl example using an ``ID``
 
