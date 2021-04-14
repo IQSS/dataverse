@@ -2891,6 +2891,10 @@ public class DatasetPage implements java.io.Serializable {
         
     }
     
+    public Long getSizeOfSelectedMaxNumeric(){
+       return Math.max(DatasetUtil.getDownloadSizeNumericBySelectedFiles(selectedFiles, true), DatasetUtil.getDownloadSizeNumericBySelectedFiles(selectedFiles, false)) ;       
+    }
+    
     public String getSizeOfDatasetOrig() {
         boolean original = true;
         return DatasetUtil.getDownloadSize(workingVersion, original);
