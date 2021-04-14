@@ -17,4 +17,10 @@ if [ ! -e dv/deps/solr-8.8.1dv.tgz ]; then
 	wget https://archive.apache.org/dist/lucene/solr/8.8.1/solr-8.8.1.tgz -O solr-8.8.1dv.tgz
 	cd ../../
 fi
-
+cd ../../
+if [ ! -e apache-maven-3.6.3-bin.tar.gz ]; then
+	echo "maven dependency prep"
+	# cd dv/deps/	
+	wget https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz -O apache-maven-3.6.3-bin.tar.gz 
+fi
+cd conf/docker-aio/

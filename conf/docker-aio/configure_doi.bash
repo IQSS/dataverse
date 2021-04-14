@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd /usr/local/glassfish4
+cd /opt/payara5
 
 # if appropriate; reconfigure PID provider on the basis of environmental variables.
 if [ ! -z "${DoiProvider}" ]; then

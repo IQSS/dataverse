@@ -74,3 +74,6 @@ src/main/webapp/resources/images/dataverseproject.png.thumb140
 
 # visual studio code
 .factorypath
+
+# docker config file
+conf/docker-aio/env-var-4-docker.config
