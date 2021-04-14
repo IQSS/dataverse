@@ -52,8 +52,8 @@ import org.primefaces.model.DualListModel;
 import javax.ejb.EJBException;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.primefaces.PrimeFaces;
 import org.primefaces.event.TransferEvent;
 
