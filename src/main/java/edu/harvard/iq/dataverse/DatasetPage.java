@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
@@ -9,8 +10,8 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
-import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
@@ -20,31 +21,115 @@ import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.*;
+import edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CuratePublishedDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeaccessionDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeletePrivateUrlCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
-import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
-import edu.harvard.iq.dataverse.externaltools.ExternalTool;
-import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
-import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
-import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
-import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import edu.harvard.iq.dataverse.metadataimport.ForeignMetadataImportServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlUtil;
-import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
-import edu.harvard.iq.dataverse.search.*;
+import edu.harvard.iq.dataverse.search.SearchFilesServiceBean;
+import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.*;
+import edu.harvard.iq.dataverse.util.ArchiverUtil;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.JsfHelper;
+import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
+
+import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.workflows.WorkflowComment;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.Collection;
+import java.util.logging.Logger;
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
+import javax.faces.event.ValueChangeEvent;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.file.UploadedFile;
+import javax.validation.ConstraintViolation;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.io.IOUtils;
+//import org.primefaces.context.RequestContext;
+import java.util.Arrays;
+import java.util.HashSet;
+import javax.faces.model.SelectItem;
+import java.util.logging.Level;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
+import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
+import edu.harvard.iq.dataverse.externaltools.ExternalTool;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
+import edu.harvard.iq.dataverse.export.SchemaDotOrgExporter;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
+import java.util.Collections;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+
+import javax.faces.event.AjaxBehaviorEvent;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.apache.commons.io.IOUtils;
+
+import org.primefaces.component.tabview.TabView;
+import org.primefaces.event.CloseEvent;
+import org.primefaces.event.TabChangeEvent;
+import org.primefaces.event.data.PageEvent;
+
+import edu.harvard.iq.dataverse.search.FacetLabel;
+import edu.harvard.iq.dataverse.search.SearchConstants;
+import edu.harvard.iq.dataverse.search.SearchFields;
+import edu.harvard.iq.dataverse.search.SearchServiceBean;
+import edu.harvard.iq.dataverse.search.SearchUtil;
+import edu.harvard.iq.dataverse.search.SolrClientService;
+import java.util.Comparator;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -52,11 +137,6 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.primefaces.PrimeFaces;
-import org.primefaces.component.tabview.TabView;
-import org.primefaces.event.CloseEvent;
-import org.primefaces.event.FileUploadEvent;
-import org.primefaces.event.TabChangeEvent;
-import org.primefaces.event.data.PageEvent;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 import org.primefaces.model.file.UploadedFile;
@@ -95,7 +175,7 @@ import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
  */
 @ViewScoped
 @Named("DatasetPage")
-public class DatasetPage implements Serializable {
+public class DatasetPage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
 
@@ -1232,6 +1312,10 @@ public class DatasetPage implements Serializable {
         return permissionsWrapper.canIssuePublishDataverseCommand(dataset.getOwner());
     }
 
+    public boolean canPublishDataset(){
+        return permissionsWrapper.canIssuePublishDatasetCommand(dataset);
+    }
+
     public boolean canViewUnpublishedDataset() {
         return permissionsWrapper.canViewUnpublishedDataset( dvRequestService.getDataverseRequest(), dataset);
     }
@@ -1807,6 +1891,8 @@ public class DatasetPage implements Serializable {
                 MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, workingVersion);
                 mdcLogService.logEntry(entry);
             }
+            displayWorkflowComments();
+
 
             if (initFull) {
                 // init the list of FileMetadatas
@@ -1967,6 +2053,22 @@ public class DatasetPage implements Serializable {
         return null;
     }
     
+    private void displayWorkflowComments() {
+        List<WorkflowComment> comments = workingVersion.getWorkflowComments();
+        for (WorkflowComment wfc : comments) {
+            if (wfc.isToBeShown() && wfc.getDatasetVersion().equals(workingVersion)
+                    && wfc.getAuthenticatedUser().equals(session.getUser())) {
+                if (wfc.getType() == WorkflowComment.Type.WORKFLOW_SUCCESS) {
+                    JsfHelper.addSuccessMessage(wfc.getMessage());
+
+                } else if (wfc.getType() == WorkflowComment.Type.WORKFLOW_FAILURE) {
+                    JsfHelper.addWarningMessage(wfc.getMessage());
+                }
+                datasetService.markWorkflowCommentAsRead(wfc);
+            }
+        }
+    }
+
     private void displayLockInfo(Dataset dataset) {
         // Various info messages, when the dataset is locked (for various reasons):
         if (dataset.isLocked() && canUpdateDataset()) {
@@ -2006,9 +2108,8 @@ public class DatasetPage implements Serializable {
                         BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.contactSupport"));
             } 
             if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress)) {
-                String rootDataverseName = dataverseService.findRootDataverse().getName();
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message"),
-                        BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details", Arrays.asList(BrandingUtil.getSupportTeamName(null, rootDataverseName))));
+                        BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details", Arrays.asList(BrandingUtil.getSupportTeamName(null))));
             }
         }
         
@@ -2654,6 +2755,8 @@ public class DatasetPage implements Serializable {
             }
         }
 
+        displayWorkflowComments();
+
         return "";
     }
     
@@ -3298,7 +3401,9 @@ public class DatasetPage implements Serializable {
             return "";
         }
         
-        // Use the Create or Update command to save the dataset: 
+
+
+        // Use the Create or Update command to save the dataset:
         Command<Dataset> cmd;
         Map<Long, String> deleteStorageLocations = null;
         
@@ -3322,8 +3427,7 @@ public class DatasetPage implements Serializable {
                     if (dataset.isLockedFor(DatasetLock.Reason.EditInProgress) || lockTest.isLockedFor(DatasetLock.Reason.EditInProgress)) {
                         logger.log(Level.INFO, "Couldn''t save dataset: {0}", "It is locked."
                                 + "");
-                        String rootDataverseName = dataverseService.findRootDataverse().getName();
-                        JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message"),BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details", Arrays.asList(BrandingUtil.getSupportTeamName(null, rootDataverseName))));
+                        JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message"),BundleUtil.getStringFromBundle("dataset.locked.editInProgress.message.details", Arrays.asList(BrandingUtil.getSupportTeamName(null))));
                         return returnToDraftVersion();
                     }
                 }
@@ -3401,7 +3505,7 @@ public class DatasetPage implements Serializable {
                     }
                     if (addFilesSuccess && dataset.getFiles().size() > 0) {
                         if (nNewFiles == dataset.getFiles().size()) {
-                            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess"));
+                            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess").concat(" ").concat(datasetService.getReminderString(dataset, canPublishDataset())));
                         } else {
                             String partialSuccessMessage = BundleUtil.getStringFromBundle("dataset.message.createSuccess.partialSuccessSavingFiles");
                             partialSuccessMessage = partialSuccessMessage.replace("{0}", "" + dataset.getFiles().size() + "");
@@ -3412,25 +3516,25 @@ public class DatasetPage implements Serializable {
                         JsfHelper.addWarningMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess.failedToSaveFiles"));
                     }
                 } else {
-                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess"));
+                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.createSuccess").concat(" ").concat(datasetService.getReminderString(dataset, canPublishDataset())));
                 }
             }
             if (editMode.equals(EditMode.METADATA)) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.metadataSuccess"));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.metadataSuccess").concat(" ").concat(datasetService.getReminderString(dataset, canPublishDataset())));
             }
             if (editMode.equals(EditMode.LICENSE)) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.termsSuccess"));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.termsSuccess").concat(" ").concat(datasetService.getReminderString(dataset, canPublishDataset())));
             }
             if (editMode.equals(EditMode.FILE)) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.filesSuccess"));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.filesSuccess").concat(" ").concat(datasetService.getReminderString(dataset, canPublishDataset())));
             }
 
         } else {
             // must have been a bulk file update or delete:
             if (bulkFileDeleteInProgress) {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileDeleteSuccess"));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileDeleteSuccess").concat(" ").concat(datasetService.getReminderString(dataset, canPublishDataset())));
             } else {
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileUpdateSuccess"));
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileUpdateSuccess").concat(" ").concat(datasetService.getReminderString(dataset, canPublishDataset())));
             }
         }
 
@@ -4151,13 +4255,13 @@ public class DatasetPage implements Serializable {
     public List< String[]> getExporters(){
         List<String[]> retList = new ArrayList<>();
         String myHostURL = getDataverseSiteUrl();
-        for (String [] provider : ExportService.getInstance(settingsService).getExportersLabels() ){
+        for (String [] provider : ExportService.getInstance().getExportersLabels() ){
             String formatName = provider[1];
             String formatDisplayName = provider[0];
             
             Exporter exporter = null; 
             try {
-                exporter = ExportService.getInstance(settingsService).getExporter(formatName);
+                exporter = ExportService.getInstance().getExporter(formatName);
             } catch (ExportException ex) {
                 exporter = null;
             }
@@ -5101,8 +5205,7 @@ public class DatasetPage implements Serializable {
      * @return the publisher of the version
      */
     public String getPublisher() {
-        assert (null != workingVersion);
-        return workingVersion.getRootDataverseNameforCitation();
+        return dataverseService.getRootDataverseName();
     }
     
     public void downloadRsyncScript() {
@@ -5247,7 +5350,7 @@ public class DatasetPage implements Serializable {
     
     public String getJsonLd() {
         if (isThisLatestReleasedVersion()) {
-            ExportService instance = ExportService.getInstance(settingsService);
+            ExportService instance = ExportService.getInstance();
             String jsonLd = instance.getExportAsString(dataset, SchemaDotOrgExporter.NAME);
             if (jsonLd != null) {
                 logger.fine("Returning cached schema.org JSON-LD.");
@@ -5412,6 +5515,15 @@ public class DatasetPage implements Serializable {
 
     public void setFileAccessRequest(boolean fileAccessRequest) {
         this.fileAccessRequest = fileAccessRequest;
+    }
+
+    // wrapper method to see if the file has been deleted (or replaced) in the current version
+    public boolean isFileDeleted (DataFile dataFile) {
+        if (dataFile.getDeleted() == null) {
+            dataFile.setDeleted(datafileService.hasBeenDeleted(dataFile));
+        }
+
+        return dataFile.getDeleted();
     }
 
     public Map<String, CVoc> getCVocConf(){

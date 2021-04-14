@@ -304,13 +304,13 @@ public class FilePage implements java.io.Serializable {
     public List< String[]> getExporters(){
         List<String[]> retList = new ArrayList<>();
         String myHostURL = systemConfig.getDataverseSiteUrl();
-        for (String [] provider : ExportService.getInstance(settingsService).getExportersLabels() ){
+        for (String [] provider : ExportService.getInstance().getExportersLabels() ){
             String formatName = provider[1];
             String formatDisplayName = provider[0];
             
             Exporter exporter = null; 
             try {
-                exporter = ExportService.getInstance(settingsService).getExporter(formatName);
+                exporter = ExportService.getInstance().getExporter(formatName);
             } catch (ExportException ex) {
                 exporter = null;
             }
@@ -786,56 +786,14 @@ public class FilePage implements java.io.Serializable {
         return dataFiles;
     }
     
-    public boolean isDraftReplacementFile(){
-        /*
-        This method tests to see if the file has been replaced in a draft version of the dataset
-        Since it must must work when you are on prior versions of the dataset 
-        it must accrue all replacement files that may have been created
-        */
-        if(null == dataset) {
-            dataset = fileMetadata.getDataFile().getOwner();
+    // wrappermethod to see if the file has been deleted (or replaced) in the current version
+    public boolean isDeletedFile () {
+        if (file.getDeleted() == null) {
+            file.setDeleted(datafileService.hasBeenDeleted(file));
         }
         
-        DataFile dataFileToTest = fileMetadata.getDataFile(); 
-        
-        DatasetVersion currentVersion = dataset.getLatestVersion();
-        
-        if (!currentVersion.isDraft()){
-            return false;
-        }
-        
-        if (dataset.getReleasedVersion() == null){
-            return false;
-        }
-        
-        List<DataFile> dataFiles = new ArrayList<>();
-        
-        dataFiles.add(dataFileToTest);
-        
-        while (datafileService.findReplacementFile(dataFileToTest.getId()) != null ){
-            dataFiles.add(datafileService.findReplacementFile(dataFileToTest.getId()));
-            dataFileToTest = datafileService.findReplacementFile(dataFileToTest.getId());
-        }
-        
-        if(dataFiles.size() <2){
-            return false;
-        }
-        
-        int numFiles = dataFiles.size();
-        
-        DataFile current = dataFiles.get(numFiles - 1 );       
-        
-        DatasetVersion publishedVersion = dataset.getReleasedVersion();
-        
-        if( datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(publishedVersion.getId(), current.getId()) == null){
-            return true;
-        }
-        
-        return false;
+        return file.getDeleted();
     }
-    
-
-
     
     /**
      * To help with replace development 
