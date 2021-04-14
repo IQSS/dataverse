@@ -173,7 +173,14 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             List<AuxiliaryFile> auxFiles = query.getResultList();
             otherAuxFiles.addAll(auxFiles);
         }
+        otherAuxFiles.addAll(findAuxiliaryFilesWithoutType(dataFile));
         return otherAuxFiles;
+    }
+
+    public List<AuxiliaryFile> findAuxiliaryFilesWithoutType(DataFile dataFile) {
+        Query query = em.createQuery("select object(o) from AuxiliaryFile as o where o.dataFile.id = :dataFileId and o.type is null", AuxiliaryFile.class);
+        query.setParameter("dataFileId", dataFile.getId());
+        return query.getResultList();
     }
 
     public String getFriendlyNameForType(String type) {
