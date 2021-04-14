@@ -797,7 +797,7 @@ View Dataset Files and Folders as a Directory Index
 
   curl $SERVER_URL/api/datasets/$ID/dirindex/
   # or
-  curl ${SERVER_URL}/api/datasets/:persistentId/dirindex/?persistentId=doi:${PERSISTENT_ID}
+  curl ${SERVER_URL}/api/datasets/:persistentId/dirindex?persistentId=doi:${PERSISTENT_ID}
 
 
 Optional parameters:
@@ -3492,5 +3492,4 @@ Recursively applies the role assignments of the specified Dataverse collection, 
   GET http://$SERVER/api/admin/dataverse/{dataverse alias}/addRoleAssignmentsToChildren
   
 Note: setting ``:InheritParentRoleAssignments`` will automatically trigger inheritance of the parent Dataverse collection's role assignments for a newly created Dataverse collection. Hence this API call is intended as a way to update existing child Dataverse collections or to update children after a change in role assignments has been made on a parent Dataverse collection.
-
 
