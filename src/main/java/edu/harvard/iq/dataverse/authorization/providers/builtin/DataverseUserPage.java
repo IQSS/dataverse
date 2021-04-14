@@ -162,7 +162,7 @@ public class DataverseUserPage implements java.io.Serializable {
             }
         }
 
-        if ( session.getUser().isAuthenticated() ) {
+        if (session.getUser(true).isAuthenticated()) {
             setCurrentUser((AuthenticatedUser) session.getUser());
             userAuthProvider = authenticationService.lookupProvider(currentUser);
             notificationsList = userNotificationService.findByUser(currentUser.getId());
@@ -284,6 +284,12 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public String save() {
         boolean passwordChanged = false;
+        
+        //First reget user to make sure they weren't deactivated or deleted
+        if (session.getUser().isAuthenticated() && !session.getUser(true).isAuthenticated()) {
+            return "dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias() + "&faces-redirect=true";
+        }
+        
         if (editMode == EditMode.CHANGE_PASSWORD) {
             final AuthenticationProvider prv = getUserAuthProvider();
             if (prv.isPasswordUpdateAllowed()) {
@@ -327,7 +333,6 @@ public class DataverseUserPage implements java.io.Serializable {
             // Authenticated user registered. Save the new bulitin, and log in.
             builtinUserService.save(builtinUser);
             session.setUser(au);
-            session.configureSessionTimeout();
             /**
              * @todo Move this to
              * AuthenticationServiceBean.createAuthenticatedUser
@@ -485,6 +490,8 @@ public class DataverseUserPage implements java.io.Serializable {
                 case PUBLISHEDDS:
                 case PUBLISHFAILED_PIDREG:
                 case RETURNEDDS:
+                case WORKFLOW_SUCCESS:
+                case WORKFLOW_FAILURE:
                     userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
                     break;
                     

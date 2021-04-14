@@ -62,7 +62,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
             authorString = UNAVAILABLE;
         }
 
-        String producerString = dataverseService.findRootDataverse().getName();
+        String producerString = dataverseService.getRootDataverseName();
 
         if (producerString.isEmpty() || producerString.equals(DatasetField.NA_VALUE)) {
             producerString = UNAVAILABLE;
@@ -437,7 +437,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         metadataTemplate.setContacts(dataset.getLatestVersion().getDatasetContacts());
         metadataTemplate.setProducers(dataset.getLatestVersion().getDatasetProducers());
         metadataTemplate.setTitle(dvObject.getCurrentName());
-        String producerString = dataverseService.findRootDataverse().getName();
+        String producerString = dataverseService.getRootDataverseName();
         if (producerString.isEmpty()  || producerString.equals(DatasetField.NA_VALUE) ) {
             producerString = UNAVAILABLE;
         }

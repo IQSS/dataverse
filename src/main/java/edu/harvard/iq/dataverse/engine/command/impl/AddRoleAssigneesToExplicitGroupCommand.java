@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupException;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -49,6 +50,12 @@ public class AddRoleAssigneesToExplicitGroupCommand extends AbstractCommand<Expl
             if ( ra == null ) {
                 nonexistentRAs.add( rai );
             } else {
+                if (ra instanceof AuthenticatedUser) {
+                    AuthenticatedUser user = (AuthenticatedUser) ra;
+                    if (user.isDeactivated()) {
+                        throw new IllegalCommandException("User " + user.getUserIdentifier() + " is deactivated and cannot be added to a group.", this);
+                    }
+                }
                 try {
                     explicitGroup.add(ra);
                 } catch (GroupException ex) {
