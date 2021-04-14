@@ -1222,8 +1222,8 @@ public class Datasets extends AbstractApiBean {
 
                     if (ds.getVersions().size() == 1) {
                         // First Release
-                        ds.getLatestVersion().setVersionNumber(new Long(1));
-                        ds.getLatestVersion().setMinorVersionNumber(new Long(0));
+                        ds.getLatestVersion().setVersionNumber(Long.valueOf(1));
+                        ds.getLatestVersion().setMinorVersionNumber(Long.valueOf(0));
                         //Also set publication date if this is the first 
                         if(dateTime != null) {
                           ds.setPublicationDate(Timestamp.valueOf(dateTime));
@@ -1233,13 +1233,13 @@ public class Datasets extends AbstractApiBean {
                         ds.setReleaseUser((AuthenticatedUser) user);
 
                     } else if (ds.getLatestVersion().isMinorUpdate()) {
-                        ds.getLatestVersion().setVersionNumber(new Long(ds.getVersionNumber()));
-                        ds.getLatestVersion().setMinorVersionNumber(new Long(ds.getMinorVersionNumber() + 1));
+                        ds.getLatestVersion().setVersionNumber(Long.valueOf(ds.getVersionNumber()));
+                        ds.getLatestVersion().setMinorVersionNumber(Long.valueOf(ds.getMinorVersionNumber() + 1));
 
                     } else {
                         // major, non-first release
-                        ds.getLatestVersion().setVersionNumber(new Long(ds.getVersionNumber() + 1));
-                        ds.getLatestVersion().setMinorVersionNumber(new Long(0));
+                        ds.getLatestVersion().setVersionNumber(Long.valueOf(ds.getVersionNumber() + 1));
+                        ds.getLatestVersion().setMinorVersionNumber(Long.valueOf(0));
                     }
                     
                 }
