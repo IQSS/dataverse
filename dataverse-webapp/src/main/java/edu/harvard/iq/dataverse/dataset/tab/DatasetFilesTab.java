@@ -568,6 +568,10 @@ public class DatasetFilesTab implements Serializable {
         fileDownloadHelper.requestDownloadWithFiles(selectedDownloadableFiles, downloadOriginal);
     }
 
+    public void startDatasetFilesDownload(boolean downloadOriginal) {
+        fileDownloadHelper.requestDownloadOfWholeDataset(workingVersion, downloadOriginal);
+    }
+
     public boolean isDownloadButtonAvailable() {
         return downloadButtonAvailable;
     }

@@ -117,6 +117,41 @@
                             <span class="glyphicon glyphicon-download-alt"/> <h:outputText value=" #{bundle['file.rsyncUpload.step2.downloadScriptButton']}"/>
                         </h:commandLink>
 
+                        <!-- DOWNLOAD ALL FILES BUTTON -->
+                        <p:outputPanel style="display: inline-block"
+                             rendered="#{!(empty datasetFilesTab.workingVersion.fileMetadatas)
+                                        and datasetFilesTab.downloadButtonAvailable
+                                        and datasetFilesTab.isHasTabular()}">
+                            <button type="button" class="btn btn-default btn-access dropdown-toggle" data-toggle="dropdown">
+                                <span class="glyphicon glyphicon-download-alt"/> #{bundle['file.download.dataset']} <span class="caret"/>
+                            </button>
+                            <ul class="dropdown-menu multi-level text-left" style="left:auto" role="menu">
+                                <li>
+                                    <p:commandLink action="#{datasetFilesTab.startDatasetFilesDownload(true)}"
+                                                   id="downloadOriginalFiles">
+                                        <h:outputText value="#{bundle['file.download.dataset.original']}"/>
+                                    </p:commandLink>
+                                </li>
+                                <li>
+                                    <p:commandLink action="#{datasetFilesTab.startDatasetFilesDownload(false)}"
+                                                   id="downloadFormated">
+                                        <h:outputText value="#{bundle['file.download.dataset.tab']}"/>
+                                    </p:commandLink>
+                                </li>
+                            </ul>
+                        </p:outputPanel>
+
+                        <p:outputPanel style="display: inline-block; margin-right: 1em"
+                                       rendered="#{!(empty datasetFilesTab.workingVersion.fileMetadatas)
+                                        and datasetFilesTab.downloadButtonAvailable
+                                        and !datasetFilesTab.isHasTabular()}">
+                            <p:commandLink type="button" styleClass="btn btn-default btn-download"
+                                           action="#{datasetFilesTab.startDatasetFilesDownload(true)}"
+                                           update="@form">
+                                <span class="glyphicon glyphicon-download-alt"/> #{bundle['file.download.dataset']}
+                            </p:commandLink>
+                        </p:outputPanel>
+
                         <!-- REORDER FILES BUTTON -->
                         <h:outputLink value="/reorderdatafiles.xhtml?datasetVersionId=#{datasetFilesTab.workingVersion.id}"
                                       type="button" styleClass="btn btn-default btn-access #{datasetFilesTab.lockedFromEdits ? 'ui-state-disabled' : ''}"

@@ -776,6 +776,21 @@ public class FileUtil implements java.io.Serializable {
         return fileDownloadUrl;
     }
 
+    public static String getDownloadWholeDatasetUrlPath(DatasetVersion dsv, boolean guestbookRecordsAlreadyWritten, ApiBatchDownloadType downloadType) {
+
+        String fileDownloadUrl = String.format("/api/datasets/%s/versions/%s/files/download", dsv.getDataset().getId(), dsv.getId());
+
+        if (guestbookRecordsAlreadyWritten && downloadType == ApiBatchDownloadType.DEFAULT) {
+            fileDownloadUrl += "?gbrecs=true";
+        } else if (guestbookRecordsAlreadyWritten && downloadType == ApiBatchDownloadType.ORIGINAL) {
+            fileDownloadUrl += "?gbrecs=true&format=original";
+        } else if (!guestbookRecordsAlreadyWritten && downloadType == ApiBatchDownloadType.ORIGINAL) {
+            fileDownloadUrl += "?format=original";
+        }
+
+        return fileDownloadUrl;
+    }
+
     public static File inputStreamToFile(InputStream inputStream) throws IOException {
         if (inputStream == null) {
             logger.info("In inputStreamToFile but inputStream was null! Returning null rather than a File.");

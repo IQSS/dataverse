@@ -15,7 +15,6 @@ import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
-import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.guestbook.GuestbookResponse;
 import edu.harvard.iq.dataverse.persistence.user.ApiToken;
@@ -105,6 +104,18 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         } catch (IOException ex) {
             logger.info("Failed to issue a redirect to file download url.");
         }
+    }
+
+    public String redirectToDownloadWholeDataset(DatasetVersion dsv, boolean guestbookRecordsAlreadyWritten, ApiBatchDownloadType downloadType) {
+        String filesDownloadUrl = FileUtil.getDownloadWholeDatasetUrlPath(dsv, guestbookRecordsAlreadyWritten, downloadType);
+
+        try {
+            FacesContext.getCurrentInstance().getExternalContext().redirect(filesDownloadUrl);
+        } catch (IOException ex) {
+            logger.info("Failed to issue a redirect to dataset download url.");
+        }
+
+        return filesDownloadUrl;
     }
 
 

@@ -38,6 +38,19 @@ public abstract class FacesContextMocker extends FacesContext {
         return context;
     }
 
+    public static FacesContext mockContext() {
+        FacesContext context = mock(FacesContext.class);
+        setCurrentInstance(context);
+        Mockito.doAnswer(RELEASE)
+               .when(context)
+               .release();
+
+        ExternalContext ext = mock(ExternalContext.class);
+        when(context.getExternalContext()).thenReturn(ext);
+
+        return context;
+    }
+
     private static class Release implements Answer<Void> {
 
         @Override
