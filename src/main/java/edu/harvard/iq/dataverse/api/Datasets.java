@@ -109,6 +109,11 @@ import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import edu.harvard.iq.dataverse.workflow.Workflow;
+import edu.harvard.iq.dataverse.workflow.WorkflowContext;
+import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
+import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -124,6 +129,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
@@ -226,6 +232,9 @@ public class Datasets extends AbstractApiBean {
     
     @Inject
     DataverseRequestServiceBean dvRequestService;
+    
+    @Inject
+    WorkflowServiceBean wfService;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -1257,15 +1266,25 @@ public class Datasets extends AbstractApiBean {
             String errorMsg = null;
             String successMsg = null;
             try {
-                FinalizeDatasetPublicationCommand cmd = new FinalizeDatasetPublicationCommand(ds,
-                        createDataverseRequest(user), true);
-                ds = commandEngine.submit(cmd);
-                //Todo - update messages
-                successMsg = BundleUtil.getStringFromBundle("datasetversion.update.success");
+                // ToDo - should this be in onSuccess()? May relate to todo above
+                Optional<Workflow> prePubWf = wfService.getDefaultWorkflow(TriggerType.PrePublishDataset);
+                if (prePubWf.isPresent()) {
+                    // Start the workflow, the workflow will call FinalizeDatasetPublication later
+                    wfService.start(prePubWf.get(),
+                            new WorkflowContext(createDataverseRequest(user), ds, TriggerType.PrePublishDataset, true),
+                            false);
+                } else {
+                    FinalizeDatasetPublicationCommand cmd = new FinalizeDatasetPublicationCommand(ds,
+                            createDataverseRequest(user), true);
+                    ds = commandEngine.submit(cmd);
+                    // Todo - update messages
+                    successMsg = BundleUtil.getStringFromBundle("datasetversion.update.success");
+                }
             } catch (CommandException ex) {
                 errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.failure") + " - " + ex.toString();
                 logger.severe(ex.getMessage());
             }
+            
             if (errorMsg != null) {
                 return error(Response.Status.INTERNAL_SERVER_ERROR, errorMsg);
             } else {
