@@ -358,6 +358,63 @@ public class AdminIT {
 
     }
 
+    /**
+     * Here we are asserting that deactivated users cannot be converted into
+     * shib users.
+     */
+    @Test
+    public void testConvertDeactivateUserToShib() {
+
+        Response createUserToConvert = UtilIT.createRandomUser();
+        createUserToConvert.then().assertThat().statusCode(OK.getStatusCode());
+        createUserToConvert.prettyPrint();
+
+        long idOfUserToConvert = createUserToConvert.body().jsonPath().getLong("data.authenticatedUser.id");
+        String emailOfUserToConvert = createUserToConvert.body().jsonPath().getString("data.authenticatedUser.email");
+        String usernameOfUserToConvert = UtilIT.getUsernameFromResponse(createUserToConvert);
+
+        Response deactivateUser = UtilIT.deactivateUser(usernameOfUserToConvert);
+        deactivateUser.prettyPrint();
+        deactivateUser.then().assertThat().statusCode(OK.getStatusCode());
+
+        String password = usernameOfUserToConvert;
+        String newEmailAddressToUse = "builtin2shib." + UUID.randomUUID().toString().substring(0, 8) + "@mailinator.com";
+        String data = emailOfUserToConvert + ":" + password + ":" + newEmailAddressToUse;
+
+        Response builtinToShibAnon = UtilIT.migrateBuiltinToShib(data, "");
+        builtinToShibAnon.prettyPrint();
+        builtinToShibAnon.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+
+        Response createSuperuser = UtilIT.createRandomUser();
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperuser);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperuser);
+        Response toggleSuperuser = UtilIT.makeSuperUser(superuserUsername);
+        toggleSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response getAuthProviders = UtilIT.getAuthProviders(superuserApiToken);
+        getAuthProviders.prettyPrint();
+        if (!getAuthProviders.body().asString().contains(BuiltinAuthenticationProvider.PROVIDER_ID)) {
+            System.out.println("Can't proceed with test without builtin provider.");
+            return;
+        }
+
+        Response makeShibUser = UtilIT.migrateBuiltinToShib(data, superuserApiToken);
+        makeShibUser.prettyPrint();
+        makeShibUser.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("[\"builtin account has been deactivated\"]"));
+
+        Response userIsStillBuiltin = UtilIT.getAuthenticatedUser(usernameOfUserToConvert, superuserApiToken);
+        userIsStillBuiltin.prettyPrint();
+        userIsStillBuiltin.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.id", equalTo(Long.valueOf(idOfUserToConvert).intValue()))
+                .body("data.identifier", equalTo("@" + usernameOfUserToConvert))
+                .body("data.authenticationProviderId", equalTo("builtin"));
+
+    }
+
     @Test
     public void testConvertOAuthUserToBuiltin() throws Exception {
 
