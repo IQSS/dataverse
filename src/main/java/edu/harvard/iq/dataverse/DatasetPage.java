@@ -114,7 +114,7 @@ import javax.faces.event.AjaxBehaviorEvent;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.io.IOUtils;
 
@@ -3078,8 +3078,8 @@ public class DatasetPage implements java.io.Serializable {
     private List<String> getSuccessMessageArguments() {
         List<String> arguments = new ArrayList<>();
         String dataverseString = "";
-        arguments.add(StringEscapeUtils.escapeHtml(dataset.getDisplayName()));
-        dataverseString += " <a href=\"/dataverse/" + selectedDataverseForLinking.getAlias() + "\">" + StringEscapeUtils.escapeHtml(selectedDataverseForLinking.getDisplayName()) + "</a>";
+        arguments.add(StringEscapeUtils.escapeHtml4(dataset.getDisplayName()));
+        dataverseString += " <a href=\"/dataverse/" + selectedDataverseForLinking.getAlias() + "\">" + StringEscapeUtils.escapeHtml4(selectedDataverseForLinking.getDisplayName()) + "</a>";
         arguments.add(dataverseString);
         return arguments;
     }

@@ -25,7 +25,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -186,7 +186,7 @@ public class DOIDataCiteRegisterService {
             DataFile df = (DataFile) dvObject;
             //Note: File metadata is not escaped like dataset metadata is, so adding an xml escape here.
             //This could/should be removed if the datafile methods add escaping
-            String fileDescription = StringEscapeUtils.escapeXml(df.getDescription());
+            String fileDescription = StringEscapeUtils.escapeXml10(df.getDescription());
             metadataTemplate.setDescription(fileDescription == null ? AbstractGlobalIdServiceBean.UNAVAILABLE : fileDescription);
             String datasetPid = df.getOwner().getGlobalId().asString();
             metadataTemplate.setDatasetIdentifier(datasetPid);
@@ -199,7 +199,7 @@ public class DOIDataCiteRegisterService {
         String title = dvObject.getCurrentName();
         if(dvObject.isInstanceofDataFile()) {
             //Note file title is not currently escaped the way the dataset title is, so adding it here.
-            title = StringEscapeUtils.escapeXml(title);
+            title = StringEscapeUtils.escapeXml10(title);
         }
         
         if (title.isEmpty() || title.equals(DatasetField.NA_VALUE)) {
