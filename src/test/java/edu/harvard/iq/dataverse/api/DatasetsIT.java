@@ -733,7 +733,7 @@ public class DatasetsIT {
     }
 
     @Test
-    public void testSequentialNumberAsIdentifierGenerationStyle() {
+    public void testStoredProcGeneratedAsIdentifierGenerationStyle() {
 
         Response createUser = UtilIT.createRandomUser();
         createUser.prettyPrint();
@@ -744,8 +744,8 @@ public class DatasetsIT {
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
-        Response setSequentialNumberAsIdentifierGenerationStyle = UtilIT.setSetting(SettingsServiceBean.Key.IdentifierGenerationStyle, "sequentialNumber");
-        setSequentialNumberAsIdentifierGenerationStyle.then().assertThat()
+        Response setStoredProcGeneratedAsIdentifierGenerationStyle = UtilIT.setSetting(SettingsServiceBean.Key.IdentifierGenerationStyle, "storedProcGenerated");
+        setStoredProcGeneratedAsIdentifierGenerationStyle.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
