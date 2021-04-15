@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.Serializable;
+import java.util.MissingResourceException;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -151,10 +152,9 @@ public class AuxiliaryFile implements Serializable {
     }
 
     public String getTypeFriendly() {
-        String friendlyName = BundleUtil.getStringFromBundle("file.auxfiles.types." + type);
-        if (friendlyName != null) {
-            return friendlyName;
-        } else {
+        try {
+            return BundleUtil.getStringFromPropertyFile("file.auxfiles.types." + type, "Bundle");
+        } catch (MissingResourceException ex) {
             return null;
         }
     }
