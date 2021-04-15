@@ -909,15 +909,16 @@
                             </button>
                         </div>
                     </p:dialog>
-                    <p:dialog id="downloadTooLarge" styleClass="smallPopUp" header="#{bundle['dataset.selectedFilesExceedZipLimitHeader']}" widgetVar="downloadTooLarge" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> 
-                            
-                                <h:outputFormat value="#{bundle['file.zip.download.exceeds.limit']}">
-                                    <f:param value="#{DatasetPage.sizeOfSelectedMaxAsString}"/>
-                                    <f:param value="#{DatasetPage.zipDownloadLimitAsString}"/>
-                                </h:outputFormat>
-                                
-                        </p>    
+                    <p:dialog id="downloadTooLarge" styleClass="smallPopUp" header="#{bundle['file.zip.download.exceeds.limit.header']}" widgetVar="downloadTooLarge" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/>  #{bundle['file.zip.download.exceeds.limit.info']}</p>
+  
+                        <p class="help-block">
+                            <h:outputFormat value="#{bundle['file.zip.download.exceeds.limit.detail']}" escape="false">
+                                <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                <f:param value="#{systemConfig.guidesVersion}"/>
+                                <f:param value="#{DatasetPage.zipDownloadLimitAsString}"/>
+                            </h:outputFormat>
+                        </p>
 
                     </p:dialog>
                     <p:dialog id="downloadMixed" styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadMixed" modal="true">
