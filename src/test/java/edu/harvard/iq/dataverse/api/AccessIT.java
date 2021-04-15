@@ -104,7 +104,6 @@ public class AccessIT {
         createDatasetResponse.prettyPrint();
         datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
 
-        // TODO: Get this working.
         Response allowAccessRequests = UtilIT.allowAccessRequests(datasetId.toString(), true, apiToken);
         allowAccessRequests.prettyPrint();
         allowAccessRequests.then().assertThat().statusCode(200);
