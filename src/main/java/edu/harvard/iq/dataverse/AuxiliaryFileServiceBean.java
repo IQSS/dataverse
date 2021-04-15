@@ -167,7 +167,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
         List<AuxiliaryFile> otherAuxFiles = new ArrayList<>();
         List<String> otherTypes = findAuxiliaryFileTypes(dataFile, false);
         for (String typeString : otherTypes) {
-            TypedQuery query = em.createNamedQuery("AuxiliaryFile.findOtherAuxiliaryFiles", AuxiliaryFile.class);
+            TypedQuery query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFilesByType", AuxiliaryFile.class);
             query.setParameter("dataFileId", dataFile.getId());
             query.setParameter("type", typeString);
             List<AuxiliaryFile> auxFiles = query.getResultList();
