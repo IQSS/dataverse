@@ -1,6 +1,6 @@
 Auxiliary Files can now be downloaded from the web interface.
 
-- Aux files uploaded as type=DP appear under "Differentially Private Statistics" under file level download. The rest (type=OTHER) appear under "Other Auxiliary Files".
+- Aux files uploaded as type=DP appear under "Differentially Private Statistics" under file level download. The rest appear under "Other Auxiliary Files".
 
 In addition, related changes were made, including the following:
 
