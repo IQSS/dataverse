@@ -585,15 +585,10 @@ public class Access extends AbstractApiBean {
             if (auxFile == null) {
                 throw new NotFoundException("Auxiliary metadata format "+formatTag+" is not available for datafile "+fileId);
             }
-            
-            if (auxFile.getIsPublic()) {
-                // Require at least one published version for isPublic to be true.
-                for (FileMetadata fm : df.getFileMetadatas()) {
-                    if (fm.getDatasetVersion().isPublished()) {
-                        publiclyAvailable = true;
-                        break;
-                    }
-                }
+
+            // Don't consider aux file public unless data file is published.
+            if (auxFile.getIsPublic() && df.getPublicationDate() != null) {
+                publiclyAvailable = true;
             }
             downloadInstance = new DownloadInstance(dInfo);
             downloadInstance.setAuxiliaryFile(auxFile);

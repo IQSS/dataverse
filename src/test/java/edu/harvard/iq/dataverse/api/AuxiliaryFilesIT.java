@@ -248,5 +248,9 @@ public class AuxiliaryFilesIT {
         Response creatorCanDownloadNonPublicAuxFile = UtilIT.downloadAuxFile(fileId, formatTagRst, formatVersionRst, apiToken);
         creatorCanDownloadNonPublicAuxFile.then().assertThat().statusCode(OK.getStatusCode());
 
+        // This succeeds now that the dataset has been published.
+        Response failToDownloadAuxFileJsonPostPublish = UtilIT.downloadAuxFile(fileId, formatTagJson, formatVersionJson, apiTokenNoPrivs);
+        failToDownloadAuxFileJsonPostPublish.then().assertThat().statusCode(OK.getStatusCode());
+
     }
 }
