@@ -38,8 +38,8 @@ import java.util.Iterator;
 import java.util.List;
 
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.methods.GetMethod;
+//import org.apache.commons.httpclient.Header;
+//import org.apache.commons.httpclient.methods.GetMethod;
 
 
 /**
@@ -53,16 +53,20 @@ public abstract class StorageIO<T extends DvObject> {
     public StorageIO() {
 
     }
-
-    public StorageIO(T dvObject) {
-        this(dvObject, null);
+    
+    public StorageIO(String storageLocation, String driverId) {
+      this.driverId=driverId;
     }
 
-    public StorageIO(T dvObject, DataAccessRequest req) {
+    public StorageIO(T dvObject, DataAccessRequest req, String driverId) {
         this.dvObject = dvObject;
         this.req = req;
+        this.driverId=driverId;
         if (this.req == null) {
             this.req = new DataAccessRequest();
+        }
+        if (this.driverId == null) {
+            this.driverId = "file";
         }
     }
 
@@ -84,21 +88,13 @@ public abstract class StorageIO<T extends DvObject> {
     }
 
     public abstract String getStorageLocation() throws IOException;
-    // do we need this method?
 
     // This method will return a Path, if the storage method is a 
     // local filesystem. Otherwise should throw an IOException. 
     public abstract Path getFileSystemPath() throws IOException;
-    
+        
     public abstract boolean exists() throws IOException; 
-
-    // This method will delete the physical file (object), if delete
-    // functionality is supported by the physical driver. 
-    // TODO: this method should throw something other than IOException 
-    // if delete functionality is not supported by the access driver!
-    // -- L.A. 4.0. beta
-    // (there is now a dedicated exception for this purpose: UnsupportedDataAccessOperationException,
-    // that extends IOException -- 4.6.2) 
+        
     public abstract void delete() throws IOException;
     
     // this method for copies a local Path (for ex., a
@@ -106,7 +102,29 @@ public abstract class StorageIO<T extends DvObject> {
     public abstract void savePath(Path fileSystemPath) throws IOException;
     
     // same, for an InputStream:
+    /**
+     * This method copies a local InputStream into this DataAccess location.
+     * Note that the S3 driver implementation of this abstract method is problematic, 
+     * because S3 cannot save an object of an unknown length. This effectively 
+     * nullifies any benefits of streaming; as we cannot start saving until we 
+     * have read the entire stream. 
+     * One way of solving this would be to buffer the entire stream as byte[], 
+     * in memory, then save it... Which of course would be limited by the amount 
+     * of memory available, and thus would not work for streams larger than that. 
+     * So we have eventually decided to save save the stream to a temp file, then 
+     * save to S3. This is slower, but guaranteed to work on any size stream. 
+     * An alternative we may want to consider is to not implement this method 
+     * in the S3 driver, and make it throw the UnsupportedDataAccessOperationException, 
+     * similarly to how we handle attempts to open OutputStreams, in this and the 
+     * Swift driver. 
+     * (Not an issue in either FileAccessIO or SwiftAccessIO implementations)
+     * 
+     * @param inputStream InputStream we want to save
+     * @param auxItemTag String representing this Auxiliary type ("extension")
+     * @throws IOException if anything goes wrong.
+    */
     public abstract void saveInputStream(InputStream inputStream) throws IOException;
+    public abstract void saveInputStream(InputStream inputStream, Long filesize) throws IOException;
     
     // Auxiliary File Management: (new as of 4.0.2!)
     
@@ -116,6 +134,7 @@ public abstract class StorageIO<T extends DvObject> {
     // thumbnails for images, etc. - in physical files with the same file 
     // name but various reserved extensions. 
    
+    //This function retrieves auxiliary files related to datasets, and returns them as inputstream
     public abstract InputStream getAuxFileAsInputStream(String auxItemTag) throws IOException ;
     
     public abstract Channel openAuxChannel(String auxItemTag, DataAccessOption... option) throws IOException;
@@ -128,11 +147,34 @@ public abstract class StorageIO<T extends DvObject> {
     
     public abstract void backupAsAux(String auxItemTag) throws IOException; 
     
+    public abstract void revertBackupAsAux(String auxItemTag) throws IOException; 
+    
     // this method copies a local filesystem Path into this DataAccess Auxiliary location:
     public abstract void savePathAsAux(Path fileSystemPath, String auxItemTag) throws IOException;
     
-    // this method copies a local InputStream into this DataAccess Auxiliary location:
+    /**
+     * This method copies a local InputStream into this DataAccess Auxiliary location.
+     * Note that the S3 driver implementation of this abstract method is problematic, 
+     * because S3 cannot save an object of an unknown length. This effectively 
+     * nullifies any benefits of streaming; as we cannot start saving until we 
+     * have read the entire stream. 
+     * One way of solving this would be to buffer the entire stream as byte[], 
+     * in memory, then save it... Which of course would be limited by the amount 
+     * of memory available, and thus would not work for streams larger than that. 
+     * So we have eventually decided to save save the stream to a temp file, then 
+     * save to S3. This is slower, but guaranteed to work on any size stream. 
+     * An alternative we may want to consider is to not implement this method 
+     * in the S3 driver, and make it throw the UnsupportedDataAccessOperationException, 
+     * similarly to how we handle attempts to open OutputStreams, in this and the 
+     * Swift driver. 
+     * (Not an issue in either FileAccessIO or SwiftAccessIO implementations)
+     * 
+     * @param inputStream InputStream we want to save
+     * @param auxItemTag String representing this Auxiliary type ("extension")
+     * @throws IOException if anything goes wrong.
+    */
     public abstract void saveInputStreamAsAux(InputStream inputStream, String auxItemTag) throws IOException; 
+    public abstract void saveInputStreamAsAux(InputStream inputStream, String auxItemTag, Long filesize) throws IOException;
     
     public abstract List<String>listAuxObjects() throws IOException;
     
@@ -145,8 +187,9 @@ public abstract class StorageIO<T extends DvObject> {
     private OutputStream out; 
     protected Channel channel;
     protected DvObject dvObject;
+    protected String driverId;
 
-    private int status;
+    /*private int status;*/
     private long size;
     
     private String mimeType;
@@ -161,8 +204,8 @@ public abstract class StorageIO<T extends DvObject> {
     private String swiftContainerName;
 
     private boolean isLocalFile = false;
-    private boolean isRemoteAccess = false;
-    private boolean isHttpAccess = false;
+    /*private boolean isRemoteAccess = false;*/
+    /*private boolean isHttpAccess = false;*/
     private boolean noVarHeader = false;
 
     // For remote downloads:
@@ -172,16 +215,15 @@ public abstract class StorageIO<T extends DvObject> {
 
     private String swiftFileName;
 
-
+    private String remoteUrl;
     
     // For HTTP-based downloads:
-    private String remoteUrl;
-    private GetMethod method = null;
-    private Header[] responseHeaders;
+    /*private GetMethod method = null;
+    private Header[] responseHeaders;*/
 
     // getters:
     
-    public Channel getChannel() {
+    public Channel getChannel() throws IOException {
         return channel;
     }
 
@@ -222,15 +264,15 @@ public abstract class StorageIO<T extends DvObject> {
         return req;
     }
 
-    public int getStatus() {
+    /*public int getStatus() {
         return status;
-    }
+    }*/
 
     public long getSize() {
         return size;
     }
 
-    public InputStream getInputStream() {
+    public InputStream getInputStream() throws IOException {
         return in;
     }
     
@@ -278,25 +320,33 @@ public abstract class StorageIO<T extends DvObject> {
         return swiftContainerName;
     }
 
-    public GetMethod getHTTPMethod() {
+    /*public GetMethod getHTTPMethod() {
         return method;
     }
 
     public Header[] getResponseHeaders() {
         return responseHeaders;
-    }
+    }*/
 
     public boolean isLocalFile() {
         return isLocalFile;
     }
+    
+    // "Direct Access" StorageIO is used to access a physical storage 
+    // location not associated with any dvObject. (For example, when we 
+    // are deleting a physical file left behind by a DataFile that's 
+    // already been deleted from the database). 
+    public boolean isDirectAccess() {
+        return dvObject == null; 
+    }
 
-    public boolean isRemoteAccess() {
+    /*public boolean isRemoteAccess() {
         return isRemoteAccess;
-    }
+    }*/
 
-    public boolean isHttpAccess() {
+    /*public boolean isHttpAccess() {
         return isHttpAccess;
-    }
+    }*/
 
     public boolean isDownloadSupported() {
         return isDownloadSupported;
@@ -314,7 +364,7 @@ public abstract class StorageIO<T extends DvObject> {
         return noVarHeader;
     }
 
-        // setters:
+    // setters:
     public void setDvObject(T f) {
         dvObject = f;
     }
@@ -323,9 +373,9 @@ public abstract class StorageIO<T extends DvObject> {
         req = dar;
     }
 
-    public void setStatus(int s) {
+    /*public void setStatus(int s) {
         status = s;
-    }
+    }*/
 
     public void setSize(long s) {
         size = s;
@@ -383,25 +433,25 @@ public abstract class StorageIO<T extends DvObject> {
         swiftContainerName = u;
     }
 
-    public void setHTTPMethod(GetMethod hm) {
+    /*public void setHTTPMethod(GetMethod hm) {
         method = hm;
-    }
+    }*/
 
-    public void setResponseHeaders(Header[] headers) {
+    /*public void setResponseHeaders(Header[] headers) {
         responseHeaders = headers;
-    }
+    }*/
 
     public void setIsLocalFile(boolean f) {
         isLocalFile = f;
     }
 
-    public void setIsRemoteAccess(boolean r) {
+    /*public void setIsRemoteAccess(boolean r) {
         isRemoteAccess = r;
-    }
+    }*/
 
-    public void setIsHttpAccess(boolean h) {
+    /*public void setIsHttpAccess(boolean h) {
         isHttpAccess = h;
-    }
+    }*/
 
     public void setIsDownloadSupported(boolean d) {
         isDownloadSupported = d;
@@ -420,11 +470,11 @@ public abstract class StorageIO<T extends DvObject> {
     }
 
         // connection management methods:
-    public void releaseConnection() {
+    /*public void releaseConnection() {
         if (method != null) {
             method.releaseConnection();
         }
-    }
+    }*/
 
     public void closeInputStream() {
         if (in != null) {
@@ -464,6 +514,32 @@ public abstract class StorageIO<T extends DvObject> {
 
         return varHeader;
     }
-    
 
+    protected boolean isWriteAccessRequested(DataAccessOption... options) throws IOException {
+
+        for (DataAccessOption option : options) {
+            // In the future we may need to be able to open read-write
+            // Channels; no support, or use case for that as of now.
+
+            if (option == DataAccessOption.READ_ACCESS) {
+                return false;
+            }
+
+            if (option == DataAccessOption.WRITE_ACCESS) {
+                return true;
+            }
+        }
+
+        // By default, we open the file in read mode:
+        return false;
+    }
+
+	public boolean isBelowIngestSizeLimit() {
+		long limit = Long.parseLong(System.getProperty("dataverse.files." + this.driverId + ".ingestsizelimit", "-1"));
+		if(limit>0 && getSize()>limit) {
+			return false;
+		} else {
+		    return true;
+		}
+	}
 }

@@ -21,7 +21,7 @@
 package edu.harvard.iq.dataverse.ingest.tabulardata.spi;
 
 import java.nio.MappedByteBuffer;
-import java.util.logging.*;
+import java.util.logging.Logger;
 import static java.lang.System.*;
 
 import edu.harvard.iq.dataverse.ingest.plugin.spi.*;

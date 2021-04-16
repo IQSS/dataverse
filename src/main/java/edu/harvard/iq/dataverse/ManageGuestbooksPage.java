@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteGuestbookCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestbookRootCommand;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.util.LinkedList;
@@ -29,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 @ViewScoped
 @Named
 public class ManageGuestbooksPage implements java.io.Serializable {
+    private static final Logger logger = Logger.getLogger(ManageGuestbooksPage.class.getCanonicalName());
 
     @EJB
     DataverseServiceBean dvService;
@@ -80,6 +82,11 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         Long totalResponses = guestbookResponseService.findCountAll(dataverseId);
         if(totalResponses.intValue() > 0){
             displayDownloadAll = true;
+            FacesContext.getCurrentInstance().addMessage(null, 
+                    new FacesMessage(FacesMessage.SEVERITY_INFO, 
+                            BundleUtil.getStringFromBundle("dataset.manageGuestbooks.tip.title"), 
+                            BundleUtil.getStringFromBundle("dataset.manageGuestbooks.tip.downloadascsv")));
+
         }
 
         dvpage.setDataverse(dataverse);
@@ -109,6 +116,8 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         return null;
     }
 
+    /* 
+      replaced by the "streamResponsesByDataverse(), below
     public void downloadResponsesByDataverse(){
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
@@ -124,31 +133,8 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         } catch (Exception e) {
 
         }
-    }
-
-    public void downloadResponsesByDataverseAndGuestbook(){
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
-        response.setContentType("text/comma-separated-values");
-        String fileNameString = "attachment;filename=" + getFileName();
-        response.setHeader("Content-Disposition", fileNameString);
-        //selectedGuestbook
-        String converted = convertResponsesToCommaDelimited(guestbookResponseService.findArrayByDataverseIdAndGuestbookId(dataverseId, selectedGuestbook.getId()));
-        try {
-            ServletOutputStream out = response.getOutputStream();
-            out.write(converted.getBytes());
-            out.flush();
-            ctx.responseComplete();
-        } catch (Exception e) {
-
-        }
-    }
-
-    private String getFileName(){
-       return  dataverse.getName() + "_GuestbookReponses.csv";
-    }
-
-    private final String SEPARATOR = ",";
+    }*/
+    /*private final String SEPARATOR = ",";
     private final String END_OF_LINE = "\n";
 
 
@@ -189,18 +175,61 @@ public class ManageGuestbooksPage implements java.io.Serializable {
             sb.append(END_OF_LINE);
         }
         return sb.toString();
+    }*/
+    
+    public void streamResponsesByDataverse(){
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
+        response.setContentType("text/comma-separated-values");
+        String fileNameString = "attachment;filename=" + getFileName();
+        response.setHeader("Content-Disposition", fileNameString);
+        try {
+            ServletOutputStream out = response.getOutputStream();
+            guestbookResponseService.streamResponsesByDataverseIdAndGuestbookId(out, dataverseId, null);
+            out.flush();
+            ctx.responseComplete();
+        } catch (Exception e) {
+            logger.warning("Failed to stream collected guestbook responses for dataverse "+dataverseId);
+        }
     }
 
+    /* This method does not appear to be needed; the ManageGuestbooksPage does not
+       offer to download collected responses by dataverse and guestbook... 
+       (that is done from the guestbook-responses page)
+    public void downloadResponsesByDataverseAndGuestbook(){
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
+        response.setContentType("text/comma-separated-values");
+        String fileNameString = "attachment;filename=" + getFileName();
+        response.setHeader("Content-Disposition", fileNameString);
+        //selectedGuestbook
+        String converted = convertResponsesToCommaDelimited(guestbookResponseService.findArrayByDataverseIdAndGuestbookId(dataverseId, selectedGuestbook.getId()));
+        try {
+            ServletOutputStream out = response.getOutputStream();
+            out.write(converted.getBytes());
+            out.flush();
+            ctx.responseComplete();
+        } catch (Exception e) {
 
+        }
+    }*/
+
+    private String getFileName(){
+       // The fix below replaces any spaces in the name of the dataverse with underscores;
+       // without it, the filename was chopped off (by the browser??), and the user 
+       // was getting the file name "Foo", instead of "Foo and Bar in Social Sciences.csv". -- L.A.
+       return  dataverse.getName().replace(' ', '_') + "_GuestbookReponses.csv";
+    }
+    
     public void deleteGuestbook() {
         if (selectedGuestbook != null) {
             guestbooks.remove(selectedGuestbook);
             dataverse.getGuestbooks().remove(selectedGuestbook);
             try {
                 engineService.submit(new DeleteGuestbookCommand(dvRequestService.getDataverseRequest(), getDataverse(), selectedGuestbook));
-                JsfHelper.addFlashMessage("The guestbook has been deleted");
+                JsfHelper.addFlashMessage(BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.deleteSuccess"));
             } catch (CommandException ex) {
-                String failMessage = "The dataset guestbook cannot be deleted.";
+                String failMessage = BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.deleteFailure");
                 JH.addMessage(FacesMessage.SEVERITY_FATAL, failMessage);
             }
         } else {
@@ -234,9 +263,9 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         }
         try {
             engineService.submit(new UpdateDataverseCommand(getDataverse(), null, null, dvRequestService.getDataverseRequest(), null));
-            JsfHelper.addSuccessMessage(JH.localize(successMessage));
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle(successMessage));
         } catch (CommandException ex) {
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, JH.localize(failureMessage));
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle(failureMessage));
         }
 
     }

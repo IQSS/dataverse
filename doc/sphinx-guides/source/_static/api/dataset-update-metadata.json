@@ -1,0 +1,86 @@
+{
+  "metadataBlocks": {
+    "citation": {
+      "displayName": "Citation Metadata",
+      "fields": [
+        {
+          "typeName": "title",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "newTitle"
+        },
+        {
+          "typeName": "author",
+          "multiple": true,
+          "typeClass": "compound",
+          "value": [
+            {
+              "authorName": {
+                "typeName": "authorName",
+                "multiple": false,
+                "typeClass": "primitive",
+                "value": "Spruce, Sabrina"
+              }
+            }
+          ]
+        },
+        {
+          "typeName": "datasetContact",
+          "multiple": true,
+          "typeClass": "compound",
+          "value": [
+            {
+              "datasetContactName": {
+                "typeName": "datasetContactName",
+                "multiple": false,
+                "typeClass": "primitive",
+                "value": "Spruce, Sabrina"
+              },
+              "datasetContactEmail": {
+                "typeName": "datasetContactEmail",
+                "multiple": false,
+                "typeClass": "primitive",
+                "value": "spruce@mailinator.com"
+              }
+            }
+          ]
+        },
+        {
+          "typeName": "dsDescription",
+          "multiple": true,
+          "typeClass": "compound",
+          "value": [
+            {
+              "dsDescriptionValue": {
+                "typeName": "dsDescriptionValue",
+                "multiple": false,
+                "typeClass": "primitive",
+                "value": "test"
+              }
+            }
+          ]
+        },
+        {
+          "typeName": "subject",
+          "multiple": true,
+          "typeClass": "controlledVocabulary",
+          "value": [
+            "Other"
+          ]
+        },
+        {
+          "typeName": "depositor",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "Spruce, Sabrina"
+        },
+        {
+          "typeName": "dateOfDeposit",
+          "multiple": false,
+          "typeClass": "primitive",
+          "value": "2017-04-19"
+        }
+      ]
+    }
+  }
+}

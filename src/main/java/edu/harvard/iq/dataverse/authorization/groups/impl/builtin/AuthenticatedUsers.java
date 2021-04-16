@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.authorization.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.groups.Group;
 import edu.harvard.iq.dataverse.authorization.groups.GroupProvider;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 
 public class AuthenticatedUsers implements Group {
 
@@ -37,7 +38,7 @@ public class AuthenticatedUsers implements Group {
 
     @Override
     public RoleAssigneeDisplayInfo getDisplayInfo() {
-        return new RoleAssigneeDisplayInfo("Anyone with a Dataverse account", null);
+        return new RoleAssigneeDisplayInfo( BundleUtil.getStringFromBundle("permission.anyoneWithAccount"), null);
     }
 
     @Override

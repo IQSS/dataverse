@@ -90,7 +90,7 @@ public class HarvestingClient implements Serializable {
     public static final String HARVEST_STYLE_DESCRIPTION_NESSTAR="Nesstar archive";
     public static final String HARVEST_STYLE_DESCRIPTION_ROPER="Roper Archive";
     public static final String HARVEST_STYLE_DESCRIPTION_HGL="HGL";
-    public static final String HARVEST_STYLE_DESCRIPTION_DEFAULT="Generic OAI resource (DC)";
+    public static final String HARVEST_STYLE_DESCRIPTION_DEFAULT="Generic OAI archive";
     
     
     public static final List<String> HARVEST_STYLE_LIST = Arrays.asList(HARVEST_STYLE_DATAVERSE, HARVEST_STYLE_VDC, HARVEST_STYLE_ICPSR, HARVEST_STYLE_NESSTAR, HARVEST_STYLE_ROPER, HARVEST_STYLE_HGL, HARVEST_STYLE_DEFAULT);
@@ -142,11 +142,11 @@ public class HarvestingClient implements Serializable {
         this.harvestedDatasets = harvestedDatasets;
     }
     
-    @NotBlank(message = "Please enter a nickname.")
+    @NotBlank(message = "{user.enterNickname}")
     @Column(nullable = false, unique=true)
-    @Size(max = 30, message = "Nickname must be at most 30 characters.")
-    @Pattern.List({@Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "Found an illegal character(s). Valid characters are a-Z, 0-9, '_', and '-'."), 
-        @Pattern(regexp=".*\\D.*", message="Nickname should not be a number")})
+    @Size(max = 30, message = "{user.nicknameLength}")
+    @Pattern.List({@Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "{dataverse.nameIllegalCharacters}"),
+        @Pattern(regexp=".*\\D.*", message="{user.nicknameNotnumber}")})
     private String name; 
     
     public String getName() {

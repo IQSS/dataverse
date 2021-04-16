@@ -20,8 +20,11 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddressRange;
 import edu.harvard.iq.dataverse.DataverseTheme.Alignment;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroup;
+import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroupTest;
 import edu.harvard.iq.dataverse.authorization.users.GuestUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.io.FileReader;
 import java.io.IOException;
@@ -421,8 +424,7 @@ public class JsonParserTest {
             dsJson = Json.createReader(reader).readObject();
             System.out.println(dsJson != null);
             Dataset actual = sut.parseDataset(dsJson);
-            assertEquals("10.5072/FK2", actual.getAuthority());
-            assertEquals("/", actual.getDoiSeparator());
+            assertEquals("10.5072", actual.getAuthority());
             assertEquals("doi", actual.getProtocol());
         } catch (IOException ioe) {
             throw new JsonParseException("Couldn't read test file", ioe);
@@ -430,12 +432,13 @@ public class JsonParserTest {
     }
 
     /**
-     * Expect an exception when the dataset version JSON contains fields
+     * 
+     * Expect no exception when the dataset version JSON contains fields
      * that the {@link DatasetFieldService} doesn't know about.
-     * @throws JsonParseException as expected
+     * @throws JsonParseException should not happen here
      * @throws IOException when test file IO goes wrong - this is bad.
      */
-    @Test(expected = JsonParseException.class)
+    @Test
     public void testParseOvercompleteDatasetVersion() throws JsonParseException, IOException {
         JsonObject dsJson;
         try (InputStream jsonFile = ClassLoader.getSystemResourceAsStream("json/complete-dataset-version.json")) {
@@ -529,6 +532,61 @@ public class JsonParserTest {
         assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("fe79::22c9:d0ff:fe48:ce61")) ));
         assertFalse( parsed.contains( new DataverseRequest(GuestUser.get(), IpAddress.valueOf("2.1.1.1")) ));
         
+    }
+    
+    @Test
+    public void testValidMailDomainGroup() throws JsonParseException {
+        // given
+        MailDomainGroup test = MailDomainGroupTest.genGroup();
+        
+        // when
+        JsonObject serialized = JsonPrinter.json(test).build();
+        MailDomainGroup parsed = new JsonParser().parseMailDomainGroup(serialized);
+        
+        // then
+        assertEquals(test, parsed);
+        assertEquals(test.hashCode(), parsed.hashCode());
+    }
+    
+    @Test
+    public void testValidRegexMailDomainGroup() throws JsonParseException {
+        // given
+        MailDomainGroup test = MailDomainGroupTest.genRegexGroup();
+        
+        // when
+        JsonObject serialized = JsonPrinter.json(test).build();
+        MailDomainGroup parsed = new JsonParser().parseMailDomainGroup(serialized);
+        
+        // then
+        assertEquals(test, parsed);
+        assertEquals(test.hashCode(), parsed.hashCode());
+    }
+    
+    @Test(expected = JsonParseException.class)
+    public void testMailDomainGroupMissingName() throws JsonParseException {
+        // given
+        String noname = "{ \"id\": 1, \"alias\": \"test\", \"domains\": [] }";
+        JsonObject obj = Json.createReader(new StringReader(noname)).readObject();
+        // when && then
+        MailDomainGroup parsed = new JsonParser().parseMailDomainGroup(obj);
+    }
+    
+    @Test(expected = JsonParseException.class)
+    public void testMailDomainGroupMissingDomains() throws JsonParseException {
+        // given
+        String noname = "{ \"name\": \"test\", \"alias\": \"test\" }";
+        JsonObject obj = Json.createReader(new StringReader(noname)).readObject();
+        // when && then
+        MailDomainGroup parsed = new JsonParser().parseMailDomainGroup(obj);
+    }
+    
+    @Test(expected = JsonParseException.class)
+    public void testMailDomainGroupNotEnabledRegexDomains() throws JsonParseException {
+        // given
+        String regexNotEnabled = "{ \"id\": 1, \"alias\": \"test\", \"domains\": [\"^foobar\\\\.com\"] }";
+        JsonObject obj = Json.createReader(new StringReader(regexNotEnabled)).readObject();
+        // when && then
+        MailDomainGroup parsed = new JsonParser().parseMailDomainGroup(obj);
     }
 
     @Test
@@ -625,47 +683,14 @@ public class JsonParserTest {
         public String getValueForKey( Key key /*, String defaultValue */) {
             switch (key) {
                 case Authority:
-                    return "10.5072/FK2";
+                    return "10.5072";
                 case Protocol:
                     return "doi";
-                case DoiSeparator:
-                    return "/";
                 default:
                     break;
             }
              return null;
         }
     }
-    
-    static class MockDatasetFieldSvc extends DatasetFieldServiceBean {
-        
-        Map<String, DatasetFieldType> fieldTypes = new HashMap<>();
-        long nextId = 1;
-        public DatasetFieldType add( DatasetFieldType t ) {
-            if ( t.getId()==null ) {
-                t.setId( nextId++ );
-            }
-            fieldTypes.put( t.getName(), t);
-            return t;
-        }
-        
-        @Override
-        public DatasetFieldType findByName( String name ) {
-            return fieldTypes.get(name);
-        }
-        
-        @Override
-        public DatasetFieldType findByNameOpt(String name) {
-           return findByName(name);
-        }
-        
-        @Override
-        public ControlledVocabularyValue findControlledVocabularyValueByDatasetFieldTypeAndStrValue(DatasetFieldType dsft, String strValue, boolean lenient) {
-            ControlledVocabularyValue cvv = new ControlledVocabularyValue();
-            cvv.setDatasetFieldType(dsft);
-            cvv.setStrValue(strValue);
-            return cvv;
-        }
- 
-    }
+
 }

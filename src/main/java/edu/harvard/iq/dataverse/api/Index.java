@@ -22,10 +22,11 @@ import edu.harvard.iq.dataverse.search.SolrField;
 import edu.harvard.iq.dataverse.search.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.search.DvObjectSolrDoc;
 import edu.harvard.iq.dataverse.search.FacetCategory;
 import edu.harvard.iq.dataverse.search.FileView;
-import edu.harvard.iq.dataverse.search.IndexAllServiceBean;
+import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexResponse;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.IndexUtil;
@@ -42,7 +43,10 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -69,7 +73,7 @@ public class Index extends AbstractApiBean {
     @EJB
     IndexServiceBean indexService;
     @EJB
-    IndexAllServiceBean indexAllService;
+    IndexBatchServiceBean indexBatchService;
     @EJB
     SolrIndexServiceBean solrIndexService;
     @EJB
@@ -147,7 +151,7 @@ public class Index extends AbstractApiBean {
                 availablePartitionIdsBuilder.add(i);
             }
 
-            JsonObjectBuilder preview = indexAllService.indexAllOrSubsetPreview(numPartitions, partitionIdToProcess, skipIndexed);
+            JsonObjectBuilder preview = indexBatchService.indexAllOrSubsetPreview(numPartitions, partitionIdToProcess, skipIndexed);
             if (previewOnly) {
                 preview.add("args", args);
                 preview.add("availablePartitionIds", availablePartitionIdsBuilder);
@@ -161,7 +165,7 @@ public class Index extends AbstractApiBean {
              * @todo How can we expose the String returned from "index all" via
              * the API?
              */
-            Future<JsonObjectBuilder> indexAllFuture = indexAllService.indexAllOrSubset(numPartitions, partitionIdToProcess, skipIndexed, previewOnly);
+            Future<JsonObjectBuilder> indexAllFuture = indexBatchService.indexAllOrSubset(numPartitions, partitionIdToProcess, skipIndexed, previewOnly);
             JsonObject workloadPreview = preview.build().getJsonObject("previewOfPartitionWorkload");
             int dataverseCount = workloadPreview.getInt("dataverseCount");
             int datasetCount = workloadPreview.getInt("datasetCount");
@@ -223,7 +227,12 @@ public class Index extends AbstractApiBean {
                     /**
                      * @todo Can we display the result of indexing to the user?
                      */
-                    Future<String> indexDataverseFuture = indexService.indexDataverse(dataverse);
+                    
+                    try {
+                        Future<String> indexDataverseFuture = indexService.indexDataverse(dataverse);
+                    } catch (IOException | SolrServerException e) {                                                
+                        return error(Status.BAD_REQUEST, writeFailureToLog(e.getLocalizedMessage(), dataverse));
+                    }
                     return ok("starting reindex of dataverse " + id);
                 } else {
                     String response = indexService.removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierDataverse + id);
@@ -233,7 +242,13 @@ public class Index extends AbstractApiBean {
                 Dataset dataset = datasetService.find(id);
                 if (dataset != null) {
                     boolean doNormalSolrDocCleanUp = true;
-                    Future<String> indexDatasetFuture = indexService.indexDataset(dataset, doNormalSolrDocCleanUp);
+                    try {
+                        Future<String> indexDatasetFuture = indexService.indexDataset(dataset, doNormalSolrDocCleanUp);
+                    } catch (IOException | SolrServerException e) {
+                        //
+                        return error(Status.BAD_REQUEST, writeFailureToLog(e.getLocalizedMessage(), dataset));
+                    }
+
                     return ok("starting reindex of dataset " + id);
                 } else {
                     /**
@@ -250,7 +265,12 @@ public class Index extends AbstractApiBean {
                  * @todo How can we display the result to the user?
                  */
                 boolean doNormalSolrDocCleanUp = true;
-                Future<String> indexDatasetFuture = indexService.indexDataset(datasetThatOwnsTheFile, doNormalSolrDocCleanUp);
+                try {
+                    Future<String> indexDatasetFuture = indexService.indexDataset(datasetThatOwnsTheFile, doNormalSolrDocCleanUp);
+                } catch (IOException | SolrServerException e) {
+                    writeFailureToLog(e.getLocalizedMessage(), datasetThatOwnsTheFile);
+                }
+                
                 return ok("started reindexing " + type + "/" + id);
             } else {
                 return error(Status.BAD_REQUEST, "illegal type: " + type);
@@ -300,11 +320,15 @@ public class Index extends AbstractApiBean {
         }
         if (dataset != null) {
             boolean doNormalSolrDocCleanUp = true;
-            Future<String> indexDatasetFuture = indexService.indexDataset(dataset, doNormalSolrDocCleanUp);
+            try {
+                Future<String> indexDatasetFuture = indexService.indexDataset(dataset, doNormalSolrDocCleanUp);
+            } catch (IOException | SolrServerException e) {
+                writeFailureToLog(e.getLocalizedMessage(), dataset);               
+            }
             JsonObjectBuilder data = Json.createObjectBuilder();
             data.add("message", "Reindexed dataset " + persistentId);
             data.add("id", dataset.getId());
-            data.add("persistentId", dataset.getGlobalId());
+            data.add("persistentId", dataset.getGlobalIdString());
             JsonArrayBuilder versions = Json.createArrayBuilder();
             for (DatasetVersion version : dataset.getVersions()) {
                 JsonObjectBuilder versionObject = Json.createObjectBuilder();
@@ -356,100 +380,59 @@ public class Index extends AbstractApiBean {
             return ok(indexResponse.getMessage());
         }
     }
-
+    /**
+     * Checks whether there are inconsistencies between the Solr index and 
+     * the database, and reports back the status by content type
+     * @param sync - optional parameter, if set, then run the command 
+     * synchronously. Else, return immediately, and report the status in server.log
+     * @return status report
+     */
     @GET
     @Path("status")
-    public Response indexStatus() {
-        JsonObjectBuilder contentInDatabaseButStaleInOrMissingFromSolr = getContentInDatabaseButStaleInOrMissingFromSolr();
-
-        JsonObjectBuilder contentInSolrButNotDatabase;
-        try {
-            contentInSolrButNotDatabase = getContentInSolrButNotDatabase();
-        } catch (SearchException ex) {
-            return error(Response.Status.INTERNAL_SERVER_ERROR, "Can not determine index status. " + ex.getLocalizedMessage() + ". Is Solr down? Exception: " + ex.getCause().getLocalizedMessage());
+    public Response indexStatus(@QueryParam("sync") String sync) {
+        Future<JsonObjectBuilder> result = indexBatchService.indexStatus();
+        if (sync != null) {
+            try {
+                JsonObjectBuilder status = result.get();
+                return ok(status);
+            } catch (InterruptedException | ExecutionException e) {
+                return AbstractApiBean.error(Status.INTERNAL_SERVER_ERROR, "indexStatus method interrupted: " + e.getLocalizedMessage());
+            }
+        } else {
+            return ok("Index Status Batch Job initiated, check log for job status.");
         }
-
-        JsonObjectBuilder permissionsInDatabaseButStaleInOrMissingFromSolr = getPermissionsInDatabaseButStaleInOrMissingFromSolr();
-        JsonObjectBuilder permissionsInSolrButNotDatabase = getPermissionsInSolrButNotDatabase();
-
-        JsonObjectBuilder data = Json.createObjectBuilder()
-                .add("contentInDatabaseButStaleInOrMissingFromIndex", contentInDatabaseButStaleInOrMissingFromSolr)
-                .add("contentInIndexButNotDatabase", contentInSolrButNotDatabase)
-                .add("permissionsInDatabaseButStaleInOrMissingFromIndex", permissionsInDatabaseButStaleInOrMissingFromSolr)
-                .add("permissionsInIndexButNotDatabase", permissionsInSolrButNotDatabase);
-
-        return ok(data);
     }
-
-    private JsonObjectBuilder getContentInDatabaseButStaleInOrMissingFromSolr() {
-        List<Dataverse> stateOrMissingDataverses = indexService.findStaleOrMissingDataverses();
-        List<Dataset> staleOrMissingDatasets = indexService.findStaleOrMissingDatasets();
-        JsonArrayBuilder jsonStateOrMissingDataverses = Json.createArrayBuilder();
-        for (Dataverse dataverse : stateOrMissingDataverses) {
-            jsonStateOrMissingDataverses.add(dataverse.getId());
+     /**
+     * Deletes "orphan" Solr documents (that don't match anything in the database).
+     * @param sync - optional parameter, if set, then run the command 
+     * synchronously. Else, return immediately, and report the results in server.log
+     * @return what documents, if anything, was deleted
+     */
+    @GET
+    @Path("clear-orphans")
+    /**
+     * Checks whether there are inconsistencies between the Solr index and the
+     * database, and reports back the status by content type
+     *
+     * @param sync - optional parameter, if !=null, then run the command
+     * synchronously. Else, return immediately, and report the status in
+     * server.log
+     * @return
+     */
+    public Response clearOrphans(@QueryParam("sync") String sync) {
+        Future<JsonObjectBuilder> result = indexBatchService.clearOrphans();
+        if (sync != null) {
+            try {
+                JsonObjectBuilder status = result.get();
+                return ok(status);
+            } catch (InterruptedException | ExecutionException e) {
+                return AbstractApiBean.error(Status.INTERNAL_SERVER_ERROR, "indexStatus method interrupted: " + e.getLocalizedMessage());
+            }
+        } else {
+            return ok("Clear Orphans Batch Job initiated, check log for job status.");
         }
-        JsonArrayBuilder datasetsInDatabaseButNotSolr = Json.createArrayBuilder();
-        for (Dataset dataset : staleOrMissingDatasets) {
-            datasetsInDatabaseButNotSolr.add(dataset.getId());
-        }
-        JsonObjectBuilder contentInDatabaseButStaleInOrMissingFromSolr = Json.createObjectBuilder()
-                /**
-                 * @todo What about files? Currently files are always indexed
-                 * along with their parent dataset
-                 */
-                .add("dataverses", jsonStateOrMissingDataverses.build().size())
-                .add("datasets", datasetsInDatabaseButNotSolr.build().size());
-        return contentInDatabaseButStaleInOrMissingFromSolr;
     }
-
-    private JsonObjectBuilder getContentInSolrButNotDatabase() throws SearchException {
-        List<Long> dataversesInSolrOnly = indexService.findDataversesInSolrOnly();
-        List<Long> datasetsInSolrOnly = indexService.findDatasetsInSolrOnly();
-        List<Long> filesInSolrOnly = indexService.findFilesInSolrOnly();
-        JsonArrayBuilder dataversesInSolrButNotDatabase = Json.createArrayBuilder();
-        for (Long dataverseId : dataversesInSolrOnly) {
-            dataversesInSolrButNotDatabase.add(dataverseId);
-        }
-        JsonArrayBuilder datasetsInSolrButNotDatabase = Json.createArrayBuilder();
-        for (Long datasetId : datasetsInSolrOnly) {
-            datasetsInSolrButNotDatabase.add(datasetId);
-        }
-        JsonArrayBuilder filesInSolrButNotDatabase = Json.createArrayBuilder();
-        for (Long fileId : filesInSolrOnly) {
-            filesInSolrButNotDatabase.add(fileId);
-        }
-        JsonObjectBuilder contentInSolrButNotDatabase = Json.createObjectBuilder()
-                /**
-                 * @todo What about files? Currently files are always indexed
-                 * along with their parent dataset
-                 */
-                .add("dataverses", dataversesInSolrButNotDatabase.build().size())
-                .add("datasets", datasetsInSolrButNotDatabase.build().size())
-                .add("files", filesInSolrButNotDatabase.build().size());
-        return contentInSolrButNotDatabase;
-    }
-
-    private JsonObjectBuilder getPermissionsInDatabaseButStaleInOrMissingFromSolr() {
-        List<Long> staleOrMissingPermissions;
-        staleOrMissingPermissions = solrIndexService.findPermissionsInDatabaseButStaleInOrMissingFromSolr();
-        JsonArrayBuilder stalePermissionList = Json.createArrayBuilder();
-        for (Long dvObjectId : staleOrMissingPermissions) {
-            stalePermissionList.add(dvObjectId);
-        }
-        return Json.createObjectBuilder()
-                .add("dvobjects", stalePermissionList.build().size());
-    }
-
-    private JsonObjectBuilder getPermissionsInSolrButNotDatabase() {
-        List<Long> staleOrMissingPermissions = solrIndexService.findPermissionsInSolrNoLongerInDatabase();
-        JsonArrayBuilder stalePermissionList = Json.createArrayBuilder();
-        for (Long dvObjectId : staleOrMissingPermissions) {
-            stalePermissionList.add(dvObjectId);
-        }
-        return Json.createObjectBuilder()
-                .add("dvobjects", stalePermissionList.build().size());
-    }
-
+  
     /**
      * We use the output of this method to generate our Solr schema.xml
      *
@@ -486,7 +469,7 @@ public class Index extends AbstractApiBean {
             }
             String multivalued = datasetField.getSolrField().isAllowedToBeMultivalued().toString();
             // <field name="datasetId" type="text_general" multiValued="false" stored="true" indexed="true"/>
-            sb.append("   <field name=\"" + nameSearchable + "\" type=\"" + type + "\" multiValued=\"" + multivalued + "\" stored=\"true\" indexed=\"true\"/>\n");
+            sb.append("    <field name=\"" + nameSearchable + "\" type=\"" + type + "\" multiValued=\"" + multivalued + "\" stored=\"true\" indexed=\"true\"/>\n");
         }
 
         List<String> listOfStaticFields = new ArrayList<>();
@@ -533,8 +516,8 @@ public class Index extends AbstractApiBean {
                 }
             }
 
-            // <copyField source="*_i" dest="text" maxChars="3000"/>
-            sb.append("   <copyField source=\"").append(nameSearchable).append("\" dest=\"text\" maxChars=\"3000\"/>\n");
+            // <copyField source="*_i" dest="_text_" maxChars="3000"/>
+            sb.append("    <copyField source=\"").append(nameSearchable).append("\" dest=\""+ SearchFields.FULL_TEXT + "\" maxChars=\"3000\"/>\n");
         }
 
         return sb.toString();
@@ -560,7 +543,7 @@ public class Index extends AbstractApiBean {
 
         User user = findUserByApiToken(apiToken);
         if (user == null) {
-            return error(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiToken + "'");
+            return error(Response.Status.UNAUTHORIZED, "Invalid apikey ");
         }
 
         Dataverse subtreeScope = dataverseService.findRootDataverse();
@@ -571,8 +554,10 @@ public class Index extends AbstractApiBean {
         boolean dataRelatedToMe = false;
         int numResultsPerPage = Integer.MAX_VALUE;
         SolrQueryResponse solrQueryResponse;
+        List<Dataverse> dataverses = new ArrayList<>();
+        dataverses.add(subtreeScope);
         try {
-            solrQueryResponse = searchService.search(createDataverseRequest(user), subtreeScope, query, filterQueries, sortField, sortOrder, paginationStart, dataRelatedToMe, numResultsPerPage);
+            solrQueryResponse = searchService.search(createDataverseRequest(user), dataverses, query, filterQueries, sortField, sortOrder, paginationStart, dataRelatedToMe, numResultsPerPage);
         } catch (SearchException ex) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, ex.getLocalizedMessage() + ": " + ex.getCause().getLocalizedMessage());
         }
@@ -597,7 +582,7 @@ public class Index extends AbstractApiBean {
 
         User user = findUserByApiToken(apiToken);
         if (user == null) {
-            return error(Response.Status.UNAUTHORIZED, "Invalid apikey '" + apiToken + "'");
+            return error(Response.Status.UNAUTHORIZED, "Invalid apikey");
         }
 
         DvObject dvObjectToLookUp = dvObjectService.findDvObject(dvObjectId);
@@ -736,6 +721,23 @@ public class Index extends AbstractApiBean {
             data.add(fileMetadata.getLabel());
         }
         return ok(data);
+    }
+    
+    private String writeFailureToLog(String localizedMessage, DvObject dvo) {
+        String retVal = "";
+        String logString = "";
+        if(dvo.isInstanceofDataverse()){
+            retVal = "Dataverse Indexing failed. " ;
+           logString +=  retVal + " You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + dvo.getId().toString(); 
+        }
+        
+        if(dvo.isInstanceofDataset()){
+            retVal += " Dataset Indexing failed. ";
+            logString +=  retVal + " You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dvo.getId().toString(); 
+        }
+        retVal += " \r\n " + localizedMessage;
+        LoggingUtil.writeOnSuccessFailureLog(null, logString, dvo);
+        return retVal;
     }
 
 }

@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.IOUtils;
 
 @RequiredPermissions(Permission.EditDataset)
 public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbnail> {
@@ -70,7 +72,7 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
                     throw new CommandException("Could not find file based on id supplied: " + dataFileIdSupplied + ".", this);
                 }
                 Dataset ds1 = ctxt.datasets().setDatasetFileAsThumbnail(dataset, datasetFileThumbnailToSwitchTo);
-                DatasetThumbnail datasetThumbnail = ds1.getDatasetThumbnail();
+                DatasetThumbnail datasetThumbnail = ds1.getDatasetThumbnail(ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
                 if (datasetThumbnail != null) {
                     DataFile dataFile = datasetThumbnail.getDataFile();
                     if (dataFile != null) {
@@ -105,15 +107,16 @@ public class UpdateDatasetThumbnailCommand extends AbstractCommand<DatasetThumbn
                     Logger.getLogger(UpdateDatasetThumbnailCommand.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 Dataset datasetWithNewThumbnail = ctxt.datasets().setNonDatasetFileAsThumbnail(dataset, fileAsStream);
+		IOUtils.closeQuietly(fileAsStream);
                 if (datasetWithNewThumbnail != null) {
-                    return datasetWithNewThumbnail.getDatasetThumbnail();
+                    return datasetWithNewThumbnail.getDatasetThumbnail(ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
                 } else {
                     return null;
                 }
 
             case removeThumbnail:
                 Dataset ds2 = ctxt.datasets().removeDatasetThumbnail(dataset);
-                DatasetThumbnail datasetThumbnail2 = ds2.getDatasetThumbnail();
+                DatasetThumbnail datasetThumbnail2 = ds2.getDatasetThumbnail(ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
                 if (datasetThumbnail2 == null) {
                     return null;
                 } else {

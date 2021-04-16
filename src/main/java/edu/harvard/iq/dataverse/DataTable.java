@@ -103,6 +103,18 @@ public class DataTable implements Serializable {
      */
     private String originalFormatVersion;
     
+    /* 
+     * Size of the original file:
+    */
+    
+    private Long originalFileSize; 
+    
+    /**
+     * originalFileName: the file name upon upload/ingest
+     */
+    @Column( nullable = true )
+    private String originalFileName;
+    
     /*
      * Getter and Setter methods:
      */
@@ -172,6 +184,14 @@ public class DataTable implements Serializable {
         this.originalFileFormat = originalFileType;
     }
 
+    public Long getOriginalFileSize() {
+        return originalFileSize; 
+    }
+    
+    public void setOriginalFileSize(Long originalFileSize) {
+        this.originalFileSize = originalFileSize;
+    }
+    
     
     public String getOriginalFormatVersion() {
         return originalFormatVersion;
@@ -179,6 +199,14 @@ public class DataTable implements Serializable {
 
     public void setOriginalFormatVersion(String originalFormatVersion) {
         this.originalFormatVersion = originalFormatVersion;
+    }
+       
+    public String getOriginalFileName() {
+        return originalFileName;
+    }
+
+    public void setOriginalFileName(String originalFileName) {
+        this.originalFileName = originalFileName;
     }
     
     /* 

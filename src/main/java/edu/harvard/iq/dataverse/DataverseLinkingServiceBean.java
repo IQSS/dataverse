@@ -7,6 +7,7 @@ package edu.harvard.iq.dataverse;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -22,6 +23,7 @@ import javax.persistence.TypedQuery;
 @Stateless
 @Named
 public class DataverseLinkingServiceBean implements java.io.Serializable {
+    private static final Logger logger = Logger.getLogger(DataverseLinkingServiceBean.class.getCanonicalName());
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -32,22 +34,20 @@ public class DataverseLinkingServiceBean implements java.io.Serializable {
     
     public List<Dataverse> findLinkedDataverses(Long linkingDataverseId) {
         List<Dataverse> retList = new ArrayList<>();
-        Query query = em.createQuery("select object(o) from DataverseLinkingDataverse as o where o.linkingDataverse.id =:linkingDataverseId order by o.id");
-        query.setParameter("linkingDataverseId", linkingDataverseId);
-        for (Object o : query.getResultList()) {
-            DataverseLinkingDataverse convterted = (DataverseLinkingDataverse) o;
-            retList.add(convterted.getDataverse());
+        TypedQuery<DataverseLinkingDataverse> typedQuery = em.createNamedQuery("DataverseLinkingDataverse.findByLinkingDataverseId", DataverseLinkingDataverse.class)
+            .setParameter("linkingDataverseId", linkingDataverseId);
+        for (DataverseLinkingDataverse dataverseLinkingDataverse : typedQuery.getResultList()) {
+            retList.add(dataverseLinkingDataverse.getDataverse());
         }
         return retList;
     }
 
     public List<Dataverse> findLinkingDataverses(Long dataverseId) {
         List<Dataverse> retList = new ArrayList<>();
-        Query query = em.createQuery("select object(o) from DataverseLinkingDataverse as o where o.dataverse.id =:dataverseId order by o.id");
-        query.setParameter("dataverseId", dataverseId);
-        for (Object o : query.getResultList()) {
-            DataverseLinkingDataverse convterted = (DataverseLinkingDataverse) o;
-            retList.add(convterted.getLinkingDataverse());
+        TypedQuery<DataverseLinkingDataverse> typedQuery = em.createNamedQuery("DataverseLinkingDataverse.findByDataverseId", DataverseLinkingDataverse.class)
+            .setParameter("dataverseId", dataverseId);
+        for (DataverseLinkingDataverse dataverseLinkingDataverse : typedQuery.getResultList()) {
+            retList.add(dataverseLinkingDataverse.getLinkingDataverse());
         }
         return retList;
     }
@@ -59,11 +59,20 @@ public class DataverseLinkingServiceBean implements java.io.Serializable {
             em.merge(dataverseLinkingDataverse);
         }
     }
+    
+    public DataverseLinkingDataverse findDataverseLinkingDataverse(Long dataverseId, Long linkingDataverseId) {
+        try {
+            return em.createNamedQuery("DataverseLinkingDataverse.findByDataverseIdAndLinkingDataverseId", DataverseLinkingDataverse.class)
+                .setParameter("dataverseId", dataverseId)
+                .setParameter("linkingDataverseId", linkingDataverseId)
+                .getSingleResult();
+        } catch (javax.persistence.NoResultException e) {
+            logger.fine("No DataverseLinkingDataverse found for dataverseId " + dataverseId + " and linkedDataverseId " + linkingDataverseId);        
+            return null;
+        }
+    }
 
     public boolean alreadyLinked(Dataverse definitionPoint, Dataverse dataverseToLinkTo) {
-        TypedQuery<DataverseLinkingDataverse> typedQuery = em.createQuery("SELECT OBJECT(o) FROM DataverseLinkingDataverse AS o WHERE o.linkingDataverse.id = :dataverseId AND o.dataverse.id = :dataverseToLinkTo", DataverseLinkingDataverse.class);
-        typedQuery.setParameter("dataverseId", definitionPoint.getId());
-        typedQuery.setParameter("dataverseToLinkTo", dataverseToLinkTo.getId());
-        return !typedQuery.getResultList().isEmpty();
+        return findDataverseLinkingDataverse(dataverseToLinkTo.getId(), definitionPoint.getId()) != null;
     }
 }

@@ -6,13 +6,13 @@
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:p="http://primefaces.org/ui"
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
-
     <h:head>
     </h:head>
 
     <h:body>
         <f:metadata>
             <f:viewParam name="dataverseId" value="#{dataverseServiceBean.findRootDataverse().id}"/>
+            <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
             <f:viewAction action="#{DashboardUsersPage.init}"/>
             <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse())}"/>
             <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb('/dashboard.xhtml?dataverseId='.concat(dataverse.id), bundle['dashboard.title'])}"/> 
@@ -24,6 +24,7 @@
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:define name="body">
                 <h:form id="dashboardUsersForm">
+                    <p:focus for="searchFiles"/>
                     <div jsf:id="userssHeaderBlock" class="row">
                         <div class="col-xs-6">
                             <div class="input-group">
@@ -33,8 +34,8 @@
                                 <p:watermark for="searchFiles" value="#{bundle['dashboard.list_users.searchTerm.watermark']}"/>
                                 <p:remoteCommand name="submitsearch" action="#{DashboardUsersPage.runUserSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"/>
                                 <span class="input-group-btn">
-                                    <p:commandLink styleClass="btn btn-default" action="#{DashboardUsersPage.runUserSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
-                                        <span class="glyphicon glyphicon-search"></span> #{bundle['dataverse.search.btn.find']}
+                                    <p:commandLink title="#{bundle['dataverse.search.btn.find']}" styleClass="btn btn-default bootstrap-button-tooltip" action="#{DashboardUsersPage.runUserSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
+                                        <span class="glyphicon glyphicon-search no-text"/>
                                     </p:commandLink>
                                 </span>
                             </div>
@@ -62,24 +63,37 @@
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.affiliation']}">
                             <h:outputText value="#{user.affiliation}" />
                         </p:column>
-                        <p:column headerText="#{bundle['dashboard.list_users.tbl_header.roles']}">
-                            <h:outputText value="#{user.roles}" />
-                        </p:column>
                         <p:column width="12%" headerText="#{bundle['dashboard.list_users.tbl_header.authProviderFactoryAlias']}">
                             <h:outputText value="#{DashboardUsersPage.getAuthProviderFriendlyName(user.authProviderId)}" />
+                            <h:outputText rendered="#{user.deactivated}" value=" (#{bundle['dashboard.list_users.tbl_header.deactivated']})" />
+                        </p:column>
+                        <p:column headerText="#{bundle['dashboard.list_users.tbl_header.roles']}">
+                            <h:outputText value="#{user.roles}" />
+                            <p:commandButton id="removeRolesButton" 
+                                            rendered="#{!empty user.roles}" 
+                                            value="#{bundle['dashboard.list_users.tbl_header.roles.removeAll']}" 
+                                            styleClass="btn btn-default">
+                                <p:ajax event="click" 
+                                        oncomplete="PF('removeRolesConfirm').show();"
+                                        process="@this" 
+                                        listener="#{DashboardUsersPage.setUserToToggleSuperuserStatus(user)}"
+                                        update=":dashboardUsersForm:removeRolesConfirm"/>
+                            </p:commandButton>
                         </p:column>
                         <p:column width="9%" class="text-center" headerText="#{bundle['dashboard.list_users.tbl_header.isSuperuser']}">
                             <!-- A simple implementation of the superuser status toggle - via a boolean checkbox with an immediate ajax update. -->
                             <!-- Uses our standard approach, of showing a confirmation popup ("are you sure you want to toggle this? ...") first,  -->
                             <!-- before saving the toggled value. -->
                             <!-- The current user, the admin user viewing the dashboard, should not be allowed to toggle the superuser status on him- or herself: -->
-                            <p:selectBooleanCheckbox id="superUserCheckbox" value="#{user.superuser}" valueChangeListener="#{DashboardUsersPage.setUserToToggleSuperuserStatus(user)}"  disabled="#{user.id == dataverseSession.user.id}">
+                            <!-- Additionally, deactivated users cannot become superusers so we disable the checkbox. -->
+                            <p:selectBooleanCheckbox id="superUserCheckbox" value="#{user.superuser}" valueChangeListener="#{DashboardUsersPage.setUserToToggleSuperuserStatus(user)}"  disabled="#{user.id == dataverseSession.user.id or user.deactivated}">
                                 <p:ajax event="change" process="@this" oncomplete="PF('toggleSuperuserConfirmation').show();"  update=":dashboardUsersForm:toggleSuperuserConfirmation"/>
                             </p:selectBooleanCheckbox>
                         </p:column>
                     </p:dataTable>
                     <p:dialog styleClass="smallPopUp" id="toggleSuperuserConfirmation" header="#{bundle['dashboard.list_users.toggleSuperuser']}" widgetVar="toggleSuperuserConfirmation" modal="true" closable="false">
-                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/>
+                        <p:focus context="toggleSuperuserConfirmation"/>
+                        <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/>
                             <h:outputFormat value=" #{bundle['dashboard.list_users.toggleSuperuser.confirmationText.add']} " rendered="#{DashboardUsersPage.selectedUserDetached.superuser}">
                                 <f:param value="#{DashboardUsersPage.selectedUserDetached.userIdentifier}"/>
                             </h:outputFormat>
@@ -88,8 +102,17 @@
                             </h:outputFormat>
                         </p>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle['dashboard.list_users.toggleSuperuser.confirm']}" action="#{DashboardUsersPage.saveSuperuserStatus()}" update="userTable,:messagePanel" onclick="PF('toggleSuperuserConfirmation').hide();"/>
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle['cancel']}" action="#{DashboardUsersPage.cancelSuperuserStatusChange()}"  update=":dashboardUsersForm:userTable,:messagePanel" onclick="PF('toggleSuperuserConfirmation').hide();"/>
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.yes}" action="#{DashboardUsersPage.saveSuperuserStatus()}" update="userTable,:messagePanel" onclick="PF('toggleSuperuserConfirmation').hide();"/>
+                            <p:commandButton styleClass="btn btn-link" value="#{bundle.no}" action="#{DashboardUsersPage.cancelSuperuserStatusChange()}" update=":dashboardUsersForm:userTable,:messagePanel" onclick="PF('toggleSuperuserConfirmation').hide();"/>
+                        </div>
+                    </p:dialog>
+                    <p:dialog id="removeRolesConfirm" header="#{bundle['dashboard.list_users.tbl_header.roles.removeAll.header']}" widgetVar="removeRolesConfirm" modal="true" closable="false">
+                        <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{DashboardUsersPage.confirmRemoveRolesMessage}</p>
+                        <div class="button-block">
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.yes}" update="userTable,:messagePanel" oncomplete="PF('removeRolesConfirm').hide();" action="#{DashboardUsersPage.removeUserRoles()}"/>
+                            <button class="btn btn-link" onclick="PF('removeRolesConfirm').hide()" type="button">
+                                #{bundle.no}
+                            </button>
                         </div>
                     </p:dialog>
                 </h:form>

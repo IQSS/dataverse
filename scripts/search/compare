@@ -7,7 +7,7 @@ curl -s "http://localhost:8080/api/search?q=*&key=$FINCHKEY" | jq '.data.fq_actu
 echo "Database:"
 scripts/search/dbperms $1 | grep '|'
 echo "Solr per group docs (old):"
-curl -s "http://localhost:8983/solr/collection1/select?rows=100&wt=json&indent=true&q=entityid%3A$1" | jq '.response.docs[] | {id, name_sort, perms_ss}'
+curl -s "http://localhost:8983/solr/collection1/select?rows=100&wt=json&indent=true&q=entityId%3A$1" | jq '.response.docs[] | {id, name_sort, perms_ss}'
 echo "Solr permission docs (new):"
 curl -s "http://localhost:8983/solr/collection1/select?rows=100&wt=json&indent=true&q=definition_point_dvobject_id_s%3A$1" | jq '.response.docs[] | {definition_point_s,discoverable_by_ss}'
 echo "Java:"

@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.ip.IpAddress
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -104,7 +103,7 @@ public class IpGroupsServiceBean {
             List<IpGroup> groupList = em.createNamedQuery("IPv4Range.findGroupsContainingAddressAsLong", IpGroup.class)
                     .setParameter("addressAsLong", ip4.toBigInteger()).getResultList();
             return new HashSet<>(groupList);
-            
+
         } else if ( ipa instanceof IPv6Address ) {
             IPv6Address ip6 = (IPv6Address) ipa;
             long[] ip6arr = ip6.toLongArray();
@@ -115,7 +114,7 @@ public class IpGroupsServiceBean {
                     .setParameter("d", ip6arr[3])
                     .getResultList();
             return new HashSet<>(groupList);
-            
+
         } else {
             throw new IllegalArgumentException( "Unknown IpAddress type: " + ipa.getClass() + " (for IpAddress:" + ipa + ")" );
         }

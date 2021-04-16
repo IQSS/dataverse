@@ -7,7 +7,8 @@ import javax.persistence.MappedSuperclass;
 
 /**
  * A range of {@link IpAddress}es. Abstract class - to instantiate, you need to
- * use one of the concrete subclasses of either IPv4 or IPv6.
+ * use one of the concrete subclasses of either IPv4 or IPv6, or the static 
+ * {@code make} methods.
  * @author michael
  */
 @MappedSuperclass
@@ -21,6 +22,10 @@ public abstract class IpAddressRange {
         } else {
             throw new IllegalArgumentException("Both addresses have to be of the same type (either IPv4 or IPv6)");
         }
+    }
+    
+    public static IpAddressRange makeSingle( IpAddress ipa ) { 
+        return make(ipa, ipa);
     }
     
     /**

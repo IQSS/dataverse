@@ -10,112 +10,87 @@
       xmlns:cc="http://java.sun.com/jsf/composite"
       xmlns:o="http://omnifaces.org/ui"
       xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-
     <h:head>
     </h:head>
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{datasetPage || EditDatafilesPage.showFileUploadFragment() ? (EditDatafilesPage.mode == 'SINGLE_REPLACE' ? bundle['file.replaceFile'] : bundle['file.uploadFiles']) : bundle['file.editFiles']} - #{EditDatafilesPage.workingVersion.title}"/>
+            <ui:param name="pageTitle" value="#{datasetPage || EditDatafilesPage.showFileUploadFragment() ? (EditDatafilesPage.mode == 'REPLACE' ? bundle['file.replaceFile'] : bundle['file.uploadFiles']) : bundle['file.editFiles']} - #{EditDatafilesPage.workingVersion.title}"/>
             <ui:param name="dataverse" value="#{EditDatafilesPage.dataset.owner}"/>
             <ui:param name="dataset" value="#{EditDatafilesPage.dataset}"/>
             <ui:param name="version" value="#{EditDatafilesPage.workingVersion}"/>
+            <ui:param name="fileMetadatas" value="#{EditDatafilesPage.fileMetadatas}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
                 <f:metadata>
                     <f:viewParam name="datasetId" value="#{EditDatafilesPage.dataset.id}"/>
-                    <f:viewParam name="mode" value="#{EditDatafilesPage.mode}"/>
-                    <!-- f:viewParam name="versionId" value="#.EditDatafilesPage.versionId."/ -->
+                    <o:viewParam name="mode" value="#{EditDatafilesPage.mode}"/>
+                    <o:viewParam name="referrer" value="#{EditDatafilesPage.referrer}" default="DATASET"/>
                     <f:viewParam name="selectedFileIds" value="#{EditDatafilesPage.selectedFileIds}"/>
                     <f:viewParam name="versionString" value="#{EditDatafilesPage.versionString}"/>
+                    <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{EditDatafilesPage.init}" />
-                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(EditDatafilesPage.dataset, (datasetPage || EditDatafilesPage.showFileUploadFragment() ? (EditDatafilesPage.mode == 'SINGLE_REPLACE' ? bundle['file.replaceFile'] : bundle['file.uploadFiles']) : bundle['file.editFiles']))}"
-                                  if="#{!(param.mode == 'SINGLE' || param.mode == 'SINGLE_REPLACE')}" />
-                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbsForFileMetadata(EditDatafilesPage.singleFile, bundle['file.editFiles'])}"
-                                  if="#{(param.mode == 'SINGLE' || param.mode == 'SINGLE_REPLACE')  }" />
+                    <o:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(EditDatafilesPage.dataset, (datasetPage || EditDatafilesPage.showFileUploadFragment() ? (EditDatafilesPage.mode == 'REPLACE' ? bundle['file.replaceFile'] : bundle['file.uploadFiles']) : bundle['file.editFiles']))}"
+                                  if="#{EditDatafilesPage.referrer == 'DATASET'}" />
+                    <o:viewAction action="#{dataverseHeaderFragment.initBreadcrumbsForFileMetadata(EditDatafilesPage.singleFile, (EditDatafilesPage.mode == 'REPLACE' ? bundle['file.replaceFile'] : bundle['file.editFiles']))}"
+                                  if="#{EditDatafilesPage.referrer == 'FILE'}" />
                 </f:metadata>
                 <h:form id="datasetForm">
                     <!-- BEGIN: file replace original -->
-                    <ui:fragment rendered="#{EditDatafilesPage.fileReplaceOperation}">
-                        <c:if test="#{EditDatafilesPage.getFileToReplace() != null}">
-                            <ui:param name="fileToReplace" value="#{EditDatafilesPage.getFileToReplace()}" />
-                        </c:if>
+                    <div class="row" jsf:rendered="#{EditDatafilesPage.fileReplaceOperation}">
                         <div id="file-replace-original-block" class="col-sm-12">
                             <label class="col-sm-2 control-label">
                                 <span>#{bundle['file.replace.original']}</span>
                             </label>
-                            <div id="filesTable" class="col-sm-10">
-                                <div style="" class="pull-left col-file-thumb">
-                                    <div class="thumbnail-block text-center">  
-                                    <span class="icon-#{dataFileServiceBean.getFileClass(fileToReplace.fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{!EditDatafilesPage.isThumbnailAvailable(fileToReplace.fileMetadata)}"/>
-                                        <span class="file-thumbnail-preview-img" jsf:rendered="#{EditDatafilesPage.isThumbnailAvailable(fileToReplace.fileMetadata)}"
-                                              data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileToReplace.fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
-                                            <p:graphicImage value="/api/access/datafile/#{fileToReplace.fileMetadata.dataFile.id}?imageThumb=true"/>
-                                        </span>
-                                        <!-- Restricted File Icon -->
-                                        <div class="file-icon-restricted-block" jsf:rendered="#{fileToReplace.fileMetadata.restricted and !fileDownloadHelper.canDownloadFile(fileToReplace.fileMetadata)}">                  
-                                            <span class="glyphicon glyphicon-lock text-danger"/>
-                                        </div>
-                                        <div class="file-icon-restricted-block" jsf:rendered="#{fileToReplace.fileMetadata.restricted and fileDownloadHelper.canDownloadFile(fileToReplace.fileMetadata) }">
-                                            <span class="icon-unlock text-success"/>
-                                        </div>
-                                    </div>
-                                </div>  
-                                <div class="col-sm-10 col-file-metadata">
-                                    <div class="fileNameOriginal">
-                                        <span>#{fileToReplace.fileMetadata.label}</span>
-                                    </div>
-                                    <div class="text-muted small">
-                                        <span id="static:fileTypeOutputRegular">#{fileToReplace.friendlyType}</span>
-                                        <span id="static:fileSize"> - #{fileToReplace.filesize} KB</span>
-                                        <span id="static:fileCreatePublishDate"> - #{fileToReplace.fileMetadata.getFileDateToDisplay()}</span>
-                                        <div class="checksum-block"><span id="static:file-checksum">#{fileToReplace.checksumType}: #{fileToReplace.checksumValue}</span></div>
-                                    </div>
-                                    <div class="fileDescription small" jsf:rendered="#{!(empty fileToReplace.fileMetadata.description)}">
-                                        <h:outputText id="fileDescNonEmpty" value="#{fileToReplace.fileMetadata.description}"/>
-                                    </div>
-
-                                    <div class="file-tags-block" jsf:rendered="#{!(empty fileToReplace.fileMetadata.categories) or !(empty fileToReplace.fileMetadata.dataFile.tags)}">
-                                        <ui:fragment rendered="#{!(empty fileToReplace.fileMetadata.categories)}">
-                                            <ui:repeat value="#{fileToReplace.fileMetadata.categories}" var="cat">
-                                                <h:outputText value="#{cat.name}" styleClass="label label-default"/>
-                                            </ui:repeat> 
-                                        </ui:fragment>
-                                        <ui:fragment>
-                                            <ui:repeat value="#{fileToReplace.fileMetadata.dataFile.tags}" var="tag">
-                                                <h:outputText value="#{tag.typeLabel}" styleClass="label label-info"/>
-                                            </ui:repeat>
-                                        </ui:fragment>
-                                    </div>
-                                </div>
+                            <div class="col-sm-8 col-lg-6">
+                                <ui:include src="file-info-fragment.xhtml">
+                                    <ui:param name="editDatafilesPage" value="true"/>
+                                    <c:if test="#{EditDatafilesPage.getFileToReplace().fileMetadata != null}">
+                                        <ui:param name="fileMetadata" value="#{EditDatafilesPage.getFileToReplace().fileMetadata}" />
+                                    </c:if>
+                                </ui:include>
                             </div>
                         </div>
-                    </ui:fragment>
+                    </div>
                     <!-- END: file replace original -->
 
-                    <div id="contentTabs">
-
-                        <ui:include src="editFilesFragment.xhtml"/>
-
-                    </div>
-
+                    <ui:fragment id="uploadFilesOnCreateTab" rendered="#{EditDatafilesPage.mode == 'UPLOAD' or                    
+                            EditDatafilesPage.mode == 'REPLACE' or EditDatafilesPage.mode == 'EDIT'}">
+                        <div id="contentTabs">
+                            <ui:include src="editFilesFragment.xhtml">
+                                <ui:param name="editDatafilesPage" value="true"/>
+                                <ui:param name="createDataset" value="false"/>
+                                <ui:param name="showFileButtonUpdate" value="true"/>
+                                <ui:param name="rsyncSupported" value="#{EditDatafilesPage.rsyncUploadSupported()}"/>
+                                <ui:param name="lockedFromEdits" value="#{EditDatafilesPage.lockedFromEdits}"/>                             
+                            </ui:include>
+                        </div>
+                    </ui:fragment>  
+                    
                     <!-- Create/Save Dataset Button Panel -->
-                    <div class="button-block">
-                        <p:commandButton tabindex="1000" id="save" value="#{bundle.saveChanges}" onclick="checkNewlyRestricted();PF('blockFileForm').show();" />
-                        <p:commandButton tabindex="1000" id="cancel" value="#{bundle.cancel}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="javascript:post_cancel_edit_files_or_metadata()">
-                        </p:commandButton>
-                        <p:commandButton value="Direct" id="datasetSave"
-                                         style="display:none"
-                                         update=":datasetForm,:messagePanel"
-                                         oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
-                                         action="#{EditDatafilesPage.save}" />
-                    </div>
-                    <!-- END: Create/Save Dataset Button Panel -->
-
+                    <ui:fragment id="editDataFilesButtons">
+                        <div class="button-block">
+                            <p:outputPanel id="filesButtons">
+                                <div jsf:rendered="#{!(empty EditDatafilesPage.fileMetadatas and (datasetPage || EditDatafilesPage.showFileUploadFragment()))}">
+                                    <p:commandButton id="savebutton" class="btn btn-default" value="#{bundle.saveChanges}"
+                                                     update=":datasetForm,:messagePanel"
+                                                     onclick="PF('blockFileForm').show();"
+                                                     oncomplete="javascript:bind_bsui_components();$(document).scrollTop(0);"
+                                                     action="#{EditDatafilesPage.save}"/>
+                                    <p:commandButton styleClass="btn btn-link" id="cancelbutton" value="#{bundle.cancel}" action="#{EditDatafilesPage.cancel}" process="@this" update="@form" oncomplete="bind_bsui_components();"/>
+                                </div>
+                                <div jsf:rendered="#{empty EditDatafilesPage.fileMetadatas and (datasetPage || EditDatafilesPage.showFileUploadFragment())}">
+                                    <button id="doneFilesButtonnop" class="btn btn-default" value="#{bundle.done}" onclick="cancelDatasetEdit();return false;">#{bundle.done}</button>
+                                    <p:remoteCommand name="cancelEditCommand" process="@this" partialSubmit="true" async="true" update="" action="#{EditDatafilesPage.cancel}"/>     
+ 
+                                </div>
+                            </p:outputPanel>
+                        </div>
+                    </ui:fragment>
+                    <!-- END: Create/Save Dataset Button Panel -->      
                 </h:form>
                 
                 <p:blockUI block="datasetForm" widgetVar="blockFileForm"/>
-
             </ui:define>
         </ui:composition>
     </h:body>

@@ -6,15 +6,12 @@
 package edu.harvard.iq.dataverse.datasetutility;
 
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.FileMetadata;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.UploadedFile;
+
 
 /**
  * Adding single file replace to the EditDatafilesPage.
@@ -22,7 +19,7 @@ import org.primefaces.model.UploadedFile;
  * Phase 1: File successfully uploaded and unpersisted DataFile is in memory
  * Phase 2: Save the files
  * 
-  http://localhost:8080/editdatafiles.xhtml?mode=SINGLE_REPLACE&datasetId=26&fid=726
+  http://localhost:8080/editdatafiles.xhtml?mode=REPLACE&datasetId=26&fid=726
  * This is messy, trying to contain some of it--give me APIs or more time, more time:)
  * 
  * @author rmp553
@@ -94,16 +91,17 @@ public class FileReplacePageHelper {
     
     /**
      * Handle native file replace
+     * @param checkSum 
      * @param event 
      */
-    public boolean handleNativeFileUpload(InputStream inputStream, String fileName, String fileContentType) {
+    public boolean handleNativeFileUpload(InputStream inputStream, String fullStorageId, String fileName, String fileContentType, String checkSumValue, ChecksumType checkSumType) {
                 
         phase1Success = false;
         
         // Preliminary sanity check
         //
-        if (inputStream == null){
-            throw new NullPointerException("inputStream cannot be null");
+        if ((inputStream == null)&&(fullStorageId==null)){
+            throw new NullPointerException("inputStream and storageId cannot both be null");
         }
         if (fileName == null){
             throw new NullPointerException("fileName cannot be null");
@@ -111,14 +109,20 @@ public class FileReplacePageHelper {
         if (fileContentType == null){
             throw new NullPointerException("fileContentType cannot be null");
         }
-          
+        
+        OptionalFileParams ofp = null;
+        ofp = new OptionalFileParams();
+        if(checkSumValue != null) {
+            ofp.setCheckSum(checkSumValue, checkSumType);
+        }
         // Run 1st phase of replace
         //
         replaceFileHelper.runReplaceFromUI_Phase1(fileToReplace.getId(),
                 fileName,
                 fileContentType,
                 inputStream,
-                null
+                fullStorageId,
+                ofp
         );
         
         // Did it work?
@@ -189,6 +193,10 @@ public class FileReplacePageHelper {
         }
         return null;
         
+    }
+    
+    public AddReplaceFileHelper getAddReplaceFileHelper(){
+        return replaceFileHelper;
     }
     
     /** 

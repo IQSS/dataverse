@@ -24,6 +24,9 @@ public class EchoAuthenticationProvider implements CredentialsAuthenticationProv
     private final String prefix;
     private final String postfix;
     private final AuthenticationProviderDisplayInfo info;
+    private final String KEY_NAME = "login.echo.credential.name";
+    private final String KEY_EMAIL = "login.echo.credential.email";
+    private final String KEY_AFFILIATION = "login.echo.credential.affiliation";
     
 
     public EchoAuthenticationProvider(String id, String prefix, String postfix, AuthenticationProviderDisplayInfo someInfo) {
@@ -42,9 +45,9 @@ public class EchoAuthenticationProvider implements CredentialsAuthenticationProv
     
     @Override
     public List<Credential> getRequiredCredentials() {
-        return Arrays.asList( new Credential("Name"),
-                              new Credential("Email"),
-                              new Credential("Affiliation") );
+        return Arrays.asList( new Credential(KEY_NAME),
+                              new Credential(KEY_EMAIL),
+                              new Credential(KEY_AFFILIATION) );
     }
 
     @Override
@@ -60,10 +63,10 @@ public class EchoAuthenticationProvider implements CredentialsAuthenticationProv
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         AuthenticatedUserDisplayInfo disinf = new AuthenticatedUserDisplayInfo(
-                prefix + " " + request.getCredential("Name") + " " + postfix,
-                prefix + " " + request.getCredential("Name") + " " + postfix,
-                request.getCredential("Email"),
-                request.getCredential("Affiliation"), 
+                prefix + " " + request.getCredential(KEY_NAME) + " " + postfix,
+                prefix + " " + request.getCredential(KEY_NAME) + " " + postfix,
+                request.getCredential(KEY_EMAIL),
+                request.getCredential(KEY_AFFILIATION), 
                 null);
         return AuthenticationResponse.makeSuccess(disinf.getEmailAddress(), disinf);
     }

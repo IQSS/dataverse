@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataTable;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -101,7 +102,7 @@ public class TestIngest {
         try {
             tabDataIngest = ingestPlugin.read(fileInputStream, null);
         } catch (IOException ingestEx) {
-            output = output.concat("Caught an exception trying to ingest file "+fileName+".");
+            output = output.concat("Caught an exception trying to ingest file " + fileName + ": " + ingestEx.getLocalizedMessage());
             return output;
         }
         
@@ -121,6 +122,8 @@ public class TestIngest {
                     
                     DataFile dataFile = new DataFile();
                     dataFile.setStorageIdentifier(tabFilename);
+                    Dataset dataset = new Dataset();
+                    dataFile.setOwner(dataset);
                     
                     FileMetadata fileMetadata = new FileMetadata();
                     fileMetadata.setLabel(fileName);

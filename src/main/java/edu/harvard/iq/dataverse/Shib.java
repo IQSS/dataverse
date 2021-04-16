@@ -11,11 +11,16 @@ import edu.harvard.iq.dataverse.authorization.providers.shib.ShibServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUserNameFields;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibUtil;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.apache.commons.lang.StringUtils;
+
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -48,6 +53,10 @@ public class Shib implements java.io.Serializable {
     GroupServiceBean groupService;
     @EJB
     UserNotificationServiceBean userNotificationService;
+    @EJB
+    SettingsServiceBean settingsService;
+	@EJB
+	SystemConfig systemConfig;
 
     HttpServletRequest request;
 
@@ -184,13 +193,14 @@ public class Shib implements java.io.Serializable {
         if (!EMailValidator.isEmailValid(emailAddressInAssertion, null)) {
             String msg = "The SAML assertion contained an invalid email address: \"" + emailAddressInAssertion + "\".";
             logger.info(msg);
+            msg=BundleUtil.getStringFromBundle("shib.invalidEmailAddress",   Arrays.asList(emailAddressInAssertion));
             String singleEmailAddress = ShibUtil.findSingleValue(emailAddressInAssertion);
             if (EMailValidator.isEmailValid(singleEmailAddress, null)) {
                 msg = "Multiple email addresses were asserted by the Identity Provider (" + emailAddressInAssertion + " ). These were sorted and the first was chosen: " + singleEmailAddress;
                 logger.info(msg);
                 emailAddress = singleEmailAddress;
             } else {
-                msg += " A single valid address could not be found.";
+                msg += BundleUtil.getStringFromBundle("shib.emailAddress.error");
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, identityProviderProblem, msg));
                 return;
             }
@@ -202,7 +212,11 @@ public class Shib implements java.io.Serializable {
         internalUserIdentifer = ShibUtil.generateFriendlyLookingUserIdentifer(usernameAssertion, emailAddress);
         logger.fine("friendly looking identifer (backend will enforce uniqueness):" + internalUserIdentifer);
 
-        String affiliation = shibService.getAffiliation(shibIdp, shibService.getDevShibAccountType());
+        String shibAffiliationAttribute = settingsService.getValueForKey(SettingsServiceBean.Key.ShibAffiliationAttribute);
+        String affiliation = (StringUtils.isNotBlank(shibAffiliationAttribute))
+            ? getValueFromAssertion(shibAffiliationAttribute)
+            : shibService.getAffiliation(shibIdp, shibService.getDevShibAccountType());
+
         if (affiliation != null) {
             affiliationToDisplayAtConfirmation = affiliation;
             friendlyNameForInstitution = affiliation;
@@ -214,6 +228,13 @@ public class Shib implements java.io.Serializable {
         ShibAuthenticationProvider shibAuthProvider = new ShibAuthenticationProvider();
         AuthenticatedUser au = authSvc.lookupUser(shibAuthProvider.getId(), userPersistentId);
         if (au != null) {
+            //See if there's another account with this email
+            AuthenticatedUser auEmail = authSvc.getAuthenticatedUserByEmail(emailAddress);
+            if (auEmail!= null && !auEmail.equals(au)){   
+                //If this email already belongs to another account throw a message for user to contact support
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("shib.duplicate.email.error"));
+                return;
+            }
             state = State.REGULAR_LOGIN_INTO_EXISTING_SHIB_ACCOUNT;
             logger.fine("Found user based on " + userPersistentId + ". Logging in.");
             logger.fine("Updating display info for " + au.getName());
@@ -264,7 +285,7 @@ public class Shib implements java.io.Serializable {
                 existingBuiltInUserFoundByEmail = shibService.findBuiltInUserByAuthUserIdentifier(existingAuthUserFoundByEmail.getUserIdentifier());
                 if (existingBuiltInUserFoundByEmail != null) {
                     state = State.PROMPT_TO_CONVERT_EXISTING_ACCOUNT;
-                    existingDisplayName = existingBuiltInUserFoundByEmail.getDisplayName();
+
                     debugSummary = "getting username from the builtin user we looked up via email";
                     builtinUsername = existingBuiltInUserFoundByEmail.getUserName();
                 } else {
@@ -304,7 +325,7 @@ public class Shib implements java.io.Serializable {
                     UserNotification.Type.CREATEACC, null);
             return "/dataverseuser.xhtml?selectTab=accountInfo&faces-redirect=true";
         } else {
-            JsfHelper.addErrorMessage("Couldn't create user.");
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("shib.createUser.fail"));
         }
         return getPrettyFacesHomePageString(true);
     }
@@ -317,12 +338,17 @@ public class Shib implements java.io.Serializable {
         logger.fine("builtin username: " + builtinUsername);
         AuthenticatedUser builtInUserToConvert = authSvc.canLogInAsBuiltinUser(builtinUsername, builtinPassword);
         if (builtInUserToConvert != null) {
+            if (builtInUserToConvert.isDeactivated()) {
+                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("shib.convert.fail.deactivated"));
+                return null;
+            }
+            // TODO: Switch from authSvc.convertBuiltInToShib to authSvc.convertBuiltInUserToRemoteUser
             AuthenticatedUser au = authSvc.convertBuiltInToShib(builtInUserToConvert, shibAuthProvider.getId(), userIdentifier);
             if (au != null) {
                 authSvc.updateAuthenticatedUser(au, displayInfo);
                 logInUserAndSetShibAttributes(au);
                 debugSummary = "Local account validated and successfully converted to a Shibboleth account. The old account username was " + builtinUsername;
-                JsfHelper.addSuccessMessage("Your Dataverse account is now associated with your institutional account.");
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.shib.success"));
                 return "/dataverseuser.xhtml?selectTab=accountInfo&faces-redirect=true";
             } else {
                 debugSummary = "Local account validated but unable to convert to Shibboleth account.";
@@ -336,6 +362,7 @@ public class Shib implements java.io.Serializable {
 
     private void logInUserAndSetShibAttributes(AuthenticatedUser au) {
         au.setShibIdentityProvider(shibIdp);
+        // setUser checks for deactivated users.
         session.setUser(au);
         logger.fine("Groups for user " + au.getId() + " (" + au.getIdentifier() + "): " + getGroups(au));
     }
@@ -399,7 +426,7 @@ public class Shib implements java.io.Serializable {
                 showMessage = false;
             }
             if (showMessage) {
-                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, identityProviderProblem, msg));
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, identityProviderProblem, BundleUtil.getStringFromBundle("shib.nullerror",Arrays.asList(key))));
             }
             throw new Exception(msg);
         }
@@ -407,6 +434,9 @@ public class Shib implements java.io.Serializable {
         if (attributeValue.isEmpty()) {
             throw new Exception(key + " was empty");
         }
+		if(systemConfig.isShibAttributeCharacterSetConversionEnabled()) {
+			attributeValue= new String( attributeValue.getBytes("ISO-8859-1"), "UTF-8");
+		}
         String trimmedValue = attributeValue.trim();
         logger.fine("The SAML assertion for \"" + key + "\" (required) was \"" + attributeValue + "\" and was trimmed to \"" + trimmedValue + "\".");
         return trimmedValue;
@@ -441,9 +471,9 @@ public class Shib implements java.io.Serializable {
         String rootDvAlias = getRootDataverseAlias();
         if (includeFacetDashRedirect) {
             if (rootDvAlias != null) {
-                return plainHomepageString + "?alias=" + rootDvAlias + "&faces-redirect=true";
+                return plainHomepageString + "?alias="  + rootDvAlias + "&faces-redirect=true";
             } else {
-                return plainHomepageString + "?faces-redirect=true";
+                return  plainHomepageString + "?faces-redirect=true";
             }
         } else if (rootDvAlias != null) {
             /**

@@ -6,25 +6,23 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.OutputStream;
-import javax.ejb.EJB;
 import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
 
 /**
+ * This exporter is for the OAI ("short") flavor of the DDI - that is, without
+ * the variable/data information. The ddi export utility does not need the
+ * version entity to produce that.
  *
  * @author skraffmi
  */
 @AutoService(Exporter.class)
 public class OAI_DDIExporter implements Exporter {
-    // TODO: move these to the export utility:
-    private static String DEFAULT_XML_NAMESPACE = "ddi:codebook:2_5"; 
-    private static String DEFAULT_XML_SCHEMALOCATION = "http://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd";
-    private static String DEFAULT_XML_VERSION = "2.5";
     
     @Override
     public String getProviderName() {
+        // TODO: Consider adding this "short form" to the "Export Metadata" dropdown in the GUI.
         return "oai_ddi";
     }
 
@@ -36,9 +34,6 @@ public class OAI_DDIExporter implements Exporter {
     @Override
     public void exportDataset(DatasetVersion version, JsonObject json, OutputStream outputStream) throws ExportException {
         try {
-            // This exporter is for the OAI ("short") flavor of the DDI - 
-            // that is, without the variable/data information. The ddi export 
-            // utility does not need the version entity to produce that. 
             DdiExportUtil.datasetJson2ddi(json, outputStream);
         } catch (XMLStreamException xse) {
             throw new ExportException ("Caught XMLStreamException performing DDI export");
@@ -62,17 +57,17 @@ public class OAI_DDIExporter implements Exporter {
     
     @Override
     public String getXMLNameSpace() throws ExportException {
-        return OAI_DDIExporter.DEFAULT_XML_NAMESPACE;   
+        return DDIExporter.DEFAULT_XML_NAMESPACE;
     }
     
     @Override
     public String getXMLSchemaLocation() throws ExportException {
-        return OAI_DDIExporter.DEFAULT_XML_SCHEMALOCATION;
+        return DDIExporter.DEFAULT_XML_SCHEMALOCATION;
     }
     
     @Override
     public String getXMLSchemaVersion() throws ExportException {
-        return OAI_DDIExporter.DEFAULT_XML_VERSION;
+        return DDIExporter.DEFAULT_XML_VERSION;
     }
     
     @Override

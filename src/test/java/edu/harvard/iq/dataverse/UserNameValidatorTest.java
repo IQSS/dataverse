@@ -6,42 +6,70 @@
 package edu.harvard.iq.dataverse;
 
 import static org.junit.Assert.assertEquals;
+
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  *
  * @author sarahferry
+ * @author alexscheitlin
  */
+@RunWith(Parameterized.class)
 public class UserNameValidatorTest {
-    
+
+    public boolean isValid;
+    public String userName;
+
+    public UserNameValidatorTest(boolean isValid, String userName) {
+        this.isValid = isValid;
+        this.userName = userName;
+    }
+
+    @Parameters
+    public static Collection<Object[]> parameters() {
+        return Arrays.asList(new Object[][] {
+            // good usernames
+            { true, "sarah" },
+            { true, ".-_5Arah_-." },
+
+            // dont allow accents
+            { false, "àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸçÇßØøÅåÆæœ" },
+
+            // dont allow chinese characters
+            { false, "谁日吧爸好" },
+
+            // dont allow middle white space
+            { false, "sarah f" },
+
+            // dont allow leading white space
+            { false, " sarah" },
+
+            // dont allow trailing white space
+            { false, "sarah " },
+
+            // dont allow symbols
+            { false, "sarah!" },
+            { false, "sarah?" },
+            { false, "sarah:(" },
+            { false, "💲🅰️®️🅰️🚧" },
+
+            // only allow between 2 and 60 characters
+            { false, "q" },
+            { true, "q2" },
+            { false, "q2jsalfhjopiwurtiosfhkdhasjkdhfgkfhkfrhnefcn4cqonroclmooi4oiqwhrfq4jrlqhaskdalwehrlwhflhklasdjfglq0kkajfelirhilwhakjgv" },
+            { false, "" },
+            { false, null }
+        });
+    }
+
     @Test
     public void testIsUserNameValid() {
-        //good usernames
-        assertEquals(true, UserNameValidator.isUserNameValid("sarah", null));
-        assertEquals(true, UserNameValidator.isUserNameValid(".-_5Arah_-.", null));
-        //dont allow accents
-        assertEquals(false, UserNameValidator.isUserNameValid("àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸçÇßØøÅåÆæœ", null));
-        //dont allow chinese characters
-        assertEquals(false, UserNameValidator.isUserNameValid("谁日吧爸好", null));
-        
-        //middle white space
-        assertEquals(false, UserNameValidator.isUserNameValid("sarah f", null));
-        //leading white space
-        assertEquals(false, UserNameValidator.isUserNameValid(" sarah", null));
-        //trailing white space
-        assertEquals(false, UserNameValidator.isUserNameValid("sarah ", null));
-        
-        //symbols!
-        assertEquals(false, UserNameValidator.isUserNameValid("sarah!", null));
-        assertEquals(false, UserNameValidator.isUserNameValid("sarah?", null));
-        assertEquals(false, UserNameValidator.isUserNameValid("sarah:(", null));
-        assertEquals(false, UserNameValidator.isUserNameValid("💲🅰️®️🅰️🚧", null));
-        
-        //length of userame
-        assertEquals(false, UserNameValidator.isUserNameValid("q", null));
-        assertEquals(true, UserNameValidator.isUserNameValid("q2", null));
-        assertEquals(false, UserNameValidator.isUserNameValid("q2jsalfhjopiwurtiosfhkdhasjkdhfgkfhkfrhnefcn4cqonroclmooi4oiqwhrfq4jrlqhaskdalwehrlwhflhklasdjfglq0kkajfelirhilwhakjgv", null));
-        assertEquals(false, UserNameValidator.isUserNameValid("", null));
-        assertEquals(false, UserNameValidator.isUserNameValid(null, null));
+        assertEquals(isValid, UserNameValidator.isUserNameValid(userName, null));
     }
 }

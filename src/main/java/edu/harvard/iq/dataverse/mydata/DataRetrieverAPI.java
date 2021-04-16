@@ -4,6 +4,7 @@
 package edu.harvard.iq.dataverse.mydata;
 
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
@@ -22,6 +23,7 @@ import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SortBy;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -35,6 +37,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -67,6 +71,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
     SearchServiceBean searchService;
     @EJB
     AuthenticationServiceBean authenticationService;
+    @EJB
+    DataverseServiceBean dataverseService;
     //@EJB
     //MyDataQueryHelperServiceBean myDataQueryHelperServiceBean;
     @EJB
@@ -83,7 +89,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
     public static final String JSON_ERROR_MSG_FIELD_NAME = "error_message";
     public static final String JSON_DATA_FIELD_NAME = "data";
     
-    public static final String MSG_NO_RESULTS_FOUND = "Sorry, no results were found.";
+    public static final String MSG_NO_RESULTS_FOUND = BundleUtil.getStringFromBundle("dataretrieverAPI.noMsgResultsFound");
     
     /**
      * Constructor
@@ -137,23 +143,7 @@ public class DataRetrieverAPI extends AbstractApiBean {
     
     
     public boolean isSuperuser(){
-        
-        // Is this an authenticated user?
-        //
-        if ((session.getUser() == null)||(!session.getUser().isAuthenticated())){ 
-             return false;             
-        }
-         
-        // Is this a user?
-        //
-        authUser =  (AuthenticatedUser)session.getUser();
-        if (authUser==null){
-            return false;
-        }
-        
-        // Is this a superuser?
-        //
-        return authUser.isSuperuser();
+        return (session.getUser() != null) && session.getUser().isSuperuser();
     }
     
     private AuthenticatedUser getUserFromIdentifier(String userIdentifier){
@@ -522,6 +512,11 @@ public class DataRetrieverAPI extends AbstractApiBean {
             // -------------------------------------------
             myDataCardInfo = doc.getJsonForMyData();
             
+            if (!doc.getEntity().isInstanceofDataFile()){
+                String parentAlias = dataverseService.getParentAliasString(doc);
+                myDataCardInfo.add("parent_alias",parentAlias);
+            }
+            
             // -------------------------------------------
             // (b) Add role info
             // -------------------------------------------
@@ -537,47 +532,5 @@ public class DataRetrieverAPI extends AbstractApiBean {
         }
         return jsonSolrDocsArrayBuilder;
         
-    }
-    
-
-    /*private JsonArrayBuilder formatSolrDocs(SolrQueryResponse solrResponse, MyDataFilterParams filterParams, MyDataFinder finder ){
-        
-        if (solrResponse == null){
-            logger.severe("DataRetrieverAPI.getDvObjectTypeCounts: formatSolrDocs should not be null");
-            return null;
-        }
-        JsonArrayBuilder jsonSolrDocsArrayBuilder = Json.createArrayBuilder();
-
-        for (SolrSearchResult doc : solrQueryResponse.getSolrSearchResults()){
-
-            if( authUser!= null){
-                doc.setUserRole(myDataQueryHelperServiceBean.getRolesOnDVO(authUser, doc.getEntityId(), filterParams.getRoleIds(), finder)); 
-            }
-            jsonSolrDocsArrayBuilder.add(doc.getJsonForMyData());
-        }
-        return jsonSolrDocsArrayBuilder;
-        
-    }
-    */
-    /*
-    @Path("test-it")
-    @Produces({"application/json"})
-    @GET
-    public String retrieveMyData(@QueryParam("key") String keyValue){ //String myDataParams) {
-        
-        final JsonObjectBuilder jsonData = Json.createObjectBuilder();
-        jsonData.add("name", keyValue);
-        return jsonData.build().toString();
-    }
-    */
-    
-    private void msg(String s){
-        //System.out.println(s);
-    }
-    
-    private void msgt(String s){
-        msg("-------------------------------");
-        msg(s);
-        msg("-------------------------------");
     }
 }        

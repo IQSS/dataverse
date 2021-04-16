@@ -6,9 +6,10 @@
 Data Exploration Guide
 =======================================================
 
+The Dataverse installation you are using may have additional or different tools configured than what appears below. For the complete list of available tools, see :ref:`inventory-of-external-tools`.
+
 Contents:
 
 .. toctree::
 
    tworavens
-   worldmap

@@ -7,6 +7,8 @@ package edu.harvard.iq.dataverse;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.validator.routines.EmailValidator;
 
 /**
@@ -29,14 +31,15 @@ public class EMailValidator implements ConstraintValidator<ValidateEmail, String
     }
     
     public static boolean isEmailValid(String value, ConstraintValidatorContext context) {
-        if (value == null) {
-            //we'll let someone else decide if it's required
-            return true;
-        }
+        //this null check is not needed any more as the null check is done in datasetfieldvaluevalidator
+//        if (value == null) {
+//            //A null email id is not valid, as email is a required field.
+//            return false;
+//        }
         boolean isValid = EmailValidator.getInstance().isValid(value);
         if (!isValid) {
             if (context != null) {
-                context.buildConstraintViolationWithTemplate(value + " is not a valid email address.").addConstraintViolation();
+                context.buildConstraintViolationWithTemplate(value + "  " + BundleUtil.getStringFromBundle("email.invalid")).addConstraintViolation();
             }
             return false;
         }

@@ -20,19 +20,19 @@ public class OAuth2UserRecord implements java.io.Serializable {
     /** A potentially mutable String that is easier on the eye than a number. */
     private final String username;
     
-    private final String accessToken;
-    
     private final AuthenticatedUserDisplayInfo displayInfo;
     
     private final List<String> availableEmailAddresses;
     
+    private final OAuth2TokenData tokenData;
+    
     public OAuth2UserRecord(String aServiceId, String anIdInService, String aUsername,
-                            String anAccessToken,  AuthenticatedUserDisplayInfo aDisplayInfo,
+                            OAuth2TokenData someTokenData,  AuthenticatedUserDisplayInfo aDisplayInfo,
                             List<String> someAvailableEmailAddresses) {
         serviceId = aServiceId;
         idInService = anIdInService;
         username = aUsername;
-        accessToken = anAccessToken;
+        tokenData = someTokenData;
         displayInfo = aDisplayInfo;
         availableEmailAddresses = someAvailableEmailAddresses;
     }
@@ -49,16 +49,16 @@ public class OAuth2UserRecord implements java.io.Serializable {
         return username;
     }
 
-    public String getAccessToken() {
-        return accessToken;
-    }
-
     public List<String> getAvailableEmailAddresses() {
         return availableEmailAddresses;
     }
     
     public AuthenticatedUserDisplayInfo getDisplayInfo() {
         return displayInfo;
+    }
+
+    public OAuth2TokenData getTokenData() {
+        return tokenData;
     }
 
     @Override

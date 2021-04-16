@@ -1,10 +1,12 @@
 package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
-import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.authorization.AuthenticationRequest;
 import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
-import static edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AllUsers.instance;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.mocks.MockAuthenticationServiceBean;
 import edu.harvard.iq.dataverse.mocks.MockBuiltinUserServiceBean;
+import edu.harvard.iq.dataverse.mocks.MockPasswordValidatorServiceBean;
+import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -16,12 +18,16 @@ import org.junit.Before;
 public class BuiltinAuthenticationProviderTest {
     
     BuiltinAuthenticationProvider sut = null;
+    PasswordValidatorServiceBean passwordValidatorService;
     MockBuiltinUserServiceBean bean = null;
+    AuthenticationServiceBean authBean = null;
     
     @Before
     public void setup() {
         bean = new MockBuiltinUserServiceBean();
-        sut = new BuiltinAuthenticationProvider(bean);
+        passwordValidatorService = new MockPasswordValidatorServiceBean();
+        authBean = new MockAuthenticationServiceBean();
+        sut = new BuiltinAuthenticationProvider(bean, passwordValidatorService, authBean);
     }
 
     /**
@@ -93,25 +99,10 @@ public class BuiltinAuthenticationProviderTest {
         assertTrue( sut.verifyPassword(user.getUserName(), newPassword));
     }
 
-    /**
-     * Test of updateUserInfo method, of class BuiltinAuthenticationProvider.
-     */
-    @Test
-    public void testUpdateUserInfo() {
-        BuiltinUser user = bean.save(makeBuiltInUser());
-        AuthenticatedUserDisplayInfo newInfo = new AuthenticatedUserDisplayInfo("nf", "nl", "ema@il.com", "newAffi", "newPos");
-        sut.updateUserInfo(user.getUserName(), newInfo);
-        assertEquals( newInfo, user.getDisplayInfo() );
-    }
-
+    
     private BuiltinUser makeBuiltInUser() {
         BuiltinUser user = new BuiltinUser();
         user.setUserName("username");
-        user.setFirstName("Firsty");
-        user.setLastName("Last");
-        user.setEmail("email@host.com");
-        user.setAffiliation("an institute");
-        user.setPosition("a position");
         user.updateEncryptedPassword(PasswordEncryption.get().encrypt("password"), PasswordEncryption.getLatestVersionNumber());
         return user;
     }
@@ -133,8 +124,8 @@ public class BuiltinAuthenticationProviderTest {
     @Test
     public void testAuthenticate() {
         bean.save(makeBuiltInUser());
-        String crdUsername = sut.getRequiredCredentials().get(0).getTitle();
-        String crdPassword = sut.getRequiredCredentials().get(1).getTitle();
+        String crdUsername = sut.getRequiredCredentials().get(0).getKey();
+        String crdPassword = sut.getRequiredCredentials().get(1).getKey();
         AuthenticationRequest req = new AuthenticationRequest();
         req.putCredential(crdUsername, "username");
         req.putCredential(crdPassword, "password");

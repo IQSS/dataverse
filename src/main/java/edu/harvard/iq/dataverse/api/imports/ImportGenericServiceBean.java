@@ -40,6 +40,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.xml.stream.XMLInputFactory;
+import net.handle.hdllib.HandleException;
+import net.handle.hdllib.HandleResolver;
 
 
 /**
@@ -366,24 +368,39 @@ public class ImportGenericServiceBean {
     }
     
     private String getOtherIdFromDTO(DatasetVersionDTO datasetVersionDTO) {
+        List<String> otherIds = new ArrayList<>();
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
             if ("citation".equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.otherId.equals(fieldDTO.getTypeName())) {
-                        String otherId = "";
                         for (HashSet<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             for (FieldDTO next : foo) {
                                 if (DatasetFieldConstant.otherIdValue.equals(next.getTypeName())) {
-                                    otherId =  next.getSinglePrimitive();
+                                    otherIds.add(next.getSinglePrimitive());
                                 }
-                            }
-                            if (!otherId.isEmpty()){
-                                return otherId;
                             }
                         }
                     }
+                }
+            }
+        }
+        if (!otherIds.isEmpty()) {
+            // We prefer doi or hdl identifiers like "doi:10.7910/DVN/1HE30F"
+            for (String otherId : otherIds) {
+                if (otherId.startsWith(GlobalId.DOI_PROTOCOL) || otherId.startsWith(GlobalId.HDL_PROTOCOL) || otherId.startsWith(GlobalId.DOI_RESOLVER_URL) || otherId.startsWith(GlobalId.HDL_RESOLVER_URL)) {
+                    return otherId;
+                }
+            }
+            // But identifiers without hdl or doi like "10.6084/m9.figshare.12725075.v1" are also allowed
+            for (String otherId : otherIds) {
+                try {
+                    HandleResolver hr = new HandleResolver();
+                    hr.resolveHandle(otherId);
+                    return GlobalId.HDL_PROTOCOL + ":" + otherId;
+                } catch (HandleException e) {
+                    logger.fine("Not a valid handle: " + e.toString());
                 }
             }
         }
@@ -393,7 +410,7 @@ public class ImportGenericServiceBean {
     private String reassignIdentifierAsGlobalId(String identifierString, DatasetDTO datasetDTO) {
 
         int index1 = identifierString.indexOf(':');
-        int index2 = identifierString.lastIndexOf('/');
+        int index2 = identifierString.indexOf('/');
         if (index1==-1) {
             logger.warning("Error parsing identifier: " + identifierString + ". ':' not found in string");
             return null; 
@@ -411,23 +428,24 @@ public class ImportGenericServiceBean {
             if (identifierString.startsWith(GlobalId.HDL_RESOLVER_URL)) {
                 logger.fine("Processing Handle identifier formatted as a resolver URL: "+identifierString);
                 protocol = GlobalId.HDL_PROTOCOL;
-                index1 = GlobalId.HDL_RESOLVER_URL.length() - 1; 
+                index1 = GlobalId.HDL_RESOLVER_URL.length() - 1;
+                index2 = identifierString.indexOf("/", index1 + 1);
             } else if (identifierString.startsWith(GlobalId.DOI_RESOLVER_URL)) {
                 logger.fine("Processing DOI identifier formatted as a resolver URL: "+identifierString);
                 protocol = GlobalId.DOI_PROTOCOL;
                 index1 = GlobalId.DOI_RESOLVER_URL.length() - 1; 
+                index2 = identifierString.indexOf("/", index1 + 1);
             } else {
                 logger.warning("HTTP Url in supplied as the identifier is neither a Handle nor DOI resolver: "+identifierString);
                 return null;
             }
-            // index2 was already found as the *last* index of '/' - so it's still good. 
         } else {
             logger.warning("Unknown identifier format: "+identifierString);
             return null; 
         }
         
         if (index2 == -1) {
-            logger.warning("Error parsing identifier: " + identifierString + ". Second separator not found in string");
+            logger.warning("Error parsing identifier: " + identifierString + ". Second '/' not found in string");
             return null;
         }
 
@@ -435,7 +453,6 @@ public class ImportGenericServiceBean {
         String identifier = identifierString.substring(index2 + 1);
 
         datasetDTO.setProtocol(protocol);
-        datasetDTO.setDoiSeparator("/");
         datasetDTO.setAuthority(authority);
         datasetDTO.setIdentifier(identifier);
 

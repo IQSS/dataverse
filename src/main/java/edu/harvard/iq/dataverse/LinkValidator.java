@@ -12,6 +12,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.validator.FacesValidator;
 import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 
 @FacesValidator(value = "linkValidator")
 public class LinkValidator implements Validator {
@@ -26,7 +27,7 @@ public class LinkValidator implements Validator {
 
         FacesMessage msg = null;
         if (taglineStr.isEmpty() && !urlStr.isEmpty()) {
-            msg = new FacesMessage("Please enter a tagline for the website to be hyperlinked with.");
+            msg = new FacesMessage(BundleUtil.getStringFromBundle("link.tagline.validate"));
             msg.setSeverity(FacesMessage.SEVERITY_ERROR);
             FacesContext.getCurrentInstance().addMessage(taglineInput.getClientId(), msg);
         }

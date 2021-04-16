@@ -1,4 +1,4 @@
-  <div id="navbar" class="{{ theme_navbar_class }} navbar-default {% if theme_navbar_fixed_top == 'true' -%} navbar-fixed-top{%- endif -%}">
+  <div id="navbar" class="{{ theme_navbar_class }} navbar-default {% if theme_navbar_fixed_top|tobool -%} navbar-fixed-top{%- endif -%}">
     <div class="container">
       <div class="navbar-header">
         <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
@@ -9,7 +9,7 @@
         </button>
         <a class="navbar-brand" href="{{ pathto(master_doc) }}">
           {%- block sidebarlogo %}
-            {%- if logo %}<img src="{{ pathto('_static/' + logo, 1) }}">{%- endif %}
+            {%- if logo %}<span><img src="{{ pathto('_static/' + logo, 1) }}"></span>{%- endif %}
           {%- endblock %}
           {% if theme_navbar_title -%}{{ theme_navbar_title|e }}{%- else -%}{{ project|e }}{%- endif -%}
         </a>
@@ -18,7 +18,6 @@
 
         <div class="collapse navbar-collapse nav-collapse">
           <ul class="nav navbar-nav">
-            <li class="divider-vertical"></li>
             {% if theme_navbar_links %}
               {%- for link in theme_navbar_links %}
                 <li><a href="{{ pathto(*link[1:]) }}">{{ link[0] }}</a></li>

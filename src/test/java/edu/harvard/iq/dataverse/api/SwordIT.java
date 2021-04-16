@@ -174,7 +174,7 @@ public class SwordIT {
         Response createDatasetResponse = UtilIT.createDatasetViaSwordApi(dataverseAlias, initialDatasetTitle, apiToken);
         createDatasetResponse.prettyPrint();
         assertEquals(CREATED.getStatusCode(), createDatasetResponse.getStatusCode());
-        String persistentId = UtilIT.getDatasetPersistentIdFromResponse(createDatasetResponse);
+        String persistentId = UtilIT.getDatasetPersistentIdFromSwordResponse(createDatasetResponse);
         logger.info("persistent id: " + persistentId);
 
         Response atomEntryUnAuth = UtilIT.getSwordAtomEntry(persistentId, apiTokenNoPrivs);
@@ -258,14 +258,15 @@ public class SwordIT {
         assertEquals("trees.png", filename);
 
         Response attemptToDownloadUnpublishedFileWithoutApiToken = UtilIT.downloadFile(fileId);
+        attemptToDownloadUnpublishedFileWithoutApiToken.prettyPrint();
         attemptToDownloadUnpublishedFileWithoutApiToken.then().assertThat()
-                .body("html.head.title", equalTo("403 Not Authorized - Root"))
+                .body("status", equalTo("ERROR"))
                 .statusCode(FORBIDDEN.getStatusCode());
 
         Response attemptToDownloadUnpublishedFileUnauthApiToken = UtilIT.downloadFile(fileId, apiTokenNoPrivs);
         attemptToDownloadUnpublishedFileUnauthApiToken.prettyPrint();
         attemptToDownloadUnpublishedFileUnauthApiToken.then().assertThat()
-                .body("html.head.title", equalTo("403 Not Authorized - Root"))
+                .body("status", equalTo("ERROR"))
                 .statusCode(FORBIDDEN.getStatusCode());
 
         Response downloadUnpublishedFileWithValidApiToken = UtilIT.downloadFile(fileId, apiToken);
@@ -369,7 +370,7 @@ public class SwordIT {
                 .statusCode(CREATED.getStatusCode())
                 .body("entry.treatment", equalTo("no treatment information available"));
 
-        persistentId = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
+        persistentId = UtilIT.getDatasetPersistentIdFromSwordResponse(createDataset);
         GlobalId globalId = new GlobalId(persistentId);
         protocol = globalId.getProtocol();
         authority = globalId.getAuthority();
@@ -460,10 +461,7 @@ public class SwordIT {
         listDatasetsAtRootAsSuperuser.then().assertThat().statusCode(OK.getStatusCode());
         assertTrue(listDatasetsAtRootAsSuperuser.body().asString().contains(identifier));
 
-        Response rootDataverseContents = UtilIT.showDataverseContents(rootDataverseAlias, apiTokenContributor);
-        rootDataverseContents.prettyPrint();
-        logger.info("We expect to find \"" + identifier + "\" from the persistent ID to be present.");
-        assertTrue(rootDataverseContents.body().asString().contains(identifier));
+
 
         Response publishShouldFailForContributorViaSword = UtilIT.publishDatasetViaSword(persistentId, apiTokenContributor);
         publishShouldFailForContributorViaSword.prettyPrint();
@@ -503,12 +501,12 @@ public class SwordIT {
                 .statusCode(CREATED.getStatusCode());
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
 
-        String datasetTitle = "Publish or Perist";
+        String datasetTitle = "Publish or Perish";
         Response createDataset = UtilIT.createDatasetViaSwordApi(dataverseAlias, datasetTitle, apiToken);
         createDataset.prettyPrint();
         createDataset.then().assertThat()
                 .statusCode(CREATED.getStatusCode());
-        String persistentId = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
+        String persistentId = UtilIT.getDatasetPersistentIdFromSwordResponse(createDataset);
 
         Response attemptToPublishDatasetInUnpublishedDataverse = UtilIT.publishDatasetViaSword(persistentId, apiToken);
         attemptToPublishDatasetInUnpublishedDataverse.prettyPrint();
@@ -545,7 +543,15 @@ public class SwordIT {
                  */
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("error.summary", equalTo("User " + usernameNoPrivs + " " + usernameNoPrivs + " is not authorized to modify dataverse " + dataverseAlias));
+        
+        Response thisDataverseContents = UtilIT.showDataverseContents(dataverseAlias, apiTokenNoPrivs);
+        thisDataverseContents.prettyPrint();
+        thisDataverseContents.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        logger.info("Without priviledges we do not expect to find \"" + persistentId + "\" from the persistent ID to be present for random user");
+        assertFalse(thisDataverseContents.body().asString().contains(persistentId.toString()));
 
+        
         Response publishDataset = UtilIT.publishDatasetViaSword(persistentId, apiToken);
         publishDataset.prettyPrint();
         publishDataset.then().assertThat()
@@ -579,6 +585,15 @@ public class SwordIT {
 
         Integer datasetId = JsonPath.from(reindexDatasetToFindDatabaseId.asString()).getInt("data.id");
 
+        /* get contents again after publication - should see id*/
+        thisDataverseContents = UtilIT.showDataverseContents(dataverseAlias, apiToken);
+        thisDataverseContents.prettyPrint();
+        thisDataverseContents.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        logger.info("We expect to find the numeric id of the dataset (\"" + datasetId + "\") in the response.");
+        assertTrue(thisDataverseContents.body().asString().contains(datasetId.toString()));
+        
+        
         /**
          * @todo The "destroy" endpoint should accept a persistentId:
          * https://github.com/IQSS/dataverse/issues/1837
@@ -628,7 +643,7 @@ public class SwordIT {
 
         Response createDataset = UtilIT.createRandomDatasetViaSwordApi(dataverseAlias, apiToken);
         createDataset.prettyPrint();
-        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromResponse(createDataset);
+        String datasetPersistentId = UtilIT.getDatasetPersistentIdFromSwordResponse(createDataset);
 
         Response uploadZip = UtilIT.uploadFile(datasetPersistentId, "3files.zip", apiToken);
         uploadZip.prettyPrint();
@@ -745,7 +760,7 @@ public class SwordIT {
 
         Response createDataset4 = UtilIT.createRandomDatasetViaSwordApi(dataverseAlias, apiToken);
         createDataset4.prettyPrint();
-        String datasetPersistentId4 = UtilIT.getDatasetPersistentIdFromResponse(createDataset4);
+        String datasetPersistentId4 = UtilIT.getDatasetPersistentIdFromSwordResponse(createDataset4);
 
         Response uploadZipToDataset4 = UtilIT.uploadFile(datasetPersistentId4, "3files.zip", apiToken);
         uploadZipToDataset4.prettyPrint();

@@ -1,40 +1,61 @@
 package edu.harvard.iq.dataverse.confirmemail;
 
 import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.Arrays;
+
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
+@RunWith(Enclosed.class)
 public class ConfirmEmailUtilTest {
 
-    @Test
-    public void testFriendlyExpirationTime() {
-        System.out.println("Friendly expiration timestamp / measurement test");
-        System.out.println("1440 Minutes: " + ConfirmEmailUtil.friendlyExpirationTime(1440));
-        assertEquals("24 hours", ConfirmEmailUtil.friendlyExpirationTime(1440));
-        System.out.println("60 Minutes: " + ConfirmEmailUtil.friendlyExpirationTime(60));
-        assertEquals("1 hour", ConfirmEmailUtil.friendlyExpirationTime(60));
-        System.out.println("30 Minutes: " + ConfirmEmailUtil.friendlyExpirationTime(30));
-        assertEquals("30 minutes", ConfirmEmailUtil.friendlyExpirationTime(30));
-        System.out.println("90 Minutes: " + ConfirmEmailUtil.friendlyExpirationTime(90));
-        assertEquals("1.5 hours", ConfirmEmailUtil.friendlyExpirationTime(90));
-        System.out.println("2880 minutes: " + ConfirmEmailUtil.friendlyExpirationTime(2880));
-        assertEquals("48 hours", ConfirmEmailUtil.friendlyExpirationTime(2880));
-        System.out.println("150 minutes: " + ConfirmEmailUtil.friendlyExpirationTime(150));
-        assertEquals("2.5 hours", ConfirmEmailUtil.friendlyExpirationTime(150));
-        System.out.println("165 minutes: " + ConfirmEmailUtil.friendlyExpirationTime(165));
-        assertEquals("2.75 hours", ConfirmEmailUtil.friendlyExpirationTime(165));
-        System.out.println("1 Minute: " + ConfirmEmailUtil.friendlyExpirationTime(1));
-        assertEquals("1 minute", ConfirmEmailUtil.friendlyExpirationTime(1));
-        System.out.println();
+    @RunWith(Parameterized.class)
+    public static class ConfirmEmailUtilParamTest {
+
+        public String timeAsFriendlyString;
+        public int timeInMinutes;
+
+        public ConfirmEmailUtilParamTest(String timeAsFriendlyString, int timeInSeconds) {
+            this.timeAsFriendlyString = timeAsFriendlyString;
+            this.timeInMinutes = timeInSeconds;
+        }
+
+        @Parameters
+        public static Collection<Object[]> parameters() {
+            return Arrays.asList(
+                    new Object[][] { 
+                        { "48 hours", 2880 }, 
+                        { "24 hours", 1440 },
+                        { "2.75 hours", 165 },
+                        { "2.5 hours", 150 },
+                        { "1.5 hours", 90 }, 
+                        { "1 hour", 60 }, 
+                        { "30 minutes", 30 }, 
+                        { "1 minute", 1 } 
+                    }
+            );
+        }
+
+        @Test
+        public void friendlyExpirationTimeTest() {
+            assertEquals(timeAsFriendlyString, ConfirmEmailUtil.friendlyExpirationTime(timeInMinutes));
+        }
     }
 
-    @Test
-    public void testGrandfatheredTime() {
-        System.out.println();
-        System.out.println("Grandfathered account timestamp test");
-        System.out.println("Grandfathered Time (y2k): " + ConfirmEmailUtil.getGrandfatheredTime());
-        assertEquals(Timestamp.valueOf("2000-01-01 00:00:00.0"), ConfirmEmailUtil.getGrandfatheredTime());
-        System.out.println();
-    }
+    public static class ConfirmEmailUtilNoParamTest {
 
+        @Test
+        public void testGrandfatheredTime() {
+            System.out.println();
+            System.out.println("Grandfathered account timestamp test");
+            System.out.println("Grandfathered Time (y2k): " + ConfirmEmailUtil.getGrandfatheredTime());
+            assertEquals(Timestamp.valueOf("2000-01-01 00:00:00.0"), ConfirmEmailUtil.getGrandfatheredTime());
+            System.out.println();
+        }
+    }
 }

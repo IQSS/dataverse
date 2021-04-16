@@ -14,12 +14,15 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import java.util.List;
+import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.ManyToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
+
+import edu.harvard.iq.dataverse.util.DateUtil;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -45,7 +48,7 @@ public class Guestbook implements Serializable {
     @OrderBy("displayOrder")
     private List<CustomQuestion> customQuestions;
     
-    @NotBlank(message="Enter a name for the guestbook")
+    @NotBlank(message="{guestbook.name}")
     private String name;
     
     private boolean enabled;
@@ -144,7 +147,7 @@ public class Guestbook implements Serializable {
     }
 
     public String getCreateDate() {
-        return new SimpleDateFormat("MMMM d, yyyy").format(createTime);
+        return DateUtil.formatDate(createTime);
     }
         
     public Guestbook copyGuestbook(Guestbook source, Dataverse dataverse) {
@@ -295,6 +298,15 @@ public class Guestbook implements Serializable {
 
     public void setResponseCountDataverse(Long responseCountDataverse) {
         this.responseCountDataverse = responseCountDataverse;
+    }
+    
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof Guestbook)) {
+            return false;
+        }
+        Guestbook other = (Guestbook) object;
+        return Objects.equals(getId(), other.getId());
     }
     
     

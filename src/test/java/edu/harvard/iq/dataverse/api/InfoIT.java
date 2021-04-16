@@ -53,5 +53,13 @@ public class InfoIT {
         response.then().assertThat().statusCode(200)
                 .body("data.message", notNullValue());
     }
-
+    
+    @Test
+    public void getTermsOfUse() {
+        Response response = given().urlEncodingEnabled(false)
+                .get("/api/info/apiTermsOfUse");
+        response.prettyPrint();
+        response.then().assertThat().statusCode(200)
+                .body("data.message", notNullValue());
+    }
 }

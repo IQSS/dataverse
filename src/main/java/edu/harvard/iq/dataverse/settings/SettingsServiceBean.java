@@ -1,18 +1,23 @@
 package edu.harvard.iq.dataverse.settings;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
-//import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
-import java.util.Arrays;
-import java.util.Collections;
+import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.util.StringUtil;
+
+import java.io.StringReader;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
+import javax.json.Json;
+import javax.json.JsonObject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
@@ -33,6 +38,12 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
+        AllowApiTokenLookupViaApi,
+        /**
+         * Ordered, comma-separated list of custom fields to show above the fold
+         * on dataset page such as "data_type,sample,pdb"
+         */
+        CustomDatasetSummaryFields,
         /**
          * Defines a public installation -- all datafiles are unrestricted
          */
@@ -48,12 +59,26 @@ public class SettingsServiceBean {
          */
         ComputeBaseUrl,
         /**
+         * Enables the provenance collection popup.
+         * Allows users to store their provenance json and description
+         */
+        ProvCollectionEnabled,
+        /**
          * For example, https://datacapture.example.org
          */
         DataCaptureModuleUrl,
         RepositoryStorageAbstractionLayerUrl,
         UploadMethods,
         DownloadMethods,
+        /**
+         * If the data replicated around the world using RSAL (Repository
+         * Storage Abstraction Layer) is locally available, this is its file
+         * path, such as "/programs/datagrid".
+         *
+         * TODO: Think about if it makes sense to make this a column in the
+         * StorageSite database table.
+         */
+        LocalDataAccessPath,
         IdentifierGenerationStyle,
         OAuth2CallbackUrl,
         DefaultAuthProvider,
@@ -65,13 +90,6 @@ public class SettingsServiceBean {
          * https://wiki.apache.org/solr/HighlightingParameters#hl.fragsize
          */
         SearchHighlightFragmentSize,
-       /**
-        * Domain name specific code for Google Analytics
-        *//**
-        * Domain name specific code for Google Analytics
-        */
-        GoogleAnalyticsCode,
-
         /**
          * Revert to MyData *not* using the Solr "permission documents" which
          * was the behavior in Dataverse 4.2. Starting to use Solr permission
@@ -81,11 +99,6 @@ public class SettingsServiceBean {
          * shouldn't.
          */
         MyDataDoesNotUseSolrPermissionDocs,
-        /**
-         * Experimental: Allow non-public search with a key/token using the
-         * Search API. See also https://github.com/IQSS/dataverse/issues/1299
-         */
-        SearchApiNonPublicAllowed,
         /**
          * In Dataverse 4.7 and earlier, an API token was required to use the
          * Search API. Tokens are no longer required but you can revert to the
@@ -152,7 +165,10 @@ public class SettingsServiceBean {
         SearchRespectPermissionRoot,
         /** Solr hostname and port, such as "localhost:8983". */
         SolrHostColonPort,
-        /** Key for limiting the number of bytes uploaded via the Data Deposit API, UI (web site and . */
+        /** Enable full-text indexing in solr up to max file size */
+        SolrFullTextIndexing, //true or false (default)
+        SolrMaxFileSizeForFullTextIndexing, //long - size in bytes (default unset/no limit)
+        /** Default Key for limiting the number of bytes uploaded via the Data Deposit API, UI (web site and . */
         MaxFileUploadSizeInBytes,
         /** Key for if ScrubMigrationData is enabled or disabled. */
         ScrubMigrationData,
@@ -166,14 +182,13 @@ public class SettingsServiceBean {
         Authority,
         /** DoiProvider for global id */
         DoiProvider,
-        DoiSeparator,
+        /** Shoulder for global id - used to create a common prefix on identifiers */
+        Shoulder,
         /* Removed for now - tried to add here but DOI Service Bean didn't like it at start-up
         DoiUsername,
         DoiPassword,
         DoiBaseurlstring,
         */
-        /* TwoRavens location */
-        TwoRavensUrl,
         /** Optionally override http://guides.dataverse.org . */
         GuidesBaseUrl,
 
@@ -182,6 +197,12 @@ public class SettingsServiceBean {
          * some other metrics app.
          */
         MetricsUrl,
+        
+        /**
+         * Number of minutes before a metrics query can be rerun. Otherwise a cached value is returned.
+         * Previous month dates always return cache. Only applies to new internal caching system (not miniverse).
+         */
+        MetricsCacheTimeoutMinutes,
         /* zip download size limit */
         /** Optionally override version number in guides. */
         GuidesVersion,
@@ -197,10 +218,6 @@ public class SettingsServiceBean {
         */
         ThumbnailSizeLimitImage,
         ThumbnailSizeLimitPDF,
-        /* status message that will appear on the home page */
-        StatusMessageHeader,
-        /* full text of status message, to appear in popup */
-        StatusMessageText,
         /* return email address for system emails such as notifications */
         SystemEmail, 
         /* size limit for Tabular data file ingests */
@@ -211,39 +228,6 @@ public class SettingsServiceBean {
         SPSS/sav format, "RData" for R, etc.
         for example: :TabularIngestSizeLimit:RData */
         TabularIngestSizeLimit,
-        /**
-        Whether to allow user to create GeoConnect Maps
-        This boolean effects whether the user sees the map button on 
-        the dataset page and if the ingest will create a shape file
-        Default is false
-        */
-        GeoconnectCreateEditMaps,
-        /**
-        Whether to allow a user to view existing maps
-        This boolean effects whether a user may see the 
-        Explore World Map Button
-        Default is false;
-        */
-        GeoconnectViewMaps,
-        /**
-        For DEVELOPMENT ONLY. Generate SQL statements for populating
-        MapLayerMetadata objects when Geoconnect is not available.
-        
-        When files have related MapLayerMetadata objects, the "Explore button
-        will be available to users.
-        */
-        GeoconnectDebug,
-
-        /**
-        Whether to allow a user to view tabular files
-        using the TwoRavens application
-        This boolean effects whether a user may see the 
-        Explore Button that links to TwoRavens
-        Default is false;
-        */
-        TwoRavensTabularView,
-                
-
         /**
          The message added to a popup upon dataset publish
          * 
@@ -283,6 +267,10 @@ public class SettingsServiceBean {
         */
         StyleCustomizationFile,
         /*
+         Location and name of analytics code file
+        */
+        WebAnalyticsCode,
+        /*
          Location and name of installation logo customization file
         */
         LogoCustomizationFile,
@@ -291,9 +279,163 @@ public class SettingsServiceBean {
         NavbarAboutUrl,
         
         // Option to override multiple guides with a single url
-        NavbarGuidesUrl; 
+        NavbarGuidesUrl,
 
+        // Option to overide the feedback dialog display with a link to an external page via its url
+        NavbarSupportUrl,
+
+        /**
+         * The theme for the root dataverse can get in the way when you try make
+         * use of HeaderCustomizationFile and LogoCustomizationFile so this is a
+         * way to disable it.
+         */
+        DisableRootDataverseTheme,
+        // Limit on how many guestbook entries to display on the guestbook-responses page:
+        GuestbookResponsesPageDisplayLimit,
+
+        /**
+         * The dictionary filepaths separated by a pipe (|)
+         */
+        PVDictionaries,
+
+//        /**
+//         * The days and minimum length for when to apply an expiration date.
+//         */
+//        PVExpirationDays,
+//        PVValidatorExpirationMaxLength,
+
+        /**
+         * The minimum length of a good, long, strong password.
+         */
+        PVGoodStrength,
+
+        /**
+         * A password minimum and maximum length
+         */
+        PVMinLength,
+        PVMaxLength,
+
+        /**
+         * One letter, 2 special characters, etc.
+         */
+        PVCharacterRules,
+
+        /**
+         * The number of M characteristics
+         */
+        PVNumberOfCharacteristics,
         
+        /**
+         * The number of consecutive digits allowed for a password
+         */
+        PVNumberOfConsecutiveDigitsAllowed,
+        /**
+         * Configurable text for alert/info message on passwordreset.xhtml when users are required to update their password.
+         */
+        PVCustomPasswordResetAlertMessage,
+        /*
+        String to describe DOI format for data files. Default is DEPENDENT. 
+        'DEPENEDENT' means the DOI will be the Dataset DOI plus a file DOI with a slash in between.
+        'INDEPENDENT' means a new global id, completely independent from the dataset-level global id.
+        */
+        DataFilePIDFormat, 
+        /* Json array of supported languages
+        */
+        Languages,
+        /*
+        Number for the minimum number of files to send PID registration to asynchronous workflow
+        */
+        PIDAsynchRegFileCount,
+        /**
+         * 
+         */
+        FilePIDsEnabled,
+
+        /**
+         * Indicates if the Handle service is setup to work 'independently' (No communication with the Global Handle Registry)
+         */
+        IndependentHandleService,
+
+        /**
+         * Archiving can be configured by providing an Archiver class name (class must extend AstractSubmitToArchiverCommand)
+         * and a list of settings that should be passed to the Archiver.
+         * Note: 
+         * Configuration may also require adding Archiver-specific jvm-options (i.e. for username and password) in glassfish.
+         * 
+         * To automate the submission of an archival copy step as part of publication, a post-publication workflow must also be configured.
+         * 
+         * For example:
+         * ArchiverClassName - "edu.harvard.iq.dataverse.engine.command.impl.DPNSubmitToArchiveCommand"
+         * ArchiverSettings - "DuraCloudHost, DuraCloudPort, DuraCloudContext"
+         * 
+         * Note: Dataverse must be configured with values for these dynamically defined settings as well, e.g. 
+         * 
+         * DuraCloudHost , eg. "qdr.duracloud.org", a non-null value enables submission
+         * DuraCloudPort, default is 443
+         * DuraCloudContext, default is "durastore"
+         */
+        
+        ArchiverClassName,
+        ArchiverSettings,
+        /**
+         * A comma-separated list of roles for which new dataverses should inherit the
+         * corresponding role assignments from the parent dataverse. Also affects
+         * /api/admin/dataverse/{alias}/addRolesToChildren. Default is "", no
+         * inheritance. "*" means inherit assignments for all roles
+         */
+        InheritParentRoleAssignments,
+        
+        /** Make Data Count Logging and Display */
+        MDCLogPath, 
+        DisplayMDCMetrics,
+
+        /**
+         * Allow CORS flag (true or false). It is true by default
+         *
+         */
+        AllowCors, 
+        
+        /**
+         * Lifespan, in minutes, of a login user session 
+         * (both DataverseSession and the underlying HttpSession)
+         */
+        LoginSessionTimeout,
+
+        /**
+         * Shibboleth affiliation attribute which holds information about the affiliation of the user (e.g. ou)
+         */
+        ShibAffiliationAttribute,
+        /**
+         * Convert shibboleth AJP attributes from ISO-8859-1 to UTF-8
+         */
+        ShibAttributeCharacterSetConversionEnabled,
+        /**
+         * Validate physical files for all the datafiles in the dataset when publishing
+         */
+        FileValidationOnPublishEnabled,
+        /**
+         * If defined, this is the URL of the zipping service outside 
+         * the main Application Service where zip downloads should be directed
+         * instead of /api/access/datafiles/
+         */
+        CustomZipDownloadServiceUrl,
+        /**
+         * Sort Date Facets Chronologically instead or presenting them in order of # of hits as other facets are. Default is true
+         */
+        ChronologicalDateFacets,
+        
+        /**
+         * Used where BrandingUtil.getInstallationBrandName is called, overides the default use of the root Dataverse collection name
+         */
+        InstallationName,
+        /**
+         * In metadata exports that set a 'distributor' this flag determines whether the
+         * Installation Brand Name is always included (default/false) or is not included
+         * when the Distributor field (citation metadatablock) is set (true)
+         */
+        ExportInstallationAsDistributorOnlyWhenNotSet
+        ;
+
         @Override
         public String toString() {
             return ":" + name();
@@ -307,20 +449,19 @@ public class SettingsServiceBean {
     ActionLogServiceBean actionLogSvc;
     
     /**
-     * Values that are considered as "true".
-     * @see #isTrue(java.lang.String, boolean) 
-     */
-    public static final Set<String> TRUE_VALUES = Collections.unmodifiableSet(
-            new TreeSet<>( Arrays.asList("1","yes", "true","allow")));
-    
-    /**
      * Basic functionality - get the name, return the setting, or {@code null}.
      * @param name of the setting
      * @return the actual setting, or {@code null}.
      */
     public String get( String name ) {
-        Setting s = em.find( Setting.class, name );
-        return (s!=null) ? s.getContent() : null;
+        List<Setting> tokens = em.createNamedQuery("Setting.findByName", Setting.class)
+                .setParameter("name", name )
+                .getResultList();
+        String val = null;
+        if(tokens.size() > 0) {
+            val = tokens.get(0).getContent();
+        }
+        return (val!=null) ? val : null;
     }
     
     /**
@@ -359,6 +500,44 @@ public class SettingsServiceBean {
         
     }
     
+       /**
+        * Attempt to convert a value in a compound key to a long
+        *  - Applicable for keys such as MaxFileUploadSizeInBytes after multistore capabilities were added in ~v4.20
+        *  backward compatible with a single value. For multi values, the key's value must be an object with param:value pairs.
+        *  A "default":value pair is allowed and will be returned for any param that doesn't have a defined value.   
+        * 
+        * On failure (key not found or string not convertible to a long), returns null
+        * @param key
+        * @return 
+        */
+       public Long getValueForCompoundKeyAsLong(Key key, String param){
+
+    	   String val = this.getValueForKey(key);
+
+    	   if (val == null){
+    		   return null;
+    	   }
+
+    	   try {
+    		   return Long.parseLong(val);
+    	   } catch (NumberFormatException ex) {
+    		   try ( StringReader rdr = new StringReader(val) ) {
+    			   JsonObject settings = Json.createReader(rdr).readObject();
+    			   if(settings.containsKey(param)) {
+    				   return Long.parseLong(settings.getString(param));
+    			   } else if(settings.containsKey("default")) {
+    				   return Long.parseLong(settings.getString("default"));
+    			   } else {
+    				   return null;
+    			   }
+
+    		   } catch (Exception e) {
+    			   logger.log(Level.WARNING, "Incorrect setting.  Could not convert \"{0}\" from setting {1} to long: {2}", new Object[]{val, key.toString(), e.getMessage()});
+    			   return null;
+    		   }
+    	   }
+
+       }
     
     /**
      * Return the value stored, or the default value, in case no setting by that
@@ -373,16 +552,71 @@ public class SettingsServiceBean {
         String val = get(name);
         return (val!=null) ? val : defaultValue;
     }
+
+    public String get(String name, String lang, String defaultValue ) {
+        List<Setting> tokens = em.createNamedQuery("Setting.findByNameAndLang", Setting.class)
+                .setParameter("name", name )
+                .setParameter("lang", lang )
+                .getResultList();
+        String val = null;
+        if(tokens.size() > 0) {
+            val = tokens.get(0).getContent();
+        }
+        return (val!=null) ? val : defaultValue;
+    }
     
     public String getValueForKey( Key key, String defaultValue ) {
         return get( key.toString(), defaultValue );
     }
+
+    public String getValueForKey( Key key, String lang, String defaultValue ) {
+        return get( key.toString(), lang, defaultValue );
+    }
      
     public Setting set( String name, String content ) {
-        Setting s = new Setting( name, content );
+        Setting s = null; 
+        
+        List<Setting> tokens = em.createNamedQuery("Setting.findByName", Setting.class)
+                .setParameter("name", name )
+                .getResultList();
+        
+        if(tokens.size() > 0) {
+            s = tokens.get(0);
+        }
+        
+        if (s == null) {
+            s = new Setting( name, content );
+        } else {
+            s.setContent(content);
+        }
+        
         s = em.merge(s);
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "set")
                             .setInfo(name + ": " + content));
+        return s;
+    }
+
+    public Setting set( String name, String lang, String content ) {
+        Setting s = null; 
+        
+        List<Setting> tokens = em.createNamedQuery("Setting.findByNameAndLang", Setting.class)
+                .setParameter("name", name )
+                .setParameter("lang", lang )
+                .getResultList();
+        
+        if(tokens.size() > 0) {
+            s = tokens.get(0);
+        }
+        
+        if (s == null) {
+            s = new Setting( name, lang, content );
+        } else {
+            s.setContent(content);
+        }
+        
+        em.merge(s);
+        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "set")
+                .setInfo(name + ": " +lang + ": " + content));
         return s;
     }
     
@@ -399,7 +633,7 @@ public class SettingsServiceBean {
      */
     public boolean isTrue( String name, boolean defaultValue ) {
         String val = get(name);
-        return ( val==null ) ? defaultValue : TRUE_VALUES.contains(val.trim().toLowerCase() );
+        return ( val==null ) ? defaultValue : StringUtil.isTrue(val);
     }
     
     public boolean isTrueForKey( Key key, boolean defaultValue ) {
@@ -419,6 +653,15 @@ public class SettingsServiceBean {
                             .setInfo(name));
         em.createNamedQuery("Setting.deleteByName")
                 .setParameter("name", name)
+                .executeUpdate();
+    }
+
+    public void delete( String name, String lang ) {
+        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Setting, "delete")
+                .setInfo(name));
+        em.createNamedQuery("Setting.deleteByNameAndLang")
+                .setParameter("name", name)
+                .setParameter("lang", lang)
                 .executeUpdate();
     }
     

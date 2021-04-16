@@ -7,10 +7,7 @@ package edu.harvard.iq.dataverse.timer;
 
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
-import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
@@ -33,13 +30,11 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
 
 
@@ -56,15 +51,13 @@ import javax.servlet.http.HttpServletRequest;
 @Singleton
 @Startup
 public class DataverseTimerServiceBean implements Serializable {
+    
+    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean");
+    
     @Resource
     javax.ejb.TimerService timerService;
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
-    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean");
     @EJB
     HarvesterServiceBean harvesterService;
-    @EJB
-    DataverseServiceBean dataverseService;
     @EJB
     HarvestingClientServiceBean harvestingClientService;
     @EJB 
@@ -105,7 +98,7 @@ public class DataverseTimerServiceBean implements Serializable {
         } catch (UnknownHostException ex) {
             Logger.getLogger(DataverseTimerServiceBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-        timerService.createTimer(initialExpiration, intervalDuration, info);
+        timerService.createIntervalTimer(initialExpiration, intervalDuration, new TimerConfig(info, false));
     }
 
     /**
@@ -258,8 +251,8 @@ public class DataverseTimerServiceBean implements Serializable {
             } else if (harvestingClient.getSchedulePeriod().equals(harvestingClient.SCHEDULE_PERIOD_WEEKLY)) {
                 intervalDuration = 1000 * 60 * 60 * 24 * 7;
                 initExpiration.set(Calendar.HOUR_OF_DAY, harvestingClient.getScheduleHourOfDay());
-                initExpiration.set(Calendar.DAY_OF_WEEK, harvestingClient.getScheduleDayOfWeek());
-
+                initExpiration.set(Calendar.DAY_OF_WEEK, harvestingClient.getScheduleDayOfWeek() + 1); //(saved as zero-based array but Calendar is one-based.)
+  
             } else {
                 logger.log(Level.WARNING, "Could not set timer for harvesting client id=" + harvestingClient.getId() + ", unknown schedule period: " + harvestingClient.getSchedulePeriod());
                 return;

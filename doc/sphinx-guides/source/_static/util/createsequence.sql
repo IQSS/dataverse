@@ -19,7 +19,7 @@ CACHE 1;
 
 ALTER TABLE datasetidentifier_seq OWNER TO "dvnapp";
 
--- And now create a PostgresQL FUNCTION, for JPA to 
+-- And now create a PostgreSQL FUNCTION, for JPA to
 -- access as a NamedStoredProcedure:
 
 CREATE OR REPLACE FUNCTION generateIdentifierAsSequentialNumber(

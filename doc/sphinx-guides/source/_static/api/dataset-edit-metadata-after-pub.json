@@ -1,0 +1,42 @@
+{
+    "fields": [
+        {
+            "typeName": "subject",
+            "value": ["Computer and Information Science"]
+        },
+        {
+            "typeName": "title",
+            "value": "Title Edited via API"		
+        },
+        {
+            "typeName": "kindOfData",
+            "value": ["8675309"]		
+        },       
+        {
+            "typeName": "subtitle",
+            "value": "Me, a name I call myself"		
+        },       
+        {
+            "typeName": "studyDesignType",
+            "value": ["Technological Design"]		
+        },
+        {
+            "typeName": "author",
+            "value": [
+                {
+                    "authorName": {
+                        "typeName": "authorName",
+                        "value": "Belicheck, Bill"
+                    }
+                    ,
+                    "authorAffiliation": {
+                        "typeName": "authorAffiliation",
+                        "value": "Pates"
+                    }
+                }	
+            ]
+        }
+        
+    ]
+}
+

@@ -5,22 +5,22 @@
  */
 package edu.harvard.iq.dataverse.dataaccess;
 
-import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
+//import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.Channel;
+import java.util.Arrays;
 import java.util.List;
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.methods.GetMethod;
+//import org.apache.commons.httpclient.Header;
+//import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -32,9 +32,9 @@ public class StorageIOTest {
     StorageIO<Dataset> instance = new FileAccessIO<>();
 
     @Test
-    public void testGetChannel() throws FileNotFoundException {
+    public void testGetChannel() throws IOException {
         assertEquals(null, instance.getChannel());
-        Channel c = new RandomAccessFile("src/main/java/Bundle.properties", "r").getChannel();
+        Channel c = new RandomAccessFile("src/main/java/propertyFiles/Bundle.properties", "r").getChannel();
         instance.setChannel(c);
         assertEquals(c, instance.getChannel());
     }
@@ -62,23 +62,26 @@ public class StorageIOTest {
     @Test
     public void testGetDvObject() {
         assertEquals(null, instance.getDvObject());
-        instance.setDvObject(new Dataset());
-        assertEquals(new Dataset(), instance.getDataset());
-
-        try {
+        Dataset d= new Dataset();
+        instance.setDvObject(d);
+        //assertSame uses == rather than the .equals() method which would (currently) be true for any two Datasets 
+        assertSame(d, instance.getDataset());        try {
             instance.getDataFile();
             fail("This should have thrown");
         } catch (ClassCastException ex) {
-            assertEquals(ex.getMessage(), "edu.harvard.iq.dataverse.Dataset cannot be cast to edu.harvard.iq.dataverse.DataFile");
+            //Test succeeds
         }
         try {
             instance.getDataverse();
             fail("This should have thrown");
         } catch (ClassCastException ex) {
-            assertEquals(ex.getMessage(), "edu.harvard.iq.dataverse.Dataset cannot be cast to edu.harvard.iq.dataverse.Dataverse");
+            //Test succeeds
         }
-        assertEquals(new DataFile(), new FileAccessIO<>(new DataFile()).getDataFile());
-        assertEquals(new Dataverse(), new FileAccessIO<>(new Dataverse()).getDataverse());
+        // null driver defaults to 'file'
+        DataFile f= new DataFile();
+        Dataverse dv = new Dataverse();
+        assertSame(f, new FileAccessIO<>(f, null, null).getDataFile());
+        assertSame(dv, new FileAccessIO<>(dv, null, null).getDataverse());
     }
 
     @Test
@@ -89,12 +92,12 @@ public class StorageIOTest {
         assertEquals(req, instance.getRequest());
     }
 
-    @Test
+    /*@Test
     public void testStatus() {
         assertEquals(0, instance.getStatus());
         instance.setStatus(1);
         assertEquals(1, instance.getStatus());
-    }
+    }*/
 
     @Test
     public void testSize() {
@@ -104,7 +107,7 @@ public class StorageIOTest {
     }
 
     @Test
-    public void testInputStream() {
+    public void testInputStream() throws IOException {
         assertEquals(null, instance.getInputStream());
         InputStream is = new ByteArrayInputStream("Test".getBytes());
         instance.setInputStream(is);
@@ -163,6 +166,7 @@ public class StorageIOTest {
         assertEquals("Swift", instance.getSwiftContainerName());
     }
 
+    /*
     @Test
     public void testHTTPMethod() {
         assertEquals(null, instance.getHTTPMethod());
@@ -196,7 +200,7 @@ public class StorageIOTest {
         assertEquals(false, instance.isHttpAccess());
         instance.setIsHttpAccess(true);
         assertEquals(true, instance.isHttpAccess());
-    }
+    }*/
 
     @Test
     public void testDownloadSupported() {
@@ -228,7 +232,7 @@ public class StorageIOTest {
 
     @Test
     public void testGenerateVariableHeader() {
-        DataVariable var = new DataVariable();
+        DataVariable var = new DataVariable(0,null);
         var.setName("Random");
 
         @SuppressWarnings("unchecked")

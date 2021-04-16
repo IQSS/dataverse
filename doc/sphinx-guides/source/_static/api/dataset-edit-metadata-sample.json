@@ -1,0 +1,74 @@
+{
+    "fields": [
+        {
+            "typeName": "subject",
+            "value": ["Astronomy and Astrophysics"]
+        },
+
+        {
+            "typeName": "subtitle",
+            "value": "More Birds and Trees"
+        },
+
+        {
+            "typeName": "title",
+            "value": "Post Publish Title Change"               
+        },
+        {
+            "typeName": "author",
+            "value": [
+                {
+                    "authorName": {
+                        "typeName": "authorName",
+                        "value": "Poe, Edgar Allen"
+                    }
+                    ,
+                    "authorAffiliation": {
+                        "typeName": "authorAffiliation",
+                        "value": "Baltimore Poets"
+                    }
+                },
+                {
+                    "authorName": {
+                        "typeName": "authorName",
+                        "value": "Mulligan, Hercules"
+                    }
+                    ,
+                    "authorAffiliation": {
+                        "typeName": "authorAffiliation",
+                        "value": "Sons of Liberty"
+                    }
+                }		
+            ]
+        },
+        {
+            "typeName": "producer",
+            "value": [
+                {
+                    "producerName": {
+                        "typeName": "producerName",
+                        "value": "Allen, Irwin"
+                    }
+                    ,
+                    "producerAffiliation": {
+                        "typeName": "producerAffiliation",
+                        "value": "MGM"
+                    }
+                },
+                {
+                    "producerName": {
+                        "typeName": "producerName",
+                        "value": "Lucas, George"
+                    }
+                    ,
+                    "producerAffiliation": {
+                        "typeName": "producerAffiliation",
+                        "value": "ILM"
+                    }
+                }		
+            ]
+        }
+    ]
+}
+
+

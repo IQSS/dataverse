@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseGuestbookCommand;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -160,7 +161,7 @@ public class GuestbookPage implements java.io.Serializable {
             editMode = EditMode.CLONE;
             sourceGB = guestbookService.find(sourceId);
             guestbook = sourceGB.copyGuestbook(sourceGB, dataverse);
-            String name = "Copy of " + sourceGB.getName();
+            String name = BundleUtil.getStringFromBundle("page.copy") +" " + sourceGB.getName();
             guestbook.setName(name);
             guestbook.setUsageCount(new Long(0));
             guestbook.setCreateTime(new Timestamp(new Date().getTime()));
@@ -262,11 +263,11 @@ public class GuestbookPage implements java.io.Serializable {
             for (CustomQuestion cq : guestbook.getCustomQuestions()) {
                 if (cq != null && cq.getQuestionType().equals("options")) {
                     if (cq.getCustomQuestionValues() == null || cq.getCustomQuestionValues().isEmpty()){
-                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Guestbook Save Failed", " - An Option question requires multiple options. Please complete before saving." ));
+                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("guestbook.save.fail"), BundleUtil.getStringFromBundle("guestbook.option.msg") ));
                         return null;
                     }
                     if (cq.getCustomQuestionValues().size() == 1){
-                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Guestbook Save Failed", " - An Option question requires multiple options. Please complete before saving." ));
+                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("guestbook.save.fail"), BundleUtil.getStringFromBundle("guestbook.option.msg") ));
                         return null; 
                     }
                 }
@@ -311,18 +312,18 @@ public class GuestbookPage implements java.io.Serializable {
                 error.append(cause.getMessage()).append(" ");
             }
             //
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Guestbook Save Failed", " - " + error.toString()));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("guestbook.save.fail"), " - " + error.toString()));
             logger.info("Guestbook Page EJB Exception. Dataverse: " + dataverse.getName());
             logger.info(error.toString());
             return null;
         } catch (CommandException ex) {
             logger.info("Guestbook Page Command Exception. Dataverse: " + dataverse.getName());
             logger.info(ex.toString());
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Guestbook Save Failed", " - " + ex.toString()));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("guestbook.save.fail"), " - " + ex.toString()));
             //logger.severe(ex.getMessage());
         }
         editMode = null;
-        String msg = (create)? "The guestbook has been created.": "The guestbook has been edited and saved.";
+        String msg = (create)? BundleUtil.getStringFromBundle("guestbook.create"): BundleUtil.getStringFromBundle("guestbook.save");
         JsfHelper.addFlashMessage(msg);
         return "/manage-guestbooks.xhtml?dataverseId=" + dataverse.getId() + "&faces-redirect=true";
     }

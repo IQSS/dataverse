@@ -7,8 +7,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -28,7 +31,7 @@ import org.jsoup.Jsoup;
 public class StringUtil {
        
     private static final Logger logger = Logger.getLogger(StringUtil.class.getCanonicalName());
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
+    public static final Set<String> TRUE_VALUES = Collections.unmodifiableSet(new TreeSet<>( Arrays.asList("1","yes", "true","allow")));
     
     public static final boolean nonEmpty( String str ) {
         return ! isEmpty(str);
@@ -53,25 +56,37 @@ public class StringUtil {
       return true;
     }
     
+    public static String substringIncludingLast(String str, String separator) {
+      if (isEmpty(str)) {
+          return str;
+      }
+      if (isEmpty(separator)) {
+          return "";
+      }
+      int pos = str.lastIndexOf(separator);
+      if (pos == -1 || pos == (str.length() - separator.length())) {
+          return "";
+      }
+      return str.substring(pos);
+  }
+    
     public static Optional<String> toOption(String s) {
-        if ( s == null ) {
+        if ( isEmpty(s) ) {
             return Optional.empty();
+        } else {
+            return Optional.of(s.trim());
         }
-        s = s.trim();
-        return s.isEmpty() ? Optional.empty() : Optional.of(s);
     }
     
+    
     /**
-     * @todo Unless there is a compelling reason not to, we should switch to the
-     * validation routines in EMailValidator.
+     * Checks if {@code s} contains a "truthy" value.
+     * @param s
+     * @return {@code true} iff {@code s} is not {@code null} and is "truthy" word.
+     * @see #TRUE_VALUES
      */
-    @Deprecated
-    public static boolean isValidEmail( String s ) {
-        logger.fine("Validating <<<" + s + ">>>.");
-        if (s == null) {
-            return false;
-        }
-        return EMAIL_PATTERN.matcher(s).matches();
+    public static boolean isTrue( String s ) {
+        return (s != null ) && TRUE_VALUES.contains(s.trim().toLowerCase());
     }
     
     public static final boolean isAlphaNumericChar(char c) {
@@ -80,25 +95,6 @@ public class StringUtil {
                  (c >= 'A') && (c <= 'Z') ||
                  (c >= '0') && (c <= '9') );
     }
-
-    public static String truncateString(String originalString, int maxLength) {
-        maxLength = Math.max( 0, maxLength);
-        String finalString = originalString;
-        if (finalString != null && finalString.length() > maxLength) {
-            String regexp = "[A-Za-z0-9][\\p{Space}]";
-            Pattern pattern = Pattern.compile(regexp);
-            String startParsedString = finalString.substring(0, maxLength);
-            String endParsedString = finalString.substring(maxLength, finalString.length());
-            Matcher matcher = pattern.matcher(endParsedString);
-            boolean found = matcher.find();
-            if (found) {
-                endParsedString = endParsedString.substring(0, matcher.end());
-                finalString = startParsedString + endParsedString + "<span class='dvn_threedots'>...</span>";
-            }
-        }
-        
-        return finalString;             
-    } 
 
     public static String html2text(String html) {
         if (html == null) {
@@ -164,6 +160,36 @@ public class StringUtil {
             throw new RuntimeException(ex);
         }
     }
+    
+    public static String sanitizeFileDirectory(String value) {
+        return sanitizeFileDirectory(value, false);
+    }
+    
+    public static String sanitizeFileDirectory(String value, boolean aggressively){        
+        // Replace all the combinations of slashes and backslashes with one single 
+        // backslash:
+        value = value.replaceAll("[\\\\/][\\\\/]*", "/");
+
+        if (aggressively) {
+            value = value.replaceAll("[^A-Za-z0-9_ ./\\-]+", ".");
+            value = value.replaceAll("\\.\\.+", ".");
+        }
+        
+        // Strip any leading or trailing slashes, whitespaces, '-' or '.':
+        while (value.startsWith("/") || value.startsWith("-") || value.startsWith(".") || value.startsWith(" ")){
+            value = value.substring(1);
+        }
+        while (value.endsWith("/") || value.endsWith("-") || value.endsWith(".") || value.endsWith(" ")){
+            value = value.substring(0, value.length() - 1);
+        }
+        
+        if ("".equals(value)) {
+            return null;
+        }
+        
+        return value;
+    }
+    
     
     private static SecretKeySpec generateKeyFromString(final String secKey) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         byte[] key = (secKey).getBytes("UTF-8");

@@ -34,16 +34,26 @@ public class IpGroupProvider implements GroupProvider<IpGroup> {
     public Set<IpGroup> groupsFor(RoleAssignee ra, DvObject o) {
         return Collections.emptySet();
     }
-    
+
+    @Override
+    public Set<IpGroup> groupsFor(RoleAssignee ra) {
+        return Collections.emptySet();
+    }
+        
     @Override
     public Set<IpGroup> groupsFor( DataverseRequest req, DvObject dvo ) {
+        return groupsFor(req);
+    }
+
+    @Override
+    public Set<IpGroup> groupsFor( DataverseRequest req) {
         if ( req.getSourceAddress() != null ) {
             return updateProvider( ipGroupsService.findAllIncludingIp(req.getSourceAddress()) );
         } else {
             return Collections.emptySet();
         }
     }
-
+    
     @Override
     public IpGroup get(String groupAlias) {
         return setProvider(ipGroupsService.getByGroupName(groupAlias));

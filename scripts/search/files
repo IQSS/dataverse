@@ -1,3 +1,4 @@
 #!/bin/sh
 curl http://localhost:8080/api/index
+# below line is broken
 curl -s 'http://localhost:8983/solr/collection1/select?rows=100&wt=json&indent=true&q=*&fq=dvtype:files' | jq '.response.docs[] | {name_sort, id, parentid}'

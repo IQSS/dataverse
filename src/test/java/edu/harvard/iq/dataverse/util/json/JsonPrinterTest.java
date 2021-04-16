@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileCategory;
 import edu.harvard.iq.dataverse.DataFileTag;
+import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
@@ -12,12 +13,15 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
+import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.ArrayList;
@@ -36,12 +40,11 @@ import static org.junit.Assert.assertNotNull;
 
 public class JsonPrinterTest {
 
-    // Centralize JsonParserTest.MockDatasetFieldSvc? See also https://github.com/IQSS/dataverse/issues/3413 and https://github.com/IQSS/dataverse/issues/3777
-    JsonParserTest.MockDatasetFieldSvc datasetFieldTypeSvc = null;
+    MockDatasetFieldSvc datasetFieldTypeSvc = null;
 
     @Before
     public void setUp() {
-        datasetFieldTypeSvc = new JsonParserTest.MockDatasetFieldSvc();
+        datasetFieldTypeSvc = new MockDatasetFieldSvc();
 
         DatasetFieldType titleType = datasetFieldTypeSvc.add(new DatasetFieldType("title", FieldType.TEXTBOX, false));
         DatasetFieldType authorType = datasetFieldTypeSvc.add(new DatasetFieldType("author", FieldType.TEXT, true));
@@ -101,8 +104,6 @@ public class JsonPrinterTest {
             t.setParentDatasetFieldType(compoundSingleType);
         }
         compoundSingleType.setChildDatasetFieldTypes(childTypes);
-//        settingsSvc = new JsonParserTest.MockSettingsSvc();
-//        jsonPrinter = new JsonPrinter(settingsSvc);
     }
 
     @Test
@@ -146,11 +147,17 @@ public class JsonPrinterTest {
         FileMetadata fmd = new FileMetadata();
         DatasetVersion dsVersion = new DatasetVersion();
         DataFile dataFile = new DataFile();
+        dataFile.setProtocol("doi");
+        dataFile.setIdentifier("ABC123");
+        dataFile.setAuthority("10.5072/FK2");
         List<DataFileTag> dataFileTags = new ArrayList<>();
         DataFileTag tag = new DataFileTag();
         tag.setTypeByLabel("Survey");
         dataFileTags.add(tag);
         dataFile.setTags(dataFileTags);
+        DataTable dt = new DataTable();
+        dataFile.setDataTable(dt);
+        dataFile.getDataTable().setOriginalFileName("50by1000.dta");
         fmd.setDatasetVersion(dsVersion);
         fmd.setDataFile(dataFile);
         List<DataFileCategory> fileCategories = new ArrayList<>();
@@ -167,8 +174,8 @@ public class JsonPrinterTest {
         assertEquals("Data", jsonObject.getJsonArray("categories").getString(0));
         assertEquals("", jsonObject.getJsonObject("dataFile").getString("filename"));
         assertEquals(-1, jsonObject.getJsonObject("dataFile").getInt("filesize"));
-        assertEquals("UNKNOWN", jsonObject.getJsonObject("dataFile").getString("originalFormatLabel"));
         assertEquals(-1, jsonObject.getJsonObject("dataFile").getInt("rootDataFileId"));
+        assertEquals("50by1000.dta", jsonObject.getJsonObject("dataFile").getString("originalFileName"));
         assertEquals("Survey", jsonObject.getJsonObject("dataFile").getJsonArray("tabularTags").getString(0));
     }
 
@@ -194,9 +201,9 @@ public class JsonPrinterTest {
         fields.add(datasetContactField);
 
         SettingsServiceBean nullServiceBean = null;
-        JsonPrinter jsonPrinter = new JsonPrinter(nullServiceBean);
-
-        JsonObject jsonObject = jsonPrinter.json(block, fields).build();
+        JsonPrinter.injectSettingsService(nullServiceBean);
+        
+        JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
 
         System.out.println("json: " + JsonUtil.prettyPrint(jsonObject.toString()));
@@ -205,7 +212,7 @@ public class JsonPrinterTest {
         assertEquals("Bar University", jsonObject.getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject("datasetContactAffiliation").getString("value"));
         assertEquals("foo@bar.com", jsonObject.getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject("datasetContactEmail").getString("value"));
 
-        JsonObject byBlocks = jsonPrinter.jsonByBlocks(fields).build();
+        JsonObject byBlocks = JsonPrinter.jsonByBlocks(fields).build();
 
         System.out.println("byBlocks: " + JsonUtil.prettyPrint(byBlocks.toString()));
         assertEquals("Foo Bar", byBlocks.getJsonObject("citation").getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject("datasetContactName").getString("value"));
@@ -235,7 +242,7 @@ public class JsonPrinterTest {
         datasetContactField.setDatasetFieldCompoundValues(vals);
         fields.add(datasetContactField);
 
-        JsonPrinter jsonPrinter = new JsonPrinter(new MockSettingsSvc());
+        JsonPrinter.injectSettingsService(new MockSettingsSvc());
 
         JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
@@ -246,13 +253,40 @@ public class JsonPrinterTest {
         assertEquals("Bar University", jsonObject.getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject("datasetContactAffiliation").getString("value"));
         assertEquals(null, jsonObject.getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject("datasetContactEmail"));
 
-        JsonObject byBlocks = jsonPrinter.jsonByBlocks(fields).build();
+        JsonObject byBlocks = JsonPrinter.jsonByBlocks(fields).build();
 
         System.out.println("byBlocks: " + JsonUtil.prettyPrint(byBlocks.toString()));
         assertEquals("Foo Bar", byBlocks.getJsonObject("citation").getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject("datasetContactName").getString("value"));
         assertEquals("Bar University", byBlocks.getJsonObject("citation").getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject("datasetContactAffiliation").getString("value"));
         assertEquals(null, byBlocks.getJsonObject("citation").getJsonArray("fields").getJsonObject(0).getJsonArray("value").getJsonObject(0).getJsonObject("datasetContactEmail"));
 
+    }
+
+    @Test
+    public void testDataversePrinter() {
+        Dataverse dataverse = new Dataverse();
+        dataverse.setId(42l);
+        dataverse.setAlias("dv42");
+        dataverse.setName("Dataverse 42");
+        dataverse.setAffiliation("42 Inc.");
+        dataverse.setDescription("Description for Dataverse 42.");
+        dataverse.setDataverseType(Dataverse.DataverseType.UNCATEGORIZED);
+        List<DataverseContact> dataverseContacts = new ArrayList<>();
+        dataverseContacts.add(new DataverseContact(dataverse, "dv42@mailinator.com"));
+        dataverse.setDataverseContacts(dataverseContacts);
+        JsonObjectBuilder job = JsonPrinter.json(dataverse);
+        JsonObject jsonObject = job.build();
+        assertNotNull(jsonObject);
+        System.out.println("json: " + JsonUtil.prettyPrint(jsonObject.toString()));
+        assertEquals(42, jsonObject.getInt("id"));
+        assertEquals("dv42", jsonObject.getString("alias"));
+        assertEquals("Dataverse 42", jsonObject.getString("name"));
+        assertEquals("42 Inc.", jsonObject.getString("affiliation"));
+        assertEquals(0, jsonObject.getJsonArray("dataverseContacts").getJsonObject(0).getInt("displayOrder"));
+        assertEquals("dv42@mailinator.com", jsonObject.getJsonArray("dataverseContacts").getJsonObject(0).getString("contactEmail"));
+        assertEquals(false, jsonObject.getBoolean("permissionRoot"));
+        assertEquals("Description for Dataverse 42.", jsonObject.getString("description"));
+        assertEquals("UNCATEGORIZED", jsonObject.getString("dataverseType"));
     }
 
     DatasetField constructPrimitive(String datasetFieldTypeName, String value) {

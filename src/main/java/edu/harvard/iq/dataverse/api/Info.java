@@ -37,13 +37,19 @@ public class Info extends AbstractApiBean {
         String version = comps[0].trim();
         JsonValue build = comps.length > 1 ? Json.createArrayBuilder().add(comps[1].trim()).build().get(0) : JsonValue.NULL;
         
-        return allowCors(response( req -> ok( Json.createObjectBuilder().add("version", version)
-                                                              .add("build", build))));
+        return response( req -> ok( Json.createObjectBuilder().add("version", version)
+                                                              .add("build", build)));
     }
     
     @GET
     @Path("server")
     public Response getServer() {
         return response( req -> ok(systemConfig.getDataverseServer()));
+    }
+    
+    @GET
+    @Path("apiTermsOfUse")
+    public Response getTermsOfUse() {
+        return response( req -> ok(systemConfig.getApiTermsOfUse()));
     }
 }

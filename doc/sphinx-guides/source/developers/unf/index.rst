@@ -20,17 +20,14 @@ computed. The signature is thus independent of the storage
 format. E.g., the same data object stored in, say, SPSS and Stata,
 will have the same UNF.
 
-Early versions of Dataverse were using the first released
+Early versions of the Dataverse Software were using the first released
 implementation of the UNF algorithm (v.3, implemented in R).  Starting
-with Dataverse 2.0 and throughout the 3.* lifecycle, UNF v.5
-(implemented in Java) was used. Dataverse 4.0 uses the latest release,
+with Dataverse Software 2.0 and throughout the 3.* lifecycle, UNF v.5
+(implemented in Java) was used. Dataverse Software 4.0 uses the latest release,
 UNF v.6. Two parallel implementation, in R and Java, will be
 available, for cross-validation.
 
-Learn more: Micah Altman, Jeff Gill and Michael McDonald, 2003,
-`Numerical Issues in Statistical Computing for the Social Scientist
-<http://www.wiley.com/WileyCDA/WileyTitle/productCd-0471236330.html>`_,
-New York: John Wiley.
+Learn more: Micah Altman and Gary King. 2007. “A Proposed Standard for the Scholarly Citation of Quantitative Data.” D-Lib Magazine, 13. Publisher’s Version Copy at http://j.mp/2ovSzoT
 
 **Contents:**
 
@@ -43,4 +40,4 @@ New York: John Wiley.
 
 ----
 
-Previous: :doc:`/developers/tools` | Next: :doc:`/developers/geospatial`
+Previous: :doc:`/developers/tools` | Next: :doc:`/developers/remote-users`

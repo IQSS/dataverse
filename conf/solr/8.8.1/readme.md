@@ -1,0 +1,1 @@
+Please see the dev guide for what to do with Solr config files.

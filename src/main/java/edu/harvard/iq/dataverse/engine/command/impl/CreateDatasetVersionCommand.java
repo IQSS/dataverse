@@ -1,32 +1,25 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.authorization.Permission;
-import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
-import javax.validation.ConstraintViolation;
 
 /**
  *
  * @author michael
  */
 @RequiredPermissions( Permission.AddDataset )
-public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion> {
+public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetVersion> {
     
     private static final Logger logger = Logger.getLogger(CreateDatasetVersionCommand.class.getName());
     
@@ -43,36 +36,14 @@ public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
     public DatasetVersion execute(CommandContext ctxt) throws CommandException {
         DatasetVersion latest = dataset.getLatestVersion();
         if ( latest.isWorkingCopy() ) {
-            // In the case of ImportType.MIGRATION, it's possible that 
-            // the newVersion will be released (ie versions are not migrated in the order that 
-            // they were created in the old system), so check the newVersion state 
-            // before throwing an Exception
+            // A dataset can only have a single draft, which has to be the latest.
+            // This is imposed here.
             if (newVersion.getVersionState().equals(VersionState.DRAFT)){
                 throw new IllegalCommandException("Latest version is already a draft. Cannot add another draft", this);
             }
         }
-        newVersion.setDataset(dataset);
-        newVersion.setDatasetFields(newVersion.initDatasetFields());
-     
-        Set<ConstraintViolation> constraintViolations = newVersion.validate();
-        if (!constraintViolations.isEmpty()) {
-            String validationFailedString = "Validation failed:";
-            for (ConstraintViolation constraintViolation : constraintViolations) {
-                validationFailedString += " " + constraintViolation.getMessage();
-            }
-            throw new IllegalCommandException(validationFailedString, this);
-        }
         
-        Iterator<DatasetField> dsfIt = newVersion.getDatasetFields().iterator();
-        while (dsfIt.hasNext()) {
-            if (dsfIt.next().removeBlankDatasetFieldValues()) {
-                dsfIt.remove();
-            }
-        }
-        Iterator<DatasetField> dsfItSort = newVersion.getDatasetFields().iterator();
-        while (dsfItSort.hasNext()) {
-            dsfItSort.next().setValueDisplayOrder();
-        }
+        prepareDatasetAndVersion();
         
         List<FileMetadata> newVersionMetadatum = new ArrayList<>(latest.getFileMetadatas().size());
         for ( FileMetadata fmd : latest.getFileMetadatas() ) {
@@ -82,22 +53,34 @@ public class CreateDatasetVersionCommand extends AbstractCommand<DatasetVersion>
         }
         newVersion.setFileMetadatas(newVersionMetadatum);
         
+        // TODO make async
+        // ctxt.index().indexDataset(dataset);
+        return ctxt.datasets().storeVersion(newVersion);
         
-        Timestamp now = new Timestamp(new Date().getTime());
-        newVersion.setCreateTime(now);
-        newVersion.setLastUpdateTime(now);
-        dataset.setModificationTime(now);
+    }
+    
+    /**
+     * Updates the states of the dataset and the new dataset version, such that
+     * the new version becomes the latest version of the dataset. Also initializes
+     * the internal fields of the dataset version.
+     * 
+     * @throws CommandException 
+     */
+    public void prepareDatasetAndVersion() throws CommandException {
         newVersion.setDataset(dataset);
+        newVersion.setDatasetFields(newVersion.initDatasetFields());
+        newVersion.setCreateTime(getTimestamp());
+        newVersion.setLastUpdateTime(getTimestamp());
+        
+        tidyUpFields(newVersion);
+        validateOrDie(newVersion, false);
+        
         final List<DatasetVersion> currentVersions = dataset.getVersions();
         ArrayList<DatasetVersion> dsvs = new ArrayList<>(currentVersions.size());
         dsvs.addAll(currentVersions);
         dsvs.add(0, newVersion);
         dataset.setVersions( dsvs );
-        
-        // TODO make async
-        // ctxt.index().indexDataset(dataset);
-        return ctxt.datasets().storeVersion(newVersion);
-        
+        dataset.setModificationTime(getTimestamp());
     }
     
 }

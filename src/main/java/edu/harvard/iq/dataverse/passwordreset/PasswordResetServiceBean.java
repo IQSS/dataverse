@@ -1,10 +1,16 @@
 package edu.harvard.iq.dataverse.passwordreset;
 
 import edu.harvard.iq.dataverse.MailServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.PasswordEncryption;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+
+import java.text.MessageFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,6 +22,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 
 @Stateless
 @Named
@@ -29,20 +36,41 @@ public class PasswordResetServiceBean {
     @EJB
     MailServiceBean mailService;
 
+    @EJB
+    PasswordValidatorServiceBean passwordValidatorService;
+    
+    @EJB
+    AuthenticationServiceBean authService;
+
+    @EJB
+    SystemConfig systemConfig;
+
     @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    protected EntityManager em;
 
     /**
      * Initiate the password reset process.
      *
      * @param emailAddress
-     * @return {@link PasswordResetInitResponse}
+     * @return {@link PasswordResetInitResponse} with empty PasswordResetData if
+     * the reset won't continue (no user, deactivated user).
      * @throws edu.harvard.iq.dataverse.passwordreset.PasswordResetException
      */
     // inspired by Troy Hunt: Everything you ever wanted to know about building a secure password reset feature - http://www.troyhunt.com/2012/05/everything-you-ever-wanted-to-know.html
     public PasswordResetInitResponse requestReset(String emailAddress) throws PasswordResetException {
         deleteAllExpiredTokens();
-        BuiltinUser user = dataverseUserService.findByEmail(emailAddress);
+        AuthenticatedUser authUser = authService.getAuthenticatedUserByEmail(emailAddress);        
+        // This null check is for the NPE reported in https://github.com/IQSS/dataverse/issues/5462
+        if (authUser == null) {
+            logger.info("Cannot find a user based on " + emailAddress + ". Cannot reset password.");
+            return new PasswordResetInitResponse(false);
+        }
+        if (authUser.isDeactivated()) {
+            logger.info("Cannot reset password for " + emailAddress + " because account is deactivated.");
+            return new PasswordResetInitResponse(false);
+        }
+        BuiltinUser user = dataverseUserService.findByUserName(authUser.getUserIdentifier());
+
         if (user != null) {
             return requestPasswordReset( user, true, PasswordResetData.Reason.FORGOT_PASSWORD );
         } else {
@@ -51,6 +79,8 @@ public class PasswordResetServiceBean {
     }
     
     public PasswordResetInitResponse requestPasswordReset( BuiltinUser aUser, boolean sendEmail, PasswordResetData.Reason reason ) throws PasswordResetException {
+        AuthenticatedUser authUser = authService.getAuthenticatedUser(aUser.getUserName());
+        
         // delete old tokens for the user
         List<PasswordResetData> oldTokens = findPasswordResetDataByDataverseUser(aUser);
         for (PasswordResetData oldToken : oldTokens) {
@@ -64,32 +94,29 @@ public class PasswordResetServiceBean {
             em.persist(passwordResetData);
             PasswordResetInitResponse passwordResetInitResponse = new PasswordResetInitResponse(true, passwordResetData);
             if ( sendEmail ) {
-                sendPasswordResetEmail(aUser, passwordResetInitResponse.getResetUrl());
+                sendPasswordResetEmail(aUser, passwordResetInitResponse.getResetUrl(systemConfig.getDataverseSiteUrl()));
             }
 
             return passwordResetInitResponse;
             
         } catch (Exception ex) {
-            String msg = "Unable to save token for " + aUser.getEmail();
+            String msg = "Unable to save token for " + authUser.getEmail();
             throw new PasswordResetException(msg, ex);
         }
         
     }
 
     private void sendPasswordResetEmail(BuiltinUser aUser, String passwordResetUrl) throws PasswordResetException {
-        String messageBody = "Hi " + aUser.getDisplayName() + ",\n\n"
-                + "Someone, hopefully you, requested a password reset for " + aUser.getUserName() + ".\n\n"
-                + "Please click the link below to reset your Dataverse account password:\n\n"
-                + passwordResetUrl + "\n\n"
-                + "The link above will only work for the next " + SystemConfig.getMinutesUntilPasswordResetTokenExpires() + " minutes.\n\n"
-                /**
-                 * @todo It would be a nice touch to show the IP from
-                 * which the password reset originated.
-                 */
-                + "Please contact us if you did not request this password reset or need further help.\n\n";
+        AuthenticatedUser authUser = authService.getAuthenticatedUser(aUser.getUserName());
+
+        String pattern = BundleUtil.getStringFromBundle("notification.email.passwordReset");
+
+        String[] paramArray = {authUser.getName(), aUser.getUserName() ,passwordResetUrl,  SystemConfig.getMinutesUntilPasswordResetTokenExpires()+""  };
+        String messageBody = MessageFormat.format(pattern, paramArray);
+
         try {
-            String toAddress = aUser.getEmail();
-            String subject = "Dataverse Password Reset Requested";
+            String toAddress = authUser.getEmail();
+            String subject = BundleUtil.getStringFromBundle("notification.email.passwordReset.subject");
             mailService.sendSystemEmail(toAddress, subject, messageBody);
         } catch (Exception ex) {
             /**
@@ -99,7 +126,7 @@ public class PasswordResetServiceBean {
              */
             throw new PasswordResetException("Problem sending password reset email possibily due to mail server not being configured.");
         }
-        logger.log(Level.INFO, "attempted to send mail to {0}", aUser.getEmail());
+        logger.log(Level.INFO, "attempted to send mail to {0}", authUser.getEmail());
     }
     
     /**
@@ -169,6 +196,12 @@ public class PasswordResetServiceBean {
         return numDeleted;
     }
 
+    public void deleteResetDataByDataverseUser(BuiltinUser user) {
+        TypedQuery<PasswordResetData> typedQuery = em.createNamedQuery("PasswordResetData.deleteByUser", PasswordResetData.class);
+        typedQuery.setParameter("user", user);
+        int numRowsAffected = typedQuery.executeUpdate();
+    }
+
     public PasswordChangeAttemptResponse attemptPasswordReset(BuiltinUser user, String newPassword, String token) {
 
         final String messageSummarySuccess = "Password Reset Successfully";
@@ -193,35 +226,14 @@ public class PasswordResetServiceBean {
             logger.info("No token provided... won't be able to delete it. Let the user change the password though.");
         }
 
-        /**
-         * @todo move these rules deeper into the system
-         */
-        int minPasswordLength = 6;
-        boolean forceNumber = true;
-        boolean forceSpecialChar = false;
-        boolean forceCapitalLetter = false;
-        int maxPasswordLength = 255;
-        /**
-         *
-         * @todo move the business rules for password complexity (once we've
-         * defined them in https://github.com/IQSS/dataverse/issues/694 ) deeper
-         * into the system and have all calls to
-         * DataverseUser.setEncryptedPassword call into the password complexity
-         * validataion method.
-         *
-         * @todo maybe look into why with the combination of minimum 8
-         * characters, max 255 characters, all other rules disabled that the
-         * password "12345678" is not considered valid.
-         */
-        PasswordValidator validator = PasswordValidator.buildValidator(forceSpecialChar, forceCapitalLetter, forceNumber, minPasswordLength, maxPasswordLength);
-        boolean passwordIsComplexEnough = validator.validatePassword(newPassword);
-        if (!passwordIsComplexEnough) {
-            messageSummary = messageSummaryFail;
-            messageDetail = "Password is not complex enough. The password must have at least one letter, one number and be at least " + minPasswordLength + " characters in length.";
+
+        List<String> errors = passwordValidatorService.validate(newPassword);
+        if (!errors.isEmpty()) {
+            messageSummary = PasswordValidatorServiceBean.parseMessages(errors);
             logger.info(messageDetail);
-            return new PasswordChangeAttemptResponse(false, messageSummary, messageDetail);
+            return new PasswordChangeAttemptResponse(false, messageSummary, messageSummaryFail);
         }
-        
+
         String newHashedPass = PasswordEncryption.get().encrypt(newPassword);
         int latestVersionNumber = PasswordEncryption.getLatestVersionNumber();
         user.updateEncryptedPassword(newHashedPass, latestVersionNumber);
@@ -235,10 +247,12 @@ public class PasswordResetServiceBean {
                 // suboptimal but when it expires it should be deleted
                 logger.info("token " + token + " for user id " + user.getId() + " was not deleted");
             }
-            String toAddress = user.getEmail();
+            AuthenticatedUser authUser = authService.getAuthenticatedUser(user.getUserName());
+            
+            String toAddress = authUser.getEmail();
             String subject = "Dataverse Password Reset Successfully Changed";
 
-            String messageBody = "Hi " + user.getDisplayName() + ",\n\n"
+            String messageBody = "Hi " + authUser.getName() + ",\n\n"
                     + "Your Dataverse account password was successfully changed.\n\n"
                     + "Please contact us if you did not request this password reset or need further help.\n\n";
             mailService.sendSystemEmail(toAddress, subject, messageBody);

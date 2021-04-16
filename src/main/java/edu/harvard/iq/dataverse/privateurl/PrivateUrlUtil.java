@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -99,6 +100,7 @@ public class PrivateUrlUtil {
     }
 
     /**
+     * @param roleAssignment
      * @return PrivateUrlRedirectData or null.
      *
      * @todo Show the Exception to the user?
@@ -109,7 +111,7 @@ public class PrivateUrlUtil {
         try {
             return new PrivateUrlRedirectData(privateUrlUser, draftDatasetPageToBeRedirectedTo);
         } catch (Exception ex) {
-            logger.info("Exception caught trying to instantiate PrivateUrlRedirectData: " + ex);
+            logger.log(Level.INFO, "Exception caught trying to instantiate PrivateUrlRedirectData: " + ex.getMessage(), ex);
             return null;
         }
     }
@@ -129,14 +131,8 @@ public class PrivateUrlUtil {
         if (draft != null) {
             Dataset dataset = draft.getDataset();
             if (dataset != null) {
-                String persistentId = dataset.getGlobalId();
-                /**
-                 * @todo Investigate why dataset.getGlobalId() yields the String
-                 * "null:null/null" when I expect null value. This smells like a
-                 * bug.
-                 */
-                if (!"null:null/null".equals(persistentId)) {
-                    String relativeUrl = "/dataset.xhtml?persistentId=" + persistentId + "&version=DRAFT";
+                if ( dataset.getGlobalId().isComplete() ) {
+                    String relativeUrl = "/dataset.xhtml?persistentId=" + dataset.getGlobalId().toString() + "&version=DRAFT";
                     return relativeUrl;
                 }
             }

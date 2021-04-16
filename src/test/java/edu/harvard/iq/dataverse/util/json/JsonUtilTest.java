@@ -7,7 +7,9 @@ public class JsonUtilTest {
 
     @Test
     public void testPrettyPrint() {
-        assertEquals(null, JsonUtil.prettyPrint(null));
+        JsonUtil jsonUtil = new JsonUtil();
+        String nullString = null;
+        assertEquals(null, JsonUtil.prettyPrint(nullString));
         assertEquals("", JsonUtil.prettyPrint(""));
         assertEquals("junk", JsonUtil.prettyPrint("junk"));
         assertEquals("{}", JsonUtil.prettyPrint("{}"));

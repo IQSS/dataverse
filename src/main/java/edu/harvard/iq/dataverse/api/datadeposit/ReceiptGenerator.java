@@ -13,7 +13,7 @@ public class ReceiptGenerator {
     DepositReceipt createDatasetReceipt(String baseUrl, Dataset dataset) {
         logger.fine("baseUrl was: " + baseUrl);
         DepositReceipt depositReceipt = new DepositReceipt();
-        String globalId = dataset.getGlobalId();
+        String globalId = dataset.getGlobalIdString();
         String editIri = baseUrl + "/edit/study/" + globalId;
         depositReceipt.setEditIRI(new IRI(editIri));
         /**

@@ -2,9 +2,12 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetRelPublication;
+import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
+import edu.harvard.iq.dataverse.util.DateUtil;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.util.ArrayList;
@@ -107,6 +110,11 @@ public class SolrSearchResult {
     private String harvestingDescription = null;
     private List<String> fileCategories = null;
     private List<String> tabularDataTags = null;
+    
+    private String identifierOfDataverse = null;
+    private String nameOfDataverse = null;
+    
+    private String filePersistentId = null;
     
     public String getDvTree() {
         return dvTree;
@@ -411,7 +419,7 @@ public class SolrSearchResult {
                 .add("is_unpublished_state", this.isUnpublishedState())
                 .add("is_published", this.isPublishedState())
                 .add("is_deaccesioned", this.isDeaccessionedState())
-                .add("date_to_display_on_card", this.dateToDisplayOnCard);
+                .add("date_to_display_on_card", getDateToDisplayOnCard());
 
         // Add is_deaccessioned attribute, even though MyData currently screens any deaccessioned info out
         //
@@ -431,7 +439,7 @@ public class SolrSearchResult {
                         .add("parentName", this.getParent().get("name"));
             }
         }
-
+        
         return myDataJson;
     } //getJsonForMydata
 
@@ -445,8 +453,15 @@ public class SolrSearchResult {
 
         String identifierLabel = null;
         String datasetCitation = null;
+        String datasetName = null;
+        String datasetId = null;
+        String datasetPersistentId = null;  
+        String filePersistentId = null;
         String preferredUrl = null;
         String apiUrl = null;
+        String publisherName = null;
+        
+
         if (this.type.equals(SearchConstants.DATAVERSES)) {
             displayName = this.name;
             identifierLabel = "identifier";
@@ -455,6 +470,8 @@ public class SolrSearchResult {
             displayName = this.title;
             identifierLabel = "global_id";
             preferredUrl = getPersistentUrl();
+            publisherName = this.parent.get("name");
+           // if
             /**
              * @todo Should we show the name of the parent dataverse?
              */
@@ -467,6 +484,9 @@ public class SolrSearchResult {
              * title of the dataset it belongs to.
              */
             datasetCitation = parent.get("citation");
+            datasetName = parent.get("name");
+            datasetId = parent.get("id");
+            datasetPersistentId = parent.get(SolrSearchResult.PARENT_IDENTIFIER);
         }
 
         //displayName = null; // testing NullSafeJsonBuilder
@@ -517,9 +537,16 @@ public class SolrSearchResult {
                 .add("md5", getFileMd5())
                 .add("checksum", JsonPrinter.getChecksumTypeAndValue(getFileChecksumType(), getFileChecksumValue()))
                 .add("unf", getUnf())
+                .add("file_persistent_id", this.filePersistentId)
+                .add("dataset_name", datasetName)
+                .add("dataset_id", datasetId)
+                .add("publisher", publisherName)
+                .add("dataset_persistent_id", datasetPersistentId)
                 .add("dataset_citation", datasetCitation)
                 .add("deaccession_reason", this.deaccessionReason)
                 .add("citationHtml", this.citationHtml)
+                .add("identifier_of_dataverse", this.identifierOfDataverse)
+                .add("name_of_dataverse", this.nameOfDataverse)
                 .add("citation", this.citation);
         // Now that nullSafeJsonBuilder has been instatiated, check for null before adding to it!
         if (showRelevance) {
@@ -531,6 +558,98 @@ public class SolrSearchResult {
                 nullSafeJsonBuilder.add("entity_id", this.entityId);
             }
         }
+        
+        if (this.entity == null) {
+
+        } else {
+            if (this.entity.isInstanceofDataset()) {
+                nullSafeJsonBuilder.add("storageIdentifier", this.entity.getStorageIdentifier());
+                Dataset ds = (Dataset) this.entity;
+                DatasetVersion dv = ds.getVersionFromId(this.datasetVersionId);
+
+                if (!dv.getKeywords().isEmpty()) {
+                    JsonArrayBuilder keyWords = Json.createArrayBuilder();
+                    for (String keyword : dv.getKeywords()) {
+                        keyWords.add(keyword);
+                    }
+                    nullSafeJsonBuilder.add("keywords", keyWords);
+                }
+
+                JsonArrayBuilder subjects = Json.createArrayBuilder();
+                for (String subject : dv.getDatasetSubjects()) {
+                    subjects.add(subject);
+                }
+                nullSafeJsonBuilder.add("subjects", subjects);
+                nullSafeJsonBuilder.add("fileCount", dv.getFileMetadatas().size());
+                nullSafeJsonBuilder.add("versionId", dv.getId());
+                nullSafeJsonBuilder.add("versionState", dv.getVersionState().toString());
+                if (this.isPublishedState()) {
+                    nullSafeJsonBuilder.add("majorVersion", dv.getVersionNumber());
+                    nullSafeJsonBuilder.add("minorVersion", dv.getMinorVersionNumber());
+                }
+
+                nullSafeJsonBuilder.add("createdAt", ds.getCreateDate());
+                nullSafeJsonBuilder.add("updatedAt", ds.getModificationTime());
+
+                if (!dv.getDatasetContacts().isEmpty()) {
+                    JsonArrayBuilder contacts = Json.createArrayBuilder();
+                    NullSafeJsonBuilder nullSafeJsonBuilderInner = jsonObjectBuilder();
+                    for (String contact[] : dv.getDatasetContacts(false)) {
+                        nullSafeJsonBuilderInner.add("name", contact[0]);
+                        nullSafeJsonBuilderInner.add("affiliation", contact[1]);
+                        contacts.add(nullSafeJsonBuilderInner);
+                    }
+                    nullSafeJsonBuilder.add("contacts", contacts);
+                }
+                if (!dv.getRelatedPublications().isEmpty()) {
+                    JsonArrayBuilder relPub = Json.createArrayBuilder();
+                    NullSafeJsonBuilder inner = jsonObjectBuilder();
+                    for (DatasetRelPublication dsRelPub : dv.getRelatedPublications()) {
+                        inner.add("title", dsRelPub.getTitle());
+                        inner.add("citation", dsRelPub.getText());
+                        inner.add("url", dsRelPub.getUrl());
+                        relPub.add(inner);
+                    }
+                    nullSafeJsonBuilder.add("publications", relPub);
+                }
+
+                if (!dv.getDatasetProducers().isEmpty()) {
+                    JsonArrayBuilder producers = Json.createArrayBuilder();
+                    for (String[] producer : dv.getDatasetProducers()) {
+                        producers.add(producer[0]);
+                    }
+                    nullSafeJsonBuilder.add("producers", producers);
+                }
+                if (!dv.getRelatedMaterial().isEmpty()) {
+                    JsonArrayBuilder relatedMaterials = Json.createArrayBuilder();
+                    for (String relatedMaterial : dv.getRelatedMaterial()) {
+                        relatedMaterials.add(relatedMaterial);
+                    }
+                    nullSafeJsonBuilder.add("relatedMaterial", relatedMaterials);
+                }
+
+                if (!dv.getGeographicCoverage().isEmpty()) {
+                    JsonArrayBuilder geoCov = Json.createArrayBuilder();
+                    NullSafeJsonBuilder inner = jsonObjectBuilder();
+                    for (String ind[] : dv.getGeographicCoverage()) {
+                        inner.add("country", ind[0]);
+                        inner.add("state", ind[1]);
+                        inner.add("city", ind[2]);
+                        inner.add("other", ind[3]);
+                        geoCov.add(inner);
+                    }
+                    nullSafeJsonBuilder.add("geographicCoverage", geoCov);
+                }
+                if (!dv.getDataSource().isEmpty()) {
+                    JsonArrayBuilder dataSources = Json.createArrayBuilder();
+                    for (String dsource : dv.getDataSource()) {
+                        dataSources.add(dsource);
+                    }
+                    nullSafeJsonBuilder.add("dataSources", dataSources);
+                }
+            }
+        }
+
         if (showApiUrls) {
             /**
              * @todo We should probably have a metadata_url or api_url concept
@@ -880,11 +999,7 @@ public class SolrSearchResult {
     }
 
     public String getDateToDisplayOnCard() {
-        return dateToDisplayOnCard;
-    }
-
-    public void setDateToDisplayOnCard(String dateToDisplayOnCard) {
-        this.dateToDisplayOnCard = dateToDisplayOnCard;
+        return DateUtil.formatDate(this.releaseOrCreateDate);
     }
 
     public long getDatasetVersionId() {
@@ -948,7 +1063,14 @@ public class SolrSearchResult {
         return null;
         //if (entity)
     }
+    
+    public String getFilePersistentId() {
+        return filePersistentId;
+    }
 
+    public void setFilePersistentId(String pid) {
+        filePersistentId = pid;
+    }
     public String getFileUrl() {
         // Nothing special needs to be done for harvested file URLs: 
         // simply directing these to the local dataset.xhtml for this dataset
@@ -965,6 +1087,9 @@ public class SolrSearchResult {
             }
             return null;
         }*/
+        if (entity.getIdentifier() != null){
+            return "/file.xhtml?persistentId=" + entity.getGlobalIdString();
+        }
         
         return "/file.xhtml?fileId=" + entity.getId() + "&datasetVersionId=" + datasetVersionId;
         
@@ -990,7 +1115,11 @@ public class SolrSearchResult {
         String parentDatasetGlobalId = parent.get(PARENT_IDENTIFIER);        
 
         if (parentDatasetGlobalId != null) {
-            return "/dataset.xhtml?persistentId=" + parentDatasetGlobalId;
+            if (isDraftState()) {
+                return "/dataset.xhtml?persistentId=" + parentDatasetGlobalId + "&version=DRAFT";
+            } else {
+                return "/dataset.xhtml?persistentId=" + parentDatasetGlobalId;
+            }
         } else {
             return "/dataset.xhtml?id=" + parent.get(SearchFields.ID) + "&versionId=" + datasetVersionId;
         }
@@ -1061,5 +1190,19 @@ public class SolrSearchResult {
         this.userRole = userRole;
     }
 
-
+    public String getIdentifierOfDataverse() {
+        return identifierOfDataverse;
+    }
+    
+    public void setIdentifierOfDataverse(String id) {
+        this.identifierOfDataverse = id;
+    }
+    
+    public String getNameOfDataverse() {
+        return nameOfDataverse;
+    }
+    
+    public void setNameOfDataverse(String id) {
+        this.nameOfDataverse = id;
+    }
 }

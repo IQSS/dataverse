@@ -16,7 +16,7 @@ public class CustomQuestionValue implements Serializable {
     private Long id;
     
     @Column( nullable = false )
-    @NotBlank(message = "Please enter a response.")
+    @NotBlank(message = "{custom.response}")
     private String valueString;
     
     private int displayOrder;

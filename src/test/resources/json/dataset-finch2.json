@@ -1,0 +1,368 @@
+{
+  "datasetVersion": {
+    "metadataBlocks": {
+      "citation": {
+        "fields": [
+          {
+            "value": "Darwin's Finches",
+            "typeClass": "primitive",
+            "multiple": false,
+            "typeName": "title"
+          },
+          {
+            "value": [
+              {
+                "authorName": {
+                  "value": "Finch, Fiona",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "authorName"
+                },
+                "authorIdentifierScheme": {
+                  "typeName": "authorIdentifierScheme",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "ORCID"
+                },
+                "authorIdentifier": {
+                  "typeName": "authorIdentifier",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "0000-0002-1825-0097"
+                },
+                "authorAffiliation": {
+                  "value": "Birds Inc.",
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "authorAffiliation"
+                }
+              }
+            ],
+            "typeClass": "compound",
+            "multiple": true,
+            "typeName": "author"
+          },
+          {
+            "value": [
+              {
+                "datasetContactEmail": {
+                  "typeClass": "primitive",
+                  "multiple": false,
+                  "typeName": "datasetContactEmail",
+                  "value": "finch@mailinator.com"
+                }
+              }
+            ],
+            "typeClass": "compound",
+            "multiple": true,
+            "typeName": "datasetContact"
+          },
+          {
+            "value": [
+              {
+                "dsDescriptionValue": {
+                  "value": "Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "typeName": "dsDescriptionValue"
+                }
+              },
+              {
+                "dsDescriptionValue": {
+                  "value": "Bird is the word.",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "typeName": "dsDescriptionValue"
+                }
+              }
+            ],
+            "typeClass": "compound",
+            "multiple": true,
+            "typeName": "dsDescription"
+          },
+          {
+            "value": [
+              "Medicine, Health and Life Sciences"
+            ],
+            "typeClass": "controlledVocabulary",
+            "multiple": true,
+            "typeName": "subject"
+          },
+          {
+            "typeName": "keyword",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "keywordValue": {
+                  "typeName": "keywordValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "KeywordTerm1"
+                },
+                "keywordVocabulary": {
+                  "typeName": "keywordVocabulary",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "KeywordVocabulary1"
+                },
+                "keywordVocabularyURI": {
+                  "typeName": "keywordVocabularyURI",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "http://KeywordVocabularyURL1.org"
+                }
+              },
+              {
+                "keywordValue": {
+                  "typeName": "keywordValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "KeywordTerm2"
+                },
+                "keywordVocabulary": {
+                  "typeName": "keywordVocabulary",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "KeywordVocabulary2"
+                },
+                "keywordVocabularyURI": {
+                  "typeName": "keywordVocabularyURI",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "http://KeywordVocabularyURL2.org"
+                }
+              },
+              {
+                "keywordValue": {
+                  "typeName": "keywordValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "keywords, with, commas"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "topicClassification",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "topicClassValue": {
+                  "typeName": "topicClassValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "tcTerm1"
+                },
+                "topicClassVocab": {
+                  "typeName": "topicClassVocab",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "tcVocab1"
+                },
+                "topicClassVocabURI": {
+                  "typeName": "topicClassVocabURI",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "http://example.com/tcTerm1"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "contributor",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "contributorType": {
+                  "typeName": "contributorType",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "Data Collector"
+                },
+                "contributorName": {
+                  "typeName": "contributorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Holmes, Sherlock"
+                }
+              },
+              {
+                "contributorType": {
+                  "typeName": "contributorType",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "Funder"
+                },
+                "contributorName": {
+                  "typeName": "contributorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "National Science Foundation"
+                }
+                },
+                {
+                "contributorType": {
+                  "typeName": "contributorType",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "Data Collector"
+                },
+                "contributorName": {
+                  "typeName": "contributorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Watson, John"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "grantNumber",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "grantNumberAgency": {
+                  "typeName": "grantNumberAgency",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "National Institutes of Health"
+                },
+                "grantNumberValue": {
+                  "typeName": "grantNumberValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "1245"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "publication",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "publicationCitation": {
+                  "typeName": "publicationCitation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Finch, Fiona 2018. \"The Finches.\" American Ornithological Journal 60 (4): 990-1005."
+                },
+                "publicationIDType": {
+                  "typeName": "publicationIDType",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "doi"
+                },
+                "publicationIDNumber": {
+                  "typeName": "publicationIDNumber",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "10.5072/FK2/RV16HK"
+                },
+                "publicationURL": {
+                  "typeName": "publicationURL",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "https://doi.org/10.5072/FK2/RV16HK"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "timePeriodCovered",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "timePeriodCoveredStart": {
+                  "typeName": "timePeriodCoveredStart",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "2002"
+                },
+                "timePeriodCoveredEnd": {
+                  "typeName": "timePeriodCoveredEnd",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "2005"
+                }
+              },
+              {
+                "timePeriodCoveredStart": {
+                  "typeName": "timePeriodCoveredStart",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "2001-10-01"
+                },
+                "timePeriodCoveredEnd": {
+                  "typeName": "timePeriodCoveredEnd",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "2015-11-15"
+                }
+              }
+            ]
+          }
+        ],
+        "displayName": "Citation Metadata"
+      },
+      "geospatial": {
+        "displayName": "Geospatial Metadata",
+        "fields": [
+          {
+            "typeName": "geographicCoverage",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "city": {
+                  "typeName": "city",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Columbus"
+                },
+                "state": {
+                  "typeName": "state",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Ohio"
+                },
+                "country": {
+                  "typeName": "country",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "United States"
+                },
+                "otherGeographicCoverage": {
+                  "typeName": "otherGeographicCoverage",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "North America"
+                }
+              },
+              {
+                "country": {
+                  "typeName": "country",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "United States"
+                },
+                "state": {
+                  "typeName": "state",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Wisconsin"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

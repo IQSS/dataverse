@@ -1,0 +1,25 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+
+        <p class="help-block">
+            <h:outputText styleClass="text-left" value=" #{configureFragmentBean.configurePopupTool.getDescriptionLang()}&lt;br/&gt;#{configureFragmentBean.getMessageApi()}" escape="false"/>
+        </p>
+        
+        <div class="button-block">
+            <p:commandButton styleClass="btn btn-default" value="#{bundle['continue']}"
+                action="#{configureFragmentBean.configureExternalAlert()}" 
+                onclick="PF('configureToolPopup').hide();"
+                update=":messagePanel">
+            </p:commandButton>
+            <button class="btn btn-link" onclick="PF('configureToolPopup').hide();PF('blockDatasetForm').hide();" type="button">
+                #{bundle.cancel}
+            </button>
+        </div>
+</ui:composition>

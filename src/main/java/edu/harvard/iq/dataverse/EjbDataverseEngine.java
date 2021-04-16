@@ -6,7 +6,10 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
@@ -14,29 +17,40 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
+import edu.harvard.iq.dataverse.search.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
-
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
+import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Resource;
+import javax.ejb.EJBContext;
 import javax.ejb.EJBException;
 import javax.ejb.TransactionAttribute;
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
+import static javax.ejb.TransactionAttributeType.SUPPORTS;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+
+import org.apache.log4j.lf5.LogLevel;
 
 /**
  * An EJB capable of executing {@link Command}s in a JEE environment.
@@ -55,9 +69,6 @@ public class EjbDataverseEngine {
     DataverseServiceBean dataverseService;
 
     @EJB
-    DataverseRoleServiceBean roleService;
-
-    @EJB
     DataverseRoleServiceBean rolesService;
 
     @EJB
@@ -65,6 +76,9 @@ public class EjbDataverseEngine {
 
     @EJB
     IndexServiceBean indexService;
+    
+    @EJB
+    IndexBatchServiceBean indexBatchService;
 
     @EJB
     SolrIndexServiceBean solrIndexService;
@@ -104,7 +118,10 @@ public class EjbDataverseEngine {
     
     @EJB
     DOIDataCiteServiceBean doiDataCite;
-    
+
+    @EJB
+    FakePidProviderServiceBean fakePidProvider;
+
     @EJB
     HandlenetServiceBean handleNet;
     
@@ -125,7 +142,10 @@ public class EjbDataverseEngine {
 
     @EJB
     ExplicitGroupServiceBean explicitGroups;
-    
+
+    @EJB
+    GroupServiceBean groups;
+
     @EJB
     RoleAssigneeServiceBean roleAssignees;
     
@@ -145,9 +165,6 @@ public class EjbDataverseEngine {
     DatasetVersionServiceBean datasetVersionService;
 
     @EJB
-    MapLayerMetadataServiceBean mapLayerMetadata;
-
-    @EJB
     DataCaptureModuleServiceBean dataCaptureModule;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
@@ -155,6 +172,22 @@ public class EjbDataverseEngine {
     
     @EJB
     ActionLogServiceBean logSvc;
+    
+    @EJB
+    WorkflowServiceBean workflowService;
+    
+    @EJB
+    FileDownloadServiceBean fileDownloadService;
+    
+    @EJB
+    ConfirmEmailServiceBean confirmEmailService;
+    
+    @EJB
+    EjbDataverseEngineInner innerEngine;
+    
+    
+    @Resource
+    EJBContext ejbCtxt;
 
     private CommandContext ctxt;
     
@@ -162,11 +195,19 @@ public class EjbDataverseEngine {
     public <R> R submitInNewTransaction(Command<R> aCommand) throws CommandException {
         return submit(aCommand);
     }
+    
+    private DvObject getRetType(Object r){
 
+        return (DvObject) r;
+       
+    }
+
+
+    @TransactionAttribute(SUPPORTS)
     public <R> R submit(Command<R> aCommand) throws CommandException {
         
         final ActionLogRecord logRec = new ActionLogRecord(ActionLogRecord.ActionType.Command, aCommand.getClass().getCanonicalName());
-        
+
         try {
             logRec.setUserIdentifier( aCommand.getRequest().getUser().getIdentifier() );
             
@@ -177,9 +218,23 @@ public class EjbDataverseEngine {
             }
 
             DataverseRequest dvReq = aCommand.getRequest();
-            
+
+            AuthenticatedUser authenticatedUser = dvReq.getAuthenticatedUser();
+            if (authenticatedUser != null) {
+                AuthenticatedUser auFreshLookup = authentication.findByID(authenticatedUser.getId());
+                if (auFreshLookup == null) {
+                    logger.fine("submit method found user no longer exists (was deleted).");
+                    throw new CommandException(BundleUtil.getStringFromBundle("command.exception.user.deleted", Arrays.asList(aCommand.getClass().getSimpleName())), aCommand);
+                } else {
+                    if (auFreshLookup.isDeactivated()) {
+                        logger.fine("submit method found user is deactivated.");
+                        throw new CommandException(BundleUtil.getStringFromBundle("command.exception.user.deactivated", Arrays.asList(aCommand.getClass().getSimpleName())), aCommand);
+                    }
+                }
+            }
+
             Map<String, DvObject> affectedDvObjects = aCommand.getAffectedDvObjects();
-            logRec.setInfo( describe(affectedDvObjects) );
+            logRec.setInfo(aCommand.describe());
             for (Map.Entry<String, ? extends Set<Permission>> pair : requiredMap.entrySet()) {
                 String dvName = pair.getKey();
                 if (!affectedDvObjects.containsKey(dvName)) {
@@ -208,16 +263,35 @@ public class EjbDataverseEngine {
                 }
             }
             try {
-                return aCommand.execute(getContext());
+                if (getContext().getCommandsCalled() == null){
+                    getContext().beginCommandSequence();
+                }
+                getContext().addCommand(aCommand);
+                //This list of commands is held by the outermost command's context
+                //to be run on completeCommand method when the outermost command is completed
+                Stack<Command> previouslyCalled = getContext().getCommandsCalled();
+                R r = innerEngine.submit(aCommand, getContext());   
+                if (getContext().getCommandsCalled().empty() && !previouslyCalled.empty()){
+                    for (Command c: previouslyCalled){
+                        getContext().getCommandsCalled().add(c);
+                    }
+                }
+                //This runs the onSuccess Methods for all commands in the stack when the outermost command completes
+                this.completeCommand(aCommand, r, getContext().getCommandsCalled());
+                return r;
                 
             } catch ( EJBException ejbe ) {
-                logRec.setActionResult(ActionLogRecord.Result.InternalError);                
                 throw new CommandException("Command " + aCommand.toString() + " failed: " + ejbe.getMessage(), ejbe.getCausedByException(), aCommand);
-            }
-            
+            } 
+        } catch (CommandException cmdEx) {
+            if (!(cmdEx instanceof PermissionException)) {            
+                logRec.setActionResult(ActionLogRecord.Result.InternalError); 
+            } 
+            logRec.setInfo(logRec.getInfo() + " (" + cmdEx.getMessage() +")");
+            throw cmdEx;
         } catch ( RuntimeException re ) {
             logRec.setActionResult(ActionLogRecord.Result.InternalError);
-            logRec.setInfo( re.getMessage() );   
+            logRec.setInfo(logRec.getInfo() + " (" + re.getMessage() +")");   
             
             Throwable cause = re;          
             while (cause != null) {
@@ -230,7 +304,7 @@ public class EjbDataverseEngine {
                     }
                     logger.log(Level.SEVERE, sb.toString());
                     // set this more detailed info in action log
-                    logRec.setInfo( sb.toString() );
+                    logRec.setInfo(logRec.getInfo() + " (" +  sb.toString() +")");
                 }
                 cause = cause.getCause();
             }           
@@ -238,17 +312,83 @@ public class EjbDataverseEngine {
             throw re;
             
         } finally {
-            if ( logRec.getActionResult() == null ) {
-                logRec.setActionResult( ActionLogRecord.Result.OK );
+            //when we get here we need to wipe out the command list so that
+            //failed commands don't have their onSuccess methods run.
+            getContext().cancelCommandSequence();
+            if (logRec.getActionResult() == null) {
+                logRec.setActionResult(ActionLogRecord.Result.OK);
+            } else {
+                try{
+                     ejbCtxt.setRollbackOnly();
+                } catch (IllegalStateException isEx){
+                    //Not in a transaction nothing to rollback
+                }                  
             }
-            logRec.setEndTime( new java.util.Date() );
+            logRec.setEndTime(new java.util.Date());
             logSvc.log(logRec);
         }
     }
+    
+    protected void completeCommand(Command command, Object r, Stack<Command> called) {
+        
+        if (called.isEmpty()){
+            return;
+        }
+        
+        Command test = called.get(0);
+        if (!test.equals(command)) {
+            //if it's not the first command on the stack it must be an "inner" command
+            //and we don't want to run its onSuccess until all commands have comepleted successfully
+            return;
+        }
+        
+        for (Command commandLoop : called) {
+           commandLoop.onSuccess(ctxt, r);
+        }
+        
+    }
+    
 
     public CommandContext getContext() {
         if (ctxt == null) {
             ctxt = new CommandContext() {
+
+                public Stack<Command> commandsCalled;
+
+                @Override
+                public void addCommand(Command command) {
+
+                    if (logger.isLoggable(Level.FINE) && !commandsCalled.isEmpty()) {
+                        int instance = (int) (100 * Math.random());
+                        try {
+                            logger.fine("Current Command Stack (" + instance + "): ");
+                            commandsCalled.forEach((c) -> {
+                                logger.fine("Command (" + instance + "): " + c.getClass().getSimpleName()
+                                        + "for DvObjects");
+                                for (Map.Entry<String, DvObject> e : ((Map<String, DvObject>) c.getAffectedDvObjects())
+                                        .entrySet()) {
+                                    logger.fine("(" + instance + "): " + e.getKey() + " : " + e.getValue().getId());
+                                }
+                            });
+                            logger.fine("Adding command(" + instance + "): " + command.getClass().getSimpleName()
+                                    + " for DvObjects");
+                            for (Map.Entry<String, DvObject> e : ((Map<String, DvObject>) command
+                                    .getAffectedDvObjects()).entrySet()) {
+                                logger.fine(e.getKey() + " : " + e.getValue().getId());
+                            }
+                        } catch (Exception e) {
+                            logger.fine("Exception logging command stack(" + instance + "): " + e.getMessage());
+                        }
+                    }
+					commandsCalled.push(command);
+                }
+                
+                
+                @Override
+                public Stack<Command> getCommandsCalled(){
+                    return commandsCalled;
+                }
+                
                 
                 @Override
                 public DatasetServiceBean datasets() {
@@ -273,6 +413,11 @@ public class EjbDataverseEngine {
                 @Override
                 public IndexServiceBean index() {
                     return indexService;
+                }
+                
+                @Override
+                public IndexBatchServiceBean indexBatch() {
+                    return indexBatchService;
                 }
 
                 @Override
@@ -344,7 +489,12 @@ public class EjbDataverseEngine {
                 public DOIDataCiteServiceBean doiDataCite() {
                     return doiDataCite;
                 }
-                
+
+                @Override
+                public FakePidProviderServiceBean fakePidProvider() {
+                    return fakePidProvider;
+                }
+
                 @Override
                 public HandlenetServiceBean handleNet() {
                     return handleNet;
@@ -388,6 +538,11 @@ public class EjbDataverseEngine {
                 public ExplicitGroupServiceBean explicitGroups() {
                     return explicitGroups;
                 }
+                
+                @Override
+                public GroupServiceBean groups() {
+                    return groups;
+                }
 
                 @Override
                 public RoleAssigneeServiceBean roleAssignees() {
@@ -418,15 +573,46 @@ public class EjbDataverseEngine {
                 public DatasetVersionServiceBean datasetVersion() {
                     return datasetVersionService;
                 }
-
+                
                 @Override
-                public MapLayerMetadataServiceBean mapLayerMetadata() {
-                    return mapLayerMetadata;
+                public WorkflowServiceBean workflows() {
+                    return workflowService;
                 }
 
                 @Override
                 public DataCaptureModuleServiceBean dataCaptureModule() {
                     return dataCaptureModule;
+                }
+                
+                @Override
+                public FileDownloadServiceBean fileDownload() {
+                    return fileDownloadService;
+                }
+                
+                @Override
+                public ConfirmEmailServiceBean confirmEmail() {
+                    return confirmEmailService;
+                }
+                
+                @Override
+                public ActionLogServiceBean actionLog() {
+                    return logSvc;
+                }
+
+                @Override
+                public void beginCommandSequence() {
+                    this.commandsCalled = new Stack();
+                }
+
+                @Override
+                public boolean completeCommandSequence(Command command) {
+                    this.commandsCalled.clear();
+                    return true;
+                }
+
+                @Override
+                public void cancelCommandSequence() {
+                    this.commandsCalled = new Stack();
                 }
 
             };
@@ -434,16 +620,5 @@ public class EjbDataverseEngine {
 
         return ctxt;
     }
-    
-    
-    private String describe( Map<String, DvObject> dvObjMap ) {
-        StringBuilder sb = new StringBuilder();
-        for ( Map.Entry<String, DvObject> ent : dvObjMap.entrySet() ) {
-            DvObject value = ent.getValue();
-            sb.append(ent.getKey()).append(":");
-            sb.append( (value!=null) ? value.accept(DvObject.NameIdPrinter) : "<null>");
-            sb.append(" ");
-        }
-        return sb.toString();
-    }
+
 }

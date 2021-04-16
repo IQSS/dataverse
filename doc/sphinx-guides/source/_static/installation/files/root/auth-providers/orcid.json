@@ -1,8 +1,0 @@
-{
-    "id":"orcid",
-    "factoryAlias":"oauth2",
-    "title":"ORCID",
-    "subtitle":"",
-    "factoryData":"type: orcid | userEndpoint: https://api.orcid.org/v1.2/{ORCID}/orcid-profile | clientId: FIXME | clientSecret: FIXME",
-    "enabled":true
-}

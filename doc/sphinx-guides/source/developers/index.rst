@@ -12,14 +12,27 @@ Developer Guide
 
    intro
    dev-environment
+   windows
+   tips
+   troubleshooting
    version-control
+   sql-upgrade-scripts
    testing
    documentation
+   dependencies
    debugging
    coding-style
+   configuration
+   deployment
+   containers
    making-releases
    tools
    unf/index
+   make-data-count
+   remote-users
    geospatial
    selinux
    big-data-support
+   aux-file-support
+   s3-direct-upload-api
+   workflows

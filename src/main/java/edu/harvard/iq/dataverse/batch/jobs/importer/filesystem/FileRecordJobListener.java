@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
@@ -37,7 +38,7 @@ import edu.harvard.iq.dataverse.batch.entities.JobExecutionEntity;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 
 import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.listener.ItemReadListener;
@@ -55,6 +56,9 @@ import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.io.IOUtils;
+
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -158,24 +162,28 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         jobParams = jobOperator.getParameters(jobContext.getInstanceId());
         
         // log job info
-        jobLogger.log(Level.INFO, "Job ID = " + jobContext.getExecutionId());
-        jobLogger.log(Level.INFO, "Job Name = " + jobContext.getJobName());
-        jobLogger.log(Level.INFO, "Job Status = " + jobContext.getBatchStatus());
+        jobLogger.log(Level.INFO, "Job ID = {0}", jobContext.getExecutionId());
+        jobLogger.log(Level.INFO, "Job Name = {0}", jobContext.getJobName());
+        jobLogger.log(Level.INFO, "Job Status = {0}", jobContext.getBatchStatus());
         
         jobParams.setProperty("datasetGlobalId", getDatasetGlobalId());
+        
+        if (dataset == null) {
+            getJobLogger().log(Level.SEVERE, "Can't find dataset.");
+            jobContext.setExitStatus("FAILED");
+            throw new IOException("Can't find dataset.");
+        }
+        
+        if (!dataset.isLockedFor(DatasetLock.Reason.DcmUpload)) {
+            getJobLogger().log(Level.SEVERE, "Dataset {0} is not locked for DCM upload. Exiting", dataset.getGlobalId());
+            jobContext.setExitStatus("FAILED");
+            throw new IOException("Dataset " + dataset.getGlobalId() + " is not locked for DCM upload");
+        }
+        
         jobParams.setProperty("userId", getUserId());
         jobParams.setProperty("mode", getMode());
         
         uploadFolder = jobParams.getProperty("uploadFolder");
-        
-        // lock the dataset
-        jobLogger.log(Level.INFO, "Locking dataset");
-        String info = "Starting batch file import job.";
-        if (user.getId() != null) {
-            datasetServiceBean.addDatasetLock(dataset.getId(), user.getId(), info);
-        } else {
-            datasetServiceBean.addDatasetLock(dataset.getId(), null, info);
-        }
 
         // check constraints for running the job
         if (canRunJob()) {
@@ -200,10 +208,18 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
     }
 
     /**
-     * After the job, generate a report and remove the dataset lock
+     * After the job is done, generate a report
      */
     @Override
     public void afterJob() throws Exception {
+
+        //TODO add notifications to job failure?
+        if (jobContext.getExitStatus() != null && jobContext.getExitStatus().equals("FAILED")) {
+            getJobLogger().log(Level.SEVERE, "Job Failed. See Log for more information.");
+            closeJobLoggerHandlers();
+            return;
+        }
+        
         // run reporting and notifications
         doReport();
 
@@ -213,12 +229,6 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
             getJobLogger().log(Level.SEVERE, "File listed in checksum manifest not found: " + key);
         }
 
-        // remove dataset lock
-        if (dataset != null && dataset.getId() != null) {
-            datasetServiceBean.removeDatasetLock(dataset.getId());
-        }
-        getJobLogger().log(Level.INFO, "Removing dataset lock.");
-        
         // job step info
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         StepExecution step = jobOperator.getStepExecutions(jobContext.getInstanceId()).get(0);
@@ -226,6 +236,11 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         getJobLogger().log(Level.INFO, "Job end   = " + step.getEndTime());
         getJobLogger().log(Level.INFO, "Job exit status = " + step.getExitStatus());
         
+        closeJobLoggerHandlers();
+
+    }
+    
+    private void closeJobLoggerHandlers(){
         // close the job logger handlers
         for (Handler h:getJobLogger().getHandlers()) {
             h.close();
@@ -242,7 +257,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
 
         boolean canIssueCommand = permissionServiceBean
                 .requestOn(new DataverseRequest(user, (HttpServletRequest) null), dataset)
-                .canIssue(UpdateDatasetCommand.class);
+                .canIssue(UpdateDatasetVersionCommand.class);
         if (!canIssueCommand) {
             getJobLogger().log(Level.SEVERE, "User doesn't have permission to import files into this dataset.");
             return false;
@@ -339,17 +354,23 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
             String datasetId = jobParams.getProperty("datasetId");
             
             dataset = datasetServiceBean.find(new Long(datasetId));
-            getJobLogger().log(Level.INFO, "Dataset Identifier (datasetId=" + datasetId + "): " + dataset.getIdentifier());
-            return dataset.getGlobalId();
+
+            if (dataset != null) {
+                getJobLogger().log(Level.INFO, "Dataset Identifier (datasetId=" + datasetId + "): " + dataset.getIdentifier());
+                return dataset.getGlobalId().asString();
+            }
         }
         if (jobParams.containsKey("datasetPrimaryKey")) {
             long datasetPrimaryKey = Long.parseLong(jobParams.getProperty("datasetPrimaryKey"));
             dataset = datasetServiceBean.find(datasetPrimaryKey);
-            getJobLogger().log(Level.INFO, "Dataset Identifier (datasetPrimaryKey=" + datasetPrimaryKey + "): " 
+            if (dataset != null) {
+                getJobLogger().log(Level.INFO, "Dataset Identifier (datasetPrimaryKey=" + datasetPrimaryKey + "): " 
                     + dataset.getIdentifier());
-            return dataset.getGlobalId();
+                
+                return dataset.getGlobalId().asString();
+            }
         }
-        getJobLogger().log(Level.SEVERE, "Can't find dataset.");
+        
         dataset = null;
         return null;
     }
@@ -418,9 +439,20 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
                 + SEP + dataset.getIdentifier()
                 + SEP + uploadFolder
                 + SEP + manifest;
+        // TODO: 
+        // The above goes directly to the filesystem directory configured by the 
+        // old "dataverse.files.directory" JVM option (otherwise used for temp
+        // files only, after the Multistore implementation (#6488). 
+        // We probably want package files to be able to use specific stores instead.
+        // More importantly perhaps, the approach above does not take into account
+        // if the dataset may have an AlternativePersistentIdentifier, that may be 
+        // designated isStorageLocationDesignator() - i.e., if a different identifer
+        // needs to be used to name the storage directory, instead of the main/current
+        // persistent identifier above. 
         getJobLogger().log(Level.INFO, "Reading checksum manifest: " + manifestAbsolutePath);
+        Scanner scanner = null;
         try {
-            Scanner scanner = new Scanner(new FileReader(manifestAbsolutePath));
+            scanner = new Scanner(new FileReader(manifestAbsolutePath));
             HashMap<String, String> map = new HashMap<>();
             while (scanner.hasNextLine()) {
                 String[] parts = scanner.nextLine().split("\\s+"); // split on any empty space between path and checksum
@@ -433,6 +465,8 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
         } catch (IOException ioe) {
             getJobLogger().log(Level.SEVERE, "Unable to load checksum manifest file: " + ioe.getMessage());
             jobContext.setExitStatus("FAILED");
+        } finally {
+            IOUtils.closeQuietly(scanner);
         }
 
     }

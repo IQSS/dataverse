@@ -1,0 +1,42 @@
+services:
+  - docker
+
+jobs:
+  include:
+    # Execute java unit- and integration tests
+    - stage: test
+      language: java
+      jdk:
+        - oraclejdk8
+      script: mvn -DcompilerArgument=-Xlint:unchecked test -P all-unit-tests
+      after_success: mvn jacoco:report coveralls:report
+
+    # Execute Cypress for UI testing
+    # see https://docs.cypress.io/guides/guides/continuous-integration.html
+    - stage: test
+      language: node_js
+      node_js:
+        - "10"
+      addons:
+        apt:
+          packages:
+            # Ubuntu 16+ does not install this dependency by default, so we need to install it ourselves
+            - libgconf-2-4
+      cache:
+        # Caches $HOME/.npm when npm ci is default script command
+        # Caches node_modules in all other cases
+        npm: true
+        directories:
+          # we also need to cache folder with Cypress binary
+          - ~/.cache
+          # we want to cache the Glassfish and Solr dependencies as well
+          - conf/docker-aio/dv/deps
+      before_install:
+        - cd tests
+      install:
+        - npm ci
+      before_script:
+        - ./run_docker_dataverse.sh
+      script:
+        # --key needs to be injected using CYPRESS_RECORD_KEY to keep it secret
+        - $(npm bin)/cypress run --record

@@ -28,13 +28,16 @@ import javax.persistence.Table;
     @NamedQuery(name="PasswordResetData.findByUser",
             query="SELECT prd FROM PasswordResetData prd WHERE prd.builtinUser = :user"),
     @NamedQuery(name="PasswordResetData.findByToken",
-            query="SELECT prd FROM PasswordResetData prd WHERE prd.token = :token")
+            query="SELECT prd FROM PasswordResetData prd WHERE prd.token = :token"),
+    @NamedQuery(name="PasswordResetData.deleteByUser",
+            query="DELETE FROM PasswordResetData prd WHERE prd.builtinUser = :user"),
 })
 @Entity
 public class PasswordResetData implements Serializable {
-    
+     
     public enum Reason {
-        FORGOT_PASSWORD, 
+        FORGOT_PASSWORD,
+        NON_COMPLIANT_PASSWORD,
         UPGRADE_REQUIRED
     }
     

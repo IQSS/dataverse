@@ -59,8 +59,8 @@ public class DataverseContact implements Serializable {
     @JoinColumn(name = "dataverse_id")
     private Dataverse dataverse;
 
-    @NotBlank(message = "Please enter a valid email address.")
-    @ValidateEmail(message = "Please enter a valid email address.")
+    @NotBlank(message = "{user.invalidEmail}")
+    @ValidateEmail(message = "{user.invalidEmail}")
     @Column( nullable = false )
     private String contactEmail;
     private int displayOrder;

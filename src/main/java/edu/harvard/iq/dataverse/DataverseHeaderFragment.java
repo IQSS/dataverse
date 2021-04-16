@@ -6,16 +6,22 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
+import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -51,6 +57,9 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     
     @EJB
     DataFileServiceBean datafileService;
+    
+    @EJB
+    BannerMessageServiceBean bannerMessageService;
 
     @Inject
     DataverseSession dataverseSession;
@@ -65,6 +74,8 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     UserNotificationServiceBean userNotificationService;
     
     List<Breadcrumb> breadcrumbs = new ArrayList<>();
+    
+    private List<BannerMessage> bannerMessages = new ArrayList<>();
 
     private Long unreadNotificationCount = null;
     
@@ -83,8 +94,8 @@ public class DataverseHeaderFragment implements java.io.Serializable {
             if (dvObject.getId() != null) {
                 initBreadcrumbs(dvObject, null);
             } else {
-                initBreadcrumbs(dvObject.getOwner(), dvObject instanceof Dataverse ? JH.localize("newDataverse") : 
-                        dvObject instanceof Dataset ? JH.localize("newDataset") : null );
+                initBreadcrumbs(dvObject.getOwner(), dvObject instanceof Dataverse ? BundleUtil.getStringFromBundle("newDataverse") : 
+                        dvObject instanceof Dataset ? BundleUtil.getStringFromBundle("newDataset") : null );
             }
     }
     
@@ -217,17 +228,30 @@ public class DataverseHeaderFragment implements java.io.Serializable {
      */
     public String logout() {
         dataverseSession.setUser(null);
-
+        dataverseSession.setStatusDismissed(false);
+        
+        // Important part of completing a logout - kill the existing HTTP session: 
+        // from the ExternalContext.invalidateSession doc page: 
+        // "Invalidates this session then unbinds any objects bound to it."
+        // - this means whatever allocated SessionScoped classes associated 
+        // with this session may currently be on the heap will become 
+        // garbage-collectable after we log the user out. 
+        FacesContext.getCurrentInstance().getExternalContext().invalidateSession();
+        // Note that the HTTP session no longer exists - 
+        // .getExternalContext().getSession(false) will return null at this point!
+        // so it is important to redirect the user to the next page, where a new 
+        // session is going to be issued to them. 
+        
         String redirectPage = navigationWrapper.getPageFromContext();
         try {
             redirectPage = URLDecoder.decode(redirectPage, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
             Logger.getLogger(LoginPage.class.getName()).log(Level.SEVERE, null, ex);
-            redirectPage = "dataverse.xhtml&alias=" + dataverseService.findRootDataverse().getAlias();
+            redirectPage = redirectToRoot();
         }
 
         if (StringUtils.isEmpty(redirectPage)) {
-            redirectPage = "dataverse.xhtml&alias=" + dataverseService.findRootDataverse().getAlias();
+            redirectPage = redirectToRoot();
         }
 
         logger.log(Level.INFO, "Sending user to = " + redirectPage);
@@ -236,6 +260,10 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
     private Boolean signupAllowed = null;
     
+    private String redirectToRoot(){
+        return "dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias();
+    }
+    
     public boolean isSignupAllowed() {
         if (signupAllowed != null) {
             return signupAllowed;
@@ -243,6 +271,51 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         boolean safeDefaultIfKeyNotFound = false;
         signupAllowed = settingsWrapper.isTrueForKey(SettingsServiceBean.Key.AllowSignUp, safeDefaultIfKeyNotFound);
         return signupAllowed;
+    }
+
+    public boolean isRootDataverseThemeDisabled(Dataverse dataverse) {
+        if (dataverse == null) {
+            return false;
+        }
+        if (dataverse.getOwner() == null) {
+            // We're operating on the root dataverse.
+            return settingsWrapper.isRootDataverseThemeDisabled();
+        } else {
+            return false;
+        }
+    }
+    
+    
+    public List<BannerMessage> getBannerMessages() {
+        User user = dataverseSession.getUser();
+        AuthenticatedUser au = null;
+        if (user.isAuthenticated()) {
+            au = (AuthenticatedUser) user;
+        }           
+        
+        if(au == null){
+            bannerMessages = bannerMessageService.findBannerMessages();
+        } else{
+            bannerMessages = bannerMessageService.findBannerMessages(au.getId());
+        } 
+        
+        if (!dataverseSession.getDismissedMessages().isEmpty()) {           
+            for (BannerMessage dismissed : dataverseSession.getDismissedMessages()) {
+                Iterator<BannerMessage> itr = bannerMessages.iterator();
+                while (itr.hasNext()) {
+                    BannerMessage test = itr.next();
+                    if (test.equals(dismissed)) {
+                        itr.remove();
+                    }
+                }
+            }            
+        }
+        
+        return bannerMessages;
+    }
+
+    public void setBannerMessages(List<BannerMessage> bannerMessages) {
+        this.bannerMessages = bannerMessages;
     }
 
     public String getSignupUrl(String loginRedirect) {

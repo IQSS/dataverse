@@ -9,9 +9,10 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupsServiceBean;
+import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroupProvider;
+import edu.harvard.iq.dataverse.authorization.groups.impl.maildomain.MailDomainGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupServiceBean;
-import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,6 +26,7 @@ import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
@@ -42,12 +44,15 @@ public class GroupServiceBean {
     ShibGroupServiceBean shibGroupService;
     @EJB
     ExplicitGroupServiceBean explicitGroupService;
+    @EJB
+    MailDomainGroupServiceBean mailDomainGroupService;
     
     private final Map<String, GroupProvider> groupProviders = new HashMap<>();
     
     private IpGroupProvider ipGroupProvider;
     private ShibGroupProvider shibGroupProvider;
     private ExplicitGroupProvider explicitGroupProvider;
+    private MailDomainGroupProvider mailDomainGroupProvider;
     
     @EJB
     RoleAssigneeServiceBean roleAssigneeSvc;
@@ -58,6 +63,7 @@ public class GroupServiceBean {
         addGroupProvider( ipGroupProvider = new IpGroupProvider(ipGroupsService) );
         addGroupProvider( shibGroupProvider = new ShibGroupProvider(shibGroupService) );
         addGroupProvider( explicitGroupProvider = explicitGroupService.getProvider() );
+        addGroupProvider( mailDomainGroupProvider = mailDomainGroupService.getProvider() );
         Logger.getLogger(GroupServiceBean.class.getName()).log(Level.INFO, null, "PostConstruct group service call");
     }
 
@@ -79,6 +85,10 @@ public class GroupServiceBean {
         return shibGroupProvider;
     }
     
+    public MailDomainGroupProvider getMailDomainGroupProvider() {
+        return mailDomainGroupProvider;
+    }
+    
     /**
      * Finds all the groups {@code req} is part of in {@code dvo}'s context.
      * Recurses upwards in {@link ExplicitGroup}s, as needed.
@@ -87,11 +97,9 @@ public class GroupServiceBean {
      * @return The groups {@code req} is part of under {@code dvo}.
      */
     public Set<Group> groupsFor( DataverseRequest req, DvObject dvo ) {
-        return groupTransitiveClosure(
-                groupProviders.values().stream()
+        return groupProviders.values().stream()
                               .flatMap(gp->(Stream<Group>)gp.groupsFor(req, dvo).stream())
-                              .collect(toSet()),
-                dvo);
+                              .collect(toSet());
     }
     
     /**
@@ -102,11 +110,9 @@ public class GroupServiceBean {
      * @return 
      */
     public Set<Group> groupsFor( RoleAssignee ra, DvObject dvo ) {
-        return groupTransitiveClosure(
-                groupProviders.values().stream()
+        return groupProviders.values().stream()
                               .flatMap(gp->(Stream<Group>)gp.groupsFor(ra, dvo).stream())
-                              .collect( toSet() ),
-                dvo);
+                              .collect( toSet() );
     }
 
     /**
@@ -114,38 +120,23 @@ public class GroupServiceBean {
      * groups a Role assignee belongs to as advertised but this method comes
      * closer.
      *
-     * @param au An AuthenticatedUser.
+     * @param ra An AuthenticatedUser.
      * @return As many groups as we can find for the AuthenticatedUser.
      * 
      * @deprecated Does not look into IP Groups. Use {@link #groupsFor(edu.harvard.iq.dataverse.engine.command.DataverseRequest)}
      */
     @Deprecated
-    public Set<Group> groupsFor(AuthenticatedUser au) {
-        Set<Group> groups = new HashSet<>();
-        groups.addAll(groupsFor(au, null));
-        String identifier = au.getIdentifier();
-        if (identifier != null) {
-            try {
-                groups.addAll( explicitGroupService.findGroups(au) );
-            } catch (IndexOutOfBoundsException ex) {
-                logger.log(Level.INFO, "Couldn''t trim first character (@ sign) from identifier: {0}", identifier);
-            }
-        }
-
-        return groups;
+    public Set<Group> groupsFor(RoleAssignee ra) {
+        return groupProviders.values().stream()
+                             .flatMap(gp->(Stream<Group>)gp.groupsFor(ra).stream())
+                             .collect(toSet());
     }
 
     
-    public Set<Group> groupsFor( DataverseRequest dr ) {
-        Set<Group> groups = new HashSet<>();
-        
-        // get the global groups
-        groups.addAll( groupsFor(dr,null) );
-        
-        // add the explicit groups
-        groups.addAll( explicitGroupService.findGroups(dr.getUser()) );
-        
-        return groups;
+    public Set<Group> groupsFor( DataverseRequest req ) {
+        return groupProviders.values().stream()
+                             .flatMap(gp->(Stream<Group>)gp.groupsFor(req).stream())
+                             .collect( toSet());
     }
     
     /**

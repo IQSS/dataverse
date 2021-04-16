@@ -1,3 +1,3 @@
 #!/bin/sh
 # see also https://redmine.hmdc.harvard.edu/issues/3809
-curl 'http://localhost:8983/solr/collection1/select?rows=100&wt=json&indent=true&q=-entityid:*'
+curl 'http://localhost:8983/solr/collection1/select?rows=100&wt=json&indent=true&q=-entityId:*'

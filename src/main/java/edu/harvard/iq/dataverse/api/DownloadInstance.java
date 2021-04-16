@@ -6,11 +6,15 @@
 package edu.harvard.iq.dataverse.api;
 
 //import java.io.ByteArrayOutputStream;
+import edu.harvard.iq.dataverse.AuxiliaryFile;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GuestbookResponse;
 import java.util.List;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
+import javax.faces.context.FacesContext;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.UriInfo;
 
 /**
  *
@@ -44,12 +48,21 @@ public class DownloadInstance {
     private String conversionParam = null;
     private String conversionParamValue = null;
     
+    // This download instance is for an auxiliary file associated with 
+    // the DataFile. Unlike "conversions" (above) this is used for files
+    // that Dataverse has no way of producing/deriving from the parent Datafile
+    // itself, that have to be deposited externally.  
+    private AuxiliaryFile auxiliaryFile = null; 
+    
     private EjbDataverseEngine command;
 
     private DataverseRequestServiceBean dataverseRequestService;
 
     private GuestbookResponse gbr;
-      
+    
+    private UriInfo requestUriInfo;
+    
+    private HttpHeaders requestHttpHeaders;      
 
     public DownloadInstance() {
         
@@ -83,8 +96,24 @@ public class DownloadInstance {
         this.conversionParamValue = paramValue;
     }
 
+    public void setRequestUriInfo(UriInfo uri) {
+        this.requestUriInfo = uri;
+    }
+    
+    public UriInfo getRequestUriInfo() {
+        return requestUriInfo;
+    }
+    
+    public HttpHeaders getRequestHttpHeaders() {
+        return requestHttpHeaders;
+    }
+
+    public void setRequestHttpHeaders(HttpHeaders requestHttpHeaders) {
+        this.requestHttpHeaders = requestHttpHeaders;
+    }
+    
     // Move this method into the DownloadInfo instead -- ?
-    public Boolean isDownloadServiceSupported(String serviceArg, String serviceArgValue) {
+    public Boolean checkIfServiceSupportedAndSetConverter(String serviceArg, String serviceArgValue) {
         if (downloadInfo == null || serviceArg == null) {
             return false;
         }
@@ -93,14 +122,23 @@ public class DownloadInstance {
 
         for (OptionalAccessService dataService : servicesAvailable) {
             if (dataService != null) {
-                // Special case for the subsetting parameter (variables=<LIST>):
                 if (serviceArg.equals("variables")) {
+                    // Special case for the subsetting parameter (variables=<LIST>):
                     if ("subset".equals(dataService.getServiceName())) {
                         conversionParam = "subset";
                         conversionParamValue = serviceArgValue; 
                         return true; 
                     }
-                } else if ("imageThumb".equals(serviceArg)) {
+                } else if (serviceArg.equals("noVarHeader")) {
+                    // Another special case available for tabular ("subsettable") data files - 
+                    // "do not add variable header" flag:
+                    if ("true".equalsIgnoreCase(serviceArgValue) || "1".equalsIgnoreCase(serviceArgValue)) {
+                        if ("subset".equals(dataService.getServiceName())) {
+                            this.conversionParam = serviceArg;
+                            return true;
+                        }
+                    }
+                } else if ("imageThumb".equals(serviceArg)&&dataService.getServiceName().equals("thumbnail")) {
                     if ("true".equals(serviceArgValue)) {
                         this.conversionParam = serviceArg;
                         this.conversionParamValue = "";
@@ -177,6 +215,14 @@ public class DownloadInstance {
 
     public void setDataverseRequestService(DataverseRequestServiceBean dataverseRequestService) {
         this.dataverseRequestService = dataverseRequestService;
+    }
+    
+    public AuxiliaryFile getAuxiliaryFile() {
+        return auxiliaryFile;
+    }
+    
+    public void setAuxiliaryFile(AuxiliaryFile auxiliaryFile) {
+        this.auxiliaryFile = auxiliaryFile;
     }
     
 }

@@ -1,0 +1,28 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+    xmlns:jsf="http://xmlns.jcp.org/jsf"
+    xmlns:pt="http://java.sun.com/jsf/passthrough"
+    xmlns:cc="http://java.sun.com/jsf/composite"
+    xmlns:o="http://omnifaces.org/ui"
+    xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+        
+        <!-- Configure Options -->
+        <li class="dropdown-header">#{bundle['file.optionsBtn.header.configure']} <span class="glyphicon glyphicon-cog"/></li>
+        <ui:repeat value="#{configureTools}" var="tool">
+            <li>
+                <p:commandLink update="@([id$=configureToolPopup])"
+                                action="#{configureFragmentBean.setConfigurePopupTool(tool)}"
+                                oncomplete="PF('configureToolPopup').show()">
+                        <f:actionListener binding="#{configureFragmentBean.setConfigureIds(fileId,fileMetadata.id)}"/>
+                        #{tool.displayName}
+                </p:commandLink>
+            </li>
+        </ui:repeat>
+        <!-- END: Configure Options -->
+
+</ui:composition>

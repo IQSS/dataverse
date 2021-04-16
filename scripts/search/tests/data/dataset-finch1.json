@@ -37,6 +37,12 @@
                     "multiple": false,
                     "typeName": "datasetContactEmail",
                     "value" : "finch@mailinator.com"
+                },
+                "datasetContactName" : {
+                    "typeClass": "primitive",
+                    "multiple": false,
+                    "typeName": "datasetContactName",
+                    "value": "Finch, Fiona"
                 }
             }],
             "typeClass": "compound",

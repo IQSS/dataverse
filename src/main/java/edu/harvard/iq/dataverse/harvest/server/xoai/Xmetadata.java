@@ -21,7 +21,7 @@ public class Xmetadata extends Metadata {
     public void write(XmlWriter writer) throws XmlWriteException {
         // Do nothing!
         // - rather than writing Metadata as an XML writer stram, we will write 
-        // the pre-exported *and pre-validated* content as a byte stream (below).
+        // the pre-exported *and pre-validated* content as a byte stream, directly.
     }
     
 }

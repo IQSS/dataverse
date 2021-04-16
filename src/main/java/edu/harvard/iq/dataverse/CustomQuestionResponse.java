@@ -103,5 +103,6 @@ public class CustomQuestionResponse implements Serializable {
     public String toString() {
         return "edu.harvard.iq.dvn.core.vdc.CustomQuestionResponse[ id=" + id + " ]";
     }
+
 }
 

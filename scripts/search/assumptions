@@ -16,7 +16,7 @@ export FIRST_SPRUCE_DOI=`curl --insecure -s -u spruce:spruce https://localhost:8
 
 export FIRST_SPRUCE_DATASET_ID=`curl -s "http://localhost:8080/api/dataverses/spruce/contents?key=$SPRUCEKEY" | jq '.data[0].id'`
 
-export FIRST_SPRUCE_DOI=doi:10.5072/FK2/`curl -s "http://localhost:8080/api/datasets/$FIRST_SPRUCE_DATASET_ID?key=$SPRUCEKEY" | jq .data.identifier | tr -d \"`
+export FIRST_SPRUCE_DOI=doi:10.5072/`curl -s "http://localhost:8080/api/datasets/$FIRST_SPRUCE_DATASET_ID?key=$SPRUCEKEY" | jq .data.identifier | tr -d \"`
 
 export FIRST_SPRUCE_FILE=`scripts/api/data-deposit/show-statement $FIRST_SPRUCE_DOI 2>/dev/null | xmlstarlet sel -t -v '//_:feed/_:entry/_:id' 2>/dev/null | cut -d '/' -f11`
 

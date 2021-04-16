@@ -41,6 +41,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.sql.Timestamp;
@@ -104,6 +105,8 @@ public class DataverseUserPage implements java.io.Serializable {
     SystemConfig systemConfig;
     @EJB
     GroupServiceBean groupService;
+    @EJB
+    PasswordValidatorServiceBean passwordValidatorService;
     @Inject
     SettingsWrapper settingsWrapper;
     @Inject
@@ -121,21 +124,22 @@ public class DataverseUserPage implements java.io.Serializable {
     private EditMode editMode;
     private String redirectPage = "dataverse.xhtml";
 
-    @NotBlank(message = "Please enter a password for your account.")
+    @NotBlank(message = "{password.retype}")
     private String inputPassword;
 
-    @NotBlank(message = "Please enter a password for your account.")
+    @NotBlank(message = "{password.current}")
     private String currentPassword;
     private Long dataverseId;
     private List<UserNotification> notificationsList;
     private int activeIndex;
-    private String selectTab = "somedata";
+    private String selectTab = "dataRelatedToMe";
     UIInput usernameField;
 
     
     private String username;
     boolean nonLocalLoginEnabled;
-    
+    private List<String> passwordErrors;
+
     public String init() {
 
         // prevent creating a user if signup not allowed.
@@ -152,13 +156,13 @@ public class DataverseUserPage implements java.io.Serializable {
                 
             } else {
                  // in create mode for new user
-                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("user.signup.tip"));
+                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("user.message.signup.label"), BundleUtil.getStringFromBundle("user.message.signup.tip"));
                 userDisplayInfo = new AuthenticatedUserDisplayInfo();
                 return "";
             }
         }
 
-        if ( session.getUser().isAuthenticated() ) {
+        if (session.getUser(true).isAuthenticated()) {
             setCurrentUser((AuthenticatedUser) session.getUser());
             userAuthProvider = authenticationService.lookupProvider(currentUser);
             notificationsList = userNotificationService.findByUser(currentUser.getId());
@@ -170,18 +174,16 @@ public class DataverseUserPage implements java.io.Serializable {
                     break;
                 case "dataRelatedToMe":
                     mydatapage.init();
+                    activeIndex = 0;
                     break;
-                // case "groupsRoles":
-                // activeIndex = 2;
-                // break;
                 case "accountInfo":
                     activeIndex = 2;
-                    // activeIndex = 3;
                     break;
                 case "apiTokenTab":
                     activeIndex = 3;
                     break;
                 default:
+                    //TODO: Do we need to call mydatapage.init(); here too?
                     activeIndex = 0;
                     break;
             }
@@ -267,30 +269,27 @@ public class DataverseUserPage implements java.io.Serializable {
             ((UIInput) toValidate).setValid(false);
 
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "Password Error", "The new password is blank: re-type it again");
+                    BundleUtil.getStringFromBundle("passwdVal.passwdReset.valFacesError"), BundleUtil.getStringFromBundle("passwdVal.passwdReset.valFacesErrorDesc"));
             context.addMessage(toValidate.getClientId(context), message);
             return;
 
         } 
 
-        int minPasswordLength = 6;
-        boolean forceNumber = true;
-        boolean forceSpecialChar = false;
-        boolean forceCapitalLetter = false;
-        int maxPasswordLength = 255;
-
-        PasswordValidator validator = PasswordValidator.buildValidator(forceSpecialChar, forceCapitalLetter, forceNumber, minPasswordLength, maxPasswordLength);
-        boolean passwordIsComplexEnough = password!= null && validator.validatePassword(password);
-        if (!passwordIsComplexEnough) {
+        final List<String> errors = passwordValidatorService.validate(password, new Date(), false);
+        this.passwordErrors = errors;
+        if (!errors.isEmpty()) {
             ((UIInput) toValidate).setValid(false);
-            String messageDetail = "Password is not complex enough. The password must have at least one letter, one number and be at least " + minPasswordLength + " characters in length.";
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Password Error", messageDetail);
-            context.addMessage(toValidate.getClientId(context), message);
         }
     }
 
     public String save() {
         boolean passwordChanged = false;
+        
+        //First reget user to make sure they weren't deactivated or deleted
+        if (session.getUser().isAuthenticated() && !session.getUser(true).isAuthenticated()) {
+            return "dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias() + "&faces-redirect=true";
+        }
+        
         if (editMode == EditMode.CHANGE_PASSWORD) {
             final AuthenticationProvider prv = getUserAuthProvider();
             if (prv.isPasswordUpdateAllowed()) {
@@ -313,13 +312,12 @@ public class DataverseUserPage implements java.io.Serializable {
             // Create a new built-in user.
             BuiltinUser builtinUser = new BuiltinUser();
             builtinUser.setUserName( getUsername() );
-            builtinUser.applyDisplayInfo(userDisplayInfo);
             builtinUser.updateEncryptedPassword(PasswordEncryption.get().encrypt(inputPassword),
                                                 PasswordEncryption.getLatestVersionNumber());
             
             AuthenticatedUser au = authenticationService.createAuthenticatedUser(
                     new UserRecordIdentifier(BuiltinAuthenticationProvider.PROVIDER_ID, builtinUser.getUserName()),
-                    builtinUser.getUserName(), builtinUser.getDisplayInfo(), false);
+                    builtinUser.getUserName(), userDisplayInfo, false);
             if ( au == null ) {
                 // Username already exists, show an error message
                 getUsernameField().setValid(false);
@@ -344,15 +342,25 @@ public class DataverseUserPage implements java.io.Serializable {
                     UserNotification.Type.CREATEACC, null);
 
             // go back to where user came from
+            
+            // (but if they came from the login page, then send them to the 
+            // root dataverse page instead. the only situation where we do 
+            // want to send them back to the login page is if they hit 
+            // 'cancel'. 
+            
+            if ("/loginpage.xhtml".equals(redirectPage) || "loginpage.xhtml".equals(redirectPage)) {
+                redirectPage = "/dataverse.xhtml";
+            }
+            
             if ("dataverse.xhtml".equals(redirectPage)) {
-                redirectPage = redirectPage + "&alias=" + dataverseService.findRootDataverse().getAlias();
+                redirectPage = redirectPage + "?alias=" + dataverseService.findRootDataverse().getAlias();
             }
 
             try {
                 redirectPage = URLDecoder.decode(redirectPage, "UTF-8");
             } catch (UnsupportedEncodingException ex) {
                 logger.log(Level.SEVERE, "Server does not support 'UTF-8' encoding.", ex);
-                redirectPage = "dataverse.xhtml&alias=" + dataverseService.findRootDataverse().getAlias();
+                redirectPage = "dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias();
             }
 
             logger.log(Level.FINE, "Sending user to = {0}", redirectPage);
@@ -369,15 +377,11 @@ public class DataverseUserPage implements java.io.Serializable {
             AuthenticatedUser savedUser = authenticationService.updateAuthenticatedUser(currentUser, userDisplayInfo);
             String emailAfterUpdate = savedUser.getEmail();
             editMode = null;
-            StringBuilder msg = new StringBuilder( passwordChanged ? "Your account password has been successfully changed." 
-                                                                   : "Your account information has been successfully updated.");
+            StringBuilder msg = new StringBuilder( passwordChanged ? BundleUtil.getStringFromBundle("userPage.passwordChanged" )
+                                                                   :  BundleUtil.getStringFromBundle("userPage.informationUpdated"));
             if (!emailBeforeUpdate.equals(emailAfterUpdate)) {
                 String expTime = ConfirmEmailUtil.friendlyExpirationTime(systemConfig.getMinutesUntilConfirmEmailTokenExpires());
-                msg.append(" Your email address has changed and must be re-verified. Please check your inbox at ")
-                        .append(currentUser.getEmail())
-                        .append(" and follow the link we've sent. \n\nAlso, please note that the link will only work for the next ")
-                        .append(expTime)
-                        .append(" before it has expired.");
+                List<String> args = Arrays.asList(currentUser.getEmail(),expTime);
                 // delete unexpired token, if it exists (clean slate)
                 confirmEmailService.deleteTokenForUser(currentUser);
                 try {
@@ -386,7 +390,7 @@ public class DataverseUserPage implements java.io.Serializable {
                     logger.log(Level.INFO, "Unable to send email confirmation link to user id {0}", savedUser.getId());
                 }
                 session.setUser(currentUser);
-                JsfHelper.addSuccessMessage(msg.toString());
+                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("confirmEmail.changed", args));
             } else {
                 JsfHelper.addFlashMessage(msg.toString());
             }
@@ -472,25 +476,25 @@ public class DataverseUserPage implements java.io.Serializable {
 
                 case REQUESTFILEACCESS:
                     DataFile file = fileService.find(userNotification.getObjectId());
-                    userNotification.setTheObject(file.getOwner());
+                    if (file != null) {
+                        userNotification.setTheObject(file.getOwner());
+                    }
                     break;
                 case GRANTFILEACCESS:
                 case REJECTFILEACCESS:
                     userNotification.setTheObject(datasetService.find(userNotification.getObjectId()));
                     break;
 
-                case MAPLAYERUPDATED:
                 case CREATEDS:
                 case SUBMITTEDDS:
                 case PUBLISHEDDS:
+                case PUBLISHFAILED_PIDREG:
                 case RETURNEDDS:
+                case WORKFLOW_SUCCESS:
+                case WORKFLOW_FAILURE:
                     userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
                     break;
                     
-                case MAPLAYERDELETEFAILED:
-                    userNotification.setTheObject(fileService.findFileMetadata(userNotification.getObjectId()));
-                    break;
-
                 case CREATEACC:
                     userNotification.setTheObject(userNotification.getUser());
                     break;
@@ -505,6 +509,15 @@ public class DataverseUserPage implements java.io.Serializable {
 
                 case CHECKSUMIMPORT:
                     userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
+                    break;
+
+                case APIGENERATED:
+                    userNotification.setTheObject(userNotification.getUser());
+                    break;
+
+                case INGESTCOMPLETED:
+                case INGESTCOMPLETEDWITHERRORS:
+                    userNotification.setTheObject(datasetService.find(userNotification.getObjectId()));
                     break;
             }
 
@@ -532,25 +545,21 @@ public class DataverseUserPage implements java.io.Serializable {
     }
 
     
-    /**
-     * Determines whether the button to send a verification email appears on user page
-     * @return 
-     */ 
     public boolean showVerifyEmailButton() {
-        final Timestamp emailConfirmed = currentUser.getEmailConfirmed();
-        final ConfirmEmailData confirmedDate = confirmEmailService.findSingleConfirmEmailDataByUser(currentUser);
-        return (!getUserAuthProvider().isEmailVerified())
-                && confirmedDate == null
-                && emailConfirmed == null;
+        return !confirmEmailService.hasVerifiedEmail(currentUser);
+    }
+    
+    public boolean getHasActiveVerificationToken(){
+        //for user page to determine how to handle Confirm Email click
+        return confirmEmailService.hasActiveVerificationToken(currentUser);
     }
 
     public boolean isEmailIsVerified() {
-
-        return currentUser.getEmailConfirmed() != null && confirmEmailService.findSingleConfirmEmailDataByUser(currentUser) == null;
+        return confirmEmailService.hasVerifiedEmail(currentUser);
     }
 
     public boolean isEmailNotVerified() {
-        return currentUser.getEmailConfirmed() == null || confirmEmailService.findSingleConfirmEmailDataByUser(currentUser) != null;
+        return !confirmEmailService.hasVerifiedEmail(currentUser);
     }
 
     public boolean isEmailGrandfathered() {
@@ -685,5 +694,21 @@ public class DataverseUserPage implements java.io.Serializable {
     public String getReasonForReturn(DatasetVersion datasetVersion) {
         // TODO: implement me! See getReasonsForReturn in api/Notifications.java
         return "";
+    }
+
+    public String getPasswordRequirements() {
+        return passwordValidatorService.getGoodPasswordDescription(passwordErrors);
+    }
+    
+    public String getRequestorName(UserNotification notification) {
+        if(notification == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");
+        if(notification.getRequestor() == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");;
+        return (notification.getRequestor().getLastName() != null && notification.getRequestor().getLastName() != null) ? notification.getRequestor().getFirstName() + " " + notification.getRequestor().getLastName() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
+    }
+    
+    public String getRequestorEmail(UserNotification notification) {
+        if(notification == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");;
+        if(notification.getRequestor() == null) return BundleUtil.getStringFromBundle("notification.email.info.unavailable");;
+        return notification.getRequestor().getEmail() != null ? notification.getRequestor().getEmail() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
     }
 }

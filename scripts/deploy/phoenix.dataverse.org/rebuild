@@ -11,7 +11,7 @@ rm -rf /usr/local/glassfish4/glassfish/domains/domain1/files
 #psql -U postgres -c "CREATE ROLE dvnapp UNENCRYPTED PASSWORD 'secret' SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN" template1
 psql -U dvnapp -c 'DROP DATABASE "dvndb"' template1
 echo $?
-curl http://localhost:8983/solr/update/json?commit=true -H "Content-type: application/json" -X POST -d "{\"delete\": { \"query\":\"*:*\"}}"
+curl http://localhost:8983/solr/collection1/update/json?commit=true -H "Content-type: application/json" -X POST -d "{\"delete\": { \"query\":\"*:*\"}}"
 psql -U dvnapp -c 'CREATE DATABASE "dvndb" WITH OWNER = "dvnapp"' template1
 echo $?
 /usr/local/glassfish4/glassfish/bin/asadmin start-domain

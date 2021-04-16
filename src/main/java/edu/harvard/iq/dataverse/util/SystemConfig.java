@@ -2,13 +2,15 @@ package edu.harvard.iq.dataverse.util;
 
 import com.ocpsoft.pretty.PrettyContext;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
-import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
+import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
-import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
+import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.validation.PasswordValidatorUtil;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,6 +18,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Year;
 import java.util.Arrays;
+import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -23,6 +26,8 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
+import org.passay.CharacterRule;
+import org.apache.commons.io.IOUtils;
 
 /**
  * System-wide configuration
@@ -41,6 +46,8 @@ public class SystemConfig {
 
     @EJB
     AuthenticationServiceBean authenticationService;
+    
+   public static final String DATAVERSE_PATH = "/dataverse/";
 
     /**
      * A JVM option for the advertised fully qualified domain name (hostname) of
@@ -52,7 +59,7 @@ public class SystemConfig {
     public static final String FQDN = "dataverse.fqdn";
     
     /**
-     * A JVM option for specifying the "official" URL of the site. 
+     * A JVM option for specifying the "official" URL of the site.
      * Unlike the FQDN option above, this would be a complete URL, 
      * with the protocol, port number etc. 
      */
@@ -62,6 +69,12 @@ public class SystemConfig {
      * A JVM option for where files are stored on the file system.
      */
     public static final String FILES_DIRECTORY = "dataverse.files.directory";
+
+    /**
+     * Some installations may not want download URLs to their files to be
+     * available in Schema.org JSON-LD output.
+     */
+    public static final String FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS = "dataverse.files.hide-schema-dot-org-download-urls";
 
     /**
      * A JVM option to override the number of minutes for which a password reset
@@ -81,11 +94,14 @@ public class SystemConfig {
      */
     private static final int defaultZipUploadFilesLimit = 1000; 
     private static final int defaultMultipleUploadFilesLimit = 1000;
+    private static final int defaultLoginSessionTimeout = 480; // = 8 hours
 
     private static String appVersionString = null; 
     private static String buildNumberString = null; 
     
     private static final String JVM_TIMER_SERVER_OPTION = "dataverse.timerServer";
+    
+    private static final long DEFAULT_GUESTBOOK_RESPONSES_DISPLAY_LIMIT = 5000L; 
     
     public String getVersion() {
         return getVersion(false);
@@ -175,6 +191,8 @@ public class SystemConfig {
                             appVersionString = mavenProperties.getProperty("version");                        
                         } catch (IOException ioex) {
                             logger.warning("caught IOException trying to read and parse the pom properties file.");
+                        } finally {
+                            IOUtils.closeQuietly(mavenPropertiesInputStream);
                         }
                     }
                     
@@ -214,10 +232,42 @@ public class SystemConfig {
     }
 
     public String getSolrHostColonPort() {
-        String solrHostColonPort = settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort, saneDefaultForSolrHostColonPort);
+        String SolrHost;
+        if ( System.getenv("SOLR_SERVICE_HOST") != null && System.getenv("SOLR_SERVICE_HOST") != ""){
+            SolrHost = System.getenv("SOLR_SERVICE_HOST");
+        }
+        else SolrHost = saneDefaultForSolrHostColonPort;
+        String solrHostColonPort = settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort, SolrHost);
         return solrHostColonPort;
     }
 
+    public boolean isProvCollectionEnabled() {
+        String provCollectionEnabled = settingsService.getValueForKey(SettingsServiceBean.Key.ProvCollectionEnabled, null);
+        if("true".equalsIgnoreCase(provCollectionEnabled)){         
+            return true;
+        }
+        return false;
+
+    }
+    
+    public int getMetricsCacheTimeoutMinutes() {
+        int defaultValue = 10080; //one week in minutes
+        SettingsServiceBean.Key key = SettingsServiceBean.Key.MetricsCacheTimeoutMinutes;
+        String metricsCacheTimeString = settingsService.getValueForKey(key);
+        int returnInt = 0;
+        try {
+            returnInt = Integer.parseInt(metricsCacheTimeString);
+            if (returnInt >= 0) {
+                return returnInt;
+            } else {
+                logger.info("Returning " + defaultValue + " for " + key + " because value must be greater than zero, not \"" + metricsCacheTimeString + "\".");
+            }
+        } catch (NumberFormatException ex) {
+            logger.info("Returning " + defaultValue + " for " + key + " because value must be an integer greater than zero, not \"" + metricsCacheTimeString + "\".");
+        }
+        return defaultValue;
+    }
+    
     public int getMinutesUntilConfirmEmailTokenExpires() {
         final int minutesInOneDay = 1440;
         final int reasonableDefault = minutesInOneDay;
@@ -272,6 +322,10 @@ public class SystemConfig {
      * by the Settings Service configuration.
      */
     public String getDataverseSiteUrl() {
+        return getDataverseSiteUrlStatic();
+    }
+    
+    public static String getDataverseSiteUrlStatic() {
         String hostUrl = System.getProperty(SITE_URL);
         if (hostUrl != null && !"".equals(hostUrl)) {
             return hostUrl;
@@ -312,7 +366,7 @@ public class SystemConfig {
     }
 
     public String getGuidesBaseUrl() {
-        String saneDefault = "http://guides.dataverse.org";
+        String saneDefault = "https://guides.dataverse.org";
         String guidesBaseUrl = settingsService.getValueForKey(SettingsServiceBean.Key.GuidesBaseUrl, saneDefault);
         return guidesBaseUrl + "/" + getGuidesLanguage();
     }
@@ -337,49 +391,58 @@ public class SystemConfig {
         return metricsUrl;
     }
 
+    static long getLongLimitFromStringOrDefault(String limitSetting, Long defaultValue) {
+        Long limit = null;
+
+        if (limitSetting != null && !limitSetting.equals("")) {
+            try {
+                limit = new Long(limitSetting);
+            } catch (NumberFormatException nfe) {
+                limit = null;
+            }
+        }
+
+        return limit != null ? limit : defaultValue;
+    }
+
+    static int getIntLimitFromStringOrDefault(String limitSetting, Integer defaultValue) {
+        Integer limit = null;
+
+        if (limitSetting != null && !limitSetting.equals("")) {
+            try {
+                limit = new Integer(limitSetting);
+            } catch (NumberFormatException nfe) {
+                limit = null;
+            }
+        }
+
+        return limit != null ? limit : defaultValue;
+    }
+
     /**
      * Download-as-zip size limit.
      * returns 0 if not specified; 
      * (the file zipper will then use the default value)
      * set to -1 to disable zip downloads. 
      */
-    
     public long getZipDownloadLimit() {
-        String zipLimitOption = settingsService.getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit);   
-        
-        Long zipLimit = null; 
-        if (zipLimitOption != null && !zipLimitOption.equals("")) {
-            try {
-                zipLimit = new Long(zipLimitOption);
-            } catch (NumberFormatException nfe) {
-                zipLimit = null; 
-            }
-        }
-        
-        if (zipLimit != null) {
-            return zipLimit.longValue();
-        }
-        
-        return 0L; 
+        String zipLimitOption = settingsService.getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit);
+        return getLongLimitFromStringOrDefault(zipLimitOption, 0L);
     }
     
     public int getZipUploadFilesLimit() {
         String limitOption = settingsService.getValueForKey(SettingsServiceBean.Key.ZipUploadFilesLimit);
-        Integer limit = null; 
-        
-        if (limitOption != null && !limitOption.equals("")) {
-            try {
-                limit = new Integer(limitOption);
-            } catch (NumberFormatException nfe) {
-                limit = null; 
-            }
-        }
-        
-        if (limit != null) {
-            return limit;
-        }
-        
-        return defaultZipUploadFilesLimit; 
+        return getIntLimitFromStringOrDefault(limitOption, defaultZipUploadFilesLimit);
+    }
+    
+    /**
+     * Session timeout, in minutes. 
+     * (default value provided)
+     */
+    public int getLoginSessionTimeout() {
+        return getIntLimitFromStringOrDefault(
+                settingsService.getValueForKey(SettingsServiceBean.Key.LoginSessionTimeout), 
+                defaultLoginSessionTimeout); 
     }
     
     /*
@@ -388,21 +451,12 @@ public class SystemConfig {
     */
     public int getMultipleUploadFilesLimit() {
         String limitOption = settingsService.getValueForKey(SettingsServiceBean.Key.MultipleUploadFilesLimit);
-        Integer limit = null; 
-        
-        if (limitOption != null && !limitOption.equals("")) {
-            try {
-                limit = new Integer(limitOption);
-            } catch (NumberFormatException nfe) {
-                limit = null; 
-            }
-        }
-        
-        if (limit != null) {
-            return limit;
-        }
-        
-        return defaultMultipleUploadFilesLimit; 
+        return getIntLimitFromStringOrDefault(limitOption, defaultMultipleUploadFilesLimit);
+    }
+    
+    public long getGuestbookResponsesPageDisplayLimit() {
+        String limitSetting = settingsService.getValueForKey(SettingsServiceBean.Key.GuestbookResponsesPageDisplayLimit);
+        return getLongLimitFromStringOrDefault(limitSetting, DEFAULT_GUESTBOOK_RESPONSES_DISPLAY_LIMIT);
     }
     
     public long getUploadLogoSizeLimit(){
@@ -431,21 +485,8 @@ public class SystemConfig {
         } else if ("PDF".equals(type)) {
             option = System.getProperty("dataverse.dataAccess.thumbnail.pdf.limit");
         }
-        Long limit = null; 
-        
-        if (option != null && !option.equals("")) {
-            try {
-                limit = new Long(option);
-            } catch (NumberFormatException nfe) {
-                limit = null; 
-            }
-        }
-        
-        if (limit != null) {
-            return limit.longValue();
-        }
-        
-        return 0l;
+
+        return getLongLimitFromStringOrDefault(option, 0L);
     }
     
     public boolean isThumbnailGenerationDisabledForType(String type) {
@@ -461,13 +502,21 @@ public class SystemConfig {
     }
     
     public String getApplicationTermsOfUse() {
-        String saneDefaultForAppTermsOfUse = "There are no Terms of Use for this Dataverse installation.";
+        String language = BundleUtil.getCurrentLocale().getLanguage();
+        String saneDefaultForAppTermsOfUse = BundleUtil.getStringFromBundle("system.app.terms");
+        // Get the value for the defaultLocale. IT will either be used as the return
+        // value, or as a better default than the saneDefaultForAppTermsOfUse if there
+        // is no language-specific value
         String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, saneDefaultForAppTermsOfUse);
+        //Now get the language-specific value if it exists
+        if (!language.equalsIgnoreCase(BundleUtil.getDefaultLocale().getLanguage())) {
+            appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, language,	appTermsOfUse);
+        }
         return appTermsOfUse;
     }
 
     public String getApiTermsOfUse() {
-        String saneDefaultForApiTermsOfUse = "There are no API Terms of Use for this Dataverse installation.";
+        String saneDefaultForApiTermsOfUse = BundleUtil.getStringFromBundle("system.api.terms");
         String apiTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApiTermsOfUse, saneDefaultForApiTermsOfUse);
         return apiTermsOfUse;
     }
@@ -491,11 +540,10 @@ public class SystemConfig {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.FilesOnDatasetPageFromSolr, safeDefaultIfKeyNotFound);
     }
 
-    public Long getMaxFileUploadSize(){
-
-         return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);
+    public Long getMaxFileUploadSizeForStore(String driverId){
+         return settingsService.getValueForCompoundKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes, driverId);
      }
-
+    
     public Integer getSearchHighlightFragmentSize() {
         String fragSize = settingsService.getValueForKey(SettingsServiceBean.Key.SearchHighlightFragmentSize);
         if (fragSize != null) {
@@ -602,7 +650,7 @@ public class SystemConfig {
     }
 
     public String getNameOfInstallation() {
-        return dataverseService.findRootDataverse().getName();
+        return dataverseService.getRootDataverseName();
     }
 
     public AbstractOAuth2AuthenticationProvider.DevOAuthAccountType getDevOAuthAccountType() {
@@ -637,11 +685,155 @@ public class SystemConfig {
         boolean defaultResponse = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibPassiveLoginEnabled, defaultResponse);
     }
+    public boolean isShibAttributeCharacterSetConversionEnabled() {
+        boolean defaultResponse = true;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.ShibAttributeCharacterSetConversionEnabled, defaultResponse);
+    }
 
+    /**
+     * getPVDictionaries
+     *
+     * @return A string of one or more pipe (|) separated file paths.
+     */
+    public String getPVDictionaries() {
+        return settingsService.get(SettingsServiceBean.Key.PVDictionaries.toString());
+    }
+
+    /**
+     * getPVGoodStrength
+     *
+     * Get the minimum length of a valid password to apply an expiration rule.
+     * Defaults to 20.
+     *
+     * @return The length.
+     */
+    public int getPVGoodStrength() {
+        // FIXME: Change this to 21 to match Harvard's requirements or implement a way to disable the rule (0 or -1) and have the default be disabled.
+        int goodStrengthLength = 20;
+        //String _goodStrengthLength = System.getProperty("pv.goodstrength", settingsService.get(SettingsServiceBean.Key.PVGoodStrength.toString()));
+        String _goodStrengthLength = settingsService.get(SettingsServiceBean.Key.PVGoodStrength.toString());
+        try {
+            goodStrengthLength = Integer.parseInt(_goodStrengthLength);
+        } catch (NumberFormatException nfe) {
+            logger.fine("Invalid value for PVGoodStrength: " + _goodStrengthLength);
+        }
+        return goodStrengthLength;
+    }
+
+    /**
+     * getPVMinLength
+     *
+     * Get the minimum length of a valid password. Defaults to 6.
+     *
+     * @return The length.
+     */
+    public int getPVMinLength() {
+        int passportValidatorMinLength = 6;
+        String _passportValidatorMinLength = settingsService.get(SettingsServiceBean.Key.PVMinLength.toString());
+        try {
+            passportValidatorMinLength = Integer.parseInt(_passportValidatorMinLength);
+        } catch (NumberFormatException nfe) {
+            logger.fine("Invalid value for PwMinLength: " + _passportValidatorMinLength);
+        }
+        return passportValidatorMinLength;
+    }
+
+    /**
+     * getPVMaxLength
+     *
+     * Get the maximum length of a valid password. Defaults to 0 (disabled).
+     *
+     * @return The length.
+     */
+    public int getPVMaxLength() {
+        int passportValidatorMaxLength = 0;
+        String _passportValidatorMaxLength = settingsService.get(SettingsServiceBean.Key.PVMaxLength.toString());
+        try {
+            passportValidatorMaxLength = Integer.parseInt(_passportValidatorMaxLength);
+        } catch (NumberFormatException nfe) {
+            logger.fine("Invalid value for PwMaxLength: " + _passportValidatorMaxLength);
+        }
+        return passportValidatorMaxLength;
+    }
+
+    /**
+     * One letter, 2 special characters, etc. Defaults to:
+     *
+     * - one uppercase
+     *
+     * - one lowercase
+     *
+     * - one digit
+     *
+     * - one special character
+     *
+     * TODO: This is more strict than what Dataverse 4.0 shipped with. Consider
+     * keeping the default the same.
+     */
+    public List<CharacterRule> getPVCharacterRules() {
+        String characterRulesString = settingsService.get(SettingsServiceBean.Key.PVCharacterRules.toString());
+        return PasswordValidatorUtil.getCharacterRules(characterRulesString);
+    }
+
+    /**
+     * getPVNumberOfCharacteristics
+     *
+     * Get the number M characteristics. Defaults to 3.
+     *
+     * @return The number.
+     * 
+     * TODO: Consider changing the out-of-the-box rules to be the same as Dataverse 4.0, which was 2 (one letter, one number).
+     */
+    public int getPVNumberOfCharacteristics() {
+        int numberOfCharacteristics = 2;
+        String _numberOfCharacteristics = settingsService.get(SettingsServiceBean.Key.PVNumberOfCharacteristics.toString());
+        try {
+            numberOfCharacteristics = Integer.parseInt(_numberOfCharacteristics);
+        } catch (NumberFormatException nfe) {
+            logger.fine("Invalid value for PVNumberOfCharacteristics: " + _numberOfCharacteristics);
+        }
+        return numberOfCharacteristics;
+    }
+
+    /**
+     * Get the number of consecutive digits allowed. Defaults to highest int
+     * possible.
+     */
+    public int getPVNumberOfConsecutiveDigitsAllowed() {
+        int numConsecutiveDigitsAllowed = Integer.MAX_VALUE;
+        String _numberOfConsecutiveDigitsAllowed = settingsService.get(SettingsServiceBean.Key.PVNumberOfConsecutiveDigitsAllowed.toString());
+        try {
+            numConsecutiveDigitsAllowed = Integer.parseInt(_numberOfConsecutiveDigitsAllowed);
+        } catch (NumberFormatException nfe) {
+            logger.fine("Invalid value for " + SettingsServiceBean.Key.PVNumberOfConsecutiveDigitsAllowed + ": " + _numberOfConsecutiveDigitsAllowed);
+        }
+        return numConsecutiveDigitsAllowed;
+    }
+
+    /**
+     * Below are three related enums having to do with big data support:
+     *
+     * - FileUploadMethods
+     *
+     * - FileDownloadMethods
+     *
+     * - TransferProtocols
+     *
+     * There is a good chance these will be consolidated in the future.
+     */
     public enum FileUploadMethods {
 
+        /**
+         * DCM stands for Data Capture Module. Right now it supports upload over
+         * rsync+ssh but DCM may support additional methods in the future.
+         */
         RSYNC("dcm/rsync+ssh"),
-        NATIVE("NATIVE");
+        /**
+         * Traditional Dataverse file handling, which tends to involve users
+         * uploading and downloading files using a browser or APIs.
+         */
+        NATIVE("native/http");
+
 
         private final String text;
 
@@ -664,11 +856,210 @@ public class SystemConfig {
         public String toString() {
             return text;
         }
+        
+        
+    }
+
+    /**
+     * See FileUploadMethods.
+     *
+     * TODO: Consider if dataverse.files.<id>.download-redirect belongs here since
+     * it's a way to bypass Glassfish when downloading.
+     */
+    public enum FileDownloadMethods {
+        /**
+         * RSAL stands for Repository Storage Abstraction Layer. Downloads don't
+         * go through Glassfish.
+         */
+        RSYNC("rsal/rsync"),
+        NATIVE("native/http");
+        private final String text;
+
+        private FileDownloadMethods(final String text) {
+            this.text = text;
+        }
+
+        public static FileUploadMethods fromString(String text) {
+            if (text != null) {
+                for (FileUploadMethods fileUploadMethods : FileUploadMethods.values()) {
+                    if (text.equals(fileUploadMethods.text)) {
+                        return fileUploadMethods;
+                    }
+                }
+            }
+            throw new IllegalArgumentException("FileDownloadMethods must be one of these values: " + Arrays.asList(FileDownloadMethods.values()) + ".");
+        }
+
+        @Override
+        public String toString() {
+            return text;
+        }
+        
+    }
+    
+    public enum DataFilePIDFormat {
+        DEPENDENT("DEPENDENT"),
+        INDEPENDENT("INDEPENDENT");
+        private final String text;
+
+        public String getText() {
+            return text;
+        }
+        
+        private DataFilePIDFormat(final String text){
+            this.text = text;
+        }
+        
+        @Override
+        public String toString() {
+            return text;
+        }
+        
+    }
+
+    /**
+     * See FileUploadMethods.
+     */
+    public enum TransferProtocols {
+
+        RSYNC("rsync"),
+        /**
+         * POSIX includes NFS. This is related to Key.LocalDataAccessPath in
+         * SettingsServiceBean.
+         */
+        POSIX("posix"),
+        GLOBUS("globus");
+
+        private final String text;
+
+        private TransferProtocols(final String text) {
+            this.text = text;
+        }
+
+        public static TransferProtocols fromString(String text) {
+            if (text != null) {
+                for (TransferProtocols transferProtocols : TransferProtocols.values()) {
+                    if (text.equals(transferProtocols.text)) {
+                        return transferProtocols;
+                    }
+                }
+            }
+            throw new IllegalArgumentException("TransferProtocols must be one of these values: " + Arrays.asList(TransferProtocols.values()) + ".");
+        }
+
+        @Override
+        public String toString() {
+            return text;
+        }
+
     }
 
     public boolean isPublicInstall(){
         boolean saneDefault = false;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.PublicInstall, saneDefault);
     }
+    
+    public boolean isRsyncUpload(){
+        return getUploadMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString());
+    }
+    
+    // Controls if HTTP upload is enabled for both GUI and API.
+    public boolean isHTTPUpload(){       
+        return getUploadMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString());       
+    }
+    
+    public boolean isRsyncOnly(){       
+        String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
+        if(downloadMethods == null){
+            return false;
+        }
+        if (!downloadMethods.toLowerCase().equals(SystemConfig.FileDownloadMethods.RSYNC.toString())){
+            return false;
+        }
+        String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods);
+        if (uploadMethods==null){
+            return false;
+        } else {
+           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
+        }        
+    }
+    
+    public boolean isRsyncDownload() {
+        String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
+        return downloadMethods !=null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.RSYNC.toString());
+    }
+    
+    public boolean isHTTPDownload() {
+        String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
+        logger.warning("Download Methods:" + downloadMethods);
+        return downloadMethods !=null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.NATIVE.toString());
+    }
+    
+    private Boolean getUploadMethodAvailable(String method){
+        String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods); 
+        if (uploadMethods==null){
+            return false;
+        } else {
+           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).contains(method);
+        }
+    }
+    
+    public Integer getUploadMethodCount(){
+        String uploadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.UploadMethods); 
+        if (uploadMethods==null){
+            return 0;
+        } else {
+           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
+        }       
+    }
+    public boolean isDataFilePIDSequentialDependent(){
+        String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
+        String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+        if (doiIdentifierType.equals("sequentialNumber") && doiDataFileFormat.equals("DEPENDENT")){
+            return true;
+        }
+        return false;
+    }
+    
+    public int getPIDAsynchRegFileCount() {
+        String fileCount = settingsService.getValueForKey(SettingsServiceBean.Key.PIDAsynchRegFileCount, "10");
+        int retVal = 10;
+        try {
+            retVal = Integer.parseInt(fileCount);
+        } catch (NumberFormatException e) {           
+            //if no number in the setting we'll return 10
+        }
+        return retVal;
+    }
+    
+    public boolean isFilePIDsEnabled() {
+        boolean safeDefaultIfKeyNotFound = true;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled, safeDefaultIfKeyNotFound);
+    }
+    
+    public boolean isIndependentHandleService() {
+        boolean safeDefaultIfKeyNotFound = false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.IndependentHandleService, safeDefaultIfKeyNotFound);
+    
+    }
+    
+    public String getMDCLogPath() {
+        String mDCLogPath = settingsService.getValueForKey(SettingsServiceBean.Key.MDCLogPath, null);
+        return mDCLogPath;
+    }
+    
+    public boolean isDatafileValidationOnPublishEnabled() {
+        boolean safeDefaultIfKeyNotFound = true;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.FileValidationOnPublishEnabled, safeDefaultIfKeyNotFound);
+    }
+
+	public boolean directUploadEnabled(DvObjectContainer container) {
+    	return Boolean.getBoolean("dataverse.files." + container.getEffectiveStorageDriverId() + ".upload-redirect");
+	}
+	
+	public String getDataCiteRestApiUrlString() {
+		//As of 5.0 the 'doi.dataciterestapiurlstring' is the documented jvm option. Prior versions used 'doi.mdcbaseurlstring' or were hardcoded to api.datacite.org, so the defaults are for backward compatibility.
+        return System.getProperty("doi.dataciterestapiurlstring", System.getProperty("doi.mdcbaseurlstring", "https://api.datacite.org"));
+	}
 
 }

@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionUser;
@@ -13,6 +14,7 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.engine.NoOpTestEntityManager;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.TestEntityManager;
@@ -25,10 +27,8 @@ import java.util.List;
 import java.util.concurrent.Future;
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
-import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -86,10 +86,21 @@ public class SubmitDatasetForReviewCommandTest {
             @Override
             public DatasetServiceBean datasets() {
                 return new DatasetServiceBean() {
+                    
+                    {
+                        em = new NoOpTestEntityManager();
+                    }
+                    
                     @Override
                     public DatasetVersionUser getDatasetVersionUser(DatasetVersion version, User user) {
                         return null;
                     }
+
+                    @Override
+                    public DatasetLock addDatasetLock(Long datasetId, DatasetLock.Reason reason, Long userId, String info) {
+                        return null;
+                    }
+                    
                 };
             }
 
@@ -126,33 +137,18 @@ public class SubmitDatasetForReviewCommandTest {
         );
     }
 
-    @After
-    public void tearDown() {
-    }
-
-    @Test
+    @Test( expected=IllegalArgumentException.class )
     public void testDatasetNull() {
-        dataset = null;
-        String expected = "Can't submit for review. Dataset is null.";
-        String actual = null;
-        Dataset updatedDataset = null;
-        try {
-            updatedDataset = testEngine.submit(new SubmitDatasetForReviewCommand(dataverseRequest, dataset));
-        } catch (CommandException ex) {
-            actual = ex.getMessage();
-        }
-        assertEquals(expected, actual);
-        assertNull(updatedDataset);
+        new SubmitDatasetForReviewCommand(dataverseRequest, null);
     }
-
+    
     @Test
     public void testReleasedDataset() {
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.RELEASED);
         String expected = "Latest version of dataset is already released. Only draft versions can be submitted for review.";
         String actual = null;
-        Dataset updatedDataset = null;
         try {
-            updatedDataset = testEngine.submit(new SubmitDatasetForReviewCommand(dataverseRequest, dataset));
+            testEngine.submit(new SubmitDatasetForReviewCommand(dataverseRequest, dataset));
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
@@ -162,12 +158,11 @@ public class SubmitDatasetForReviewCommandTest {
     @Test
     public void testDraftDataset() {
         dataset.getLatestVersion().setVersionState(DatasetVersion.VersionState.DRAFT);
-        String actual = null;
         Dataset updatedDataset = null;
         try {
             updatedDataset = testEngine.submit(new SubmitDatasetForReviewCommand(dataverseRequest, dataset));
         } catch (CommandException ex) {
-            actual = ex.getMessage();
+            System.out.println("Error updating dataset: " + ex.getMessage() );
         }
         assertNotNull(updatedDataset);
     }

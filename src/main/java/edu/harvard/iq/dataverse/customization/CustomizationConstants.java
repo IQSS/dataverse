@@ -19,6 +19,8 @@ public class CustomizationConstants {
 
     public static String fileTypeStyle = "style";
 
+    public static String fileTypeAnalytics = "analytics";
+
     public static String fileTypeLogo = "logo";
 
 

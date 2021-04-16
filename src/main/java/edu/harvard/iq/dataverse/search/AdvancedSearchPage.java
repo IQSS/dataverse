@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.WidgetWrapper;
+import static edu.harvard.iq.dataverse.search.SearchUtil.constructQuery;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -44,6 +45,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
     private Map<Long, List<DatasetFieldType>> metadataFieldMap = new HashMap<>();
     private List<DatasetFieldType> metadataFieldList;
     private String dvFieldName;
+    private String dvFieldAlias;
     private String dvFieldDescription;
     private String dvFieldAffiliation;
     private List<String> dvFieldSubject;
@@ -51,9 +53,11 @@ public class AdvancedSearchPage implements java.io.Serializable {
     private String dsPersistentId;
     private String fileFieldName;
     private String fileFieldDescription;
+    private String filePersistentId;
     private String fileFieldFiletype;
     private String fileFieldVariableName;
     private String fileFieldVariableLabel;
+    private String fileFieldFileTags;
 
     public void init() {
 
@@ -122,6 +126,9 @@ public class AdvancedSearchPage implements java.io.Serializable {
         if (StringUtils.isNotBlank(dvFieldName)) {
             queryStrings.add(constructQuery(SearchFields.DATAVERSE_NAME, dvFieldName));
         }
+        if (StringUtils.isNotBlank(dvFieldAlias)) {
+            queryStrings.add(constructQuery(SearchFields.DATAVERSE_ALIAS, dvFieldAlias));
+        }
 
         if (StringUtils.isNotBlank(dvFieldAffiliation)) {
             queryStrings.add(constructQuery(SearchFields.DATAVERSE_AFFILIATION, dvFieldAffiliation));
@@ -151,6 +158,10 @@ public class AdvancedSearchPage implements java.io.Serializable {
         if (StringUtils.isNotBlank(fileFieldDescription)) {
             queryStrings.add(constructQuery(SearchFields.FILE_DESCRIPTION, fileFieldDescription));
         }
+        
+        if (StringUtils.isNotBlank(filePersistentId)) {
+            queryStrings.add(constructQuery(SearchFields.FILE_PERSISTENT_ID, filePersistentId));
+        }
 
         if (StringUtils.isNotBlank(fileFieldFiletype)) {
             queryStrings.add(constructQuery(SearchFields.FILE_TYPE_SEARCHABLE, fileFieldFiletype));
@@ -164,75 +175,13 @@ public class AdvancedSearchPage implements java.io.Serializable {
             queryStrings.add(constructQuery(SearchFields.VARIABLE_LABEL, fileFieldVariableLabel));
         }
 
+        if (StringUtils.isNotBlank(fileFieldFileTags)) {
+            queryStrings.add(constructQuery(SearchFields.FILE_TAG_SEARCHABLE, fileFieldFileTags));
+        }
+
         return constructQuery(queryStrings, true);
     }
-
-    private String constructQuery(List<String> queryStrings, boolean isAnd) {
-        return constructQuery(queryStrings, isAnd, true);
-    }
-
-    private String constructQuery(List<String> queryStrings, boolean isAnd, boolean surroundWithParens) {
-        StringBuilder queryBuilder = new StringBuilder();
-
-        int count = 0;
-        for (String string : queryStrings) {
-            if (!StringUtils.isBlank(string)) {
-                if (++count > 1) {
-                    queryBuilder.append(isAnd ? " AND " : " OR ");
-                }
-                queryBuilder.append(string);
-            }
-        }
-
-        if (surroundWithParens && count > 1) {
-            queryBuilder.insert(0, "(");
-            queryBuilder.append(")");
-        }
-
-        return queryBuilder.toString().trim();
-    }
-
-    private String constructQuery(String solrField, String userSuppliedQuery) {
-
-        StringBuilder queryBuilder = new StringBuilder();
-        String delimiter = "[\"]+";
-
-        List<String> queryStrings = new ArrayList<>();
-
-        if (userSuppliedQuery != null && !userSuppliedQuery.equals("")) {
-            if (userSuppliedQuery.contains("\"")) {
-                String[] tempString = userSuppliedQuery.split(delimiter);
-                for (int i = 1; i < tempString.length; i++) {
-                    if (!tempString[i].equals(" ") && !tempString[i].isEmpty()) {
-                        queryStrings.add(solrField + ":" + "\"" + tempString[i].trim() + "\"");
-                    }
-                }
-            } else {
-                StringTokenizer st = new StringTokenizer(userSuppliedQuery);
-                while (st.hasMoreElements()) {
-                    queryStrings.add(solrField + ":" + st.nextElement());
-                }
-            }
-        }
-
-        if (queryStrings.size() > 1) {
-            queryBuilder.append("(");
-        }
-
-        for (int i = 0; i < queryStrings.size(); i++) {
-            if (i > 0) {
-                queryBuilder.append(" ");
-            }
-            queryBuilder.append(queryStrings.get(i));
-        }
-
-        if (queryStrings.size() > 1) {
-            queryBuilder.append(")");
-        }
-
-        return queryBuilder.toString().trim();
-    }
-
+    
     public Dataverse getDataverse() {
         return dataverse;
     }
@@ -271,6 +220,14 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
     public void setDvFieldName(String dvFieldName) {
         this.dvFieldName = dvFieldName;
+    }
+
+    public String getDvFieldAlias() {
+        return dvFieldAlias;
+    }
+
+    public void setDvFieldAlias(String dvFieldAlias) {
+        this.dvFieldAlias = dvFieldAlias;
     }
 
     public String getDvFieldDescription() {
@@ -333,6 +290,15 @@ public class AdvancedSearchPage implements java.io.Serializable {
     public void setFileFieldDescription(String fileFieldDescription) {
         this.fileFieldDescription = fileFieldDescription;
     }
+    
+    
+    public String getFilePersistentId() {
+        return filePersistentId;
+    }
+
+    public void setFilePersistentId(String filePersistentId) {
+        this.filePersistentId = filePersistentId;
+    }
 
     public String getFileFieldFiletype() {
         return fileFieldFiletype;
@@ -356,6 +322,14 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
     public void setFileFieldVariableLabel(String fileFieldVariableLabel) {
         this.fileFieldVariableLabel = fileFieldVariableLabel;
+    }
+
+    public String getFileFieldFileTags() {
+        return fileFieldFileTags;
+    }
+
+    public void setFileFieldFileTags(String fileFieldFileTags) {
+        this.fileFieldFileTags = fileFieldFileTags;
     }
 
 }

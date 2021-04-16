@@ -1416,7 +1416,7 @@ public class SAVFileReader  extends TabularDataFileReader{
         List<DataVariable> variableList = new ArrayList<DataVariable>();
 
         for (int i = 0; i < variableCounter; i++) {
-            DataVariable dv = new DataVariable();
+            DataVariable dv = new DataVariable(i, dataTable);
             String varName = variableNameList.get(i);
             dbgLog.fine("name: "+varName);
             dv.setName(varName);
@@ -1431,16 +1431,8 @@ public class SAVFileReader  extends TabularDataFileReader{
             }
             dbgLog.fine("label: "+varLabel);
             dv.setLabel(varLabel);
-            
-            dv.setInvalidRanges(new ArrayList<VariableRange>());
-            dv.setSummaryStatistics( new ArrayList<SummaryStatistic>());
-            dv.setUnf("UNF:6:");
-            dv.setCategories(new ArrayList<VariableCategory>());
             variableList.add(dv);
 
-            dv.setFileOrder(i);
-
-            dv.setDataTable(dataTable);
         }
 
         dataTable.setDataVariables(variableList);
@@ -1696,9 +1688,8 @@ public class SAVFileReader  extends TabularDataFileReader{
         // Let's go through all the categorical value label mappings and 
         // assign them to the correct variables: 
         
-        for (int i = 0; i < dataTable.getVarQuantity().intValue(); i++) {
-            
-            String varName = dataTable.getDataVariables().get(i).getName();
+        for (DataVariable dataVariable : dataTable.getDataVariables()) {
+            String varName = dataVariable.getName();
             
             Map<String, String> valueLabelPairs = valueLabelTable.get(valueVariableMappingTable.get(varName));
             if (valueLabelPairs != null && !valueLabelPairs.isEmpty()) {
@@ -1709,8 +1700,8 @@ public class SAVFileReader  extends TabularDataFileReader{
                     cat.setLabel(valueLabelPairs.get(value));
 
                     /* cross-link the variable and category to each other: */
-                    cat.setDataVariable(dataTable.getDataVariables().get(i));
-                    dataTable.getDataVariables().get(i).getCategories().add(cat);
+                    cat.setDataVariable(dataVariable);
+                    dataVariable.getCategories().add(cat);
                 }
             }
         }

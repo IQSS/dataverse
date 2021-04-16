@@ -7,6 +7,11 @@
         <view-id value="/dataverse.xhtml" />
     </url-mapping>
     
+    <url-mapping id="dataverseslash">
+        <pattern value="/dataverse/#{alias}/" />
+        <view-id value="/dataverse.xhtml" />
+    </url-mapping>
+    
     <url-mapping id="iframe">
         <pattern value="/iframe/#{alias}" />
         <view-id value="/iframe.xhtml" />
@@ -15,6 +20,11 @@
     <url-mapping id="advancedSearch">
         <pattern value="/dataverse/#{dataverseIdentifier}/search" />
         <view-id value="/search/advanced.xhtml" />
+    </url-mapping>
+
+    <url-mapping id="sitemap">
+        <pattern value="/sitemap.xml" />
+        <view-id value="/sitemap/sitemap.xml" />
     </url-mapping>
 
 </pretty-config>

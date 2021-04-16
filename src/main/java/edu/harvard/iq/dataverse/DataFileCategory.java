@@ -6,6 +6,7 @@
 
 package edu.harvard.iq.dataverse;
 
+import com.google.gson.annotations.Expose;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,6 +25,7 @@ import javax.persistence.Table;
  *
  * @author Leonid Andreev
  */
+
 
 @Entity
 @Table(indexes = {@Index(columnList="dataset_id")})
@@ -57,6 +59,7 @@ public class DataFileCategory implements Serializable {
         this.dataset = dataset;
     }
     
+    @Expose
     @Column( nullable = false )
     private String name;
     

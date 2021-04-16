@@ -1,0 +1,22 @@
+[Unit]
+Description=Rserve
+
+[Service]
+PIDFile=/var/run/rserve/rserve.pid
+Restart=always
+TimeoutSec=15s
+Type=forking
+User=rserve
+Group=rserve
+Nice=19
+StandardOutput=null
+
+# Run ExecStartPre with root-permissions
+PermissionsStartOnly=true
+ExecStartPre=/usr/bin/mkdir -p /var/run/rserve
+ExecStartPre=/usr/bin/chown -R rserve:rserve /var/run/rserve
+
+ExecStart=/usr/bin/R CMD Rserve --quiet --vanilla --RS-conf /etc/Rserv.conf --RS-pidfile /var/run/rserve/rserve.pid
+
+[Install]
+WantedBy=multi-user.target

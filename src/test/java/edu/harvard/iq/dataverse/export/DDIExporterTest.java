@@ -1,10 +1,12 @@
 package edu.harvard.iq.dataverse.export;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
+import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import java.io.ByteArrayOutputStream;
@@ -12,14 +14,14 @@ import java.io.File;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Year;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
@@ -127,6 +129,27 @@ public class DDIExporterTest {
     }
 
     @Test
+    public void testCitation() throws Exception {
+        System.out.println("testCitation");
+
+        File datasetVersionJson = new File("src/test/resources/json/dataset-finch1.json");
+        String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
+
+        JsonReader jsonReader = Json.createReader(new StringReader(datasetVersionAsJson));
+        JsonObject json = jsonReader.readObject();
+        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, null);
+        DatasetVersion version = jsonParser.parseDatasetVersion(json.getJsonObject("datasetVersion"));
+        version.setVersionState(DatasetVersion.VersionState.DRAFT);
+        Dataset dataset = new Dataset();
+        version.setDataset(dataset);
+        dataset.setOwner(new Dataverse());
+        String citation = version.getCitation();
+        System.out.println("citation: " + citation);
+        int currentYear = Year.now().getValue();
+        assertEquals("Finch, Fiona, " + currentYear + ", \"Darwin's Finches\", LibraScholar, DRAFT VERSION", citation);
+    }
+
+    @Test
     public void testExportDatasetContactEmailPresent() throws Exception {
         File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/datasetContactEmailPresent.json");
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
@@ -160,39 +183,6 @@ public class DDIExporterTest {
 
         System.out.println(XmlPrinter.prettyPrintXml(byteArrayOutputStream.toString()));
         assertFalse(byteArrayOutputStream.toString().contains("finch@mailinator.com"));
-
-    }
-
-    static class MockDatasetFieldSvc extends DatasetFieldServiceBean {
-
-        Map<String, DatasetFieldType> fieldTypes = new HashMap<>();
-        long nextId = 1;
-
-        public DatasetFieldType add(DatasetFieldType t) {
-            if (t.getId() == null) {
-                t.setId(nextId++);
-            }
-            fieldTypes.put(t.getName(), t);
-            return t;
-        }
-
-        @Override
-        public DatasetFieldType findByName(String name) {
-            return fieldTypes.get(name);
-        }
-
-        @Override
-        public DatasetFieldType findByNameOpt(String name) {
-            return findByName(name);
-        }
-
-        @Override
-        public ControlledVocabularyValue findControlledVocabularyValueByDatasetFieldTypeAndStrValue(DatasetFieldType dsft, String strValue, boolean lenient) {
-            ControlledVocabularyValue cvv = new ControlledVocabularyValue();
-            cvv.setDatasetFieldType(dsft);
-            cvv.setStrValue(strValue);
-            return cvv;
-        }
 
     }
 

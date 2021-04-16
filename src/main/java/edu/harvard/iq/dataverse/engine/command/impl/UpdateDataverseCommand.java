@@ -1,16 +1,24 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.Dataverse.DataverseType;
 import edu.harvard.iq.dataverse.DataverseFieldTypeInputLevel;
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.search.IndexResponse;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
+import javax.persistence.TypedQuery;
+import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  * Update an existing dataverse.
@@ -26,56 +34,75 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
 
 	public UpdateDataverseCommand(Dataverse editedDv, List<DatasetFieldType> facetList, List<Dataverse> featuredDataverseList, 
                     DataverseRequest aRequest,  List<DataverseFieldTypeInputLevel> inputLevelList ) {
-		super(aRequest, editedDv);
-		this.editedDv = editedDv;
-                // add update template uses this command but does not
-                // update facet list or featured dataverses
-                if (facetList != null){
-                   this.facetList = new ArrayList<>(facetList); 
-                } else {
-                   this.facetList = null;
-                }
-		if (featuredDataverseList != null){
-                    this.featuredDataverseList = new ArrayList<>(featuredDataverseList);
-                } else {
-                    this.featuredDataverseList = null;
-                }
-                if (inputLevelList != null){
-                   this.inputLevelList = new ArrayList<>(inputLevelList); 
-                } else {
-                   this.inputLevelList = null;
-                }
+            super(aRequest, editedDv);
+            this.editedDv = editedDv;
+            // add update template uses this command but does not
+            // update facet list or featured dataverses
+            if (facetList != null){
+               this.facetList = new ArrayList<>(facetList); 
+            } else {
+               this.facetList = null;
+            }
+            if (featuredDataverseList != null){
+                this.featuredDataverseList = new ArrayList<>(featuredDataverseList);
+            } else {
+                this.featuredDataverseList = null;
+            }
+            if (inputLevelList != null){
+               this.inputLevelList = new ArrayList<>(inputLevelList); 
+            } else {
+               this.inputLevelList = null;
+            }
 	}
 	
 	@Override
 	public Dataverse execute(CommandContext ctxt) throws CommandException {
-		
-		Dataverse result = ctxt.dataverses().save(editedDv);
-		
-        if ( facetList != null ) {
-            ctxt.facets().deleteFacetsFor(result);
-            int i=0;
-            for ( DatasetFieldType df : facetList ) {
-                ctxt.facets().create(i++, df.getId(), result.getId());
+            DataverseType oldDvType = ctxt.dataverses().find(editedDv.getId()).getDataverseType();
+            String oldDvAlias = ctxt.dataverses().find(editedDv.getId()).getAlias();
+            String oldDvName = ctxt.dataverses().find(editedDv.getId()).getName();
+            Dataverse result = ctxt.dataverses().save(editedDv);
+            
+            if ( facetList != null ) {
+                ctxt.facets().deleteFacetsFor(result);
+                int i=0;
+                for ( DatasetFieldType df : facetList ) {
+                    ctxt.facets().create(i++, df.getId(), result.getId());
+                }
             }
-        }
-        if ( featuredDataverseList != null ) {
-            ctxt.featuredDataverses().deleteFeaturedDataversesFor(result);
-            int i=0;
-            for ( Object obj : featuredDataverseList ) {
-                Dataverse dv = (Dataverse) obj;
-                ctxt.featuredDataverses().create(i++, dv.getId(), result.getId());
+            if ( featuredDataverseList != null ) {
+                ctxt.featuredDataverses().deleteFeaturedDataversesFor(result);
+                int i=0;
+                for ( Object obj : featuredDataverseList ) {
+                    Dataverse dv = (Dataverse) obj;
+                    ctxt.featuredDataverses().create(i++, dv.getId(), result.getId());
+                }
             }
-        }
-        if ( inputLevelList != null ) {
-            ctxt.fieldTypeInputLevels().deleteFacetsFor(result);
-            for ( DataverseFieldTypeInputLevel obj : inputLevelList ) {               
-                ctxt.fieldTypeInputLevels().create(obj);
+            if ( inputLevelList != null ) {
+                ctxt.fieldTypeInputLevels().deleteFacetsFor(result);
+                for ( DataverseFieldTypeInputLevel obj : inputLevelList ) {               
+                    ctxt.fieldTypeInputLevels().create(obj);
+                }
             }
-        }
-		ctxt.index().indexDataverse(result);
-		
-        return result;
+            
+            
+            return result;
 	}
-	
+        
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+        
+        // first kick of async index of datasets
+        // TODO: is this actually needed? Is there a better way to handle
+        try {
+            Dataverse result = (Dataverse) r;
+            List<Dataset> datasets = ctxt.datasets().findByOwnerId(result.getId());
+            ctxt.index().asyncIndexDatasetList(datasets, true);
+        } catch (IOException | SolrServerException e) {
+            // these datasets are being indexed asynchrounously, so not sure how to handle errors here
+        }
+        
+        return ctxt.dataverses().index((Dataverse) r);
+    }  
+
 }
+

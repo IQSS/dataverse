@@ -14,7 +14,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
+import static java.util.stream.Collectors.joining;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -66,7 +68,7 @@ public class StatementManagerImpl implements StatementManager {
             if (!permissionService.isUserAllowedOn(user, new GetDraftDatasetVersionCommand(dvReq, dataset), dataset)) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to view dataset with global ID " + globalId);
             }
-            String feedUri = urlManager.getHostnamePlusBaseUrlPath(editUri) + "/edit/study/" + dataset.getGlobalId();
+            String feedUri = urlManager.getHostnamePlusBaseUrlPath(editUri) + "/edit/study/" + dataset.getGlobalIdString();
             String author = dataset.getLatestVersion().getAuthorsStr();
             String title = dataset.getLatestVersion().getTitle();
             // in the statement, the element is called "updated"
@@ -91,14 +93,16 @@ public class StatementManagerImpl implements StatementManager {
             states.put("latestVersionState", dataset.getLatestVersion().getVersionState().toString());
             Boolean isMinorUpdate = dataset.getLatestVersion().isMinorUpdate();
             states.put("isMinorUpdate", isMinorUpdate.toString());
-            DatasetLock lock = dataset.getDatasetLock();
-            if (lock != null) {
+            
+            if ( dataset.isLocked() ) {
                 states.put("locked", "true");
-                states.put("lockedDetail", lock.getInfo());
-                states.put("lockedStartTime", lock.getStartTime().toString());
+                states.put("lockedDetail", dataset.getLocks().stream().map( l-> l.getInfo() ).collect( joining(",")) );
+                Optional<DatasetLock> earliestLock = dataset.getLocks().stream().min((l1, l2) -> (int)Math.signum(l1.getStartTime().getTime()-l2.getStartTime().getTime()) );
+                states.put("lockedStartTime", earliestLock.get().getStartTime().toString());
             } else {
                 states.put("locked", "false");
             }
+            
             statement.setStates(states);
             List<FileMetadata> fileMetadatas = dataset.getLatestVersion().getFileMetadatas();
             for (FileMetadata fileMetadata : fileMetadatas) {
@@ -108,6 +112,7 @@ public class StatementManagerImpl implements StatementManager {
                 //
                 // Replace spaces to avoid IRISyntaxException
                 String fileNameFinal = fileMetadata.getLabel().replace(' ', '_');
+                // TODO: Consider where we would show the persistent identifiers for files via SWORD.
                 String fileUrlString = urlManager.getHostnamePlusBaseUrlPath(editUri) + "/edit-media/file/" + dataFile.getId() + "/" + fileNameFinal;
                 IRI fileUrl;
                 try {

@@ -1,16 +1,23 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetLinkingDataverse;
+import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DataverseLinkingDataverse;
+import edu.harvard.iq.dataverse.DataverseLinkingServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
+import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
@@ -19,6 +26,7 @@ import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -32,17 +40,22 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
+import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
+import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
+import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
-import edu.harvard.iq.dataverse.validation.BeanValidationServiceBean;
+import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import java.io.StringReader;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -57,6 +70,7 @@ import javax.json.JsonReader;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
@@ -74,8 +88,11 @@ public abstract class AbstractApiBean {
     private static final Logger logger = Logger.getLogger(AbstractApiBean.class.getName());
     private static final String DATAVERSE_KEY_HEADER_NAME = "X-Dataverse-key";
     private static final String PERSISTENT_ID_KEY=":persistentId";
+    private static final String ALIAS_KEY=":alias";
     public static final String STATUS_ERROR = "ERROR";
     public static final String STATUS_OK = "OK";
+    public static final String STATUS_WF_IN_PROGRESS = "WORKFLOW_IN_PROGRESS";
+    public static final String DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME = "X-Dataverse-invocationID";
 
     /**
      * Utility class to convey a proper error response using Java's exceptions.
@@ -140,14 +157,17 @@ public abstract class AbstractApiBean {
         }
     }
 
-	@EJB
-	protected EjbDataverseEngine engineSvc;
+    @EJB
+    protected EjbDataverseEngine engineSvc;
 
     @EJB
     protected DatasetServiceBean datasetSvc;
+    
+    @EJB
+    protected DataFileServiceBean fileService;
 
-	@EJB
-	protected DataverseServiceBean dataverseSvc;
+    @EJB
+    protected DataverseServiceBean dataverseSvc;
 
     @EJB
     protected AuthenticationServiceBean authSvc;
@@ -180,9 +200,6 @@ public abstract class AbstractApiBean {
     protected ActionLogServiceBean actionLogSvc;
 
     @EJB
-    protected BeanValidationServiceBean beanValidationSvc;
-
-    @EJB
     protected SavedSearchServiceBean savedSearchSvc;
 
     @EJB
@@ -198,13 +215,37 @@ public abstract class AbstractApiBean {
     protected DatasetVersionServiceBean datasetVersionSvc;
 
     @EJB
-    protected MapLayerMetadataServiceBean mapLayerMetadataSrv;
-
-    @EJB
     protected SystemConfig systemConfig;
 
     @EJB
     protected DataCaptureModuleServiceBean dataCaptureModuleSvc;
+    
+    @EJB
+    protected DatasetLinkingServiceBean dsLinkingService;
+    
+    @EJB
+    protected DataverseLinkingServiceBean dvLinkingService;
+
+    @EJB
+    protected PasswordValidatorServiceBean passwordValidatorService;
+
+    @EJB
+    protected ExternalToolServiceBean externalToolService;
+
+    @EJB
+    DataFileServiceBean fileSvc;
+
+    @EJB
+    StorageSiteServiceBean storageSiteSvc;
+
+    @EJB
+    MetricsServiceBean metricsSvc;
+    
+    @EJB 
+    DvObjectServiceBean dvObjSvc;
+    
+    @EJB 
+    GuestbookResponseServiceBean gbRespSvc;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     protected EntityManager em;
@@ -269,7 +310,15 @@ public abstract class AbstractApiBean {
     protected String getRequestApiKey() {
         String headerParamApiKey = httpRequest.getHeader(DATAVERSE_KEY_HEADER_NAME);
         String queryParamApiKey = httpRequest.getParameter("key");
+                
         return headerParamApiKey!=null ? headerParamApiKey : queryParamApiKey;
+    }
+    
+    protected String getRequestWorkflowInvocationID() {
+        String headerParamWFKey = httpRequest.getHeader(DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME);
+        String queryParamWFKey = httpRequest.getParameter("invocationID");
+                
+        return headerParamWFKey!=null ? headerParamWFKey : queryParamWFKey;
     }
 
     /* ========= *\
@@ -306,14 +355,15 @@ public abstract class AbstractApiBean {
      */
     protected User findUserOrDie() throws WrappedResponse {
         final String requestApiKey = getRequestApiKey();
-        if (requestApiKey == null) {
+        final String requestWFKey = getRequestWorkflowInvocationID();
+        if (requestApiKey == null && requestWFKey == null) {
             return GuestUser.get();
         }
         PrivateUrlUser privateUrlUser = privateUrlSvc.getPrivateUrlUserFromToken(requestApiKey);
         if (privateUrlUser != null) {
             return privateUrlUser;
         }
-        return findAuthenticatedUserOrDie(requestApiKey);
+        return findAuthenticatedUserOrDie(requestApiKey, requestWFKey);
     }
 
     /**
@@ -329,18 +379,33 @@ public abstract class AbstractApiBean {
      * @throws edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse in case said user is not found.
      */
     protected AuthenticatedUser findAuthenticatedUserOrDie() throws WrappedResponse {
-        return findAuthenticatedUserOrDie(getRequestApiKey());
+        return findAuthenticatedUserOrDie(getRequestApiKey(), getRequestWorkflowInvocationID());
     }
 
 
-    private AuthenticatedUser findAuthenticatedUserOrDie( String key ) throws WrappedResponse {
-        AuthenticatedUser authUser = authSvc.lookupUser(key);
-        if ( authUser != null ) {
-            authUser = userSvc.updateLastApiUseTime(authUser);
+    private AuthenticatedUser findAuthenticatedUserOrDie( String key, String wfid ) throws WrappedResponse {
+        if (key != null) {
+            // No check for deactivated user because it's done in authSvc.lookupUser.
+            AuthenticatedUser authUser = authSvc.lookupUser(key);
 
-            return authUser;
+            if (authUser != null) {
+                authUser = userSvc.updateLastApiUseTime(authUser);
+
+                return authUser;
+            }
+            else {
+                throw new WrappedResponse(badApiKey(key));
+            }
+        } else if (wfid != null) {
+            AuthenticatedUser authUser = authSvc.lookupUserForWorkflowInvocationID(wfid);
+            if (authUser != null) {
+                return authUser;
+            } else {
+                throw new WrappedResponse(badWFKey(wfid));
+            }
         }
-        throw new WrappedResponse( badApiKey(key) );
+        //Just send info about the apiKey - workflow users will learn about invocationId elsewhere
+        throw new WrappedResponse(badApiKey(null));
     }
 
     protected Dataverse findDataverseOrDie( String dvIdtf ) throws WrappedResponse {
@@ -351,7 +416,22 @@ public abstract class AbstractApiBean {
         return dv;
     }
     
-    
+    protected DataverseLinkingDataverse findDataverseLinkingDataverseOrDie(String dataverseId, String linkedDataverseId) throws WrappedResponse {
+        DataverseLinkingDataverse dvld;
+        Dataverse dataverse = findDataverseOrDie(dataverseId);
+        Dataverse linkedDataverse = findDataverseOrDie(linkedDataverseId);
+        try {
+            dvld = dvLinkingService.findDataverseLinkingDataverse(dataverse.getId(), linkedDataverse.getId());
+            if (dvld == null) {
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataverselinking.error.not.found.ids", Arrays.asList(dataverseId, linkedDataverseId))));
+            }
+            return dvld;
+        } catch (NumberFormatException nfe) {
+            throw new WrappedResponse(
+                    badRequest(BundleUtil.getStringFromBundle("find.dataverselinking.error.not.found.bad.ids", Arrays.asList(dataverseId, linkedDataverseId))));
+        }
+    }
+
     protected Dataset findDatasetOrDie(String id) throws WrappedResponse {
         Dataset dataset;
         if (id.equals(PERSISTENT_ID_KEY)) {
@@ -377,6 +457,93 @@ public abstract class AbstractApiBean {
                 throw new WrappedResponse(
                         badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.bad.id", Collections.singletonList(id))));
             }
+        }
+    }
+    
+    protected DataFile findDataFileOrDie(String id) throws WrappedResponse {
+        DataFile datafile;
+        if (id.equals(PERSISTENT_ID_KEY)) {
+            String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
+            if (persistentId == null) {
+                throw new WrappedResponse(
+                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+            }
+            datafile = fileService.findByGlobalId(persistentId);
+            if (datafile == null) {
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.datafile.error.dataset.not.found.persistentId", Collections.singletonList(persistentId))));
+            }
+            return datafile;
+        } else {
+            try {
+                datafile = fileService.find(Long.parseLong(id));
+                if (datafile == null) {
+                    throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.datafile.error.datafile.not.found.id", Collections.singletonList(id))));
+                }
+                return datafile;
+            } catch (NumberFormatException nfe) {
+                throw new WrappedResponse(
+                        badRequest(BundleUtil.getStringFromBundle("find.datafile.error.datafile.not.found.bad.id", Collections.singletonList(id))));
+            }
+        }
+    }
+       
+    protected DataverseRole findRoleOrDie(String id) throws WrappedResponse {
+        DataverseRole role;
+        if (id.equals(ALIAS_KEY)) {
+            String alias = getRequestParameter(ALIAS_KEY.substring(1));
+            try {
+                return em.createNamedQuery("DataverseRole.findDataverseRoleByAlias", DataverseRole.class)
+                        .setParameter("alias", alias)
+                        .getSingleResult();
+
+            //Should not be a multiple result exception due to table constraint
+            } catch (NoResultException nre) {
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataverse.role.error.role.not.found.alias", Collections.singletonList(alias))));
+            }
+
+        } else {
+
+            try {
+                role = rolesSvc.find(Long.parseLong(id));
+                if (role == null) {
+                    throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataverse.role.error.role.not.found.id", Collections.singletonList(id))));
+                } else {
+                    return role;
+                }
+
+            } catch (NumberFormatException nfe) {
+                throw new WrappedResponse(
+                        badRequest(BundleUtil.getStringFromBundle("find.dataverse.role.error.role.not.found.bad.id", Collections.singletonList(id))));
+            }
+        }
+    }
+    
+    protected DatasetLinkingDataverse findDatasetLinkingDataverseOrDie(String datasetId, String linkingDataverseId) throws WrappedResponse {
+        DatasetLinkingDataverse dsld;
+        Dataverse linkingDataverse = findDataverseOrDie(linkingDataverseId);
+
+        if (datasetId.equals(PERSISTENT_ID_KEY)) {
+            String persistentId = getRequestParameter(PERSISTENT_ID_KEY.substring(1));
+            if (persistentId == null) {
+                throw new WrappedResponse(
+                        badRequest(BundleUtil.getStringFromBundle("find.dataset.error.dataset_id_is_null", Collections.singletonList(PERSISTENT_ID_KEY.substring(1)))));
+            }
+            
+            Dataset dataset = datasetSvc.findByGlobalId(persistentId);
+            if (dataset == null) {
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataset.error.dataset.not.found.persistentId", Collections.singletonList(persistentId))));
+            }
+            datasetId = dataset.getId().toString();
+        } 
+        try {
+            dsld = dsLinkingService.findDatasetLinkingDataverse(Long.parseLong(datasetId), linkingDataverse.getId());
+            if (dsld == null) {
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.datasetlinking.error.not.found.ids", Arrays.asList(datasetId, linkingDataverse.getId().toString()))));
+            }
+            return dsld;
+        } catch (NumberFormatException nfe) {
+            throw new WrappedResponse(
+                    badRequest(BundleUtil.getStringFromBundle("find.datasetlinking.error.not.found.bad.ids", Arrays.asList(datasetId, linkingDataverse.getId().toString()))));
         }
     }
 
@@ -447,13 +614,25 @@ public abstract class AbstractApiBean {
             return engineSvc.submit(cmd);
 
         } catch (IllegalCommandException ex) {
-            throw new WrappedResponse( ex, error(Response.Status.FORBIDDEN, ex.getMessage() ) );
-
+            throw new WrappedResponse( ex, forbidden(ex.getMessage() ) );
         } catch (PermissionException ex) {
             /**
-             * @todo Is there any harm in exposing ex.getLocalizedMessage()?
+             * TODO Is there any harm in exposing ex.getLocalizedMessage()?
              * There's valuable information in there that can help people reason
-             * about permissions!
+             * about permissions! The formatting of the error would need to be
+             * cleaned up but here's an example the helpful information:
+             *
+             * "User :guest is not permitted to perform requested action.Can't
+             * execute command
+             * edu.harvard.iq.dataverse.engine.command.impl.MoveDatasetCommand@50b150d9,
+             * because request [DataverseRequest user:[GuestUser
+             * :guest]@127.0.0.1] is missing permissions [AddDataset,
+             * PublishDataset] on Object mra"
+             *
+             * Right now, the error that's visible via API (and via GUI
+             * sometimes?) doesn't have much information in it:
+             *
+             * "User @jsmith is not permitted to perform requested action."
              */
             throw new WrappedResponse(error(Response.Status.UNAUTHORIZED,
                                                     "User " + cmd.getRequest().getUser().getIdentifier() + " is not permitted to perform requested action.") );
@@ -545,6 +724,15 @@ public abstract class AbstractApiBean {
             .type(MediaType.APPLICATION_JSON)
             .build();
     }
+    
+    protected Response ok( String msg, JsonObjectBuilder bld  ) {
+        return Response.ok().entity(Json.createObjectBuilder()
+            .add("status", STATUS_OK)
+            .add("message", Json.createObjectBuilder().add("message",msg))     
+            .add("data", bld).build())      
+            .type(MediaType.APPLICATION_JSON)
+            .build();
+    }
 
     protected Response ok( boolean value ) {
         return Response.ok().entity(Json.createObjectBuilder()
@@ -569,11 +757,19 @@ public abstract class AbstractApiBean {
                 .type(MediaType.APPLICATION_JSON)
                 .build();
     }
-
+    
+    protected Response accepted(JsonObjectBuilder bld) {
+        return Response.accepted()
+                .entity(Json.createObjectBuilder()
+                        .add("status", STATUS_WF_IN_PROGRESS)
+                        .add("data",bld).build()
+                ).build();
+    }
+    
     protected Response accepted() {
         return Response.accepted()
                 .entity(Json.createObjectBuilder()
-                        .add("status", STATUS_OK).build()
+                        .add("status", STATUS_WF_IN_PROGRESS).build()
                 ).build();
     }
 
@@ -584,16 +780,29 @@ public abstract class AbstractApiBean {
     protected Response badRequest( String msg ) {
         return error( Status.BAD_REQUEST, msg );
     }
-
+    
+    protected Response forbidden( String msg ) {
+        return error( Status.FORBIDDEN, msg );
+    }
+    
     protected Response badApiKey( String apiKey ) {
-        return error(Status.UNAUTHORIZED, (apiKey != null ) ? "Bad api key '" + apiKey +"'" : "Please provide a key query parameter (?key=XXX) or via the HTTP header " + DATAVERSE_KEY_HEADER_NAME );
+        return error(Status.UNAUTHORIZED, (apiKey != null ) ? "Bad api key " : "Please provide a key query parameter (?key=XXX) or via the HTTP header " + DATAVERSE_KEY_HEADER_NAME);
     }
 
+    protected Response badWFKey( String wfId ) {
+        String message = (wfId != null ) ? "Bad workflow invocationId " : "Please provide an invocationId query parameter (?invocationId=XXX) or via the HTTP header " + DATAVERSE_WORKFLOW_INVOCATION_HEADER_NAME;
+        return error(Status.UNAUTHORIZED, message );
+    }
+    
     protected Response permissionError( PermissionException pe ) {
         return permissionError( pe.getMessage() );
     }
 
     protected Response permissionError( String message ) {
+        return unauthorized( message );
+    }
+    
+    protected Response unauthorized( String message ) {
         return error( Status.UNAUTHORIZED, message );
     }
 
@@ -604,11 +813,6 @@ public abstract class AbstractApiBean {
                         .add( "message", msg ).build()
                 ).type(MediaType.APPLICATION_JSON_TYPE).build();
     }
-
-   protected Response allowCors( Response r ) {
-       r.getHeaders().add("Access-Control-Allow-Origin", "*");
-       return r;
-   }
 }
 
 class LazyRef<T> {

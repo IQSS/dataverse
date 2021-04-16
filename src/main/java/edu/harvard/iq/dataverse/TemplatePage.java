@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateTemplateCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseTemplateCommand;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import java.sql.Timestamp;
@@ -211,18 +212,18 @@ public class TemplatePage implements java.io.Serializable {
             System.out.print("dataverse " + dataverse.getName());
             System.out.print("Ejb exception");
             System.out.print(error.toString());
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, "Template Save Failed");
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("template.save.fail"));
             return null;
         } catch (CommandException ex) {
             System.out.print("command exception");
             System.out.print(ex.toString());
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Template Save Failed", " - " + ex.toString()));
-            JH.addMessage(FacesMessage.SEVERITY_FATAL, "Template Save Failed");
+            JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("template.save.fail"));
             return null;
             //logger.severe(ex.getMessage());
         }
         editMode = null;       
-        String msg = (create)? "Template has been created.": "Template has been edited and saved.";
+        String msg = (create)? BundleUtil.getStringFromBundle("template.create"): BundleUtil.getStringFromBundle("template.save");
         JsfHelper.addFlashMessage(msg);
         String retString = "";   
         if (!redirectPage.isEmpty() && createdId.intValue() > 0) {

@@ -1,0 +1,71 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+    xmlns:jsf="http://xmlns.jcp.org/jsf"
+    xmlns:pt="http://java.sun.com/jsf/passthrough"
+    xmlns:cc="http://java.sun.com/jsf/composite"
+    xmlns:o="http://omnifaces.org/ui"
+    xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+
+    <div jsf:rendered="#{datasetVersion.draft}">
+        <h:outputFormat value=" #{bundle['file.dataFilesTab.dataAccess.info.draft']}" escape="false">
+            <f:param value="#{systemConfig.guidesBaseUrl}"/>
+            <f:param value="#{systemConfig.guidesVersion}"/>
+        </h:outputFormat>
+    </div>
+    <div jsf:rendered="#{not datasetVersion.draft}">
+        <div class="row">
+            <div class="col-xs-12">
+                <p class="help-block">
+                    <h:outputFormat value=" #{bundle['file.dataFilesTab.dataAccess.info']}" escape="false">
+                        <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                        <f:param value="#{systemConfig.guidesVersion}"/>
+                    </h:outputFormat>
+                </p>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-xs-12 col-lg-3 control-label">
+                #{bundle['file.dataFilesTab.dataAccess.local.label']}
+                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.dataAccess.local.tooltip']}"></span>
+            </label>
+            <div class="col-sm-9">
+                <code>
+                    <h:outputText value="#{repositoryStorageAbstractionLayerPage.getLocalDataAccessDirectory(datasetVersion)}"/>
+                </code>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-xs-12 col-lg-3 control-label">
+                #{bundle['file.dataFilesTab.dataAccess.download.label']}
+                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.dataAccess.download.tooltip']}"></span>
+            </label>
+            <div class="col-xs-12 col-lg-9 row">
+                <ui:repeat value="#{repositoryStorageAbstractionLayerPage.getRsyncSites(datasetVersion)}" var="site">
+                    <div class="col-sm-12">
+                        <code><h:outputText value="#{site.rsyncDownloadcommand}"/></code>
+                        <h:outputText class="text-muted" value=" (#{site.name})"/>
+                    </div>
+                </ui:repeat>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-xs-12 col-lg-3 control-label">
+                #{bundle['file.dataFilesTab.dataAccess.verify.label']}
+                <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                      data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.dataAccess.verify.tooltip']}"></span>
+            </label>
+            <div class="col-sm-9">
+                <code>
+                    <h:outputText value="#{repositoryStorageAbstractionLayerPage.getVerifyDataCommand(datasetVersion)}"/>
+                </code>
+            </div>
+        </div>
+    </div>
+</ui:composition>

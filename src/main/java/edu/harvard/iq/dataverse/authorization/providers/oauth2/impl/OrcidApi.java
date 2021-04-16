@@ -12,7 +12,7 @@ import com.github.scribejava.core.model.OAuth2AccessToken;
 public class OrcidApi extends DefaultApi20 {
     
     /**
-     * The instance holder pattern allows for lazy creation of the intance.
+     * The instance holder pattern allows for lazy creation of the instance.
      */
     private static class SandboxInstanceHolder {
         private static final OrcidApi INSTANCE = 

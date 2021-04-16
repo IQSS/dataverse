@@ -4,7 +4,7 @@ if [ -z "$1" ]; then
   exit 1
 else
   echo "Deleting Solr id $1"
-  OUTPUT=`curl -s http://localhost:8983/solr/update/json?commit=true -H "Content-type: application/json" -X POST -d "{\"delete\": { \"query\":\"id:$1\"}}"`
+  OUTPUT=`curl -s http://localhost:8983/solr/collection1/update/json?commit=true -H "Content-type: application/json" -X POST -d "{\"delete\": { \"query\":\"id:$1\"}}"`
   # exit code 7 is expected when Solr is down
   EXIT_CODE=$?
   #echo $EXIT_CODE

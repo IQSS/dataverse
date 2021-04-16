@@ -5,35 +5,44 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.groups.Group;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
-import java.util.ResourceBundle;
-import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.concurrent.Future;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+import org.apache.solr.client.solrj.SolrServerException;
 
 /**
  *
@@ -46,15 +55,30 @@ public class DataverseServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DataverseServiceBean.class.getCanonicalName());
     @EJB
     IndexServiceBean indexService;
+    
+    @EJB
+    SolrIndexServiceBean solrIndexService; 
 
     @EJB
+    AuthenticationServiceBean authService;
+    
+    @EJB
     DatasetServiceBean datasetService;
-
+    
     @EJB
     DataverseLinkingServiceBean dataverseLinkingService;
 
     @EJB
     DatasetLinkingServiceBean datasetLinkingService;
+    
+    @EJB
+    GroupServiceBean groupService;
+    
+    @EJB
+    DataverseRoleServiceBean rolesService;
+    
+    @EJB
+    PermissionServiceBean permissionService;
     
     @EJB
     SystemConfig systemConfig;
@@ -69,20 +93,47 @@ public class DataverseServiceBean implements java.io.Serializable {
        
         dataverse.setModificationTime(new Timestamp(new Date().getTime()));
         Dataverse savedDataverse = em.merge(dataverse);
-        /**
-         * @todo check the result to see if indexing was successful or not
-         */
-        Future<String> indexingResult = indexService.indexDataverse(savedDataverse);
-//        logger.log(Level.INFO, "during dataverse save, indexing result was: {0}", indexingResult);
         return savedDataverse;
     }
+    
+    public boolean index(Dataverse dataverse) {
+        return index(dataverse, false);
+
+    }
+        
+    public boolean index(Dataverse dataverse, boolean indexPermissions) {    
+        /**
+         * @todo check the result to see if indexing was successful or not
+         * added logging of exceptions 
+         */
+        try {
+            indexService.indexDataverse(dataverse);
+            if (indexPermissions) {
+                solrIndexService.indexPermissionsOnSelfAndChildren(dataverse);
+            }
+        } catch (IOException | SolrServerException e) {
+            String failureLogText = "Post-save indexing failed. You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + dataverse.getId().toString();
+            failureLogText += "\r\n" + e.getLocalizedMessage();
+            LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, dataverse);
+            return false;
+        }
+
+        return true;
+    }    
 
     public Dataverse find(Object pk) {
         return em.find(Dataverse.class, pk);
     }
 
     public List<Dataverse> findAll() {
-        return em.createQuery("select object(o) from Dataverse as o order by o.name", Dataverse.class).getResultList();
+        return em.createNamedQuery("Dataverse.findAll").getResultList();
+    }
+    
+    public List<Long> findIdStale() {
+        return em.createNamedQuery("Dataverse.findIdStale").getResultList();
+    }
+    public List<Long> findIdStalePermission() {
+        return em.createNamedQuery("Dataverse.findIdStalePermission").getResultList();
     }
 
     /**
@@ -113,10 +164,30 @@ public class DataverseServiceBean implements java.io.Serializable {
         typedQuery.setParameter("partitionId", partitionId);
         return typedQuery.getResultList();
     }
+    
+    public List<Long> findDataverseIdsForIndexing(boolean skipIndexed) {
+        if (skipIndexed) {
+            return em.createQuery("SELECT o.id FROM Dataverse o WHERE o.indexTime IS null ORDER BY o.id", Long.class).getResultList();
+        }
+        return em.createQuery("SELECT o.id FROM Dataverse o ORDER BY o.id", Long.class).getResultList();
+        
+    }
+
+    public List<Dataverse> findByCreatorId(Long creatorId) {
+        return em.createNamedQuery("Dataverse.findByCreatorId").setParameter("creatorId", creatorId).getResultList();
+    }
+
+    public List<Dataverse> findByReleaseUserId(Long releaseUserId) {
+        return em.createNamedQuery("Dataverse.findByReleaseUserId").setParameter("releaseUserId", releaseUserId).getResultList();
+    }
 
     public List<Dataverse> findByOwnerId(Long ownerId) {
-        String qr = "select object(o) from Dataverse as o where o.owner.id =:ownerId order by o.name";
-        return em.createQuery(qr, Dataverse.class).setParameter("ownerId", ownerId).getResultList();
+        return em.createNamedQuery("Dataverse.findByOwnerId").setParameter("ownerId", ownerId).getResultList();
+    }
+    
+    public List<Long> findIdsByOwnerId(Long ownerId) {
+        String qr = "select o.id from Dataverse as o where o.owner.id =:ownerId order by o.id";
+        return em.createQuery(qr, Long.class).setParameter("ownerId", ownerId).getResultList();
     }
     
     public List<Dataverse> findPublishedByOwnerId(Long ownerId) {
@@ -130,7 +201,16 @@ public class DataverseServiceBean implements java.io.Serializable {
      * NoResultException which is a RuntimeException?
      */
     public Dataverse findRootDataverse() {
-        return em.createQuery("select object(o) from Dataverse as o where o.owner.id = null", Dataverse.class).getSingleResult();
+        return em.createNamedQuery("Dataverse.findRoot", Dataverse.class).getSingleResult();
+    }
+    
+    
+    //Similarly - if the above throws that exception, do we need to catch it here?
+    //ToDo - consider caching?
+    public String getRootDataverseName() {
+        Dataverse root = findRootDataverse();
+        String rootDataverseName=root.getName();
+        return StringUtil.isEmpty(rootDataverseName) ? "" : rootDataverseName; 
     }
     
     public List<Dataverse> findAllPublishedByOwnerId(Long ownerId) {
@@ -157,16 +237,16 @@ public class DataverseServiceBean implements java.io.Serializable {
     public Dataverse findByAlias(String anAlias) {
         try {
             return (anAlias.toLowerCase().equals(":root"))
-				? findRootDataverse()
-				: em.createNamedQuery("Dataverse.findByAlias", Dataverse.class)
-					.setParameter("alias", anAlias.toLowerCase())
-					.getSingleResult();
+              ? findRootDataverse()
+              : em.createNamedQuery("Dataverse.findByAlias", Dataverse.class)
+                  .setParameter("alias", anAlias.toLowerCase())
+                  .getSingleResult();
         } catch ( NoResultException|NonUniqueResultException ex ) {
-            logger.fine("Unable to find a single dataverse using alias \"" + anAlias + "\": " + ex);
+            logger.warning("Unable to find a single dataverse using alias \"" + anAlias + "\": " + ex);
             return null;
         }
     }
-	
+    
 	public boolean hasData( Dataverse dv ) {
 		TypedQuery<Long> amountQry = em.createNamedQuery("Dataverse.ownedObjectsById", Long.class)
 								.setParameter("id", dv.getId());
@@ -406,7 +486,7 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
 
     public List<Dataset> findDatasetsThisIdHasLinkedTo(long dataverseId) {
-        return datasetLinkingService.findDatasetsThisDataverseIdHasLinkedTo(dataverseId);
+        return datasetLinkingService.findLinkedDatasets(dataverseId);
     }
 
     public List<Dataverse> findDataversesThatLinkToThisDatasetId(long datasetId) {
@@ -426,6 +506,119 @@ public class DataverseServiceBean implements java.io.Serializable {
             logger.info("results list: "+ret.size()+" results.");
         }
         return ret;
+    }
+    
+    public List<Dataverse> filterDataversesForLinking(String query, DataverseRequest req, Dataset dataset) {
+
+        List<Dataverse> dataverseList = new ArrayList<>();
+
+        List<Dataverse> results = filterDataversesByNamePattern(query);
+        
+        if (results == null || results.size() == 0) {
+            return null; 
+        }
+
+        List<Object> alreadyLinkeddv_ids = em.createNativeQuery("SELECT linkingdataverse_id   FROM datasetlinkingdataverse WHERE dataset_id = " + dataset.getId()).getResultList();
+        List<Dataverse> remove = new ArrayList<>();
+
+        if (alreadyLinkeddv_ids != null && !alreadyLinkeddv_ids.isEmpty()) {
+            alreadyLinkeddv_ids.stream().map((testDVId) -> this.find(testDVId)).forEachOrdered((removeIt) -> {
+                remove.add(removeIt);
+            });
+        }
+        
+        for (Dataverse res : results) {
+            if (!remove.contains(res)) {
+                if (this.permissionService.requestOn(req, res).has(Permission.PublishDataset)) {
+                    dataverseList.add(res);
+                }
+            }
+        }
+
+        return dataverseList;
+    }
+    
+    public List<Dataverse> filterDataversesForHosting(String pattern, DataverseRequest req) {
+
+        // Find the dataverses matching the search parameters: 
+        
+        List<Dataverse> searchResults = filterDataversesByNamePattern(pattern);
+        
+        if (searchResults == null || searchResults.size() == 0) {
+            return null; 
+        }
+        
+        logger.fine("search query found " + searchResults.size() + " results");
+        
+        // Filter the results and drop the dataverses where the user is not allowed to 
+        // add datasets:
+        
+        if (req.getAuthenticatedUser().isSuperuser()) {
+            logger.fine("will skip permission check...");
+            return searchResults;
+        }
+        
+        List<Dataverse> finalResults = new ArrayList<>();
+        
+        for (Dataverse res : searchResults) {
+            if (this.permissionService.requestOn(req, res).has(Permission.AddDataset)) {
+                finalResults.add(res);
+            }
+        }
+        
+        logger.fine("returning " + finalResults.size() + " final results");
+
+        return finalResults;
+    }
+    
+    
+    /* 
+        This method takes a search parameter and expands it into a list of 
+        Dataverses with matching names. 
+        The search is performed on the name with the trailing word "dataverse"
+        stripped (if present). This way the search on "data" (or on "da" pr 
+        "dat") does NOT return almost every dataverse in the database - since
+        most of them have names that end in "... Dataverse". 
+        The query isn't pretty, but it works, and it's still EJB QL (and NOT a 
+        native query). 
+    */
+    public List<Dataverse> filterDataversesByNamePattern(String pattern) {
+
+        pattern = pattern.toLowerCase();
+        
+        String pattern1 = pattern + "%";
+        String pattern2 = "% " + pattern + "%";
+
+        // Adjust the queries for very short, 1 and 2-character patterns:
+        if (pattern.length() == 1) {
+            pattern1 = pattern;
+            pattern2 = pattern + " %";
+        } 
+        /*if (pattern.length() == 2) {
+            pattern2 = pattern + "%";
+        }*/
+        
+        
+        String qstr = "select dv from Dataverse dv "
+                + "where (LOWER(dv.name) LIKE :dataverse and ((SUBSTRING(LOWER(dv.name),0,(LENGTH(dv.name)-9)) LIKE :pattern1) "
+                + "     or (SUBSTRING(LOWER(dv.name),0,(LENGTH(dv.name)-9)) LIKE :pattern2))) "
+                + "or (LOWER(dv.name) NOT LIKE :dataverse and ((LOWER(dv.name) LIKE :pattern1) "
+                + "     or (LOWER(dv.name) LIKE :pattern2))) "
+                + "order by dv.alias";
+                
+        List<Dataverse> searchResults = null;
+        
+        try {
+            searchResults = em.createQuery(qstr, Dataverse.class)
+                    .setParameter("dataverse", "%dataverse")
+                    .setParameter("pattern1", pattern1)
+                    .setParameter("pattern2", pattern2)
+                    .getResultList();
+        } catch (Exception ex) {
+            searchResults = null;
+        }
+        
+        return searchResults;
     }
     
     /**
@@ -468,7 +661,35 @@ public class DataverseServiceBean implements java.io.Serializable {
         
         return ret;        
     }*/
+    
+    public String getParentAliasString(SolrSearchResult solrSearchResult){
+        Long dvId = solrSearchResult.getEntityId();
+        String retVal = "";
+        
+        if (dvId == null) {
+            return retVal;
+        }
+        
+        String searchResult;
+        try {
+            searchResult = (String) em.createNativeQuery("select  t0.ALIAS FROM DATAVERSE t0, DVOBJECT t1,  DVOBJECT t2 WHERE (t0.ID = t1.ID) AND (t2.OWNER_ID = t1.ID)  AND (t2.ID =" + dvId + ")").getSingleResult();
 
+        } catch (Exception ex) {
+            return retVal;
+        }
+
+        if (searchResult == null) {
+            return retVal;
+        }
+
+        if (searchResult != null) {
+            return searchResult;
+        }
+        
+        return retVal;
+    }
+    
+    
     public void populateDvSearchCard(SolrSearchResult solrSearchResult) {
   
         Long dvId = solrSearchResult.getEntityId();
@@ -517,4 +738,179 @@ public class DataverseServiceBean implements java.io.Serializable {
             }
         }
     }
-}  
+    
+    // function to recursively find ids of all children of a dataverse that 
+    // are also of type dataverse
+    public List<Long> findAllDataverseDataverseChildren(Long dvId) {
+        // get list of Dataverse children
+        List<Long> dataverseChildren = findIdsByOwnerId(dvId);
+        
+        if (dataverseChildren == null) {
+            return dataverseChildren;
+        } else {
+            List<Long> newChildren = new ArrayList<>();
+            for (Long childDvId : dataverseChildren) {
+                newChildren.addAll(findAllDataverseDataverseChildren(childDvId));
+            }
+            dataverseChildren.addAll(newChildren);
+            return dataverseChildren;
+        }
+    }
+    
+    // function to recursively find ids of all children of a dataverse that are 
+    // of type dataset
+    public List<Long> findAllDataverseDatasetChildren(Long dvId) {
+        // get list of Dataverse children
+        List<Long> dataverseChildren = findIdsByOwnerId(dvId);
+        // get list of Dataset children
+        List<Long> datasetChildren = datasetService.findIdsByOwnerId(dvId);
+        
+        if (dataverseChildren == null) {
+            return datasetChildren;
+        } else {
+            for (Long childDvId : dataverseChildren) {
+                datasetChildren.addAll(findAllDataverseDatasetChildren(childDvId));
+            }
+            return datasetChildren;
+        }
+    }
+    
+    public String addRoleAssignmentsToChildren(Dataverse owner, ArrayList<String> rolesToInherit,
+            boolean inheritAllRoles) {
+        /*
+         * This query recursively finds all Dataverses that are inside/children of the
+         * specified one. It recursively finds dvobjects of dtype 'Dataverse' whose
+         * owner_id equals an id already in the list and then returns the list of ids
+         * found, excluding the id of the original specified Dataverse.
+         */
+        String qstr = "WITH RECURSIVE path_elements AS ((" + " SELECT id, dtype FROM dvobject WHERE id in ("
+                + owner.getId() + "))" + " UNION\n"
+                + " SELECT o.id, o.dtype FROM path_elements p, dvobject o WHERE o.owner_id = p.id and o.dtype='Dataverse') "
+                + "SELECT id FROM path_elements WHERE id !=" + owner.getId() + ";";
+
+        List<Integer> childIds;
+        try {
+            childIds = em.createNativeQuery(qstr).getResultList();
+        } catch (Exception ex) {
+            childIds = null;
+        }
+
+        // Set up to track the set of users/groups that get assigned a role and those
+        // that don't
+        JsonArrayBuilder usedNames = Json.createArrayBuilder();
+        JsonArrayBuilder unusedNames = Json.createArrayBuilder();
+        // Set up to track the list of dataverses, by id and alias, that are traversed.
+        JsonArrayBuilder dataverseIds = Json.createArrayBuilder();
+        JsonArrayBuilder dataverseAliases = Json.createArrayBuilder();
+        // Get the Dataverses for the returned ids
+
+        List<Dataverse> children = new ArrayList<Dataverse>();
+
+        for (int i = 0; i < childIds.size(); i++) {
+            Integer childId = childIds.get(i);
+            Dataverse child = find(new Long(childId.longValue()));
+            if (child != null) {
+                // Add to the list of Dataverses
+                children.add(child);
+                // Add ids and aliases to the tracking arrays
+                dataverseIds.add(childId.longValue());
+                dataverseAliases.add(child.getAlias());
+            }
+        }
+        // Find the role assignments on the specified Dataverse
+        List<RoleAssignment> allRAsOnOwner = rolesService.directRoleAssignments(owner);
+
+        // Create a list of just the inheritable role assignments on the original
+        // dataverse
+        List<RoleAssignment> inheritableRAsOnOwner = new ArrayList<RoleAssignment>();
+        for (RoleAssignment role : allRAsOnOwner) {
+            if (inheritAllRoles || rolesToInherit.contains(role.getRole().getAlias())) {
+                //Only supporting built-in/non-dataverse-specific custom roles. Custom roles all have an owner.
+                if(role.getRole().getOwner()==null) {
+                    inheritableRAsOnOwner.add(role);
+                }
+            }
+        }
+
+        String privateUrlToken = null;
+        // Create lists of the existing inheritable roles for each child Dataverse
+        Map<Long, List<RoleAssignment>> existingRAs = new HashMap<Long, List<RoleAssignment>>();
+        for (Dataverse childDv : children) {
+            List<RoleAssignment> allRAsOnChild = rolesService.directRoleAssignments(childDv);
+            List<RoleAssignment> inheritableRoles = new ArrayList<RoleAssignment>();
+            for (RoleAssignment role : allRAsOnChild) {
+                if (inheritAllRoles || rolesToInherit.contains(role.getRole().getAlias())) {
+                    inheritableRoles.add(role);
+                }
+            }
+            existingRAs.put(childDv.getId(), inheritableRoles);
+        }
+
+        for (RoleAssignment roleAssignment : inheritableRAsOnOwner) {
+            DataverseRole inheritableRole = roleAssignment.getRole();
+            String identifier = roleAssignment.getAssigneeIdentifier();
+            if (identifier.startsWith(AuthenticatedUser.IDENTIFIER_PREFIX)) {
+                // The RoleAssignment is for an individual user
+                // Add their name to the tracking list
+                usedNames.add(identifier);
+                // Strip the Identifier prefix so we can retrieve the user
+                identifier = identifier.substring(AuthenticatedUser.IDENTIFIER_PREFIX.length());
+                AuthenticatedUser roleUser = authService.getAuthenticatedUser(identifier);
+                // Now loop over all children and add the roleUser in this role if they don't
+                // yet have this role
+                for (Dataverse childDv : children) {
+                    try {
+                        RoleAssignment ra = new RoleAssignment(inheritableRole, roleUser, childDv, privateUrlToken);
+                        if (!existingRAs.get(childDv.getId()).contains(ra)) {
+                            rolesService.save(ra);
+                        }
+                    } catch (Exception e) {
+                        logger.warning("Unable to assign " + roleAssignment.getAssigneeIdentifier()
+                                + "as an admin for new Dataverse: " + childDv.getName());
+                        logger.warning(e.getMessage());
+                        throw (e);
+                    }
+                }
+            } else if (identifier.startsWith(Group.IDENTIFIER_PREFIX)) {
+                // The role assignment is for a group
+                usedNames.add(identifier);
+                identifier = identifier.substring(Group.IDENTIFIER_PREFIX.length());
+                Group roleGroup = groupService.getGroup(identifier);
+                if (roleGroup != null) {
+                    for (Dataverse childDv : children) {
+                        try {
+                            RoleAssignment ra = new RoleAssignment(inheritableRole, roleGroup, childDv,
+                                    privateUrlToken);
+                            if (!existingRAs.get(childDv.getId()).contains(ra)) {
+                                rolesService.save(ra);
+                            }
+                        } catch (Exception e) {
+                            logger.warning("Unable to assign " + roleAssignment.getAssigneeIdentifier()
+                                    + "as an admin for new Dataverse: " + childDv.getName());
+                            logger.warning(e.getMessage());
+                            throw (e);
+                        }
+                    }
+                } else {
+                    // Add any groups of types not yet supported
+                    unusedNames.add(identifier);
+                }
+            } else {
+                // Add any other types of entity found (not user or group) that aren't supported
+                unusedNames.add(identifier);
+            }
+        }
+        /*
+         * Report the list of Dataverses affected and the set of users/groups that
+         * should now have admin roles on them (they may already have had them) and any
+         * entities that had an admin role on the specified dataverse which were not
+         * handled. Add this to the log and the API return message.
+         */
+        String result = Json.createObjectBuilder().add("Dataverses Updated", dataverseIds)
+                .add("Updated Dataverse Aliases", dataverseAliases).add("Assignments added for", usedNames)
+                .add("Assignments not added for", unusedNames).build().toString();
+        logger.info(result);
+        return (result);
+    }
+    
+}

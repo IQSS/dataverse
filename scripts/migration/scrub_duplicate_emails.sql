@@ -3,17 +3,17 @@
 --------------------
 /*
 -- Query to list all user acocunts with duplicate e-mails
-select id, username, email from vdcuser
-where email in (
-select email from vdcuser
-group by email
+select id, username, lower(email) from vdcuser 
+where lower(email) in (
+select lower(email) from vdcuser 
+group by lower(email)
 having count(*) > 1
 )
 order by email
 
 -- Query to list all e-mails that have are duplicated (total = # of actual users, without duplicates)
-select email, count(*) from vdcuser
-group by email
+select lower(email), count(*) from vdcuser
+group by lower(email)
 having count(*) > 1
 order by count(*) desc
 
@@ -22,18 +22,18 @@ select u1.id, u1.username, u1.active,u1.email, u2.id, u2.username, u2.active
 from vdcuser u1, vdcuser u2
 where 1=1
 and u1.id != u2.id
-and u1.email = u2.email
-and u1.email in (
-select email from vdcuser
-group by email
+and lower(u1.email) = lower(u2.email)
+and lower(u1.email) in (
+select lower(email) from vdcuser
+group by lower(email)
 having count(*) > 1
 )
 and u2.id in (
 select min(id) from vdcuser
-group by email
+group by lower(email)
 having count(*) > 1
 )
-order by u1.email
+order by lower(u1.email)
 
 -- Delete query, to be run after all the updates
 delete from vdcuser where id in (
@@ -41,15 +41,15 @@ select u1.id
 from vdcuser u1, vdcuser u2
 where 1=1
 and u1.id != u2.id
-and u1.email = u2.email
-and u1.email in (
-select email from vdcuser
-group by email
+and lower(u1.email) = lower(u2.email)
+and lower(u1.email) in (
+select lower(email) from vdcuser
+group by lower(email)
 having count(*) > 1
 )
 and u2.id in (
 select min(id) from vdcuser
-group by email
+group by lower(email)
 having count(*) > 1
 )
 )

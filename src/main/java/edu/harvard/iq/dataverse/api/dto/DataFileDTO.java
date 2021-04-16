@@ -12,12 +12,23 @@ public class DataFileDTO {
     private String id;
     private String storageIdentifier; 
     private String contentType;
+    private Long filesize;
     private String filename;
     private String originalFileFormat;
     private String originalFormatLabel;
     private String UNF;
     private String md5;
     private String description;
+    private String pidURL;
+
+    public String getPidURL() {
+        return pidURL;
+    }
+
+    public void setPidURL(String pidURL) {
+        this.pidURL = pidURL;
+    }
+    
     private List<DataTableDTO> dataTables = new ArrayList<>();
 
     public List<DataTableDTO> getDataTables() {
@@ -50,6 +61,14 @@ public class DataFileDTO {
 
     public void setContentType(String contentType) {
         this.contentType = contentType;
+    }
+    
+    public Long getFileSize() {
+        return filesize;
+    }
+
+    public void setFileSize(Long fileSize) {
+        this.filesize = fileSize;
     }
 
     public String getFilename() {

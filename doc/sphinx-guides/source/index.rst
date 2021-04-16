@@ -3,10 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Dataverse 4.7.1 Guides
-======================
+Dataverse Documentation v. |version|
+====================================
 
-These guides are for the most recent version of Dataverse. For the guides for **version 4.7** please go `here <http://guides.dataverse.org/en/4.7/>`_.
+These documentation guides are for the |version| version of Dataverse. To find guides belonging to previous versions, :ref:`guides_versions` has a list of all available versions.
 
 .. toctree::
   :glob:
@@ -14,18 +14,18 @@ These guides are for the most recent version of Dataverse. For the guides for **
   :maxdepth: 2
 
   user/index
-  installation/index
+  admin/index
   api/index
+  installation/index
   developers/index
   style/index
-  admin/index
 
 How the Guides Are Organized
-=============================
+----------------------------
 
-The Guides are reference documents that explain how to use Dataverse,
+The guides are documentation that explain how to use Dataverse,
 which are divided into the following sections: User Guide,
-Installation Guide, Developer Guide, and API Guide. The User Guide is further divided into primary activities: finding & using
+Installation Guide, Developer Guide, API Guide and Style Guide. The User Guide is further divided into primary activities: finding & using
 data, adding Datasets, administering dataverses or Datasets, and Dataset exploration/visualizations. Details
 on all of the above tasks can be found in the Users Guide. The
 Installation Guide is for people or organizations who want to host their
@@ -35,7 +35,7 @@ project or who want to modify the code to suit their own needs. Finally, the API
 Developers that work on other applications and are interested in connecting with Dataverse through our APIs.
 
 Other Resources
-=========================
+---------------
 
 **Dataverse Project Site**
 
@@ -56,19 +56,22 @@ For up to date news, information and developments, follow our twitter account: `
 
 **Support**
 
-We maintain an email based support service that's free of charge. We
+We maintain an email based support service that is free of charge. We
 attempt to respond within one business day to all questions and if it
-cannot be resolved immediately, we'll let you know what to expect.
+cannot be resolved immediately, we will let you know what to expect.
 
-The support email address is
-`support@dataverse.org <mailto:support@dataverse.org>`__.
+The support email address is `support@dataverse.org <mailto:support@dataverse.org>`__.
 
-This is the same address as the Report Issue link. We try to respond
-within one business day.
-  
+**Reporting Issues and Contributing**
 
-Indices and tables
-==================
+Report bugs and add feature requests in `GitHub Issues <https://github.com/IQSS/dataverse/issues>`__
+or use `GitHub pull requests <http://guides.dataverse.org/en/latest/developers/version-control.html#how-to-make-a-pull-request>`__,
+if you have some code, scripts or documentation that you'd like to share.
+If you have a **security issue** to report, please email `security@dataverse.org <mailto:security@dataverse.org>`__.
+
+
+Indices and Tables
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`

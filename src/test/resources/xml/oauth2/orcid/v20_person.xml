@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<person:person xmlns:common="http://www.orcid.org/ns/common"
+	xmlns:person="http://www.orcid.org/ns/person" xmlns:personal-details="http://www.orcid.org/ns/personal-details"
+	xmlns:other-name="http://www.orcid.org/ns/other-name"
+	xmlns:researcher-url="http://www.orcid.org/ns/researcher-url"
+	xmlns:email="http://www.orcid.org/ns/email" 
+	xmlns:address="http://www.orcid.org/ns/address"
+	xmlns:keyword="http://www.orcid.org/ns/keyword"
+	xmlns:external-identifier="http://www.orcid.org/ns/external-identifier"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.orcid.org/ns/person ../person-2.0.xsd">
+	<common:last-modified-date>2016-04-14T20:56:22.279Z</common:last-modified-date>
+	<person:name visibility="public"> 		
+		<common:created-date>2016-04-14T20:56:22.279Z</common:created-date>
+		<common:last-modified-date>2016-04-14T20:56:22.279Z</common:last-modified-date>
+		<personal-details:given-names>Bob T.</personal-details:given-names>
+		<personal-details:family-name>Doc</personal-details:family-name>
+		<personal-details:credit-name>Bob the Doc</personal-details:credit-name>		
+	</person:name>
+	<other-name:other-names>		
+		<common:last-modified-date>2001-12-31T12:00:00</common:last-modified-date>
+		<other-name:other-name visibility="public" put-code="1">
+			<common:created-date>2001-12-31T12:00:00</common:created-date>
+			<common:last-modified-date>2001-12-31T12:00:00</common:last-modified-date>						
+			<common:source>
+				<common:source-orcid>
+					<common:uri>http://orcid.org/8888-8888-8888-8880</common:uri>
+					<common:path>8888-8888-8888-8880</common:path>
+					<common:host>orcid.org</common:host>
+				</common:source-orcid>
+				<common:source-name />
+			</common:source>
+			<other-name:content>other-name-1</other-name:content>
+		</other-name:other-name>
+	</other-name:other-names>
+	<person:biography visibility="public">
+		<common:created-date>2016-04-14T20:56:22.279Z</common:created-date>
+		<common:last-modified-date>2016-04-14T20:56:22.279Z</common:last-modified-date>
+		<personal-details:content>biography</personal-details:content>		
+	</person:biography>
+	<researcher-url:researcher-urls>
+		<common:last-modified-date>2001-12-31T12:00:00</common:last-modified-date>
+		<researcher-url:researcher-url put-code="1248"
+			visibility="public">
+			<common:created-date>2001-12-31T12:00:00</common:created-date>
+			<common:last-modified-date>2001-12-31T12:00:00</common:last-modified-date>				
+			<common:source>
+				<common:source-orcid>
+					<common:uri>http://orcid.org/8888-8888-8888-8880</common:uri>
+					<common:path>8888-8888-8888-8880</common:path>
+					<common:host>orcid.org</common:host>
+				</common:source-orcid>
+				<common:source-name />
+			</common:source>
+			<researcher-url:url-name>url-name-1</researcher-url:url-name>
+			<researcher-url:url>http://url.com/</researcher-url:url>	
+		</researcher-url:researcher-url>
+	</researcher-url:researcher-urls>
+	<email:emails>
+		<email:email primary="true" visibility="public">				
+			<common:created-date>2001-12-31T12:00:00</common:created-date>
+			<common:last-modified-date>2001-12-31T12:00:00</common:last-modified-date>				
+			<common:source>
+				<common:source-orcid>
+					<common:uri>http://orcid.org/8888-8888-8888-8880</common:uri>
+					<common:path>8888-8888-8888-8880</common:path>
+					<common:host>orcid.org</common:host>
+				</common:source-orcid>
+				<common:source-name />
+			</common:source>
+			<email:email>bdoc@mailinator.com</email:email>	
+		</email:email>
+		<email:email visibility="public">				
+			<common:created-date>2001-12-31T12:00:00</common:created-date>
+			<common:last-modified-date>2001-12-31T12:00:00</common:last-modified-date>				
+			<common:source>
+				<common:source-orcid>
+					<common:uri>http://orcid.org/8888-8888-8888-8880</common:uri>
+					<common:path>8888-8888-8888-8880</common:path>
+					<common:host>orcid.org</common:host>
+				</common:source-orcid>
+				<common:source-name />
+			</common:source>
+			<email:email>bdoc2@mailinator.com</email:email>	
+		</email:email>
+	</email:emails>
+	<address:addresses>
+		<address:address visibility="public" put-code="1">
+			<common:created-date>2001-12-31T12:00:00</common:created-date>
+			<common:last-modified-date>2001-12-31T12:00:00</common:last-modified-date>					
+			<common:source>
+				<common:source-orcid>
+					<common:uri>http://orcid.org/8888-8888-8888-8880</common:uri>
+					<common:path>8888-8888-8888-8880</common:path>
+					<common:host>orcid.org</common:host>
+				</common:source-orcid>
+				<common:source-name />
+			</common:source>
+			<address:country>US</address:country>
+		</address:address>
+	</address:addresses>
+	<keyword:keywords>
+		<keyword:keyword visibility="public" put-code="1">
+			<common:created-date>2001-12-31T12:00:00</common:created-date>
+			<common:last-modified-date>2001-12-31T12:00:00</common:last-modified-date>		
+			<common:source>
+				<common:source-orcid>
+					<common:uri>http://orcid.org/8888-8888-8888-8880</common:uri>
+					<common:path>8888-8888-8888-8880</common:path>
+					<common:host>orcid.org</common:host>
+				</common:source-orcid>
+				<common:source-name />
+			</common:source>
+			<keyword:content>keyword1</keyword:content>
+		</keyword:keyword>
+	</keyword:keywords>
+	<external-identifier:external-identifiers>
+		<external-identifier:external-identifier visibility="public" put-code="1">
+			<common:created-date>2001-12-31T12:00:00</common:created-date>
+			<common:last-modified-date>2001-12-31T12:00:00</common:last-modified-date>							
+			<common:source>
+				<common:source-orcid>
+					<common:uri>http://orcid.org/8888-8888-8888-8880</common:uri>
+					<common:path>8888-8888-8888-8880</common:path>
+					<common:host>orcid.org</common:host>
+				</common:source-orcid>
+				<common:source-name />
+			</common:source>
+			<common:external-id-type>type-1</common:external-id-type>
+			<common:external-id-value>value-1</common:external-id-value>
+			<common:external-id-url>http://url.com/1</common:external-id-url>			
+		</external-identifier:external-identifier>
+	</external-identifier:external-identifiers>
+</person:person>

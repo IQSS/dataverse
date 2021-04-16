@@ -27,11 +27,21 @@ import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
+import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
 import java.io.File;
 import java.io.FileInputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.RedirectionException;
+import javax.ws.rs.ServiceUnavailableException;
 
 /**
  *
@@ -39,6 +49,9 @@ import java.util.logging.Logger;
  */
 @Provider
 public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstance> {
+    
+    @Inject
+    MakeDataCountLoggingServiceBean mdcLogService;
     
     private static final Logger logger = Logger.getLogger(DownloadInstanceWriter.class.getCanonicalName());
 
@@ -67,7 +80,13 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
             StorageIO<DataFile> storageIO = DataAccess.getStorageIO(dataFile, daReq);
                         
             if (storageIO != null) {
-                storageIO.open();
+                try {
+                    storageIO.open();
+                } catch (IOException ioex) {
+                    //throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
+                    logger.log(Level.INFO, "Datafile {0}: Failed to locate and/or open physical file. Error message: {1}", new Object[]{dataFile.getId(), ioex.getLocalizedMessage()});
+                    throw new NotFoundException("Datafile "+dataFile.getId()+": Failed to locate and/or open physical file.");
+                }
                 
                 if (di.getConversionParam() != null) {
                     // Image Thumbnail and Tabular data conversion: 
@@ -204,7 +223,73 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     
                     
                     if (storageIO == null) {
-                        throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
+                        //throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
+                        // 404/not found may be a better return code option here
+                        // (similarly to what the Access API returns when a thumbnail is requested on a text file, etc.)
+                        throw new NotFoundException("datafile access error: requested optional service (image scaling, format conversion, etc.) could not be performed on this datafile.");
+                    }
+                } else if (di.getAuxiliaryFile() != null) {
+                    // Make sure to close the InputStream for the main datafile: 
+                    try {storageIO.getInputStream().close();} catch (IOException ioex) {}
+                    String auxTag = di.getAuxiliaryFile().getFormatTag(); 
+                    String auxVersion = di.getAuxiliaryFile().getFormatVersion();
+                    if (auxVersion != null) {
+                        auxTag = auxTag + "_" + auxVersion;
+                    }
+                    long auxFileSize = di.getAuxiliaryFile().getFileSize();
+                    InputStreamIO auxStreamIO = new InputStreamIO(storageIO.getAuxFileAsInputStream(auxTag), auxFileSize);
+                    auxStreamIO.setFileName(storageIO.getFileName() + "." + auxTag);
+                    auxStreamIO.setMimeType(di.getAuxiliaryFile().getContentType());
+                    storageIO = auxStreamIO;
+                    
+                } else {
+                    if (storageIO instanceof S3AccessIO && !(dataFile.isTabularData()) && ((S3AccessIO) storageIO).downloadRedirectEnabled()) {
+                        // definitely close the (still open) S3 input stream, 
+                        // since we are not going to use it. The S3 documentation
+                        // emphasizes that it is very important not to leave these
+                        // lying around un-closed, since they are going to fill 
+                        // up the S3 connection pool!
+                        try {storageIO.getInputStream().close();} catch (IOException ioex) {}
+                        // [attempt to] redirect: 
+                        String redirect_url_str; 
+                        try {
+                            redirect_url_str = ((S3AccessIO)storageIO).generateTemporaryS3Url();
+                        } catch (IOException ioex) {
+                            redirect_url_str = null; 
+                        }
+                        
+                        if (redirect_url_str == null) {
+                            throw new ServiceUnavailableException();
+                        }
+                        
+                        logger.fine("Data Access API: direct S3 url: "+redirect_url_str);
+                        URI redirect_uri; 
+
+                        try {
+                            redirect_uri = new URI(redirect_url_str);
+                        } catch (URISyntaxException ex) {
+                            logger.info("Data Access API: failed to create S3 redirect url ("+redirect_url_str+")");
+                            redirect_uri = null; 
+                        }
+                        if (redirect_uri != null) {
+                            // increment the download count, if necessary:
+                            if (di.getGbr() != null) {
+                                try {
+                                    logger.fine("writing guestbook response, for an S3 download redirect.");
+                                    Command<?> cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
+                                    di.getCommand().submit(cmd);
+                                    MakeDataCountEntry entry = new MakeDataCountEntry(di.getRequestUriInfo(), di.getRequestHttpHeaders(), di.getDataverseRequestService(), di.getGbr().getDataFile());
+                                    mdcLogService.logEntry(entry);
+                                } catch (CommandException e) {
+                                }
+                            }
+                            
+                            // finally, issue the redirect:
+                            Response response = Response.seeOther(redirect_uri).build();
+                            logger.fine("Issuing redirect to the file location on S3.");
+                            throw new RedirectionException(response);
+                        }
+                        throw new ServiceUnavailableException();
                     }
                 }
                 
@@ -217,9 +302,11 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     
                     // Provide both the "Content-disposition" and "Content-Type" headers,
                     // to satisfy the widest selection of browsers out there. 
-                    
-                    httpHeaders.add("Content-disposition", "attachment; filename=\"" + fileName + "\"");
-                    httpHeaders.add("Content-Type", mimeType + "; name=\"" + fileName + "\"");
+                    // Encode the filename as UTF-8, then deal with spaces. "encode" changes
+                    // a space to + so we change it back to a space (%20).
+                    String finalFileName = URLEncoder.encode(fileName, "UTF-8").replaceAll("\\+", "%20");
+                    httpHeaders.add("Content-disposition", "attachment; filename=\"" + finalFileName + "\"");
+                    httpHeaders.add("Content-Type", mimeType + "; name=\"" + finalFileName + "\"");
                     
                     long contentSize; 
                     boolean useChunkedTransfer = false; 
@@ -284,13 +371,12 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             logger.fine("writing guestbook response.");
                             Command<?> cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
                             di.getCommand().submit(cmd);
-                        } catch (CommandException e) {
-                            //if an error occurs here then download won't happen no need for response recs...
-                        }
+                            MakeDataCountEntry entry = new MakeDataCountEntry(di.getRequestUriInfo(), di.getRequestHttpHeaders(), di.getDataverseRequestService(), di.getGbr().getDataFile());
+                            mdcLogService.logEntry(entry);
+                        } catch (CommandException e) {}
                     } else {
                         logger.fine("not writing guestbook response");
                     } 
-                        
                     
                     instream.close();
                     outstream.close(); 
@@ -299,7 +385,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
             }
         }
         
-        throw new WebApplicationException(Response.Status.NOT_FOUND);
+        throw new NotFoundException();
 
     }
     
@@ -376,5 +462,4 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
         }
         return -1;
     }
-
 }

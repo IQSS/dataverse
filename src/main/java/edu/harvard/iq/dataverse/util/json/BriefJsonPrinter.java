@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUser;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
+import edu.harvard.iq.dataverse.workflow.Workflow;
 import javax.json.JsonObjectBuilder;
 
 /**
@@ -13,16 +14,6 @@ import javax.json.JsonObjectBuilder;
  * @author michael
  */
 public class BriefJsonPrinter {
-	
-	public JsonObjectBuilder json( BuiltinUser usr ) {
-		return ( usr==null ) 
-				? null
-				: jsonObjectBuilder().add("id", usr.getId())
-					.add("firstName", usr.getFirstName())
-					.add("lastName", usr.getLastName())
-					.add("affiliation", usr.getAffiliation())
-					;
-	}
 	
 	public JsonObjectBuilder json( DatasetVersion dsv ) {
 		return ( dsv==null ) 
@@ -41,4 +32,9 @@ public class BriefJsonPrinter {
 					.add("name", blk.getName())
 					;
 	}
+    
+    public JsonObjectBuilder json( Workflow wf ) {
+        return jsonObjectBuilder().add("id", wf.getId())
+                                  .add("name", wf.getName() );
+    }
 }

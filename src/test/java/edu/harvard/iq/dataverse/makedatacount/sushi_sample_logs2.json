@@ -1,0 +1,100 @@
+{
+  "report-header": {
+    "report-name": "dataset report",
+    "report-id": "DSR",
+    "release": "rd1",
+    "created": "2019-01-14",
+    "created-by": "Dash",
+    "report-attributes": [],
+    "reporting-period": {
+      "begin-date": "2019-01-01",
+      "end-date": "2019-01-14"
+    },
+    "report-filters": [],
+    "exceptions": [
+      {
+        "code": 3040,
+        "severity": "warning",
+        "message": "partial data returned",
+        "help-url": "String",
+        "data": "usage data has not been processed for the entire reporting period"
+      }
+    ]
+  },
+  "report_datasets": [
+    {
+      "dataset-title": "dataset1",
+      "dataset-id": [
+        {
+          "type": "doi",
+          "value": "10.5072/FK2/TZQKGD"
+        }
+      ],
+      "dataset-contributors": [
+        {
+          "type": "name",
+          "value": "Admin, Dataverse"
+        }
+      ],
+      "dataset-dates": [
+        {
+          "type": "pub-date",
+          "value": "2019-01-14"
+        }
+      ],
+      "platform": "Dash",
+      "publisher": "client-id",
+      "publisher-id": [
+        {
+          "type": "",
+          "value": ""
+        }
+      ],
+      "data-type": "dataset",
+      "yop": "2019",
+      "uri": "/dataset.xhtml?persistentId=doi:10.5072/FK2/TZQKGD",
+      "performance": [
+        {
+          "period": {
+            "begin-date": "2019-01-01",
+            "end-date": "2019-01-31"
+          },
+          "instance": [
+            {
+              "access-method": "regular",
+              "metric-type": "total-dataset-requests",
+              "count": 1,
+              "country-counts": {
+                "us": 1
+              }
+            },
+            {
+              "access-method": "regular",
+              "metric-type": "unique-dataset-requests",
+              "count": 1,
+              "country-counts": {
+                "us": 1
+              }
+            },
+            {
+              "access-method": "regular",
+              "metric-type": "total-dataset-investigations",
+              "count": 2,
+              "country-counts": {
+                "us": 2
+              }
+            },
+            {
+              "access-method": "regular",
+              "metric-type": "unique-dataset-investigations",
+              "count": 1,
+              "country-counts": {
+                "us": 1
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearch;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.ArrayList;
@@ -31,6 +32,8 @@ import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -40,10 +43,18 @@ import org.hibernate.validator.constraints.NotEmpty;
  * @author mbarsinai
  */
 @NamedQueries({
+    @NamedQuery(name = "Dataverse.findIdStale",query = "SELECT d.id FROM Dataverse d WHERE d.indexTime is NULL OR d.indexTime < d.modificationTime"),
+    @NamedQuery(name = "Dataverse.findIdStalePermission",query = "SELECT d.id FROM Dataverse d WHERE d.permissionIndexTime is NULL OR d.permissionIndexTime < d.permissionModificationTime"),
     @NamedQuery(name = "Dataverse.ownedObjectsById", query = "SELECT COUNT(obj) FROM DvObject obj WHERE obj.owner.id=:id"),
+    @NamedQuery(name = "Dataverse.findAll", query = "SELECT d FROM Dataverse d order by d.name"),
+    @NamedQuery(name = "Dataverse.findRoot", query = "SELECT d FROM Dataverse d where d.owner.id=null"),
     @NamedQuery(name = "Dataverse.findByAlias", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.alias)=:alias"),
+    @NamedQuery(name = "Dataverse.findByOwnerId", query="select object(o) from Dataverse as o where o.owner.id =:ownerId order by o.name"),
+    @NamedQuery(name = "Dataverse.findByCreatorId", query="select object(o) from Dataverse as o where o.creator.id =:creatorId order by o.name"),
+    @NamedQuery(name = "Dataverse.findByReleaseUserId", query="select object(o) from Dataverse as o where o.releaseUser.id =:releaseUserId order by o.name"),
     @NamedQuery(name = "Dataverse.filterByAlias", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.alias) LIKE :alias order by dv.alias"),
-    @NamedQuery(name = "Dataverse.filterByAliasNameAffiliation", query="SELECT dv FROM Dataverse dv WHERE (LOWER(dv.alias) LIKE :alias) OR (LOWER(dv.name) LIKE :name) OR (LOWER(dv.affiliation) LIKE :affiliation) order by dv.alias")
+    @NamedQuery(name = "Dataverse.filterByAliasNameAffiliation", query="SELECT dv FROM Dataverse dv WHERE (LOWER(dv.alias) LIKE :alias) OR (LOWER(dv.name) LIKE :name) OR (LOWER(dv.affiliation) LIKE :affiliation) order by dv.alias"),
+    @NamedQuery(name = "Dataverse.filterByName", query="SELECT dv FROM Dataverse dv WHERE LOWER(dv.name) LIKE :name  order by dv.alias")
 })
 @Entity
 @Table(indexes = {@Index(columnList="defaultcontributorrole_id")
@@ -65,25 +76,25 @@ public class Dataverse extends DvObjectContainer {
     
     private static final long serialVersionUID = 1L;
 
-    @NotBlank(message = "Please enter a name.")
+    @NotBlank(message = "{dataverse.name}")
     @Column( nullable = false )
     private String name;
 
     /**
      * @todo add @Column(nullable = false) for the database to enforce non-null
      */
-    @NotBlank(message = "Please enter an alias.")
+    @NotBlank(message = "{dataverse.alias}")
     @Column(nullable = false, unique=true)
-    @Size(max = 60, message = "Alias must be at most 60 characters.")
-    @Pattern.List({@Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "Found an illegal character(s). Valid characters are a-Z, 0-9, '_', and '-'."), 
-        @Pattern(regexp=".*\\D.*", message="Alias should not be a number")})
+    @Size(max = 60, message = "{dataverse.aliasLength}")
+    @Pattern.List({@Pattern(regexp = "[a-zA-Z0-9\\_\\-]*", message = "{dataverse.nameIllegalCharacters}"),
+        @Pattern(regexp=".*\\D.*", message="{dataverse.aliasNotnumber}")})
     private String alias;
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @NotNull(message = "Please select a category for your dataverse.")
+    @NotNull(message = "{dataverse.category}")
     @Column( nullable = false )
     private DataverseType dataverseType;
        
@@ -102,44 +113,49 @@ public class Dataverse extends DvObjectContainer {
         this.dataverseType = dataverseType;
     }
 
-    @Transient
-    private final String uncategorizedString = "Uncategorized";
-
-        public String getFriendlyCategoryName(){
-       switch (this.dataverseType) {
-            case RESEARCHERS:
-                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.researchers");
-            case RESEARCH_PROJECTS:
-                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.researchProjects");
-            case JOURNALS:
-                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.journals");           
-            case ORGANIZATIONS_INSTITUTIONS:
-                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.organizationsAndInsitutions");           
-            case TEACHING_COURSES:
-                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.teachingCourses");
-            case LABORATORY:
-               return BundleUtil.getStringFromBundle("dataverse.type.selectTab.laboratory");
-            case RESEARCH_GROUP:
-               return BundleUtil.getStringFromBundle("dataverse.type.selectTab.researchGroup");
-            case DEPARTMENT:
-                return BundleUtil.getStringFromBundle("dataverse.type.selectTab.department");
-            case UNCATEGORIZED:
-                return uncategorizedString;
-            default:
-                return "";
-        }    
+    public String getFriendlyCategoryName(){
+        String key = getFriendlyCategoryKey();
+        return BundleUtil.getStringFromBundle(key);
     }
 
+    public String getFriendlyCategoryKey(){
+        switch (this.dataverseType) {
+            case RESEARCHERS:
+                return  ("dataverse.type.selectTab.researchers");
+            case RESEARCH_PROJECTS:
+                return  ("dataverse.type.selectTab.researchProjects" );
+            case JOURNALS:
+                return  ("dataverse.type.selectTab.journals" );
+            case ORGANIZATIONS_INSTITUTIONS:
+                return  ("dataverse.type.selectTab.organizationsAndInsitutions" );
+            case TEACHING_COURSES:
+                return  ("dataverse.type.selectTab.teachingCourses" );
+            case LABORATORY:
+                return  ("dataverse.type.selectTab.laboratory");
+            case RESEARCH_GROUP:
+                return  ("dataverse.type.selectTab.researchGroup" );
+            case DEPARTMENT:
+                return  ("dataverse.type.selectTab.department" );
+            case UNCATEGORIZED:
+                return ("dataverse.type.selectTab.uncategorized");
+            default:
+                return "";
+        }
+    }
+
+
     public String getIndexableCategoryName() {
-        String friendlyName = getFriendlyCategoryName();
-        if (friendlyName.equals(uncategorizedString)) {
+        String key = getFriendlyCategoryKey();
+        if (key.equals("dataverse.type.selectTab.uncategorized")) {
             return null;
         } else {
-            return friendlyName;
+            return BundleUtil.getStringFromDefaultBundle(key);
         }
     }
 
     private String affiliation;
+    
+    ///private String storageDriver=null;
 
 	// Note: We can't have "Remove" here, as there are role assignments that refer
     //       to this role. So, adding it would mean violating a forign key contstraint.
@@ -149,7 +165,7 @@ public class Dataverse extends DvObjectContainer {
     private Set<DataverseRole> roles;
     
     @ManyToOne
-    @JoinColumn(nullable = false)
+    @JoinColumn(nullable = true)
     private DataverseRole defaultContributorRole;
 
     public DataverseRole getDefaultContributorRole() {
@@ -162,7 +178,8 @@ public class Dataverse extends DvObjectContainer {
    
     private boolean metadataBlockRoot;
     private boolean facetRoot;
-    private boolean themeRoot;
+    // By default, themeRoot should be true, as new dataverses should start with the default theme
+    private boolean themeRoot = true;
     private boolean templateRoot;    
 
     
@@ -725,6 +742,11 @@ public class Dataverse extends DvObjectContainer {
     }
     
     @Override
+    public String getCurrentName() {
+        return getName();
+    }
+    
+    @Override
     public boolean isPermissionRoot() {
         return permissionRoot;
     }
@@ -743,5 +765,4 @@ public class Dataverse extends DvObjectContainer {
         }
         return false;
     }
-
 }

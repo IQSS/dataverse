@@ -14,7 +14,9 @@ package edu.harvard.iq.dataverse;
 
 public class DatasetRelPublication {
 
-
+    /**
+     * The "text" is the citation of the related publication.
+     */
     private String text;
     private String idType;
     private String idNumber;

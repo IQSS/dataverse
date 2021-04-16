@@ -1,0 +1,31 @@
+{
+    "fields": [
+        {
+            "typeName": "author",
+            "value": [
+                {
+                    "authorName": {
+                        "typeName": "authorName",
+                        "value": "Poe, Edgar Allen"
+                    }
+                    ,
+                    "authorAffiliation": {
+                        "typeName": "authorAffiliation",
+                        "value": "Baltimore Poets"
+                    }
+                },
+                {
+                    "authorName": {
+                        "typeName": "authorName",
+                        "value": "Mulligan, Hercules"
+                    }
+                    ,
+                    "authorAffiliation": {
+                        "typeName": "authorAffiliation",
+                        "value": "Sons of Liberty"
+                    }
+                }		
+            ]
+        }
+    ]
+}

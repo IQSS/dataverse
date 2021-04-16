@@ -5,9 +5,9 @@ Upgrading
 .. contents:: |toctitle|
 	:local:
 
-When upgrading within Dataverse 4.x, you will need to follow the upgrade instructions for each intermediate version. 
+When upgrading within Dataverse Software 4.x, you will need to follow the upgrade instructions for each intermediate 4.x. Similarly, when upgrading within Dataverse Software 5.x, you will need to follow the upgrade instructions for each intermediate 5.x version.
 
-Upgrades always involve deploying the latest war file but may also include running SQL scripts and updating the schema used by Solr.
+Upgrades always involve deploying the latest war file but may also include updating the schema used by Solr or other manual steps. Running database migration scripts was once required but this has been automated (see the ``flyway_schema_history`` database table to see migrations that have been run).
 
 Please consult the release notes associated with each release at https://github.com/IQSS/dataverse/releases for more information.
 

@@ -10,9 +10,10 @@ import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.AbstractCreateDatasetCommand;
 import edu.harvard.iq.dataverse.api.imports.ImportGenericServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -97,15 +98,13 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                     String nonNullDefaultIfKeyNotFound = "";
                     String protocol = settingsService.getValueForKey(SettingsServiceBean.Key.Protocol, nonNullDefaultIfKeyNotFound);
                     String authority = settingsService.getValueForKey(SettingsServiceBean.Key.Authority, nonNullDefaultIfKeyNotFound);
-                    String separator = settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator, nonNullDefaultIfKeyNotFound);
+
                     dataset.setProtocol(protocol);
                     dataset.setAuthority(authority);
-                    dataset.setDoiSeparator(separator);
                     //Wait until the create command before actually getting an identifier                    
-                    //dataset.setIdentifier(datasetService.generateDatasetIdentifier(protocol, authority, separator));
                     logger.log(Level.FINE, "DS Deposit identifier: {0}", dataset.getIdentifier());
 
-                    CreateDatasetCommand createDatasetCommand = new CreateDatasetCommand(dataset, dvReq, false);
+                    AbstractCreateDatasetCommand createDatasetCommand = new CreateNewDatasetCommand(dataset, dvReq);
                     if (!permissionService.isUserAllowedOn(user, createDatasetCommand, dataset)) {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "user " + user.getDisplayInfo().getTitle() + " is not authorized to create a dataset in this dataverse.");
                     }
