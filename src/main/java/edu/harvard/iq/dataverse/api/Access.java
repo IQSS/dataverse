@@ -544,6 +544,8 @@ public class Access extends AbstractApiBean {
     /*
      * GET method for retrieving various auxiliary files associated with 
      * a tabular datafile.
+     *
+     * TODO: Consider removing "metadata" from the path.
      */
     
     @Path("datafile/{fileId}/metadata/{formatTag}/{formatVersion}")
@@ -1167,6 +1169,8 @@ public class Access extends AbstractApiBean {
      * @param contentDispositionHeader
      * @param formDataBodyPart
      * @return 
+     *
+     * TODO: Consider removing "metadata" from the path.
      */
     @Path("datafile/{fileId}/metadata/{formatTag}/{formatVersion}")
     @POST
