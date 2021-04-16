@@ -17,7 +17,7 @@
             <span class="#{!fileMetadata.restricted ?
                            'glyphicon glyphicon-globe text-success' : (!fileDownloadHelper.canDownloadFile(fileMetadata) ? 'glyphicon glyphicon-lock text-danger' : 'icon-unlock text-success')}"/>
             <h:outputText 
-                value=" #{!fileMetadata.restricted ? 'Public' : (!fileDownloadHelper.canDownloadFile(fileMetadata) ? bundle['file.downloadBtn.restricted'] : bundle['file.downloadBtn.restricted.with.access.granted'])}"
+                value=" #{!fileMetadata.restricted ? 'Public' : (!fileDownloadHelper.canDownloadFile(fileMetadata) ? bundle['restricted'] : bundle['restrictedaccess'])}"
                 styleClass="#{!fileMetadata.restricted ? 'text-success' : (!fileDownloadHelper.canDownloadFile(fileMetadata) ? 'text-danger' : 'text-success')}"/>
         </span></li>
 
