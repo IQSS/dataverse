@@ -26,6 +26,8 @@ public class CitationData {
     private Date date;
     private String releaseYear;
     private GlobalId persistentId;
+    private GlobalId pidOfDataset;
+    private GlobalId pidOfFile;
     private String version;
     private String UNF = null;
     private String publisher;
@@ -89,8 +91,22 @@ public class CitationData {
         return date;
     }
 
+    /**
+     * CAUTION: this field can contain dataset or file pid depending
+     * on context. Use getters {@link CitationData#getPidOfDataset()}
+     * or {@link CitationData#getPidOfFile()} to obtain pid of wanted
+     * object (if available).
+     */
     public GlobalId getPersistentId() {
         return persistentId;
+    }
+
+    public GlobalId getPidOfDataset() {
+        return pidOfDataset;
+    }
+
+    public GlobalId getPidOfFile() {
+        return pidOfFile;
     }
 
     public String getVersion() {
@@ -211,6 +227,16 @@ public class CitationData {
 
     public CitationData setPersistentId(GlobalId persistentId) {
         this.persistentId = persistentId;
+        return this;
+    }
+
+    public CitationData setPidOfDataset(GlobalId pidOfDataset) {
+        this.pidOfDataset = pidOfDataset;
+        return this;
+    }
+
+    public CitationData setPidOfFile(GlobalId pidOfFile) {
+        this.pidOfFile = pidOfFile;
         return this;
     }
 

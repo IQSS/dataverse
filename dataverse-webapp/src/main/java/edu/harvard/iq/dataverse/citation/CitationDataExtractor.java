@@ -23,6 +23,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+
 @Stateless
 public class CitationDataExtractor {
 
@@ -36,6 +38,7 @@ public class CitationDataExtractor {
 
         data.setDirect(false)
                 .setPersistentId(extractPID(datasetVersion, datasetVersion.getDataset(), false)) // Global Id: always part of citation for local datasets & some harvested
+                .setPidOfDataset(extractDatasetPID(datasetVersion))
                 .setUNF(datasetVersion.getUNF());
 
         return data;
@@ -51,8 +54,9 @@ public class CitationDataExtractor {
         data.setDirect(direct)
                 .setFileTitle(fileMetadata.getLabel())
                 .setDescription(fileMetadata.getDescription())
-                .setPersistentId(extractPID(dsv, df, direct)); // Global Id of datafile (if published & isDirect==true) or dataset as appropriate
-
+                .setPersistentId(extractPID(dsv, df, direct)) // Global Id of datafile (if published & isDirect==true) or dataset as appropriate
+                .setPidOfDataset(extractDatasetPID(dsv))
+                .setPidOfFile(extractFilePID(dsv, df, direct));
         if (df.isTabularData() && df.getUnf() != null && !df.getUnf().isEmpty()) {
             data.setUNF(df.getUnf());
         }
@@ -122,13 +126,23 @@ public class CitationDataExtractor {
 
     private GlobalId extractPID(DatasetVersion dsv, DvObject dv, boolean direct) {
         if (shouldCreateGlobalId(dsv)) {
-            if (direct && StringUtils.isNotEmpty(dsv.getDataset().getIdentifier())) {
+            if (!direct && isNotEmpty(dsv.getDataset().getIdentifier())) {
                 return new GlobalId(dsv.getDataset());
-            } else if (!direct && StringUtils.isNotEmpty(dv.getIdentifier())) {
+            } else if (direct && isNotEmpty(dv.getIdentifier())) {
                 return new GlobalId(dv);
             }
         }
         return null;
+    }
+
+    private GlobalId extractDatasetPID(DatasetVersion dsv) {
+        return shouldCreateGlobalId(dsv) && isNotEmpty(dsv.getDataset().getIdentifier())
+                ? new GlobalId(dsv.getDataset()) : null;
+    }
+
+    private GlobalId extractFilePID(DatasetVersion dsv, DataFile datafile, boolean direct) {
+        return shouldCreateGlobalId(dsv) && !direct && isNotEmpty(datafile.getIdentifier())
+                ? new GlobalId(datafile) : null;
     }
 
     private boolean shouldCreateGlobalId(DatasetVersion dsv) {
@@ -153,8 +167,9 @@ public class CitationDataExtractor {
             }
         } else {
             try {
-                citationDate = new SimpleDateFormat("yyyy")
-                        .parse(dsv.getDistributionDate());
+                citationDate = dsv.getDistributionDate() != null
+                        ? new SimpleDateFormat("yyyy").parse(dsv.getDistributionDate())
+                        : null;
             } catch (ParseException pe) {
                 logger.warn(String.format("Error parsing date [%s]", dsv.getDistributionDate()), pe);
             }

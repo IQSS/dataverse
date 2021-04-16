@@ -5,6 +5,7 @@ package edu.harvard.iq.dataverse.citation;
  */
 public enum CitationConstants {
     DATA("citation.constants.data"),
+    FILE_NAME("citation.constants.file.name"),
     PRODUCER("citation.constants.producer"),
     DISTRIBUTOR("citation.constants.distributor"),
     PUBLISHER("citation.constants.publisher");

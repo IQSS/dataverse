@@ -48,7 +48,7 @@ public class StandardCitationFormatsConverter extends AbstractCitationFormatsCon
                 .orElse(StringUtils.EMPTY);
         citation.urlValue(pid, pid).endPart()
                 .value(data.getPublisher()).endPart()
-                .rawValue(data.getVersion()).endPart(StringUtils.EMPTY);
+                .rawValue(data.getVersion()).endPartEmpty();
         if (!data.isDirect()) {
             citation.add("; ").value(data.getFileTitle()).endPart(" [fileName]");
         }

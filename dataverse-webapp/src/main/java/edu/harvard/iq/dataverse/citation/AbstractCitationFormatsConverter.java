@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
@@ -51,7 +52,7 @@ public abstract class AbstractCitationFormatsConverter implements CitationFormat
         }
 
         public CitationBuilder urlValue(String text, String url) {
-            if (text == null) {
+            if (isBlank(text)) {
                 partElements.add(new Token(StringUtils.EMPTY, Token.Type.DATA));
             } else {
                 String value = escapeHtml && url != null
@@ -64,6 +65,10 @@ public abstract class AbstractCitationFormatsConverter implements CitationFormat
 
         public CitationBuilder endPart() {
             return endPart(", ");
+        }
+
+        public CitationBuilder endPartEmpty() {
+            return endPart(StringUtils.EMPTY);
         }
 
         public CitationBuilder endPart(String delimiter) {

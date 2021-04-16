@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolHandler;
+import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
@@ -25,6 +26,7 @@ import edu.harvard.iq.dataverse.util.FileUtil.ApiBatchDownloadType;
 import edu.harvard.iq.dataverse.util.FileUtil.ApiDownloadType;
 import edu.harvard.iq.dataverse.util.FileUtil.FileCitationExtension;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -36,6 +38,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -261,6 +264,9 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         String nameEnd = (fileMetadata == null || fileMetadata.getLabel() == null)
                 ? extension.getExtension() // Dataset-level citation
                 : FileUtil.getCiteDataFileFilename(citationData.getFileTitle(), extension); // Datafile-level citation
-        return type + ";" + "filename=" + citationData.getPersistentId().asString() + nameEnd;
+        String pid = Optional.ofNullable(citationData.getPersistentId())
+                .map(GlobalId::asString)
+                .orElse(StringUtils.EMPTY);
+        return type + ";" + "filename=" + pid + nameEnd;
     }
 }
