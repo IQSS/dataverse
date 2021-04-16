@@ -1866,7 +1866,11 @@ public class DatasetPage implements java.io.Serializable {
             displayWorkflowComments();
             
             
-            if (initFull) {
+            if (initFull) {                
+                tooLargeToDownload = getSizeOfDatasetNumeric() > settingsWrapper.getZipDownloadLimit();
+                tooLargeToDownloadOriginal = getSizeOfDatasetOrigNumeric() > settingsWrapper.getZipDownloadLimit();
+                tooLargeToDownloadArchival = getSizeOfDatasetArchivalNumeric() > settingsWrapper.getZipDownloadLimit();
+                
                 // init the list of FileMetadatas
                 if (workingVersion.isDraft() && canUpdateDataset()) {
                     readOnly = false;
@@ -2852,19 +2856,47 @@ public class DatasetPage implements java.io.Serializable {
         return DatasetUtil.getDownloadSize(workingVersion, original);
     }
     
+    private boolean tooLargeToDownload;
+    private boolean tooLargeToDownloadArchival;
+    private boolean tooLargeToDownloadOriginal;
+
+    public boolean isTooLargeToDownloadOriginal() {
+        return tooLargeToDownloadOriginal;
+    }
+
+    public void setTooLargeToDownloadOriginal(boolean tooLargeToDownloadOriginal) {
+        this.tooLargeToDownloadOriginal = tooLargeToDownloadOriginal;
+    }
+
+    public boolean isTooLargeToDownloadArchival() {
+        return tooLargeToDownloadArchival;
+    }
+
+    public void setTooLargeToDownloadArchival(boolean tooLargeToDownloadArchival) {
+        this.tooLargeToDownloadArchival = tooLargeToDownloadArchival;
+    }
+
+    public boolean isTooLargeToDownload() {
+        return tooLargeToDownload;
+    }
+
+    public void setTooLargeToDownload(boolean tooLargeToDownload) {
+        this.tooLargeToDownload = tooLargeToDownload;
+    }
+    
     public Long getSizeOfDatasetNumeric() {
-        //get min of orig/archival
-        return Math.min(DatasetUtil.getDownloadSizeNumeric(workingVersion, true), DatasetUtil.getDownloadSizeNumeric(workingVersion, false)) ;
+        if (this.hasTabular){
+            return Math.min(getSizeOfDatasetOrigNumeric(), getSizeOfDatasetArchivalNumeric());
+        } 
+        return getSizeOfDatasetOrigNumeric();
     }
     
     public Long getSizeOfDatasetOrigNumeric() {
-        boolean original = true;
-        return DatasetUtil.getDownloadSizeNumeric(workingVersion, original);
+        return DatasetUtil.getDownloadSizeNumeric(workingVersion, true);
     }
     
     public Long getSizeOfDatasetArchivalNumeric() {
-        boolean original = false;
-        return DatasetUtil.getDownloadSizeNumeric(workingVersion, original);
+        return DatasetUtil.getDownloadSizeNumeric(workingVersion, false);
     }
     
     public String getSizeOfSelectedAsString(){
@@ -2872,7 +2904,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public String getSizeOfSelectedMaxAsString(){
-        return FileSizeChecker.bytesToHumanReadable(Math.max(getSizeOfSelectedOrigNumeric(), getSizeOfDatasetArchivalNumeric()) );
+        return FileSizeChecker.bytesToHumanReadable(Math.max(getSizeOfSelectedOrigNumeric(), getSizeOfSelectedArchivalNumeric()) );
     }
     
     public String getZipDownloadLimitAsString(){
@@ -2880,24 +2912,19 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public Long getSizeOfSelectedOrigNumeric(){
-        boolean original = true;
-        return DatasetUtil.getDownloadSizeNumericBySelectedFiles(selectedFiles, original);
-        
+        return DatasetUtil.getDownloadSizeNumericBySelectedFiles(selectedFiles, true);        
     }
     
     public Long getSizeOfSelectedArchivalNumeric(){
-        boolean original = false;
-        return DatasetUtil.getDownloadSizeNumericBySelectedFiles(selectedFiles, original);
-        
+        return DatasetUtil.getDownloadSizeNumericBySelectedFiles(selectedFiles, false);        
     }
     
     public Long getSizeOfSelectedMaxNumeric(){
-       return Math.max(DatasetUtil.getDownloadSizeNumericBySelectedFiles(selectedFiles, true), DatasetUtil.getDownloadSizeNumericBySelectedFiles(selectedFiles, false)) ;       
+       return Math.max(getSizeOfSelectedOrigNumeric(), getSizeOfSelectedArchivalNumeric()) ;       
     }
     
     public String getSizeOfDatasetOrig() {
-        boolean original = true;
-        return DatasetUtil.getDownloadSize(workingVersion, original);
+        return DatasetUtil.getDownloadSize(workingVersion, true);
     }
 
     public void validateAllFilesForDownloadArchival() {
@@ -2946,7 +2973,6 @@ public class DatasetPage implements java.io.Serializable {
        
         //if there are two or more files with a total size 
         //over the zip limit post a "too large" popup 
-        System.out.print("bytes: " + bytes);
         if (bytes > settingsWrapper.getZipDownloadLimit() && selectedDownloadableFiles.size() > 1 ){
             PrimeFaces.current().executeScript("PF('downloadTooLarge').show()");
             return;
@@ -3010,11 +3036,6 @@ public class DatasetPage implements java.io.Serializable {
     public void setSelectAllFiles(boolean selectAllFiles) {
         this.selectAllFiles = selectAllFiles;
     }
-    
-    public void handleFileSelectClick(){
-        setSelectAllFiles(false);
-        
-    }
 
     public void toggleAllSelected(){
         //This is here so that if the user selects all on the dataset page
@@ -3063,28 +3084,6 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
     }
-    
-    
-    private Long originalSelectedFileSize;
-    
-    private Long archivalSelectedFileSize;
-
-    public Long getOriginalSelectedFileSize() {
-        return originalSelectedFileSize;
-    }
-
-    public void setOriginalSelectedFileSize(Long originalSelectedFileSize) {
-        this.originalSelectedFileSize = originalSelectedFileSize;
-    }
-
-    public Long getArchivalSelectedFileSize() {
-        return archivalSelectedFileSize;
-    }
-
-    public void setArchivalSelectedFileSize(Long archivalSelectedFileSize) {
-        this.archivalSelectedFileSize = archivalSelectedFileSize;
-    }
-
 
     private List<String> getSuccessMessageArguments() {
         List<String> arguments = new ArrayList<>();

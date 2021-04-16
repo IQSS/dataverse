@@ -146,10 +146,10 @@
                                                     </button>
                                                     <ul class="dropdown-menu pull-right text-left" style="padding-left:1em; padding-right:1em;" >
                                                         <!-- DOWNLOAD -->
-                                                        <ui:fragment rendered="#{DatasetPage.canDownloadFiles()  and !(DatasetPage.sizeOfDatasetNumeric > settingsWrapper.zipDownloadLimit) }">
+                                                        <ui:fragment rendered="#{DatasetPage.canDownloadFiles()  and !(DatasetPage.tooLargeToDownload) }">
                                                             <li class="dropdown-header">#{bundle['dataset.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
                                                             <!-- NORMAL DOWNLOAD BUTTON (NO TABULAR FILES) -->
-                                                            <li jsf:rendered="#{!DatasetPage.versionHasTabular and !(DatasetPage.sizeOfDatasetNumeric > settingsWrapper.zipDownloadLimit)}">                 
+                                                            <li jsf:rendered="#{!DatasetPage.versionHasTabular and !(DatasetPage.tooLargeToDownload)}">                 
                                                                 <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadArchival()}" styleClass="btn-download">
                                                                     #{bundle.download}
                                                                     <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
@@ -157,14 +157,9 @@
                                                                     </h:outputFormat>
                                                                 </p:commandLink>
                                                             </li>
-                                                            
-                                                            <li jsf:rendered="#{DatasetPage.canDownloadFiles()  and (DatasetPage.sizeOfDatasetOrigNumeric > settingsWrapper.zipDownloadLimit) }" style="margin-left: 3.5em;">
-                                                                <h:outputText value="#{bundle['dataset.accessBtn.too.big']}"  >                                           
-                                                                </h:outputText> 
-                                                            </li>
 
                                                             <!-- DOWNLOAD ORIGINAL BUTTON (TABULAR FILES PRESENT) -->
-                                                            <li jsf:rendered="#{DatasetPage.versionHasTabular and DatasetPage.sizeOfDatasetOrig != '0 B'  and !(DatasetPage.sizeOfDatasetOrigNumeric > settingsWrapper.zipDownloadLimit) }">
+                                                            <li jsf:rendered="#{DatasetPage.versionHasTabular and DatasetPage.sizeOfDatasetOrig != '0 B'  and !(DatasetPage.tooLargeToDownloadOriginal) }">
                                                                 <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadOriginal()}" 
                                                                                oncomplete="bind_bsui_components();"
                                                                                styleClass="btn-download">
@@ -174,12 +169,12 @@
                                                                     </h:outputFormat>
                                                                 </p:commandLink>
                                                             </li>
-                                                            <ui:fragment rendered="#{DatasetPage.canDownloadFiles()  and (DatasetPage.sizeOfDatasetOrigNumeric > settingsWrapper.zipDownloadLimit) }">                                                                                                                               
+                                                            <ui:fragment rendered="#{DatasetPage.canDownloadFiles()  and (DatasetPage.tooLargeToDownloadOriginal) }">                                                                                                                               
                                                                     <h:outputText value="#{bundle['dataset.accessBtn.original.too.big']}">                                           
                                                                     </h:outputText>                                                            
                                                             </ui:fragment>
                                                             <!-- DOWNLOAD ARCHIVAL FILES (TABULAR FILES PRESENT) -->
-                                                            <li jsf:rendered="#{DatasetPage.versionHasTabular and !(DatasetPage.sizeOfDatasetArchivalNumeric > settingsWrapper.zipDownloadLimit)}">
+                                                            <li jsf:rendered="#{DatasetPage.versionHasTabular and !(DatasetPage.tooLargeToDownloadArchival)}">
                                                                 <p:commandLink update="@form" oncomplete="bind_bsui_components();" 
                                                                                actionListener="#{DatasetPage.validateAllFilesForDownloadArchival()}" styleClass="btn-download">
                                                                     #{bundle.downloadArchival}
@@ -188,7 +183,7 @@
                                                                     </h:outputFormat>
                                                                 </p:commandLink>
                                                             </li>
-                                                            <ui:fragment rendered="#{DatasetPage.versionHasTabular  and (DatasetPage.sizeOfDatasetArchivalNumeric > settingsWrapper.zipDownloadLimit) }">                                                                                                                               
+                                                            <ui:fragment rendered="#{DatasetPage.versionHasTabular  and (DatasetPage.tooLargeToDownloadArchival) }">                                                                                                                               
                                                                     <h:outputText value="#{bundle['dataset.accessBtn.archival.too.big']}">                                           
                                                                     </h:outputText>                                                            
                                                             </ui:fragment>
@@ -198,7 +193,7 @@
                                                         <!-- END: DOWNLOAD -->
                                                         
                                                         <!-- Download either format too big-->
-                                                        <ui:fragment rendered="#{DatasetPage.canDownloadFiles()  and (DatasetPage.sizeOfDatasetNumeric > settingsWrapper.zipDownloadLimit) }">                                                                                                                               
+                                                        <ui:fragment rendered="#{DatasetPage.canDownloadFiles()  and (DatasetPage.tooLargeToDownload) }">                                                                                                                               
                                                                     <h:outputText value="#{bundle['dataset.accessBtn.too.big']}">                                           
                                                                     </h:outputText>                                                            
                                                         </ui:fragment>                                                        

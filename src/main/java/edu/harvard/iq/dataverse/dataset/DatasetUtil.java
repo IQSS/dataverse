@@ -470,16 +470,7 @@ public class DatasetUtil {
     }
     
     public static Long getDownloadSizeNumeric(DatasetVersion dsv, boolean original) {
-        long bytes = 0l;
-        for (FileMetadata fileMetadata : dsv.getFileMetadatas()) {
-            DataFile dataFile = fileMetadata.getDataFile();
-            if (original && dataFile.isTabularData()) {                
-                bytes += dataFile.getOriginalFileSize() == null ? 0 : dataFile.getOriginalFileSize();
-            } else {
-                bytes += dataFile.getFilesize();
-            }
-        }
-        return bytes;
+        return getDownloadSizeNumericBySelectedFiles(dsv.getFileMetadatas(), original);
     }
     
     public static Long getDownloadSizeNumericBySelectedFiles(List<FileMetadata> fileMetadatas, boolean original) {
