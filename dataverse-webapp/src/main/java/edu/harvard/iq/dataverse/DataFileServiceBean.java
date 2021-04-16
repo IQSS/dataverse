@@ -27,7 +27,6 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
-import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
@@ -145,7 +144,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
 
     public List<DataFile> findAllRelatedByRootDatafileId(Long datafileId) {
-        /* 
+        /*
          Get all files with the same root datafile id
          the first file has its own id as root so only one query needed.
         */
@@ -209,7 +208,7 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         //the createNativeQuary takes persistant entities, which Integer.class is not,
         //which is causing the exception. Hence, this query does not need an Integer.class
-        //as the second parameter. 
+        //as the second parameter.
         return em.createNativeQuery("select o.id from FileMetadata o where o.datasetVersion_id = " + datasetVersionId
                                             + searchClause
                                             + " order by o." + sortFieldAndOrder.getSortField() + " " + (
@@ -287,7 +286,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         dataFile.setPublicationDate(publicationDate);
 
         // no support for users yet!
-        // (no need to - so far? -- L.A. 4.2.2) 
+        // (no need to - so far? -- L.A. 4.2.2)
         /*
          Long creatorId = (Long) result[7];
          if (creatorId != null) {
@@ -398,7 +397,7 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         dataFile.setOwner(owner);
 
-        // If content type indicates it's tabular data, spend 2 extra queries 
+        // If content type indicates it's tabular data, spend 2 extra queries
         // looking up the data table and tabular tags objects:
 
         if (TextMimeType.TSV.getMimeValue().equalsIgnoreCase(contentType)) {
@@ -429,7 +428,7 @@ public class DataFileServiceBean implements java.io.Serializable {
                 dataTable.setDataFile(dataFile);
                 dataFile.setDataTable(dataTable);
 
-                // tabular tags: 
+                // tabular tags:
 
                 List<Object[]> tagResults;
                 try {
@@ -518,8 +517,8 @@ public class DataFileServiceBean implements java.io.Serializable {
           .executeUpdate();
     }
 
-    /* 
-     Convenience methods for merging and removingindividual file metadatas, 
+    /*
+     Convenience methods for merging and removingindividual file metadatas,
      without touching the rest of the DataFile object:
     */
 
@@ -558,7 +557,7 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         logger.info("UUID value: {0}", uid.toString());
 
-        // last 6 bytes, of the random UUID, in hex: 
+        // last 6 bytes, of the random UUID, in hex:
 
         String hexRandom = uid.toString().substring(24);
 
@@ -581,13 +580,13 @@ public class DataFileServiceBean implements java.io.Serializable {
     public boolean isSpssSavFile(DataFile file) {
         return (file != null) && ApplicationMimeType.SPSS_SAV.getMimeValue().equalsIgnoreCase(file.getContentType());
     }
-    
+
     /*
     public boolean isSpssPorFile (FileMetadata fileMetadata) {
         if (fileMetadata != null && fileMetadata.getDataFile() != null) {
             return isSpssPorFile(fileMetadata.getDataFile());
         }
-        return false; 
+        return false;
     }
     */
 
@@ -607,16 +606,16 @@ public class DataFileServiceBean implements java.io.Serializable {
             logger.info("returning true");
             return true;
         }
-        
+
         /*
-         Checking the permission here was resulting in extra queries; 
-         it is now the responsibility of the client - such as the DatasetPage - 
+         Checking the permission here was resulting in extra queries;
+         it is now the responsibility of the client - such as the DatasetPage -
          to make sure the permission check out, before calling this method.
-         (or *after* calling this method? - checking permissions costs db 
-         queries; checking if the thumbnail is available may cost cpu time, if 
-         it has to be generated on the fly - so you have to figure out which 
-         is more important... 
-        
+         (or *after* calling this method? - checking permissions costs db
+         queries; checking if the thumbnail is available may cost cpu time, if
+         it has to be generated on the fly - so you have to figure out which
+         is more important...
+
         */
 
 
@@ -685,13 +684,13 @@ public class DataFileServiceBean implements java.io.Serializable {
         // Some browsers (Chrome?) seem to identify FITS files as mime
         // type "image/fits" on upload; this is both incorrect (the official
         // mime type for FITS is "application/fits", and problematic: then
-        // the file is identified as an image, and the page will attempt to 
+        // the file is identified as an image, and the page will attempt to
         // generate a preview - which of course is going to fail...
 
         if (ImageMimeType.FITSIMAGE.getMimeValue().equalsIgnoreCase(contentType)) {
             return false;
         }
-        // besides most image/* types, we can generate thumbnails for 
+        // besides most image/* types, we can generate thumbnails for
         // pdf and "world map" files:
 
         return (contentType != null && (contentType.toLowerCase().startsWith("image/")));
@@ -704,8 +703,8 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         String contentType = file.getContentType();
 
-        // TODO: 
-        // verify that there are no audio types that don't start with "audio/" - 
+        // TODO:
+        // verify that there are no audio types that don't start with "audio/" -
         //  some exotic mp[34]... ?
 
         return (contentType != null && (contentType.toLowerCase().startsWith("audio/")));
@@ -718,7 +717,7 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         String contentType = file.getContentType();
 
-        // The following are the "control card/syntax" formats that we recognize 
+        // The following are the "control card/syntax" formats that we recognize
         // as "code":
 
         return (ApplicationMimeType.R_SYNTAX.getMimeValue().equalsIgnoreCase(contentType)
@@ -733,7 +732,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             return false;
         }
 
-        // "Documents": PDF, assorted MS docs, etc. 
+        // "Documents": PDF, assorted MS docs, etc.
 
         String contentType = file.getContentType();
         int scIndex = 0;
@@ -778,16 +777,16 @@ public class DataFileServiceBean implements java.io.Serializable {
         return TextMimeType.NETWORK_GRAPHML.getMimeValue().equalsIgnoreCase(contentType);
 
     }
-    
-    /* 
-     * we don't really need a method for "other" - 
-     * it's "other" if it fails to identify as any specific class... 
+
+    /*
+     * we don't really need a method for "other" -
+     * it's "other" if it fails to identify as any specific class...
      * (or do we?)
     public boolean isFileClassOther (DataFile file) {
         if (file == null) {
             return false;
         }
-        
+
     }
     */
 
@@ -810,22 +809,22 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
 
         // "Tabular data" is EITHER an INGESTED tabular data file, i.e.
-        // a file with a DataTable and DataVariables; or a DataFile 
+        // a file with a DataTable and DataVariables; or a DataFile
         // of one of the many known tabular data formats - SPSS, Stata, etc.
-        // that for one reason or another didn't get ingested: 
+        // that for one reason or another didn't get ingested:
 
         if (file.isTabularData()) {
             return true;
         }
 
-        // The formats we know how to ingest: 
+        // The formats we know how to ingest:
         if (canIngestAsTabular(file)) {
             return true;
         }
 
         String contentType = file.getContentType();
 
-        // And these are the formats we DON'T know how to ingest, 
+        // And these are the formats we DON'T know how to ingest,
         // but nevertheless recognize as "tabular data":
 
         return (TextMimeType.TSV.getMimeValue().equalsIgnoreCase(contentType)
@@ -842,8 +841,8 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         String contentType = file.getContentType();
 
-        // TODO: 
-        // check if there are video types that don't start with "audio/" - 
+        // TODO:
+        // check if there are video types that don't start with "audio/" -
         // some exotic application/... formats ?
 
         return (contentType != null && (contentType.toLowerCase().startsWith("video/")));
@@ -859,11 +858,6 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         return PackageMimeType.DATAVERSE_PACKAGE.getMimeValue().equalsIgnoreCase(contentType);
     }
-
-    public void populateFileSearchCard(SolrSearchResult solrSearchResult) {
-        solrSearchResult.setEntity(this.findCheapAndEasy(solrSearchResult.getEntityId()));
-    }
-
 
     /**
      * Does this file have a replacement.
@@ -967,7 +961,7 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         String prepend = "";
         if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.DEPENDENT.toString())) {
-            //If format is dependent then pre-pend the dataset identifier 
+            //If format is dependent then pre-pend the dataset identifier
             prepend = datafile.getOwner().getIdentifier() + "/";
         } else {
             //If there's a shoulder prepend independent identifiers with it
@@ -1005,7 +999,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierAsSequentialNumber");
             query.execute();
             Integer identifierNumeric = (Integer) query.getOutputParameterValue(1);
-            // some diagnostics here maybe - is it possible to determine that it's failing 
+            // some diagnostics here maybe - is it possible to determine that it's failing
             // because the stored procedure hasn't been created in the database?
             if (identifierNumeric == null) {
                 return null;
@@ -1079,7 +1073,7 @@ public class DataFileServiceBean implements java.io.Serializable {
      * delete the physical file)
      */
     public void finalizeFileDelete(Long dataFileId, String storageLocation) throws IOException {
-        // Verify that the DataFile no longer exists: 
+        // Verify that the DataFile no longer exists:
         if (find(dataFileId) != null) {
             throw new IOException("Attempted to permanently delete a physical file still associated with an existing DvObject "
                                           + "(id: " + dataFileId + ", location: " + storageLocation);
@@ -1107,8 +1101,8 @@ public class DataFileServiceBean implements java.io.Serializable {
 
     public Map<Long, String> getPhysicalFilesToDelete(DatasetVersion datasetVersion, boolean destroy) {
         // Gather the locations of the physical files associated with DRAFT
-        // (unpublished) DataFiles (or ALL the DataFiles, if "destroy") in the 
-        // DatasetVersion, that will need to be deleted once the 
+        // (unpublished) DataFiles (or ALL the DataFiles, if "destroy") in the
+        // DatasetVersion, that will need to be deleted once the
         // DeleteDatasetVersionCommand execution has been finalized:
 
         return getPhysicalFilesToDelete(
@@ -1133,11 +1127,11 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
 
     public Map<Long, String> getPhysicalFilesToDelete(Dataset dataset) {
-        // Gather the locations of ALL the physical files associated with 
+        // Gather the locations of ALL the physical files associated with
         // a DATASET that is being DESTROYED, that will need to be deleted
-        // once the DestroyDataset command execution has been finalized. 
+        // once the DestroyDataset command execution has been finalized.
         // Once again, note that we are selecting all the files from the dataset
-        // - not just drafts. 
+        // - not just drafts.
 
         Map<Long, String> deleteStorageLocations = new HashMap<>();
 
@@ -1162,7 +1156,7 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         } catch (IOException ioex) {
             // something potentially wrong with the physical file,
-            // or connection to the physical storage? 
+            // or connection to the physical storage?
             // we don't care (?) - we'll still try to delete the datafile from the database.
         }
         return null;

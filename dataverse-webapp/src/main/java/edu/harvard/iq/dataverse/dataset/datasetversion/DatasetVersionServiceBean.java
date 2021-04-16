@@ -20,7 +20,6 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersionIdentifier;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersionRepository;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
-import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -456,7 +455,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         }
 
         DatasetVersion chosenVersion;
-        
+
         /* --------------------------------------------
             (1) Scenario: User asking for a DRAFT?
                 - (1a) Look for draft
@@ -484,7 +483,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
             return chosenVersion;  // This may be null -- let DatasetPage check
         }
         // END: User asking for a Draft
-        
+
         /* --------------------------------------------
             (2) Scenario: Version specified
                 - (2a) Look for major and minor version - RELEASE OR DEACCESSIONED
@@ -492,11 +491,11 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
                 - (2c) Not found: look for latest released version
                 - (2c) Not found: look for DEACCESSIONED
                 - (2d) Not found: look for draft
-                - Permissions: check on DatasetPage        
-        
+                - Permissions: check on DatasetPage
+
             (3) Scenario: No version specified
                 - Same as (2c)(2d) above
-                - Permissions: check on DatasetPage        
+                - Permissions: check on DatasetPage
         -------------------------------------------- */
         Long[] versionNumbers = parseVersionNumber(version);
         if (versionNumbers != null && versionNumbers.length == 2) {        // At least a major version found
@@ -554,8 +553,8 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         if (persistentId == null) {
             return null;
         }
-        
-        /*        
+
+        /*
             Parse the persistent id
         */
         GlobalId parsedId;
@@ -690,16 +689,16 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         return null;
     } // end: retrieveDatasetVersionByVersionId
 
-    // This is an optimized, native query-based method for picking an image 
-    // that can be used as the thumbnail for a given dataset/version. 
+    // This is an optimized, native query-based method for picking an image
+    // that can be used as the thumbnail for a given dataset/version.
     // It is primarily designed to be used when thumbnails are requested
-    // from the Dataverse page, which is Solr search object based; meaning we 
+    // from the Dataverse page, which is Solr search object based; meaning we
     // may not have the Dataset, DatasetVersion, etc. entities initialized.
-    // And since we may need to look up/generate these thumbnails for a large 
+    // And since we may need to look up/generate these thumbnails for a large
     // number of search results, actually instantiating full entities for each
-    // one may be prohibitively expensive. It is also used by the DatasetPage, 
-    // when in read-only, optimized mode, when we similarly try to serve the 
-    // page while minimizing full lookup of entities via EJB. 
+    // one may be prohibitively expensive. It is also used by the DatasetPage,
+    // when in read-only, optimized mode, when we similarly try to serve the
+    // page while minimizing full lookup of entities via EJB.
     // (in both cases above the method is called via ThumbnailServiceWrapper)
 
     public Long getThumbnailByVersionId(Long versionId) {
@@ -709,7 +708,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
 
         Long thumbnailFileId;
 
-        // First, let's see if there are thumbnails that have already been 
+        // First, let's see if there are thumbnails that have already been
         // generated:
         try {
             thumbnailFileId = (Long) em.createNativeQuery("SELECT df.id "
@@ -802,7 +801,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         try {
             em.createNativeQuery("UPDATE dataset SET thumbnailfile_id=" + dataFileId + " WHERE id in (SELECT dataset_id FROM datasetversion WHERE id=" + versionId + ")").executeUpdate();
         } catch (Exception ex) {
-            // it's ok to just ignore... 
+            // it's ok to just ignore...
         }
     }
 
@@ -817,92 +816,6 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         String fileName = "/edit-draft-" + datasetId + "-" + identifier + "-" + logTimestamp + ".txt";
         LoggingUtil.saveLogFile(summary, logDir, fileName);
 
-    }
-
-    public void populateDatasetSearchCard(SolrSearchResult solrSearchResult) {
-        Long dataverseId = Long.parseLong(solrSearchResult.getParent().get("id"));
-        Long datasetVersionId = solrSearchResult.getDatasetVersionId();
-        Long datasetId = solrSearchResult.getEntityId();
-
-        if (dataverseId == 0) {
-            return;
-        }
-
-        Object[] searchResult;
-
-        try {
-            if (datasetId != null) {
-                searchResult = (Object[]) em.createNativeQuery("SELECT t0.VERSIONSTATE, t1.ALIAS, t2.THUMBNAILFILE_ID, t2.USEGENERICTHUMBNAIL, t3.STORAGEIDENTIFIER FROM DATASETVERSION t0, DATAVERSE t1, DATASET t2, DVOBJECT t3 WHERE t0.ID = "
-                                                                       + datasetVersionId
-                                                                       + " AND t1.ID = "
-                                                                       + dataverseId
-                                                                       + " AND t2.ID = "
-                                                                       + datasetId
-                                                                       + " AND t2.ID = t3.ID").getSingleResult()
-
-                ;
-            } else {
-                // Why is this method ever called with dataset_id = null? -- L.A.
-                searchResult = (Object[]) em.createNativeQuery("SELECT t0.VERSIONSTATE, t1.ALIAS FROM DATASETVERSION t0, DATAVERSE t1 WHERE t0.ID = " + datasetVersionId + " AND t1.ID = " + dataverseId).getSingleResult();
-            }
-        } catch (Exception ex) {
-            return;
-        }
-
-        if (searchResult == null) {
-            return;
-        }
-
-        if (searchResult[0] != null) {
-            String versionState = (String) searchResult[0];
-            if ("DEACCESSIONED".equals(versionState)) {
-                solrSearchResult.setDeaccessionedState(true);
-            }
-        }
-
-        /**
-         * @todo (from pdurbin) can a dataverse alias ever be null?
-         */
-
-        if (searchResult[1] != null) {
-            solrSearchResult.setDataverseAlias((String) searchResult[1]);
-        }
-
-        if (searchResult.length == 5) {
-            Dataset datasetEntity = new Dataset();
-            String globalIdentifier = solrSearchResult.getIdentifier();
-            GlobalId globalId = new GlobalId(globalIdentifier);
-
-            datasetEntity.setProtocol(globalId.getProtocol());
-            datasetEntity.setAuthority(globalId.getAuthority());
-            datasetEntity.setIdentifier(globalId.getIdentifier());
-            if (searchResult[4] != null) {
-                datasetEntity.setStorageIdentifier(searchResult[4].toString());
-            }
-            solrSearchResult.setEntity(datasetEntity);
-            if (searchResult[2] != null) {
-                // This is the image file specifically assigned as the "icon" for
-                // the dataset:
-                Long thumbnailFile_id = (Long) searchResult[2];
-                if (thumbnailFile_id != null) {
-                    DataFile thumbnailFile;
-                    try {
-                        thumbnailFile = datafileService.findCheapAndEasy(thumbnailFile_id);
-                    } catch (Exception ex) {
-                        thumbnailFile = null;
-                    }
-
-                    if (thumbnailFile != null) {
-                        ((Dataset) solrSearchResult.getEntity()).setThumbnailFile(thumbnailFile);
-                    }
-                }
-            }
-            if (searchResult[3] != null) {
-                ((Dataset) solrSearchResult.getEntity()).setUseGenericThumbnail((Boolean) searchResult[3]);
-            } else {
-                ((Dataset) solrSearchResult.getEntity()).setUseGenericThumbnail(false);
-            }
-        }
     }
 
     /**
@@ -1018,12 +931,12 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         List<Object[]> infoList = nativeQuery.getResultList();
 
         List<HashMap> hashList = new ArrayList<>();
-        
+
         /*
         HashMap mMap;
         List<String> hashKeys = colsToRetrieve.stream()
-                                  .map(String :: trim)  
-          */                              
+                                  .map(String :: trim)
+          */
 
         /*
                                                         .map(x -> x.getTypeLabel())
@@ -1037,7 +950,7 @@ w
                 */
         return null;/*
         for (Object[] dvInf: infoList) {
-                        
+
             mMap = new HashMap();
             for(int idx=0; idx < colsToRetrieve.size(); idx++){
                 String keyName = colsToRetrieve.get(idx);
@@ -1086,7 +999,7 @@ w
             }
         }
 
-        // is the UNF still unset? 
+        // is the UNF still unset?
         if (StringUtils.isBlank(datasetVersion.getUNF())) {
             IngestUtil.recalculateDatasetVersionUNF(datasetVersion);
             DatasetVersion saved = em.merge(datasetVersion);

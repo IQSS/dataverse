@@ -105,7 +105,7 @@ public class SolrSearchResult {
     private boolean draftState = false;
     private boolean inReviewState = false;
     private boolean deaccessionedState = false;
-    private long datasetVersionId;
+    private Long datasetVersionId;
     private String versionNumberFriendly;
     //Determine if the search result is owned by any of the dvs in the tree of the DV displayed
     private boolean isInTree;
@@ -905,11 +905,11 @@ public class SolrSearchResult {
         this.dateToDisplayOnCard = dateToDisplayOnCard;
     }
 
-    public long getDatasetVersionId() {
+    public Long getDatasetVersionId() {
         return datasetVersionId;
     }
 
-    public void setDatasetVersionId(long datasetVersionId) {
+    public void setDatasetVersionId(Long datasetVersionId) {
         this.datasetVersionId = datasetVersionId;
     }
 

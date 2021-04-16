@@ -33,6 +33,8 @@ import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -58,6 +60,14 @@ import java.util.logging.Logger;
         @NamedQuery(name = "DataFile.findDataFileByIdProtocolAuth",
                 query = "SELECT s FROM DataFile s WHERE s.identifier=:identifier AND s.protocol=:protocol AND s.authority=:authority")
 })
+@NamedNativeQueries({
+        @NamedNativeQuery(name = "Datafile.findDataForSolrResults2", query =
+                DataFile.FIND_DATA_FOR_SOLR_RESULTS_QUERY_BASE + "WHERE t0.ID IN (?, ?)"),
+        @NamedNativeQuery(name = "Datafile.findDataForSolrResults6", query =
+                DataFile.FIND_DATA_FOR_SOLR_RESULTS_QUERY_BASE + "WHERE t0.ID IN (?, ?, ?, ?, ?, ?)"),
+        @NamedNativeQuery(name = "Datafile.findDataForSolrResults10", query =
+                DataFile.FIND_DATA_FOR_SOLR_RESULTS_QUERY_BASE + "WHERE t0.ID IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+})
 @Entity
 @Table(indexes = {@Index(columnList = "ingeststatus")
         , @Index(columnList = "checksumvalue")
@@ -74,6 +84,14 @@ public class DataFile extends DvObject implements Comparable {
 
     public static final Long ROOT_DATAFILE_ID_DEFAULT = (long) -1;
 
+    static final String FIND_DATA_FOR_SOLR_RESULTS_QUERY_BASE =
+            "SELECT t0.ID, t0.CREATEDATE, " +
+            "t0.PUBLICATIONDATE, t0.PREVIEWIMAGEAVAILABLE, t0.STORAGEIDENTIFIER, t0.AUTHORITY, t0.PROTOCOL, t0.IDENTIFIER, " +
+            "t1.CONTENTTYPE, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.CHECKSUMTYPE, " +
+            "t2.ID, t2.IDENTIFIER,  t2.AUTHORITY, t3.ID, t3.UNF, t3.CASEQUANTITY, t3.VARQUANTITY " +
+            "FROM DVOBJECT t0 JOIN DATAFILE t1 ON t0.ID = t1.ID JOIN DVOBJECT t2 ON t0.OWNER_ID = t2.ID " +
+            "LEFT JOIN DATATABLE t3 ON t3.DATAFILE_ID = t0.ID ";
+
     @Expose
     @NotBlank
     @Column(nullable = false)
@@ -81,7 +99,7 @@ public class DataFile extends DvObject implements Comparable {
     private String contentType;
 
 
-//    @Expose    
+//    @Expose
 //    @SerializedName("storageIdentifier")
 //    @Column( nullable = false )
 //    private String fileSystemName;
@@ -173,7 +191,7 @@ public class DataFile extends DvObject implements Comparable {
     //The id given for the datafile by CPL.
 //    @Column(name="prov_cplid") //( nullable=false )
 //    private int provCplId;
-    
+
     /*
         Tabular (formerly "subsettable") data files have DataTable objects
         associated with them:
@@ -499,12 +517,12 @@ public class DataFile extends DvObject implements Comparable {
         // Some browsers (Chrome?) seem to identify FITS files as mime
         // type "image/fits" on upload; this is both incorrect (the official
         // mime type for FITS is "application/fits", and problematic: then
-        // the file is identified as an image, and the page will attempt to 
+        // the file is identified as an image, and the page will attempt to
         // generate a preview - which of course is going to fail...
         if ("image/fits".equalsIgnoreCase(contentType)) {
             return false;
         }
-        // a pdf file is an "image" for practical purposes (we will attempt to 
+        // a pdf file is an "image" for practical purposes (we will attempt to
         // generate thumbnails and previews for them)
         return (contentType != null && (contentType.startsWith("image/") || contentType.equalsIgnoreCase("application/pdf")));
     }
@@ -574,9 +592,9 @@ public class DataFile extends DvObject implements Comparable {
 
     public String getUnf() {
         if (this.isTabularData()) {
-            // (isTabularData() method above verifies that that this file 
-            // has a datDatable associated with it, so the line below is 
-            // safe, in terms of a NullPointerException: 
+            // (isTabularData() method above verifies that that this file
+            // has a datDatable associated with it, so the line below is
+            // safe, in terms of a NullPointerException:
             return this.getDataTable().getUnf();
         }
         return null;
@@ -702,7 +720,7 @@ public class DataFile extends DvObject implements Comparable {
 //    public int getProvCplId() {
 //        return provCplId;
 //    }
-//    
+//
 //    public void setProvCplId(int cplId) {
 //        this.provCplId = cplId;
 //    }
@@ -774,7 +792,7 @@ public class DataFile extends DvObject implements Comparable {
         // ----------------------------------
 
         Map<String, Object> datasetMap = new HashMap<>();
-        // expensive call.......bleh!!! 
+        // expensive call.......bleh!!!
         // https://github.com/IQSS/dataverse/issues/761, https://github.com/IQSS/dataverse/issues/2110, https://github.com/IQSS/dataverse/issues/3191
         //
         datasetMap.put("title", thisFileMetadata.getDatasetVersion().getTitle());
@@ -808,12 +826,12 @@ public class DataFile extends DvObject implements Comparable {
                                       gson.toJsonTree(thisFileMetadata.getCategoriesByName())
         );
 
-        // ----------------------------------        
+        // ----------------------------------
         // Tags
-        // ----------------------------------               
+        // ----------------------------------
         jsonObj.getAsJsonObject().add("tags", gson.toJsonTree(getTagLabels()));
 
-        // ----------------------------------        
+        // ----------------------------------
         // Checksum
         // ----------------------------------
         Map<String, String> checkSumMap = new HashMap<>();
@@ -858,7 +876,7 @@ public class DataFile extends DvObject implements Comparable {
 
 
 } // end of class
-    
 
-    
+
+
 

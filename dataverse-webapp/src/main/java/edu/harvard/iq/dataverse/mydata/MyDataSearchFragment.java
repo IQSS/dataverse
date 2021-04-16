@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.mydata;
 
-import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
@@ -9,12 +8,12 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
+import edu.harvard.iq.dataverse.SolrSearchResultsService;
 import edu.harvard.iq.dataverse.ThumbnailServiceWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
-import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
@@ -41,6 +40,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -77,10 +77,6 @@ public class MyDataSearchFragment implements java.io.Serializable {
     private DvObjectServiceBean dvObjectServiceBean;
     @EJB
     private GroupServiceBean groupService;
-    @EJB
-    private DatasetVersionServiceBean datasetVersionService;
-    @EJB
-    private DataFileServiceBean dataFileService;
     @Inject
     private WidgetWrapper widgetWrapper;
     @Inject
@@ -89,6 +85,8 @@ public class MyDataSearchFragment implements java.io.Serializable {
     private DataverseRequestServiceBean dataverseRequestService;
     @Inject
     private RoleAssigneeServiceBean roleAssigneeService;
+    @Inject
+    private SolrSearchResultsService solrSearchResultsService;
 
     private String browseModeString = "browse";
     private String searchModeString = "search";
@@ -390,10 +388,10 @@ public class MyDataSearchFragment implements java.io.Serializable {
         friendlyNames.add(searchService.getLocaleFacetLabelName(formattedValue, parts[0]));
         return friendlyNames;
     }
-    
+
     public String getNewSelectedTypes(SearchObjectType typeClicked) {
         SearchForTypes newTypesSelected = selectedTypes.toggleType(typeClicked);
-        
+
         return newTypesSelected.getTypes().stream()
                 .map(t -> t.getSolrValue())
                 .collect(Collectors.joining(":"));
@@ -655,7 +653,7 @@ public class MyDataSearchFragment implements java.io.Serializable {
         // ---------------------------------
         DataverseRequest originalRequest = dataverseRequestService.getDataverseRequest();
         DataverseRequest requestWithSearchedUser = new DataverseRequest(authUser, originalRequest.getSourceAddress());
-        
+
         selectedTypes = SearchForTypes.byTypes(
                 Arrays.stream(selectedTypesString.split(":"))
                     .map(SearchObjectType::fromSolrValue)
@@ -785,36 +783,18 @@ public class MyDataSearchFragment implements java.io.Serializable {
              * the UI (currently) shows this "citation" field.
              */
             for (SolrSearchResult solrSearchResult : searchResults) {
-                if (solrSearchResult.getEntityId() == null) {
-                    // avoiding EJBException a la https://redmine.hmdc.harvard.edu/issues/3809
-                    logger.warning(SearchFields.ENTITY_ID + " was null for Solr document id:" + solrSearchResult.getId() + ", skipping. Bad Solr data?");
-                    break;
-                }
-
                 // going to assume that this is NOT a linked object, for now:
                 solrSearchResult.setIsInTree(true);
                 // (we'll review this later!)
-
-                if (solrSearchResult.getType() == SearchObjectType.DATAVERSES) {
-                    dataverseDao.populateDvSearchCard(solrSearchResult);
-
-                } else if (solrSearchResult.getType() == SearchObjectType.DATASETS) {
-                    //logger.info("XXRESULT: dataset: "+solrSearchResult.getEntityId());
-                    datasetVersionService.populateDatasetSearchCard(solrSearchResult);
-
-                    String deaccesssionReason = solrSearchResult.getDeaccessionReason();
-                    if (deaccesssionReason != null) {
-                        solrSearchResult.setDescriptionNoSnippet(deaccesssionReason);
-                    }
-
-                } else if (solrSearchResult.getType() == SearchObjectType.FILES) {
-                    dataFileService.populateFileSearchCard(solrSearchResult);
-
-                    /**
-                     * @todo: show DataTable variables
-                     */
-                }
             }
+            Map<SearchObjectType, List<SolrSearchResult>> results = searchResults.stream()
+                    .collect(Collectors.groupingBy(SolrSearchResult::getType));
+            solrSearchResultsService.populateDataverseSearchCard(
+                    results.getOrDefault(SearchObjectType.DATAVERSES, Collections.emptyList()));
+            solrSearchResultsService.populateDatasetSearchCard(
+                    results.getOrDefault(SearchObjectType.DATASETS, Collections.emptyList()));
+            solrSearchResultsService.populateDatafileSearchCard(
+                    results.getOrDefault(SearchObjectType.FILES, Collections.emptyList()));
         }
 
         return StringUtils.EMPTY;

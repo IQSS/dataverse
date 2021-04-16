@@ -27,6 +27,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -58,6 +60,20 @@ import java.util.Set;
         @NamedQuery(name = "Dataverse.filterByAlias", query = "SELECT dv FROM Dataverse dv WHERE LOWER(dv.alias) LIKE :alias order by dv.alias"),
         @NamedQuery(name = "Dataverse.filterByAliasNameAffiliation", query = "SELECT dv FROM Dataverse dv WHERE (LOWER(dv.alias) LIKE :alias) OR (LOWER(dv.name) LIKE :name) OR (LOWER(dv.affiliation) LIKE :affiliation) order by dv.alias"),
         @NamedQuery(name = "Dataverse.filterByName", query = "SELECT dv FROM Dataverse dv WHERE LOWER(dv.name) LIKE :name  order by dv.alias")
+})
+@NamedNativeQueries({
+        @NamedNativeQuery(name = "Dataverse.findDataForSolrResults2", query =
+                "SELECT t0.ID, t0.AFFILIATION, t0.ALIAS, t2.ALIAS " +
+                "FROM DATAVERSE t0 JOIN DVOBJECT t1 ON t0.ID = t1.ID LEFT JOIN DATAVERSE t2 ON t1.OWNER_ID = t2.ID " +
+                "WHERE t0.ID IN (?, ?)"),
+        @NamedNativeQuery(name = "Dataverse.findDataForSolrResults6", query =
+                "SELECT t0.ID, t0.AFFILIATION, t0.ALIAS, t2.ALIAS " +
+                "FROM DATAVERSE t0 JOIN DVOBJECT t1 ON t0.ID = t1.ID LEFT JOIN DATAVERSE t2 ON t1.OWNER_ID = t2.ID " +
+                "WHERE t0.ID IN (?, ?, ?, ?, ?, ?)"),
+        @NamedNativeQuery(name = "Dataverse.findDataForSolrResults10", query =
+                "SELECT t0.ID, t0.AFFILIATION, t0.ALIAS, t2.ALIAS " +
+                "FROM DATAVERSE t0 JOIN DVOBJECT t1 ON t0.ID = t1.ID LEFT JOIN DATAVERSE t2 ON t1.OWNER_ID = t2.ID " +
+                "WHERE t0.ID IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 })
 @Entity
 @Table(indexes = {@Index(columnList = "defaultcontributorrole_id")
@@ -338,7 +354,7 @@ public class Dataverse extends DvObjectContainer {
     }
     /*
     public boolean isHarvested() {
-        return harvestingClient != null; 
+        return harvestingClient != null;
     }
     */
 
@@ -468,7 +484,7 @@ public class Dataverse extends DvObjectContainer {
             return getOwner().getMetadataBlockRootDataverse();
         }
     }
-    
+
     public List<MetadataBlock> getRootMetadataBlocks() {
         return getMetadataBlockRootDataverse().getMetadataBlocks();
     }

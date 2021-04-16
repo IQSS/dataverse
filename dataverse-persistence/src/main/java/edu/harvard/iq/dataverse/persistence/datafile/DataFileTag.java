@@ -16,6 +16,8 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
 import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -27,6 +29,14 @@ import java.util.Map;
  * @author Leonid Andreev
  */
 @Entity
+@NamedNativeQueries({
+        @NamedNativeQuery(name = "DataFileTag.findData2",
+                query = "SELECT DATAFILE_ID, TYPE FROM DATAFILETAG WHERE DATAFILE_ID IN (?, ?)"),
+        @NamedNativeQuery(name = "DataFileTag.findData6",
+                query = "SELECT DATAFILE_ID, TYPE FROM DATAFILETAG WHERE DATAFILE_ID IN (?, ?, ?, ?, ?, ?)"),
+        @NamedNativeQuery(name = "DataFileTag.findData10",
+                query = "SELECT DATAFILE_ID, TYPE FROM DATAFILETAG WHERE DATAFILE_ID IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"),
+})
 @Table(indexes = {@Index(columnList = "datafile_id")})
 public class DataFileTag implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -50,9 +60,9 @@ public class DataFileTag implements Serializable {
     private DataFile dataFile;
 
 
-    // TODO: 
-    // add a mechanism for defining tags in the database, in addition to 
-    // these built-in tags (?). 
+    // TODO:
+    // add a mechanism for defining tags in the database, in addition to
+    // these built-in tags (?).
     // -- L.A. 4.0 beta 9
     public enum TagType {Survey, TimeSeries, Panel, Event, Genomics, Network, Geospatial}
 

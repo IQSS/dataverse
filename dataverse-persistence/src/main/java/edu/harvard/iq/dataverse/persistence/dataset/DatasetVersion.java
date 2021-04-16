@@ -28,6 +28,8 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
@@ -72,6 +74,20 @@ import static java.util.stream.Collectors.toList;
 @Table(indexes = {@Index(columnList = "dataset_id")},
         uniqueConstraints = @UniqueConstraint(columnNames = {"dataset_id","versionnumber","minorversionnumber"}))
 @ValidateVersionNote(versionNote = "versionNote", versionState = "versionState")
+@NamedNativeQueries({
+        @NamedNativeQuery(name = "Dataset.findDataForSolrResults2", query =
+                "SELECT t0.ID, t0.VERSIONSTATE, t1.ALIAS, t2.THUMBNAILFILE_ID, t2.USEGENERICTHUMBNAIL, t3.STORAGEIDENTIFIER " +
+                "FROM DATASETVERSION t0 JOIN DATASET t2 ON t0.DATASET_ID = t2.ID JOIN DVOBJECT t3 ON t2.ID = t3.ID " +
+                "JOIN DATAVERSE t1 ON t3.OWNER_ID = t1.ID WHERE t0.ID IN (?, ?)"),
+        @NamedNativeQuery(name = "Dataset.findDataForSolrResults6", query =
+                "SELECT t0.ID, t0.VERSIONSTATE, t1.ALIAS, t2.THUMBNAILFILE_ID, t2.USEGENERICTHUMBNAIL, t3.STORAGEIDENTIFIER " +
+                "FROM DATASETVERSION t0 JOIN DATASET t2 ON t0.DATASET_ID = t2.ID JOIN DVOBJECT t3 ON t2.ID = t3.ID " +
+                "JOIN DATAVERSE t1 ON t3.OWNER_ID = t1.ID WHERE t0.ID IN (?, ?, ?, ?, ?, ?)"),
+        @NamedNativeQuery(name = "Dataset.findDataForSolrResults10", query =
+                "SELECT t0.ID, t0.VERSIONSTATE, t1.ALIAS, t2.THUMBNAILFILE_ID, t2.USEGENERICTHUMBNAIL, t3.STORAGEIDENTIFIER " +
+                "FROM DATASETVERSION t0 JOIN DATASET t2 ON t0.DATASET_ID = t2.ID JOIN DVOBJECT t3 ON t2.ID = t3.ID " +
+                "JOIN DATAVERSE t1 ON t3.OWNER_ID = t1.ID WHERE t0.ID IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+})
 @Customizer(EntityCustomizer.class)
 public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVersionIdentifier {
 

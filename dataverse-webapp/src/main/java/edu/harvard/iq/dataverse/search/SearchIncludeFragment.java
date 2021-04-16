@@ -1,21 +1,17 @@
 package edu.harvard.iq.dataverse.search;
 
-import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetDao;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
-import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.SolrSearchResultsService;
 import edu.harvard.iq.dataverse.ThumbnailServiceWrapper;
 import edu.harvard.iq.dataverse.WidgetWrapper;
-import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.group.AuthenticatedUsers;
-import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
 import edu.harvard.iq.dataverse.search.query.SearchForTypes;
@@ -54,23 +50,17 @@ public class SearchIncludeFragment implements java.io.Serializable {
     @EJB
     DatasetDao datasetDao;
     @EJB
-    DatasetVersionServiceBean datasetVersionService;
-    @EJB
-    DataFileServiceBean dataFileService;
-    @EJB
     DvObjectServiceBean dvObjectService;
-    @Inject
-    DataverseSession session;
     @Inject
     ThumbnailServiceWrapper thumbnailServiceWrapper;
     @Inject
     WidgetWrapper widgetWrapper;
-    @EJB
-    private DatasetFieldServiceBean datasetFieldService;
     @Inject
     private DataverseRequestServiceBean dataverseRequestService;
     @Inject
     private PermissionServiceBean permissionService;
+    @Inject
+    private SolrSearchResultsService solrSearchResultsService;
 
     private String query;
     private List<String> filterQueries = new ArrayList<>();
@@ -121,7 +111,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
      * https://github.com/IQSS/dataverse/issues/84
      */
     private final static int numRows = 10;
-    
+
     /**
      * @todo: better style and icons for facets
      * <p>
@@ -248,15 +238,15 @@ public class SearchIncludeFragment implements java.io.Serializable {
         }
 
         filterQueriesFinal.addAll(filterQueries);
-        
+
         selectedTypesMap.put(SearchObjectType.DATAVERSES, selectedTypesString.contains(SearchObjectType.DATAVERSES.getSolrValue()));
         selectedTypesMap.put(SearchObjectType.DATASETS, selectedTypesString.contains(SearchObjectType.DATASETS.getSolrValue()));
         selectedTypesMap.put(SearchObjectType.FILES, selectedTypesString.contains(SearchObjectType.FILES.getSolrValue()));
-        
+
         SearchForTypes searchForTypes = SearchForTypes.byTypes(
                 selectedTypesMap.entrySet().stream()
-                    .filter(entry -> entry.getValue())
-                    .map(entry -> entry.getKey())
+                    .filter(Map.Entry::getValue)
+                    .map(Map.Entry::getKey)
                     .collect(Collectors.toList()));
 
         int paginationStart = (page - 1) * paginationGuiRows;
@@ -266,21 +256,21 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
         SolrQueryResponse solrQueryResponse = null;
         try {
-            logger.fine("query from user:   " + query);
-            logger.fine("queryToPassToSolr: " + queryToPassToSolr);
-            logger.fine("sort by: " + sortField);
+            logger.fine("query from user:   " + query
+                    + "\tqueryToPassToSolr: " + queryToPassToSolr
+                    + "\tsort by: " + sortField);
 
-            
-            solrQueryResponse = searchService.search(dataverseRequestService.getDataverseRequest(), Collections.singletonList(dataverse), 
+
+            solrQueryResponse = searchService.search(dataverseRequestService.getDataverseRequest(), Collections.singletonList(dataverse),
                     queryToPassToSolr, searchForTypes, filterQueriesFinal, sortField, sortOrder,
                     paginationStart, numRows, false);
-            
-            // This 2nd search() is for populating the facets: -- L.A. 
+
+            // This 2nd search() is for populating the facets: -- L.A.
             // TODO: ...
             SolrQueryResponse solrQueryResponseAllTypes = searchService.search(dataverseRequestService.getDataverseRequest(), Collections.singletonList(dataverse),
-                    queryToPassToSolr, SearchForTypes.all(), filterQueriesFinal, sortField, sortOrder, 
+                    queryToPassToSolr, SearchForTypes.all(), filterQueriesFinal, sortField, sortOrder,
                     paginationStart, numRows, false);
-            
+
             // populate preview counts: https://redmine.hmdc.harvard.edu/issues/3560
             previewCountbyType.put("dataverses", solrQueryResponseAllTypes.getDvObjectCounts().getDataversesCount());
             previewCountbyType.put("datasets", solrQueryResponseAllTypes.getDvObjectCounts().getDatasetsCount());
@@ -295,13 +285,13 @@ public class SearchIncludeFragment implements java.io.Serializable {
             this.errorFromSolr = ex.getMessage();
             return;
         }
-        
-        
+
+
         this.facetCategoryList = solrQueryResponse.getFacetCategoryList();
         this.searchResultsList = solrQueryResponse.getSolrSearchResults();
         this.searchResultsCount = solrQueryResponse.getNumResultsFound().intValue();
         this.filterQueriesDebug = solrQueryResponse.getFilterQueriesActual();
-        
+
         paginationGuiStart = paginationStart + 1;
         paginationGuiEnd = Math.min(page * paginationGuiRows, searchResultsCount);
         List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
@@ -323,52 +313,33 @@ public class SearchIncludeFragment implements java.io.Serializable {
             // going to assume that this is NOT a linked object, for now:
             solrSearchResult.setIsInTree(true);
             // (we'll review this later!)
-
-            if (solrSearchResult.getType() == SearchObjectType.DATAVERSES) {
-                dataverseDao.populateDvSearchCard(solrSearchResult);
-                
-                /*
-                Dataverses cannot be harvested yet.
-                if (isHarvestedDataverse(solrSearchResult.getEntityId())) {
-                    solrSearchResult.setHarvested(true);
-                }*/
-
-            } else if (solrSearchResult.getType() == SearchObjectType.DATASETS) {
-                datasetVersionService.populateDatasetSearchCard(solrSearchResult);
-
-                // @todo - the 3 lines below, should they be moved inside
-                // searchServiceBean.search()?
-                String deaccesssionReason = solrSearchResult.getDeaccessionReason();
-                if (deaccesssionReason != null) {
-                    solrSearchResult.setDescriptionNoSnippet(deaccesssionReason);
-                }
-
-            } else if (solrSearchResult.getType() == SearchObjectType.FILES) {
-                dataFileService.populateFileSearchCard(solrSearchResult);
-
-                /**
-                 * @todo: show DataTable variables
-                 */
-            }
         }
+        Map<SearchObjectType, List<SolrSearchResult>> results = searchResults.stream()
+                .collect(Collectors.groupingBy(SolrSearchResult::getType));
+        solrSearchResultsService.populateDataverseSearchCard(
+                results.getOrDefault(SearchObjectType.DATAVERSES, Collections.emptyList()));
+        solrSearchResultsService.populateDatasetSearchCard(
+                results.getOrDefault(SearchObjectType.DATASETS, Collections.emptyList()));
+        solrSearchResultsService.populateDatafileSearchCard(
+                results.getOrDefault(SearchObjectType.FILES, Collections.emptyList()));
     }
 
     public String searchWithSelectedTypesRedirect() {
         String searchUrl = "dataverse.xhtml?alias=" + dataverse.getAlias();
-        
+
         searchUrl += "&q=" + ((query == null) ? "" : query);
         searchUrl += "&types=" + selectedTypesMap.entrySet().stream()
             .filter(entry -> entry.getValue())
             .map(entry -> entry.getKey().getSolrValue())
             .collect(Collectors.joining(":"));
-        
+
         for (int i=0; i< filterQueries.size(); i++) {
             searchUrl += "&fq" + i + "=" + filterQueries.get(i);
         }
         searchUrl += "&sort=" + sortField;
         searchUrl += "&order=" + sortOrder;
         searchUrl += "&page=1";
-        
+
         return widgetWrapper.wrapURL(searchUrl + "&faces-redirect=true");
     }
 
@@ -538,7 +509,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     public void setDataverse(Dataverse dataverse) {
         this.dataverse = dataverse;
     }
-    
+
     public String getSelectedTypesString() {
         return selectedTypesString;
     }
@@ -562,7 +533,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
     public void setSearchFieldSubtree(String searchFieldSubtree) {
         this.searchFieldSubtree = searchFieldSubtree;
     }
-    
+
     public String getTypeFilterQuery() {
         return typeFilterQuery;
     }
@@ -778,11 +749,11 @@ public class SearchIncludeFragment implements java.io.Serializable {
             .filter(entry -> entry.getValue())
             .allMatch(entry -> entry.getKey() == searchObjectType);
     }
-    
+
     public void setSelectedTypesMap(Map<SearchObjectType, Boolean> selectedTypesMap) {
         this.selectedTypesMap = selectedTypesMap;
     }
-    
+
     public boolean selectedTypesAreEmpty() {
         return selectedTypesMap.entrySet().stream()
                 .filter(entry -> entry.getValue())
@@ -908,8 +879,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
         thumbnailServiceWrapper.resetObjectMaps();
 
-        // Now, make another pass, and add the remote archive descriptions to the 
-        // harvested dataset and datafile cards (at the expense of one extra 
+        // Now, make another pass, and add the remote archive descriptions to the
+        // harvested dataset and datafile cards (at the expense of one extra
         // SQL query:
 
         if (harvestedDatasetIds != null) {
@@ -943,7 +914,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     // definitely NOT linked:
                     result.setIsInTree(true);
                 } else if (result.getParentIdAsLong() == dataverseDao.findRootDataverse().getId()) {
-                    // the object's parent is the root Dv; and the current 
+                    // the object's parent is the root Dv; and the current
                     // Dv is NOT root... definitely linked:
                     result.setIsInTree(false);
                 } else {
