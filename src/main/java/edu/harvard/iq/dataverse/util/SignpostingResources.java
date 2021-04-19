@@ -86,13 +86,9 @@ public class SignpostingResources {
                     da.getAffiliation(),
                     da.getIdentifierAsUrl()
             ));
-            String authorURL = "";
-            if (da.getIdValue() != null && !da.getIdValue().trim().isEmpty()) {
-                authorURL = da.getIdValue();
-            } else if (da.getIdentifierAsUrl() != null && !da.getIdentifierAsUrl().trim().isEmpty()) {
-                authorURL = da.getIdentifierAsUrl();
-            }
 
+            String authorURL = "";
+            authorURL = getAuthorUrl(da);
             if (!Objects.equals(authorURL, "")) {
                 singleAuthorString = "<" + authorURL + ">;rel=\"author\"";
                 if (Objects.equals(identifierSchema, "")) {
@@ -164,13 +160,25 @@ public class SignpostingResources {
         return String.join(", ", valueList);
     }
 
+    private String getAuthorUrl(DatasetAuthor da) {
+        String authorURL = "";
+        if (da.getIdValue() != null && !da.getIdValue().trim().isEmpty()) {
+            authorURL = da.getIdValue();
+        } else if (da.getIdentifierAsUrl() != null && !da.getIdentifierAsUrl().trim().isEmpty()) {
+            authorURL = da.getIdentifierAsUrl();
+        }
+        return authorURL;
+    }
+
     private JsonArrayBuilder getIdentifiersSchema(List<DatasetAuthor> datasetAuthors) {
         if (datasetAuthors.size() > maxAuthors) return null;
         JsonArrayBuilder authors = Json.createArrayBuilder();
         boolean returnNull = true;
+        String authorURL = "";
         for (DatasetAuthor da : datasetAuthors) {
-            if (da.getIdentifierAsUrl() != null && !da.getIdentifierAsUrl().trim().isEmpty()) {
-                authors.add(jsonObjectBuilder().add("href", da.getIdentifierAsUrl()));
+            authorURL = getAuthorUrl(da);
+            if (!Objects.equals(authorURL, "")) {
+                authors.add(jsonObjectBuilder().add("href", authorURL));
                 returnNull = false;
             }
         }
