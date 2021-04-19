@@ -19,8 +19,6 @@ package edu.harvard.iq.dataverse.util;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -74,7 +72,7 @@ public class SignpostingResources {
      * @param datasetAuthors list of all DatasetAuthor object
      * @return all the non empty author links in a string
      */
-    private String getIdentifierSchema(List<DatasetAuthor> datasetAuthors) {
+    private String getAuthors(List<DatasetAuthor> datasetAuthors) {
         String singleAuthorString;
         String identifierSchema = "";
         if (datasetAuthors.size() > maxAuthors) {return "";}
@@ -112,7 +110,7 @@ public class SignpostingResources {
         List<String> valueList = new LinkedList<>();
         Dataset ds = workingDatasetVersion.getDataset();
 
-        String identifierSchema = getIdentifierSchema(workingDatasetVersion.getDatasetAuthors());
+        String identifierSchema = getAuthors(workingDatasetVersion.getDatasetAuthors());
         if (!identifierSchema.equals("")) {
             valueList.add(identifierSchema);
         }
@@ -170,8 +168,7 @@ public class SignpostingResources {
         return authorURL;
     }
 
-    private JsonArrayBuilder getIdentifiersSchema(List<DatasetAuthor> datasetAuthors) {
-        if (datasetAuthors.size() > maxAuthors) return null;
+    private JsonArrayBuilder getJsonAuthors(List<DatasetAuthor> datasetAuthors) {
         JsonArrayBuilder authors = Json.createArrayBuilder();
         boolean returnNull = true;
         String authorURL = "";
@@ -216,7 +213,7 @@ public class SignpostingResources {
     public JsonArrayBuilder getJsonLinkset() {
         Dataset ds = workingDatasetVersion.getDataset();
         String landingPage = systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier();
-        JsonArrayBuilder authors = getIdentifiersSchema(workingDatasetVersion.getDatasetAuthors());
+        JsonArrayBuilder authors = getJsonAuthors(workingDatasetVersion.getDatasetAuthors());
 
         List<FileMetadata> fms = workingDatasetVersion.getFileMetadatas();
         JsonArrayBuilder items = getJsonItems(fms);
