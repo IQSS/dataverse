@@ -77,7 +77,7 @@ public class SignpostingResources {
     private String getIdentifierSchema(List<DatasetAuthor> datasetAuthors) {
         String singleAuthorString;
         String identifierSchema = "";
-        if (datasetAuthors.size() > maxAuthors) return "";
+        if (datasetAuthors.size() > maxAuthors) {return "";}
         for (DatasetAuthor da : datasetAuthors) {
             logger.info(String.format(
                     "idtype: %s; idvalue: %s, affiliation: %s; identifierUrl: %s",
@@ -86,8 +86,15 @@ public class SignpostingResources {
                     da.getAffiliation(),
                     da.getIdentifierAsUrl()
             ));
-            if (da.getIdentifierAsUrl() != null && !da.getIdentifierAsUrl().trim().isEmpty()) {
-                singleAuthorString = "<" + da.getIdentifierAsUrl() + ">;rel=\"author\"";
+            String authorURL = "";
+            if (da.getIdValue() != null && !da.getIdValue().trim().isEmpty()) {
+                authorURL = da.getIdValue();
+            } else if (da.getIdentifierAsUrl() != null && !da.getIdentifierAsUrl().trim().isEmpty()) {
+                authorURL = da.getIdentifierAsUrl();
+            }
+
+            if (!Objects.equals(authorURL, "")) {
+                singleAuthorString = "<" + authorURL + ">;rel=\"author\"";
                 if (Objects.equals(identifierSchema, "")) {
                     identifierSchema = singleAuthorString;
                 } else {
