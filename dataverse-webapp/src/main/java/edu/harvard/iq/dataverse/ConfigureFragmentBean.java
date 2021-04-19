@@ -10,16 +10,12 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 
-import javax.faces.view.ViewScoped;
-
 import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import java.util.logging.Logger;
-
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 /**
  * This bean is mainly for keeping track of which file the user selected to run external tools on.

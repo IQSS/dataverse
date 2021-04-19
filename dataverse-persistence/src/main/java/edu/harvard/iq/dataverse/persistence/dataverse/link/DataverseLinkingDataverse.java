@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.persistence.dataverse.link;
 
+import edu.harvard.iq.dataverse.persistence.JpaEntity;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 
 import javax.persistence.Entity;
@@ -23,7 +24,7 @@ import java.util.Date;
         @Index(columnList = "dataverse_id"),
         @Index(columnList = "linkingDataverse_id")
 })
-public class DataverseLinkingDataverse implements Serializable {
+public class DataverseLinkingDataverse implements Serializable, JpaEntity<Long> {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -23,6 +23,12 @@ public class PermissionException extends CommandException {
         dvObject = aDvObject;
     }
 
+    public PermissionException(String message, Set<Permission> missingPermissions, DvObject aDvObject) {
+        super(message, null);
+        this.missingPermissions = missingPermissions;
+        dvObject = aDvObject;
+    }
+
     public Set<Permission> getMissingPermissions() {
         return missingPermissions;
     }

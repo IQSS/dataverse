@@ -68,8 +68,7 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
         if (featuredDataverseList != null) {
             ctxt.featuredDataverses().deleteFeaturedDataversesFor(result);
             int i = 0;
-            for (Object obj : featuredDataverseList) {
-                Dataverse dv = (Dataverse) obj;
+            for (Dataverse dv : featuredDataverseList) {
                 ctxt.featuredDataverses().create(i++, dv.getId(), result.getId());
             }
         }

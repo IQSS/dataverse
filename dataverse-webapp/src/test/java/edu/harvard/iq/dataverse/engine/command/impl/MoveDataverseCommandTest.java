@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.engine.command.impl;
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseDao;
-import edu.harvard.iq.dataverse.DataverseLinkingDao;
+import edu.harvard.iq.dataverse.dataverse.DataverseLinkingService;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.engine.NoOpTestEntityManager;
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
@@ -283,13 +283,6 @@ public class MoveDataverseCommandTest {
             @Override
             public EntityManager em() {
                 return new NoOpTestEntityManager();
-            }
-
-            @Override
-            public DataverseLinkingDao dvLinking() {
-                return new DataverseLinkingDao() {
-
-                };
             }
         });
     }

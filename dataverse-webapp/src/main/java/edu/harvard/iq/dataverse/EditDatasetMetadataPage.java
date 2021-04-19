@@ -37,8 +37,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
-
 @ViewScoped
 @Named("editDatasetMetadataPage")
 public class EditDatasetMetadataPage implements Serializable {
@@ -56,8 +54,6 @@ public class EditDatasetMetadataPage implements Serializable {
     private InputFieldRendererManager inputFieldRendererManager;
     @Inject
     private PermissionsWrapper permissionsWrapper;
-    @Inject
-    private DataverseRequestServiceBean dvRequestService;
     @Inject
     private DataverseSession session;
 

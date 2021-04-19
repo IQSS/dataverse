@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.guestbook;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
-import edu.harvard.iq.dataverse.dataverse.DataversePage;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
@@ -11,10 +10,8 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
 
-import javax.faces.view.ViewScoped;
-
-import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.ServletOutputStream;
@@ -24,8 +21,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 /**
  * @author skraffmiller
@@ -38,7 +33,6 @@ public class ManageGuestbooksPage implements java.io.Serializable {
     private DataverseDao dvService;
     private GuestbookResponseServiceBean guestbookResponseService;
     private GuestbookServiceBean guestbookService;
-    private DataversePage dvpage;
     private PermissionsWrapper permissionsWrapper;
     private ManageGuestbooksService manageGuestbooksService;
 
@@ -56,13 +50,12 @@ public class ManageGuestbooksPage implements java.io.Serializable {
 
     @Inject
     public ManageGuestbooksPage(DataverseDao dvService, GuestbookResponseServiceBean guestbookResponseService,
-                                GuestbookServiceBean guestbookService, DataversePage dvpage,
+                                GuestbookServiceBean guestbookService,
                                 PermissionsWrapper permissionsWrapper,
                                 ManageGuestbooksService manageGuestbooksService) {
         this.dvService = dvService;
         this.guestbookResponseService = guestbookResponseService;
         this.guestbookService = guestbookService;
-        this.dvpage = dvpage;
         this.permissionsWrapper = permissionsWrapper;
         this.manageGuestbooksService = manageGuestbooksService;
     }
@@ -116,7 +109,6 @@ public class ManageGuestbooksPage implements java.io.Serializable {
             displayDownloadAll = true;
         }
 
-        dvpage.setDataverse(dataverse);
         refreshGuestbooks();
 
         return null;

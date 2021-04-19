@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.persistence.dataverse;
 
+import edu.harvard.iq.dataverse.persistence.JpaEntity;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 
 import javax.persistence.Entity;
@@ -28,7 +29,7 @@ import java.util.Objects;
 @Table(indexes = {@Index(columnList = "dataverse_id")
         , @Index(columnList = "featureddataverse_id")
         , @Index(columnList = "displayorder")})
-public class DataverseFeaturedDataverse implements Serializable {
+public class DataverseFeaturedDataverse implements Serializable, JpaEntity<Long> {
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -86,7 +87,7 @@ public class DataverseFeaturedDataverse implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof DatasetFieldType)) {
+        if (!(object instanceof DataverseFeaturedDataverse)) {
             return false;
         }
         DataverseFeaturedDataverse other = (DataverseFeaturedDataverse) object;

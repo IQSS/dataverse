@@ -24,14 +24,11 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 /**
  * @author michaelsuo

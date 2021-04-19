@@ -20,8 +20,6 @@ import java.util.logging.Logger;
  */
 public class JsfHelper {
     private static final Logger logger = Logger.getLogger(JsfHelper.class.getName());
-
-    public static final JsfHelper JH = new JsfHelper();
     
     
     public static void addFlashSuccessMessage(String message) {

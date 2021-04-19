@@ -3,9 +3,7 @@ package edu.harvard.iq.dataverse.dataverse.template;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.persistence.dataset.Template;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -21,8 +19,6 @@ import java.util.logging.Logger;
 public class TemplateDao {
 
     private static final Logger logger = Logger.getLogger(DatasetDao.class.getCanonicalName());
-    @EJB
-    IndexServiceBean indexService;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;

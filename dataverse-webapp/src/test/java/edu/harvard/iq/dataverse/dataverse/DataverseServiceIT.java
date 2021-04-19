@@ -154,44 +154,6 @@ public class DataverseServiceIT extends WebappArquillianDeployment {
 
     @Test
     @Transactional(TransactionMode.ROLLBACK)
-    public void saveLinkedDataverse() {
-        //given
-        loginSessionWithSuperUser();
-        Dataverse ownerDataverse = dataverseDao.find(19L);
-        Dataverse dataverseToBeLinked = dataverseDao.find(51L);
-
-        //when
-        dataverseService.saveLinkedDataverse(dataverseToBeLinked, ownerDataverse);
-        Dataverse linkedDataverse = dataverseDao.find(dataverseToBeLinked.getId());
-
-        //then
-        Assert.assertTrue(retrieveLinkedDataverseOwners(linkedDataverse).contains(ownerDataverse));
-    }
-
-    @Test
-    @Transactional(TransactionMode.ROLLBACK)
-    public void saveLinkedDataverse_WithIllegalCommandEx() {
-        //given
-        loginSessionWithSuperUser();
-        Dataverse ownerDataverse = dataverseDao.find(19L);
-
-        //when & then
-        Assertions.assertThrows(IllegalCommandException.class, () -> dataverseService.saveLinkedDataverse(ownerDataverse, ownerDataverse));
-    }
-
-    @Test
-    @Transactional(TransactionMode.ROLLBACK)
-    public void saveLinkedDataverse_WithPermissionException() {
-        //given
-        Dataverse ownerDataverse = dataverseDao.find(19L);
-        Dataverse dataverseToBeLinked = dataverseDao.find(51L);
-
-        //when & then
-        Assertions.assertThrows(PermissionException.class, () -> dataverseService.saveLinkedDataverse(dataverseToBeLinked, ownerDataverse));
-    }
-
-    @Test
-    @Transactional(TransactionMode.ROLLBACK)
     public void publishDataverse() {
         //given
         loginSessionWithSuperUser();
@@ -262,20 +224,6 @@ public class DataverseServiceIT extends WebappArquillianDeployment {
         AuthenticatedUser user = userServiceBean.find(2L);
         dataverseSession.setUser(user);
         return user.getId();
-    }
-
-    /**
-     * Helper filtering method, because for some reason streams won't work in this case.
-     */
-    private List<Dataverse> retrieveLinkedDataverseOwners(Dataverse linkedDataverse){
-        List<DataverseLinkingDataverse> dataverseLinkedDataverses = linkedDataverse.getDataverseLinkedDataverses();
-
-        List<Dataverse> linkedOwners = new ArrayList<>();
-        for (DataverseLinkingDataverse dataverseLinkedDatavers : dataverseLinkedDataverses) {
-            linkedOwners.add(dataverseLinkedDatavers.getDataverse());
-        }
-
-        return linkedOwners;
     }
 
     private Dataverse prepareDataverse() {

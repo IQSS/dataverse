@@ -1,8 +1,6 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
-import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
@@ -11,6 +9,7 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.UserNotificationDao;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
+import edu.harvard.iq.dataverse.util.JsfRedirectHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang.StringUtils;
 
@@ -41,16 +40,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     SettingsServiceBean settingsService;
 
     @EJB
-    GroupServiceBean groupService;
-
-    @EJB
-    PermissionServiceBean permissionService;
-
-    @EJB
     SystemConfig systemConfig;
-
-    @EJB
-    DatasetVersionServiceBean datasetVersionService;
 
     @EJB
     DataFileServiceBean datafileService;
@@ -67,16 +57,15 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     @EJB
     UserNotificationDao userNotificationDao;
 
+    @Inject
+    private WidgetWrapper widgetWrapper;
+
     List<Breadcrumb> breadcrumbs = new ArrayList<>();
 
-    private Long unreadNotificationCount = null;
+    private Long unreadNotificationCount;
 
     public List<Breadcrumb> getBreadcrumbs() {
         return breadcrumbs;
-    }
-
-    public void setBreadcrumbs(List<Breadcrumb> breadcrumbs) {
-        this.breadcrumbs = breadcrumbs;
     }
 
     public void initBreadcrumbs(DvObject dvObject) {
@@ -93,23 +82,19 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
     public void initBreadcrumbsForFileMetadata(FileMetadata fmd) {
 
-        initBreadcrumbsForFileMetadata(fmd, null, null);
+        initBreadcrumbsForFileMetadata(fmd, null);
     }
 
-    public void initBreadcrumbsForFileMetadata(DataFile datafile, String subPage) {
+    public void initBreadcrumbsForDataFile(DataFile datafile, String subPage) {
+        Dataset dataset = datafile.getOwner();
+        Long getDatasetVersionID = dataset.getLatestVersion().getId();
+        FileMetadata fmd = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, datafile.getId());
 
-        initBreadcrumbsForFileMetadata(null, datafile, subPage);
+        initBreadcrumbsForFileMetadata(fmd, subPage);
     }
 
 
-    public void initBreadcrumbsForFileMetadata(FileMetadata fmd, DataFile datafile, String subPage) {
-        if (fmd == null) {
-            Dataset dataset = datafile.getOwner();
-            Long getDatasetVersionID = dataset.getLatestVersion().getId();
-            fmd = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, datafile.getId());
-        }
-
-
+    public void initBreadcrumbsForFileMetadata(FileMetadata fmd, String subPage) {
         if (fmd == null) {
             return;
         }
@@ -118,19 +103,19 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
         String optionalUrlExtension = "&version=" + fmd.getDatasetVersion().getSemanticVersion();
         //First Add regular breadcrumb for the data file
-        DvObject dvObject = fmd.getDataFile();
-        breadcrumbs.add(0, new Breadcrumb(dvObject, dvObject.getDisplayName(), optionalUrlExtension));
+        DataFile datafile = fmd.getDataFile();
+        breadcrumbs.add(0, buildBreadcrumbForDatafile(datafile, optionalUrlExtension));
 
         //Get the Dataset Owning the Datafile and add version to the breadcrumb       
-        dvObject = dvObject.getOwner();
+        Dataset dataset = datafile.getOwner();
 
-        breadcrumbs.add(0, new Breadcrumb(dvObject, dvObject.getDisplayName(), optionalUrlExtension));
+        breadcrumbs.add(0, buildBreadcrumbForDataset(dataset, optionalUrlExtension));
 
         // now get Dataverse Owner of the dataset and proceed as usual
-        dvObject = dvObject.getOwner();
-        while (dvObject != null) {
-            breadcrumbs.add(0, new Breadcrumb(dvObject, dvObject.getDisplayName()));
-            dvObject = dvObject.getOwner();
+        Dataverse dataverse = dataset.getOwner();
+        while (dataverse != null) {
+            breadcrumbs.add(0, buildBreadcrumbForDataverse(dataverse));
+            dataverse = dataverse.getOwner();
         }
 
         if (subPage != null) {
@@ -161,7 +146,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     public void initBreadcrumbs(DvObject dvObject, String subPage) {
         breadcrumbs.clear();
         while (dvObject != null) {
-            breadcrumbs.add(0, new Breadcrumb(dvObject, dvObject.getDisplayName()));
+            breadcrumbs.add(0, buildBreadcrumbForDvObject(dvObject));
             dvObject = dvObject.getOwner();
         }
 
@@ -170,53 +155,45 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         }
     }
 
-
-    /* Old methods for breadcrumb and trees - currently disabled and deferred
-
-    public List<Dataverse> getDataverses(Dataverse dataverse) {
-        List dataverses = new ArrayList();
-        if (dataverse != null) {
-            dataverses.addAll(dataverse.getOwners());
-            dataverses.add(dataverse);
-        } else {
-            dataverses.add(dataverseService.findRootDataverse());
+    private Breadcrumb buildBreadcrumbForDvObject(DvObject dvObject) {
+        if (dvObject.isInstanceofDataverse()) {
+            return buildBreadcrumbForDataverse((Dataverse) dvObject);
+        } else if (dvObject.isInstanceofDataset()) {
+            return buildBreadcrumbForDataset((Dataset) dvObject, null);
+        } else if (dvObject.isInstanceofDataFile()) {
+            return buildBreadcrumbForDatafile((DataFile) dvObject, null);
         }
-        return dataverses;
-    }    
+        throw new IllegalArgumentException("Unknown dvObject type: " + dvObject.getClass().getName());
+    }
+
+    private Breadcrumb buildBreadcrumbForDataverse(Dataverse dataverse) {
+        String dataverseUrl = "/dataverse/" + dataverse.getAlias();
+        if (widgetWrapper.isWidgetTarget(dataverse)) {
+            dataverseUrl = widgetWrapper.wrapURL(dataverseUrl); 
+        }
+        boolean openInNewTab = widgetWrapper.isWidgetView() && !widgetWrapper.isWidgetTarget(dataverse);
+
+        return new Breadcrumb(dataverseUrl, dataverse.getDisplayName(), openInNewTab);
+    }
+    private Breadcrumb buildBreadcrumbForDataset(Dataset dataset, String optionalUrlExtension) {
+        String dataverseUrl = "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString() + (optionalUrlExtension == null ? "" : optionalUrlExtension);
+        if (widgetWrapper.isWidgetTarget(dataset)) {
+            dataverseUrl = widgetWrapper.wrapURL(dataverseUrl); 
+        }
+        boolean openInNewTab = widgetWrapper.isWidgetView() && !widgetWrapper.isWidgetTarget(dataset);
+
+        return new Breadcrumb(dataverseUrl, dataset.getDisplayName(), openInNewTab);
+    }
+    private Breadcrumb buildBreadcrumbForDatafile(DataFile datafile, String optionalUrlExtension) {
+        String dataverseUrl = "/file.xhtml?fileId=" + datafile.getId() + (optionalUrlExtension == null ? "" : optionalUrlExtension);
+        if (widgetWrapper.isWidgetTarget(datafile)) {
+            dataverseUrl = widgetWrapper.wrapURL(dataverseUrl); 
+        }
+        boolean openInNewTab = widgetWrapper.isWidgetView() && !widgetWrapper.isWidgetTarget(datafile);
+
+        return new Breadcrumb(dataverseUrl, datafile.getDisplayName(), openInNewTab);
+    }
     
-     // @todo right now we just check on if published or if you are the creator; need full permission support
-     public boolean hasVisibleChildren(Dataverse dataverse) {
-     for (Dataverse dv : dataverseService.findByOwnerId(dataverse.getId())) {
-     if (dv.isReleased() || dv.getCreator().equals(dataverseSession.getUser())) {
-     return true;
-     }
-     }
-        
-     return false;
-
-     }
-
-     public TreeNode getDataverseTree(Dataverse dataverse) {
-     if (dataverse == null) { // the primefaces component seems to call this with dataverse == null for some reason
-     return null;
-     }
-     return getDataverseNode(dataverse, null, true);
-     }
-
-     private TreeNode getDataverseNode(Dataverse dataverse, TreeNode root, boolean expand) {
-     // @todo right now we just check on if published or if you are the creator; need full permission support
-     if (dataverse.isReleased() || dataverse.getCreator().equals(dataverseSession.getUser())) {
-     TreeNode dataverseNode = new DefaultTreeNode(dataverse, root);
-     dataverseNode.setExpanded(expand);
-     List<Dataverse> childDataversesOfCurrentDataverse = dataverseService.findByOwnerId(dataverse.getId());
-     for (Dataverse child : childDataversesOfCurrentDataverse) {
-     getDataverseNode(child, dataverseNode, false);
-     }
-     return dataverseNode;
-     }
-     return null;
-     }
-     */
     public String logout() {
         dataverseSession.setUser(null);
         dataverseSession.setStatusDismissed(false);
@@ -274,49 +251,38 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     public void addBreadcrumb(String text) {
         breadcrumbs.add(new Breadcrumb(text));
     }
-
+    
     // inner class used for breadcrumbs
-    public static class Breadcrumb {
+    public static class Breadcrumb implements java.io.Serializable {
 
         private final String breadcrumbText;
-        private DvObject dvObject = null;
-        private String url = null;
-        private String optionalUrlExtension = null;
+        private final String url;
+        private final boolean openUrlInNewTab;
 
-        public Breadcrumb(DvObject dvObject, String breadcrumbText, String optionalUrlExtension) {
+        public Breadcrumb(String url, String breadcrumbText, boolean openUrlInNewTab) {
+            this.url = url;
             this.breadcrumbText = breadcrumbText;
-            this.dvObject = dvObject;
-            this.optionalUrlExtension = optionalUrlExtension;
-        }
-
-        public Breadcrumb(DvObject dvObject, String breadcrumbText) {
-            this.breadcrumbText = breadcrumbText;
-            this.dvObject = dvObject;
+            this.openUrlInNewTab = openUrlInNewTab;
         }
 
         public Breadcrumb(String url, String breadcrumbText) {
-            this.breadcrumbText = breadcrumbText;
-            this.url = url;
+            this(url, breadcrumbText, false);
         }
 
         public Breadcrumb(String breadcrumbText) {
-            this.breadcrumbText = breadcrumbText;
+            this(null, breadcrumbText, false);
         }
 
         public String getBreadcrumbText() {
             return breadcrumbText;
         }
 
-        public DvObject getDvObject() {
-            return dvObject;
-        }
-
         public String getUrl() {
             return url;
         }
 
-        public String getOptionalUrlExtension() {
-            return optionalUrlExtension;
+        public boolean isOpenUrlInNewTab() {
+            return openUrlInNewTab;
         }
     }
 }

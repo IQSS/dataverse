@@ -35,11 +35,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 @ViewScoped
 @Named("CreateEditDataversePage")
@@ -50,9 +47,6 @@ public class CreateEditDataversePage implements Serializable {
 
     @EJB
     private DatasetFieldServiceBean datasetFieldService;
-
-    @EJB
-    private PermissionServiceBean permissionService;
 
     @EJB
     private MetadataBlockService metadataBlockService;

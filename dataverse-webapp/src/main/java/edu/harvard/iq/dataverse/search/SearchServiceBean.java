@@ -685,10 +685,6 @@ public class SearchServiceBean {
         return solrQueryResponse;
     }
 
-    public String getCapitalizedName(String name) {
-        return Character.toUpperCase(name.charAt(0)) + name.substring(1);
-    }
-
     public String getLocaleFacetCategoryName(String facetCategoryName) {
         final String formattedFacetFieldName = removeSolrFieldSuffix(facetCategoryName);
         List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedByName();

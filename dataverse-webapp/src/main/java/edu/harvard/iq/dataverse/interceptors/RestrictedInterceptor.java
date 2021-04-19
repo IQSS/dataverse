@@ -82,7 +82,7 @@ public class RestrictedInterceptor {
                 + " is missing permissions: " + firstMissing.missing
                 + " on Object: [" + firstMissing.dvObjectName
                 + "]. All missing permissions: " + missingPermissions,
-                null, allMissingPermissions , firstMissing.dvObject);
+                allMissingPermissions , firstMissing.dvObject);
     }
 
     private void logBasicInfo(InvocationContext ctx, Collection<RestrictedObject> restrictedObjects) {

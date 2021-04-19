@@ -159,7 +159,7 @@ public class DataverseTheme implements Serializable {
 
     @Override
     public String toString() {
-        return "DataverseFacet[ id=" + id + " ]";
+        return "DataverseTheme[ id=" + id + " ]";
     }
 
 }

@@ -89,6 +89,12 @@ public class PermissionsWrapper implements java.io.Serializable {
 
     /* Dataverse Commands */
 
+    public boolean canViewUnpublishedDataverse(Dataverse dataverse) {
+        return permissionService
+                .requestOn(dvRequestService.getDataverseRequest(), dataverse)
+                .has(Permission.ViewUnpublishedDataverse);
+    }
+
     public boolean canIssueUpdateDataverseCommand(DvObject dvo) {
         return canIssueCommand(dvo, UpdateDataverseCommand.class);
     }

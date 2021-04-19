@@ -1139,10 +1139,6 @@ public class DatasetPage implements java.io.Serializable {
         return fileTermDiffsWithLatestReleased;
     }
 
-    public String redirectToMetrics() {
-        return "/metrics.xhtml?faces-redirect=true";
-    }
-
     public boolean isSameTermsOfUseForAllFiles() {
         if (sameTermsOfUseForAllFiles != null) {
             return sameTermsOfUseForAllFiles;

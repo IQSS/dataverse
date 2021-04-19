@@ -20,9 +20,11 @@ import edu.harvard.iq.dataverse.search.response.FacetCategory;
 import edu.harvard.iq.dataverse.search.response.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 import org.apache.commons.lang.StringUtils;
+import org.omnifaces.cdi.Param;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
+import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.ArrayList;
@@ -37,11 +39,25 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-@ViewScoped
+@RequestScoped
 @Named("SearchIncludeFragment")
-public class SearchIncludeFragment implements java.io.Serializable {
+public class SearchIncludeFragment {
 
     private static final Logger logger = Logger.getLogger(SearchIncludeFragment.class.getCanonicalName());
+
+    /**
+     * @todo Number of search results per page should be configurable -
+     * https://github.com/IQSS/dataverse/issues/84
+     */
+    private static final int RESULTS_PER_PAGE = 10;
+
+    public static final String SEARCH_FIELD_TYPE = SearchFields.TYPE;
+    public static final String SEARCH_FIELD_SUBTREE = SearchFields.SUBTREE;
+    public static final String SEARCH_FIELD_NAME_SORT = SearchFields.NAME_SORT;
+    public static final String SEARCH_FIELD_RELEVANCE = SearchFields.RELEVANCE;
+    public static final String SEARCH_FIELD_RELEASE_OR_CREATE_DATE = SearchFields.RELEASE_OR_CREATE_DATE;
+    public static final String ASCENDING = SortOrder.asc.toString();
+    public static final String DESCENDING = SortOrder.desc.toString();
 
     @EJB
     SearchServiceBean searchService;
@@ -62,56 +78,99 @@ public class SearchIncludeFragment implements java.io.Serializable {
     @Inject
     private SolrSearchResultsService solrSearchResultsService;
 
+    @Inject @Param(name = "q")
     private String query;
+    @Inject @Param
+    private String fq0;
+    @Inject @Param
+    private String fq1;
+    @Inject @Param
+    private String fq2;
+    @Inject @Param
+    private String fq3;
+    @Inject @Param
+    private String fq4;
+    @Inject @Param
+    private String fq5;
+    @Inject @Param
+    private String fq6;
+    @Inject @Param
+    private String fq7;
+    @Inject @Param
+    private String fq8;
+    @Inject @Param
+    private String fq9;
+    @Inject @Param(name = "types")
+    private String selectedTypesString;
+    @Inject @Param(name = "sort")
+    private String sortField;
+    @Inject @Param(name = "order")
+    private SortOrder sortOrder;
+    @Inject @Param
+    private Integer page;
+
     private List<String> filterQueries = new ArrayList<>();
     private List<FacetCategory> facetCategoryList = new ArrayList<>();
     private List<SolrSearchResult> searchResultsList = new ArrayList<>();
     private int searchResultsCount;
-    private String fq0;
-    private String fq1;
-    private String fq2;
-    private String fq3;
-    private String fq4;
-    private String fq5;
-    private String fq6;
-    private String fq7;
-    private String fq8;
-    private String fq9;
+
     private String dataverseAlias;
     private Dataverse dataverse;
-    private String dataversePath = null;
 
-    private String selectedTypesString;
+    
     private Map<SearchObjectType, Boolean> selectedTypesMap = new HashMap<>();
-    private String searchFieldType = SearchFields.TYPE;
-    private String searchFieldSubtree = SearchFields.SUBTREE;
-    private String searchFieldNameSort = SearchFields.NAME_SORT;
-    private String searchFieldRelevance = SearchFields.RELEVANCE;
-    private String searchFieldReleaseOrCreateDate = SearchFields.RELEASE_OR_CREATE_DATE;
-    final private String ASCENDING = SortOrder.asc.toString();
-    final private String DESCENDING = SortOrder.desc.toString();
-    private String typeFilterQuery;
-    Map<String, Long> previewCountbyType = new HashMap<>();
-    private String sortField;
-    private SortOrder sortOrder;
-    private int page = 1;
+    private Map<SearchObjectType, Long> previewCountbyType = new HashMap<>();
+    
+    
     private int paginationGuiStart = 1;
     private int paginationGuiEnd = 10;
-    private int paginationGuiRows = 10;
     private boolean solrIsDown = false;
-    private Map<String, Integer> numberOfFacets = new HashMap<>();
 
-    List<String> filterQueriesDebug = new ArrayList<>();
+    private List<String> filterQueriesDebug = new ArrayList<>();
     private String errorFromSolr;
     private SearchException searchException;
     private boolean solrErrorEncountered = false;
+    
+    @PostConstruct
+    public void postConstruct() {
 
-    /**
-     * @todo Number of search results per page should be configurable -
-     * https://github.com/IQSS/dataverse/issues/84
-     */
-    private final static int numRows = 10;
+        if (page == null) {
+            page = 1;
+        }
 
+        if (StringUtils.isEmpty(query)) {
+            if (sortField == null) {
+                sortField = SEARCH_FIELD_RELEASE_OR_CREATE_DATE;
+            }
+            if (sortOrder == null) {
+                sortOrder = SortOrder.desc;
+            }
+            if (selectedTypesString == null || selectedTypesString.isEmpty()) {
+                selectedTypesString = "dataverses:datasets";
+            }
+        } else {
+            if (sortField == null) {
+                sortField = SEARCH_FIELD_RELEVANCE;
+            }
+            if (sortOrder == null) {
+                sortOrder = SortOrder.desc;
+            }
+            if (selectedTypesString == null || selectedTypesString.isEmpty()) {
+                selectedTypesString = "dataverses:datasets:files";
+            }
+        }
+        filterQueries = new ArrayList<>();
+        for (String fq : Arrays.asList(fq0, fq1, fq2, fq3, fq4, fq5, fq6, fq7, fq8, fq9)) {
+            if (fq != null) {
+                filterQueries.add(fq);
+            }
+        }
+        
+        selectedTypesMap.put(SearchObjectType.DATAVERSES, selectedTypesString.contains(SearchObjectType.DATAVERSES.getSolrValue()));
+        selectedTypesMap.put(SearchObjectType.DATASETS, selectedTypesString.contains(SearchObjectType.DATASETS.getSolrValue()));
+        selectedTypesMap.put(SearchObjectType.FILES, selectedTypesString.contains(SearchObjectType.FILES.getSolrValue()));
+    }
+    
     /**
      * @todo: better style and icons for facets
      * <p>
@@ -170,7 +229,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
          *
          */
 
-        String optionalDataverseScope = "&alias=" + dataverse.getAlias();
+        String optionalDataverseScope = "&alias=" + dataverseAlias;
 
         String qParam = "";
         if (query != null) {
@@ -181,67 +240,28 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     }
 
-    public void search() {
+    public void search(Dataverse dataverse) {
         logger.fine("search called");
 
-        if (dataverseAlias != null) {
-            dataverse = dataverseDao.findByAlias(dataverseAlias);
-        }
-        if (dataverse == null) {
-            dataverse = dataverseDao.findRootDataverse();
-        }
-
         // wildcard/browse (*) unless user supplies a query
-        String queryToPassToSolr = "*";
+        String queryToPassToSolr = StringUtils.isEmpty(query) ? "*" : query;
 
-        if (StringUtils.isEmpty(query)) {
-            queryToPassToSolr = "*";
-            if (sortField == null) {
-                sortField = searchFieldReleaseOrCreateDate;
-            }
-            if (sortOrder == null) {
-                sortOrder = SortOrder.desc;
-            }
-            if (selectedTypesString == null || selectedTypesString.isEmpty()) {
-                selectedTypesString = "dataverses:datasets";
-            }
-        } else {
-            queryToPassToSolr = query;
-            if (sortField == null) {
-                sortField = searchFieldRelevance;
-            }
-            if (sortOrder == null) {
-                sortOrder = SortOrder.desc;
-            }
-            if (selectedTypesString == null || selectedTypesString.isEmpty()) {
-                selectedTypesString = "dataverses:datasets:files";
-            }
-        }
-
-        filterQueries = new ArrayList<>();
-        for (String fq : Arrays.asList(fq0, fq1, fq2, fq3, fq4, fq5, fq6, fq7, fq8, fq9)) {
-            if (fq != null) {
-                filterQueries.add(fq);
-            }
-        }
-
+        this.dataverse = dataverse;
+        this.dataverseAlias = dataverse.getAlias();
 
         List<String> filterQueriesFinal = new ArrayList<>();
+        String dataversePath = null;
 
         if (!dataverse.isRoot()) {
             /**
              * @todo centralize this into SearchServiceBean
              */
-            dataversePath = dataverseDao.determineDataversePath(this.dataverse);
+            dataversePath = dataverseDao.determineDataversePath(dataverse);
             String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
             filterQueriesFinal.add(filterDownToSubtree);
         }
 
         filterQueriesFinal.addAll(filterQueries);
-
-        selectedTypesMap.put(SearchObjectType.DATAVERSES, selectedTypesString.contains(SearchObjectType.DATAVERSES.getSolrValue()));
-        selectedTypesMap.put(SearchObjectType.DATASETS, selectedTypesString.contains(SearchObjectType.DATASETS.getSolrValue()));
-        selectedTypesMap.put(SearchObjectType.FILES, selectedTypesString.contains(SearchObjectType.FILES.getSolrValue()));
 
         SearchForTypes searchForTypes = SearchForTypes.byTypes(
                 selectedTypesMap.entrySet().stream()
@@ -249,7 +269,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
                     .map(Map.Entry::getKey)
                     .collect(Collectors.toList()));
 
-        int paginationStart = (page - 1) * paginationGuiRows;
+        int paginationStart = (page - 1) * RESULTS_PER_PAGE;
 
         // reset the solr error flag
         solrErrorEncountered = false;
@@ -263,18 +283,18 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
             solrQueryResponse = searchService.search(dataverseRequestService.getDataverseRequest(), Collections.singletonList(dataverse),
                     queryToPassToSolr, searchForTypes, filterQueriesFinal, sortField, sortOrder,
-                    paginationStart, numRows, false);
+                    paginationStart, RESULTS_PER_PAGE, false);
 
             // This 2nd search() is for populating the facets: -- L.A.
             // TODO: ...
             SolrQueryResponse solrQueryResponseAllTypes = searchService.search(dataverseRequestService.getDataverseRequest(), Collections.singletonList(dataverse),
                     queryToPassToSolr, SearchForTypes.all(), filterQueriesFinal, sortField, sortOrder,
-                    paginationStart, numRows, false);
+                    paginationStart, RESULTS_PER_PAGE, false);
 
             // populate preview counts: https://redmine.hmdc.harvard.edu/issues/3560
-            previewCountbyType.put("dataverses", solrQueryResponseAllTypes.getDvObjectCounts().getDataversesCount());
-            previewCountbyType.put("datasets", solrQueryResponseAllTypes.getDvObjectCounts().getDatasetsCount());
-            previewCountbyType.put("files", solrQueryResponseAllTypes.getDvObjectCounts().getDatafilesCount());
+            previewCountbyType.put(SearchObjectType.DATAVERSES, solrQueryResponseAllTypes.getDvObjectCounts().getDataversesCount());
+            previewCountbyType.put(SearchObjectType.DATASETS, solrQueryResponseAllTypes.getDvObjectCounts().getDatasetsCount());
+            previewCountbyType.put(SearchObjectType.FILES, solrQueryResponseAllTypes.getDvObjectCounts().getDatafilesCount());
 
         } catch (SearchException ex) {
             String message = "Exception running search for [" + queryToPassToSolr + "] with filterQueries " + filterQueries + " and paginationStart [" + paginationStart + "]";
@@ -293,8 +313,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         this.filterQueriesDebug = solrQueryResponse.getFilterQueriesActual();
 
         paginationGuiStart = paginationStart + 1;
-        paginationGuiEnd = Math.min(page * paginationGuiRows, searchResultsCount);
-        List<SolrSearchResult> searchResults = solrQueryResponse.getSolrSearchResults();
+        paginationGuiEnd = Math.min(page * RESULTS_PER_PAGE, searchResultsCount);
 
         /**
          * @todo consider creating Java objects called DatasetCard,
@@ -308,13 +327,14 @@ public class SearchIncludeFragment implements java.io.Serializable {
          * solrSearchResult.setCitation method but only the dataset card in
          * the UI (currently) shows this "citation" field.
          */
-        for (SolrSearchResult solrSearchResult : searchResults) {
+        for (SolrSearchResult solrSearchResult : searchResultsList) {
 
             // going to assume that this is NOT a linked object, for now:
             solrSearchResult.setIsInTree(true);
             // (we'll review this later!)
         }
-        Map<SearchObjectType, List<SolrSearchResult>> results = searchResults.stream()
+
+        Map<SearchObjectType, List<SolrSearchResult>> results = searchResultsList.stream()
                 .collect(Collectors.groupingBy(SolrSearchResult::getType));
         solrSearchResultsService.populateDataverseSearchCard(
                 results.getOrDefault(SearchObjectType.DATAVERSES, Collections.emptyList()));
@@ -322,25 +342,27 @@ public class SearchIncludeFragment implements java.io.Serializable {
                 results.getOrDefault(SearchObjectType.DATASETS, Collections.emptyList()));
         solrSearchResultsService.populateDatafileSearchCard(
                 results.getOrDefault(SearchObjectType.FILES, Collections.emptyList()));
+
+        setDisplayCardValues(dataversePath);
     }
 
     public String searchWithSelectedTypesRedirect() {
-        String searchUrl = "dataverse.xhtml?alias=" + dataverse.getAlias();
-
-        searchUrl += "&q=" + ((query == null) ? "" : query);
-        searchUrl += "&types=" + selectedTypesMap.entrySet().stream()
-            .filter(entry -> entry.getValue())
-            .map(entry -> entry.getKey().getSolrValue())
-            .collect(Collectors.joining(":"));
+        StringBuilder searchUrlBuilder = new StringBuilder()
+                .append("dataverse.xhtml?alias=").append(dataverseAlias)
+                .append("&q=" + ((query == null) ? "" : query))
+                .append("&types=" + selectedTypesMap.entrySet().stream()
+                                    .filter(entry -> entry.getValue())
+                                    .map(entry -> entry.getKey().getSolrValue())
+                                    .collect(Collectors.joining(":")));
 
         for (int i=0; i< filterQueries.size(); i++) {
-            searchUrl += "&fq" + i + "=" + filterQueries.get(i);
+            searchUrlBuilder.append("&fq").append(i).append("=").append(filterQueries.get(i));
         }
-        searchUrl += "&sort=" + sortField;
-        searchUrl += "&order=" + sortOrder;
-        searchUrl += "&page=1";
+        searchUrlBuilder.append("&sort=").append(sortField)
+                        .append("&order=").append(sortOrder)
+                        .append("&page=1&faces-redirect=true");
 
-        return widgetWrapper.wrapURL(searchUrl + "&faces-redirect=true");
+        return widgetWrapper.wrapURL(searchUrlBuilder.toString());
     }
 
     /**
@@ -361,27 +383,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
         return solrErrorEncountered;
     }
 
-    public int getNumberOfFacets(String name, int defaultValue) {
-        Integer numFacets = numberOfFacets.get(name);
-        if (numFacets == null) {
-            numberOfFacets.put(name, defaultValue);
-            numFacets = defaultValue;
-        }
-        return numFacets;
-    }
-
-    public void incrementFacets(String name, int incrementNum) {
-        Integer numFacets = numberOfFacets.get(name);
-        if (numFacets == null) {
-            numFacets = incrementNum;
-        }
-        numberOfFacets.put(name, numFacets + incrementNum);
-    }
-
-    private Long findFacetCountByType(String type) {
-        return previewCountbyType.get(type);
-    }
-
     public String getQuery() {
         return query;
     }
@@ -394,120 +395,20 @@ public class SearchIncludeFragment implements java.io.Serializable {
         return filterQueries;
     }
 
-    public void setFilterQueries(List<String> filterQueries) {
-        this.filterQueries = filterQueries;
-    }
-
     public List<FacetCategory> getFacetCategoryList() {
         return facetCategoryList;
-    }
-
-    public void setFacetCategoryList(List<FacetCategory> facetCategoryList) {
-        this.facetCategoryList = facetCategoryList;
     }
 
     public List<SolrSearchResult> getSearchResultsList() {
         return searchResultsList;
     }
 
-    public void setSearchResultsList(List<SolrSearchResult> searchResultsList) {
-        this.searchResultsList = searchResultsList;
-    }
-
     public int getSearchResultsCount() {
         return searchResultsCount;
     }
 
-    public void setSearchResultsCount(int searchResultsCount) {
-        this.searchResultsCount = searchResultsCount;
-    }
-
-    public String getFq0() {
-        return fq0;
-    }
-
-    public void setFq0(String fq0) {
-        this.fq0 = fq0;
-    }
-
-    public String getFq1() {
-        return fq1;
-    }
-
-    public void setFq1(String fq1) {
-        this.fq1 = fq1;
-    }
-
-    public String getFq2() {
-        return fq2;
-    }
-
-    public void setFq2(String fq2) {
-        this.fq2 = fq2;
-    }
-
-    public String getFq3() {
-        return fq3;
-    }
-
-    public void setFq3(String fq3) {
-        this.fq3 = fq3;
-    }
-
-    public String getFq4() {
-        return fq4;
-    }
-
-    public void setFq4(String fq4) {
-        this.fq4 = fq4;
-    }
-
-    public String getFq5() {
-        return fq5;
-    }
-
-    public void setFq5(String fq5) {
-        this.fq5 = fq5;
-    }
-
-    public String getFq6() {
-        return fq6;
-    }
-
-    public void setFq6(String fq6) {
-        this.fq6 = fq6;
-    }
-
-    public String getFq7() {
-        return fq7;
-    }
-
-    public void setFq7(String fq7) {
-        this.fq7 = fq7;
-    }
-
-    public String getFq8() {
-        return fq8;
-    }
-
-    public void setFq8(String fq8) {
-        this.fq8 = fq8;
-    }
-
-    public String getFq9() {
-        return fq9;
-    }
-
-    public void setFq9(String fq9) {
-        this.fq9 = fq9;
-    }
-
     public Dataverse getDataverse() {
         return dataverse;
-    }
-
-    public void setDataverse(Dataverse dataverse) {
-        this.dataverse = dataverse;
     }
 
     public String getSelectedTypesString() {
@@ -518,76 +419,20 @@ public class SearchIncludeFragment implements java.io.Serializable {
         this.selectedTypesString = selectedTypesString;
     }
 
-    public String getSearchFieldType() {
-        return searchFieldType;
-    }
-
-    public void setSearchFieldType(String searchFieldType) {
-        this.searchFieldType = searchFieldType;
-    }
-
-    public String getSearchFieldSubtree() {
-        return searchFieldSubtree;
-    }
-
-    public void setSearchFieldSubtree(String searchFieldSubtree) {
-        this.searchFieldSubtree = searchFieldSubtree;
-    }
-
-    public String getTypeFilterQuery() {
-        return typeFilterQuery;
-    }
-
-    public void setTypeFilterQuery(String typeFilterQuery) {
-        this.typeFilterQuery = typeFilterQuery;
-    }
-
     public Long getFacetCountDatasets() {
-        return findFacetCountByType("datasets");
+        return previewCountbyType.get(SearchObjectType.DATASETS);
     }
 
     public Long getFacetCountDataverses() {
-        return findFacetCountByType("dataverses");
+        return previewCountbyType.get(SearchObjectType.DATAVERSES);
     }
 
     public Long getFacetCountFiles() {
-        return findFacetCountByType("files");
-    }
-
-    public String getSearchFieldRelevance() {
-        return searchFieldRelevance;
-    }
-
-    public void setSearchFieldRelevance(String searchFieldRelevance) {
-        this.searchFieldRelevance = searchFieldRelevance;
-    }
-
-    public String getSearchFieldNameSort() {
-        return searchFieldNameSort;
-    }
-
-    public void setSearchFieldNameSort(String searchFieldNameSort) {
-        this.searchFieldNameSort = searchFieldNameSort;
-    }
-
-    public String getSearchFieldReleaseOrCreateDate() {
-        return searchFieldReleaseOrCreateDate;
-    }
-
-    public String getASCENDING() {
-        return ASCENDING;
-    }
-
-    public String getDESCENDING() {
-        return DESCENDING;
+        return previewCountbyType.get(SearchObjectType.FILES);
     }
 
     public String getSortField() {
         return sortField;
-    }
-
-    public void setSortField(String sortField) {
-        this.sortField = sortField;
     }
 
     public String getSortOrder() {
@@ -617,68 +462,44 @@ public class SearchIncludeFragment implements java.io.Serializable {
     }
 
     public boolean isSortedByNameAsc() {
-        return sortField.equals(searchFieldNameSort) && sortOrder == SortOrder.asc;
+        return sortField.equals(SEARCH_FIELD_NAME_SORT) && sortOrder == SortOrder.asc;
     }
 
     public boolean isSortedByNameDesc() {
-        return sortField.equals(searchFieldNameSort) && sortOrder == SortOrder.desc;
+        return sortField.equals(SEARCH_FIELD_NAME_SORT) && sortOrder == SortOrder.desc;
     }
 
     public boolean isSortedByReleaseDateAsc() {
-        return sortField.equals(searchFieldReleaseOrCreateDate) && sortOrder == SortOrder.asc;
+        return sortField.equals(SEARCH_FIELD_RELEASE_OR_CREATE_DATE) && sortOrder == SortOrder.asc;
     }
 
     public boolean isSortedByReleaseDateDesc() {
-        return sortField.equals(searchFieldReleaseOrCreateDate) && sortOrder == SortOrder.desc;
+        return sortField.equals(SEARCH_FIELD_RELEASE_OR_CREATE_DATE) && sortOrder == SortOrder.desc;
     }
 
     public boolean isSortedByRelevance() {
-        return sortField.equals(searchFieldRelevance) && sortOrder == SortOrder.desc;
+        return sortField.equals(SEARCH_FIELD_RELEVANCE) && sortOrder == SortOrder.desc;
     }
 
     public int getPage() {
         return page;
     }
 
-    public void setPage(int page) {
-        this.page = page;
-    }
-
     // helper method
     public int getTotalPages() {
-        return ((searchResultsCount - 1) / paginationGuiRows) + 1;
+        return ((searchResultsCount - 1) / RESULTS_PER_PAGE) + 1;
     }
 
     public int getPaginationGuiStart() {
         return paginationGuiStart;
     }
 
-    public void setPaginationGuiStart(int paginationGuiStart) {
-        this.paginationGuiStart = paginationGuiStart;
-    }
-
     public int getPaginationGuiEnd() {
         return paginationGuiEnd;
     }
 
-    public void setPaginationGuiEnd(int paginationGuiEnd) {
-        this.paginationGuiEnd = paginationGuiEnd;
-    }
-
-    public int getPaginationGuiRows() {
-        return paginationGuiRows;
-    }
-
-    public void setPaginationGuiRows(int paginationGuiRows) {
-        this.paginationGuiRows = paginationGuiRows;
-    }
-
     public boolean isSolrIsDown() {
         return solrIsDown;
-    }
-
-    public void setSolrIsDown(boolean solrIsDown) {
-        this.solrIsDown = solrIsDown;
     }
 
     public boolean isRootDv() {
@@ -703,7 +524,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
      *
      * @return
      */
-    public boolean hasValidFilterQueries() {
+    private boolean hasValidFilterQueries() {
 
         if (this.filterQueries.isEmpty()) {
             return true;        // empty is valid!
@@ -744,20 +565,8 @@ public class SearchIncludeFragment implements java.io.Serializable {
         return selectedTypesMap;
     }
 
-    public boolean selectedTypesContainsOnly(SearchObjectType searchObjectType) {
-        return selectedTypesMap.entrySet().stream()
-            .filter(entry -> entry.getValue())
-            .allMatch(entry -> entry.getKey() == searchObjectType);
-    }
-
     public void setSelectedTypesMap(Map<SearchObjectType, Boolean> selectedTypesMap) {
         this.selectedTypesMap = selectedTypesMap;
-    }
-
-    public boolean selectedTypesAreEmpty() {
-        return selectedTypesMap.entrySet().stream()
-                .filter(entry -> entry.getValue())
-                .count() == 0;
     }
 
     public String getErrorFromSolr() {
@@ -841,7 +650,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
         return "";
     }
 
-    public void setDisplayCardValues() {
+    private void setDisplayCardValues(String dataversePath) {
 
         Set<Long> harvestedDatasetIds = null;
         for (SolrSearchResult result : searchResultsList) {

@@ -14,4 +14,7 @@ public class IllegalCommandException extends CommandException {
         super(message, aCommand);
     }
 
+    public IllegalCommandException(String message) {
+        super(message, null);
+    }
 }

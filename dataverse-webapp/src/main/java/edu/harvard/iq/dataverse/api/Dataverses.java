@@ -10,8 +10,11 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroup
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.Util;
+import edu.harvard.iq.dataverse.dataverse.DataverseLinkingService;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.NoDatasetFilesException;
+import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.engine.command.impl.AddRoleAssigneesToExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
@@ -24,7 +27,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetExplicitGroupCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ImportDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.LinkDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListDataverseContentCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListExplicitGroupsCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ListFacetsCommand;
@@ -118,6 +120,9 @@ public class Dataverses extends AbstractApiBean {
 
     @EJB
     ImportServiceBean importService;
+
+    @Inject
+    private DataverseLinkingService dataverseLinkingService;
 
     @Inject
     private JsonPrinter jsonPrinter;
@@ -959,7 +964,6 @@ public class Dataverses extends AbstractApiBean {
     @Path("{linkedDataverseAlias}/link/{linkingDataverseAlias}")
     public Response linkDataverse(@PathParam("linkedDataverseAlias") String linkedDataverseAlias, @PathParam("linkingDataverseAlias") String linkingDataverseAlias) {
         try {
-            User u = findUserOrDie();
             Dataverse linked = findDataverseOrDie(linkedDataverseAlias);
             Dataverse linking = findDataverseOrDie(linkingDataverseAlias);
             if (linked == null) {
@@ -968,12 +972,15 @@ public class Dataverses extends AbstractApiBean {
             if (linking == null) {
                 return error(Response.Status.BAD_REQUEST, "Linking Dataverse not found.");
             }
-            execCommand(new LinkDataverseCommand(
-                    createDataverseRequest(u), linking, linked
-            ));
+            dataverseLinkingService.saveLinkedDataverse(linking, linked);
+
             return ok("Dataverse " + linked.getAlias() + " linked successfully to " + linking.getAlias());
         } catch (WrappedResponse ex) {
             return ex.getResponse();
+        } catch (PermissionException ex) {
+            return permissionError(ex);
+        } catch (IllegalCommandException ex) {
+            return forbidden(ex.getMessage());
         }
     }
 

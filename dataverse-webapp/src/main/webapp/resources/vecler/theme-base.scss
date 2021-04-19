@@ -181,6 +181,10 @@ pre {
 	color: $gray-text-color;
 }
 
+.hidden-content {
+    display: none;
+}
+
 /* Bootstrap tooltips and popovers */
 .tooltip {
 	font-size: 0.8em;

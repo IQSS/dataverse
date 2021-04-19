@@ -10,7 +10,8 @@
 
     <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
     <o:importConstants type="edu.harvard.iq.dataverse.search.query.SearchObjectType" var="searchObjectTypeEnum"/>
-    
+    <o:importConstants type="edu.harvard.iq.dataverse.search.SearchIncludeFragment" var="searchConstants"/>
+
     <c:set var="page" value="/dataverse/#{SearchIncludeFragment.dataverse.alias}"/>
 
     <!--@elvariable id="friendlyNames" type="java.util.List<java.lang.String>"-->
@@ -19,6 +20,8 @@
     <div class="row panelSearchForm" jsf:rendered="#{!SearchIncludeFragment.solrIsDown}">
         <div class="#{widgetWrapper.widgetView ? 'col-sm-12' : 'col-sm-8'}">
             <h:form>
+                <h:inputHidden value="#{SearchIncludeFragment.dataverseAlias}" />
+
                 <h:outputLabel styleClass="sr-only" value="#{bundle['dataverse.search.label']}" for="searchBasic" />
                 <p:inputText id="searchBasic" styleClass="search-input" size="40" value="#{SearchIncludeFragment.query}" onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
                 <p:watermark for="searchBasic" value="#{bundle['dataverse.search.input.watermark']}"/>
@@ -93,11 +96,11 @@
         
             <!--TYPE FACET (DATAVERSES, DATASETS, FILES)-->
             <h:form id="facetType" styleClass="clearfix">
-            
+                <h:inputHidden value="#{SearchIncludeFragment.dataverseAlias}" />
+
                 <div class="clearfix">
                     <p:selectBooleanCheckbox id="checkDataverses" value="#{SearchIncludeFragment.selectedTypesMap[searchObjectTypeEnum.DATAVERSES]}"
-                            styleClass="facetTypeChBox">
-                        <p:ajax process="@form" update="@form" />
+                            styleClass="facetTypeChBox" onchange="updateApplyTypeFacetDisabledState();">
                     </p:selectBooleanCheckbox>
 
                     <i class="icon-dataverse text-icon-inline"></i>
@@ -111,8 +114,7 @@
                 
                 <div class="clearfix">
                     <p:selectBooleanCheckbox id="checkDatasets" value="#{SearchIncludeFragment.selectedTypesMap[searchObjectTypeEnum.DATASETS]}"
-                        styleClass="facetTypeChBox">
-                        <p:ajax process="@form" update="@form" />
+                        styleClass="facetTypeChBox" onchange="updateApplyTypeFacetDisabledState();">
                     </p:selectBooleanCheckbox>
 
                     <i class="icon-dataset text-icon-inline"></i>
@@ -126,8 +128,7 @@
                     
                 <div class="clearfix">
                     <p:selectBooleanCheckbox id="checkFiles" value="#{SearchIncludeFragment.selectedTypesMap[searchObjectTypeEnum.FILES]}"
-                        styleClass="facetTypeChBox">
-                        <p:ajax process="@form" update="@form" />
+                        styleClass="facetTypeChBox" onchange="updateApplyTypeFacetDisabledState();">
                     </p:selectBooleanCheckbox>
 
                     <i class="icon-file text-icon-inline"></i>
@@ -140,8 +141,7 @@
                 </div>
                     
                 <div class="pull-right">
-                    <p:commandButton value="#{bundle.apply}"
-                            disabled="#{SearchIncludeFragment.selectedTypesAreEmpty()}"
+                    <p:commandButton id="applyTypeFacetsButton" widgetVar="applyTypeFacetsButton" value="#{bundle.apply}"
                             action="#{SearchIncludeFragment.searchWithSelectedTypesRedirect()}" />
                 </div>
             </h:form>
@@ -150,55 +150,65 @@
             <h:form id="facetCategoryForm" rendered="#{SearchIncludeFragment.searchResultsCount > 0}">
                 <p:dataList id="facetCategoryList" value="#{SearchIncludeFragment.facetCategoryList}" var="facetCategory">
                     <h:outputText value="#{facetCategory.displayName}" styleClass="facetCategoryName" escape="false"/>
-                    <p:dataList value="#{facetCategory.facetLabel}" var="facetLabel" rows="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5)}">
-                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{!SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink">
-                            <h:outputFormat value="#{facetLabel.displayName} &#40;{0}&#41; ">
-                                <f:param value="#{facetLabel.count}"/>
-                            </h:outputFormat>
-                            <h:outputText styleClass="sr-only" value=" #{facetCategory.displayName}: #{bundle['dataverse.search.filters.add.screenReaderPostfix']}" />
-                            
-                            <f:param name="q" value="#{SearchIncludeFragment.query}"/>
-                            <f:param name="fq#{SearchIncludeFragment.filterQueries.size()}" value="#{facetLabel.filterQuery}"/>
-                            <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
-                                <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
-                            </c:forEach>
-                            <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
-                            <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
-                            <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
-                        </h:outputLink>
-
-                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink facetSelected">
-                            <h:outputFormat value="#{facetLabel.displayName} &#40;{0}&#41;">
-                                <f:param value="#{facetLabel.count}"/>
-                            </h:outputFormat>
-                            <h:outputText styleClass="sr-only" value=" #{facetCategory.displayName}: #{bundle['dataverse.search.filters.remove.screenReaderPostfix']}" />
-                            
-                            <span class="glyphicon glyphicon-remove"></span>
-                            <f:param name="q" value="#{SearchIncludeFragment.query}"/>
-                            <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
-                                <f:param name="fq#{status.index}" value='#{clickedFilterQuery}' disable="#{clickedFilterQuery == facetLabel.filterQuery}"/>
-                            </c:forEach>
-                            <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
-                            <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
-                            <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
-                        </h:outputLink>
-                    </p:dataList>
-                    <ui:fragment rendered="#{facetCategory.name != SearchIncludeFragment.searchFieldType and facetCategory.name != SearchIncludeFragment.searchFieldSubtree}">
+                    
+                    <div class="ui-datalist ui-widget">
+                        <div class="ui-datalist-content ui-widget-content">
+                            <ul class="ui-datalist-data">
+                                <ui:repeat var="facetLabel" value="#{facetCategory.facetLabel}" varStatus="facetLabelStatus">
+                                    <li class="ui-datalist-item facet-item #{facetLabelStatus.index ge 5 ? 'hidden-content' : ''}">
+                                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{!SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink">
+                                            <h:outputFormat value="#{facetLabel.displayName} &#40;{0}&#41; ">
+                                                <f:param value="#{facetLabel.count}"/>
+                                            </h:outputFormat>
+                                            <h:outputText styleClass="sr-only" value=" #{facetCategory.displayName}: #{bundle['dataverse.search.filters.add.screenReaderPostfix']}" />
+                                            
+                                            <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                                            <f:param name="fq#{SearchIncludeFragment.filterQueries.size()}" value="#{facetLabel.filterQuery}"/>
+                                            <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                                <f:param name="fq#{status.index}" value='#{clickedFilterQuery}'/>
+                                            </c:forEach>
+                                            <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                                            <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
+                                            <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                                        </h:outputLink>
+                
+                                        <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink facetSelected">
+                                            <h:outputFormat value="#{facetLabel.displayName} &#40;{0}&#41;">
+                                                <f:param value="#{facetLabel.count}"/>
+                                            </h:outputFormat>
+                                            <h:outputText styleClass="sr-only" value=" #{facetCategory.displayName}: #{bundle['dataverse.search.filters.remove.screenReaderPostfix']}" />
+                                            
+                                            <span class="glyphicon glyphicon-remove"></span>
+                                            <f:param name="q" value="#{SearchIncludeFragment.query}"/>
+                                            <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
+                                                <f:param name="fq#{status.index}" value='#{clickedFilterQuery}' disable="#{clickedFilterQuery == facetLabel.filterQuery}"/>
+                                            </c:forEach>
+                                            <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
+                                            <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
+                                            <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
+                                        </h:outputLink>
+                                    </li>
+                                </ui:repeat>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <ui:fragment rendered="#{facetCategory.name != searchConstants.SEARCH_FIELD_TYPE and facetCategory.name != searchConstants.SEARCH_FIELD_SUBTREE}">
                         <div class="clearfix">
-                            <h:panelGroup styleClass="pull-left" rendered="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5) gt 5}">
-                                <p:commandLink actionListener="#{SearchIncludeFragment.incrementFacets(facetCategory.name,-5)}" update="facetCategoryList">
+                            <div class="pull-left hidden-content" jsf:rendered="#{facetCategory.facetLabel.size() gt 5}">
+                                <a href="#" data-facet-link="show-less">
                                     <h:outputText styleClass="sr-only" value="#{bundle['dataverse.search.filters.showMoreLess.screenReaderPrefix']} " />
                                     #{bundle.less}
                                     <h:outputText styleClass="sr-only" value=" #{bundle['dataverse.search.filters.showMoreLess.screenReaderPostfix']} #{facetCategory.displayName}" />
-                                </p:commandLink>
-                            </h:panelGroup>
-                            <h:panelGroup styleClass="pull-right" rendered="#{SearchIncludeFragment.getNumberOfFacets(facetCategory.name,5) lt facetCategory.facetLabel.size()}">
-                                <p:commandLink actionListener="#{SearchIncludeFragment.incrementFacets(facetCategory.name,5)}" update="facetCategoryList">
+                                </a>
+                            </div>
+                            <div class="pull-right" jsf:rendered="#{facetCategory.facetLabel.size() gt 5}">
+                                <a href="#" data-facet-link="show-more">
                                     <h:outputText styleClass="sr-only" value="#{bundle['dataverse.search.filters.showMoreLess.screenReaderPrefix']}" />
                                     #{bundle.more}
                                     <h:outputText styleClass="sr-only" value=" #{bundle['dataverse.search.filters.showMoreLess.screenReaderPostfix']} #{facetCategory.displayName}" />
-                                </p:commandLink>
-                            </h:panelGroup>
+                                </a>
+                            </div>
                         </div>
                     </ui:fragment>
                 </p:dataList>
@@ -351,8 +361,8 @@
                                     </c:forEach>
                                     <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                                     <f:param name="page" value="1"/>
-                                    <f:param name="sort" value="#{SearchIncludeFragment.searchFieldNameSort}"/>
-                                    <f:param name="order" value="#{SearchIncludeFragment.ASCENDING}"/>
+                                    <f:param name="sort" value="#{searchConstants.SEARCH_FIELD_NAME_SORT}"/>
+                                    <f:param name="order" value="#{searchConstants.ASCENDING}"/>
                                 </h:outputLink>
                             </li>
                             <li role="none">
@@ -366,8 +376,8 @@
                                     </c:forEach>
                                     <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                                     <f:param name="page" value="1"/>
-                                    <f:param name="sort" value="#{SearchIncludeFragment.searchFieldNameSort}"/>
-                                    <f:param name="order" value="#{SearchIncludeFragment.DESCENDING}"/>
+                                    <f:param name="sort" value="#{searchConstants.SEARCH_FIELD_NAME_SORT}"/>
+                                    <f:param name="order" value="#{searchConstants.DESCENDING}"/>
                                 </h:outputLink>
                             </li>
                             <li role="none">
@@ -381,8 +391,8 @@
                                     </c:forEach>
                                     <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                                     <f:param name="page" value="1"/>
-                                    <f:param name="sort" value="#{SearchIncludeFragment.searchFieldReleaseOrCreateDate}"/>
-                                    <f:param name="order" value="#{SearchIncludeFragment.DESCENDING}"/>
+                                    <f:param name="sort" value="#{searchConstants.SEARCH_FIELD_RELEASE_OR_CREATE_DATE}"/>
+                                    <f:param name="order" value="#{searchConstants.DESCENDING}"/>
                                 </h:outputLink>
                             </li>
                             <li role="none">
@@ -396,8 +406,8 @@
                                     </c:forEach>
                                     <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                                     <f:param name="page" value="1"/>
-                                    <f:param name="sort" value="#{SearchIncludeFragment.searchFieldReleaseOrCreateDate}"/>
-                                    <f:param name="order" value="#{SearchIncludeFragment.ASCENDING}"/>
+                                    <f:param name="sort" value="#{searchConstants.SEARCH_FIELD_RELEASE_OR_CREATE_DATE}"/>
+                                    <f:param name="order" value="#{searchConstants.ASCENDING}"/>
                                 </h:outputLink>
                             </li>
                             <ui:fragment rendered="#{!(empty SearchIncludeFragment.query)}">
@@ -412,8 +422,8 @@
                                         </c:forEach>
                                         <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                                         <f:param name="page" value="1"/>
-                                        <f:param name="sort" value="#{SearchIncludeFragment.searchFieldRelevance}"/>
-                                        <f:param name="order" value="#{SearchIncludeFragment.DESCENDING}"/>
+                                        <f:param name="sort" value="#{searchConstants.SEARCH_FIELD_RELEVANCE}"/>
+                                        <f:param name="order" value="#{searchConstants.DESCENDING}"/>
                                     </h:outputLink>
                                 </li>
                             </ui:fragment>
@@ -666,14 +676,6 @@
         </div>
     </div>
 
-    <!-- this remote command is called once the page finishes its initial load,
-            in order to display the images for the card -->
-    <h:form>
-        <p:remoteCommand name="postLoad"
-                         process="@this"
-                         update=":#{p:resolveClientId('resultsTable', view)}"
-                         actionListener="#{SearchIncludeFragment.setDisplayCardValues()}" />
-    </h:form>
 
     <p:dialog header="#{bundle['dataverse.results.dialog.addDataGuest.header']}" widgetVar="addData_popup" modal="true">
         <p class="help-block">
@@ -690,13 +692,9 @@
         </div>
     </p:dialog>
     <script type="text/javascript">
+    //<![CDATA[
+        
         $(document).ready(function () {
-            // Calls the p:remoteCommand postLoad.
-            // Posted at end of fragment to work correctly with Account information
-            <ui:remove>
-            // See: https://github.com/IQSS/dataverse/issues/2004
-            </ui:remove>
-            postLoad();
 
             $('[data-toggle=offcanvas]').click(function() {
                 var showText = '#{bundle.show}';
@@ -705,6 +703,56 @@
                 $(this).find('.show-hide-text').text($('.row-offcanvas').hasClass('active') ? showText : hideText);
                 $('.row-offcanvas').toggleClass('active', 200);
             });
+            $('[data-facet-link="show-more"]').click(function(e) {
+                e.preventDefault();
+                var showLessLink = $(this).closest('li').find('[data-facet-link="show-less"]');
+                console.log($(this).closest('li').find('[data-facet-link="show-less"]'));
+                var facetItems = $(this).closest('li').find('li.facet-item');
+                var allFacetItemsCount = facetItems.length;
+                var visibleFacetItemsCount = facetItems.filter(':visible').length;
+                var newVisibleFacetItemsCount = visibleFacetItemsCount + 5;
+                facetItems.each(function(index) {
+                    if (index >= newVisibleFacetItemsCount) {
+                        $(this).addClass('hidden-content');
+                    } else {
+                        $(this).removeClass('hidden-content');
+                    }
+                });
+                if (newVisibleFacetItemsCount >= allFacetItemsCount) {
+                    $(this).parent().addClass('hidden-content');
+                }
+                showLessLink.parent().removeClass('hidden-content');
+            });
+            $('[data-facet-link="show-less"]').click(function(e) {
+                e.preventDefault();
+                var showMoreLink = $(this).closest('li').find('[data-facet-link="show-more"]');
+                var facetItems = $(this).closest('li').find('li.facet-item');
+                var allFacetItemsCount = facetItems.length;
+                var visibleFacetItemsCount = facetItems.filter(':visible').length;
+                var newVisibleFacetItemsCount = Math.max(visibleFacetItemsCount - 5, 5);
+                facetItems.each(function(index) {
+                    if (index >= newVisibleFacetItemsCount) {
+                        $(this).addClass('hidden-content');
+                    } else {
+                        $(this).removeClass('hidden-content');
+                    }
+                });
+                if (newVisibleFacetItemsCount <= 5) {
+                    $(this).parent().addClass('hidden-content');
+                }
+                showMoreLink.parent().removeClass('hidden-content');
+            });
         });
+
+        function updateApplyTypeFacetDisabledState() {
+            var atLeastOneCheckboxSelected = $('form[id^="facetType"]').find('input:checked').length > 0;
+
+            if (atLeastOneCheckboxSelected) {
+                PF('applyTypeFacetsButton').enable();
+            } else {
+                PF('applyTypeFacetsButton').disable();
+            }
+        }
+    //]]>
     </script>
 </ui:composition>

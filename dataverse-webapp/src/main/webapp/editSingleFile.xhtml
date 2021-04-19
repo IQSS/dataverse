@@ -31,7 +31,7 @@
                 <f:viewParam name="versionString" value="#{EditSingleFilePage.versionString}"/>
                 <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                 <f:viewAction action="#{EditSingleFilePage.init}" />
-                <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbsForFileMetadata(EditSingleFilePage.singleFile, bundle['file.editSingleFile'])}" />
+                <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbsForDataFile(EditSingleFilePage.singleFile, bundle['file.editSingleFile'])}" />
             </f:metadata>
 
         <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.RestrictType" var="restrictTypeEnum"/>
