@@ -1067,13 +1067,12 @@ public class DatasetServiceBean implements java.io.Serializable {
     @Asynchronous
     public void globusUpload(String jsonData, ApiToken token, Dataset dataset, String httpRequestUrl, User authUser) throws ExecutionException, InterruptedException, MalformedURLException {
 
+        Integer countAll = 0;
+        Integer countSuccess = 0;
+        Integer countError = 0;
         String logTimestamp = logFormatter.format(new Date());
         Logger globusLogger = Logger.getLogger("edu.harvard.iq.dataverse.upload.client.DatasetServiceBean." + "GlobusUpload" + logTimestamp);
-
-
-        //Logger.getLogger(DatasetServiceBean.class.getCanonicalName());
-        //Logger.getLogger("edu.harvard.iq.dataverse.harvest.client.DatasetServiceBean." + "ExportAll" + logTimestamp);
-        String logFileName = "../logs" + File.separator + "globusUpload" + dataset.getId()+"_"+authUser.getIdentifier()+"_"+ logTimestamp + ".log";
+        String logFileName = "../logs" + File.separator + "globusUpload_id_" + dataset.getId() + "_" + logTimestamp + ".log";
         FileHandler fileHandler;
         boolean fileHandlerSuceeded;
         try {
@@ -1131,28 +1130,31 @@ public class DatasetServiceBean implements java.io.Serializable {
 
                 for (JsonObject fileJsonObject : filesJsonArray.getValuesAs(JsonObject.class)) {
 
-                    //   storageIdentifier   s3://gcs5-bucket1:1781cfeb8a7-748c270a227c from victoria
+                    //   storageIdentifier   s3://gcs5-bucket1:1781cfeb8a7-748c270a227c from externalTool
                     String storageIdentifier = fileJsonObject.getString("storageIdentifier");
-                    String fileName = fileJsonObject.getString("fileName");
                     String[] bits = storageIdentifier.split(":");
-                    String fileId = bits[bits.length-1];
                     String bucketName = bits[1].replace("/", "");
+                    String fileId = bits[bits.length-1];
 
                     //  fullpath    s3://gcs5-bucket1/10.5072/FK2/3S6G2E/1781cfeb8a7-4ad9418a5873
                     String fullPath = storageType + bucketName + "/" + datasetIdentifier +"/" +fileId ;
+                    String fileName = fileJsonObject.getString("fileName");
 
                     inputList.add(fileId + "IDsplit" + fullPath + "IDsplit" + fileName);
                 }
 
-                // calculate checksum, mimetype
+                // calculateMissingMetadataFields: checksum, mimetype
                 JsonObject newfilesJsonObject = calculateMissingMetadataFields(inputList,globusLogger);
                 JsonArray newfilesJsonArray = newfilesJsonObject.getJsonArray("files");
 
-                JsonArrayBuilder jsonSecondAPI = Json.createArrayBuilder() ;
+                JsonArrayBuilder jsonDataSecondAPI = Json.createArrayBuilder() ;
 
                 for (JsonObject fileJsonObject : filesJsonArray.getValuesAs(JsonObject.class)) {
 
+                    countAll++;
                     String storageIdentifier = fileJsonObject.getString("storageIdentifier");
+                    String fileName = fileJsonObject.getString("fileName");
+                    String directoryLabel = fileJsonObject.getString("directoryLabel");
                     String[] bits = storageIdentifier.split(":");
                     String fileId = bits[bits.length-1];
 
@@ -1165,13 +1167,18 @@ public class DatasetServiceBean implements java.io.Serializable {
                         fileJsonObject = path.apply(fileJsonObject);
                         path = Json.createPatchBuilder().add("/mimeType", newfileJsonObject.get(0).getString("mime")).build();
                         fileJsonObject = path.apply(fileJsonObject);
-                        jsonSecondAPI.add(stringToJsonObjectBuilder(fileJsonObject.toString()));
+                        jsonDataSecondAPI.add(stringToJsonObjectBuilder(fileJsonObject.toString()));
+                        countSuccess++;
+                    }
+                    else {
+                        globusLogger.info(fileName + " will be skipped from adding to dataset by second API due to missing values ");
+                        countError++;
                     }
                 }
 
-                String newjsonData = jsonSecondAPI.build().toString();
+                String newjsonData = jsonDataSecondAPI.build().toString();
 
-                globusLogger.info("Generated new JsonData with calculated values");
+                globusLogger.info("Successfully generated new JsonData for Second API call");
 
 
                 String command = "curl -H \"X-Dataverse-key:" + token.getTokenString() + "\" -X POST "+httpRequestUrl+"/api/datasets/:persistentId/addFiles?persistentId=doi:" + datasetIdentifier + " -F jsonData='" + newjsonData  + "'";
@@ -1180,7 +1187,8 @@ public class DatasetServiceBean implements java.io.Serializable {
                 String output = addFilesAsync(command , globusLogger ) ;
                 if(output.equalsIgnoreCase("ok"))
                 {
-                    userNotificationService.sendNotification((AuthenticatedUser) authUser, new Timestamp(new Date().getTime()), UserNotification.Type.GLOBUSUPLOADSUCCESS, dataset.getId());
+                    userNotificationService.sendNotification((AuthenticatedUser) authUser, new Timestamp(new Date().getTime()), UserNotification.Type.GLOBUSUPLOADSUCCESS, dataset.getId(),"");
+
                     globusLogger.info("Successfully completed api/datasets/:persistentId/addFiles call ");
                 }
                 else
@@ -1189,6 +1197,11 @@ public class DatasetServiceBean implements java.io.Serializable {
                 }
 
             }
+
+            globusLogger.info("Files processed: " + countAll.toString());
+            globusLogger.info("Files added successfully: " + countSuccess.toString());
+            globusLogger.info("Files failures: " + countError.toString());
+            globusLogger.info("Finished upload via Globus job.");
 
             if (fileHandlerSuceeded) {
                 fileHandler.close();
@@ -1310,10 +1323,14 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         } while (count < 3);
 
-
-        String mimeType = calculatemime(fileName);
-        globusLogger.info(" File Name " + fileName  +  "  File Details " + fileId  + " checksum = "+ checksumVal + " mimeType = " + mimeType);
-        return  new fileDetailsHolder(fileId, checksumVal,mimeType);
+        if(checksumVal.length() > 0 ) {
+            String mimeType = calculatemime(fileName);
+            globusLogger.info(" File Name " + fileName + "  File Details " + fileId + " checksum = " + checksumVal + " mimeType = " + mimeType);
+            return new fileDetailsHolder(fileId, checksumVal, mimeType);
+        }
+        else {
+            return null;
+        }
         //getBytes(in)+"" );
         // calculatemime(fileName));
     }
@@ -1402,7 +1419,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         String logTimestamp = logFormatter.format(new Date());
         Logger globusLogger = Logger.getLogger("edu.harvard.iq.dataverse.upload.client.DatasetServiceBean." + "GlobusDownload" + logTimestamp);
 
-        String logFileName = "../logs" + File.separator + "globusDownload_" + dataset.getId()+"_"+authUser.getIdentifier()+"_"+logTimestamp + ".log";
+        String logFileName = "../logs" + File.separator + "globusDownload_id_" + dataset.getId() + "_" + logTimestamp + ".log";
         FileHandler fileHandler;
         boolean fileHandlerSuceeded;
         try {

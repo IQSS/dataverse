@@ -101,136 +101,6 @@ public class GlobusServiceBean implements java.io.Serializable{
         this.userTransferToken = userTransferToken;
     }
 
-    public void onLoad() {
-        logger.info("Start Globus " + code);
-        logger.info("State " + state);
-
-        String globusEndpoint = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusEndpoint, "");
-        String basicGlobusToken = settingsSvc.getValueForKey(SettingsServiceBean.Key.BasicGlobusToken, "");
-        if (globusEndpoint.equals("") || basicGlobusToken.equals("")) {
-            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.GlobusError"));
-            return;
-        }
-        String datasetId = state;
-        logger.info("DatasetId = " + datasetId);
-
-        String directory = getDirectory(datasetId);
-        if (directory == null) {
-            logger.severe("Cannot find directory");
-            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.GlobusError"));
-            return;
-        }
-        HttpServletRequest origRequest = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-
-        logger.info(origRequest.getScheme());
-        logger.info(origRequest.getServerName());
-
-        if (code != null ) {
-
-            try {
-                AccessToken accessTokenUser = getAccessToken(origRequest, basicGlobusToken);
-                if (accessTokenUser == null) {
-                    logger.severe("Cannot get access user token for code " + code);
-                    JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.GlobusError"));
-                    return;
-                } else {
-                    setUserTransferToken(accessTokenUser.getOtherTokens().get(0).getAccessToken());
-                }
-
-                UserInfo usr = getUserInfo(accessTokenUser);
-                if (usr == null) {
-                    logger.severe("Cannot get user info for " + accessTokenUser.getAccessToken());
-                    JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.GlobusError"));
-                    return;
-                }
-                logger.info(accessTokenUser.getAccessToken());
-                logger.info(usr.getEmail());
-                //AccessToken clientTokenUser = getClientToken(basicGlobusToken);
-                AccessToken clientTokenUser = getClientToken();
-                if (clientTokenUser == null) {
-                    logger.severe("Cannot get client token ");
-                    JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.GlobusError"));
-                    return;
-                }
-                logger.info(clientTokenUser.getAccessToken());
-
-                int status = createDirectory(clientTokenUser, directory, globusEndpoint);
-                if (status == 202) {
-                    int perStatus = givePermission("identity", usr.getSub(), "rw", clientTokenUser, directory, globusEndpoint);
-                    if (perStatus != 201 && perStatus != 200) {
-                        logger.severe("Cannot get permissions ");
-                        JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.GlobusError"));
-                        return;
-                    }
-                } else if (status == 502) { //directory already exists
-                    int perStatus = givePermission("identity", usr.getSub(), "rw", clientTokenUser, directory, globusEndpoint);
-                    if (perStatus == 409) {
-                        logger.info("permissions already exist");
-                    } else if (perStatus != 201 && perStatus != 200) {
-                        logger.severe("Cannot get permissions ");
-                        JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.GlobusError"));
-                        return;
-                    }
-                } else {
-                    logger.severe("Cannot create directory, status code " + status);
-                    JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.GlobusError"));
-                    return;
-                }
-                // ProcessBuilder processBuilder = new ProcessBuilder();
-                // AuthenticatedUser user = (AuthenticatedUser) session.getUser();
-                // ApiToken token = authSvc.findApiTokenByUser(user);
-                // String command = "curl -H \"X-Dataverse-key:" + token.getTokenString() + "\" -X POST https://" + origRequest.getServerName() + "/api/globus/" + datasetId;
-                // logger.info("====command ==== " + command);
-                // processBuilder.command("bash", "-c", command);
-                // logger.info("=== Start process");
-                // Process process = processBuilder.start();
-                // logger.info("=== Going globus");
-                goGlobusUpload(directory, globusEndpoint);
-                logger.info("=== Finished globus");
-
-
-            } catch (MalformedURLException ex) {
-                logger.severe(ex.getMessage());
-                logger.severe(ex.getCause().toString());
-                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.GlobusError"));
-            } catch (UnsupportedEncodingException ex) {
-                logger.severe(ex.getMessage());
-                logger.severe(ex.getCause().toString());
-                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.GlobusError"));
-            } catch (IOException ex) {
-                logger.severe(ex.getMessage());
-                logger.severe(ex.getCause().toString());
-                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.GlobusError"));
-            }
-
-        }
-
-    }
-
-    private void goGlobusUpload(String directory, String globusEndpoint ) {
-
-        String httpString = "window.location.replace('" + "https://app.globus.org/file-manager?destination_id=" + globusEndpoint + "&destination_path=" + directory + "'" +")";
-        PrimeFaces.current().executeScript(httpString);
-    }
-
-    public void goGlobusDownload(String datasetId) {
-
-        String directory = getDirectory(datasetId);
-        String globusEndpoint = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusEndpoint, "");
-        String httpString = "window.location.replace('" + "https://app.globus.org/file-manager?origin_id=" + globusEndpoint + "&origin_path=" + directory + "'" +")";
-        PrimeFaces.current().executeScript(httpString);
-    }
-/*
-    public void removeGlobusPermission() throws MalformedURLException {
-        //taskId and ruleId
-        String basicGlobusToken = settingsSvc.getValueForKey(SettingsServiceBean.Key.BasicGlobusToken, "");
-        AccessToken clientTokenUser =  getClientToken(basicGlobusToken);
-        String directory =  getDirectory( dataset.getId()+"" );
-        updatePermision(clientTokenUser, directory, "identity", "r");
-    }
-
- */
-
     ArrayList<String>  checkPermisions( AccessToken clientTokenUser, String directory, String globusEndpoint, String principalType, String principal) throws MalformedURLException {
         URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint/" + globusEndpoint + "/access_list");
         MakeRequestResponse result = makeRequest(url, "Bearer",
@@ -348,125 +218,6 @@ public class GlobusServiceBean implements java.io.Serializable{
         return result.status;
     }
 
-    private int createDirectory(AccessToken clientTokenUser, String directory, String globusEndpoint) throws MalformedURLException {
-        URL url = new URL("https://transfer.api.globusonline.org/v0.10/operation/endpoint/" + globusEndpoint + "/mkdir");
-
-        MkDir mkDir = new MkDir();
-        mkDir.setDataType("mkdir");
-        mkDir.setPath(directory);
-        Gson gson = new GsonBuilder().create();
-
-        MakeRequestResponse result = makeRequest(url, "Bearer",
-                clientTokenUser.getOtherTokens().get(0).getAccessToken(),"POST",  gson.toJson(mkDir));
-        logger.info(result.toString());
-
-        if (result.status == 502) {
-            logger.warning("Cannot create directory " + mkDir.getPath() + ", it already exists");
-        } else if (result.status == 403) {
-            logger.severe("Cannot create directory " + mkDir.getPath() + ", permission denied");
-        } else if  (result.status == 202) {
-            logger.info("Directory created " + mkDir.getPath());
-        }
-
-        return result.status;
-
-    }
-
-    public String getTaskList(String basicGlobusToken, String identifierForFileStorage, String timeWhenAsyncStarted) throws MalformedURLException  {
-        try
-        {
-            logger.info("1.getTaskList ====== timeWhenAsyncStarted = " + timeWhenAsyncStarted + "    ====== identifierForFileStorage ====== " + identifierForFileStorage);
-
-            String globusEndpoint = settingsSvc.getValueForKey(SettingsServiceBean.Key.GlobusEndpoint, "");
-            //AccessToken clientTokenUser = getClientToken(basicGlobusToken);
-            AccessToken clientTokenUser = getClientToken( );
-
-            URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint_manager/task_list?filter_endpoint="+globusEndpoint+"&filter_status=SUCCEEDED&filter_completion_time="+timeWhenAsyncStarted);
-
-            //AccessToken accessTokenUser
-            //accessTokenUser.getOtherTokens().get(0).getAccessToken()
-            MakeRequestResponse result = makeRequest(url, "Bearer", clientTokenUser.getOtherTokens().get(0).getAccessToken(),"GET",  null);
-            //logger.info("==TEST ==" + result.toString());
-
-
-
-            //2019-12-01 18:34:37+00:00
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            //SimpleDateFormat task_sdf = new SimpleDateFormat("yyyy-MM-ddTHH:mm:ss");
-
-            Calendar cal1 = Calendar.getInstance();
-            cal1.setTime(sdf.parse(timeWhenAsyncStarted));
-
-            Calendar cal2 = Calendar.getInstance();
-
-            Tasklist tasklist = null;
-            //2019-12-01 18:34:37+00:00
-
-            if (result.status == 200) {
-                tasklist = parseJson(result.jsonResponse, Tasklist.class, false);
-                for (int i = 0; i< tasklist.getDATA().size(); i++) {
-                    Task task = tasklist.getDATA().get(i);
-                    Date tastTime = sdf.parse(task.getRequest_time().replace("T" , " "));
-                    cal2.setTime(tastTime);
-
-
-                    if ( cal1.before(cal2))  {
-
-                        // get /task/<task_id>/successful_transfers
-                        // verify datasetid in "destination_path": "/~/test_godata_copy/file1.txt",
-                        // go to aws and get files and write to database tables
-
-                        logger.info("====== timeWhenAsyncStarted = " + timeWhenAsyncStarted + "    ====== task.getRequest_time().toString() ====== " + task.getRequest_time());
-
-                        boolean success = getSuccessfulTransfers(clientTokenUser, task.getTask_id() , identifierForFileStorage) ;
-
-                        if(success)
-                        {
-                            logger.info("SUCCESS ====== " + timeWhenAsyncStarted + " timeWhenAsyncStarted is before tastTime  =  TASK time =  " + task.getTask_id());
-                            return task.getTask_id();
-                        }
-                    }
-                    else
-                    {
-                        //logger.info("====== " + timeWhenAsyncStarted + " timeWhenAsyncStarted is after tastTime =  TASK time = " + task.getTask_id());
-                        //return task.getTask_id();
-                    }
-                }
-            }
-        } catch (MalformedURLException ex) {
-            logger.severe(ex.getMessage());
-            logger.severe(ex.getCause().toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public boolean getSuccessfulTransfers(AccessToken clientTokenUser, String taskId, String identifierForFileStorage) throws MalformedURLException {
-
-        URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint_manager/task/"+taskId+"/successful_transfers");
-
-        MakeRequestResponse result = makeRequest(url, "Bearer",clientTokenUser.getOtherTokens().get(0).getAccessToken(),
-                "GET",  null);
-
-        Transferlist transferlist = null;
-
-        if (result.status == 200) {
-            transferlist = parseJson(result.jsonResponse, Transferlist.class, false);
-            for (int i = 0; i < transferlist.getDATA().size(); i++) {
-                SuccessfulTransfer successfulTransfer = transferlist.getDATA().get(i);
-                String pathToVerify = successfulTransfer.getDestination_path();
-                logger.info("getSuccessfulTransfers : ======pathToVerify ===  " + pathToVerify + " ====identifierForFileStorage ===  " + identifierForFileStorage);
-                if(pathToVerify.contains(identifierForFileStorage))
-                {
-                    logger.info(" SUCCESS ====== " + pathToVerify + " ====  " + identifierForFileStorage);
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     public boolean getSuccessfulTransfers(AccessToken clientTokenUser, String taskId ) throws MalformedURLException {
 
         URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint_manager/task/"+taskId+"/successful_transfers");
@@ -474,16 +225,12 @@ public class GlobusServiceBean implements java.io.Serializable{
         MakeRequestResponse result = makeRequest(url, "Bearer",clientTokenUser.getOtherTokens().get(0).getAccessToken(),
                 "GET",  null);
 
-        Transferlist transferlist = null;
-
         if (result.status == 200) {
             logger.info(" SUCCESS ====== " );
             return true;
         }
         return false;
     }
-
-
 
     public AccessToken getClientToken() throws MalformedURLException {
         String basicGlobusToken = settingsSvc.getValueForKey(SettingsServiceBean.Key.BasicGlobusToken, "");
@@ -525,17 +272,6 @@ public class GlobusServiceBean implements java.io.Serializable{
 
     }
 
-    public UserInfo getUserInfo(AccessToken accessTokenUser) throws MalformedURLException {
-
-        URL url = new URL("https://auth.globus.org/v2/oauth2/userinfo");
-        MakeRequestResponse result = makeRequest(url, "Bearer" , accessTokenUser.getAccessToken() , "GET",  null);
-        UserInfo usr = null;
-        if (result.status == 200) {
-            usr = parseJson(result.jsonResponse, UserInfo.class, true);
-        }
-
-        return usr;
-    }
 
     public MakeRequestResponse  makeRequest(URL url, String authType, String authCode, String method, String jsonString) {
         String str = null;

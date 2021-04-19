@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
 import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -234,9 +233,6 @@ public class DatasetPage implements java.io.Serializable {
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
     @Inject DataverseHeaderFragment dataverseHeaderFragment;
-    @Inject
-    protected GlobusServiceBean globusService;
-
     private Dataset dataset = new Dataset();
     
     private Long id = null;    

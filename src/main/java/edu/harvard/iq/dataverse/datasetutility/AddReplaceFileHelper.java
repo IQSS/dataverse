@@ -100,7 +100,7 @@ public class AddReplaceFileHelper{
     public static String FILE_ADD_OPERATION = "FILE_ADD_OPERATION";
     public static String FILE_REPLACE_OPERATION = "FILE_REPLACE_OPERATION";
     public static String FILE_REPLACE_FORCE_OPERATION = "FILE_REPLACE_FORCE_OPERATION";
-    public static String GLOBUSFILE_ADD_OPERATION = "GLOBUSFILE_ADD_OPERATION";
+    public static String MULTIPLEFILES_ADD_OPERATION = "MULTIPLEFILES_ADD_OPERATION";
             
     private String currentOperation;
     
@@ -326,14 +326,14 @@ public class AddReplaceFileHelper{
                                        String newStorageIdentifier,
                                        InputStream newFileInputStream,
                                        OptionalFileParams optionalFileParams,
-                                       boolean globustype) {
+                                       boolean multipleFiles) {
 
         msgt(">> runAddFileByDatasetId");
 
         initErrorHandling();
         
-        if(globustype) {
-            this.currentOperation = GLOBUSFILE_ADD_OPERATION;
+        if(multipleFiles) {
+            this.currentOperation = MULTIPLEFILES_ADD_OPERATION;
         }
         else {
             this.currentOperation = FILE_ADD_OPERATION;
@@ -747,7 +747,7 @@ public class AddReplaceFileHelper{
             
         }else{
             msgt("step_070_run_update_dataset_command");
-            if (!this.isGlobusFileAddOperation()) {
+            if (!this.isMultipleFilesAddOperation()) {
             if (!this.step_070_run_update_dataset_command()){
                 return false;            
             }
@@ -813,14 +813,14 @@ public class AddReplaceFileHelper{
         return this.currentOperation.equals(FILE_ADD_OPERATION);
     }
     /**
-     * Is this a file add operation via Globus?
+     * Is this a multiple files add operation ?
      *
      * @return
      */
 
-    public boolean isGlobusFileAddOperation(){
+    public boolean isMultipleFilesAddOperation(){
 
-        return this.currentOperation.equals(GLOBUSFILE_ADD_OPERATION);
+        return this.currentOperation.equals(MULTIPLEFILES_ADD_OPERATION);
     }
 
     /**
@@ -1902,7 +1902,7 @@ public class AddReplaceFileHelper{
         msg("pre ingest start");
         // start the ingest!
         //
-        if (!this.isGlobusFileAddOperation()) {
+        if (!this.isMultipleFilesAddOperation()) {
         ingestService.startIngestJobsForDataset(dataset, dvRequest.getAuthenticatedUser());
         }
 
