@@ -2620,7 +2620,9 @@ public class Datasets extends AbstractApiBean {
                         } catch (DataFileTagException ex) {
                             return error(Response.Status.BAD_REQUEST, ex.getMessage());
                         }
-
+                        catch (ClassCastException | com.google.gson.JsonParseException ex) {
+                            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("file.addreplace.error.parsing"));
+                        }
                         // -------------------------------------
                         // (3) Get the file name and content type
                         // -------------------------------------
@@ -2704,10 +2706,10 @@ public class Datasets extends AbstractApiBean {
             logger.log(Level.INFO, "Success Number of Files " + successNumberofFiles);
             DatasetLock dcmLock = dataset.getLockFor(DatasetLock.Reason.EditInProgress);
             if (dcmLock == null) {
-                logger.log(Level.WARNING, "Dataset not locked for Globus upload");
+                logger.log(Level.WARNING, "No lock found for dataset");
             } else {
-                logger.log(Level.INFO, "Dataset remove locked for Globus upload");
                 datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.EditInProgress);
+                logger.log(Level.INFO, "Removed EditInProgress lock ");
                 //dataset.removeLock(dcmLock);
             }
 
