@@ -16,13 +16,9 @@ public class BrandingUtil {
     private static SettingsServiceBean settingsService;
 
     public static String getInstallationBrandName() {
-
-        String brandName = null;
-        if (settingsService != null)
-            brandName = settingsService.getValueForKey(SettingsServiceBean.Key.InstallationName);
-        // Separate if statement simplifies test setup, otherwise could use the
-        // getValueForKey method with a default param
-        if (brandName == null && dataverseService != null) {
+        String brandName = settingsService.getValueForKey(SettingsServiceBean.Key.InstallationName);
+        // Separate if statement simplifies test setup, otherwise could use the getValueForKey method with a default param
+        if (brandName == null) {
             brandName = dataverseService.getRootDataverseName();
         }
         return brandName;
