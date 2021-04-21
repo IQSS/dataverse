@@ -1318,9 +1318,11 @@ public class AddReplaceFileHelper{
             
             // Has the content type of the file changed?
             //
-            if (!finalFileList.get(0).getContentType().equalsIgnoreCase(fileToReplace.getContentType())){
-            
-                List<String> errParams = Arrays.asList(fileToReplace.getFriendlyType(),
+            String origType = fileToReplace.getOriginalFileFormat() != null ? fileToReplace.getOriginalFileFormat() : fileToReplace.getContentType();
+            if (!finalFileList.get(0).getContentType().equalsIgnoreCase(origType)) {
+                String friendlyType = fileToReplace.getOriginalFormatLabel() != null ? fileToReplace.getOriginalFormatLabel() : fileToReplace.getFriendlyType();
+                
+                List<String> errParams = Arrays.asList(friendlyType,
                                                 finalFileList.get(0).getFriendlyType());
                 
                 String contentTypeErr = BundleUtil.getStringFromBundle("file.addreplace.error.replace.new_file_has_different_content_type", 
