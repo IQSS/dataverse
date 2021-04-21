@@ -46,10 +46,10 @@ import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveComma
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import java.net.URI;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-import javax.persistence.PersistenceException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -2013,15 +2013,21 @@ public class Admin extends AbstractApiBean {
 
     @POST
     @Path("/licenses")
-    public Response addLicense(License license) {
+    public Response addLicense(JsonObject jsonObject) {
         try {
+            License license = new License();
+            license.setName(jsonObject.getString("name"));
+            license.setShortDescription(jsonObject.getString("shortDescription"));
+            license.setUri(new URI(jsonObject.getString("uri")));
+            license.setIconUrl(new URI(jsonObject.getString("iconUrl")));
+            license.setActive(jsonObject.getBoolean("active"));
             licenseService.save(license);
 			String location = "/api/admin/licenses/name/" + UrlEscapers.urlFragmentEscaper().escape(license.getName());
 			return created(location, Json.createObjectBuilder().add("message", "License created"));
         } catch (RequestBodyException e) {
-			return error(Response.Status.BAD_REQUEST, e.getMessage());
-		} catch(PersistenceException e) {
-            return error(Response.Status.CONFLICT, "A license with the same URI or name is already present.");
+            return error(Response.Status.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            return error(Response.Status.BAD_REQUEST, "Something went wrong.");
         }
 	}
 
