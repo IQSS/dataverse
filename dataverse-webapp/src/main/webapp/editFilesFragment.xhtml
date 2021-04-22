@@ -479,7 +479,7 @@
                                     <p:message for="fileDescription"/>
                                 </ui:fragment>
                             </div>
-                            <div jsf:rendered="#{isUploadPermited}">
+                            <div jsf:rendered="#{isUploadPermited}" jsf:id="licenseSelection">
                                 <ui:fragment id="fileTermsOfUse">
 
                                     <p:outputLabel styleClass="control-label" for="fileLicense"
@@ -489,7 +489,7 @@
                                                      value="#{fileMetadata.termsOfUseForm.typeWithLicenseId}"
                                                      autoWidth="false">
                                         <f:selectItems value="#{EditDatafilesPage.termsOfUseSelectItems}"/>
-                                        <p:ajax update="filesTable"/>
+                                        <p:ajax update="licenseSelection"/>
                                     </p:selectOneMenu>
 
                                     <div jsf:rendered="#{fileMetadata.termsOfUseForm.typeWithLicenseId eq 'RESTRICTED'}">
@@ -510,7 +510,7 @@
                                                     itemValue="ACADEMIC_PURPOSE_AND_NOT_FOR_REDISTRIBUTION"/>
                                             <f:selectItem itemLabel="#{bundle['file.termsOfAccess.restricted.CUSTOM']}"
                                                           itemValue="CUSTOM"/>
-                                            <p:ajax update="filesTable"/>
+                                            <p:ajax update="licenseSelection"/>
                                         </p:selectOneMenu>
                                     </div>
 
