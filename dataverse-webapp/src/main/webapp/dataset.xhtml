@@ -481,7 +481,7 @@
                             <!-- BEGIN: DATASET SUMMARY -->
                             <div jsf:id="dataset-summary-metadata" class="row panel panel-default"
                                  jsf:rendered="#{!widgetWrapper.widgetView and !DatasetPage.workingVersion.deaccessioned and
-                                                    (!empty DatasetPage.datasetSummaryFields or !empty DatasetPage.workingVersion.fileMetadatas) }">
+                                                    (!empty DatasetPage.datasetSummaryFields or (DatasetPage.getFileSize() gt 0)) }">
                                 <div class="panel-body metadata-panel-body metadata-summary-panel-body">
                                     <ui:repeat value="#{DatasetPage.datasetSummaryFields}" var="fieldsByType">
 
@@ -551,7 +551,7 @@
                                     </ui:repeat>
 
                                     <ui:fragment
-                                            rendered="#{!empty DatasetPage.workingVersion.fileMetadatas and !DatasetPage.sameTermsOfUseForAllFiles and !DatasetPage.isUserUnderEmbargo()}">
+                                            rendered="#{(DatasetPage.getFileSize() gt 0) and !DatasetPage.sameTermsOfUseForAllFiles and !DatasetPage.isUserUnderEmbargo()}">
                                         <div class="form-group">
                                             <label class="col-sm-3 control-label">
                                                 #{bundle['dataset.files.license']}
@@ -567,7 +567,7 @@
                                         </div>
                                     </ui:fragment>
                                     <ui:fragment
-                                            rendered="#{!empty DatasetPage.workingVersion.fileMetadatas and DatasetPage.sameTermsOfUseForAllFiles and !DatasetPage.isUserUnderEmbargo()}">
+                                            rendered="#{(DatasetPage.getFileSize() gt 0) and DatasetPage.sameTermsOfUseForAllFiles and !DatasetPage.isUserUnderEmbargo()}">
                                         <div class="form-group"
                                              jsf:rendered="#{DatasetPage.termsOfUseOfFirstFile.get().termsOfUseType == termsOfUseTypeEnum.LICENSE_BASED}">
                                             <label class="col-sm-3 control-label">
@@ -1174,7 +1174,7 @@
                         <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetPublishCustomText)}"
                                       escape="false"/>
                     </div>
-                    <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}">
+                    <ui:fragment rendered="#{DatasetPage.isMinorUpdate()}">
                         <p class="help-block">
                             #{bundle['dataset.selectVersionNumber']}
                         </p>
@@ -1193,17 +1193,17 @@
                     </ui:fragment>
                     <p>
                         <h:outputFormat value="#{bundle['dataset.majorRelease.tip']}"
-                                        rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}">
+                                        rendered="#{!DatasetPage.isMinorUpdate()}">
                             <f:param value="#{DatasetPage.datasetNextMajorVersion}"/>
                         </h:outputFormat>
                     </p>
                     <div class="button-block">
                         <p:commandButton value="#{bundle.continue}"
                                          onclick="PF('releaseDraft').hide();"
-                                         rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}"
+                                         rendered="#{DatasetPage.isMinorUpdate()}"
                                          action="#{DatasetPage.releaseDraft}"/>
                         <p:commandButton value="#{bundle.continue}" onclick="PF('releaseDraft').hide();"
-                                         rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}"
+                                         rendered="#{!DatasetPage.isMinorUpdate()}"
                                          action="#{DatasetPage.releaseMajor}" immediate="true"/>
                         <p:commandButton value="#{bundle.cancel}"
                                          onclick="PF('releaseDraft').hide();"

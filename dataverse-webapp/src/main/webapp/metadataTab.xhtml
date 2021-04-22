@@ -35,7 +35,7 @@
         <ui:param name="metadataBlocks"
                   value="#{DatasetMetadataTab.metadataBlocks.entrySet().toArray()}"/>
         <ui:param name="globalId" value="#{DatasetMetadataTab.dataset.globalIdString}"/>
-        <ui:param name="altPID" value="#{DatasetMetadataTab.dataset.alternativePersistentIdentifier}"/>
+        <ui:param name="altPID" value="#{DatasetMetadataTab.getAlternativePersistentIdentifier()}"/>
         <ui:param name="publicationDate" value="#{DatasetMetadataTab.dataset.publicationDateFormattedYYYYMMDD}"/>
     </ui:include>
 </ui:composition>

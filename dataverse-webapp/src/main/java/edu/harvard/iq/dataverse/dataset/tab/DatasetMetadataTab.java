@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.dataset.tab;
 
-import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.dataset.DatasetFieldsInitializer;
 import edu.harvard.iq.dataverse.export.ExportService;
@@ -18,7 +18,6 @@ import io.vavr.Tuple2;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +31,7 @@ public class DatasetMetadataTab implements Serializable {
     private ExportService exportService;
     private SystemConfig systemConfig;
     private DatasetFieldsInitializer datasetFieldsInitializer;
+    private DatasetDao datasetDao;
 
     private Dataset dataset;
     private boolean isDatasetLocked;
@@ -45,14 +45,15 @@ public class DatasetMetadataTab implements Serializable {
 
     @Inject
     public DatasetMetadataTab(PermissionsWrapper permissionsWrapper,
-                              DataverseRequestServiceBean dvRequestService,
                               ExportService exportService,
                               SystemConfig systemConfig,
-                              DatasetFieldsInitializer datasetVersionUI) {
+                              DatasetFieldsInitializer datasetVersionUI,
+                              DatasetDao datasetDao) {
         this.permissionsWrapper = permissionsWrapper;
         this.exportService = exportService;
         this.systemConfig = systemConfig;
         this.datasetFieldsInitializer = datasetVersionUI;
+        this.datasetDao = datasetDao;
     }
 
     // -------------------- GETTERS --------------------
@@ -103,6 +104,10 @@ public class DatasetMetadataTab implements Serializable {
                 .forEach(exporter -> exportersInfo.add(Tuple.of(exporter.getDisplayName(), createExporterURL(exporter, systemConfig.getDataverseSiteUrl()))));
 
         return exportersInfo;
+    }
+
+    public String getAlternativePersistentIdentifier() {
+        return datasetDao.find(dataset.getId()).getAlternativePersistentIdentifier();
     }
 
     // -------------------- PRIVATE --------------------

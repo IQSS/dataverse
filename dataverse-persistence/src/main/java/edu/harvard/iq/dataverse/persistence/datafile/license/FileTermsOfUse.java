@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.persistence.datafile.license;
 
+import edu.harvard.iq.dataverse.persistence.JpaEntity;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -17,7 +19,7 @@ import java.io.Serializable;
  * @author madryk
  */
 @Entity
-public class FileTermsOfUse implements Serializable {
+public class FileTermsOfUse implements Serializable, JpaEntity<Long> {
 
     private static final long serialVersionUID = 1L;
 
