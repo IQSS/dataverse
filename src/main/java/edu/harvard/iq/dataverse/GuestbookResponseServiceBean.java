@@ -581,7 +581,7 @@ public class GuestbookResponseServiceBean {
         return guestbook;
 
     }
-
+    
     public String getUserName(User user) {
         if (user.isAuthenticated()) {
             AuthenticatedUser authUser = (AuthenticatedUser) user;
@@ -812,6 +812,10 @@ public class GuestbookResponseServiceBean {
     }
     
     public GuestbookResponse initAPIGuestbookResponse(Dataset dataset, DataFile dataFile, DataverseSession session, User user) {
+        return initAPIGuestbookResponse(dataset, null, dataFile, session, user);
+    }
+    
+    public GuestbookResponse initAPIGuestbookResponse(Dataset dataset, DatasetVersion version, DataFile dataFile, DataverseSession session, User user) {
         GuestbookResponse guestbookResponse = new GuestbookResponse();
         Guestbook datasetGuestbook = dataset.getGuestbook();
         
@@ -821,7 +825,12 @@ public class GuestbookResponseServiceBean {
             guestbookResponse.setGuestbook(datasetGuestbook);            
         }
 
-       if(dataset.getLatestVersion() != null && dataset.getLatestVersion().isDraft()){
+        // This may not be doing what we want: 
+        if (version == null) {
+            version = dataset.getLatestVersion();
+        }
+        
+       if(version != null && version.isDraft()){
             guestbookResponse.setWriteResponse(false);
         }
         if (dataFile != null){
@@ -894,7 +903,7 @@ public class GuestbookResponseServiceBean {
         em.persist(guestbookResponse);
     }
     
-    
+        
     public Long getCountGuestbookResponsesByDataFileId(Long dataFileId) {
         // datafile id is null, will return 0
         Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.datafile_id  = " + dataFileId);

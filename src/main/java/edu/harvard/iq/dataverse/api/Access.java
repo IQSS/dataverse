@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
+import edu.harvard.iq.dataverse.DatasetVersionServiceBean.RetrieveDatasetVersionResponse;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
@@ -23,6 +24,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.FileDownloadServiceBean;
+import edu.harvard.iq.dataverse.Guestbook;
 import edu.harvard.iq.dataverse.GuestbookResponse;
 import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
@@ -626,12 +628,27 @@ public class Access extends AbstractApiBean {
     @GET
     @Produces({"application/zip"})
     public Response downloadAllFromLatest(@PathParam("id") String datasetIdOrPersistentId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
+        logger.info("inside download-all api");
         try {
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            User user = findUserOrDie(); 
+            DataverseRequest req = createDataverseRequest(user);
             final Dataset retrieved = execCommand(new GetDatasetCommand(req, findDatasetOrDie(datasetIdOrPersistentId)));
-            final DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
+            //final DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
+            if (!(user instanceof GuestUser)) {
+                // If it is a guest user, let's not even bother looking up if a draft exists.
+                final DatasetVersion draft = versionService.getDatasetVersionById(retrieved.getId(), DatasetVersion.VersionState.DRAFT.toString());
+                if (permissionService.requestOn(req, retrieved).has(Permission.ViewUnpublishedDataset)) {
+                    String fileIds = getFileIdsAsCommaSeparated(draft.getFileMetadatas());
+                    return downloadDatafiles(fileIds, draft, gbrecs, apiTokenParam, uriInfo, headers, response);
+                }
+            }
+            
+            // OK, it was not the draft. Let's see if we can serve a published version.
+            
+            final DatasetVersion latest = versionService.getLatestReleasedVersionFast(retrieved.getId()); 
+            
             String fileIds = getFileIdsAsCommaSeparated(latest.getFileMetadatas());
-            return downloadDatafiles(fileIds, gbrecs, apiTokenParam, uriInfo, headers, response);
+            return downloadDatafiles(fileIds, latest, gbrecs, apiTokenParam, uriInfo, headers, response);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -695,7 +712,11 @@ public class Access extends AbstractApiBean {
         return downloadDatafiles(fileIds, gbrecs, apiTokenParam, uriInfo, headers, response);
     }
 
-    private Response downloadDatafiles(String rawFileIds, boolean gbrecs, String apiTokenParam, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response) throws WebApplicationException /* throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    private Response downloadDatafiles(String rawFileIds, boolean gbrecs, String apiTokenParam, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response) throws WebApplicationException {
+        return downloadDatafiles(rawFileIds, null, gbrecs, apiTokenParam, uriInfo, headers, response);
+    }
+    
+    private Response downloadDatafiles(String rawFileIds, DatasetVersion version, boolean gbrecs, String apiTokenParam, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response) throws WebApplicationException /* throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         long setLimit = systemConfig.getZipDownloadLimit();
         if (!(setLimit > 0L)) {
             setLimit = DataFileZipper.DEFAULT_ZIPFILE_LIMIT;
@@ -739,7 +760,7 @@ public class Access extends AbstractApiBean {
         if (useCustomZipService) {
             URI redirect_uri = null; 
             try {
-                redirect_uri = handleCustomZipDownload(customZipServiceUrl, fileIds, apiToken, apiTokenUser, uriInfo, headers, gbrecs, true); 
+                redirect_uri = handleCustomZipDownload(customZipServiceUrl, version, fileIds, apiToken, apiTokenUser, uriInfo, headers, gbrecs, true); 
             } catch (WebApplicationException wae) {
                 throw wae;
             }
@@ -1865,7 +1886,9 @@ public class Access extends AbstractApiBean {
         return apiTokenUser;
     }
 
-    private URI handleCustomZipDownload(String customZipServiceUrl, String fileIds, String apiToken, User apiTokenUser, UriInfo uriInfo, HttpHeaders headers, boolean gbrecs, boolean orig) throws WebApplicationException {
+    private URI handleCustomZipDownload(String customZipServiceUrl, DatasetVersion version, String fileIds, String apiToken, User apiTokenUser, UriInfo uriInfo, HttpHeaders headers, boolean gbrecs, boolean orig) throws WebApplicationException {
+        logger.info("inside handleCustomZipDownload");
+        
         String zipServiceKey = null; 
         Timestamp timestamp = null; 
         
@@ -1886,6 +1909,7 @@ public class Access extends AbstractApiBean {
             } catch (NumberFormatException nfe) {
                 fileId = null;
             }
+            logger.info("handling file "+fileId);
             if (fileId != null) {
                 DataFile file = dataFileService.find(fileId);
                 if (file != null) {
@@ -1893,7 +1917,7 @@ public class Access extends AbstractApiBean {
                     if (isAccessAuthorized(file, apiToken)) {
                         logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
                         if (gbrecs != true && file.isReleased()) {
-                            GuestbookResponse gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
+                            GuestbookResponse gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), version, file, session, apiTokenUser);
                             guestbookResponseService.save(gbr);
                             MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, file);
                             mdcLogService.logEntry(entry);
