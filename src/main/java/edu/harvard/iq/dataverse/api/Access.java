@@ -632,7 +632,8 @@ public class Access extends AbstractApiBean {
         try {
             User user = findUserOrDie(); 
             DataverseRequest req = createDataverseRequest(user);
-            final Dataset retrieved = execCommand(new GetDatasetCommand(req, findDatasetOrDie(datasetIdOrPersistentId)));
+            //final Dataset retrieved = execCommand(new GetDatasetCommand(req, findDatasetOrDie(datasetIdOrPersistentId)));
+            final Dataset retrieved = findDatasetOrDie(datasetIdOrPersistentId);
             //final DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
             if (!(user instanceof GuestUser)) {
                 // If it is a guest user, let's not even bother looking up if a draft exists.
