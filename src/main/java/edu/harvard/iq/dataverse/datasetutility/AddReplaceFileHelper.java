@@ -1318,8 +1318,8 @@ public class AddReplaceFileHelper{
             
             // Has the content type of the file changed?
             //
-            String origType = fileToReplace.getOriginalFileFormat() != null ? fileToReplace.getOriginalFileFormat() : fileToReplace.getContentType();
-            if (!finalFileList.get(0).getContentType().equalsIgnoreCase(origType)) {
+            String fileType = fileToReplace.getOriginalFileFormat() != null ? fileToReplace.getOriginalFileFormat() : fileToReplace.getContentType();
+            if (!finalFileList.get(0).getContentType().equalsIgnoreCase(fileType)) {
                 String friendlyType = fileToReplace.getOriginalFormatLabel() != null ? fileToReplace.getOriginalFormatLabel() : fileToReplace.getFriendlyType();
                 
                 List<String> errParams = Arrays.asList(friendlyType,
