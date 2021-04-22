@@ -8,3 +8,5 @@ In addition, related changes were made, including the following:
 - When downloading individual files, you will see "Restricted with Access Granted" or just "Restricted" (followed by "Users may not request access to files.") as appropriate.
 - When downloading individual files, instead of "Download" you should expect to see the file type such as "JPEG Image" or "Original File Format" if the type is unknown.
 - Downloaded aux files now have a file extension if it can be determined.
+
+Please note that the auxiliary files feature is experimental and if you don't need it, its API endpoints can be blocked.
