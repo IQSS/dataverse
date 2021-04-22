@@ -539,13 +539,11 @@
                             <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard}"/>
 
                             <h:outputText styleClass="text-muted" value=" - " rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}"/>
+                            <c:set var="dvParentAlias" value="/dataverse/#{result.dataverseAlias}"/>
+                            <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvParentAlias : widgetWrapper.wrapURL(dvParentAlias)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
+                                <h:outputText value="#{result.parent.get('name')}"/>
+                            </h:outputLink>
                         </div>
-                        
-                        <c:set var="dvParentAlias" value="/dataverse/#{result.dataverseAlias}"/>
-                        <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvParentAlias : widgetWrapper.wrapURL(dvParentAlias)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
-                            <h:outputText value="#{result.parent.get('name')}"/>
-                        </h:outputLink>
-
                         <div class="resultDatasetCitationBlock #{result.deaccessionedState ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation bg-citation-file'}">
                             <h:outputText value="#{result.citationHtml != null ? result.citationHtml : result.citation}" escape="false"/>
                         </div>
