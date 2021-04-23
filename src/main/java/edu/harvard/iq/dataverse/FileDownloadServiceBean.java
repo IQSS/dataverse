@@ -280,6 +280,14 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         redirectToBatchDownloadAPI(multiFileString, true, downloadOriginal);
     }
 
+    public void redirectToAuxFileDownloadAPI(Long fileId, String formatTag, String formatVersion) {
+        String fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata/" + formatTag + "/" + formatVersion;
+        try {
+            FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
+        } catch (IOException ex) {
+            logger.info("Failed to issue a redirect to aux file download url (" + fileDownloadUrl + "): " + ex);
+        }
+    }
     
     /**
      * Launch an "explore" tool which is a type of ExternalTool such as

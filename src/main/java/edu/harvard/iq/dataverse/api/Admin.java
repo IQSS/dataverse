@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.google.common.net.UrlEscapers;
 import edu.harvard.iq.dataverse.BannerMessage;
 import edu.harvard.iq.dataverse.BannerMessageServiceBean;
 import edu.harvard.iq.dataverse.BannerMessageText;
@@ -16,6 +17,7 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EMailValidator;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.License;
 import edu.harvard.iq.dataverse.LicenseServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
@@ -44,10 +46,10 @@ import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveComma
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import java.net.URI;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-import javax.persistence.PersistenceException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -74,10 +76,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvidersRegistrationServiceBean;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
@@ -87,6 +91,10 @@ import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.MergeInAccountCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ChangeUserIdentifierCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeactivateUserCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -101,6 +109,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.json.JsonArray;
 import javax.persistence.Query;
@@ -152,8 +161,8 @@ public class Admin extends AbstractApiBean {
         @EJB
         BannerMessageServiceBean bannerMessageService;
         @EJB
-		LicenseServiceBean licenseService;
-        
+		    LicenseServiceBean licenseService;
+
 
 	// Make the session available
 	@Inject
@@ -382,9 +391,40 @@ public class Admin extends AbstractApiBean {
         return ok("AuthenticatedUser " + au.getIdentifier() + " deleted. ");
 
     }  
-    
 
-        
+    @POST
+    @Path("authenticatedUsers/{identifier}/deactivate")
+    public Response deactivateAuthenticatedUser(@PathParam("identifier") String identifier) {
+        AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
+        if (user != null) {
+            return deactivateAuthenticatedUser(user);
+        }
+        return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
+    }
+
+    @POST
+    @Path("authenticatedUsers/id/{id}/deactivate")
+    public Response deactivateAuthenticatedUserById(@PathParam("id") Long id) {
+        AuthenticatedUser user = authSvc.findByID(id);
+        if (user != null) {
+            return deactivateAuthenticatedUser(user);
+        }
+        return error(Response.Status.BAD_REQUEST, "User " + id + " not found.");
+    }
+
+    private Response deactivateAuthenticatedUser(AuthenticatedUser userToDisable) {
+        AuthenticatedUser superuser = authSvc.getAdminUser();
+        if (superuser == null) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "Cannot find superuser to execute DeactivateUserCommand.");
+        }
+        try {
+            execCommand(new DeactivateUserCommand(createDataverseRequest(superuser), userToDisable));
+            return ok("User " + userToDisable.getIdentifier() + " deactivated.");
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
 	@POST
 	@Path("publishDataverseAsCreator/{id}")
 	public Response publishDataverseAsCreator(@PathParam("id") long id) {
@@ -658,6 +698,10 @@ public class Admin extends AbstractApiBean {
 			boolean knowsExistingPassword = false;
 			BuiltinUser oldBuiltInUser = builtinUserService.findByUserName(builtInUserToConvert.getUserIdentifier());
 			if (oldBuiltInUser != null) {
+                                if (builtInUserToConvert.isDeactivated()) {
+                                        problems.add("builtin account has been deactivated");
+                                        return error(Status.BAD_REQUEST, problems.build().toString());
+                                }
 				String usernameOfBuiltinAccountToConvert = oldBuiltInUser.getUserName();
 				response.add("old username", usernameOfBuiltinAccountToConvert);
 				AuthenticatedUser authenticatedUser = authSvc.canLogInAsBuiltinUser(usernameOfBuiltinAccountToConvert,
@@ -892,6 +936,17 @@ public class Admin extends AbstractApiBean {
 		}
 	}
 
+    @DELETE
+    @Path("roles/{id}")
+    public Response deleteRole(@PathParam("id") String id) {
+
+        return response(req -> {
+            DataverseRole doomed = findRoleOrDie(id);
+            execCommand(new DeleteRoleCommand(req, doomed));
+            return ok("role " + doomed.getName() + " deleted.");
+        });
+    }
+
 	@Path("superuser/{identifier}")
 	@POST
 	public Response toggleSuperuser(@PathParam("identifier") String identifier) {
@@ -899,6 +954,9 @@ public class Admin extends AbstractApiBean {
 				.setInfo(identifier);
 		try {
 			AuthenticatedUser user = authSvc.getAuthenticatedUser(identifier);
+                        if (user.isDeactivated()) {
+                            return error(Status.BAD_REQUEST, "You cannot make a deactivated user a superuser.");
+                        }
 
 			user.setSuperuser(!user.isSuperuser());
 
@@ -1687,7 +1745,7 @@ public class Admin extends AbstractApiBean {
 			// DataverseRequest and is sent to the back-end command where it is used to get
 			// the API Token which is then used to retrieve files (e.g. via S3 direct
 			// downloads) to create the Bag
-            session.setUser(au);
+            session.setUser(au); // TODO: Stop using session. Use createDataverseRequest instead.
             Dataset ds = findDatasetOrDie(dsid);
 
             DatasetVersion dv = datasetversionService.findByFriendlyVersionNumber(ds.getId(), versionNumber);
@@ -1955,14 +2013,21 @@ public class Admin extends AbstractApiBean {
 
     @POST
     @Path("/licenses")
-    public Response addLicense(License license) {
+    public Response addLicense(JsonObject jsonObject) {
         try {
+            License license = new License();
+            license.setName(jsonObject.getString("name"));
+            license.setShortDescription(jsonObject.getString("shortDescription"));
+            license.setUri(new URI(jsonObject.getString("uri")));
+            license.setIconUrl(new URI(jsonObject.getString("iconUrl")));
+            license.setActive(jsonObject.getBoolean("active"));
             licenseService.save(license);
-            return created("/api/admin/licenses", Json.createObjectBuilder().add("message", "License created"));
+			String location = "/api/admin/licenses/name/" + UrlEscapers.urlFragmentEscaper().escape(license.getName());
+			return created(location, Json.createObjectBuilder().add("message", "License created"));
         } catch (RequestBodyException e) {
-			return error(Response.Status.BAD_REQUEST, e.getMessage());
-		} catch(PersistenceException e) {
-            return error(Response.Status.CONFLICT, "A license with the same URI or name is already present.");
+            return error(Response.Status.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            return error(Response.Status.BAD_REQUEST, "Something went wrong.");
         }
 	}
 
@@ -2007,5 +2072,5 @@ public class Admin extends AbstractApiBean {
         }
         return error(Response.Status.NOT_FOUND, "A license with name " + name + " doesn't exist.");
     }
-    
+
 }

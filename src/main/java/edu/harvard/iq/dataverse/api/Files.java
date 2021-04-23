@@ -212,17 +212,33 @@ public class Files extends AbstractApiBean {
                 } catch (DataFileTagException ex) {
                     return error(Response.Status.BAD_REQUEST, ex.getMessage());
                 }
-            } catch (ClassCastException ex) {
-                logger.info("Exception parsing string '" + jsonData + "': " + ex);
+            } catch (ClassCastException | com.google.gson.JsonParseException ex) {
+                return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("file.addreplace.error.parsing"));
             }
         }
 
         // (3) Get the file name and content type
-        if(null == contentDispositionHeader) {
-             return error(BAD_REQUEST, "You must upload a file.");
+        String newFilename = null;
+        String newFileContentType = null;
+        String newStorageIdentifier = null;
+        if (null == contentDispositionHeader) {
+            if (optionalFileParams.hasStorageIdentifier()) {
+                newStorageIdentifier = optionalFileParams.getStorageIdentifier();
+                // ToDo - check that storageIdentifier is valid
+                if (optionalFileParams.hasFileName()) {
+                    newFilename = optionalFileParams.getFileName();
+                    if (optionalFileParams.hasMimetype()) {
+                        newFileContentType = optionalFileParams.getMimeType();
+                    }
+                }
+            } else {
+                return error(BAD_REQUEST,
+                        "You must upload a file or provide a storageidentifier, filename, and mimetype.");
+            }
+        } else {
+            newFilename = contentDispositionHeader.getFileName();
+            newFileContentType = formDataBodyPart.getMediaType().toString();
         }
-        String newFilename = contentDispositionHeader.getFileName();
-        String newFileContentType = formDataBodyPart.getMediaType().toString();
         
         // (4) Create the AddReplaceFileHelper object
         msg("REPLACE!");
@@ -254,14 +270,16 @@ public class Files extends AbstractApiBean {
             addFileHelper.runForceReplaceFile(fileToReplaceId,
                                     newFilename,
                                     newFileContentType,
+                                    newStorageIdentifier,
                                     testFileInputStream,
                                     optionalFileParams);
         }else{
             addFileHelper.runReplaceFile(fileToReplaceId,
                                     newFilename,
                                     newFileContentType,
+                                    newStorageIdentifier,
                                     testFileInputStream,
-                                    optionalFileParams);            
+                                    optionalFileParams);
         }    
             
         msg("we're back.....");
@@ -357,7 +375,7 @@ public class Files extends AbstractApiBean {
                         return error(Response.Status.BAD_REQUEST, ex.getMessage());
                     }
                 } catch (ClassCastException | com.google.gson.JsonParseException ex) {
-                    return error(Response.Status.BAD_REQUEST, "Exception parsing provided json");
+                    return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("file.addreplace.error.parsing"));
                 }
             }
 
@@ -601,7 +619,7 @@ public class Files extends AbstractApiBean {
     private void exportDatasetMetadata(SettingsServiceBean settingsServiceBean, Dataset theDataset) {
 
         try {
-            ExportService instance = ExportService.getInstance(settingsServiceBean);
+            ExportService instance = ExportService.getInstance();
             instance.exportAllFormats(theDataset);
 
         } catch (ExportException ex) {
