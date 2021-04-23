@@ -142,12 +142,14 @@ public class DDIExporterTest {
         version.setVersionState(DatasetVersion.VersionState.DRAFT);
         Dataset dataset = new Dataset();
         version.setDataset(dataset);
-        dataset.setOwner(new Dataverse());
+        Dataverse owner = new Dataverse();
+        owner.setName("Special Collection");
+        dataset.setOwner(owner);
         String citation = version.getCitation();
         System.out.println("citation: " + citation);
         int currentYear = Year.now().getValue();
-        //QDR - note first LibraScholar is from the installation name while the second is from root dataverse collection
-        assertEquals("Finch, Fiona. "+ currentYear + ". \"Darwin's Finches\". LibraScholar. LibraScholar. DRAFT VERSION", citation);
+        //QDR - note LibraScholar is from the installation name while the second entry is from the dataset's owning dataverse collection
+        assertEquals("Finch, Fiona. "+ currentYear + ". \"Darwin's Finches\". LibraScholar. Special Collection. DRAFT VERSION", citation);
     }
 
     @Test
