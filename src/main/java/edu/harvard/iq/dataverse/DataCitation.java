@@ -751,8 +751,8 @@ public class DataCitation {
 
     private String getPublisherFrom(DatasetVersion dsv) {
         if (!dsv.getDataset().isHarvested()) {
-            //QDR - already includes the installation name in the citation, so want to keep the collection name here
-            return BrandingUtil.getRootDataverseCollectionName();
+            //QDR - already includes the installation name in the citation, so want the specific collection name here
+            return dsv.getDataset().getOwner().getDisplayName();
         } else {
             return dsv.getDistributorName();
             // remove += [distributor] SEK 8-18-2016
