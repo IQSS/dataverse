@@ -941,9 +941,9 @@
                             <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" 
                                              rendered="#{!DatasetPage.downloadPopupRequired}"
                                              action="#{DatasetPage.startMultipleFileDownload()}"/>
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('downloadMixed').hide()"
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('downloadMixed').hide();"
                                              rendered="#{DatasetPage.downloadPopupRequired and !settingsWrapper.rsyncDownload}"
-                                             action="#{DatasetPage.openDownloadPopupForMultipleFileDownload()}" update="@form"/>
+                                             oncomplete="PF('downloadPopup').show();" />
                             <button class="btn btn-link" onclick="PF('downloadMixed').hide();" type="button">
                                 #{bundle.cancel}
                             </button>

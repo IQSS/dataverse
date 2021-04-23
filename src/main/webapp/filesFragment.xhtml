@@ -407,6 +407,7 @@
                     <p:commandLink 
                                    styleClass="btn btn-default btn-download"
                                    disabled="#{false and DatasetPage.lockedFromDownload}"
+                                   onclick="if (!testFilesSelected()) return false;" 
                                    action="#{DatasetPage.startDownloadSelectedOriginal()}"
                                    update="@form" oncomplete="bind_bsui_components();showPopup();">
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
@@ -424,6 +425,7 @@
                             <p:commandLink
                                            disabled="#{false and DatasetPage.lockedFromDownload}"
                                            update="@form" oncomplete="bind_bsui_components();showPopup();"
+                                           onclick="if (!testFilesSelected()) return false;" 
                                            actionListener="#{DatasetPage.startDownloadSelectedOriginal()}">
                                 #{bundle.downloadOriginal}
                             </p:commandLink>
@@ -432,6 +434,7 @@
                             <p:commandLink
                                            disabled="#{false and DatasetPage.lockedFromDownload}"
                                            update="@form" oncomplete="bind_bsui_components();showPopup();"
+                                           onclick="if (!testFilesSelected()) return false;" 
                                            actionListener="#{DatasetPage.startDownloadSelectedArchival()}">
                                 #{bundle.downloadArchival}
                             </p:commandLink>

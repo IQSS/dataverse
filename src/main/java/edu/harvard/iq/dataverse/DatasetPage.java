@@ -2852,8 +2852,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String getSizeOfDataset() {
-        boolean original = false;
-        return DatasetUtil.getDownloadSize(workingVersion, original);
+        return DatasetUtil.getDownloadSize(workingVersion, false);
     }
 
     private boolean tooLargeToDownload;
@@ -4079,24 +4078,6 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setDownloadType(String downloadType) {
         this.downloadType = downloadType;
-    }
-
-
-    public void openDownloadPopupForMultipleFileDownload() {
-        if (this.selectedFiles.isEmpty()) {
-            //RequestContext requestContext = RequestContext.getCurrentInstance();
-            PrimeFaces.current().executeScript("PF('selectFilesForDownload').show()");
-            return;
-        }
-
-        // There's a chance that this is not really a batch download - i.e.,
-        // there may only be one file on the downloadable list. But the fileDownloadService
-        // method below will check for that, and will redirect to the single download, if
-        // that's the case. -- L.A.
-
-        this.guestbookResponse.setDownloadtype("Download");
-        //RequestContext requestContext = RequestContext.getCurrentInstance();
-        PrimeFaces.current().executeScript("PF('downloadPopup').show();handleResizeDialog('downloadPopup');");
     }
 
     public void initGuestbookMultipleResponse(String selectedFileIds){
