@@ -18,10 +18,10 @@
             <ui:param name="pageTitle" value="#{FilePage.fileMetadata.dataFile.displayName} - #{FilePage.file.owner.owner.displayName}"/>
             <ui:param name="dataverse" value="#{FilePage.file.owner.owner}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
-            <ui:param name="showAccessFileButtonGroup" value="#{fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)
-                                                                  or (!fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) and FilePage.fileMetadata.dataFile.owner.fileAccessRequest)
-                                                                  and (!FilePage.fileMetadata.datasetVersion.deaccessioned
-                                                                        or (FilePage.fileMetadata.datasetVersion.deaccessioned and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)))}"/>
+            <!-- NOTE removed fileAccessRequest logic in order to always display the file access btn -->
+            <ui:param name="showAccessFileButtonGroup" value="#{!FilePage.fileMetadata.datasetVersion.deaccessioned
+                                                                or (FilePage.fileMetadata.datasetVersion.deaccessioned
+                                                                and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset))}"/>
             <ui:define name="meta_header">
             <meta name="description" content="#{FilePage.fileMetadata.description}"/>
             </ui:define>
@@ -61,8 +61,8 @@
 
                                     <div id="title-label-block" class="margin-top-half">
                                         <!-- Restricted File Icon -->
-                                        <span class="glyphicon glyphicon-lock text-danger" jsf:rendered="#{FilePage.fileMetadata.restricted and !(fileDownloadHelper.canDownloadFile(FilePage.fileMetadata))}"/>
-                                        <span class="icon-unlock text-success" jsf:rendered="#{FilePage.fileMetadata.restricted  and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) }"/>
+                                        <span class="glyphicon glyphicon-lock text-danger" title="#{bundle['restricted']}" data-toggle="tooltip" jsf:rendered="#{FilePage.fileMetadata.restricted and !(fileDownloadHelper.canDownloadFile(FilePage.fileMetadata))}"/>
+                                        <span class="icon-unlock text-success" title="#{bundle['restrictedaccess']}" data-toggle="tooltip" jsf:rendered="#{FilePage.fileMetadata.restricted  and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) }"/>
                                         <!-- DATASET Publication Status -->
                                         <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{FilePage.fileMetadata.datasetVersion.draft}"/>
                                         <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{FilePage.fileMetadata.datasetVersion.inReview}"/>

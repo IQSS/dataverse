@@ -179,6 +179,8 @@ Additional download options available for tabular data (found in the same drop-d
 - Data File Citation (currently in either RIS, EndNote XML, or BibTeX format); 
 - All of the above, as a zipped bundle. 
 
+Differentially Private (DP) Metadata can also be accessed for restricted tabular files if the data depositor has created a DP Metadata Release. See :ref:`dp-release-create` for more information.
+
 Astronomy (FITS)
 ----------------
 
@@ -209,6 +211,8 @@ Restricted Files
 ================
 
 When you restrict a file it cannot be downloaded unless permission has been granted.
+
+Differentially Private (DP) Metadata can be accessed for restricted tabular files if the data depositor has created a DP Metadata Release. See :ref:`dp-release-create` for more information.
 
 See also :ref:`terms-of-access` and :ref:`permissions`.
 
@@ -301,6 +305,23 @@ If you restrict any files in your dataset, you will be prompted by a pop-up to e
 **Note:** Some Dataverse installations do not allow for file restriction.
 
 See also :ref:`restricted-files`.
+
+.. _dp-release-create:
+
+Creating and Depositing Differentially Private Metadata (Experimental)
+----------------------------------------------------------------------
+
+Through an integration with tools from the OpenDP Project (opendp.org), the Dataverse Software offers an experimental workflow that allows a data depositor to create and deposit Differentially Private (DP) Metadata files, which can then be used for exploratory data analysis. This workflow allows researchers to view the DP metadata for a tabular file, determine whether or not the file contains useful information, and then make an informed decision about whether or not to request access to the original file.
+
+If this integration has been enabled in your Dataverse installation, you can follow these steps to create a DP Metadata Release and make it available to researchers, while still keeping the files themselves restricted and able to be accessed after a successful access request.
+
+- Deposit a tabular file and let the ingest process complete
+- Restrict the File
+- In the kebab next to the file on the dataset page, or from the "Edit Files" dropdown on the file page, click "OpenDP Tool"
+- Go through the process to create a DP Metadata Release in the OpenDP tool, and at the end of the process deposit the DP Metadata Release back to the Dataverse installation
+- Publish the Dataset
+
+Once the dataset is published, users will be able to request access using the normal process, but will also have the option to download DP Statistics in order to get more information about the file. 
 
 Guestbook
 ---------
