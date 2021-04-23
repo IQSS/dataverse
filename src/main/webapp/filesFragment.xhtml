@@ -404,19 +404,11 @@
                      jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) 
                                      and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable
                                      and !DatasetPage.isHasTabular()}">
-                    <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                    <p:commandLink 
                                    styleClass="btn btn-default btn-download"
                                    disabled="#{false and DatasetPage.lockedFromDownload}"
-                                   update="@form" oncomplete="bind_bsui_components();"
-                                   actionListener="#{DatasetPage.validateFilesForDownload(false, false)}">
-                        <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
-                    </p:commandLink>
-                    <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                    <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
-                                   styleClass="btn btn-default btn-download"
-                                   disabled="#{false and DatasetPage.lockedFromDownload}"
-                                   action="#{DatasetPage.validateFilesForDownload(true, false)}"
-                                   update="@form" oncomplete="bind_bsui_components();">
+                                   action="#{DatasetPage.startDownloadSelectedOriginal()}"
+                                   update="@form" oncomplete="bind_bsui_components();showPopup();">
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                     </p:commandLink>
                 </div>
@@ -429,32 +421,18 @@
                     </button>
                     <ul jsf:id="downloadDropdownOptions" class="dropdown-menu multi-level pull-right text-left" role="menu">
                         <li >
-                            <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                            <p:commandLink
                                            disabled="#{false and DatasetPage.lockedFromDownload}"
-                                           update="@form" oncomplete="bind_bsui_components();"
-                                           actionListener="#{DatasetPage.validateFilesForDownload(false, true)}">
-                                #{bundle.downloadOriginal}
-                            </p:commandLink>
-                            <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                            <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
-                                           disabled="#{false and DatasetPage.lockedFromDownload}"
-                                           action="#{DatasetPage.validateFilesForDownload(true, true)}"
-                                           update="@form" oncomplete="bind_bsui_components();">
+                                           update="@form" oncomplete="bind_bsui_components();showPopup();"
+                                           actionListener="#{DatasetPage.startDownloadSelectedOriginal()}">
                                 #{bundle.downloadOriginal}
                             </p:commandLink>
                         </li>
-                        <li> <!--jsf:rendered="# {DatasetPage.isTabularDataSelected()}"-->
-                            <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                        <li> 
+                            <p:commandLink
                                            disabled="#{false and DatasetPage.lockedFromDownload}"
-                                           update="@form" oncomplete="bind_bsui_components();"
-                                           actionListener="#{DatasetPage.validateFilesForDownload(false, false)}">
-                                #{bundle.downloadArchival}
-                            </p:commandLink>
-                            <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                            <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
-                                           disabled="#{false and DatasetPage.lockedFromDownload}"
-                                           action="#{DatasetPage.validateFilesForDownload(true, false)}"
-                                           update="@form" oncomplete="bind_bsui_components();">
+                                           update="@form" oncomplete="bind_bsui_components();showPopup();"
+                                           actionListener="#{DatasetPage.startDownloadSelectedArchival()}">
                                 #{bundle.downloadArchival}
                             </p:commandLink>
                         </li>
