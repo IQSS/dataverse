@@ -9,7 +9,8 @@
       xmlns:jsf="http://xmlns.jcp.org/jsf"
       xmlns:pt="http://java.sun.com/jsf/passthrough"
       xmlns:cc="http://java.sun.com/jsf/composite"
-      xmlns:o="http://omnifaces.org/ui">
+      xmlns:o="http://omnifaces.org/ui"
+      xmlns:of="http://omnifaces.org/functions">
     <h:head>
     </h:head>
     <h:body>
@@ -36,10 +37,10 @@
                                                                    or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))}"/>
             <!-- TO-DO FIX RSYNC LOGIC !fileMetadata.dataFile.filePackage or
                                                     fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload -->
-            <ui:param name="showAccessFileButtonGroup" value="#{fileDownloadHelper.canDownloadFile(fileMetadata)
-                                                                or (!fileDownloadHelper.canDownloadFile(fileMetadata) and DatasetPage.dataset.fileAccessRequest)
-                                                                and (!DatasetPage.workingVersion.deaccessioned
-                                                                or (DatasetPage.workingVersion.deaccessioned and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)))}"/>
+            <!-- NOTE removed fileAccessRequest logic in order to always display the file access btn -->
+            <ui:param name="showAccessFileButtonGroup" value="#{!DatasetPage.workingVersion.deaccessioned
+                                                                or (DatasetPage.workingVersion.deaccessioned
+                                                                and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset))}"/>
             <ui:param name="publishDataset" value="#{DatasetPage.publishDatasetPopup()}"/>
             <ui:param name="releaseDraft" value="#{DatasetPage.releaseDraftPopup()}"/>
             <ui:param name="releaseBoth" value="#{DatasetPage.publishBothPopup()}"/>
@@ -1652,10 +1653,24 @@
                     <!-- END: Publish/Submit for Review Dialogs -->
                 </h:form>
                 <script>
-                    //<![CDATA[                   
+                    //<![CDATA[
                     $(document).ready(function () {
                         popoverHTML('#{bundle.htmlAllowedTitle}', '#{bundle.htmlAllowedTags}');
+                        summaryDescTruncation();
                     });
+                    function summaryDescTruncation() {
+                        // truncate summary description, contentTruncate function in dv_rebind_bootstrap_ui.js
+                        // add summary desc row id to pass as selector param
+                        var descId = 'dsDescription';
+                        // add metadata dynamic label text, tooltip text from bundle as param
+                        var truncMoreBtn = '#{of:format1(bundle.truncateMoreBtn, DatasetPage.datasetVersionUI.description.datasetFieldType.localeTitle)}';
+                        var truncMoreTip = '#{of:format1(bundle.truncateMoreTip, DatasetPage.datasetVersionUI.description.datasetFieldType.localeTitle)}';
+                        var truncLessBtn = '#{of:format1(bundle.truncateLessBtn, DatasetPage.datasetVersionUI.description.datasetFieldType.localeTitle)}';
+                        var truncLessTip = '#{of:format1(bundle.truncateLessTip, DatasetPage.datasetVersionUI.description.datasetFieldType.localeTitle)}';
+                        
+                        // pass bundle text variabls as params to function
+                        contentTruncate(descId, truncMoreBtn, truncMoreTip, truncLessBtn, truncLessTip);
+                    }
                     function openDialog() {
                         PF('details').show();
                     }
@@ -1670,16 +1685,14 @@
                             $('button[id$="compareVersions"]').trigger('click');
                         }
                     }
-                                      
                     function testFilesSelected() {
                         var count = PF('filesTable').getSelectedRowsCount();
                         if (count == 0) {
                             PF('selectFiles').show();
                         } else {
                             return true;
-                        }                        
+                        }
                     }
-                    
                     function updateTemplate() {
                         $('button[id$="updateTemplate"]').trigger('click');
                     }
