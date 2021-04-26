@@ -1264,10 +1264,10 @@ public class Datasets extends AbstractApiBean {
              * be applied to the code there as well.
              */
             String errorMsg = null;
-            String successMsg = null;
+            Optional<Workflow> prePubWf = wfService.getDefaultWorkflow(TriggerType.PrePublishDataset);
+
             try {
                 // ToDo - should this be in onSuccess()? May relate to todo above
-                Optional<Workflow> prePubWf = wfService.getDefaultWorkflow(TriggerType.PrePublishDataset);
                 if (prePubWf.isPresent()) {
                     // Start the workflow, the workflow will call FinalizeDatasetPublication later
                     wfService.start(prePubWf.get(),
@@ -1277,8 +1277,6 @@ public class Datasets extends AbstractApiBean {
                     FinalizeDatasetPublicationCommand cmd = new FinalizeDatasetPublicationCommand(ds,
                             createDataverseRequest(user), true);
                     ds = commandEngine.submit(cmd);
-                    // Todo - update messages
-                    successMsg = BundleUtil.getStringFromBundle("datasetversion.update.success");
                 }
             } catch (CommandException ex) {
                 errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.failure") + " - " + ex.toString();
@@ -1288,11 +1286,7 @@ public class Datasets extends AbstractApiBean {
             if (errorMsg != null) {
                 return error(Response.Status.INTERNAL_SERVER_ERROR, errorMsg);
             } else {
-                JsonObjectBuilder responseBld = Json.createObjectBuilder()
-                        .add("id", ds.getId())
-                        .add("persistentId", ds.getGlobalId().toString());
-                return Response.ok(Json.createObjectBuilder().add("status", STATUS_OK).add("status_details", successMsg)
-                        .add("data", responseBld).build()).type(MediaType.APPLICATION_JSON).build();
+                return prePubWf.isPresent() ? accepted(json(ds)) : ok(json(ds));
             }
 
         } catch (WrappedResponse ex) {
