@@ -232,6 +232,45 @@ public class GlobusServiceBean implements java.io.Serializable{
         return false;
     }
 
+    public Task getTask(AccessToken clientTokenUser, String taskId , Logger globusLogger) throws MalformedURLException {
+
+        URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint_manager/task/"+taskId );
+
+        MakeRequestResponse result = makeRequest(url, "Bearer",clientTokenUser.getOtherTokens().get(0).getAccessToken(),
+                "GET",  null);
+
+        Task task = null;
+        String status = null;
+        //2019-12-01 18:34:37+00:00
+
+        if (result.status == 200) {
+            task = parseJson(result.jsonResponse, Task.class, false);
+            status = task.getStatus();
+        }
+        if (result.status != 200) {
+            globusLogger.warning("Cannot find information for the task " + taskId + " : Reason :   " + result.jsonResponse.toString());
+        }
+
+        return task;
+    }
+
+    public Boolean getTaskSkippedErrors(AccessToken clientTokenUser, String taskId , Logger globusLogger) throws MalformedURLException {
+
+        URL url = new URL("https://transfer.api.globusonline.org/v0.10/endpoint_manager/task/"+taskId );
+
+        MakeRequestResponse result = makeRequest(url, "Bearer",clientTokenUser.getOtherTokens().get(0).getAccessToken(),
+                "GET",  null);
+
+        Task task = null;
+
+        if (result.status == 200) {
+            task = parseJson(result.jsonResponse, Task.class, false);
+            return task.getSkip_source_errors();
+        }
+
+        return false;
+    }
+
     public AccessToken getClientToken() throws MalformedURLException {
         String basicGlobusToken = settingsSvc.getValueForKey(SettingsServiceBean.Key.BasicGlobusToken, "");
         URL url = new URL("https://auth.globus.org/v2/oauth2/token?scope=openid+email+profile+urn:globus:auth:scope:transfer.api.globus.org:all&grant_type=client_credentials");

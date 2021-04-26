@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.globus.AccessToken;
 import edu.harvard.iq.dataverse.globus.GlobusServiceBean;
+import edu.harvard.iq.dataverse.globus.Task;
 import edu.harvard.iq.dataverse.globus.fileDetailsHolder;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
@@ -1094,8 +1095,8 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         String datasetIdentifier = dataset.getStorageIdentifier();
 
-        String storageType = datasetIdentifier.substring(0, datasetIdentifier.indexOf("://") +3);
-        datasetIdentifier = datasetIdentifier.substring(datasetIdentifier.indexOf("://") +3);
+        String storageType = datasetIdentifier.substring(0, datasetIdentifier.indexOf("://") + 3);
+        datasetIdentifier = datasetIdentifier.substring(datasetIdentifier.indexOf("://") + 3);
 
 
         Thread.sleep(5000);
@@ -1110,106 +1111,123 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         String taskIdentifier = jsonObject.getString("taskIdentifier");
 
-        String ruleId = "" ;
+        String ruleId = "";
         try {
             jsonObject.getString("ruleId");
-        }catch (NullPointerException npe){
+        } catch (NullPointerException npe) {
 
         }
 
         //  globus task status check
-        globusStatusCheck(taskIdentifier,globusLogger);
+        String taskStatus = globusStatusCheck(taskIdentifier, globusLogger);
+        Boolean taskSkippedFiles = taskSkippedFiles(taskIdentifier, globusLogger);
 
-        globusServiceBean.deletePermision(ruleId,globusLogger);
+        if(ruleId.length() > 0) {
+            globusServiceBean.deletePermision(ruleId, globusLogger);
+        }
 
-        try {
-            List<String> inputList = new ArrayList<String>();
-            JsonArray filesJsonArray = jsonObject.getJsonArray("files");
+        if (taskStatus.startsWith("FAILED") || taskStatus.startsWith("INACTIVE")) {
+            String comment = "Reason : " + taskStatus.split("#") [1] + "<br> Short Description " + taskStatus.split("#")[2];
+            userNotificationService.sendNotification((AuthenticatedUser) authUser, new Timestamp(new Date().getTime()), UserNotification.Type.GLOBUSUPLOADCOMPLETEDWITHERRORS, dataset.getId(),comment, true);
+            globusLogger.info("Globus task failed ");
+        }
+        else {
+            try {
+                List<String> inputList = new ArrayList<String>();
+                JsonArray filesJsonArray = jsonObject.getJsonArray("files");
 
-            if (filesJsonArray != null) {
+                if (filesJsonArray != null) {
 
-                for (JsonObject fileJsonObject : filesJsonArray.getValuesAs(JsonObject.class)) {
+                    for (JsonObject fileJsonObject : filesJsonArray.getValuesAs(JsonObject.class)) {
 
-                    //   storageIdentifier   s3://gcs5-bucket1:1781cfeb8a7-748c270a227c from externalTool
-                    String storageIdentifier = fileJsonObject.getString("storageIdentifier");
-                    String[] bits = storageIdentifier.split(":");
-                    String bucketName = bits[1].replace("/", "");
-                    String fileId = bits[bits.length-1];
+                        //   storageIdentifier   s3://gcs5-bucket1:1781cfeb8a7-748c270a227c from externalTool
+                        String storageIdentifier = fileJsonObject.getString("storageIdentifier");
+                        String[] bits = storageIdentifier.split(":");
+                        String bucketName = bits[1].replace("/", "");
+                        String fileId = bits[bits.length - 1];
 
-                    //  fullpath    s3://gcs5-bucket1/10.5072/FK2/3S6G2E/1781cfeb8a7-4ad9418a5873
-                    String fullPath = storageType + bucketName + "/" + datasetIdentifier +"/" +fileId ;
-                    String fileName = fileJsonObject.getString("fileName");
+                        //  fullpath    s3://gcs5-bucket1/10.5072/FK2/3S6G2E/1781cfeb8a7-4ad9418a5873
+                        String fullPath = storageType + bucketName + "/" + datasetIdentifier + "/" + fileId;
+                        String fileName = fileJsonObject.getString("fileName");
 
-                    inputList.add(fileId + "IDsplit" + fullPath + "IDsplit" + fileName);
-                }
-
-                // calculateMissingMetadataFields: checksum, mimetype
-                JsonObject newfilesJsonObject = calculateMissingMetadataFields(inputList,globusLogger);
-                JsonArray newfilesJsonArray = newfilesJsonObject.getJsonArray("files");
-
-                JsonArrayBuilder jsonDataSecondAPI = Json.createArrayBuilder() ;
-
-                for (JsonObject fileJsonObject : filesJsonArray.getValuesAs(JsonObject.class)) {
-
-                    countAll++;
-                    String storageIdentifier = fileJsonObject.getString("storageIdentifier");
-                    String fileName = fileJsonObject.getString("fileName");
-                    String directoryLabel = fileJsonObject.getString("directoryLabel");
-                    String[] bits = storageIdentifier.split(":");
-                    String fileId = bits[bits.length-1];
-
-                    List<JsonObject> newfileJsonObject =  IntStream.range(0, newfilesJsonArray.size() )
-                            .mapToObj(index -> ((JsonObject)newfilesJsonArray.get(index)).getJsonObject(fileId))
-                            .filter(Objects::nonNull).collect(Collectors.toList());
-
-                    if(newfileJsonObject != null) {
-                        JsonPatch path = Json.createPatchBuilder().add("/md5Hash", newfileJsonObject.get(0).getString("hash")).build();
-                        fileJsonObject = path.apply(fileJsonObject);
-                        path = Json.createPatchBuilder().add("/mimeType", newfileJsonObject.get(0).getString("mime")).build();
-                        fileJsonObject = path.apply(fileJsonObject);
-                        jsonDataSecondAPI.add(stringToJsonObjectBuilder(fileJsonObject.toString()));
-                        countSuccess++;
+                        inputList.add(fileId + "IDsplit" + fullPath + "IDsplit" + fileName);
                     }
-                    else {
-                        globusLogger.info(fileName + " will be skipped from adding to dataset by second API due to missing values ");
-                        countError++;
+
+                    // calculateMissingMetadataFields: checksum, mimetype
+                    JsonObject newfilesJsonObject = calculateMissingMetadataFields(inputList, globusLogger);
+                    JsonArray newfilesJsonArray = newfilesJsonObject.getJsonArray("files");
+
+                    JsonArrayBuilder jsonDataSecondAPI = Json.createArrayBuilder();
+
+                    for (JsonObject fileJsonObject : filesJsonArray.getValuesAs(JsonObject.class)) {
+
+                        countAll++;
+                        String storageIdentifier = fileJsonObject.getString("storageIdentifier");
+                        String fileName = fileJsonObject.getString("fileName");
+                        String directoryLabel = fileJsonObject.getString("directoryLabel");
+                        String[] bits = storageIdentifier.split(":");
+                        String fileId = bits[bits.length - 1];
+
+                        List<JsonObject> newfileJsonObject = IntStream.range(0, newfilesJsonArray.size())
+                                .mapToObj(index -> ((JsonObject) newfilesJsonArray.get(index)).getJsonObject(fileId))
+                                .filter(Objects::nonNull).collect(Collectors.toList());
+
+                        if (newfileJsonObject != null) {
+                            if ( !newfileJsonObject.get(0).getString("hash").equalsIgnoreCase("null")) {
+                                JsonPatch path = Json.createPatchBuilder().add("/md5Hash", newfileJsonObject.get(0).getString("hash")).build();
+                                fileJsonObject = path.apply(fileJsonObject);
+                                path = Json.createPatchBuilder().add("/mimeType", newfileJsonObject.get(0).getString("mime")).build();
+                                fileJsonObject = path.apply(fileJsonObject);
+                                jsonDataSecondAPI.add(stringToJsonObjectBuilder(fileJsonObject.toString()));
+                                countSuccess++;
+                            } else {
+                                globusLogger.info(fileName + " will be skipped from adding to dataset by second API due to missing values ");
+                                countError++;
+                            }
+                        } else {
+                            globusLogger.info(fileName + " will be skipped from adding to dataset by second API due to missing values ");
+                            countError++;
+                        }
                     }
+
+                    String newjsonData = jsonDataSecondAPI.build().toString();
+
+                    globusLogger.info("Successfully generated new JsonData for Second API call");
+
+
+                    String command = "curl -H \"X-Dataverse-key:" + token.getTokenString() + "\" -X POST " + httpRequestUrl + "/api/datasets/:persistentId/addFiles?persistentId=doi:" + datasetIdentifier + " -F jsonData='" + newjsonData + "'";
+                    System.out.println("*******====command ==== " + command);
+
+                    String output = addFilesAsync(command, globusLogger);
+                    if (output.equalsIgnoreCase("ok")) {
+                        //if(!taskSkippedFiles)
+                        if (countError == 0 ){
+                            userNotificationService.sendNotification((AuthenticatedUser) authUser, new Timestamp(new Date().getTime()), UserNotification.Type.GLOBUSUPLOADCOMPLETED, dataset.getId(), countSuccess + " files added out of "+ countAll , true);
+                        }
+                        else {
+                            userNotificationService.sendNotification((AuthenticatedUser) authUser, new Timestamp(new Date().getTime()), UserNotification.Type.GLOBUSUPLOADCOMPLETEDWITHERRORS, dataset.getId(), countSuccess + " files added out of "+ countAll , true);
+                        }
+                        globusLogger.info("Successfully completed api/datasets/:persistentId/addFiles call ");
+                    } else {
+                        globusLogger.log(Level.SEVERE, "******* Error while executing api/datasets/:persistentId/add call ", command);
+                    }
+
                 }
 
-                String newjsonData = jsonDataSecondAPI.build().toString();
+                globusLogger.info("Files processed: " + countAll.toString());
+                globusLogger.info("Files added successfully: " + countSuccess.toString());
+                globusLogger.info("Files failures: " + countError.toString());
+                globusLogger.info("Finished upload via Globus job.");
 
-                globusLogger.info("Successfully generated new JsonData for Second API call");
-
-
-                String command = "curl -H \"X-Dataverse-key:" + token.getTokenString() + "\" -X POST "+httpRequestUrl+"/api/datasets/:persistentId/addFiles?persistentId=doi:" + datasetIdentifier + " -F jsonData='" + newjsonData  + "'";
-                System.out.println("*******====command ==== " + command);
-
-                String output = addFilesAsync(command , globusLogger ) ;
-                if(output.equalsIgnoreCase("ok"))
-                {
-                    userNotificationService.sendNotification((AuthenticatedUser) authUser, new Timestamp(new Date().getTime()), UserNotification.Type.GLOBUSUPLOADSUCCESS, dataset.getId(),"");
-
-                    globusLogger.info("Successfully completed api/datasets/:persistentId/addFiles call ");
-                }
-                else
-                {
-                    globusLogger.log(Level.SEVERE, "******* Error while executing api/datasets/:persistentId/add call ", command);
+                if (fileHandlerSuceeded) {
+                    fileHandler.close();
                 }
 
+            } catch (Exception e) {
+                logger.info("Exception from globusUpload call ");
+                e.printStackTrace();
+                globusLogger.info("Exception from globusUpload call " + e.getMessage());
             }
-
-            globusLogger.info("Files processed: " + countAll.toString());
-            globusLogger.info("Files added successfully: " + countSuccess.toString());
-            globusLogger.info("Files failures: " + countError.toString());
-            globusLogger.info("Finished upload via Globus job.");
-
-            if (fileHandlerSuceeded) {
-                fileHandler.close();
-            }
-
-        } catch (Exception e) {
-            logger.info("Exception  ");
-            e.printStackTrace();
         }
     }
 
@@ -1230,23 +1248,62 @@ public class DatasetServiceBean implements java.io.Serializable {
     Executor executor = Executors.newFixedThreadPool(10);
 
 
-    private Boolean globusStatusCheck(String taskId, Logger globusLogger) throws MalformedURLException {
-        boolean success = false;
+    private String globusStatusCheck(String taskId, Logger globusLogger) throws MalformedURLException {
+        boolean taskCompletion = false;
+        String status = "";
         do {
             try {
                 globusLogger.info("checking globus transfer task   " + taskId);
                 Thread.sleep(50000);
                 AccessToken clientTokenUser =  globusServiceBean.getClientToken();
-                success =  globusServiceBean.getSuccessfulTransfers(clientTokenUser, taskId);
+                //success =  globusServiceBean.getSuccessfulTransfers(clientTokenUser, taskId);
+                Task task = globusServiceBean.getTask(clientTokenUser,taskId, globusLogger);
+                status = task.getStatus();
+                if(status != null) {
+                    //The task is in progress.
+                    if (status.equalsIgnoreCase("ACTIVE")) {
+                        if(task.getNice_status().equalsIgnoreCase("ok") || task.getNice_status().equalsIgnoreCase("queued")) {
+                            taskCompletion = false;
+                        }
+                        else {
+                            taskCompletion = true;
+                            status = "FAILED" + "#" + task.getNice_status() + "#" + task.getNice_status_short_description();
+                        }
+                    } else {
+                        //The task is either succeeded, failed or inactive.
+                        taskCompletion = true;
+                        status = status + "#" + task.getNice_status() + "#" + task.getNice_status_short_description();
+                    }
+                }
+                else {
+                    status = "FAILED";
+                    taskCompletion = true;
+                }
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
 
-        } while (!success);
+        } while (!taskCompletion);
 
         globusLogger.info("globus transfer task completed successfully");
 
-        return success;
+        return status;
+    }
+
+    private Boolean taskSkippedFiles(String taskId, Logger globusLogger) throws MalformedURLException {
+
+        try {
+            globusLogger.info("checking globus transfer task   " + taskId);
+            Thread.sleep(50000);
+            AccessToken clientTokenUser =  globusServiceBean.getClientToken();
+            return   globusServiceBean.getTaskSkippedErrors(clientTokenUser,taskId, globusLogger);
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return false;
+
     }
 
 
@@ -1314,7 +1371,11 @@ public class DatasetServiceBean implements java.io.Serializable {
                 in = dataFileStorageIO.getInputStream();
                 checksumVal = FileUtil.calculateChecksum(in, DataFile.ChecksumType.MD5);
                 count = 3;
-            } catch (Exception ex) {
+            }catch (IOException ioex) {
+                count = 3;
+                logger.info(ioex.getMessage());
+                globusLogger.info("S3AccessIO: DataFile (fullPAth " + fullPath + ") does not appear to be an S3 object associated with driver: " );
+            }catch (Exception ex) {
                 count = count + 1;
                 ex.printStackTrace();
                 logger.info(ex.getMessage());
@@ -1323,14 +1384,13 @@ public class DatasetServiceBean implements java.io.Serializable {
 
         } while (count < 3);
 
-        if(checksumVal.length() > 0 ) {
-            String mimeType = calculatemime(fileName);
-            globusLogger.info(" File Name " + fileName + "  File Details " + fileId + " checksum = " + checksumVal + " mimeType = " + mimeType);
-            return new fileDetailsHolder(fileId, checksumVal, mimeType);
+        if(checksumVal.length() == 0 ) {
+            checksumVal = "NULL";
         }
-        else {
-            return null;
-        }
+
+        String mimeType = calculatemime(fileName);
+        globusLogger.info(" File Name " + fileName + "  File Details " + fileId + " checksum = " + checksumVal + " mimeType = " + mimeType);
+        return new fileDetailsHolder(fileId, checksumVal, mimeType);
         //getBytes(in)+"" );
         // calculatemime(fileName));
     }
@@ -1457,15 +1517,27 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
 
         //  globus task status check
-        globusStatusCheck(taskIdentifier,globusLogger);
-
-        // what if some files failed during download?
+        String taskStatus = globusStatusCheck(taskIdentifier,globusLogger);
+        Boolean taskSkippedFiles = taskSkippedFiles(taskIdentifier, globusLogger);
 
         if(ruleId.length() > 0) {
             globusServiceBean.deletePermision(ruleId, globusLogger);
         }
 
-        userNotificationService.sendNotification((AuthenticatedUser) authUser, new Timestamp(new Date().getTime()), UserNotification.Type.GLOBUSDOWNLOADSUCCESS, dataset.getId());
+
+        if (taskStatus.startsWith("FAILED") || taskStatus.startsWith("INACTIVE")) {
+            String comment = "Reason : " + taskStatus.split("#") [1] + "<br> Short Description : " + taskStatus.split("#")[2];
+            userNotificationService.sendNotification((AuthenticatedUser) authUser, new Timestamp(new Date().getTime()), UserNotification.Type.GLOBUSDOWNLOADCOMPLETEDWITHERRORS, dataset.getId(),comment, true);
+            globusLogger.info("Globus task failed during download process");
+        }
+        else {
+            if(!taskSkippedFiles) {
+                userNotificationService.sendNotification((AuthenticatedUser) authUser, new Timestamp(new Date().getTime()), UserNotification.Type.GLOBUSDOWNLOADCOMPLETED, dataset.getId());
+            }
+            else {
+                userNotificationService.sendNotification((AuthenticatedUser) authUser, new Timestamp(new Date().getTime()), UserNotification.Type.GLOBUSDOWNLOADCOMPLETEDWITHERRORS, dataset.getId(), "");
+            }
+        }
 
     }
 }

@@ -70,13 +70,37 @@ public class MailUtil {
                 } catch (Exception e) {
                     return BundleUtil.getStringFromBundle("notification.email.import.filesystem.subject", rootDvNameAsList);
                 }
-            case GLOBUSUPLOADSUCCESS:
+            case GLOBUSUPLOADCOMPLETED:
                 try {
                     DatasetVersion version =  (DatasetVersion)objectOfNotification;
                     List<String> dsNameAsList = Arrays.asList(version.getDataset().getDisplayName());
-                    return BundleUtil.getStringFromBundle("notification.email.import.globus.subject", dsNameAsList);
+                    return BundleUtil.getStringFromBundle("notification.email.globus.uploadCompleted.subject", dsNameAsList);
                 } catch (Exception e) {
-                    return BundleUtil.getStringFromBundle("notification.email.import.globus.subject", rootDvNameAsList);
+                    return BundleUtil.getStringFromBundle("notification.email.globus.uploadCompleted.subject", rootDvNameAsList);
+                }
+            case GLOBUSDOWNLOADCOMPLETED:
+                try {
+                    DatasetVersion version =  (DatasetVersion)objectOfNotification;
+                    List<String> dsNameAsList = Arrays.asList(version.getDataset().getDisplayName());
+                    return BundleUtil.getStringFromBundle("notification.email.globus.downloadCompleted.subject", dsNameAsList);
+                } catch (Exception e) {
+                    return BundleUtil.getStringFromBundle("notification.email.globus.downloadCompleted.subject", rootDvNameAsList);
+                }
+            case GLOBUSUPLOADCOMPLETEDWITHERRORS:
+                try {
+                    DatasetVersion version =  (DatasetVersion)objectOfNotification;
+                    List<String> dsNameAsList = Arrays.asList(version.getDataset().getDisplayName());
+                    return BundleUtil.getStringFromBundle("notification.email.globus.uploadCompletedWithErrors.subject", dsNameAsList);
+                } catch (Exception e) {
+                    return BundleUtil.getStringFromBundle("notification.email.globus.uploadCompletedWithErrors.subject", rootDvNameAsList);
+                }
+            case GLOBUSDOWNLOADCOMPLETEDWITHERRORS:
+                try {
+                    DatasetVersion version =  (DatasetVersion)objectOfNotification;
+                    List<String> dsNameAsList = Arrays.asList(version.getDataset().getDisplayName());
+                    return BundleUtil.getStringFromBundle("notification.email.globus.downloadCompletedWithErrors.subject", dsNameAsList);
+                } catch (Exception e) {
+                    return BundleUtil.getStringFromBundle("notification.email.globus.downloadCompletedWithErrors.subject", rootDvNameAsList);
                 }
 
             case CHECKSUMIMPORT:
