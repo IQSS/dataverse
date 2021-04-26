@@ -52,13 +52,23 @@ public class PasswordResetServiceBean {
      * Initiate the password reset process.
      *
      * @param emailAddress
-     * @return {@link PasswordResetInitResponse}
+     * @return {@link PasswordResetInitResponse} with empty PasswordResetData if
+     * the reset won't continue (no user, deactivated user).
      * @throws edu.harvard.iq.dataverse.passwordreset.PasswordResetException
      */
     // inspired by Troy Hunt: Everything you ever wanted to know about building a secure password reset feature - http://www.troyhunt.com/2012/05/everything-you-ever-wanted-to-know.html
     public PasswordResetInitResponse requestReset(String emailAddress) throws PasswordResetException {
         deleteAllExpiredTokens();
         AuthenticatedUser authUser = authService.getAuthenticatedUserByEmail(emailAddress);        
+        // This null check is for the NPE reported in https://github.com/IQSS/dataverse/issues/5462
+        if (authUser == null) {
+            logger.info("Cannot find a user based on " + emailAddress + ". Cannot reset password.");
+            return new PasswordResetInitResponse(false);
+        }
+        if (authUser.isDeactivated()) {
+            logger.info("Cannot reset password for " + emailAddress + " because account is deactivated.");
+            return new PasswordResetInitResponse(false);
+        }
         BuiltinUser user = dataverseUserService.findByUserName(authUser.getUserIdentifier());
 
         if (user != null) {
@@ -184,6 +194,12 @@ public class PasswordResetServiceBean {
             }
         }
         return numDeleted;
+    }
+
+    public void deleteResetDataByDataverseUser(BuiltinUser user) {
+        TypedQuery<PasswordResetData> typedQuery = em.createNamedQuery("PasswordResetData.deleteByUser", PasswordResetData.class);
+        typedQuery.setParameter("user", user);
+        int numRowsAffected = typedQuery.executeUpdate();
     }
 
     public PasswordChangeAttemptResponse attemptPasswordReset(BuiltinUser user, String newPassword, String token) {

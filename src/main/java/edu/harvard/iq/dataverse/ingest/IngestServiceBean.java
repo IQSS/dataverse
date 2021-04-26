@@ -136,9 +136,9 @@ public class IngestServiceBean {
     @EJB
     SystemConfig systemConfig;
 
-    @Resource(mappedName = "jms/DataverseIngest")
+    @Resource(lookup = "java:app/jms/queue/ingest")
     Queue queue;
-    @Resource(mappedName = "jms/IngestQueueConnectionFactory")
+    @Resource(lookup = "java:app/jms/factory/ingest")
     QueueConnectionFactory factory;
     
 
@@ -155,7 +155,7 @@ public class IngestServiceBean {
     // DataFileCategory objects, if any were already assigned to the files). 
     // It must be called before we attempt to permanently save the files in 
     // the database by calling the Save command on the dataset and/or version. 
-	public List<DataFile> saveAndAddFilesToDataset(DatasetVersion version, List<DataFile> newFiles, boolean isReplaceOperation) {
+	public List<DataFile> saveAndAddFilesToDataset(DatasetVersion version, List<DataFile> newFiles, DataFile fileToReplace) {
 		List<DataFile> ret = new ArrayList<>();
 
 		if (newFiles != null && newFiles.size() > 0) {
@@ -164,10 +164,7 @@ public class IngestServiceBean {
 			// we tried to make the file names unique on upload, but then
 			// the user may have edited them on the "add files" page, and
 			// renamed FOOBAR-1.txt back to FOOBAR.txt...
-		    //Don't change the name if we're replacing a file - (the original hasn't yet been deleted but will be in a later step)
-            if(!isReplaceOperation) {
-			  IngestUtil.checkForDuplicateFileNamesFinal(version, newFiles);
-            }
+            IngestUtil.checkForDuplicateFileNamesFinal(version, newFiles, fileToReplace);
 			Dataset dataset = version.getDataset();
 
 			for (DataFile dataFile : newFiles) {

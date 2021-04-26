@@ -250,11 +250,12 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         int lineNumber = 0;
         HeaderType header = null;
         JsonArrayBuilder responseArr = Json.createArrayBuilder();
+        String[] values = null;
         try {
             br = new BufferedReader(new FileReader("/" + file));
             while ((line = br.readLine()) != null) {
                 lineNumber++;
-                String[] values = line.split(splitBy);
+                values = line.split(splitBy);
                 if (values[0].startsWith("#")) { // Header row
                     switch (values[0]) {
                         case "#metadataBlock":
@@ -301,7 +302,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             return error(Status.EXPECTATION_FAILED, "File not found");
 
         } catch (ArrayIndexOutOfBoundsException e) {
-            String message = getArrayIndexOutOfBoundMessage(header, lineNumber, e);
+            String message = getArrayIndexOutOfBoundMessage(header, lineNumber, values.length);
             logger.log(Level.WARNING, message, e);
             alr.setActionResult(ActionLogRecord.Result.InternalError);
             alr.setInfo(alr.getInfo() + "// " + message);
@@ -352,10 +353,9 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
      */
     public String getArrayIndexOutOfBoundMessage(HeaderType header,
                                                  int lineNumber,
-                                                 ArrayIndexOutOfBoundsException e) {
+                                                 int wrongIndex) {
 
         List<String> columns = getColumnsByHeader(header);
-        int wrongIndex = Integer.parseInt(e.getMessage());
 
         String column = columns.get(wrongIndex - 1);
         List<String> arguments = new ArrayList<>();
@@ -470,15 +470,23 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         if (cvv == null) {
             cvv = new ControlledVocabularyValue();
             cvv.setDatasetFieldType(dsv);
-            //Alt is only for dataload so only add to new
-            for (int i = 5; i < values.length; i++) {
-                ControlledVocabAlternate alt = new ControlledVocabAlternate();
-                alt.setDatasetFieldType(dsv);
-                alt.setControlledVocabularyValue(cvv);
-                alt.setStrValue(values[i]);
-                cvv.getControlledVocabAlternates().add(alt);
-            }
-        }         
+        }
+        
+        // Alternate variants for this controlled vocab. value: 
+        
+        // Note that these are overwritten every time:
+        cvv.getControlledVocabAlternates().clear();
+        // - meaning, if an alternate has been removed from the tsv file, 
+        // it will be removed from the database! -- L.A. 5.4
+        
+        for (int i = 5; i < values.length; i++) {
+            ControlledVocabAlternate alt = new ControlledVocabAlternate();
+            alt.setDatasetFieldType(dsv);
+            alt.setControlledVocabularyValue(cvv);
+            alt.setStrValue(values[i]);
+            cvv.getControlledVocabAlternates().add(alt);
+        }
+        
         cvv.setStrValue(values[2]);
         cvv.setIdentifier(values[3]);
         cvv.setDisplayOrder(Integer.parseInt(values[4]));

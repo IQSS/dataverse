@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.util.json;
 
+import edu.harvard.iq.dataverse.AuxiliaryFile;
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileTag;
@@ -34,6 +35,7 @@ import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroup;
 import edu.harvard.iq.dataverse.authorization.providers.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -55,6 +57,9 @@ import java.util.logging.Logger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
+
+import javax.ejb.EJB;
+import javax.ejb.Singleton;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
@@ -63,14 +68,15 @@ import javax.json.JsonObject;
  *
  * @author michael
  */
+@Singleton
 public class JsonPrinter {
 
     private static final Logger logger = Logger.getLogger(JsonPrinter.class.getCanonicalName());
 
-    static SettingsServiceBean settingsService = null;
+    @EJB
+    static SettingsServiceBean settingsService;
 
-    // Passed to DatasetFieldWalker so it can check the :ExcludeEmailFromExport setting
-    public static void setSettingsService(SettingsServiceBean ssb) {
+    public static void injectSettingsService(SettingsServiceBean ssb) {
             settingsService = ssb;
     }
 
@@ -106,6 +112,8 @@ public class JsonPrinter {
             .add("lastName", authenticatedUser.getLastName())
             .add("email", authenticatedUser.getEmail())
             .add("superuser", authenticatedUser.isSuperuser())
+            .add("deactivated", authenticatedUser.isDeactivated())
+            .add("deactivatedTime", authenticatedUser.getDeactivatedTime())
             .add("affiliation", authenticatedUser.getAffiliation())
             .add("position", authenticatedUser.getPosition())
             .add("persistentUserId", authenticatedUser.getAuthenticatedUserLookup().getPersistentUserId())
@@ -318,7 +326,7 @@ public class JsonPrinter {
                 .add("persistentUrl", ds.getPersistentURL())
                 .add("protocol", ds.getProtocol())
                 .add("authority", ds.getAuthority())
-                .add("publisher", getRootDataverseNameforCitation(ds))
+                .add("publisher", BrandingUtil.getInstallationBrandName())
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
                 .add("storageIdentifier", ds.getStorageIdentifier());
     }
@@ -386,19 +394,6 @@ public class JsonPrinter {
         bld.add("files", jsonFileMetadatas(dataFileList));
 
         return bld;
-    }
-    
-    private static String getRootDataverseNameforCitation(Dataset dataset) {
-        Dataverse root = dataset.getOwner();
-        while (root.getOwner() != null) {
-            root = root.getOwner();
-        }
-        String rootDataverseName = root.getName();
-        if (!StringUtil.isEmpty(rootDataverseName)) {
-            return rootDataverseName;
-        } else {
-            return "";
-        }
     }
     
     private static String getLicenseInfo(DatasetVersion dsv) {
@@ -575,6 +570,16 @@ public class JsonPrinter {
                 .add("dataFile", JsonPrinter.json(fmd.getDataFile(), fmd));
     }
 
+      public static JsonObjectBuilder json(AuxiliaryFile auxFile) {
+        return jsonObjectBuilder()
+               .add("formatTag", auxFile.getFormatTag())
+                .add("formatVersion", auxFile.getFormatVersion()) // "label" is the filename
+                .add("origin", auxFile.getOrigin()) 
+                .add("isPublic", auxFile.getIsPublic())
+                .add("fileSize", auxFile.getFileSize())
+                .add("checksum", auxFile.getChecksum())
+                .add("dataFile", JsonPrinter.json(auxFile.getDataFile()));
+    }
     public static JsonObjectBuilder json(DataFile df) {
         return JsonPrinter.json(df, null);
     }
