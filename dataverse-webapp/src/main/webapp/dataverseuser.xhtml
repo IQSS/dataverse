@@ -557,9 +557,9 @@
                                         <p:inputText id="userName" styleClass="form-control"
                                                         validator="#{DataverseUserPage.validateUserName}"
                                                         value="#{DataverseUserPage.username}"
-                                                        disabled="#{DataverseUserPage.editMode != 'CREATE'}"
-                                                        binding="#{DataverseUserPage.usernameField}"/>
+                                                        disabled="#{DataverseUserPage.editMode != 'CREATE'}"/>
                                         <p:message for="userName" display="text" />
+
                                     </div>
                                 </div>
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == DataverseUserPage.changePasswordMode}">
@@ -738,7 +738,7 @@
                                     <div class="col-sm-12 button-block">
                                         <p:commandButton id="save" styleClass="btn btn-default"
                                                          value="#{DataverseUserPage.editMode == 'CREATE' ? bundle['user.createBtn']:bundle.saveChanges}"
-                                                         action="#{DataverseUserPage.save}" update="@form,:messagePanel,:userDisplayInfoTitle" />
+                                                         action="#{DataverseUserPage.save()}" update="@form,:messagePanel,:userDisplayInfoTitle" />
                                         <p:commandButton id="cancel" styleClass="btn btn-default" value="#{bundle.cancel}"
                                                          action="#{DataverseUserPage.cancel}" process="@this" update="@form">
                                             <p:resetInput target="@form" />

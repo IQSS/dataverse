@@ -61,7 +61,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -159,7 +158,6 @@ public class DataverseUserPage implements java.io.Serializable {
     private List<UserNotification> notificationsList;
     private int activeIndex;
     private String selectTab = "somedata";
-    UIInput usernameField;
 
     private Locale preferredNotificationsLanguage = null;
 
@@ -180,6 +178,7 @@ public class DataverseUserPage implements java.io.Serializable {
         }
 
         if (editMode == EditMode.CREATE) {
+
             if (isUserAuthenticated()) {
                 editMode = null; // we can't be in create mode for an existing user
 
@@ -380,16 +379,6 @@ public class DataverseUserPage implements java.io.Serializable {
             AuthenticatedUser au = authenticationService.createAuthenticatedUser(
                     new UserRecordIdentifier(BuiltinAuthenticationProvider.PROVIDER_ID, builtinUser.getUserName()),
                     builtinUser.getUserName(), userDisplayInfo, false, preferredNotificationsLanguage).getOrNull();
-            if (au == null) {
-                // Username already exists, show an error message
-                getUsernameField().setValid(false);
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                                                        BundleUtil.getStringFromBundle("user.username.taken"),
-                                                        null);
-                FacesContext context = FacesContext.getCurrentInstance();
-                context.addMessage(getUsernameField().getClientId(context), message);
-                return null;
-            }
 
             // Authenticated user registered. Save the new bulitin, and log in.
             builtinUserService.save(builtinUser);
@@ -772,14 +761,6 @@ public class DataverseUserPage implements java.io.Serializable {
 
     public void setSelectTab(String selectTab) {
         this.selectTab = selectTab;
-    }
-
-    public UIInput getUsernameField() {
-        return usernameField;
-    }
-
-    public void setUsernameField(UIInput usernameField) {
-        this.usernameField = usernameField;
     }
 
     public String getUsername() {
