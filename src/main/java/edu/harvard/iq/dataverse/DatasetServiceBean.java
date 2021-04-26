@@ -1127,9 +1127,18 @@ public class DatasetServiceBean implements java.io.Serializable {
         }
 
         if (taskStatus.startsWith("FAILED") || taskStatus.startsWith("INACTIVE")) {
-            String comment = "Reason : " + taskStatus.split("#") [1] + "<br> Short Description " + taskStatus.split("#")[2];
+            String comment = "Reason : " + taskStatus.split("#") [1] + "<br> Short Description : " + taskStatus.split("#")[2];
             userNotificationService.sendNotification((AuthenticatedUser) authUser, new Timestamp(new Date().getTime()), UserNotification.Type.GLOBUSUPLOADCOMPLETEDWITHERRORS, dataset.getId(),comment, true);
             globusLogger.info("Globus task failed ");
+
+            DatasetLock dcmLock = dataset.getLockFor(DatasetLock.Reason.EditInProgress);
+            if (dcmLock == null) {
+                logger.log(Level.WARNING, "No lock found for dataset");
+            } else {
+                removeDatasetLocks(dataset, DatasetLock.Reason.EditInProgress);
+                logger.log(Level.INFO, "Removed EditInProgress lock ");
+                //dataset.removeLock(dcmLock);
+            }
         }
         else {
             try {
