@@ -64,8 +64,8 @@ public class DashboardUsersPage implements java.io.Serializable {
         sortingMap.put("id desc",             "dashboard.list_users.tbl_header.userIdZA");
         sortingMap.put("userIdentifier",      "dashboard.list_users.tbl_header.userIdentifierAZ");
         sortingMap.put("userIdentifier desc", "dashboard.list_users.tbl_header.userIdentifierZA");
-        sortingMap.put("lastName",            "dashboard.list_users.tbl_header.lastNameZA");
-        sortingMap.put("lastName desc",       "dashboard.list_users.tbl_header.lastNameAZ");
+        sortingMap.put("lastName",            "dashboard.list_users.tbl_header.lastNameAZ");
+        sortingMap.put("lastName desc",       "dashboard.list_users.tbl_header.lastNameZA");
         sortingMap.put("email",               "dashboard.list_users.tbl_header.emailAZ");
         sortingMap.put("email desc",          "dashboard.list_users.tbl_header.emailZA");
         sortingMap.put("affiliation",         "dashboard.list_users.tbl_header.affiliationAZ");

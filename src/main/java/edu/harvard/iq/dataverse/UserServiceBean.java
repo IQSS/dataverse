@@ -30,8 +30,10 @@ public class UserServiceBean {
     public static final List<String> acceptableSortKeys = Arrays.asList(
       "id", "useridentifier", "lastname", "firstname", "email", "affiliation",
       "superuser", "position", "createdtime", "lastlogintime", "lastapiusetime",
+      "authproviderid",
       "id desc", "useridentifier desc", "lastname desc", "firstname desc", "email desc", "affiliation desc",
-      "superuser desc", "position desc", "createdtime desc", "lastlogintime desc", "lastapiusetime desc"
+      "superuser desc", "position desc", "createdtime desc", "lastlogintime desc", "lastapiusetime desc",
+      "authproviderid desc"
     );
 
     @PersistenceContext
@@ -374,7 +376,13 @@ public class UserServiceBean {
                                            Integer resultLimit,
                                            Integer offset) {
         if (StringUtils.isNotBlank(sortKey) && acceptableSortKeys.contains(sortKey.toLowerCase())) {
-            sortKey = "u." + sortKey.toLowerCase();
+            if (sortKey.toLowerCase().equals("authproviderid")) {
+                sortKey = "prov.id";
+            } else if (sortKey.toLowerCase().equals("authproviderid desc")) {
+                sortKey = "prov.id desc";
+            } else {
+                sortKey = "u." + sortKey.toLowerCase();
+            }
         } else {
             sortKey = "u.useridentifier";
         }
