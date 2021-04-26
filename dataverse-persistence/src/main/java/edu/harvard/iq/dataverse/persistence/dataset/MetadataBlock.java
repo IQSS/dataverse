@@ -20,7 +20,6 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.List;
-import java.util.MissingResourceException;
 import java.util.Objects;
 
 /**
@@ -189,10 +188,7 @@ public class MetadataBlock implements Serializable {
     }
 
     public String getLocaleDisplayName() {
-        try {
-            return BundleUtil.getStringFromNonDefaultBundle("metadatablock.displayName", getName());
-        } catch (MissingResourceException e) {
-            return displayName;
-        }
+        String localeDisplayName =  BundleUtil.getStringFromNonDefaultBundle("metadatablock.displayName", getName());
+        return localeDisplayName.isEmpty() ? displayName : localeDisplayName;
     }
 }

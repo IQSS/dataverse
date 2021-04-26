@@ -25,23 +25,21 @@ import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchFilesServiceBean;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
+import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrField;
-import edu.harvard.iq.dataverse.search.SolrFieldFactory;
-import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
-import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
-import edu.harvard.iq.dataverse.search.index.PermissionsSolrDoc;
-import edu.harvard.iq.dataverse.search.index.PermissionsSolrDocFactory;
 import edu.harvard.iq.dataverse.search.index.IndexBatchServiceBean;
 import edu.harvard.iq.dataverse.search.index.IndexResponse;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.index.IndexUtil;
+import edu.harvard.iq.dataverse.search.index.PermissionsSolrDoc;
+import edu.harvard.iq.dataverse.search.index.PermissionsSolrDocFactory;
 import edu.harvard.iq.dataverse.search.index.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.query.SearchForTypes;
-import edu.harvard.iq.dataverse.search.query.SortBy;
 import edu.harvard.iq.dataverse.search.response.FacetCategory;
 import edu.harvard.iq.dataverse.search.response.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
+import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import org.apache.solr.client.solrj.SolrServerException;
 
 import javax.ejb.EJB;
@@ -98,8 +96,6 @@ public class Index extends AbstractApiBean {
     DatasetFieldServiceBean datasetFieldService;
     @EJB
     SearchFilesServiceBean searchFilesService;
-    @EJB
-    private SolrFieldFactory solrFieldFactory;
     @EJB
     private PermissionsSolrDocFactory solrDocFactory;
 
@@ -476,10 +472,8 @@ public class Index extends AbstractApiBean {
         StringBuilder sb = new StringBuilder();
 
         for (DatasetFieldType datasetField : datasetFieldService.findAllOrderedByName()) {
-            SolrField dsfSolrField = solrFieldFactory.getSolrField(datasetField.getName(),
-                                                                   datasetField.getFieldType(),
-                                                                   datasetField.isThisOrParentAllowsMultipleValues(),
-                                                                   datasetField.isFacetable());
+            SolrField dsfSolrField = SolrField.of(datasetField.getName(), datasetField.getFieldType(),
+                    datasetField.isThisOrParentAllowsMultipleValues(), datasetField.isFacetable());
             String nameSearchable = dsfSolrField.getNameSearchable();
 
             SolrField.SolrType solrType = dsfSolrField.getSolrType();
@@ -531,10 +525,8 @@ public class Index extends AbstractApiBean {
         sb.append("---\n");
 
         for (DatasetFieldType datasetField : datasetFieldService.findAllOrderedByName()) {
-            SolrField dsfSolrField = solrFieldFactory.getSolrField(datasetField.getName(),
-                                                                   datasetField.getFieldType(),
-                                                                   datasetField.isThisOrParentAllowsMultipleValues(),
-                                                                   datasetField.isFacetable());
+            SolrField dsfSolrField = SolrField.of(datasetField.getName(), datasetField.getFieldType(),
+                    datasetField.isThisOrParentAllowsMultipleValues(), datasetField.isFacetable());
             String nameSearchable = dsfSolrField.getNameSearchable();
 
             String nameFacetable = dsfSolrField.getNameFacetable();

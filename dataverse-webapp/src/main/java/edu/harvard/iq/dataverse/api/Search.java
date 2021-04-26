@@ -126,7 +126,8 @@ public class Search extends AbstractApiBean {
                                                          sortBy.getOrder(),
                                                          paginationStart,
                                                          numResultsPerPage,
-                                                         queryEntities
+                                                         queryEntities,
+                                                         false
                 );
             } catch (SearchException ex) {
                 Throwable cause = ex;
@@ -313,7 +314,7 @@ public class Search extends AbstractApiBean {
         try {
             subtreesFilter = subtreesFilter.substring(0, subtreesFilter.lastIndexOf("OR"));
         } catch (StringIndexOutOfBoundsException ex) {
-            //This case should only happen the root subtree is searched 
+            //This case should only happen the root subtree is searched
             //and there are no ORs in the string
             subtreesFilter = "";
         }

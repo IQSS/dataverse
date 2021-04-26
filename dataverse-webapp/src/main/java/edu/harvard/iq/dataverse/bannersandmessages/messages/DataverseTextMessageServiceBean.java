@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.bannersandmessages.messages;
 import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseMessagesMapper;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.dto.DataverseTextMessageDto;
-import edu.harvard.iq.dataverse.bannersandmessages.validation.DataverseTextMessageValidator;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.bannersandmessages.DataverseTextMessage;
 
@@ -83,7 +82,7 @@ public class DataverseTextMessageServiceBean implements java.io.Serializable {
         if (dataverseId == null) {
             return Lists.newArrayList();
         }
-        logger.info("Getting text messages for dataverse: " + dataverseId);
+        logger.finest("Getting text messages for dataverse: " + dataverseId);
         List<String> messages = em.createNativeQuery("select r.message from (select distinct dvtml.message, dvtm.totime  from\n" +
                                                              "  dataversetextmessage dvtm\n" +
                                                              "  join dataverselocalizedmessage dvtml on dvtml.dataversetextmessage_id = dvtm.id\n" +

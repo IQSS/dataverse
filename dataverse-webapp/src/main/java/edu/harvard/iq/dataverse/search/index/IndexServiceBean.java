@@ -29,7 +29,6 @@ import edu.harvard.iq.dataverse.search.SearchConstants;
 import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SolrField;
-import edu.harvard.iq.dataverse.search.SolrFieldFactory;
 import edu.harvard.iq.dataverse.search.query.SearchPublicationStatus;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -106,8 +105,6 @@ public class IndexServiceBean {
     DataverseLinkingService dvLinkingService;
     @Inject
     SettingsServiceBean settingsService;
-    @EJB
-    private SolrFieldFactory solrFieldFactory;
     @Inject
     private SolrClient solrServer;
     @Inject
@@ -688,10 +685,8 @@ public class IndexServiceBean {
             for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
 
                 DatasetFieldType dsfType = dsf.getDatasetFieldType();
-                SolrField dsfSolrField = solrFieldFactory.getSolrField(dsfType.getName(),
-                                                                       dsfType.getFieldType(),
-                                                                       dsfType.isThisOrParentAllowsMultipleValues(),
-                                                                       dsfType.isFacetable());
+                SolrField dsfSolrField = SolrField.of(dsfType.getName(), dsfType.getFieldType(),
+                        dsfType.isThisOrParentAllowsMultipleValues(), dsfType.isFacetable());
                 String solrFieldSearchable = dsfSolrField.getNameSearchable();
                 String solrFieldFacetable = dsfSolrField.getNameFacetable();
 

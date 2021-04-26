@@ -4,15 +4,13 @@ import com.google.common.collect.Sets;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.search.SolrField;
-import edu.harvard.iq.dataverse.search.SolrFieldFactory;
 import io.vavr.control.Option;
 import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,37 +18,39 @@ import java.util.Set;
 public class SolrQuerySanitizer {
 
     private final static Set<Character> SOLR_SPECIAL_CHARACTERS = Sets.newHashSet(
-            '\\', ':', '+', '-', '!', '(', ')', 
+            '\\', ':', '+', '-', '!', '(', ')',
             '^' , '[', ']', '"', '{', '}', '~',
             '*' , '?', '|', '&', ';', '/');
-    
-    
+
+
     @Inject
     private DatasetFieldServiceBean datasetFieldService;
-    @Inject
-    private SolrFieldFactory solrFieldFactory;
-    
+
     // -------------------- LOGIC --------------------
-    
+
     public String sanitizeQuery(String query) {
+        return sanitizeQuery(query, null);
+    }
+
+    public String sanitizeQuery(String query, Collection<DatasetFieldType> datasetFields) {
         if (query == null) {
             return StringUtils.EMPTY;
         }
-        
-        query = replaceQueryFieldNames(query, buildFieldNamesMapping());
+
+        query = replaceQueryFieldNames(query, buildFieldNamesMapping(datasetFields));
         query = escapeGlobalIdValues(query);
-        
+
         return query;
     }
-    
+
     // -------------------- PRIVATE --------------------
-    
-    private Map<String, String> buildFieldNamesMapping() {
+
+    private Map<String, String> buildFieldNamesMapping(Collection<DatasetFieldType> datasetFields) {
         Map<String, String> fieldNamesMapping = new HashMap<>();
-        List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
+        datasetFields = datasetFields == null ? datasetFieldService.findAllOrderedById() : datasetFields;
         for (DatasetFieldType datasetFieldType : datasetFields) {
 
-            SolrField dsfSolrField = solrFieldFactory.getSolrField(datasetFieldType.getName(),
+            SolrField dsfSolrField = SolrField.of(datasetFieldType.getName(),
                                                                    datasetFieldType.getFieldType(),
                                                                    datasetFieldType.isThisOrParentAllowsMultipleValues(),
                                                                    datasetFieldType.isFacetable());
@@ -58,12 +58,12 @@ public class SolrQuerySanitizer {
         }
         return fieldNamesMapping;
     }
-    
+
     private void transferString(StringBuilder source, StringBuilder target) {
         target.append(source);
         source.setLength(0);
     }
-    
+
     /**
      * Replaces field names in the given query according to provided mapping.
      * <p>
@@ -84,7 +84,7 @@ public class SolrQuerySanitizer {
 
         boolean insideQuotation = false;
         boolean currentCharIsEscaped = false;
-        
+
         for (int i=0; i<query.length(); ++i) {
             char currentChar = query.charAt(i);
 
@@ -93,7 +93,7 @@ public class SolrQuerySanitizer {
                 currentCharIsEscaped = !currentCharIsEscaped;
                 continue;
             }
-            
+
             if (currentChar == '"' && !currentCharIsEscaped) {
                 insideQuotation = !insideQuotation;
 
@@ -110,11 +110,11 @@ public class SolrQuerySanitizer {
             if (currentChar == ':') {
                 String fieldNameFromView = currentSegmentWithoutSpecialCharacters.toString();
                 Option<String> solrFieldName = Option.none();
-                
+
                 if (fieldNamesMapping.containsKey(fieldNameFromView)) {
                     solrFieldName = Option.of(fieldNamesMapping.get(fieldNameFromView));
                 }
-                
+
                 transformedQuery.append(solrFieldName.getOrElse(fieldNameFromView));
                 currentSegmentWithoutSpecialCharacters.setLength(0);
                 transformedQuery.append(currentChar);
@@ -133,8 +133,8 @@ public class SolrQuerySanitizer {
         transformedQuery.append(currentSegmentWithoutSpecialCharacters);
         return transformedQuery.toString();
     }
-    
-    
+
+
     /**
      * @param query The query string that might be mutated before feeding it
      *              into Solr.
@@ -142,7 +142,7 @@ public class SolrQuerySanitizer {
      * passed in.
      */
     private String escapeGlobalIdValues(String query) {
-        
+
         String[] colonParts = query.split(":");
         if (colonParts.length > 0) {
             String first = colonParts[0];

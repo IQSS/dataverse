@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Locale;
-import java.util.MissingResourceException;
 import java.util.Objects;
 
 /**
@@ -105,13 +104,15 @@ public class ControlledVocabularyValue implements Serializable {
     public String getLocaleStrValue(Locale locale) {
         String key = strValue.toLowerCase().replace(" ", "_");
         key = StringUtils.stripAccents(key);
+        String value;
         try {
-            return BundleUtil.getStringFromNonDefaultBundleWithLocale(
+            value = BundleUtil.getStringFromNonDefaultBundleWithLocale(
                     "controlledvocabulary." + this.datasetFieldType.getName() + "." + key,
                     getDatasetFieldType().getMetadataBlock().getName(), locale);
-        } catch (MissingResourceException | NullPointerException e) {
-            return getStrValue();
+        } catch (NullPointerException npe) {
+            value = StringUtils.EMPTY;
         }
+        return value.isEmpty() ? getStrValue() : value;
     }
 
     // -------------------- SETTERS --------------------

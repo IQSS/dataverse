@@ -16,7 +16,6 @@ import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.InputRendererType;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.search.SolrField;
-import edu.harvard.iq.dataverse.search.SolrFieldFactory;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import org.apache.commons.lang.StringUtils;
 
@@ -61,9 +60,6 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
 
     @EJB
     ControlledVocabularyValueServiceBean controlledVocabularyValueService;
-
-    @EJB
-    private SolrFieldFactory solrFieldFactory;
 
     @Inject
     private JsonPrinter jsonPrinter;
@@ -134,7 +130,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             Long id = dsf.getId();
             String title = dsf.getTitle();
             FieldType fieldType = dsf.getFieldType();
-            SolrField dsfSolrField = solrFieldFactory.getSolrField(dsf.getName(),
+            SolrField dsfSolrField = SolrField.of(dsf.getName(),
                                                                    dsf.getFieldType(),
                                                                    dsf.isThisOrParentAllowsMultipleValues(),
                                                                    dsf.isFacetable());

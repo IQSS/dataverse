@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.common;
 
 import org.apache.commons.lang3.StringUtils;
-import java.util.MissingResourceException;
 
 public class RoleTranslationUtil {
 
@@ -16,16 +15,12 @@ public class RoleTranslationUtil {
      */
     public static String getLocaleNameFromAlias(String alias, String name) {
         if (alias != null) {
-            try {
-                String key = "role." + alias.toLowerCase() + ".name";
-                String localeName = BundleUtil.getStringFromNonDefaultBundle(key, "BuiltInRoles");
-                if (StringUtils.isEmpty(localeName)) {
-                    return name;
-                } else {
-                    return localeName;
-                }
-            } catch (MissingResourceException mre) {
+            String key = "role." + alias.toLowerCase() + ".name";
+            String localeName = BundleUtil.getStringFromNonDefaultBundle(key, "BuiltInRoles");
+            if (StringUtils.isEmpty(localeName)) {
                 return name;
+            } else {
+                return localeName;
             }
         }
         return name;
@@ -49,18 +44,12 @@ public class RoleTranslationUtil {
     public static String getLocaleDescriptionFromAlias(String alias, String description) {
         if (alias != null) {
             String key = "role." + alias.toLowerCase() + ".description";
-            try {
-                String localeDescription = BundleUtil.getStringFromNonDefaultBundle(key, "BuiltInRoles");
-                if (StringUtils.isEmpty(localeDescription)) {
-                    return description;
-                } else {
-                    return localeDescription;
-                }
-
-            } catch (MissingResourceException mre) {
+            String localeDescription = BundleUtil.getStringFromNonDefaultBundle(key, "BuiltInRoles");
+            if (StringUtils.isEmpty(localeDescription)) {
                 return description;
+            } else {
+                return localeDescription;
             }
-
         }
         return description;
     }
