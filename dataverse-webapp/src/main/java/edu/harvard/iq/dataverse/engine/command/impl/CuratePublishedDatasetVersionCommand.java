@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
-import edu.harvard.iq.dataverse.persistence.datafile.DataFileCategory;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -16,6 +15,7 @@ import edu.harvard.iq.dataverse.persistence.workflow.WorkflowComment;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -85,30 +85,29 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         // we have to merge to update the database but not flush because
         // we don't want to create two draft versions!
         Dataset tempDataset = ctxt.em().merge(getDataset());
+        List<FileMetadata> filesToRemove = new ArrayList<>();
+        List<DataFile> dataFilesToUpdateTime = new ArrayList<>();
 
         // Look for file metadata changes and update published metadata if needed
         for (FileMetadata fileMetadataInLatestVersion : latestVersion.getFileMetadatas()) {
             DataFile dataFile = fileMetadataInLatestVersion.getDataFile();
-            
+
             FileMetadata fileMetadataInUpdateVersion = findFileMetadataOfDataFileInVersion(updateVersion, dataFile)
                     .orElseThrow(() -> new IllegalCommandException("Curated version doesn't contain DataFile with id: " + dataFile.getId(), this));
-            
+
             boolean metadataUpdated = copyFileMetadata(fileMetadataInLatestVersion, fileMetadataInUpdateVersion, ctxt);
 
             if (metadataUpdated) {
-                dataFile.setModificationTime(getTimestamp());
+                dataFilesToUpdateTime.add(dataFile);
             }
+
             // Now delete filemetadata from draft version before deleting the version itself
             FileMetadata mergedFmd = ctxt.em().merge(fileMetadataInLatestVersion);
             ctxt.em().remove(mergedFmd);
-            // including removing metadata from the list on the datafile
-            dataFile.getFileMetadatas().remove(fileMetadataInLatestVersion);
-            tempDataset.getEditVersion().getFileMetadatas().remove(fileMetadataInLatestVersion);
-            // And any references in the list held by categories
-            for (DataFileCategory cat : tempDataset.getCategories()) {
-                cat.getFileMetadatas().remove(fileMetadataInLatestVersion);
-            }
+            filesToRemove.add(fileMetadataInLatestVersion);
         }
+
+        removeAndUpdateFilesFromDatasetForMerge(tempDataset, filesToRemove, dataFilesToUpdateTime);
 
         // Update modification time on the published version and the dataset
         updateVersion.setLastUpdateTime(getTimestamp());
@@ -141,6 +140,22 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
 
 
         return savedDataset;
+    }
+
+    private void removeAndUpdateFilesFromDatasetForMerge(Dataset tempDataset,
+                                                         List<FileMetadata> filesToRemove,
+                                                         List<DataFile> dataFilesToUpdateTime) {
+        for (DataFile fileToUpdate : tempDataset.getFiles()) {
+
+            if (dataFilesToUpdateTime.contains(fileToUpdate)) {
+                fileToUpdate.setModificationTime(getTimestamp());
+            }
+
+            fileToUpdate.getFileMetadatas().removeAll(filesToRemove);
+        }
+
+        tempDataset.getEditVersion().getFileMetadatas().removeAll(filesToRemove);
+        tempDataset.getCategories().forEach(category -> category.getFileMetadatas().removeAll(filesToRemove));
     }
 
     private Optional<FileMetadata> findFileMetadataOfDataFileInVersion(DatasetVersion version, DataFile dataFile) {
