@@ -6,6 +6,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.AbstractGlobalIdServiceBean.GlobalIdMetadataTemplate;
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -205,7 +207,7 @@ public class DOIDataCiteRegisterService {
         }
         
         metadataTemplate.setTitle(title);
-        String producerString = dataset.getLatestVersion().getRootDataverseNameforCitation();
+        String producerString = BrandingUtil.getRootDataverseCollectionName();
         if (producerString.isEmpty() || producerString.equals(DatasetField.NA_VALUE)) {
             producerString = AbstractGlobalIdServiceBean.UNAVAILABLE;
         }
