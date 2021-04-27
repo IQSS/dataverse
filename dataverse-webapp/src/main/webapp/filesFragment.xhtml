@@ -12,7 +12,7 @@
     <!--@elvariable id="fileMetadata" type="edu.harvard.iq.dataverse.persistence.datafile.FileMetadata"-->
 
     <!-- No files accessible in Dataset -->
-    <ui:fragment rendered="#{empty datasetFilesTab.fileMetadatasSearch.getAllAvailableFilesCount() and datasetFilesTab.dataset.hasEverBeenPublished()
+    <ui:fragment rendered="#{datasetFilesTab.fileMetadatasSearch.getAllAvailableFilesCount() eq 0 and datasetFilesTab.dataset.hasEverBeenPublished()
                             and !datasetFilesTab.isFilesTabDisplayable()}">
         <div class="panel panel-default" jsf:rendered="#{!settingsWrapper.rsyncOnly}">
             <div class="panel-body">
