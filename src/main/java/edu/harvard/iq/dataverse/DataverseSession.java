@@ -14,6 +14,8 @@ import edu.harvard.iq.dataverse.util.SessionUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -133,8 +135,16 @@ public class DataverseSession implements Serializable{
                 //QDR - remove SSO cookie when user changes
                 Cookie passiveSSOCookie = new Cookie("_check_is_passive_dv", "0");
                 passiveSSOCookie.setMaxAge(0);
+                String QDRDrupalSiteURL = settingsWrapper.get(":QDRDrupalSiteURL");
+                String QDRDrupalSiteHost = QDRDrupalSiteURL;
+                int index = QDRDrupalSiteURL.indexOf("://");
+                if (index >=0) {
+                    QDRDrupalSiteHost = QDRDrupalSiteURL.substring(index + 3);
+                }
+                //In QDR config, common domain for Drupal and Dataverse is '.<Drupal dns name>'
+                passiveSSOCookie.setDomain("." + QDRDrupalSiteHost);
                 ((HttpServletResponse) context.getExternalContext().getResponse()).addCookie(passiveSSOCookie);
-                
+                httpSession.setAttribute("passiveChecked", true);
             }
            
         
