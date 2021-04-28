@@ -23,7 +23,9 @@ import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -148,6 +150,12 @@ public class DataverseSession implements Serializable{
 
           //#3254 - change session id when user changes
           SessionUtil.changeSessionId((HttpServletRequest) context.getExternalContext().getRequest());
+          
+          //QDR - remove SSO cookie when user changes
+          Cookie passiveSSOCookie = new Cookie("_check_is_passive_dv", "0");
+          passiveSSOCookie.setMaxAge(0);
+          ((HttpServletResponse) context.getExternalContext().getResponse()).addCookie(passiveSSOCookie);
+          
             HttpSession httpSession = (HttpSession) context.getExternalContext().getSession(false);
             if (httpSession != null) {
                 // Configure session timeout.
