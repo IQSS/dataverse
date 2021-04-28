@@ -1527,9 +1527,7 @@
                         <ui:fragment  rendered="#{publishDataset}">
                             <div class="form-group">
                                 <p class="col-sm-12 text-warning">#{bundle['dataset.publish.tip']}</p>
-                                <p class="col-sm-12 help-block">This version of the dataset will be published with the
-                                    following
-                                    terms:</p>
+                                <p class="col-sm-12 help-block">#{bundle['dataset.publish.terms.tip']}</p>
                             </div>
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">
@@ -1555,8 +1553,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <p class="col-sm-12 help-block">To change the terms for this version, click the Cancel
-                                    button and go to the Terms tab for this dataset.</p>
+                                <p class="col-sm-12 help-block">#{bundle['dataset.publish.terms.help.tip']}</p>
                             </div>
                         </ui:fragment>
                         <ui:fragment rendered="#{releaseBoth}">
