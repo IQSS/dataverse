@@ -760,7 +760,6 @@ public class DatasetFilesTab implements Serializable {
     private void addSuccessMessage() {
         String successMessage = BundleUtil.getStringFromBundle("file.assignedTabFileTags.success");
         logger.fine(successMessage);
-        successMessage = successMessage.replace("{0}", "Selected Files");
         JsfHelper.addFlashSuccessMessage(successMessage);
     }
 
