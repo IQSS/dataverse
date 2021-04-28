@@ -75,6 +75,7 @@ import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Timestamp;
@@ -118,6 +119,7 @@ import javax.ws.rs.core.StreamingOutput;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.net.URISyntaxException;
 import javax.ws.rs.RedirectionException;
+import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MediaType;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -1270,7 +1272,13 @@ public class Access extends AbstractApiBean {
             return error(FORBIDDEN, "User not authorized to edit the dataset.");
         }
 
-        auxiliaryFileService.deleteAuxiliaryFile(dataFile, formatTag, formatVersion);
+        try {
+            auxiliaryFileService.deleteAuxiliaryFile(dataFile, formatTag, formatVersion);
+        } catch (FileNotFoundException e) {
+            throw new NotFoundException();
+        } catch(IOException io) {
+            throw new ServerErrorException("IO Exception trying remove auxiliary file", Response.Status.INTERNAL_SERVER_ERROR, io);
+        }
 
         return ok("Auxiliary file deleted.");
     }
