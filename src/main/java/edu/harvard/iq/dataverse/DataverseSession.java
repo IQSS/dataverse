@@ -124,6 +124,21 @@ public class DataverseSession implements Serializable{
                 }
             }
         }
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpSession httpSession = (HttpSession) context.getExternalContext().getSession(false);
+        if (httpSession != null) {
+            Object o = httpSession.getAttribute("passiveChecked");
+            if(o==null) {
+                logger.info("No passiveChecked: Setting cookie to 0: " + LocalDateTime.now().toString());
+                //QDR - remove SSO cookie when user changes
+                Cookie passiveSSOCookie = new Cookie("_check_is_passive_dv", "0");
+                passiveSSOCookie.setMaxAge(0);
+                ((HttpServletResponse) context.getExternalContext().getResponse()).addCookie(passiveSSOCookie);
+                
+            }
+           
+        
+        }
         return user;
     }
 
@@ -165,6 +180,7 @@ public class DataverseSession implements Serializable{
                 // Configure session timeout.
                 logger.fine("jsession: " + httpSession.getId() + " setting the lifespan of the session to " + systemConfig.getLoginSessionTimeout() + " minutes");
                 httpSession.setMaxInactiveInterval(systemConfig.getLoginSessionTimeout() * 60); // session timeout, in seconds
+                httpSession.setAttribute("passiveChecked", Boolean.TRUE);
             }
         }
         this.user = aUser;
