@@ -112,6 +112,27 @@ public class DataverseSession implements Serializable{
     public User getUser(boolean lookupAuthenticatedUserAgain) {
         if ( user == null ) {
             user = GuestUser.get();
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpSession httpSession = (HttpSession) context.getExternalContext().getSession(false);
+            if (httpSession != null) {
+                Object o = httpSession.getAttribute("passiveChecked");
+                if(o==null) {
+                    logger.info("No passiveChecked: Setting cookie to 0: " + LocalDateTime.now().toString());
+                    //QDR - remove SSO cookie when user changes
+                    Cookie passiveSSOCookie = new Cookie("_check_is_passive_dv", "0");
+                    passiveSSOCookie.setMaxAge(0);
+                    String QDRDrupalSiteURL = settingsWrapper.get(":QDRDrupalSiteURL");
+                    String QDRDrupalSiteHost = QDRDrupalSiteURL;
+                    int index = QDRDrupalSiteURL.indexOf("://");
+                    if (index >=0) {
+                        QDRDrupalSiteHost = QDRDrupalSiteURL.substring(index + 3);
+                    }
+                    //In QDR config, common domain for Drupal and Dataverse is '.<Drupal dns name>'
+                    passiveSSOCookie.setDomain("." + QDRDrupalSiteHost);
+                    ((HttpServletResponse) context.getExternalContext().getResponse()).addCookie(passiveSSOCookie);
+                    httpSession.setAttribute("passiveChecked", true);
+                }
+            }
         }
         if (lookupAuthenticatedUserAgain && user instanceof AuthenticatedUser) {
             AuthenticatedUser auFromSession = (AuthenticatedUser) user;
@@ -125,29 +146,6 @@ public class DataverseSession implements Serializable{
                     user = GuestUser.get();
                 }
             }
-        }
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpSession httpSession = (HttpSession) context.getExternalContext().getSession(false);
-        if (httpSession != null) {
-            Object o = httpSession.getAttribute("passiveChecked");
-            if(o==null) {
-                logger.info("No passiveChecked: Setting cookie to 0: " + LocalDateTime.now().toString());
-                //QDR - remove SSO cookie when user changes
-                Cookie passiveSSOCookie = new Cookie("_check_is_passive_dv", "0");
-                passiveSSOCookie.setMaxAge(0);
-                String QDRDrupalSiteURL = settingsWrapper.get(":QDRDrupalSiteURL");
-                String QDRDrupalSiteHost = QDRDrupalSiteURL;
-                int index = QDRDrupalSiteURL.indexOf("://");
-                if (index >=0) {
-                    QDRDrupalSiteHost = QDRDrupalSiteURL.substring(index + 3);
-                }
-                //In QDR config, common domain for Drupal and Dataverse is '.<Drupal dns name>'
-                passiveSSOCookie.setDomain("." + QDRDrupalSiteHost);
-                ((HttpServletResponse) context.getExternalContext().getResponse()).addCookie(passiveSSOCookie);
-                httpSession.setAttribute("passiveChecked", true);
-            }
-           
-        
         }
         return user;
     }
@@ -177,20 +175,16 @@ public class DataverseSession implements Serializable{
                           .setUserIdentifier((aUser!=null) ? aUser.getIdentifier() : (user!=null ? user.getIdentifier() : "") ));
 
           //#3254 - change session id when user changes
-          logger.info("Changing jsession id");
           SessionUtil.changeSessionId((HttpServletRequest) context.getExternalContext().getRequest());
-          logger.info("Setting cookie to 0: " + LocalDateTime.now().toString());
-          //QDR - remove SSO cookie when user changes
-          Cookie passiveSSOCookie = new Cookie("_check_is_passive_dv", "0");
-          passiveSSOCookie.setMaxAge(0);
-          ((HttpServletResponse) context.getExternalContext().getResponse()).addCookie(passiveSSOCookie);
           
             HttpSession httpSession = (HttpSession) context.getExternalContext().getSession(false);
             if (httpSession != null) {
                 // Configure session timeout.
                 logger.fine("jsession: " + httpSession.getId() + " setting the lifespan of the session to " + systemConfig.getLoginSessionTimeout() + " minutes");
                 httpSession.setMaxInactiveInterval(systemConfig.getLoginSessionTimeout() * 60); // session timeout, in seconds
+                //QDR - if we don't see this, we know the session has changed and passive checking should happen again
                 httpSession.setAttribute("passiveChecked", Boolean.TRUE);
+                
             }
         }
         this.user = aUser;
