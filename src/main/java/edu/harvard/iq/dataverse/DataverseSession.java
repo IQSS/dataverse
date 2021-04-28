@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.util.SessionUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -27,6 +28,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
+import com.google.api.client.util.DateTime;
 
 /**
  *
@@ -149,8 +152,9 @@ public class DataverseSession implements Serializable{
                           .setUserIdentifier((aUser!=null) ? aUser.getIdentifier() : (user!=null ? user.getIdentifier() : "") ));
 
           //#3254 - change session id when user changes
+          logger.info("Changing jsession id");
           SessionUtil.changeSessionId((HttpServletRequest) context.getExternalContext().getRequest());
-          
+          logger.info("Setting cookie to 0: " + LocalDateTime.now().toString());
           //QDR - remove SSO cookie when user changes
           Cookie passiveSSOCookie = new Cookie("_check_is_passive_dv", "0");
           passiveSSOCookie.setMaxAge(0);
