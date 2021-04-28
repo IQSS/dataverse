@@ -1525,9 +1525,39 @@
                     <!-- Publish/Submit for Review Dialogs -->
                     <p:dialog id="publishDataset" width="70%" header="#{bundle['dataset.publish.header']}" widgetVar="publishDataset" modal="true">
                         <ui:fragment  rendered="#{publishDataset}">
-                            <p class="text-warning">
-                                <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.publish.tip']}
-                            </p>
+                            <div class="form-group">
+                                <p class="col-sm-12 text-warning">#{bundle['dataset.publish.tip']}</p>
+                                <p class="col-sm-12 help-block">This version of the dataset will be published with the
+                                    following
+                                    terms:</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">
+                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver']}
+                                </label>
+                                <div class="col-sm-9">
+                                    <p>
+                                        <img src="/resources/images/cc0.png" alt="#{bundle['file.cc0.icon.alttxt']}"/>
+                                        #{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.txt']}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">
+                                    #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess.dialog']}
+                                </label>
+                                <div class="col-sm-9">
+                                    <p>
+                                        <p:inputTextarea
+                                                value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.workingVersion.termsOfUseAndAccess.termsOfAccess)}"
+                                                readonly="true" rows="3" styleClass="form-control"/>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <p class="col-sm-12 help-block">To change the terms for this version, click the Cancel
+                                    button and go to the Terms tab for this dataset.</p>
+                            </div>
                         </ui:fragment>
                         <ui:fragment rendered="#{releaseBoth}">
                             <p class="text-warning">
