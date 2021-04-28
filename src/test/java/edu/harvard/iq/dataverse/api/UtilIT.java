@@ -1097,7 +1097,7 @@ public class UtilIT {
                 .post(swordConfiguration.getBaseUrlPathCurrent() + "/edit/study/" + persistentId);
         
         // Wait for the dataset to get unlocked, if/as needed:
-        sleepForLock(persistentId, "finalizePublication", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);            
+        sleepForLock(persistentId, "finalizePublication", apiToken, UtilIT.MAXIMUM_PUBLISH_LOCK_DURATION);
         return publishResponse;
     }
 
@@ -1117,7 +1117,7 @@ public class UtilIT {
         Response publishResponse = requestSpecification.post("/api/datasets/" + idInPath + "/actions/:publish?type=" + majorOrMinor + optionalQueryParam);
         
         // Wait for the dataset to get unlocked, if/as needed:
-        sleepForLock(idOrPersistentId, "finalizePublication", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);            
+        sleepForLock(idOrPersistentId, "finalizePublication", apiToken, UtilIT.MAXIMUM_PUBLISH_LOCK_DURATION);
         
         return publishResponse;
     }
@@ -1133,7 +1133,7 @@ public class UtilIT {
                 .get("/api/datasets/:persistentId/actions/:publish?type=" + majorOrMinor + "&persistentId=" + persistentId);
         
         // Wait for the dataset to get unlocked, if/as needed:
-        sleepForLock(persistentId, "finalizePublication", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);            
+        sleepForLock(persistentId, "finalizePublication", apiToken, UtilIT.MAXIMUM_PUBLISH_LOCK_DURATION);
         
         return publishResponse;
     }
