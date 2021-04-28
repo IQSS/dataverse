@@ -23,6 +23,8 @@ import javax.persistence.UniqueConstraint;
             query = "SELECT l FROM License l WHERE l.id=:id"),
     @NamedQuery( name="License.findByName",
             query = "SELECT l FROM License l WHERE l.name=:name"),
+    @NamedQuery( name="License.findByNameOrUri",
+            query = "SELECT l FROM License l WHERE l.name=:name OR l.uri=:uri"),
     @NamedQuery( name="License.deleteById",
                 query="DELETE FROM License l WHERE l.id=:id"),
     @NamedQuery( name="License.deleteByName",
@@ -126,7 +128,12 @@ public class License {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         License license = (License) o;
-        return active == license.active && id.equals(license.id) && name.equals(license.name) && shortDescription.equals(license.shortDescription) && uri.equals(license.uri) && iconUrl.equals(license.iconUrl);
+        return active == license.active &&
+                Objects.equals(id, license.id) &&
+                Objects.equals(name, license.name) &&
+                Objects.equals(shortDescription, license.shortDescription) &&
+                Objects.equals(uri, license.uri) &&
+                Objects.equals(iconUrl, license.iconUrl);
     }
 
     @Override

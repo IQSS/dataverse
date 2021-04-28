@@ -46,7 +46,6 @@ import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveComma
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
-import java.net.URI;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -76,7 +75,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
@@ -109,7 +107,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.json.JsonArray;
 import javax.persistence.Query;
@@ -161,8 +158,7 @@ public class Admin extends AbstractApiBean {
         @EJB
         BannerMessageServiceBean bannerMessageService;
         @EJB
-		    LicenseServiceBean licenseService;
-
+        LicenseServiceBean licenseService;
 
 	// Make the session available
 	@Inject
@@ -2013,21 +2009,14 @@ public class Admin extends AbstractApiBean {
 
     @POST
     @Path("/licenses")
-    public Response addLicense(JsonObject jsonObject) {
+    public Response addLicense(License license) {
         try {
-            License license = new License();
-            license.setName(jsonObject.getString("name"));
-            license.setShortDescription(jsonObject.getString("shortDescription"));
-            license.setUri(new URI(jsonObject.getString("uri")));
-            license.setIconUrl(new URI(jsonObject.getString("iconUrl")));
-            license.setActive(jsonObject.getBoolean("active"));
             licenseService.save(license);
-			String location = "/api/admin/licenses/name/" + UrlEscapers.urlFragmentEscaper().escape(license.getName());
-			return created(location, Json.createObjectBuilder().add("message", "License created"));
+            return created("/api/admin/licenses", Json.createObjectBuilder().add("message", "License created"));
         } catch (RequestBodyException e) {
-            return error(Response.Status.BAD_REQUEST, e.getMessage());
-        } catch (Exception e) {
-            return error(Response.Status.BAD_REQUEST, "Something went wrong.");
+			return error(Response.Status.BAD_REQUEST, e.getMessage());
+		} catch(ConflictException e) {
+            return error(Response.Status.CONFLICT, e.getMessage());
         }
 	}
 
@@ -2044,13 +2033,13 @@ public class Admin extends AbstractApiBean {
 
     @PUT
     @Path("/licenses/name/{name}")
-    public Response putLicenseByName(@PathParam("name") String name, License license) {
+    public Response putLicenseByName(@PathParam("name") String nameArg, License license) {
 		try {
-			licenseService.setByName(license.getName(), license.getShortDescription(), license.getUri(), license.getIconUrl(), license.isActive());
+			licenseService.setByName(nameArg, license.getName(), license.getShortDescription(), license.getUri(), license.getIconUrl(), license.isActive());
 		} catch (UpdateException e) {
 			return error(Response.Status.BAD_REQUEST, e.getMessage());
 		}
-		return ok("License with name " + name + " was replaced.");
+		return ok("License with name " + nameArg + " was replaced.");
     }
 
     @DELETE
@@ -2072,5 +2061,5 @@ public class Admin extends AbstractApiBean {
         }
         return error(Response.Status.NOT_FOUND, "A license with name " + name + " doesn't exist.");
     }
-
+    
 }
