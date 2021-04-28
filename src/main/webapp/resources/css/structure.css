@@ -713,7 +713,6 @@ a.popoverHTML {display:inline-block;}
 
 /* TERMS */
 .waiver-CC0-inline {display:inline-block; margin-left:1em;}
-.waiver-CC0-inline-no-margin {display:inline-block;}
 
 /* FILES */
 div[id$="filesTable"].ui-datatable.ui-widget div.ui-datatable-tablewrapper {overflow:visible;}
