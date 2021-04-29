@@ -10,7 +10,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
+
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.api.Util;
@@ -68,10 +70,16 @@ public class OptionalFileParams {
     public static final String FILE_NAME_ATTR_NAME = "fileName";
     private String mimeType;
     public static final String MIME_TYPE_ATTR_NAME = "mimeType";
-    private String checkSum;
-    public static final String CHECKSUM_ATTR_NAME = "md5Hash";
+    private String checkSumValue;
+    private ChecksumType checkSumType;
+    public static final String LEGACY_CHECKSUM_ATTR_NAME = "md5Hash";
+    public static final String CHECKSUM_OBJECT_NAME = "checksum";
+    public static final String CHECKSUM_OBJECT_TYPE = "@type";
+    public static final String CHECKSUM_OBJECT_VALUE = "@value";
 
-     
+    public OptionalFileParams() {
+    }
+    
     public OptionalFileParams(String jsonData) throws DataFileTagException{
         
         if (jsonData != null){
@@ -100,6 +108,21 @@ public class OptionalFileParams {
         setCategories(newCategories);
         this.addFileDataTags(potentialFileDataTags);
         this.restrict = restrict;
+    }
+
+    //For use in replace operations - load the file metadata from the file being replaced so it can be applied to the new file
+    //checksum and mimetype aren't needed
+    public OptionalFileParams(DataFile df) throws DataFileTagException {
+        FileMetadata fm = df.getFileMetadata();
+
+        this.description = fm.getDescription();
+        setCategories(fm.getCategoriesByName());
+        this.addFileDataTags(df.getTagLabels());
+        this.restrict = fm.isRestricted();
+        //Explicitly do not replace the file name - replaces with -force may change the mimetype and extension
+        //this.label = fm.getLabel(); 
+        this.directoryLabel = fm.getDirectoryLabel();
+        this.provFreeForm = fm.getProvFreeForm();
     }
 
 
@@ -217,17 +240,22 @@ public class OptionalFileParams {
 		return mimeType;
 	}
 
-	public void setCheckSum(String checkSum) {
-		this.checkSum = checkSum;
+	public void setCheckSum(String checkSum, ChecksumType type) {
+		this.checkSumValue = checkSum;
+		this.checkSumType = type;
 	}
 	
 	public boolean hasCheckSum() {
-		return ((checkSum!=null)&&(!checkSum.isEmpty()));
+		return ((checkSumValue!=null)&&(!checkSumValue.isEmpty()));
 	}
 
 	public String getCheckSum() {
-		return checkSum;
+		return checkSumValue;
 	}
+	
+    public ChecksumType getCheckSumType() {
+        return checkSumType;
+    }
 
     /**
      *  Set tags
@@ -278,12 +306,7 @@ public class OptionalFileParams {
 //            logger.log(Level.SEVERE, "jsonData is null");
         }
         JsonObject jsonObj;
-        try {
-            jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
-        } catch (ClassCastException ex) {
-            logger.info("Exception parsing string '" + jsonData + "': " + ex);
-            return;
-        }
+        jsonObj = new Gson().fromJson(jsonData, JsonObject.class);
 
         // -------------------------------
         // get description as string
@@ -350,11 +373,21 @@ public class OptionalFileParams {
         }
         
         // -------------------------------
-        // get checkSum as string
+        // get md5 checkSum as string
         // -------------------------------
-        if ((jsonObj.has(CHECKSUM_ATTR_NAME)) && (!jsonObj.get(CHECKSUM_ATTR_NAME).isJsonNull())){
+        if ((jsonObj.has(LEGACY_CHECKSUM_ATTR_NAME)) && (!jsonObj.get(LEGACY_CHECKSUM_ATTR_NAME).isJsonNull())){
 
-            this.checkSum = jsonObj.get(CHECKSUM_ATTR_NAME).getAsString();
+            this.checkSumValue = jsonObj.get(LEGACY_CHECKSUM_ATTR_NAME).getAsString();
+            this.checkSumType= ChecksumType.MD5;
+        }
+        // -------------------------------
+        // get checkSum type and value
+        // -------------------------------
+        else if ((jsonObj.has(CHECKSUM_OBJECT_NAME)) && (!jsonObj.get(CHECKSUM_OBJECT_NAME).isJsonNull())){
+
+            this.checkSumValue = ((JsonObject) jsonObj.get(CHECKSUM_OBJECT_NAME)).get(CHECKSUM_OBJECT_VALUE).getAsString();
+            this.checkSumType = ChecksumType.fromString(((JsonObject) jsonObj.get(CHECKSUM_OBJECT_NAME)).get(CHECKSUM_OBJECT_TYPE).getAsString());
+
         }
         
         // -------------------------------

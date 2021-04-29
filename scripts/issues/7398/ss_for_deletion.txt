@@ -1,0 +1,10 @@
+-- this query will show you the saved searches that will get deleted
+
+select ss.id, ss.definitionpoint_id, dld.dataverse_id, ssfq.filterquery
+from savedsearch ss, savedsearchfilterquery ssfq, dataverselinkingdataverse dld
+where ss.id = ssfq.savedsearch_id
+and ss.definitionpoint_id = dld.linkingdataverse_id
+and dld.dataverse_id = rtrim(reverse(split_part(reverse(ssfq.filterquery),'/',1)),'"')::integer
+and ss.query='*'
+and ssfq.filterquery like 'subtreePaths%'
+order by ss.definitionpoint_id;

@@ -14,7 +14,6 @@ import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -82,6 +81,10 @@ public class FilePage implements java.io.Serializable {
     private List<ExternalTool> exploreTools;
     private List<ExternalTool> toolsWithPreviews;
     private Long datasetVersionId;
+    /**
+     * Have the terms been met so that the Preview tab can show the preview?
+     */
+    private boolean termsMet;
 
     @EJB
     DataFileServiceBean datafileService;
@@ -119,17 +122,8 @@ public class FilePage implements java.io.Serializable {
     PermissionsWrapper permissionsWrapper;
     @Inject
     FileDownloadHelper fileDownloadHelper;
-    @Inject WorldMapPermissionHelper worldMapPermissionHelper;
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
-
-    public WorldMapPermissionHelper getWorldMapPermissionHelper() {
-        return worldMapPermissionHelper;
-    }
-
-    public void setWorldMapPermissionHelper(WorldMapPermissionHelper worldMapPermissionHelper) {
-        this.worldMapPermissionHelper = worldMapPermissionHelper;
-    }
 
     private static final Logger logger = Logger.getLogger(FilePage.class.getCanonicalName());
 
@@ -193,7 +187,7 @@ public class FilePage implements java.io.Serializable {
                     return permissionsWrapper.notFound();
                 }
             }
-
+            
             // If this DatasetVersion is unpublished and permission is doesn't have permissions:
             //  > Go to the Login page
             //
@@ -204,6 +198,9 @@ public class FilePage implements java.io.Serializable {
             if (!authorized) {
                 return permissionsWrapper.notAuthorized();
             }
+            
+            //termsOfAccess = fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().getTermsOfAccess();
+            //fileAccessRequest = fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().isFileAccessRequest();
 
             this.guestbookResponse = this.guestbookResponseService.initGuestbookResponseForFragment(fileMetadata, session);
 
@@ -226,7 +223,7 @@ public class FilePage implements java.io.Serializable {
             configureTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.CONFIGURE, contentType);
             exploreTools = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.EXPLORE, contentType);
             Collections.sort(exploreTools, CompareExternalToolName);
-            toolsWithPreviews  = addMapLayerAndSortExternalTools();
+            toolsWithPreviews  = sortExternalTools();
             if(!toolsWithPreviews.isEmpty()){
                 setSelectedTool(toolsWithPreviews.get(0));                
             }
@@ -254,31 +251,12 @@ public class FilePage implements java.io.Serializable {
     public void setDatasetVersionId(Long datasetVersionId) {
         this.datasetVersionId = datasetVersionId;
     }
-    
-    private List<ExternalTool> addMapLayerAndSortExternalTools(){
-        List<ExternalTool> retList = externalToolService.findFileToolsByTypeContentTypeAndAvailablePreview(ExternalTool.Type.EXPLORE, file.getContentType());
-        if(!retList.isEmpty()){
-            retList.forEach((et) -> {
-                et.setWorldMapTool(false);
-            });
-        }
-        if (file != null && worldMapPermissionHelper.getMapLayerMetadata(file) != null && worldMapPermissionHelper.getMapLayerMetadata(file).getEmbedMapLink() != null) {
-            ExternalTool wpTool = new ExternalTool();
-            wpTool.setDisplayName("World Map"); 
-            wpTool.setToolParameters("{}");
-            wpTool.setToolUrl(worldMapPermissionHelper.getMapLayerMetadata(file).getEmbedMapLink());
-            wpTool.setWorldMapTool(true);
-            retList.add(wpTool);
-        }
+
+    private List<ExternalTool> sortExternalTools(){
+        List<ExternalTool> retList = externalToolService.findFileToolsByTypeAndContentType(ExternalTool.Type.PREVIEW, file.getContentType());
         Collections.sort(retList, CompareExternalToolName);
-        
         return retList;
     }
-    
-    /*
-    worldMapPermissionHelper.getMapLayerMetadata(FilePage.fileMetadata.dataFile).getEmbedMapLink()
-    */
-    
 
     public boolean isDownloadPopupRequired() {  
         if(fileMetadata.getId() == null || fileMetadata.getDatasetVersion().getId() == null ){
@@ -326,13 +304,13 @@ public class FilePage implements java.io.Serializable {
     public List< String[]> getExporters(){
         List<String[]> retList = new ArrayList<>();
         String myHostURL = systemConfig.getDataverseSiteUrl();
-        for (String [] provider : ExportService.getInstance(settingsService).getExportersLabels() ){
+        for (String [] provider : ExportService.getInstance().getExportersLabels() ){
             String formatName = provider[1];
             String formatDisplayName = provider[0];
             
             Exporter exporter = null; 
             try {
-                exporter = ExportService.getInstance(settingsService).getExporter(formatName);
+                exporter = ExportService.getInstance().getExporter(formatName);
             } catch (ExportException ex) {
                 exporter = null;
             }
@@ -368,9 +346,11 @@ public class FilePage implements java.io.Serializable {
     
     public String restrictFile(boolean restricted) throws CommandException{
         String fileNames = null;
-        String termsOfAccess = this.fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().getTermsOfAccess();        
-        Boolean allowRequest = this.fileMetadata.getDatasetVersion().getTermsOfUseAndAccess().isFileAccessRequest();
         editDataset = this.file.getOwner();
+        if (restricted) { // get values from access popup
+            editDataset.getEditVersion().getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
+            editDataset.getEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(fileAccessRequest);        
+        }
         
         Command cmd;
         for (FileMetadata fmw : editDataset.getEditVersion().getFileMetadatas()) {
@@ -381,9 +361,6 @@ public class FilePage implements java.io.Serializable {
                 commandEngine.submit(cmd);
             }
         }
-        
-        editDataset.getEditVersion().getTermsOfUseAndAccess().setTermsOfAccess(termsOfAccess);
-        editDataset.getEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(allowRequest);
         
         if (fileNames != null) {
             String successMessage = BundleUtil.getStringFromBundle("file.restricted.success");
@@ -582,7 +559,15 @@ public class FilePage implements java.io.Serializable {
     public void setDatasetVersionsForTab(List<DatasetVersion> datasetVersionsForTab) {
         this.datasetVersionsForTab = datasetVersionsForTab;
     }
-    
+
+    public boolean isTermsMet() {
+        return termsMet;
+    }
+
+    public void setTermsMet(boolean termsMet) {
+        this.termsMet = termsMet;
+    }
+
     public String save() {
         // Validate
         Set<ConstraintViolation> constraintViolations = this.fileMetadata.getDatasetVersion().validate();
@@ -801,56 +786,14 @@ public class FilePage implements java.io.Serializable {
         return dataFiles;
     }
     
-    public boolean isDraftReplacementFile(){
-        /*
-        This method tests to see if the file has been replaced in a draft version of the dataset
-        Since it must must work when you are on prior versions of the dataset 
-        it must accrue all replacement files that may have been created
-        */
-        if(null == dataset) {
-            dataset = fileMetadata.getDataFile().getOwner();
+    // wrappermethod to see if the file has been deleted (or replaced) in the current version
+    public boolean isDeletedFile () {
+        if (file.getDeleted() == null) {
+            file.setDeleted(datafileService.hasBeenDeleted(file));
         }
         
-        DataFile dataFileToTest = fileMetadata.getDataFile(); 
-        
-        DatasetVersion currentVersion = dataset.getLatestVersion();
-        
-        if (!currentVersion.isDraft()){
-            return false;
-        }
-        
-        if (dataset.getReleasedVersion() == null){
-            return false;
-        }
-        
-        List<DataFile> dataFiles = new ArrayList<>();
-        
-        dataFiles.add(dataFileToTest);
-        
-        while (datafileService.findReplacementFile(dataFileToTest.getId()) != null ){
-            dataFiles.add(datafileService.findReplacementFile(dataFileToTest.getId()));
-            dataFileToTest = datafileService.findReplacementFile(dataFileToTest.getId());
-        }
-        
-        if(dataFiles.size() <2){
-            return false;
-        }
-        
-        int numFiles = dataFiles.size();
-        
-        DataFile current = dataFiles.get(numFiles - 1 );       
-        
-        DatasetVersion publishedVersion = dataset.getReleasedVersion();
-        
-        if( datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(publishedVersion.getId(), current.getId()) == null){
-            return true;
-        }
-        
-        return false;
+        return file.getDeleted();
     }
-    
-
-
     
     /**
      * To help with replace development 
@@ -875,7 +818,7 @@ public class FilePage implements java.io.Serializable {
             // Always allow preview for PrivateUrlUser
             return true;
         } else {
-            return isPubliclyDownloadable();
+            return FileUtil.isPreviewAllowed(fileMetadata);
         }
     }
 
@@ -1002,4 +945,31 @@ public class FilePage implements java.io.Serializable {
         }
     };
 
+    public void showPreview(GuestbookResponse guestbookResponse) {
+        boolean response = fileDownloadHelper.writeGuestbookAndShowPreview(guestbookResponse);
+        if (response == true) {
+            termsMet = true;
+        } else {
+            JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.guestbookResponse.showPreview.errorMessage"), BundleUtil.getStringFromBundle("dataset.guestbookResponse.showPreview.errorDetail"));
+        }
+    }
+    
+    private String termsOfAccess;
+    private boolean fileAccessRequest;
+
+    public String getTermsOfAccess() {
+        return termsOfAccess;
+    }
+
+    public void setTermsOfAccess(String termsOfAccess) {
+        this.termsOfAccess = termsOfAccess;
+    }
+
+    public boolean isFileAccessRequest() {
+        return fileAccessRequest;
+    }
+
+    public void setFileAccessRequest(boolean fileAccessRequest) {
+        this.fileAccessRequest = fileAccessRequest;
+    }  
 }

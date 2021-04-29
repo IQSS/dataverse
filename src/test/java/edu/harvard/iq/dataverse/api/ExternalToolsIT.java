@@ -17,6 +17,8 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import static org.junit.Assert.assertTrue;
+import org.junit.Ignore;
 
 public class ExternalToolsIT {
 
@@ -84,12 +86,13 @@ public class ExternalToolsIT {
         uploadTabularFile.then().assertThat()
                 .statusCode(OK.getStatusCode());
 
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToTabularFile, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
         Integer tabularFileId = JsonPath.from(uploadTabularFile.getBody().asString()).getInt("data.files[0].dataFile.id");
 
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("displayName", "AwesomeTool");
         job.add("description", "This tool is awesome.");
-        job.add("type", "explore");
+        job.add("types", Json.createArrayBuilder().add("explore"));
         job.add("scope", "file");
         job.add("contentType", "text/tab-separated-values");
         job.add("toolUrl", "http://awesometool.com");
@@ -106,8 +109,8 @@ public class ExternalToolsIT {
         Response addExternalTool = UtilIT.addExternalTool(job.build());
         addExternalTool.prettyPrint();
         addExternalTool.then().assertThat()
-                .body("data.displayName", CoreMatchers.equalTo("AwesomeTool"))
-                .statusCode(OK.getStatusCode());
+                .statusCode(OK.getStatusCode())
+                .body("data.displayName", CoreMatchers.equalTo("AwesomeTool"));
 
         long toolId = JsonPath.from(addExternalTool.getBody().asString()).getLong("data.id");
 
@@ -121,7 +124,7 @@ public class ExternalToolsIT {
         getExternalToolsForFileInvalidType.prettyPrint();
         getExternalToolsForFileInvalidType.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", CoreMatchers.equalTo("Type must be one of these values: [explore, configure]."));
+                .body("message", CoreMatchers.equalTo("Type must be one of these values: [explore, configure, preview]."));
 
         Response getExternalToolsForTabularFiles = UtilIT.getExternalToolsForFile(tabularFileId.toString(), "explore", apiToken);
         getExternalToolsForTabularFiles.prettyPrint();
@@ -194,7 +197,7 @@ public class ExternalToolsIT {
         JsonObjectBuilder job = Json.createObjectBuilder();
         job.add("displayName", "DatasetTool1");
         job.add("description", "This tool is awesome.");
-        job.add("type", "explore");
+        job.add("types", Json.createArrayBuilder().add("explore"));
         job.add("scope", "dataset");
         job.add("toolUrl", "http://datasettool1.com");
         job.add("toolParameters", Json.createObjectBuilder()
@@ -210,14 +213,14 @@ public class ExternalToolsIT {
         Response addExternalTool = UtilIT.addExternalTool(job.build());
         addExternalTool.prettyPrint();
         addExternalTool.then().assertThat()
-                .body("data.displayName", CoreMatchers.equalTo("DatasetTool1"))
-                .statusCode(OK.getStatusCode());
+                .statusCode(OK.getStatusCode())
+                .body("data.displayName", CoreMatchers.equalTo("DatasetTool1"));
 
         Response getExternalToolsByDatasetIdInvalidType = UtilIT.getExternalToolsForDataset(datasetId.toString(), "invalidType", apiToken);
         getExternalToolsByDatasetIdInvalidType.prettyPrint();
         getExternalToolsByDatasetIdInvalidType.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", CoreMatchers.equalTo("Type must be one of these values: [explore, configure]."));
+                .body("message", CoreMatchers.equalTo("Type must be one of these values: [explore, configure, preview]."));
 
         Response getExternalToolsByDatasetId = UtilIT.getExternalToolsForDataset(datasetId.toString(), "explore", apiToken);
         getExternalToolsByDatasetId.prettyPrint();
@@ -301,6 +304,142 @@ public class ExternalToolsIT {
         addExternalTool.then().assertThat()
                 .body("message", CoreMatchers.equalTo("Unknown reserved word: mode1"))
                 .statusCode(BAD_REQUEST.getStatusCode());
+    }
+
+    @Ignore
+    @Test
+    public void deleteTools() {
+
+        // Delete all external tools before testing.
+        Response getTools = UtilIT.getExternalTools();
+        getTools.prettyPrint();
+        getTools.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String body = getTools.getBody().asString();
+        JsonReader bodyObject = Json.createReader(new StringReader(body));
+        JsonArray tools = bodyObject.readObject().getJsonArray("data");
+        for (int i = 0; i < tools.size(); i++) {
+            JsonObject tool = tools.getJsonObject(i);
+            int id = tool.getInt("id");
+            Response deleteExternalTool = UtilIT.deleteExternalTool(id);
+            deleteExternalTool.prettyPrint();
+        }
+    }
+
+    // preview only
+    @Ignore
+    @Test
+    public void createToolShellScript() {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("displayName", "View Code");
+        job.add("description", "");
+        job.add("types", Json.createArrayBuilder().add("preview"));
+        job.add("scope", "file");
+        job.add("hasPreviewMode", "true");
+        job.add("contentType", "application/x-sh");
+        job.add("toolUrl", "http://localhost:8000/dataverse-previewers/previewers/TextPreview.html");
+        job.add("toolParameters", Json.createObjectBuilder()
+                .add("queryParameters", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("fileid", "{fileId}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("siteUrl", "{siteUrl}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("key", "{apiToken}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("datasetid", "{datasetId}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("datasetversion", "{datasetVersion}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("locale", "{localeCode}")
+                                .build())
+                        .build())
+                .build());
+        Response addExternalTool = UtilIT.addExternalTool(job.build());
+        addExternalTool.prettyPrint();
+        addExternalTool.then().assertThat()
+                .statusCode(OK.getStatusCode());
+    }
+
+    // explore only
+    @Ignore
+    @Test
+    public void createToolDataExplorer() {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("displayName", "Data Explorer");
+        job.add("description", "");
+        job.add("types", Json.createArrayBuilder().add("explore"));
+        job.add("scope", "file");
+        job.add("contentType", "text/tab-separated-values");
+        job.add("toolUrl", "https://scholarsportal.github.io/Dataverse-Data-Explorer-v2/");
+        job.add("toolParameters", Json.createObjectBuilder()
+                .add("queryParameters", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("fileId", "{fileId}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("siteUrl", "{siteUrl}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("key", "{apiToken}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("dvLocale", "{localeCode}")
+                                .build())
+                        .build())
+                .build());
+        Response addExternalTool = UtilIT.addExternalTool(job.build());
+        addExternalTool.prettyPrint();
+        addExternalTool.then().assertThat()
+                .statusCode(OK.getStatusCode());
+    }
+
+    // both preview and explore
+    @Ignore
+    @Test
+    public void createToolSpreadsheetViewer() {
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        job.add("displayName", "View Data");
+        job.add("description", "");
+        job.add("types", Json.createArrayBuilder()
+                .add("preview")
+                .add("explore")
+        );
+        job.add("scope", "file");
+        job.add("hasPreviewMode", "true");
+        job.add("contentType", "text/tab-separated-values");
+        job.add("toolUrl", "http://localhost:8000/dataverse-previewers/previewers/SpreadsheetPreview.html");
+        job.add("toolParameters", Json.createObjectBuilder()
+                .add("queryParameters", Json.createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                .add("fileid", "{fileId}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("siteUrl", "{siteUrl}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("key", "{apiToken}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("datasetid", "{datasetId}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("datasetversion", "{datasetVersion}")
+                                .build())
+                        .add(Json.createObjectBuilder()
+                                .add("locale", "{localeCode}")
+                                .build())
+                        .build())
+                .build());
+        Response addExternalTool = UtilIT.addExternalTool(job.build());
+        addExternalTool.prettyPrint();
+        addExternalTool.then().assertThat()
+                .statusCode(OK.getStatusCode());
     }
 
 }

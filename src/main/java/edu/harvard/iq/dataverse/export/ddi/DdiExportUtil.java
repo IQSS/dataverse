@@ -27,6 +27,8 @@ import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_SUBJECT_
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_TYPE_TAG;
 import static edu.harvard.iq.dataverse.export.DDIExportServiceBean.NOTE_TYPE_UNF;
 import edu.harvard.iq.dataverse.export.DDIExporter;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+
 import static edu.harvard.iq.dataverse.util.SystemConfig.FQDN;
 import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
@@ -55,6 +57,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.w3c.dom.Document;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.DOMException;
 
 // For write operation
@@ -79,8 +82,8 @@ public class DdiExportUtil {
 
     public static final String LEVEL_DV = "dv";
 
-    @EJB
-    VariableServiceBean variableService;
+    
+    static SettingsServiceBean settingsService;
     
     public static final String NOTE_TYPE_CONTENTTYPE = "DATAVERSE:CONTENTTYPE";
     public static final String NOTE_SUBJECT_CONTENTTYPE = "Content/MIME Type";
@@ -195,7 +198,19 @@ public class DdiExportUtil {
         writeProducersElement(xmlw, version);
         
         xmlw.writeStartElement("distStmt");
-        if (datasetDto.getPublisher() != null && !datasetDto.getPublisher().equals("")) {
+      //The default is to add Dataverse Repository as a distributor. The excludeinstallationifset setting turns that off if there is a distributor defined in the metadata
+        boolean distributorSet=false;
+        MetadataBlockDTO citationDTO= version.getMetadataBlocks().get("citation");
+        if(citationDTO!=null) {
+            if(citationDTO.getField(DatasetFieldConstant.distributor)!=null) {
+                distributorSet=true;
+            }
+        }
+        logger.info("Dsitr set?: " + distributorSet);
+        logger.info("Pub?: " + datasetDto.getPublisher());
+        boolean excludeRepository = settingsService.isTrueForKey(SettingsServiceBean.Key.ExportInstallationAsDistributorOnlyWhenNotSet, false);
+        logger.info("Exclude: " + excludeRepository);
+        if (!StringUtils.isEmpty(datasetDto.getPublisher()) && !(excludeRepository && distributorSet)) {
             xmlw.writeStartElement("distrbtr");
             writeAttribute(xmlw, "source", "archive");
             xmlw.writeCharacters(datasetDto.getPublisher());
@@ -308,7 +323,8 @@ public class DdiExportUtil {
         xmlw.writeEndElement(); // IDNo
         xmlw.writeEndElement(); // titlStmt
         xmlw.writeStartElement("distStmt");
-        if (datasetDto.getPublisher() != null && !datasetDto.getPublisher().equals("")) {
+        //The doc is always published by the Dataverse Repository
+        if (!StringUtils.isEmpty(datasetDto.getPublisher())) {
             xmlw.writeStartElement("distrbtr");
             writeAttribute(xmlw, "source", "archive");
             xmlw.writeCharacters(datasetDto.getPublisher());
@@ -328,7 +344,7 @@ public class DdiExportUtil {
     
     private static void writeVersionStatement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException{
         xmlw.writeStartElement("verStmt");
-        writeAttribute(xmlw,"source","DVN"); 
+        writeAttribute(xmlw,"source","archive"); 
         xmlw.writeStartElement("version");
         writeAttribute(xmlw,"date", datasetVersionDTO.getReleaseTime().substring(0, 10));
         writeAttribute(xmlw,"type", datasetVersionDTO.getVersionState().toString()); 
@@ -1388,6 +1404,17 @@ public class DdiExportUtil {
         for (FileMetadata fileMetadata : datasetVersion.getFileMetadatas()) {
             DataFile dataFile = fileMetadata.getDataFile();
 
+            /**
+             * Previously (in Dataverse 5.3 and below) the dataDscr section was
+             * included for restricted files but that meant that summary
+             * statistics were exposed. (To get at these statistics, API users
+             * should instead use the "Data Variable Metadata Access" endpoint.)
+             * These days we return early to avoid this exposure.
+             */
+            if (dataFile.isRestricted()) {
+                return;
+            }
+
             if (dataFile != null && dataFile.isTabularData()) {
                 if (!tabularData) {
                     xmlw.writeStartElement("dataDscr");
@@ -1493,6 +1520,28 @@ public class DdiExportUtil {
             writeAttribute(xmlw, "level", "variable");
             xmlw.writeCharacters(vm.getLabel());
             xmlw.writeEndElement(); //labl
+        }
+
+        if (vm != null) {
+            if (!StringUtilisEmpty(vm.getLiteralquestion()) || !StringUtilisEmpty(vm.getInterviewinstruction()) || !StringUtilisEmpty(vm.getPostquestion())) {
+                xmlw.writeStartElement("qstn");
+                if (!StringUtilisEmpty(vm.getLiteralquestion())) {
+                    xmlw.writeStartElement("qstnLit");
+                    xmlw.writeCharacters(vm.getLiteralquestion());
+                    xmlw.writeEndElement(); // qstnLit
+                }
+                if (!StringUtilisEmpty(vm.getInterviewinstruction())) {
+                    xmlw.writeStartElement("ivuInstr");
+                    xmlw.writeCharacters(vm.getInterviewinstruction());
+                    xmlw.writeEndElement(); //ivuInstr
+                }
+                if (!StringUtilisEmpty(vm.getPostquestion())) {
+                    xmlw.writeStartElement("postQTxt");
+                    xmlw.writeCharacters(vm.getPostquestion());
+                    xmlw.writeEndElement(); //ivuInstr
+                }
+                xmlw.writeEndElement(); //qstn
+            }
         }
 
         // invalrng
@@ -1631,27 +1680,7 @@ public class DdiExportUtil {
             }
         }
 
-        if (vm != null) {
-            if (!StringUtilisEmpty(vm.getLiteralquestion()) || !StringUtilisEmpty(vm.getInterviewinstruction()) || !StringUtilisEmpty(vm.getPostquestion())) {
-                xmlw.writeStartElement("qstn");
-                if (!StringUtilisEmpty(vm.getLiteralquestion())) {
-                    xmlw.writeStartElement("qstnLit");
-                    xmlw.writeCharacters(vm.getLiteralquestion());
-                    xmlw.writeEndElement(); // qstnLit
-                }
-                if (!StringUtilisEmpty(vm.getInterviewinstruction())) {
-                    xmlw.writeStartElement("ivuInstr");
-                    xmlw.writeCharacters(vm.getInterviewinstruction());
-                    xmlw.writeEndElement(); //ivuInstr
-                }
-                if (!StringUtilisEmpty(vm.getPostquestion())) {
-                    xmlw.writeStartElement("postQTxt");
-                    xmlw.writeCharacters(vm.getPostquestion());
-                    xmlw.writeEndElement(); //ivuInstr
-                }
-                xmlw.writeEndElement(); //qstn
-            }
-        }
+
 
         xmlw.writeEndElement(); //var
 
@@ -1780,6 +1809,10 @@ public class DdiExportUtil {
             logger.info("I/O error " + ioe.getMessage());
         }
 
+    }
+
+    public static void injectSettingsService(SettingsServiceBean settingsSvc) {
+        settingsService=settingsSvc;
     }
 
 }

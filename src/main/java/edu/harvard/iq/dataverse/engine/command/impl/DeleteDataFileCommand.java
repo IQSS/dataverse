@@ -24,6 +24,9 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
+import edu.harvard.iq.dataverse.UserNotification;
+import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  * Deletes a data file, both DB entity and filesystem object.
@@ -210,6 +213,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         } catch (Exception e) {
             logger.log(Level.WARNING, "Identifier deletion was not successfull:", e.getMessage());
         }
+
         DataFile doomedAndMerged = ctxt.em().merge(doomed);
         ctxt.em().remove(doomedAndMerged);
         /**

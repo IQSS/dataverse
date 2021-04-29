@@ -11,6 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -18,6 +19,7 @@ import javax.json.JsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import javax.ws.rs.core.Response.Status;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.OK;
 import static junit.framework.Assert.assertEquals;
 import org.junit.BeforeClass;
@@ -358,46 +360,32 @@ public class DataversesIT {
         moveResponse.prettyPrint();
         moveResponse.then().assertThat().statusCode(OK.getStatusCode());
         
-        Response search = UtilIT.search("id:dataverse_" + dataverseId + "&subtree=" + dataverseAlias2, apiToken);
-        search.prettyPrint();
-        search.then().assertThat()
-                .body("data.total_count", equalTo(1))
-                .statusCode(200);
+        // because indexing happens asynchronously, we'll wait first, and then retry a few times, before failing
+        int numberofAttempts = 0;
+        boolean checkIndex = true;
+        while (checkIndex) {
+            try {   
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException ex) {
+                    }                
+                Response search = UtilIT.search("id:dataverse_" + dataverseId + "&subtree=" + dataverseAlias2, apiToken);
+                search.prettyPrint();
+                search.then().assertThat()
+                        .body("data.total_count", equalTo(1))
+                        .statusCode(200);
+                checkIndex = false;
+            } catch (AssertionError ae) {
+                if (numberofAttempts++ > 5) {
+                    throw ae;
+                }
+            }
+        }
+
     }
-    
-    @Test
-    public void testCreateDeleteDataverseLink() {
-        Response createUser = UtilIT.createRandomUser();
-        
-        createUser.prettyPrint();
-        String username = UtilIT.getUsernameFromResponse(createUser);
-        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
-        
-        Response superuserResponse = UtilIT.makeSuperUser(username);
-        
-        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
-        createDataverseResponse.prettyPrint();
-        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
-        Integer dataverseId = UtilIT.getDataverseIdFromResponse(createDataverseResponse);
-        
-        Response createDataverseResponse2 = UtilIT.createRandomDataverse(apiToken);
-        createDataverseResponse2.prettyPrint();
-        String dataverseAlias2 = UtilIT.getAliasFromResponse(createDataverseResponse2);
-        
-        Response createLinkingDataverseResponse = UtilIT.createDataverseLink(dataverseAlias, dataverseAlias2, apiToken);
-        createLinkingDataverseResponse.prettyPrint();
-        
-        createLinkingDataverseResponse.then().assertThat()
-                .body("data.message", equalTo("Dataverse " + dataverseAlias + " linked successfully to " + dataverseAlias2))
-                .statusCode(200);
-        
-        Response deleteLinkingDataverseResponse = UtilIT.deleteDataverseLink(dataverseAlias, dataverseAlias2, apiToken);
-        deleteLinkingDataverseResponse.prettyPrint();
-        deleteLinkingDataverseResponse.then().assertThat()
-                .body("data.message", equalTo("Link from Dataverse " + dataverseAlias + " to linked Dataverse " + dataverseAlias2 + " deleted"))
-                .statusCode(200);
-    }
-    
+
+    // testCreateDeleteDataverseLink was here but is now in LinkIT
+
     @Test
     public void testUpdateDefaultContributorRole() {
         Response createUser = UtilIT.createRandomUser();
@@ -451,6 +439,46 @@ public class DataversesIT {
                 .body("message", equalTo("Role colonel not found."))
                 .statusCode(404);
 
+    }
+    
+    @Test
+    public void testDataFileAPIPermissions() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        String pathToJsonFile = "src/test/resources/json/complete-dataset-with-files.json";
+        Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+        
+        //should fail if non-super user and attempting to
+        //create a dataset with files
+        createDatasetResponse.prettyPrint();
+        createDatasetResponse.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+        
+        //should be ok to create a dataset without files...
+        pathToJsonFile = "scripts/api/data/dataset-create-new.json";
+        createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+        
+        createDatasetResponse.prettyPrint();
+        createDatasetResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        
+        //As non-super user should be able to add a real file
+        String pathToFile1 = "src/main/webapp/resources/images/cc0.png";
+        Response authorAttemptsToAddFileViaNative = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile1, apiToken);
+
+        authorAttemptsToAddFileViaNative.prettyPrint();
+        authorAttemptsToAddFileViaNative.then().assertThat()
+                .statusCode(OK.getStatusCode());
+ 
     }
     
 }

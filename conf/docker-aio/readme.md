@@ -4,7 +4,7 @@ First pass docker all-in-one image, intended for running integration tests again
 Also usable for normal development and system evaluation; not intended for production.
 
 ### Requirements:
- - java8 compiler, maven, make, wget, docker
+ - java11 compiler, maven, make, wget, docker
 
 ### Quickstart:
  - in the root of the repository, run `./conf/docker-aio/prep_it.bash`
@@ -18,7 +18,7 @@ Also usable for normal development and system evaluation; not intended for produ
 
 
 ### Initial setup (aka - do once):
-- `cd conf/docker-aio` and run `./0prep_deps.sh` to created Glassfish and Solr tarballs in `conf/docker-aio/dv/deps`.
+- `cd conf/docker-aio` and run `./0prep_deps.sh` to created Payara and Solr tarballs in `conf/docker-aio/dv/deps`.
 
 ### Per-build:
 
@@ -27,9 +27,9 @@ Also usable for normal development and system evaluation; not intended for produ
 #### Setup
 
 - `cd conf/docker-aio`, and run `./1prep.sh` to copy files for integration test data into docker build context; `1prep.sh` will also build the war file and installation zip file
-- build the docker image: `docker build -t dv0 -f c7.dockerfile .`
+- build the docker image: `docker build -t dv0 -f c8.dockerfile .`
 
-- Run image: `docker run -d -p 8083:8080 -p 8084:80 --name dv dv0` (aka - forward port 8083 locally to 8080 in the container for glassfish, and 8084 to 80 for apache); if you'd like to connect a java debugger to glassfish, use `docker run -d -p 8083:8080 -p 8084:80 -p 9010:9009 --name dv dv0`
+- Run image: `docker run -d -p 8083:8080 -p 8084:80 --name dv dv0` (aka - forward port 8083 locally to 8080 in the container for payara, and 8084 to 80 for apache); if you'd like to connect a java debugger to payara, use `docker run -d -p 8083:8080 -p 8084:80 -p 9010:9009 --name dv dv0`
 
 - Installation (integration test): `docker exec dv /opt/dv/setupIT.bash` 
   (Note that it's possible to customize the installation by editing `conf/docker-aio/default.config` and running `docker exec dv /opt/dv/install.bash` but for the purposes of integration testing, the `setupIT.bash` script above works fine.)
@@ -55,6 +55,6 @@ There isn't any strict requirement on the local port (8083, 8084 in this doc), t
  ``` 
     run something like `docker ps -a | grep dv` to see the container left over from the last run and something like `docker rm 5f72a45b68c8` to remove it. Then try the `docker run` command above again.
 
-* `empty reply from server` or `Failed to connect to ::1: Cannot assign requested address` tend to indicate either that you haven't given glassfish enough time to start, or your docker setup is in an inconsistent state and should probably be restarted.
+* `empty reply from server` or `Failed to connect to ::1: Cannot assign requested address` tend to indicate either that you haven't given payara enough time to start, or your docker setup is in an inconsistent state and should probably be restarted.
 
 * For manually fiddling around with the created dataverse, use user `dataverseAdmin` with password `admin1`.

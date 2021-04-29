@@ -155,7 +155,15 @@ public class DataFileServiceBean implements java.io.Serializable {
     public DataFile findByGlobalId(String globalId) {
             return (DataFile) dvObjectService.findByGlobalId(globalId, DataFile.DATAFILE_DTYPE_STRING);
     }
-    
+
+    public List<DataFile> findByCreatorId(Long creatorId) {
+        return em.createNamedQuery("DataFile.findByCreatorId").setParameter("creatorId", creatorId).getResultList();
+    }
+
+    public List<DataFile> findByReleaseUserId(Long releaseUserId) {
+        return em.createNamedQuery("DataFile.findByReleaseUserId").setParameter("releaseUserId", releaseUserId).getResultList();
+    }
+
     public DataFile findReplacementFile(Long previousFileId){
         Query query = em.createQuery("select object(o) from DataFile as o where o.previousDataFileId = :previousFileId");
         query.setParameter("previousFileId", previousFileId);
@@ -497,7 +505,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         // If content type indicates it's tabular data, spend 2 extra queries 
         // looking up the data table and tabular tags objects:
         
-        if (MIME_TYPE_TSV.equalsIgnoreCase(contentType)) {
+        if (MIME_TYPE_TSV.equalsIgnoreCase(contentType) || MIME_TYPE_TSV_ALT.equalsIgnoreCase(contentType)) {
             Object[] dtResult;
             try {
                 dtResult = (Object[]) em.createNativeQuery("SELECT ID, UNF, CASEQUANTITY, VARQUANTITY, ORIGINALFILEFORMAT, ORIGINALFILESIZE FROM dataTable WHERE DATAFILE_ID = " + id).getSingleResult();
@@ -578,7 +586,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         int i = 0; 
         
-        List<Object[]> dataTableResults = em.createNativeQuery("SELECT t0.ID, t0.DATAFILE_ID, t0.UNF, t0.CASEQUANTITY, t0.VARQUANTITY, t0.ORIGINALFILEFORMAT, t0.ORIGINALFILESIZE FROM dataTable t0, dataFile t1, dvObject t2 WHERE ((t0.DATAFILE_ID = t1.ID) AND (t1.ID = t2.ID) AND (t2.OWNER_ID = " + owner.getId() + ")) ORDER BY t0.ID").getResultList();
+        List<Object[]> dataTableResults = em.createNativeQuery("SELECT t0.ID, t0.DATAFILE_ID, t0.UNF, t0.CASEQUANTITY, t0.VARQUANTITY, t0.ORIGINALFILEFORMAT, t0.ORIGINALFILESIZE, t0.ORIGINALFILENAME FROM dataTable t0, dataFile t1, dvObject t2 WHERE ((t0.DATAFILE_ID = t1.ID) AND (t1.ID = t2.ID) AND (t2.OWNER_ID = " + owner.getId() + ")) ORDER BY t0.ID").getResultList();
         
         for (Object[] result : dataTableResults) {
             DataTable dataTable = new DataTable(); 
@@ -595,6 +603,8 @@ public class DataFileServiceBean implements java.io.Serializable {
             dataTable.setOriginalFileFormat((String)result[5]);
             
             dataTable.setOriginalFileSize((Long)result[6]);
+            
+            dataTable.setOriginalFileName((String)result[7]);
             
             dataTables.add(dataTable);
             datatableMap.put(fileId, i++);
@@ -856,8 +866,10 @@ public class DataFileServiceBean implements java.io.Serializable {
 
             fileMetadata.setDatasetVersion(version);
             
-            //fileMetadata.setDataFile(dataset.getFiles().get(file_list_id));
+            // Link the FileMetadata object to the DataFile:
             fileMetadata.setDataFile(dataFiles.get(file_list_id));
+            // ... and the DataFile back to the FileMetadata:
+            fileMetadata.getDataFile().getFileMetadatas().add(fileMetadata);
             
             String description = (String) result[2]; 
             
@@ -1358,55 +1370,6 @@ public class DataFileServiceBean implements java.io.Serializable {
     
     public void populateFileSearchCard(SolrSearchResult solrSearchResult) {
         solrSearchResult.setEntity(this.findCheapAndEasy(solrSearchResult.getEntityId()));
-    }
-        
-    
-    /**
-     * Does this file have a replacement.  
-     * Any file should have AT MOST 1 replacement
-     * 
-     * @param df
-     * @return 
-     * @throws java.lang.Exception if a DataFile has more than 1 replacement
-     *         or is unpublished and has a replacement.
-     */
-    public boolean hasReplacement(DataFile df) throws Exception{
-        
-        if (df.getId() == null){
-            // An unsaved file cannot have a replacment
-            return false;
-        }
-       
-        
-        List<DataFile> dataFiles = em.createQuery("select o from DataFile o" +
-                    " WHERE o.previousDataFileId = :dataFileId", DataFile.class)
-                    .setParameter("dataFileId", df.getId())
-                    .getResultList();
-        
-        if (dataFiles.isEmpty()){
-            return false;
-        }
-        
-         if (!df.isReleased()){
-            // An unpublished SHOULD NOT have a replacment
-            String errMsg = "DataFile with id: [" + df.getId() + "] is UNPUBLISHED with a REPLACEMENT.  This should NOT happen.";
-            logger.severe(errMsg);
-            
-            throw new Exception(errMsg);
-        }
-
-        
-        
-        else if (dataFiles.size() == 1){
-            return true;
-        }else{
-        
-            String errMsg = "DataFile with id: [" + df.getId() + "] has more than one replacment!";
-            logger.severe(errMsg);
-
-            throw new Exception(errMsg);
-        }
-        
     }
     
     public boolean hasBeenDeleted(DataFile df){

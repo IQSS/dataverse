@@ -34,7 +34,7 @@ public class ConfirmEmailServiceBean {
     private static final Logger logger = Logger.getLogger(ConfirmEmailServiceBean.class.getCanonicalName());
 
     @EJB
-    AuthenticationServiceBean dataverseUserService;
+    AuthenticationServiceBean authenticationService;
 
     @EJB
     MailServiceBean mailService;
@@ -46,6 +46,19 @@ public class ConfirmEmailServiceBean {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+    
+    /**
+     * A simple interface to check if a user email has been verified or not.
+     * @param user
+     * @return true if verified, false otherwise
+     */
+    public boolean hasVerifiedEmail(AuthenticatedUser user) {
+        boolean hasTimestamp = user.getEmailConfirmed() != null;
+        boolean hasNoStaleVerificationTokens = this.findSingleConfirmEmailDataByUser(user) == null;
+        boolean isVerifiedByAuthProvider = authenticationService.lookupProvider(user).isEmailVerified();
+        
+        return (hasTimestamp && hasNoStaleVerificationTokens) || isVerifiedByAuthProvider;
+    }
 
     /**
      * Initiate the email confirmation process.
@@ -108,20 +121,14 @@ public class ConfirmEmailServiceBean {
 
         try {
             String toAddress = aUser.getEmail();
-            try {
-                Dataverse rootDataverse = dataverseService.findRootDataverse();
-                if (rootDataverse != null) {
-                    String rootDataverseName = rootDataverse.getName();
-                    // FIXME: consider refactoring this into MailServiceBean.sendNotificationEmail. CONFIRMEMAIL may be the only type where we don't want an in-app notification.
-                    UserNotification userNotification = new UserNotification();
-                    userNotification.setType(UserNotification.Type.CONFIRMEMAIL);
-                    String subject = MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null);
-                    logger.fine("sending email to " + toAddress + " with this subject: " + subject);
-                    mailService.sendSystemEmail(toAddress, subject, messageBody);
-                }
-            } catch (Exception e) {
-                logger.info("The root dataverse is not present. Don't send a notification to dataverseAdmin.");
-            }
+
+            // FIXME: consider refactoring this into MailServiceBean.sendNotificationEmail.
+            // CONFIRMEMAIL may be the only type where we don't want an in-app notification.
+            UserNotification userNotification = new UserNotification();
+            userNotification.setType(UserNotification.Type.CONFIRMEMAIL);
+            String subject = MailUtil.getSubjectTextBasedOnNotification(userNotification, null);
+            logger.fine("sending email to " + toAddress + " with this subject: " + subject);
+            mailService.sendSystemEmail(toAddress, subject, messageBody);
         } catch (Exception ex) {
             /**
              * @todo get more specific about the exception that's thrown when
@@ -156,6 +163,10 @@ public class ConfirmEmailServiceBean {
                 long nowInMilliseconds = new Date().getTime();
                 Timestamp emailConfirmed = new Timestamp(nowInMilliseconds);
                 AuthenticatedUser authenticatedUser = confirmEmailData.getAuthenticatedUser();
+                if (authenticatedUser.isDeactivated()) {
+                    logger.fine("User is deactivated.");
+                    return null;
+                }
                 authenticatedUser.setEmailConfirmed(emailConfirmed);
                 em.remove(confirmEmailData);
                 return goodTokenCanProceed;
@@ -192,6 +203,14 @@ public class ConfirmEmailServiceBean {
         }
         return confirmEmailData;
     }
+    
+    public boolean hasActiveVerificationToken(AuthenticatedUser au) {
+        if (findSingleConfirmEmailDataByUser(au) == null){
+            return false;
+        }
+        return !findSingleConfirmEmailDataByUser(au).isExpired();
+    }
+
 
     public List<ConfirmEmailData> findAllConfirmEmailData() {
         TypedQuery<ConfirmEmailData> typedQuery = em.createNamedQuery("ConfirmEmailData.findAll", ConfirmEmailData.class);

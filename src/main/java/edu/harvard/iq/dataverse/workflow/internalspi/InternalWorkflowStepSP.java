@@ -17,8 +17,12 @@ public class InternalWorkflowStepSP implements WorkflowStepSPI {
                 return new LoggingWorkflowStep(stepParameters);
             case "pause":
                 return new PauseStep(stepParameters);
+            case "pause/message":
+                return new PauseWithMessageStep(stepParameters);
             case "http/sr":
                 return new HttpSendReceiveClientStep(stepParameters);
+            case "http/authExt":
+                return new AuthorizedExternalStep(stepParameters);
             case "archiver":
                 return new ArchivalSubmissionWorkflowStep(stepParameters);
             default:

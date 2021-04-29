@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
@@ -9,7 +10,10 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.Headers;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PartETag;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.AbortMultipartUploadRequest;
+import com.amazonaws.services.s3.model.CompleteMultipartUploadRequest;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectTaggingRequest;
@@ -17,6 +21,8 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
+import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ResponseHeaderOverrides;
@@ -30,6 +36,8 @@ import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import opennlp.tools.util.StringUtil;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -45,11 +53,15 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
 
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -67,34 +79,31 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.dataaccess.S3AccessIO");
 
+    private static HashMap<String, AmazonS3> driverClientMap = new HashMap<String,AmazonS3>();
+    private static HashMap<String, TransferManager> driverTMMap = new HashMap<String,TransferManager>();
+
     public S3AccessIO(T dvObject, DataAccessRequest req, String driverId) {
         super(dvObject, req, driverId);
-        readSettings();
         this.setIsLocalFile(false);
         
         try {
-            // get a standard client, using the standard way of configuration the credentials, etc.
-            AmazonS3ClientBuilder s3CB = AmazonS3ClientBuilder.standard();
-            // if the admin has set a system property (see below) we use this endpoint URL instead of the standard ones.
-            if (!s3CEUrl.isEmpty()) {
-                s3CB.setEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3CEUrl, s3CERegion));
+            bucketName=getBucketName(driverId);
+            minPartSize = getMinPartSize(driverId);
+            s3=getClient(driverId);
+            tm=getTransferManager(driverId);
+            endpoint = System.getProperty("dataverse.files." + driverId + ".custom-endpoint-url", "");
+            proxy = System.getProperty("dataverse.files." + driverId + ".proxy-url", "");
+            if(!StringUtil.isEmpty(proxy)&&StringUtil.isEmpty(endpoint)) {
+                logger.severe(driverId + " config error: Must specify a custom-endpoint-url if proxy-url is specified");
             }
-            // some custom S3 implementations require "PathStyleAccess" as they us a path, not a subdomain. default = false
-            s3CB.withPathStyleAccessEnabled(s3pathStyleAccess);
-            // Openstack SWIFT S3 implementations require "PayloadSigning" set to true. default = false
-            s3CB.setPayloadSigningEnabled(s3payloadSigning);
-            // Openstack SWIFT S3 implementations require "ChunkedEncoding" set to false. default = true
-            // Boolean is inverted, otherwise setting dataverse.files.<id>.chunked-encoding=false would result in leaving Chunked Encoding enabled
-            s3CB.setChunkedEncodingDisabled(!s3chunkedEncoding);
-
-            s3CB.setCredentials(new ProfileCredentialsProvider(s3profile));
-            // let's build the client :-)
-            this.s3 = s3CB.build();
-
-            // building a TransferManager instance to support multipart uploading for files over 4gb.
-            this.tm = TransferManagerBuilder.standard()
-                    .withS3Client(this.s3)
-                    .build();
+            //Not sure this is needed but moving it from the open method for now since it definitely doesn't need to run every time an object is opened.
+            try {
+                if (bucketName == null || !s3.doesBucketExistV2(bucketName)) {
+                    throw new IOException("ERROR: S3AccessIO - You must create and configure a bucket before creating datasets.");
+                }
+            } catch (SdkClientException sce) {
+                throw new IOException("ERROR: S3AccessIO - Failed to look up bucket "+bucketName+" (is AWS properly configured?): " + sce.getMessage());
+            }
         } catch (Exception e) {
             throw new AmazonClientException(
                         "Cannot instantiate a S3 client; check your AWS credentials and region",
@@ -102,45 +111,34 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
     
-
-	public S3AccessIO(String storageLocation, String driverId) {
-		this(null, null, driverId);
+    public S3AccessIO(String storageLocation, String driverId) {
+        this(null, null, driverId);
         // TODO: validate the storage location supplied
         bucketName = storageLocation.substring(0,storageLocation.indexOf('/'));
+        minPartSize = getMinPartSize(driverId);
         key = storageLocation.substring(storageLocation.indexOf('/')+1);
     }
     
+    //Used for tests only
     public S3AccessIO(T dvObject, DataAccessRequest req, @NotNull AmazonS3 s3client, String driverId) {
         super(dvObject, req, driverId);
-        readSettings();
+        bucketName = getBucketName(driverId);
         this.setIsLocalFile(false);
         this.s3 = s3client;
     }
     
     private AmazonS3 s3 = null;
     private TransferManager tm = null;
-    //See readSettings() for the source of these values
-    private String s3CEUrl = null;
-    private String s3CERegion = null;
-    private boolean s3pathStyleAccess = false;
-    private boolean s3payloadSigning = false;
-    private boolean s3chunkedEncoding = true;
-    private String s3profile = "default";
     private String bucketName = null;
     private String key = null;
+    private long minPartSize;
+    private String endpoint = null;
+    private String proxy= null;
 
     @Override
     public void open(DataAccessOption... options) throws IOException {
         if (s3 == null) {
             throw new IOException("ERROR: s3 not initialised. ");
-        }
-
-        try {
-            if (bucketName == null || !s3.doesBucketExist(bucketName)) {
-                throw new IOException("ERROR: S3AccessIO - You must create and configure a bucket before creating datasets.");
-            }
-        } catch (SdkClientException sce) {
-            throw new IOException("ERROR: S3AccessIO - Failed to look up bucket "+bucketName+" (is AWS properly configured?)");
         }
 
         DataAccessRequest req = this.getRequest();
@@ -171,28 +169,28 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             // So we fix it up here. ToDo: refactor so that storageidentifier is generated by the appropriate StorageIO class and is final from the start.
             String newStorageIdentifier = null;
             if (storageIdentifier.startsWith(this.driverId + "://")) {
-            	if(!storageIdentifier.substring((this.driverId + "://").length()).contains(":")) {
-            		//Driver id but no bucket
-            		if(bucketName!=null) {
-            			newStorageIdentifier=this.driverId + "://" + bucketName + ":" + storageIdentifier.substring((this.driverId + "://").length()); 
-            		} else {
-            			throw new IOException("S3AccessIO: DataFile (storage identifier " + storageIdentifier + ") is not associated with a bucket.");
-            		}
-            	} // else we're OK (assumes bucket name in storageidentifier matches the driver's bucketname)
+                if(!storageIdentifier.substring((this.driverId + "://").length()).contains(":")) {
+                    //Driver id but no bucket
+                    if(bucketName!=null) {
+                        newStorageIdentifier=this.driverId + "://" + bucketName + ":" + storageIdentifier.substring((this.driverId + "://").length()); 
+                    } else {
+                        throw new IOException("S3AccessIO: DataFile (storage identifier " + storageIdentifier + ") is not associated with a bucket.");
+                    }
+                } // else we're OK (assumes bucket name in storageidentifier matches the driver's bucketname)
             } else {
-            	if(!storageIdentifier.substring((this.driverId + "://").length()).contains(":")) {
-            		//No driver id or bucket 
-            		newStorageIdentifier= this.driverId + "://" + bucketName + ":" + storageIdentifier;
-            	} else {
-            		//Just the bucketname
-            		newStorageIdentifier= this.driverId + "://" + storageIdentifier;
-            	}
+                if(!storageIdentifier.substring((this.driverId + "://").length()).contains(":")) {
+                    //No driver id or bucket 
+                    newStorageIdentifier= this.driverId + "://" + bucketName + ":" + storageIdentifier;
+                } else {
+                    //Just the bucketname
+                    newStorageIdentifier= this.driverId + "://" + storageIdentifier;
+                }
             }
             if(newStorageIdentifier != null) {
-        		//Fixup needed:
-        		storageIdentifier = newStorageIdentifier;
-        		dvObject.setStorageIdentifier(newStorageIdentifier);
-        	}
+                //Fixup needed:
+                storageIdentifier = newStorageIdentifier;
+                dvObject.setStorageIdentifier(newStorageIdentifier);
+            }
 
             
             if (isReadAccess) {
@@ -235,36 +233,36 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         } else if (dvObject instanceof Dataverse) {
             throw new IOException("Data Access: Storage driver does not support dvObject type Dataverse yet");
         } else {
-        	// Direct access, e.g. for external upload - no associated DVobject yet, but we want to be able to get the size
-        	// With small files, it looks like we may call before S3 says it exists, so try some retries before failing
-        	if(key!=null) {
-        		 ObjectMetadata objectMetadata = null; 
-        		 int retries = 20;
-        		 while(retries > 0) {
-        			 try {
-        				 objectMetadata = s3.getObjectMetadata(bucketName, key);
-        				 if(retries != 20) {
-        				   logger.warning("Success for key: " + key + " after " + ((20-retries)*3) + " seconds");
-        				 }
-        				 retries = 0;
-        			 } catch (SdkClientException sce) {
-        				 if(retries > 1) {
-        					 retries--;
-        					 try {
-        						 Thread.sleep(3000);
-        					 } catch (InterruptedException e) {
-        						 e.printStackTrace();
-        					 }
-        					 logger.warning("Retrying after: " + sce.getMessage());
-        				 } else {
-        					 throw new IOException("Cannot get S3 object " + key + " ("+sce.getMessage()+")");
-        				 }
-        			 }
-        		 }
+            // Direct access, e.g. for external upload - no associated DVobject yet, but we want to be able to get the size
+            // With small files, it looks like we may call before S3 says it exists, so try some retries before failing
+            if(key!=null) {
+                 ObjectMetadata objectMetadata = null; 
+                 int retries = 20;
+                 while(retries > 0) {
+                     try {
+                         objectMetadata = s3.getObjectMetadata(bucketName, key);
+                         if(retries != 20) {
+                           logger.warning("Success for key: " + key + " after " + ((20-retries)*3) + " seconds");
+                         }
+                         retries = 0;
+                     } catch (SdkClientException sce) {
+                         if(retries > 1) {
+                             retries--;
+                             try {
+                                 Thread.sleep(3000);
+                             } catch (InterruptedException e) {
+                                 e.printStackTrace();
+                             }
+                             logger.warning("Retrying after: " + sce.getMessage());
+                         } else {
+                             throw new IOException("Cannot get S3 object " + key + " ("+sce.getMessage()+")");
+                         }
+                     }
+                 }
                  this.setSize(objectMetadata.getContentLength());
-        	}else {
+            }else {
             throw new IOException("Data Access: Invalid DvObject type");
-        	}
+            }
         }
     }
 
@@ -591,16 +589,18 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     //We save those streams to a file and then upload the file
     private File createTempFile(Path path, InputStream inputStream) throws IOException {
 
-        File targetFile = new File(path.toUri()); //File needs a name
-        OutputStream outStream = new FileOutputStream(targetFile);
+        File targetFile = new File(path.toUri()); // File needs a name
+        try (OutputStream outStream = new FileOutputStream(targetFile);) {
 
-        byte[] buffer = new byte[8 * 1024];
-        int bytesRead;
-        while ((bytesRead = inputStream.read(buffer)) != -1) {
-            outStream.write(buffer, 0, bytesRead);
+            byte[] buffer = new byte[8 * 1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outStream.write(buffer, 0, bytesRead);
+            }
+
+        } finally {
+            IOUtils.closeQuietly(inputStream);
         }
-        IOUtils.closeQuietly(inputStream);
-        IOUtils.closeQuietly(outStream);
         return targetFile;
     } 
     
@@ -731,8 +731,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         if (dvObject instanceof DataFile) {
             destinationKey = key;
         } else if((dvObject==null) && (key !=null)) {
-        	//direct access
-        	destinationKey = key;
+            //direct access
+            destinationKey = key;
         } else {
             logger.warning("Trying to check if a path exists is only supported for a data file.");
         }
@@ -793,30 +793,42 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
      */
     String getMainFileKey() throws IOException {
         if (key == null) {
+            DataFile df = this.getDataFile();
             // TODO: (?) - should we worry here about the datafile having null for the owner here? 
-            // or about the owner dataset having null for the authority and/or identifier?
-            // we should probably check for that and throw an exception. (unless we are 
-            // super positive that this condition would have been intercepted by now)
-            String baseKey = this.getDataFile().getOwner().getAuthorityForFileStorage() + "/" + this.getDataFile().getOwner().getIdentifierForFileStorage();
-            String storageIdentifier = dvObject.getStorageIdentifier();
-
-            if (storageIdentifier == null || "".equals(storageIdentifier)) {
-                throw new FileNotFoundException("Data Access: No local storage identifier defined for this datafile.");
-            }
-
-            if (storageIdentifier.startsWith(this.driverId + "://")) {
-                bucketName = storageIdentifier.substring((this.driverId + "://").length(), storageIdentifier.lastIndexOf(":"));
-            	key = baseKey + "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);	
-            } else {
-                throw new IOException("S3AccessIO: DataFile (storage identifier " + storageIdentifier + ") does not appear to be an S3 object.");
-            }
+            key = getMainFileKey(df.getOwner(), df.getStorageIdentifier(), driverId);
         }
-        
         return key;
     }
     
+    static String getMainFileKey(Dataset owner, String storageIdentifier, String driverId) throws IOException {
+             
+        // or about the owner dataset having null for the authority and/or identifier?
+        // we should probably check for that and throw an exception. (unless we are 
+        // super positive that this condition would have been intercepted by now)
+        String baseKey = owner.getAuthorityForFileStorage() + "/" + owner.getIdentifierForFileStorage();
+        return getMainFileKey(baseKey, storageIdentifier, driverId);
+    }
+    
+    private static String getMainFileKey(String baseKey, String storageIdentifier, String driverId) throws IOException {
+        String key = null;
+        if (storageIdentifier == null || "".equals(storageIdentifier)) {
+            throw new FileNotFoundException("Data Access: No local storage identifier defined for this datafile.");
+        }
+
+        if (storageIdentifier.indexOf(driverId + "://")>=0) {
+            //String driverId = storageIdentifier.substring(0, storageIdentifier.indexOf("://")+3);
+            //As currently implemented (v4.20), the bucket is part of the identifier and we could extract it and compare it with getBucketName() as a check - 
+            //Only one bucket per driver is supported (though things might work if the profile creds work with multiple buckets, then again it's not clear when logic is reading from the driver property or from the DataFile).
+            //String bucketName = storageIdentifier.substring(driverId.length() + 3, storageIdentifier.lastIndexOf(":"));
+            key = baseKey + "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);    
+        } else {
+            throw new IOException("S3AccessIO: DataFile (storage identifier " + storageIdentifier + ") does not appear to be an S3 object associated with driver: " + driverId);
+        }
+        return key;
+    }
+
     public boolean downloadRedirectEnabled() {
-    	String optionValue = System.getProperty("dataverse.files." + this.driverId + ".download-redirect");
+        String optionValue = System.getProperty("dataverse.files." + this.driverId + ".download-redirect");
         if ("true".equalsIgnoreCase(optionValue)) {
             return true;
         }
@@ -850,7 +862,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             // Most browsers are happy with just "filename="+URLEncoder.encode(this.getDataFile().getDisplayName(), "UTF-8") 
             // in the header. But Firefox appears to require that "UTF8" is 
             // specified explicitly, as below:
-            responseHeaders.setContentDisposition("attachment; filename*=UTF-8''"+URLEncoder.encode(this.getDataFile().getDisplayName(), "UTF-8"));
+            responseHeaders.setContentDisposition("attachment; filename*=UTF-8''" + URLEncoder.encode(this.getDataFile().getDisplayName(), "UTF-8")
+                    .replaceAll("\\+", "%20"));
             // - without it, download will work, but Firefox will leave the special
             // characters in the file name encoded. For example, the file name 
             // will look like "1976%E2%80%932016.txt" instead of "1976–2016.txt", 
@@ -869,7 +882,44 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             }
 
             if (s != null) {
-                return s.toString();
+                if(!StringUtil.isEmpty(proxy)) {
+                    /*
+                     * AWS actually uses two URLs for its endpoint - for example
+                     *   https://s3.amazonaws.com is what's used to configure the custom-endpoint-url
+                     *     in Dataverse, but presigned URLs are of the form
+                     *   https://<bucketname>.s3.amazonaws.com
+                     * 
+                     * Since we only record the first form, we'll use a regexp to match endpoints
+                     * that have an additional 'bucket prefix' in the servername.
+                     * 
+                     * Institutional S3 servers, e.g. based on MinIO, don't need to do this (i.e.
+                     * it's just AWS network setup, not part of the S3 protocol itself), so
+                     * supporting this may only be used in testing.
+                     * 
+                     * Further, since the signatures only validate for the correct URLs, the risk in
+                     * a bad match appears to be limited to breaking things, but if the potential
+                     * for substitutions gets more complex, it might be better to just add another
+                     * config setting.
+                     */
+                    // endpoint-urls for AWS don't have to have the protocol, so while we expect
+                    // them for some servers, we check whether the protocol is in the url and then
+                    // normalizing to use the part without the protocol
+                    String endpointServer = endpoint;
+                    int protocolEnd = endpoint.indexOf("://");
+                    if (protocolEnd >=0 ) {
+                        endpointServer = endpoint.substring(protocolEnd + 3);
+                    }
+                    logger.fine("Endpoint: " + endpointServer);
+                    // We're then replacing 
+                    //    http or https followed by :// and an optional <bucketname>. before the normalized endpoint url
+                    // with the proxy info (which is protocol + machine name and optional port)
+                    logger.fine("Original Url: " + s.toString());
+                    String finalUrl = s.toString().replaceFirst("http[s]*:\\/\\/([^\\/]+\\.)"+endpointServer, proxy);
+                    logger.fine("ProxiedURL: " + finalUrl);
+                    return finalUrl; 
+                } else {
+                    return s.toString();
+                }
             }
             
             //throw new IOException("Failed to generate temporary S3 url for "+key);
@@ -883,38 +933,107 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
     
+    @Deprecated
     public String generateTemporaryS3UploadUrl() throws IOException {
-
+        
         key = getMainFileKey();
-        java.util.Date expiration = new java.util.Date();
+        Date expiration = new Date();
         long msec = expiration.getTime();
         msec += 60 * 1000 * getUrlExpirationMinutes();
         expiration.setTime(msec);
 
+        return generateTemporaryS3UploadUrl(key, expiration);
+    }
+    
+    private String generateTemporaryS3UploadUrl(String key, Date expiration) throws IOException {
         GeneratePresignedUrlRequest generatePresignedUrlRequest = 
-        		new GeneratePresignedUrlRequest(bucketName, key).withMethod(HttpMethod.PUT).withExpiration(expiration);
+                new GeneratePresignedUrlRequest(bucketName, key).withMethod(HttpMethod.PUT).withExpiration(expiration);
         //Require user to add this header to indicate a temporary file
         generatePresignedUrlRequest.putCustomRequestHeader(Headers.S3_TAGGING, "dv-state=temp");
         
         URL presignedUrl; 
         try {
-        	presignedUrl = s3.generatePresignedUrl(generatePresignedUrlRequest);
+            presignedUrl = s3.generatePresignedUrl(generatePresignedUrlRequest);
         } catch (SdkClientException sce) {
-        	logger.warning("SdkClientException generating temporary S3 url for "+key+" ("+sce.getMessage()+")");
-        	presignedUrl = null; 
+            logger.warning("SdkClientException generating temporary S3 url for "+key+" ("+sce.getMessage()+")");
+            presignedUrl = null; 
         }
         String urlString = null;
         if (presignedUrl != null) {
-        	String endpoint = System.getProperty("dataverse.files." + driverId + ".custom-endpoint-url");
-        	String proxy = System.getProperty("dataverse.files." + driverId + ".proxy-url");
-        	if(proxy!=null) {
-        		urlString = presignedUrl.toString().replace(endpoint, proxy);
-        	} else {
-        		urlString = presignedUrl.toString();
-        	}
+            if(!StringUtil.isEmpty(proxy)) {
+                //See discussion in getTemporaryS3Url
+                // endpoint-urls for AWS don't have to have the protocol, so while we expect
+                // them for some servers, we check whether the protocol is in the url and then
+                // normalizing to use the part without the protocol
+                String endpointServer = endpoint;
+                int protocolEnd = endpoint.indexOf("://");
+                if (protocolEnd >=0 ) {
+                    endpointServer = endpoint.substring(protocolEnd + 3);
+                }
+                logger.fine("Endpoint: " + endpointServer);
+                // We're then replacing 
+                //    http or https followed by :// and an optional <bucketname>. before the normalized endpoint url
+                // with the proxy info (which is protocol + machine name and optional port)
+                urlString = presignedUrl.toString().replaceFirst("http[s]*:\\/\\/([^\\/]+\\.)"+endpointServer, proxy);
+                logger.fine("ProxiedURL: " + urlString);
+            } else {
+                urlString = presignedUrl.toString();
+            }
         }
 
         return urlString;
+    }
+    
+    public JsonObjectBuilder generateTemporaryS3UploadUrls(String globalId, String storageIdentifier, long fileSize) throws IOException {
+
+        JsonObjectBuilder response = Json.createObjectBuilder();
+        key = getMainFileKey();
+        java.util.Date expiration = new java.util.Date();
+        long msec = expiration.getTime();
+        msec += 60 * 1000 * getUrlExpirationMinutes();
+        expiration.setTime(msec);
+        
+        if (fileSize <= minPartSize) {
+            response.add("url", generateTemporaryS3UploadUrl(key, expiration));
+        } else {
+            JsonObjectBuilder urls = Json.createObjectBuilder();
+            InitiateMultipartUploadRequest initiationRequest = new InitiateMultipartUploadRequest(bucketName, key);
+            initiationRequest.putCustomRequestHeader(Headers.S3_TAGGING, "dv-state=temp");
+            InitiateMultipartUploadResult initiationResponse = s3.initiateMultipartUpload(initiationRequest);
+            String uploadId = initiationResponse.getUploadId();
+            for (int i = 1; i <= (fileSize / minPartSize) + (fileSize % minPartSize > 0 ? 1 : 0); i++) {
+                GeneratePresignedUrlRequest uploadPartUrlRequest = new GeneratePresignedUrlRequest(bucketName, key)
+                        .withMethod(HttpMethod.PUT).withExpiration(expiration);
+                uploadPartUrlRequest.addRequestParameter("uploadId", uploadId);
+                uploadPartUrlRequest.addRequestParameter("partNumber", Integer.toString(i));
+                URL presignedUrl;
+                try {
+                    presignedUrl = s3.generatePresignedUrl(uploadPartUrlRequest);
+                } catch (SdkClientException sce) {
+                    logger.warning("SdkClientException generating temporary S3 url for " + key + " (" + sce.getMessage()
+                            + ")");
+                    presignedUrl = null;
+                }
+                String urlString = null;
+                if (presignedUrl != null) {
+                    if(!StringUtil.isEmpty(proxy)) {
+                        urlString = presignedUrl.toString().replace(endpoint, proxy);
+                    } else {
+                        urlString = presignedUrl.toString();
+                    }
+                }
+                urls.add(Integer.toString(i), urlString);
+            }
+            response.add("urls", urls);
+            response.add("abort", "/api/datasets/mpupload?globalid=" + globalId + "&uploadid=" + uploadId
+                    + "&storageidentifier=" + storageIdentifier);
+            response.add("complete", "/api/datasets/mpupload?globalid=" + globalId + "&uploadid=" + uploadId
+                    + "&storageidentifier=" + storageIdentifier);
+
+        }
+        response.add("partSize", minPartSize);
+
+        return response;
     }
     
     int getUrlExpirationMinutes() {
@@ -922,7 +1041,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         if (optionValue != null) {
             Integer num; 
             try {
-                num = new Integer(optionValue);
+                num = Integer.parseInt(optionValue);
             } catch (NumberFormatException ex) {
                 num = null; 
             }
@@ -933,67 +1052,175 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return 60; 
     }
     
-    private void readSettings() {
-        /**
-         * Pass in a URL pointing to your S3 compatible storage.
-         * For possible values see https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/client/builder/AwsClientBuilder.EndpointConfiguration.html
-         */
-        s3CEUrl = System.getProperty("dataverse.files." + this.driverId + ".custom-endpoint-url", "");
-        /**
-         * Pass in a region to use for SigV4 signing of requests.
-         * Defaults to "dataverse" as it is not relevant for custom S3 implementations.
-         */
-        s3CERegion = System.getProperty("dataverse.files." + this.driverId + ".custom-endpoint-region", "dataverse");
-        /**
-         * Pass in a boolean value if path style access should be used within the S3 client.
-         * Anything but case-insensitive "true" will lead to value of false, which is default value, too.
-         */
-        s3pathStyleAccess = Boolean.parseBoolean(System.getProperty("dataverse.files." + this.driverId + ".path-style-access", "false"));
-        /**
-         * Pass in a boolean value if payload signing should be used within the S3 client.
-         * Anything but case-insensitive "true" will lead to value of false, which is default value, too.
-         */
-        s3payloadSigning = Boolean.parseBoolean(System.getProperty("dataverse.files." + this.driverId + ".payload-signing","false"));
-        /**
-         * Pass in a boolean value if chunked encoding should not be used within the S3 client.
-         * Anything but case-insensitive "false" will lead to value of true, which is default value, too.
-         */
-        s3chunkedEncoding = Boolean.parseBoolean(System.getProperty("dataverse.files." + this.driverId + ".chunked-encoding","true"));
-        /**
-         * Pass in a string value if this storage driver should use a non-default AWS S3 profile.
-         * The default is "default" which should work when only one profile exists.
-         */
-        s3profile = System.getProperty("dataverse.files." + this.driverId + ".profile","default");
-       
-        bucketName = System.getProperty("dataverse.files." + this.driverId + ".bucket-name");
-	}
+    private static String getBucketName(String driverId) {
+        return System.getProperty("dataverse.files." + driverId + ".bucket-name");
+    }
+    
+    private static long getMinPartSize(String driverId) {
+        // as a default, pick 1 GB minimum part size for AWS S3 
+        // (minimum allowed is 5*1024**2 but it probably isn't worth the complexity starting at ~5MB. Also -  confirmed that they use base 2 definitions)
+        long min = 5 * 1024 * 1024l; 
+
+        String partLength = System.getProperty("dataverse.files." + driverId + ".min-part-size");
+        try {
+            if (partLength != null) {
+                long val = Long.parseLong(partLength);
+                if(val>=min) {
+                    min=val;
+                } else {
+                    logger.warning(min + " is the minimum part size allowed for jvm option dataverse.files." + driverId + ".min-part-size" );
+                }
+            } else {
+                min = 1024 * 1024 * 1024l;
+            }
+        } catch (NumberFormatException nfe) {
+            logger.warning("Unable to parse dataverse.files." + driverId + ".min-part-size as long: " + partLength);
+        }
+        return min;
+    }
 
 
-	public void removeTempTag() throws IOException {
-		if (!(dvObject instanceof DataFile)) {
-			logger.warning("Attempt to remove tag from non-file DVObject id: " + dvObject.getId());
-			throw new IOException("Attempt to remove temp tag from non-file S3 Object");
-		}
-		try {
-			
-			key = getMainFileKey();
-			DeleteObjectTaggingRequest deleteObjectTaggingRequest = new DeleteObjectTaggingRequest(bucketName, key);
-			//NOte - currently we only use one tag so delete is the fastest and cheapest way to get rid of that one tag 
-			//Otherwise you have to get tags, remove the one you don't want and post new tags and get charged for the operations
+    private static TransferManager getTransferManager(String driverId) {
+        if(driverTMMap.containsKey(driverId)) {
+            return driverTMMap.get(driverId);
+        } else {
+            // building a TransferManager instance to support multipart uploading for files over 4gb.
+            TransferManager manager = TransferManagerBuilder.standard()
+                    .withS3Client(getClient(driverId))
+                    .build();
+            driverTMMap.put(driverId,  manager);
+            return manager;
+        }
+    }
+
+
+    private static AmazonS3 getClient(String driverId) {
+        if(driverClientMap.containsKey(driverId)) {
+            return driverClientMap.get(driverId);
+        } else {
+            // get a standard client, using the standard way of configuration the credentials, etc.
+            AmazonS3ClientBuilder s3CB = AmazonS3ClientBuilder.standard();
+
+            ClientConfiguration cc = new ClientConfiguration();
+            Integer poolSize = Integer.getInteger("dataverse.files." + driverId + ".connection-pool-size", 256);
+            cc.setMaxConnections(poolSize);
+            s3CB.setClientConfiguration(cc);
+            
+            /**
+             * Pass in a URL pointing to your S3 compatible storage.
+             * For possible values see https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/client/builder/AwsClientBuilder.EndpointConfiguration.html
+             */
+            String s3CEUrl = System.getProperty("dataverse.files." + driverId + ".custom-endpoint-url", "");
+            /**
+             * Pass in a region to use for SigV4 signing of requests.
+             * Defaults to "dataverse" as it is not relevant for custom S3 implementations.
+             */
+            String s3CERegion = System.getProperty("dataverse.files." + driverId + ".custom-endpoint-region", "dataverse");
+
+            // if the admin has set a system property (see below) we use this endpoint URL instead of the standard ones.
+            if (!s3CEUrl.isEmpty()) {
+                s3CB.setEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3CEUrl, s3CERegion));
+            }
+            /**
+             * Pass in a boolean value if path style access should be used within the S3 client.
+             * Anything but case-insensitive "true" will lead to value of false, which is default value, too.
+             */
+            Boolean s3pathStyleAccess = Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".path-style-access", "false"));
+            // some custom S3 implementations require "PathStyleAccess" as they us a path, not a subdomain. default = false
+            s3CB.withPathStyleAccessEnabled(s3pathStyleAccess);
+
+            /**
+             * Pass in a boolean value if payload signing should be used within the S3 client.
+             * Anything but case-insensitive "true" will lead to value of false, which is default value, too.
+             */
+            Boolean s3payloadSigning = Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".payload-signing","false"));
+            /**
+             * Pass in a boolean value if chunked encoding should not be used within the S3 client.
+             * Anything but case-insensitive "false" will lead to value of true, which is default value, too.
+             */
+            Boolean s3chunkedEncoding = Boolean.parseBoolean(System.getProperty("dataverse.files." + driverId + ".chunked-encoding","true"));
+            // Openstack SWIFT S3 implementations require "PayloadSigning" set to true. default = false
+            s3CB.setPayloadSigningEnabled(s3payloadSigning);
+            // Openstack SWIFT S3 implementations require "ChunkedEncoding" set to false. default = true
+            // Boolean is inverted, otherwise setting dataverse.files.<id>.chunked-encoding=false would result in leaving Chunked Encoding enabled
+            s3CB.setChunkedEncodingDisabled(!s3chunkedEncoding);
+
+            /**
+             * Pass in a string value if this storage driver should use a non-default AWS S3 profile.
+             * The default is "default" which should work when only one profile exists.
+             */
+            String s3profile = System.getProperty("dataverse.files." + driverId + ".profile","default");
+
+            s3CB.setCredentials(new ProfileCredentialsProvider(s3profile));
+            // let's build the client :-)
+            AmazonS3 client =  s3CB.build();
+            driverClientMap.put(driverId,  client);
+            return client;
+        }
+    }
+
+    public void removeTempTag() throws IOException {
+        if (!(dvObject instanceof DataFile)) {
+            logger.warning("Attempt to remove tag from non-file DVObject id: " + dvObject.getId());
+            throw new IOException("Attempt to remove temp tag from non-file S3 Object");
+        }
+        try {
+            
+            key = getMainFileKey();
+            DeleteObjectTaggingRequest deleteObjectTaggingRequest = new DeleteObjectTaggingRequest(bucketName, key);
+            //NOte - currently we only use one tag so delete is the fastest and cheapest way to get rid of that one tag 
+            //Otherwise you have to get tags, remove the one you don't want and post new tags and get charged for the operations
             s3.deleteObjectTagging(deleteObjectTaggingRequest);
          } catch (SdkClientException sce) {
-        	 if(sce.getMessage().contains("Status Code: 501")) {
-        		 // In this case, it's likely that tags are not implemented at all (e.g. by Minio) so no tag was set either and it's just something to be aware of
-        		 logger.warning("Temp tag not deleted: Object tags not supported by storage: " + driverId);
-        	 } else {
-        	   // In this case, the assumption is that adding tags has worked, so not removing it is a problem that should be looked into.
-        	   logger.severe("Unable to remove temp tag from : " + bucketName + " : " + key);
-        	 }
+             if(sce.getMessage().contains("Status Code: 501")) {
+                 // In this case, it's likely that tags are not implemented at all (e.g. by Minio) so no tag was set either and it's just something to be aware of
+                 logger.warning("Temp tag not deleted: Object tags not supported by storage: " + driverId);
+             } else {
+               // In this case, the assumption is that adding tags has worked, so not removing it is a problem that should be looked into.
+               logger.severe("Unable to remove temp tag from : " + bucketName + " : " + key);
+             }
          } catch (IOException e) {
-			logger.warning("Could not create key for S3 object." );
-			e.printStackTrace();
-		}
-		
-	}
+            logger.warning("Could not create key for S3 object." );
+            e.printStackTrace();
+        }
+        
+    }
+
+    public static void abortMultipartUpload(String globalId, String storageIdentifier, String uploadId)
+            throws IOException {
+        String baseKey = null;
+        int index = globalId.indexOf(":");
+        if (index >= 0) {
+            baseKey = globalId.substring(index + 1);
+        } else {
+            throw new IOException("Invalid Global ID (expected form with '<type>:' prefix)");
+        }
+        String[] info = DataAccess.getDriverIdAndStorageLocation(storageIdentifier);
+        String driverId = info[0];
+        AmazonS3 s3Client = getClient(driverId);
+        String bucketName = getBucketName(driverId);
+        String key = getMainFileKey(baseKey, storageIdentifier, driverId);
+        AbortMultipartUploadRequest req = new AbortMultipartUploadRequest(bucketName, key, uploadId);
+        s3Client.abortMultipartUpload(req);
+    }
+
+    public static void completeMultipartUpload(String globalId, String storageIdentifier, String uploadId,
+            List<PartETag> etags) throws IOException {
+        String baseKey = null;
+        int index = globalId.indexOf(":");
+        if (index >= 0) {
+            baseKey = globalId.substring(index + 1);
+        } else {
+            throw new IOException("Invalid Global ID (expected form with '<type>:' prefix)");
+        }
+
+        String[] info = DataAccess.getDriverIdAndStorageLocation(storageIdentifier);
+        String driverId = info[0];
+        AmazonS3 s3Client = getClient(driverId);
+        String bucketName = getBucketName(driverId);
+        String key = getMainFileKey(baseKey, storageIdentifier, driverId);
+        CompleteMultipartUploadRequest req = new CompleteMultipartUploadRequest(bucketName, key, uploadId, etags);
+        s3Client.completeMultipartUpload(req);
+    }
 
 }

@@ -10,51 +10,105 @@
     xmlns:cc="http://java.sun.com/jsf/composite"
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-    <p:outputPanel>
-        <div id="fileInfoInclude-filesTable" class="col-sm-12 row">
-            <div class="pull-left col-file-thumb">
-                <div class="thumbnail-block text-center">  
-                    <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{!EditDatafilesPage.isThumbnailAvailable(fileMetadata)}"/>
-                    <span class="file-thumbnail-preview-img" jsf:rendered="#{EditDatafilesPage.isThumbnailAvailable(fileMetadata)}"
-                          data-toggle="popover" data-placement="bottom" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34;#{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;"
-                          data-template='&lt;div class="popover thumb-preview" role="tooltip"&gt;&lt;div class="arrow"&gt;&lt;/div&gt;&lt;h3 class="popover-title"&gt;&lt;/h3&gt;&lt;div class="popover-content"&gt;&lt;/div&gt;&lt;/div&gt;'>
-                        <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true" alt="#{fileMetadata.label}"/>
-                    </span>
-                    <!-- Restricted File Icon -->
-                    <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and !fileDownloadHelper.canDownloadFile(fileMetadata)}">                  
-                        <span class="glyphicon glyphicon-lock text-danger"/>
-                    </div>
-                    <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and fileDownloadHelper.canDownloadFile(fileMetadata) }">
-                        <span class="icon-unlock text-success"/>
-                    </div>
+    
+    <ui:remove>
+    <!--
+    This fragment is included on... 
+    
+    - dataset pg, filesFragment, empty editMode render logic
+    - dataset pg AND file pg, (s3) package-download-popup-fragment
+    - editdatafiles (replace files) pg
+    
+    Parameters:
+    fileMetadata - object from containing page backing bean
+    editDatafilesPage - true if included on editdatafiles pg
+    -->            
+    </ui:remove>
+    
+    <p:outputPanel id="fileInfoInclude-filesTable" styleClass="media">
+        <div class="media-left col-file-thumb" style="padding-top:4px;">
+            <div class="media-object thumbnail-block text-center">
+                <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{!fileDownloadHelper.canDownloadFile(fileMetadata) or !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)}"/>
+                <span class="file-thumbnail-preview-img" jsf:rendered="#{dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)}"
+                      data-toggle="popover" data-placement="auto top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34;#{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;"
+                      data-template='&lt;div class="popover thumb-preview" role="tooltip"&gt;&lt;div class="arrow"&gt;&lt;/div&gt;&lt;h3 class="popover-title"&gt;&lt;/h3&gt;&lt;div class="popover-content"&gt;&lt;/div&gt;&lt;/div&gt;'>
+                    <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true" alt="#{fileMetadata.label}"/>
+                </span>
+                <!-- Restricted File Icon -->
+                <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and !fileDownloadHelper.canDownloadFile(fileMetadata)}">
+                    <span class="glyphicon glyphicon-lock text-danger"/>
+                </div>
+                <div class="file-icon-restricted-block" jsf:rendered="#{fileMetadata.restricted and fileDownloadHelper.canDownloadFile(fileMetadata)}">
+                    <span class="icon-unlock text-success"/>
                 </div>
             </div>
-            <div class="col-sm-10 col-file-metadata">
-                <div class="fileNameOriginal">
+        </div>
+        <div class="media-body col-file-metadata">
+            <div class="fileNameOriginal">
+                <ui:fragment rendered="#{!editDatafilesPage}">
+                    <!-- conditional render in file page links, if file has global id, use that; if not, we use database id -->
+                    <a href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalIdString ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalIdString ? fileMetadata.dataFile.globalIdString : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
+                        #{fileMetadata.label}
+                    </a>
+                </ui:fragment>
+                <ui:fragment rendered="#{editDatafilesPage}">
                     <span>#{fileMetadata.label}</span>
+                </ui:fragment>
+            </div>
+            <!-- HIERARCHY + TYPE + SIZE + DATE + CHECKSUM -->
+            <div class="text-muted small">
+                <!-- id:#{fileMetadata.dataFile.id} -->
+                <h:outputText id="fileHierarchy" styleClass="show" value="#{fileMetadata.directoryLabel}/" rendered="#{!empty fileMetadata.directoryLabel}"/>
+                <h:outputText id="fileType" value="#{fileMetadata.dataFile.tabularData ? bundle['file.type.tabularData'] : fileMetadata.dataFile.friendlyType}"/>
+                <h:outputText id="fileSize" value=" - #{fileMetadata.dataFile.friendlySize}"/>
+                <div class="dateCreatePublish-block">
+                    <h:outputText id="fileCreatePublishDate" value="#{fileMetadata.dataFile.released ? bundle['published'] : bundle['deposited']} #{fileMetadata.getFileDateToDisplay()}" rendered="#{!(empty fileMetadata.id)}"/>
                 </div>
-                <div class="text-muted small">
-                    <span id="static:fileTypeOutputRegular">#{fileMetadata.dataFile.friendlyType}</span>
-                    <span id="static:fileSize"> - #{fileMetadata.dataFile.friendlySize}</span>
-                    <span id="static:fileCreatePublishDate"> - #{fileMetadata.fileDateToDisplay}</span>
-                    <div class="checksum-block"><span id="static:file-checksum">#{fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue}</span></div>
+                <div class="downloads-block" jsf:rendered="#{!editDatafilesPage and !(settingsWrapper.rsyncOnly) and fileMetadata.dataFile.released}">
+                    <h:outputFormat styleClass="visible-xs-block visible-sm-block visible-md-inline visible-lg-inline" id="fileDownloadCount" value="{0} #{bundle['metrics.downloads']}">
+                        <f:param value="#{guestbookResponseServiceBean.getCountGuestbookResponsesByDataFileId(fileMetadata.dataFile.id)}"/>
+                    </h:outputFormat>
                 </div>
-                <div class="fileDescription small" jsf:rendered="#{!(empty fileMetadata.description)}">
-                    <h:outputText id="fileDescNonEmpty" value="#{fileMetadata.description}"/>
+                <!-- CHECKSUM -->
+                <div class="checksum-block" jsf:rendered="#{!fileMetadata.dataFile.tabularData and !(empty fileMetadata.dataFile.checksumValue)}">
+                    <span class="sr-only #{!editDatafilesPage ? 'checksum-truncate checksum-tooltip' : ''}" style="margin-right:3px;"
+                                  data-toggle="tooltip" data-placement="top" data-html="true"
+                                  data-clipboard-action="copy"
+                                  data-clipboard-text="#{fileMetadata.dataFile.checksumValue}"
+                                  title="#{bundle['file.metaData.checksum.copy']}&lt;br/&gt;#{fileMetadata.dataFile.checksumValue}">#{fileMetadata.dataFile.checksumType}: #{fileMetadata.dataFile.checksumValue}</span>
+                    <span class="glyphicon glyphicon-copy btn-copy checksum-tooltip" 
+                                  data-toggle="tooltip" data-placement="top" data-html="true"
+                                  data-clipboard-action="copy"
+                                  data-clipboard-text="#{fileMetadata.dataFile.checksumValue}" 
+                                  title="#{bundle['file.metaData.checksum.copy']}&lt;br/&gt;#{fileMetadata.dataFile.checksumValue}"></span>
                 </div>
-
-                <div class="file-tags-block" jsf:rendered="#{!(empty fileMetadata.categories) or !(empty fileMetadata.dataFile.tags)}">
-                    <ui:fragment rendered="#{!(empty fileMetadata.categories)}">
-                        <ui:repeat value="#{fileMetadata.categories}" var="cat">
-                            <h:outputText value="#{cat.name}" styleClass="label label-default"/>
-                        </ui:repeat> 
-                    </ui:fragment>
-                    <ui:fragment>
-                        <ui:repeat value="#{fileMetadata.dataFile.tags}" var="tag">
-                            <h:outputText value="#{tag.typeLabel}" styleClass="label label-info"/>
-                        </ui:repeat>
-                    </ui:fragment>
+                <!-- TABULAR VARIABLES, OBSERVATIONS + UNF -->
+                <div class="unf-block" jsf:rendered="#{fileMetadata.dataFile.tabularData}">
+                    <h:outputText id="fileNumVars" value="#{fileMetadata.dataFile.dataTable.varQuantity} #{bundle['file.metaData.dataFile.dataTab.variables']}, "/>
+                    <h:outputText id="fileNumObs" value="#{fileMetadata.dataFile.dataTable.caseQuantity} #{bundle['file.metaData.dataFile.dataTab.observations']} "/>
+                    <span jsf:id="fileUNF" class="sr-only #{!editDatafilesPage ? 'checksum-truncate checksum-tooltip' : ''}" style="margin-right:3px;"
+                                  jsf:rendered="#{!(empty fileMetadata.dataFile.unf)}"
+                                  data-toggle="tooltip" data-placement="top" data-html="true"
+                                  data-clipboard-action="copy"
+                                  data-clipboard-text="#{fileMetadata.dataFile.unf}"
+                                  title="#{bundle['file.metaData.checksum.copy']}&lt;br/&gt;#{fileMetadata.dataFile.unf}">#{fileMetadata.dataFile.unf}</span>
+                    <span class="glyphicon glyphicon-copy btn-copy checksum-tooltip" jsf:rendered="#{!(empty fileMetadata.dataFile.unf)}" 
+                                  data-toggle="tooltip" data-placement="top" data-html="true"
+                                  data-clipboard-action="copy"
+                                  data-clipboard-text="#{fileMetadata.dataFile.unf}" 
+                                  title="#{bundle['file.metaData.checksum.copy']}&lt;br/&gt;#{fileMetadata.dataFile.unf}"></span>
                 </div>
+            </div>
+            <div class="fileDescription small" jsf:rendered="#{!(empty fileMetadata.description)}">
+                <h:outputText id="fileDescNonEmpty" value="#{fileMetadata.description}"/>
+            </div>
+            <div class="file-tags-block" jsf:rendered="#{!(empty fileMetadata.categories) or !(empty fileMetadata.dataFile.tags)}">
+                <ui:repeat value="#{fileMetadata.categories}" var="cat">
+                    <h:outputText value="#{cat.name}" styleClass="label label-default"/>
+                </ui:repeat>
+                <ui:repeat value="#{fileMetadata.dataFile.tags}" var="tag">
+                    <h:outputText value="#{tag.typeLabel}" styleClass="label label-info"/>
+                </ui:repeat>
             </div>
         </div>
     </p:outputPanel>

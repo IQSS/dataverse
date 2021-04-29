@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import static java.lang.Thread.sleep;
+import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
@@ -116,20 +117,17 @@ public class FilesIT {
         //addResponse.prettyPrint();
         msgt("Here it is: " + addResponse.prettyPrint());
         String successMsg = BundleUtil.getStringFromBundle("file.addreplace.success.add");
-
       
         addResponse.then().assertThat()
                 /**
                  * @todo We have a need to show human readable success messages
                  * via API in a consistent location.
                  */
-                //                .body("message", equalTo(successMsg))
                 .body("status", equalTo(AbstractApiBean.STATUS_OK))
                 .body("data.files[0].categories[0]", equalTo("Data"))
                 .body("data.files[0].dataFile.contentType", equalTo("image/png"))
                 .body("data.files[0].dataFile.description", equalTo("my description"))
                 .body("data.files[0].directoryLabel", equalTo("data/subdir1"))
-//                .body("data.files[0].dataFile.tags", nullValue())
                 .body("data.files[0].dataFile.tabularTags", nullValue())
                 .body("data.files[0].label", equalTo("dataverseproject.png"))
                 // not sure why description appears in two places
@@ -138,18 +136,20 @@ public class FilesIT {
         
         
         //------------------------------------------------
-        // Try to add the same file again -- and fail
+        // Try to add the same file again -- and get warning
         //------------------------------------------------
         Response addTwiceResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, apiToken);
 
         msgt("2nd requests: " + addTwiceResponse.prettyPrint());    //addResponse.prettyPrint();
         
-        String errMsg = BundleUtil.getStringFromBundle("file.addreplace.error.duplicate_file");
-                
+        String dupeName = "dataverseproject.png";
+
+        String errMsg = BundleUtil.getStringFromBundle("file.addreplace.warning.duplicate_file",
+                Arrays.asList(dupeName));
+        String errMsgFromResponse = JsonPath.from(addTwiceResponse.body().asString()).getString("message");
         addTwiceResponse.then().assertThat()
-                .body("message", Matchers.startsWith(errMsg))
-                .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
-                .statusCode(BAD_REQUEST.getStatusCode());
+                .statusCode(OK.getStatusCode());
+        assertTrue(errMsgFromResponse.contains(errMsg));
     }
 
     
@@ -241,16 +241,12 @@ public class FilesIT {
 
         Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, junkJson, apiToken);
 
+        String parseError = BundleUtil.getStringFromBundle("file.addreplace.error.parsing");
+        
         addResponse.then().assertThat()
-                .body("status", equalTo(AbstractApiBean.STATUS_OK))
-                .body("data.files[0].categories", nullValue())
-                .body("data.files[0].dataFile.contentType", equalTo("image/png"))
-                .body("data.files[0].dataFile.description", equalTo(""))
-                .body("data.files[0].dataFile.tabularTags", nullValue())
-                .body("data.files[0].label", equalTo("dataverseproject.png"))
-                // not sure why description appears in two places
-                .body("data.files[0].description", equalTo(""))
-                .statusCode(OK.getStatusCode());
+        .statusCode(BAD_REQUEST.getStatusCode())
+        .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
+        .body("message", equalTo(parseError));
     }
     
     @Test
@@ -372,12 +368,25 @@ public class FilesIT {
                 .add("categories", Json.createArrayBuilder()
                         .add("Data")
                 );
+        
+        /*
+         * ToDo: When the dataset is still locked, the replaceFile call below returns an
+         * 'OK' status with an empty 'data' array The sleepForLock avoids that so this
+         * test tests the normal replace functionality directly, but a new test to check
+         * that, when the dataset is locked, the call fails instead of returning OK
+         * would be useful (along with making the replace call do that)
+         */
+        /*
+         * ToDo: make sleep time shorter for this? Add sleepForLock before subsequent
+         * calls as well? (Or is it only needed here because it is still locked from the
+         * publish call above?)
+         */
+
+        UtilIT.sleepForLock(datasetId, null, apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);
         Response replaceResp = UtilIT.replaceFile(origFileId.toString(), pathToFile2, json.build(), apiToken);
         
         msgt(replaceResp.prettyPrint());
         
-        String successMsg2 = BundleUtil.getStringFromBundle("file.addreplace.success.replace");
-
         replaceResp.then().assertThat()
                 /**
                  * @todo We have a need to show human readable success messages
@@ -621,6 +630,9 @@ public class FilesIT {
                 .add("categories", Json.createArrayBuilder()
                         .add("Data")
                 );
+        
+        UtilIT.sleepForLock(datasetId, null, apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);
+        
         Response replaceResp = UtilIT.replaceFile(origFileId.toString(), pathToFile2, json.build(), apiToken);
 
         replaceResp.prettyPrint();
@@ -632,7 +644,7 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
         
         Long newDfId = JsonPath.from(replaceResp.body().asString()).getLong("data.files[0].dataFile.id");
-        
+        System.out.print("newDfId: " + newDfId);
         //Adding an additional fileMetadata update tests after this to ensure updating replaced files works
         msg("Update file metadata for old file, will error");
         String updateDescription = "New description.";
@@ -645,6 +657,7 @@ public class FilesIT {
         //Adding an additional fileMetadata update tests after this to ensure updating replaced files works
         msg("Update file metadata for new file");
         //"junk" passed below is to test that it is discarded
+        System.out.print("params: " +  String.valueOf(newDfId) + " " + updateJsonString + " " + apiToken);
         Response updateMetadataResponse = UtilIT.updateFileMetadata(String.valueOf(newDfId), updateJsonString, apiToken);
         assertEquals(OK.getStatusCode(), updateMetadataResponse.getStatusCode());  
         //String updateMetadataResponseString = updateMetadataResponse.body().asString();
@@ -732,14 +745,11 @@ public class FilesIT {
         String pathToFile2 = "src/main/webapp/resources/images/cc0.png";
         Response replaceResp = UtilIT.replaceFile(origFileId.toString(), pathToFile2, apiToken);
 
-        String errMsgUnpublished = BundleUtil.getStringFromBundle("file.addreplace.error.unpublished_file_cannot_be_replaced");
-        
         replaceResp.then().assertThat()
-               .statusCode(BAD_REQUEST.getStatusCode())
-               .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
-               .body("message", Matchers.startsWith(errMsgUnpublished))
-               ;
-       
+        .body("data.files[0].dataFile.contentType", equalTo("image/png"))
+        .body("data.files[0].label", equalTo("cc0.png"))
+        .statusCode(OK.getStatusCode());
+        
         // -------------------------
         // Publish dataset
         // -------------------------
@@ -902,10 +912,11 @@ public class FilesIT {
         Response replaceResp = UtilIT.replaceFile(origFileId.toString(), pathToFile2, jsonAsString, apiToken);
 
         msgt("replace resp: " + replaceResp.prettyPrint());
-
+        String parseError = BundleUtil.getStringFromBundle("file.addreplace.error.parsing");
         replaceResp.then().assertThat()
-                .statusCode(OK.getStatusCode())
-                .body("status", equalTo(AbstractApiBean.STATUS_OK));
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("status", equalTo(AbstractApiBean.STATUS_ERROR))
+                .body("message", equalTo(parseError));
 
     }
 
@@ -1264,8 +1275,8 @@ public class FilesIT {
         assertEquals(updateCategory, JsonPath.from(getUpMetadataResponseString).getString("categories[0]"));
         assertNull(JsonPath.from(getUpMetadataResponseString).getString("provFreeform")); //unupdated fields are not persisted
         assertEquals(updateDataFileTag, JsonPath.from(getUpMetadataResponseString).getString("dataFileTags[0]"));
-        
-        //We haven't published so the non-draft call should still give the pre-edit metadata
+
+//We haven't published so the non-draft call should still give the pre-edit metadata
         Response getOldMetadataResponse = UtilIT.getDataFileMetadata(origFileId, apiToken);
         String getOldMetadataResponseString = getOldMetadataResponse.body().asString();
         msg("Old Published (shouldn't be updated):");
@@ -1320,7 +1331,7 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode());
         
         // wait for it to ingest... 
-        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile , UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, 5));
      //   sleep(10000);
      
         Response publishDataversetResp = UtilIT.publishDataverseViaSword(dataverseAlias, apiToken);
@@ -1410,6 +1421,152 @@ public class FilesIT {
                 .statusCode(OK.getStatusCode())
                 .body("codeBook.fileDscr.fileTxt.fileName", equalTo("stata13-auto-withstrls.tab"))
                 .body("codeBook.dataDscr.var[0].@name", equalTo("make"));
+
+    }
+    
+    /*
+        A very simple test for shape file package processing. 
+    */    
+    @Test
+    public void test_ProcessShapeFilePackage() {
+        msgt("test_ProcessShapeFilePackage");
+         // Create user
+        String apiToken = createUserGetToken();
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+
+        // Create Dataset
+        Integer datasetId = createDatasetGetId(dataverseAlias, apiToken);
+       
+        // This archive contains 4 files that constitute a valid 
+        // shape file. We want to check that these files were properly 
+        // recognized and re-zipped as a shape package, preserving the 
+        // folder structure found in the uploaded zip. 
+        String pathToFile = "scripts/search/data/shape/shapefile.zip";
+        
+        String suppliedDescription = "file extracted from a shape bundle";
+        String extractedFolderName = "subfolder";
+        String extractedShapeName = "boston_public_schools_2012_z1l.zip"; 
+        String extractedShapeType = "application/zipped-shapefile";
+
+        JsonObjectBuilder json = Json.createObjectBuilder()
+                .add("description", suppliedDescription);
+
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile, json.build(), apiToken);
+
+        msgt("Server response: " + addResponse.prettyPrint());
+      
+        // We are checking the following: 
+        // - that the upload succeeded;
+        // - that a shape file with the name specified above has been repackaged and added
+        //   to the dataset as a single file;
+        // - that the mime type has been properly identified;
+        // - that the description supplied via the API has been added; 
+        // - that the subfolder found inside the uploaded zip file has been properly
+        //   preserved in the FileMetadata. 
+        // 
+        // Feel free to expand the checks further - we can also verify the 
+        // checksum, the size of the resulting file, add more files to the uploaded
+        // zip archive etc. etc. - but this should be a good start. 
+        // -- L.A. 2020/09
+        addResponse.then().assertThat()
+                .body("status", equalTo(AbstractApiBean.STATUS_OK))
+                .body("data.files[0].dataFile.contentType", equalTo(extractedShapeType))
+                .body("data.files[0].label", equalTo(extractedShapeName))
+                .body("data.files[0].directoryLabel", equalTo(extractedFolderName))
+                .body("data.files[0].description", equalTo(suppliedDescription))
+                .statusCode(OK.getStatusCode());
+    }
+    
+    /*
+        First test for the new "crawlable file access" API (#7084)
+    */    
+    @Test
+    public void test_CrawlableAccessToDatasetFiles() {
+        msgt("test_test_CrawlableAccessToDatasetFiles");
+         // Create user
+        String apiToken = createUserGetToken();
+
+        // Create Dataverse
+        String dataverseAlias = createDataverseGetAlias(apiToken);
+
+        // Create Dataset
+        String datasetId = createDatasetGetId(dataverseAlias, apiToken).toString();
+        
+        msgt("dataset id: "+datasetId);
+       
+        String testFileName = "dataverseproject.png";
+        String pathToFile = "src/main/webapp/resources/images/" + testFileName;
+        String description = "test file 1";
+        String folderName = "subfolder";
+
+        JsonObjectBuilder json = Json.createObjectBuilder()
+                .add("description", description)
+                .add("directoryLabel", folderName);
+
+        Response addResponse = UtilIT.uploadFileViaNative(datasetId, pathToFile, json.build(), apiToken);
+
+        msgt("Server response: " + addResponse.prettyPrint());
+      
+        addResponse.then().assertThat()
+                .body("status", equalTo(AbstractApiBean.STATUS_OK))
+                .body("data.files[0].label", equalTo(testFileName))
+                .body("data.files[0].directoryLabel", equalTo(folderName))
+                .body("data.files[0].description", equalTo(description))
+                .statusCode(OK.getStatusCode());
+        
+        String dataFileId = addResponse.getBody().jsonPath().getString("data.files[0].dataFile.id");
+        //msgt("datafile id: "+dataFileId);
+        
+        // TODO: (potentially?)
+        // maybe upload a few more files, in more folders, 
+        // and try an actual recursive crawl of a full tree - ?
+                
+        // Make some calls to the "/dirindex API:
+        // (note that this API outputs HTML!)
+        
+        // Expected values in the output: 
+        String expectedTitleTopFolder = "Index of folder /";
+        String expectedLinkTopFolder = folderName + "/";
+        String expectedLinkAhrefTopFolder = "/api/datasets/"+datasetId+"/dirindex/?version=:draft&folder=subfolder";
+        
+        String expectedTitleSubFolder = "Index of folder /" + folderName;
+        String expectedLinkAhrefSubFolder = "/api/access/datafile/" + folderName + "/" + dataFileId;
+        
+        // ... with no folder specified: 
+        // (with just the one file above, this should show one folder only - "subfolder", and no files)
+        Response fileAccessResponse = UtilIT.getCrawlableFileAccess(datasetId, "", apiToken);
+        fileAccessResponse.then().assertThat().statusCode(OK.getStatusCode()).contentType("text/html");
+
+        String htmlTitle = fileAccessResponse.getBody().htmlPath().getString("html.head.title");
+        assertEquals(expectedTitleTopFolder, htmlTitle);
+        
+        String htmlCrawlLink = fileAccessResponse.getBody().htmlPath().getString("html.body.table.tr[2].td[0]");
+        //msgt("html crawl link: "+htmlCrawlLink);
+        assertEquals(expectedLinkTopFolder, htmlCrawlLink);
+        
+        String htmlCrawlLinkAhref = fileAccessResponse.getBody().htmlPath().get("html.body.table.tr[2].td[0].a.@href").toString();
+        //msgt("html crawl link href: "+htmlCrawlLinkAhref);
+        assertEquals(expectedLinkAhrefTopFolder, htmlCrawlLinkAhref);
+
+        
+        // ... and with the folder name "subfolder" specified: 
+        // (should result in being shown one access link to the file above, no folders)
+        fileAccessResponse = UtilIT.getCrawlableFileAccess(datasetId.toString(), folderName, apiToken);
+        fileAccessResponse.then().assertThat().statusCode(OK.getStatusCode()).contentType("text/html");
+
+        htmlTitle = fileAccessResponse.getBody().htmlPath().getString("html.head.title");
+        assertEquals(expectedTitleSubFolder, htmlTitle);
+        
+        htmlCrawlLink = fileAccessResponse.getBody().htmlPath().getString("html.body.table.tr[2].td[0]");
+        //msgt("html crawl link: "+htmlCrawlLink);
+        // this should be the name of the test file above:
+        assertEquals(testFileName, htmlCrawlLink);
+        
+        htmlCrawlLinkAhref = fileAccessResponse.getBody().htmlPath().get("html.body.table.tr[2].td[0].a.@href").toString();
+        //msgt("html crawl link href: "+htmlCrawlLinkAhref);
+        assertEquals(expectedLinkAhrefSubFolder, htmlCrawlLinkAhref);
 
     }
     

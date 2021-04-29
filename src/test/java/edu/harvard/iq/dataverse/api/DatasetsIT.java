@@ -26,35 +26,57 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.UUID;
-import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import org.apache.commons.lang.StringUtils;
 import com.jayway.restassured.parsing.Parser;
 import static com.jayway.restassured.path.json.JsonPath.with;
 import com.jayway.restassured.path.xml.XmlPath;
+import edu.harvard.iq.dataverse.Dataset;
 import static edu.harvard.iq.dataverse.api.UtilIT.equalToCI;
 import static edu.harvard.iq.dataverse.authorization.AuthenticationResponse.Status.ERROR;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObjectBuilder;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import javax.persistence.PersistenceContext;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.NO_CONTENT;
+import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
+import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import org.junit.Before;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
 public class DatasetsIT {
 
     private static final Logger logger = Logger.getLogger(DatasetsIT.class.getCanonicalName());
+    
+    
 
     @BeforeClass
     public static void setUpClass() {
+        
+        
         RestAssured.baseURI = UtilIT.getRestAssuredBaseUri();
 
         Response removeIdentifierGenerationStyle = UtilIT.deleteSetting(SettingsServiceBean.Key.IdentifierGenerationStyle);
@@ -1869,4 +1891,277 @@ public class DatasetsIT {
 
     }
     
+    @Test
+    public void testUpdateDatasetVersionWithFiles() throws InterruptedException {
+        Response createCurator = UtilIT.createRandomUser();
+        createCurator.prettyPrint();
+        createCurator.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String curatorUsername = UtilIT.getUsernameFromResponse(createCurator);
+        String curatorApiToken = UtilIT.getApiTokenFromResponse(createCurator);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(curatorApiToken);
+        createDataverseResponse.prettyPrint();
+        createDataverseResponse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        Response createAuthor = UtilIT.createRandomUser();
+        createAuthor.prettyPrint();
+        createAuthor.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String authorUsername = UtilIT.getUsernameFromResponse(createAuthor);
+        String authorApiToken = UtilIT.getApiTokenFromResponse(createAuthor);
+
+ 
+        Response grantAuthorAddDataset = UtilIT.grantRoleOnDataverse(dataverseAlias, DataverseRole.DS_CONTRIBUTOR.toString(), "@" + authorUsername, curatorApiToken);
+        grantAuthorAddDataset.prettyPrint();
+        grantAuthorAddDataset.then().assertThat()
+                .body("data.assignee", equalTo("@" + authorUsername))
+                .body("data._roleAlias", equalTo("dsContributor"))
+                .statusCode(OK.getStatusCode());
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, authorApiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+
+        // FIXME: have the initial create return the DOI or Handle to obviate the need for this call.
+        Response getDatasetJsonBeforePublishing = UtilIT.nativeGet(datasetId, authorApiToken);
+        getDatasetJsonBeforePublishing.prettyPrint();
+        String protocol = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.protocol");
+        String authority = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.authority");
+        String identifier = JsonPath.from(getDatasetJsonBeforePublishing.getBody().asString()).getString("data.identifier");
+
+        String datasetPersistentId = protocol + ":" + authority + "/" + identifier;
+        System.out.println("datasetPersistentId: " + datasetPersistentId);
+
+       String pathToJsonFile = "src/test/resources/json/update-dataset-version-with-files.json";
+
+        Response updateMetadataAddFilesViaNative = UtilIT.updateDatasetMetadataViaNative(datasetPersistentId, pathToJsonFile, authorApiToken);
+        updateMetadataAddFilesViaNative.prettyPrint();
+        updateMetadataAddFilesViaNative.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+        // These println's are here in case you want to log into the GUI to see what notifications look like.
+        System.out.println("Curator username/password: " + curatorUsername);
+        System.out.println("Author username/password: " + authorUsername);
+
+    }
+    
+    @Test
+    public void testLinkingDatasets() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createSuperUser = UtilIT.createRandomUser();
+        createSuperUser.prettyPrint();
+        createSuperUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String superuserUsername = UtilIT.getUsernameFromResponse(createSuperUser);
+        String superuserApiToken = UtilIT.getApiTokenFromResponse(createSuperUser);
+        Response makeSuperuser = UtilIT.makeSuperUser(superuserUsername);
+        makeSuperuser.prettyPrint();
+        makeSuperuser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        Response createDataverse1 = UtilIT.createRandomDataverse(apiToken);
+        createDataverse1.prettyPrint();
+        createDataverse1.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverse1Alias = UtilIT.getAliasFromResponse(createDataverse1);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+
+        Response createDataverse2 = UtilIT.createRandomDataverse(apiToken);
+        createDataverse2.prettyPrint();
+        createDataverse2.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverse2Alias = UtilIT.getAliasFromResponse(createDataverse2);
+        Integer dataverse2Id = UtilIT.getDatasetIdFromResponse(createDataverse2);
+        String dataverse2Name = JsonPath.from(createDataverse2.asString()).getString("data.name");
+
+        UtilIT.publishDataverseViaNativeApi(dataverse1Alias, apiToken).then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        // Link dataset to second dataverse.
+        //should fail if dataset is not published
+        Response linkDataset = UtilIT.linkDataset(datasetPid, dataverse2Alias, superuserApiToken);
+        linkDataset.prettyPrint();
+        linkDataset.then().assertThat()
+                .body("message", equalTo(BundleUtil.getStringFromBundle("dataset.link.not.available")))
+                .statusCode(FORBIDDEN.getStatusCode());
+
+        UtilIT.publishDatasetViaNativeApi(datasetPid, "major", apiToken).then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        //Once published you should be able to link it
+        linkDataset = UtilIT.linkDataset(datasetPid, dataverse2Alias, superuserApiToken);
+        linkDataset.prettyPrint();
+        linkDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+//Experimental code for trying to trick test into thinking the dataset has been harvested
+/*
+createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId2 = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid2 = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+        
+        linkDataset = UtilIT.linkDataset(datasetPid2, dataverse2Alias, superuserApiToken);
+        linkDataset.prettyPrint();
+        linkDataset.then().assertThat()
+                .body("message", equalTo( BundleUtil.getStringFromBundle("dataset.link.not.available")))
+                .statusCode(FORBIDDEN.getStatusCode());
+                EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+        // Do stuff...
+        entityManager.createNativeQuery("UPDATE dataset SET harvestingclient_id=1 WHERE id="+datasetId2).executeUpdate();
+        entityManager.getTransaction().commit();
+        entityManager.close();
+
+        
+        UtilIT.linkDataset(datasetId2.toString(), dataverse2Alias, superuserApiToken);
+        linkDataset.prettyPrint();
+        linkDataset.then().assertThat()
+                .statusCode(OK.getStatusCode());
+         */
+    }
+
+    /**
+     * In this test we are restricting a file and testing "export DDI" at the
+     * dataset level as well as getting the DDI at the file level.
+     *
+     * Export at the dataset level is always the public version.
+     *
+     * At the file level, you can still get summary statistics (and friends,
+     * "dataDscr") if you have access to download the file. If you don't have
+     * access, you get an error.
+     */
+    @Test
+    public void testRestrictFileExportDdi() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String authorUsername = UtilIT.getUsernameFromResponse(createUser);
+        String authorApiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(authorApiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, authorApiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+
+        Path pathToFile = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.csv");
+        String contentOfCsv = ""
+                + "name,pounds,species\n"
+                + "Marshall,40,dog\n"
+                + "Tiger,17,cat\n"
+                + "Panther,21,cat\n";
+        java.nio.file.Files.write(pathToFile, contentOfCsv.getBytes());
+
+        Response uploadFile = UtilIT.uploadFileViaNative(datasetId.toString(), pathToFile.toString(), authorApiToken);
+        uploadFile.prettyPrint();
+        uploadFile.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data.csv"));
+
+        String fileId = JsonPath.from(uploadFile.body().asString()).getString("data.files[0].dataFile.id");
+
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToFile, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", authorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        Response restrictFile = UtilIT.restrictFile(fileId, true, authorApiToken);
+        restrictFile.prettyPrint();
+        restrictFile.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, authorApiToken);
+        publishDataverse.then().assertThat().statusCode(OK.getStatusCode());
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", authorApiToken);
+        publishDataset.then().assertThat().statusCode(OK.getStatusCode());
+
+        // We're testing export here, which is at dataset level.
+        // Guest/public version
+        Response exportByGuest = UtilIT.exportDataset(datasetPid, "ddi");
+        exportByGuest.prettyPrint();
+        exportByGuest.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("codeBook.fileDscr.fileTxt.fileName", equalTo("data.tab"));
+
+        // Here we are asserting that dataDscr is empty. TODO: Do this in REST Assured.
+        String dataDscrForGuest = XmlPath.from(exportByGuest.asString()).getString("codeBook.dataDscr");
+        Assert.assertEquals("", dataDscrForGuest);
+
+        // Author export (has access)
+        Response exportByAuthor = UtilIT.exportDataset(datasetPid, "ddi", authorApiToken);
+        exportByAuthor.prettyPrint();
+        exportByAuthor.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("codeBook.fileDscr.fileTxt.fileName", equalTo("data.tab"));
+
+        // Here we are asserting that dataDscr is empty. TODO: Do this in REST Assured.
+        String dataDscrForAuthor = XmlPath.from(exportByAuthor.asString()).getString("codeBook.dataDscr");
+        Assert.assertEquals("", dataDscrForAuthor);
+
+        // Now we are testing file-level retrieval.
+        // The author has access to a restricted file and gets all the metadata.
+        Response fileMetadataDdiAuthor = UtilIT.getFileMetadata(fileId, "ddi", authorApiToken);
+        fileMetadataDdiAuthor.prettyPrint();
+        fileMetadataDdiAuthor.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("codeBook.fileDscr.fileTxt.fileName", equalTo("data.tab"))
+                //                .body("codeBook", containsString("dataDscr"))
+                // The names of all these variables (name, pounds, species) should be visible.
+                .body("codeBook.dataDscr", CoreMatchers.not(equalTo(null)))
+                //                .body("codeBook.dataDscr", equalTo(null))
+                .body("codeBook.dataDscr.var[0].@name", equalTo("name"))
+                .body("codeBook.dataDscr.var[1].@name", equalTo("pounds"))
+                // This is an example of a summary stat (max) that should be visible.
+                .body("codeBook.dataDscr.var[1].sumStat.find { it.@type == 'max' }", equalTo("40.0"))
+                .body("codeBook.dataDscr.var[2].@name", equalTo("species"));
+
+        Response createUserNoAuth = UtilIT.createRandomUser();
+        createUserNoAuth.prettyPrint();
+        String usernameNoAuth = UtilIT.getUsernameFromResponse(createUserNoAuth);
+        String apiTokenNoAuth = UtilIT.getApiTokenFromResponse(createUserNoAuth);
+
+        // Users with no access to the restricted file are blocked.
+        Response fileMetadataDdiUserNoAuth = UtilIT.getFileMetadata(fileId, "ddi", apiTokenNoAuth);
+        fileMetadataDdiUserNoAuth.prettyPrint();
+        fileMetadataDdiUserNoAuth.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("You do not have permission to download this file."));
+
+        // Guest users (not logged in) are also blocked.
+        Response fileMetadataDdiGuest = UtilIT.getFileMetadata(fileId, "ddi");
+        fileMetadataDdiGuest.prettyPrint();
+        fileMetadataDdiGuest.then().assertThat()
+                .statusCode(BAD_REQUEST.getStatusCode())
+                .body("message", equalTo("You do not have permission to download this file."));
+    }
+
 }
