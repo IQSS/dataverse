@@ -812,10 +812,6 @@ public class GuestbookResponseServiceBean {
     }
     
     public GuestbookResponse initAPIGuestbookResponse(Dataset dataset, DataFile dataFile, DataverseSession session, User user) {
-        return initAPIGuestbookResponse(dataset, null, dataFile, session, user);
-    }
-    
-    public GuestbookResponse initAPIGuestbookResponse(Dataset dataset, DatasetVersion version, DataFile dataFile, DataverseSession session, User user) {
         GuestbookResponse guestbookResponse = new GuestbookResponse();
         Guestbook datasetGuestbook = dataset.getGuestbook();
         
@@ -825,14 +821,6 @@ public class GuestbookResponseServiceBean {
             guestbookResponse.setGuestbook(datasetGuestbook);            
         }
 
-        // This may not be doing what we want: 
-        if (version == null) {
-            version = dataset.getLatestVersion();
-        }
-        
-       if(version != null && version.isDraft()){
-            guestbookResponse.setWriteResponse(false);
-        }
         if (dataFile != null){
             guestbookResponse.setDataFile(dataFile);
         }        
