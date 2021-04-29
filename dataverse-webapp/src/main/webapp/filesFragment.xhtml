@@ -41,7 +41,7 @@
         <p:dataTable id="filesTable"
                      rows="10" paginator="#{datasetFilesTab.getFileSize() gt 10}" paginatorPosition="bottom"
                      paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} #{bundle['file.dynamicCounter.filesPerPage']} {RowsPerPageDropdown}"
-                     rowsPerPageTemplate="10,25,50,1000"
+                     rowsPerPageTemplate="10,25,50,100"
                      style="margin-right:1px;"
                      lazy="true"
                      value="#{datasetFilesTab.fileMetadatasSearch}"
