@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import java.io.File;
@@ -148,6 +149,14 @@ public class DatasetServiceBean implements java.io.Serializable {
             }
             return retList;
         }
+    }
+
+    public List<Dataset> findByCreatorId(Long creatorId) {
+        return em.createNamedQuery("Dataset.findByCreatorId").setParameter("creatorId", creatorId).getResultList();
+    }
+
+    public List<Dataset> findByReleaseUserId(Long releaseUserId) {
+        return em.createNamedQuery("Dataset.findByReleaseUserId").setParameter("releaseUserId", releaseUserId).getResultList();
     }
 
     public List<Dataset> filterByPidQuery(String filterQuery) {
@@ -719,6 +728,27 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     }
     
+    //get a string to add to save success message
+    //depends on dataset state and user privleges
+    public String getReminderString(Dataset dataset, boolean canPublishDataset) {
+
+        if(!dataset.isReleased() ){
+            //messages for draft state.
+            if (canPublishDataset){
+                return BundleUtil.getStringFromBundle("dataset.message.publish.remind.draft");
+            } else {
+                return BundleUtil.getStringFromBundle("dataset.message.submit.remind.draft");
+            }            
+        } else{
+            //messages for new version - post-publish
+            if (canPublishDataset){
+                return BundleUtil.getStringFromBundle("dataset.message.publish.remind.version");
+            } else {
+                return BundleUtil.getStringFromBundle("dataset.message.submit.remind.version");
+            }           
+        }             
+    }
+    
     public void updateLastExportTimeStamp(Long datasetId) {
         Date now = new Date();
         em.createNativeQuery("UPDATE Dataset SET lastExportTime='"+now.toString()+"' WHERE id="+datasetId).executeUpdate();
@@ -786,6 +816,12 @@ public class DatasetServiceBean implements java.io.Serializable {
         em.persist(workflowComment);
         return workflowComment;
     }
+    
+    public void markWorkflowCommentAsRead(WorkflowComment workflowComment) {
+        workflowComment.setToBeShown(false);
+        em.merge(workflowComment);
+    }
+    
     
     /**
      * This method used to throw CommandException, which was pretty pointless 
@@ -963,7 +999,7 @@ public class DatasetServiceBean implements java.io.Serializable {
             // (i.e., the metadata exports):
             StorageIO<Dataset> datasetSIO = DataAccess.getStorageIO(dataset);
             
-            for (String[] exportProvider : ExportService.getInstance(settingsService).getExportersLabels()) {
+            for (String[] exportProvider : ExportService.getInstance().getExportersLabels()) {
                 String exportLabel = "export_" + exportProvider[1] + ".cached";
                 try {
                     total += datasetSIO.getAuxObjectSize(exportLabel);

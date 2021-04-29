@@ -6,6 +6,7 @@
 
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.AuxiliaryFile;
 import java.lang.reflect.Type;
 import java.lang.annotation.Annotation;
 import java.io.InputStream; 
@@ -42,6 +43,9 @@ import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.RedirectionException;
 import javax.ws.rs.ServiceUnavailableException;
+import org.apache.tika.mime.MimeType;
+import org.apache.tika.mime.MimeTypeException;
+import org.apache.tika.mime.MimeTypes;
 
 /**
  *
@@ -238,7 +242,8 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     }
                     long auxFileSize = di.getAuxiliaryFile().getFileSize();
                     InputStreamIO auxStreamIO = new InputStreamIO(storageIO.getAuxFileAsInputStream(auxTag), auxFileSize);
-                    auxStreamIO.setFileName(storageIO.getFileName() + "." + auxTag);
+                    String fileExtension = getFileExtension(di.getAuxiliaryFile());
+                    auxStreamIO.setFileName(storageIO.getFileName() + "." + auxTag + fileExtension);
                     auxStreamIO.setMimeType(di.getAuxiliaryFile().getContentType());
                     storageIO = auxStreamIO;
                     
@@ -388,7 +393,24 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
         throw new NotFoundException();
 
     }
-    
+
+    private String getFileExtension(AuxiliaryFile auxFile) {
+        String fileExtension = "";
+        if (auxFile == null) {
+            return fileExtension;
+        }
+        String contentType = auxFile.getContentType();
+        if (contentType != null) {
+            MimeTypes allTypes = MimeTypes.getDefaultMimeTypes();
+            try {
+                MimeType mimeType = allTypes.forName(contentType);
+                fileExtension = mimeType.getExtension();
+            } catch (MimeTypeException ex) {
+            }
+        }
+        return fileExtension;
+    }
+
     private boolean isThumbnailDownload(DownloadInstance downloadInstance) {
         if (downloadInstance == null) return false; 
         

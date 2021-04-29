@@ -642,7 +642,25 @@ public class UtilIT {
         }
         return requestSpecification.post("/api/datasets/" + datasetId + "/add");
     }
-    
+
+    static Response uploadAuxFile(Long fileId, String pathToFile, String formatTag, String formatVersion, String mimeType, boolean isPublic, String type, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .multiPart("file", new File(pathToFile), mimeType)
+                .multiPart("isPublic", isPublic);
+        if (type != null) {
+            requestSpecification.multiPart("type", type);
+        }
+        return requestSpecification.post("/api/access/datafile/" + fileId + "/metadata/" + formatTag + "/" + formatVersion);
+    }
+
+    static Response downloadAuxFile(Long fileId, String formatTag, String formatVersion, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/access/datafile/" + fileId + "/metadata/" + formatTag + "/" + formatVersion);
+        return response;
+    }
+
     static Response getCrawlableFileAccess(String datasetId, String folderName, String apiToken) {
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken);
@@ -977,10 +995,36 @@ public class UtilIT {
                 .post("api/dataverses/" + definitionPoint + "/assignments?key=" + apiToken);
     }
 
+    public static Response deactivateUser(String username) {
+        Response deactivateUserResponse = given()
+                .post("/api/admin/authenticatedUsers/" + username + "/deactivate");
+        return deactivateUserResponse;
+    }
+
+    public static Response deactivateUser(Long userId) {
+        Response deactivateUserResponse = given()
+                .post("/api/admin/authenticatedUsers/id/" + userId + "/deactivate");
+        return deactivateUserResponse;
+    }
+
     public static Response deleteUser(String username) {
         Response deleteUserResponse = given()
                 .delete("/api/admin/authenticatedUsers/" + username + "/");
         return deleteUserResponse;
+    }
+
+    public static Response deleteUserRoles(String username, String apiToken) {
+        Response deleteUserResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .post("/api/users/" + username + "/removeRoles");
+        return deleteUserResponse;
+    }
+
+    public static Response getUserTraces(String username, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/users/" + username + "/traces");
+        return response;
     }
 
     public static Response reingestFile(Long fileId, String apiToken) {
@@ -1201,6 +1245,7 @@ public class UtilIT {
         return response;
     }
 
+    // TODO: Consider removing apiToken since it isn't used by the API itself.
     static Response getAuthenticatedUser(String userIdentifier, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -2492,6 +2537,66 @@ public class UtilIT {
                 .body(jsonIn)
                 .contentType("application/json")
                 .post("/api/admin/bannerMessage");
+        return addBannerMessageResponse;
+    }
+    
+    static Response addBuiltInRole(String pathToJsonFile) {
+        String jsonIn = getDatasetJson(pathToJsonFile);
+
+        Response addBannerMessageResponse = given()
+                .body(jsonIn)
+                .contentType("application/json")
+                .post("/api/admin/roles");
+        return addBannerMessageResponse;
+    }
+
+    static Response deleteBuiltInRole(String roleAlias) {
+
+        Response addBannerMessageResponse = given()
+                .delete("/api/admin/roles/:alias?alias=" +roleAlias);
+        return addBannerMessageResponse;
+    }
+
+    static Response addDataverseRole(String pathToJsonFile, String dvAlias, String apiToken) {
+        String jsonIn = getDatasetJson(pathToJsonFile);
+
+        Response addBannerMessageResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .body(jsonIn)
+                .contentType("application/json")
+                .post("/api/roles?dvo="+dvAlias);
+        return addBannerMessageResponse;
+    }
+
+    static Response deleteDataverseRole( String roleAlias, String apiToken) {
+
+        Response addBannerMessageResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/roles/:alias?alias="+roleAlias);
+        return addBannerMessageResponse;
+    }
+    
+    static Response deleteDataverseRoleById( String id, String apiToken) {
+
+        Response addBannerMessageResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .delete("/api/roles/"+id);
+        return addBannerMessageResponse;
+    }
+    
+    static Response viewDataverseRole( String roleAlias, String apiToken) {
+
+        Response addBannerMessageResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/roles/:alias?alias="+roleAlias);
+        return addBannerMessageResponse;
+    }
+    
+    static Response viewDataverseRoleById( String id, String apiToken) {
+
+        Response addBannerMessageResponse = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/roles/"+id);
         return addBannerMessageResponse;
     }
     

@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -15,6 +17,7 @@ import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import org.apache.tika.Tika;
 
 /**
@@ -28,7 +31,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
    private static final Logger logger = Logger.getLogger(AuxiliaryFileServiceBean.class.getCanonicalName());
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    protected EntityManager em;
     
     @EJB
     private SystemConfig systemConfig;
@@ -54,9 +57,11 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
      * @param formatVersion - to distinguish between multiple versions of a file
      * @param origin - name of the tool/system that created the file
      * @param isPublic boolean - is this file available to any user?
+     * @param type how to group the files such as "DP" for "Differentially
+     * Private Statistics".
      * @return success boolean - returns whether the save was successful
      */
-    public AuxiliaryFile processAuxiliaryFile(InputStream fileInputStream, DataFile dataFile, String formatTag, String formatVersion, String origin, boolean isPublic) {
+    public AuxiliaryFile processAuxiliaryFile(InputStream fileInputStream, DataFile dataFile, String formatTag, String formatVersion, String origin, boolean isPublic, String type) {
     
         StorageIO<DataFile> storageIO =null;
         AuxiliaryFile auxFile = new AuxiliaryFile();
@@ -81,6 +86,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
             auxFile.setFormatVersion(formatVersion);
             auxFile.setOrigin(origin);
             auxFile.setIsPublic(isPublic);
+            auxFile.setType(type);
             auxFile.setDataFile(dataFile);         
             auxFile.setFileSize(storageIO.getAuxObjectSize(auxExtension));
             auxFile = save(auxFile);
@@ -101,7 +107,7 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
     
     public AuxiliaryFile lookupAuxiliaryFile(DataFile dataFile, String formatTag, String formatVersion) {
         
-        Query query = em.createQuery("select object(o) from AuxiliaryFile as o where o.dataFile.id = :dataFileId and o.formatTag = :formatTag and o.formatVersion = :formatVersion");
+        Query query = em.createNamedQuery("AuxiliaryFile.lookupAuxiliaryFile");
                 
         query.setParameter("dataFileId", dataFile.getId());
         query.setParameter("formatTag", formatTag);
@@ -112,6 +118,75 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
         } catch(Exception ex) {
             return null;
         }
+    }
+
+    public List<AuxiliaryFile> findAuxiliaryFiles(DataFile dataFile) {
+        TypedQuery query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFiles", AuxiliaryFile.class);
+        query.setParameter("dataFileId", dataFile.getId());
+        return query.getResultList();
+    }
+
+    /**
+     * @param inBundle If true, only return types that are in the bundle. If
+     * false, only return types that are not in the bundle.
+     */
+    public List<String> findAuxiliaryFileTypes(DataFile dataFile, boolean inBundle) {
+        List<String> allTypes = findAuxiliaryFileTypes(dataFile);
+        List<String> typesInBundle = new ArrayList<>();
+        List<String> typeNotInBundle = new ArrayList<>();
+        for (String type : allTypes) {
+            // Check if type is in the bundle.
+            String friendlyType = getFriendlyNameForType(type);
+            if (friendlyType != null) {
+                typesInBundle.add(type);
+            } else {
+                typeNotInBundle.add(type);
+            }
+        }
+        if (inBundle) {
+            return typesInBundle;
+        } else {
+            return typeNotInBundle;
+        }
+    }
+
+    public List<String> findAuxiliaryFileTypes(DataFile dataFile) {
+        Query query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFileTypes");
+        query.setParameter(1, dataFile.getId());
+        return query.getResultList();
+    }
+
+    public List<AuxiliaryFile> findAuxiliaryFilesByType(DataFile dataFile, String typeString) {
+        TypedQuery query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFilesByType", AuxiliaryFile.class);
+        query.setParameter("dataFileId", dataFile.getId());
+        query.setParameter("type", typeString);
+        return query.getResultList();
+    }
+
+    public List<AuxiliaryFile> findOtherAuxiliaryFiles(DataFile dataFile) {
+        List<AuxiliaryFile> otherAuxFiles = new ArrayList<>();
+        List<String> otherTypes = findAuxiliaryFileTypes(dataFile, false);
+        for (String typeString : otherTypes) {
+            TypedQuery query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFilesByType", AuxiliaryFile.class);
+            query.setParameter("dataFileId", dataFile.getId());
+            query.setParameter("type", typeString);
+            List<AuxiliaryFile> auxFiles = query.getResultList();
+            otherAuxFiles.addAll(auxFiles);
+        }
+        otherAuxFiles.addAll(findAuxiliaryFilesWithoutType(dataFile));
+        return otherAuxFiles;
+    }
+
+    public List<AuxiliaryFile> findAuxiliaryFilesWithoutType(DataFile dataFile) {
+        Query query = em.createNamedQuery("AuxiliaryFile.findAuxiliaryFilesWithoutType", AuxiliaryFile.class);
+        query.setParameter("dataFileId", dataFile.getId());
+        return query.getResultList();
+    }
+
+    public String getFriendlyNameForType(String type) {
+        AuxiliaryFile auxFile = new AuxiliaryFile();
+        auxFile.setType(type);
+        return auxFile.getTypeFriendly();
     }
 
 }
