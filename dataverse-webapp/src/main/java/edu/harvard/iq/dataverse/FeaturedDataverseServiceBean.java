@@ -86,7 +86,7 @@ public class FeaturedDataverseServiceBean {
     public List<Dataverse> findFeaturableDataverses(Long dataverseId) {
         List<Dataverse> featurableDataverses = new ArrayList<>();
         featurableDataverses.addAll(dataverseRepository.findPublishedByOwnerId(dataverseId));
-        featurableDataverses.addAll(linkingService.findLinkingDataverses(dataverseId));
+        featurableDataverses.addAll(linkingService.findLinkedDataverses(dataverseId));
         return featurableDataverses;
     }
 
