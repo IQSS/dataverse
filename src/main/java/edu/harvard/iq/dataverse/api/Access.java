@@ -115,6 +115,9 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import javax.ws.rs.core.StreamingOutput;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.net.URISyntaxException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.RedirectionException;
 import javax.ws.rs.core.MediaType;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
@@ -538,6 +541,8 @@ public class Access extends AbstractApiBean {
     /*
      * GET method for retrieving various auxiliary files associated with 
      * a tabular datafile.
+     *
+     * TODO: Consider removing "metadata" from the path.
      */
     
     @Path("datafile/{fileId}/metadata/{formatTag}/{formatVersion}")
@@ -584,8 +589,9 @@ public class Access extends AbstractApiBean {
             if (auxFile == null) {
                 throw new NotFoundException("Auxiliary metadata format "+formatTag+" is not available for datafile "+fileId);
             }
-            
-            if (auxFile.getIsPublic()) {
+
+            // Don't consider aux file public unless data file is published.
+            if (auxFile.getIsPublic() && df.getPublicationDate() != null) {
                 publiclyAvailable = true;
             }
             downloadInstance = new DownloadInstance(dInfo);
@@ -1186,10 +1192,13 @@ public class Access extends AbstractApiBean {
      * @param formatVersion
      * @param origin
      * @param isPublic
+     * @param type
      * @param fileInputStream
      * @param contentDispositionHeader
      * @param formDataBodyPart
      * @return 
+     *
+     * TODO: Consider removing "metadata" from the path.
      */
     @Path("datafile/{fileId}/metadata/{formatTag}/{formatVersion}")
     @POST
@@ -1200,6 +1209,7 @@ public class Access extends AbstractApiBean {
             @PathParam("formatVersion") String formatVersion,
             @FormDataParam("origin") String origin,
             @FormDataParam("isPublic") boolean isPublic,
+            @FormDataParam("type") String type,
             @FormDataParam("file") InputStream fileInputStream
           
     ) {
@@ -1222,9 +1232,8 @@ public class Access extends AbstractApiBean {
         if (!dataFile.isTabularData()) {
             return error(BAD_REQUEST, "Not a tabular DataFile (db id=" + fileId + ")");
         }
-         
 
-        AuxiliaryFile saved = auxiliaryFileService.processAuxiliaryFile(fileInputStream, dataFile, formatTag, formatVersion, origin, isPublic);
+        AuxiliaryFile saved = auxiliaryFileService.processAuxiliaryFile(fileInputStream, dataFile, formatTag, formatVersion, origin, isPublic, type);
       
         if (saved!=null) {
             return ok(json(saved));
