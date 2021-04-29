@@ -4,6 +4,8 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.DigestInputStream;
@@ -145,24 +147,18 @@ public class AuxiliaryFileServiceBean implements java.io.Serializable {
         }
     }
 
-    public void deleteAuxiliaryFile(DataFile dataFile, String formatTag, String formatVersion) {
+    public void deleteAuxiliaryFile(DataFile dataFile, String formatTag, String formatVersion) throws IOException {
         AuxiliaryFile af = lookupAuxiliaryFile(dataFile, formatTag, formatVersion);
         if (af == null) {
-            throw new NotFoundException();
+            throw new FileNotFoundException();
         }
         em.remove(af);
         StorageIO<?> storageIO;
-        try {
-            storageIO = dataFile.getStorageIO();
-            String auxExtension = formatTag + "_" + formatVersion;
-            if (storageIO.isAuxObjectCached(auxExtension)) {
-                storageIO.deleteAuxObject(auxExtension);
-            }
-        } catch (IOException ioex) {
-            logger.warning("IO Exception trying remove auxiliary file in exception handler: " + ioex.getMessage());
-            throw new ServerErrorException("IO Exception trying remove auxiliary file", Response.Status.INTERNAL_SERVER_ERROR, ioex);
+        storageIO = dataFile.getStorageIO();
+        String auxExtension = formatTag + "_" + formatVersion;
+        if (storageIO.isAuxObjectCached(auxExtension)) {
+            storageIO.deleteAuxObject(auxExtension);
         }
-
     }
 
 }
