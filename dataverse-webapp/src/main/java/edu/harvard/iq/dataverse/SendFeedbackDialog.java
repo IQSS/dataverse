@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.feedback.FeedbackUtil;
 import edu.harvard.iq.dataverse.mail.MailService;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.validator.routines.EmailValidator;
@@ -211,12 +212,15 @@ public class SendFeedbackDialog implements java.io.Serializable {
         List<Feedback> feedbacks = FeedbackUtil.gatherFeedback(recipient, dataverseSession, messageSubject, userMessage, systemAddress, userEmail, systemConfig.getDataverseSiteUrl(), installationBrandName, supportTeamName);
         if (feedbacks.isEmpty()) {
             logger.warning("No feedback has been sent!");
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("contact.send.failure"));
             return null;
         }
         for (Feedback feedback : feedbacks) {
             logger.fine("sending feedback: " + feedback);
             mailService.sendMailAsync(feedback.getFromEmail(), feedback.getToEmail(), feedback.getSubject(), feedback.getBody());
         }
+        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("contact.send.success"));
+
         return null;
     }
 

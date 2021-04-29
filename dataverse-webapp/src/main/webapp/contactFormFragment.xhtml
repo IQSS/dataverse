@@ -110,7 +110,7 @@
                 <!-- send | cancel buttons -->
                 <div class="button-block">
                     <p:commandButton styleClass="btn btn-default btn-access" value="#{bundle['contact.send']}"
-                                    update="@form" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('contactForm').hide();" actionListener="#{sendFeedbackDialog.sendMessage}">
+                                    update="@form,:messagePanel" oncomplete="if (args &amp;&amp; !args.validationFailed) PF('contactForm').hide();" actionListener="#{sendFeedbackDialog.sendMessage}">
                     </p:commandButton>
                     <button type="button" onclick="PF('contactForm').hide()" class="btn btn-default" value="#{bundle.cancel}">
                         #{bundle.cancel}
