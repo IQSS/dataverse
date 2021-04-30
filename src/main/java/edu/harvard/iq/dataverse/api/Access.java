@@ -635,7 +635,7 @@ public class Access extends AbstractApiBean {
             final Dataset retrieved = findDatasetOrDie(datasetIdOrPersistentId);
             if (!(user instanceof GuestUser)) {
                 // The reason we are only looking up a draft version for a NON-guest user
-                // is that we know that guest is never authorized to 
+                // is that we know that guest never has the Permission.ViewUnpublishedDataset. 
                 final DatasetVersion draft = versionService.getDatasetVersionById(retrieved.getId(), DatasetVersion.VersionState.DRAFT.toString());
                 if (draft != null && permissionService.requestOn(req, retrieved).has(Permission.ViewUnpublishedDataset)) {                    
                     String fileIds = getFileIdsAsCommaSeparated(draft.getFileMetadatas());
