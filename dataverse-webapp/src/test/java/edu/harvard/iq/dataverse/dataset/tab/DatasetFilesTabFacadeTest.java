@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -108,6 +110,7 @@ class DatasetFilesTabFacadeTest {
         assertThat(updatedFiles.get(0)).extracting(FileMetadata::getCategoriesByName).is(new Condition<>(strings -> strings.contains(metaTag), ""));
         assertThat(updatedFiles.get(1)).extracting(FileMetadata::getCategoriesByName).is(new Condition<>(strings -> strings.contains(metaTag), ""));
         assertThat(updatedFiles.get(2)).extracting(FileMetadata::getCategoriesByName).is(new Condition<>(strings -> strings.contains(metaTag), ""));
+        Mockito.verify(datasetVersionRepository, times(1)).save(datasetVersion);
 
     }
 
@@ -162,6 +165,7 @@ class DatasetFilesTabFacadeTest {
 
         //then
         assertThat(updatedDsv.getFileMetadatas().get(0).getTermsOfUse().getLicense()).isEqualTo(license);
+        Mockito.verify(datasetVersionRepository, times(1)).save(datasetVersion);
     }
 
     @Test

@@ -77,6 +77,8 @@ public class DatasetFilesTabFacade {
                           });
         }
 
+        datasetVersionRepository.save(dsv);
+
         return dsv;
     }
 
@@ -92,6 +94,8 @@ public class DatasetFilesTabFacade {
                            .filter(fileMetadata -> fileMetadata.getId().equals(fm.getId()))
                            .forEach(fileMetadata -> fileMetadata.setTermsOfUse(termsOfUse.createCopy()));
         }
+
+        datasetVersionRepository.save(dsv);
 
         return dsv;
     }
