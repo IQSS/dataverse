@@ -453,7 +453,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         
         //Fix for 6029 FireFox was failing to parse it when content type was set to json 
-        response.setContentType("text/plain");
+        response.setContentType("text/plain;charset=utf-8");
         
         String fileNameString;
         if (fileMetadata == null || fileMetadata.getLabel() == null) {
