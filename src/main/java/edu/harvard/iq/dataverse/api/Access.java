@@ -629,15 +629,15 @@ public class Access extends AbstractApiBean {
     @GET
     @Produces({"application/zip"})
     public Response downloadAllFromLatest(@PathParam("id") String datasetIdOrPersistentId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
-        logger.info("inside download-all api");
         try {
             User user = findUserOrDie(); 
             DataverseRequest req = createDataverseRequest(user);
             final Dataset retrieved = findDatasetOrDie(datasetIdOrPersistentId);
             if (!(user instanceof GuestUser)) {
-                // If it is a guest user, let's not even bother looking up if a draft exists.
+                // The reason we are only looking up a draft version for a NON-guest user
+                // is that we know that guest is never authorized to 
                 final DatasetVersion draft = versionService.getDatasetVersionById(retrieved.getId(), DatasetVersion.VersionState.DRAFT.toString());
-                if (draft != null && permissionService.requestOn(req, retrieved).has(Permission.ViewUnpublishedDataset)) {
+                if (draft != null && permissionService.requestOn(req, retrieved).has(Permission.ViewUnpublishedDataset)) {                    
                     String fileIds = getFileIdsAsCommaSeparated(draft.getFileMetadatas());
                     // We don't want downloads from Draft versions to be counted, 
                     // so we are setting the gbrecs (aka "do not write guestbook response") 
@@ -650,11 +650,16 @@ public class Access extends AbstractApiBean {
             
             final DatasetVersion latest = versionService.getLatestReleasedVersionFast(retrieved.getId()); 
             
-            // Make sure to throw a clean "not found" if we have failed to locate an 
-            // accessible version: 
+            // Make sure to throw a clean error code if we have failed to locate an 
+            // accessible version:
+            // (A "Not Found" would be more appropriate here, I believe, than a "Bad Request". 
+            // But we've been using the latter for a while, and it's a popular API... 
+            // and this return code is expected by our tests - so I'm choosing it to keep 
+            // -- L.A.)
             
             if (latest == null) {
-                throw new NotFoundException();
+                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.exception.dataset.not.found"));
+                //throw new NotFoundException();
             }
             
             String fileIds = getFileIdsAsCommaSeparated(latest.getFileMetadatas());
@@ -694,7 +699,10 @@ public class Access extends AbstractApiBean {
                 }
             }));
             if (dsv == null) {
-                // Shouldn't this be a 404/not found here? 
+                // (A "Not Found" would be more appropriate here, I believe, than a "Bad Request". 
+                // But we've been using the latter for a while, and it's a popular API... 
+                // and this return code is expected by our tests - so I'm choosing it to keep 
+                // -- L.A.)
                 return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.exception.version.not.found"));
             }
             String fileIds = getFileIdsAsCommaSeparated(dsv.getFileMetadatas());
@@ -1903,7 +1911,6 @@ public class Access extends AbstractApiBean {
     }
 
     private URI handleCustomZipDownload(String customZipServiceUrl, String fileIds, String apiToken, User apiTokenUser, UriInfo uriInfo, HttpHeaders headers, boolean donotwriteGBResponse, boolean orig) throws WebApplicationException {
-        logger.info("inside handleCustomZipDownload");
         
         String zipServiceKey = null; 
         Timestamp timestamp = null; 
@@ -1925,7 +1932,6 @@ public class Access extends AbstractApiBean {
             } catch (NumberFormatException nfe) {
                 fileId = null;
             }
-            logger.info("handling file "+fileId);
             if (fileId != null) {
                 DataFile file = dataFileService.find(fileId);
                 if (file != null) {
