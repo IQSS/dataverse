@@ -1928,6 +1928,7 @@ public class DatasetPage implements java.io.Serializable {
             } else if (!permissionService.on(dataset.getOwner()).has(Permission.AddDataset)) {
                 return permissionsWrapper.notAuthorized(); 
             }
+
             //Wait until the create command before actually getting an identifier, except if we're using directUpload  
         	//Need to assign an identifier prior to calls to requestDirectUploadUrl if direct upload is used.
             if ( isEmpty(dataset.getIdentifier()) && systemConfig.directUploadEnabled(dataset) ) {
@@ -3388,6 +3389,9 @@ public class DatasetPage implements java.io.Serializable {
                         return null;
                     }
                 } else {
+                    //Lock the metadataLanguage once created
+                    dataset.setMetadataLanguage(dataset.getOwner().getEffectiveMetadataLanguage());
+                    
                    cmd = new CreateNewDatasetCommand(dataset, dvRequestService.getDataverseRequest());
                 }
                 
