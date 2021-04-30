@@ -793,6 +793,7 @@
                                     <ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDate != null ? DatasetPage.dataset.publicationDateFormattedYYYYMMDD : ''}"/>
                                     <ui:param name="globalId" value="#{DatasetPage.dataset.globalIdString}"/>
                                     <ui:param name="altPID" value="#{DatasetPage.dataset.alternativePersistentIdentifier}"/>
+                                    <ui:param name="mdLang" value="#{DatasetPage.dataset.effectiveMetadataLanguage}"/>
                                 </ui:include>
                             </p:tab>
                             <!-- 4.2.1: see comment above -->
