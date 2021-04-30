@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.xml.stream.XMLStreamException;
 import java.io.ByteArrayOutputStream;
@@ -22,6 +23,7 @@ public class OpenAireExporter implements Exporter {
 
     // -------------------- CONSTRUCTORS --------------------
 
+    @Inject
     public OpenAireExporter(SettingsServiceBean settingsService, JsonPrinter jsonPrinter) {
         this.settingsService = settingsService;
         this.jsonPrinter = jsonPrinter;
