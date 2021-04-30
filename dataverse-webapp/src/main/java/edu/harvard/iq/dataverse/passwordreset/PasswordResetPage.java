@@ -146,13 +146,9 @@ public class PasswordResetPage implements java.io.Serializable {
             }
             FacesContext.getCurrentInstance().addMessage(null,
                                                          new FacesMessage(FacesMessage.SEVERITY_INFO,
-                                                                          BundleUtil.getStringFromBundle(
-                                                                                  "passwdVal.passwdReset.resetInitiated"),
-                                                                          ""));
+                                                                          BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetInitiated"),
+                                                                          BundleUtil.getStringFromBundle("passwdReset.successSubmit.tip", emailAddress)));
         } catch (PasswordResetException ex) {
-            /**
-             * @todo do we really need a special exception for this??
-             */
             logger.log(Level.WARNING, "Error While resetting password: " + ex.getMessage(), ex);
         }
         return "";
