@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+
 import javax.persistence.MappedSuperclass;
 import org.apache.commons.lang.StringUtils;
 
@@ -12,6 +14,12 @@ import org.apache.commons.lang.StringUtils;
 @MappedSuperclass
 public abstract class DvObjectContainer extends DvObject {
 	
+    
+    //Default to "file" is for tests only
+    public static final String DEFAULT_METADATA_LANGUAGE = BundleUtil.getCurrentLocale().getLanguage();
+    public static final String UNDEFINED_METADATA_LANGUAGE_CODE = "undefined"; //Used in dataverse.xhtml as a non-null selection option value (indicating inheriting the default)
+    
+    
     public void setOwner(Dataverse owner) {
         super.setOwner(owner);
     }
@@ -29,6 +37,8 @@ public abstract class DvObjectContainer extends DvObject {
     }
 
     private String storageDriver=null;
+    
+    private String metadataLanguage=null;
     
     public String getEffectiveStorageDriverId() {
         String id = storageDriver;
@@ -56,4 +66,32 @@ public abstract class DvObjectContainer extends DvObject {
             this.storageDriver = storageDriver;
         }
     }
+    
+    public String getEffectiveMetadataLanguage() {
+        String ml = metadataLanguage;
+        if (StringUtils.isBlank(ml)) {
+            if (this.getOwner() != null) {
+                ml = this.getOwner().getEffectiveMetadataLanguage();
+            } else {
+                ml = DEFAULT_METADATA_LANGUAGE;
+            }
+        }
+        return ml;
+    }
+    
+    public String getMetadataLanguage() {
+        if (metadataLanguage == null) {
+            return UNDEFINED_METADATA_LANGUAGE_CODE;
+        }
+        return metadataLanguage;
+    }
+
+    public void setMetadataLanguage(String ml) {
+        if (ml != null && ml.equals(UNDEFINED_METADATA_LANGUAGE_CODE)) {
+            this.metadataLanguage = null;
+        } else {
+            this.metadataLanguage = ml;
+        }
+    }
+    
 }
