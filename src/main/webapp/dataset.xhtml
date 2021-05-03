@@ -152,7 +152,7 @@
                                                                 <li class="dropdown-header">#{bundle['dataset.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
                                                                 <!-- NORMAL DOWNLOAD BUTTON (NO TABULAR FILES) -->
                                                                 <li jsf:rendered="#{!DatasetPage.versionHasTabular}">                 
-                                                                    <p:commandLink update="@form" actionListener="#{DatasetPage.startDownloadAllArchival()}" styleClass="btn-download" 
+                                                                    <p:commandLink update="@form" actionListener="#{DatasetPage.startDownloadAllOriginal()}" styleClass="btn-download" 
                                                                                    oncomplete="bind_bsui_components();showPopup();">
                                                                     #{bundle.download}
                                                                         <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
@@ -161,8 +161,9 @@
                                                                     </p:commandLink>
                                                                 </li>
 
-                                                                <!-- DOWNLOAD ORIGINAL BUTTON (TABULAR FILES PRESENT) -->
+                                                                <!-- DOWNLOAD Options (TABULAR FILES PRESENT) -->
                                                                 <ui:fragment rendered="#{DatasetPage.versionHasTabular}">
+                                                                    <!-- DOWNLOAD ORIGINAL BUTTON (TABULAR FILES PRESENT) -->
                                                                     <li jsf:rendered="#{ DatasetPage.sizeOfDatasetOrig != '0 B'  and !(DatasetPage.tooLargeToDownloadOriginal) }">
                                                                         <p:commandLink update="@form" actionListener="#{DatasetPage.startDownloadAllOriginal()}" 
                                                                                        oncomplete="bind_bsui_components();showPopup();"
@@ -173,6 +174,7 @@
                                                                             </h:outputFormat>
                                                                         </p:commandLink>
                                                                     </li>
+                                                                    <!-- Original Format too big -->
                                                                     <ui:fragment rendered="#{DatasetPage.tooLargeToDownloadOriginal}">                                                                                                                               
                                                                         <h:outputText value="#{bundle['dataset.accessBtn.original.too.big']}">                                           
                                                                         </h:outputText>                                                            
@@ -187,6 +189,7 @@
                                                                             </h:outputFormat>
                                                                         </p:commandLink>
                                                                     </li>
+                                                                    <!-- Archival Format too big -->
                                                                     <ui:fragment rendered="#{DatasetPage.tooLargeToDownloadArchival}">                                                                                                                               
                                                                         <h:outputText value="#{bundle['dataset.accessBtn.archival.too.big']}">                                           
                                                                         </h:outputText>                                                            
