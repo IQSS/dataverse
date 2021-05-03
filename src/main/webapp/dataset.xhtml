@@ -147,59 +147,61 @@
                                                     </button>
                                                     <ul class="dropdown-menu pull-right text-left" style="padding-left:1em; padding-right:1em;" >
                                                         <!-- DOWNLOAD -->
-                                                        <ui:fragment rendered="#{DatasetPage.canDownloadFiles()  and !(DatasetPage.tooLargeToDownload) }">
-                                                            <li class="dropdown-header">#{bundle['dataset.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
-                                                            <!-- NORMAL DOWNLOAD BUTTON (NO TABULAR FILES) -->
-                                                            <li jsf:rendered="#{!DatasetPage.versionHasTabular}">                 
-                                                                <p:commandLink update="@form" actionListener="#{DatasetPage.startDownloadAllArchival()}" styleClass="btn-download" 
-                                                                               oncomplete="bind_bsui_components();showPopup();">
+                                                        <ui:fragment rendered="#{DatasetPage.canDownloadFiles()}">
+                                                            <ui:fragment rendered="#{!DatasetPage.tooLargeToDownload}">
+                                                                <li class="dropdown-header">#{bundle['dataset.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
+                                                                <!-- NORMAL DOWNLOAD BUTTON (NO TABULAR FILES) -->
+                                                                <li jsf:rendered="#{!DatasetPage.versionHasTabular}">                 
+                                                                    <p:commandLink update="@form" actionListener="#{DatasetPage.startDownloadAllArchival()}" styleClass="btn-download" 
+                                                                                   oncomplete="bind_bsui_components();showPopup();">
                                                                     #{bundle.download}
-                                                                    <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
-                                                                        <f:param value="#{DatasetPage.sizeOfDataset}" />
-                                                                    </h:outputFormat>
-                                                                </p:commandLink>
-                                                            </li>
+                                                                        <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
+                                                                            <f:param value="#{DatasetPage.sizeOfDataset}" />
+                                                                        </h:outputFormat>
+                                                                    </p:commandLink>
+                                                                </li>
 
-                                                            <!-- DOWNLOAD ORIGINAL BUTTON (TABULAR FILES PRESENT) -->
-                                                            <li jsf:rendered="#{DatasetPage.versionHasTabular and DatasetPage.sizeOfDatasetOrig != '0 B'  and !(DatasetPage.tooLargeToDownloadOriginal) }">
-                                                                <p:commandLink update="@form" actionListener="#{DatasetPage.startDownloadAllOriginal()}" 
-                                                                               oncomplete="bind_bsui_components();showPopup();"
-                                                                               styleClass="btn-download">
-                                                                    #{bundle.downloadOriginal}
-                                                                    <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
-                                                                        <f:param value="#{DatasetPage.sizeOfDatasetOrig}" />
-                                                                    </h:outputFormat>
-                                                                </p:commandLink>
-                                                            </li>
-                                                            <ui:fragment rendered="#{DatasetPage.canDownloadFiles()  and (DatasetPage.tooLargeToDownloadOriginal) }">                                                                                                                               
-                                                                    <h:outputText value="#{bundle['dataset.accessBtn.original.too.big']}">                                           
-                                                                    </h:outputText>                                                            
+                                                                <!-- DOWNLOAD ORIGINAL BUTTON (TABULAR FILES PRESENT) -->
+                                                                <ui:fragment rendered="#{DatasetPage.versionHasTabular}">
+                                                                    <li jsf:rendered="#{ DatasetPage.sizeOfDatasetOrig != '0 B'  and !(DatasetPage.tooLargeToDownloadOriginal) }">
+                                                                        <p:commandLink update="@form" actionListener="#{DatasetPage.startDownloadAllOriginal()}" 
+                                                                                       oncomplete="bind_bsui_components();showPopup();"
+                                                                                       styleClass="btn-download">
+                                                                            #{bundle.downloadOriginal}
+                                                                            <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
+                                                                                <f:param value="#{DatasetPage.sizeOfDatasetOrig}" />
+                                                                            </h:outputFormat>
+                                                                        </p:commandLink>
+                                                                    </li>
+                                                                    <ui:fragment rendered="#{DatasetPage.tooLargeToDownloadOriginal}">                                                                                                                               
+                                                                        <h:outputText value="#{bundle['dataset.accessBtn.original.too.big']}">                                           
+                                                                        </h:outputText>                                                            
+                                                                    </ui:fragment>
+                                                                    <!-- DOWNLOAD ARCHIVAL FILES (TABULAR FILES PRESENT) -->
+                                                                    <li jsf:rendered="#{!DatasetPage.tooLargeToDownloadArchival}">
+                                                                        <p:commandLink update="@form" oncomplete="bind_bsui_components();showPopup();" 
+                                                                                       actionListener="#{DatasetPage.startDownloadAllArchival()}" styleClass="btn-download">
+                                                                                #{bundle.downloadArchival}
+                                                                            <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
+                                                                                <f:param value="#{DatasetPage.sizeOfDataset}" />
+                                                                            </h:outputFormat>
+                                                                        </p:commandLink>
+                                                                    </li>
+                                                                    <ui:fragment rendered="#{DatasetPage.tooLargeToDownloadArchival}">                                                                                                                               
+                                                                        <h:outputText value="#{bundle['dataset.accessBtn.archival.too.big']}">                                           
+                                                                        </h:outputText>                                                            
+                                                                    </ui:fragment>
+                                                                </ui:fragment>
                                                             </ui:fragment>
-                                                            <!-- DOWNLOAD ARCHIVAL FILES (TABULAR FILES PRESENT) -->
-                                                            <li jsf:rendered="#{DatasetPage.versionHasTabular and !(DatasetPage.tooLargeToDownloadArchival)}">
-                                                                <p:commandLink update="@form" oncomplete="bind_bsui_components();showPopup();" 
-                                                                               actionListener="#{DatasetPage.startDownloadAllArchival()}" styleClass="btn-download">
-                                                                    #{bundle.downloadArchival}
-                                                                    <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
-                                                                        <f:param value="#{DatasetPage.sizeOfDataset}" />
-                                                                    </h:outputFormat>
-                                                                </p:commandLink>
-                                                            </li>
-                                                            <ui:fragment rendered="#{DatasetPage.versionHasTabular  and (DatasetPage.tooLargeToDownloadArchival) }">                                                                                                                               
-                                                                    <h:outputText value="#{bundle['dataset.accessBtn.archival.too.big']}">                                           
-                                                                    </h:outputText>                                                            
+                                                            <!-- Can Download, but Download either format too big-->
+                                                            <ui:fragment rendered="#{DatasetPage.tooLargeToDownload}">                                                                                                                               
+                                                                <h:outputText value="#{bundle['dataset.accessBtn.too.big']}">                                           
+                                                                </h:outputText>                                                            
                                                             </ui:fragment>
                                                         </ui:fragment>
-                                                        
-                                                     
+                                                                                                            
                                                         <!-- END: DOWNLOAD -->
-                                                        
-                                                        <!-- Download either format too big-->
-                                                        <ui:fragment rendered="#{DatasetPage.canDownloadFiles()  and (DatasetPage.tooLargeToDownload) }">                                                                                                                               
-                                                                    <h:outputText value="#{bundle['dataset.accessBtn.too.big']}">                                           
-                                                                    </h:outputText>                                                            
-                                                        </ui:fragment>                                                        
-                                                        
+                                                       
                                                         <!-- EXPLORE -->
                                                         <ui:fragment rendered="#{DatasetPage.datasetExploreTools.size() >= 1}">
                                                             <li class="dropdown-header">#{bundle['dataset.accessBtn.header.explore']} <span class="glyphicon glyphicon-equalizer"/></li>
