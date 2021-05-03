@@ -118,7 +118,7 @@ public class DataverseSession implements Serializable{
                 if (httpSession != null) {
                     Object o = httpSession.getAttribute("passiveChecked");
                     if (o == null) {
-                        logger.info("No passiveChecked: Setting cookie to 0: " + LocalDateTime.now().toString());
+                        logger.fine("No passiveChecked: Setting cookie to 0: " + LocalDateTime.now().toString());
                         // QDR - remove SSO cookie when user changes
                         Cookie passiveSSOCookie = new Cookie("_check_is_passive_dv", "0");
                         passiveSSOCookie.setMaxAge(0);
