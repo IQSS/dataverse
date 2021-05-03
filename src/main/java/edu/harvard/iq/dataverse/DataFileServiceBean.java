@@ -774,7 +774,13 @@ public class DataFileServiceBean implements java.io.Serializable {
                     dataFile.addTag(tag);
                 }
             }            
-            dataFile.setFileAccessRequesters(retrieveFileAccessRequesters(dataFile));              
+            if (dataFile.isRestricted()) {
+                // retrieveFileAccessRequesters is expensive. Only call it for restricted files.
+                dataFile.setFileAccessRequesters(retrieveFileAccessRequesters(dataFile));
+            } else {
+                // Ok to set to empty array because file is not restricted.
+                dataFile.setFileAccessRequesters(new ArrayList<>());
+            }
             dataFiles.add(dataFile);
             filesMap.put(dataFile.getId(), i++);
         }
