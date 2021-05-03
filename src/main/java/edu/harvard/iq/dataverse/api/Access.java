@@ -67,7 +67,6 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -122,8 +121,6 @@ import javax.json.JsonObjectBuilder;
 import javax.ws.rs.RedirectionException;
 import javax.ws.rs.core.MediaType;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import org.glassfish.jersey.media.multipart.FormDataBodyPart;
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 /*
@@ -633,9 +630,38 @@ public class Access extends AbstractApiBean {
     @Produces({"application/zip"})
     public Response downloadAllFromLatest(@PathParam("id") String datasetIdOrPersistentId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
         try {
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
-            final Dataset retrieved = execCommand(new GetDatasetCommand(req, findDatasetOrDie(datasetIdOrPersistentId)));
-            final DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
+            User user = findUserOrDie(); 
+            DataverseRequest req = createDataverseRequest(user);
+            final Dataset retrieved = findDatasetOrDie(datasetIdOrPersistentId);
+            if (!(user instanceof GuestUser)) {
+                // The reason we are only looking up a draft version for a NON-guest user
+                // is that we know that guest never has the Permission.ViewUnpublishedDataset. 
+                final DatasetVersion draft = versionService.getDatasetVersionById(retrieved.getId(), DatasetVersion.VersionState.DRAFT.toString());
+                if (draft != null && permissionService.requestOn(req, retrieved).has(Permission.ViewUnpublishedDataset)) {                    
+                    String fileIds = getFileIdsAsCommaSeparated(draft.getFileMetadatas());
+                    // We don't want downloads from Draft versions to be counted, 
+                    // so we are setting the gbrecs (aka "do not write guestbook response") 
+                    // variable accordingly:
+                    return downloadDatafiles(fileIds, true, apiTokenParam, uriInfo, headers, response);
+                }
+            }
+            
+            // OK, it was not the draft. Let's see if we can serve a published version.
+            
+            final DatasetVersion latest = versionService.getLatestReleasedVersionFast(retrieved.getId()); 
+            
+            // Make sure to throw a clean error code if we have failed to locate an 
+            // accessible version:
+            // (A "Not Found" would be more appropriate here, I believe, than a "Bad Request". 
+            // But we've been using the latter for a while, and it's a popular API... 
+            // and this return code is expected by our tests - so I'm choosing it to keep 
+            // -- L.A.)
+            
+            if (latest == null) {
+                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.exception.dataset.not.found"));
+                //throw new NotFoundException();
+            }
+            
             String fileIds = getFileIdsAsCommaSeparated(latest.getFileMetadatas());
             return downloadDatafiles(fileIds, gbrecs, apiTokenParam, uriInfo, headers, response);
         } catch (WrappedResponse wr) {
@@ -673,9 +699,19 @@ public class Access extends AbstractApiBean {
                 }
             }));
             if (dsv == null) {
+                // (A "Not Found" would be more appropriate here, I believe, than a "Bad Request". 
+                // But we've been using the latter for a while, and it's a popular API... 
+                // and this return code is expected by our tests - so I'm choosing it to keep 
+                // -- L.A.)
                 return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.exception.version.not.found"));
             }
             String fileIds = getFileIdsAsCommaSeparated(dsv.getFileMetadatas());
+            // We don't want downloads from Draft versions to be counted, 
+            // so we are setting the gbrecs (aka "do not write guestbook response") 
+            // variable accordingly:
+            if (dsv.isDraft()) {
+                gbrecs = true;
+            }
             return downloadDatafiles(fileIds, gbrecs, apiTokenParam, uriInfo, headers, response);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -701,7 +737,7 @@ public class Access extends AbstractApiBean {
         return downloadDatafiles(fileIds, gbrecs, apiTokenParam, uriInfo, headers, response);
     }
 
-    private Response downloadDatafiles(String rawFileIds, boolean gbrecs, String apiTokenParam, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response) throws WebApplicationException /* throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    private Response downloadDatafiles(String rawFileIds, boolean donotwriteGBResponse, String apiTokenParam, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response) throws WebApplicationException /* throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         long setLimit = systemConfig.getZipDownloadLimit();
         if (!(setLimit > 0L)) {
             setLimit = DataFileZipper.DEFAULT_ZIPFILE_LIMIT;
@@ -745,7 +781,7 @@ public class Access extends AbstractApiBean {
         if (useCustomZipService) {
             URI redirect_uri = null; 
             try {
-                redirect_uri = handleCustomZipDownload(customZipServiceUrl, fileIds, apiToken, apiTokenUser, uriInfo, headers, gbrecs, true); 
+                redirect_uri = handleCustomZipDownload(customZipServiceUrl, fileIds, apiToken, apiTokenUser, uriInfo, headers, donotwriteGBResponse, true); 
             } catch (WebApplicationException wae) {
                 throw wae;
             }
@@ -789,7 +825,7 @@ public class Access extends AbstractApiBean {
                                     
                                     logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
                                     //downloadInstance.addDataFile(file);
-                                    if (gbrecs != true && file.isReleased()){
+                                    if (donotwriteGBResponse != true && file.isReleased()){
                                         GuestbookResponse  gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
                                         guestbookResponseService.save(gbr);
                                         MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, file);                                        
@@ -1874,7 +1910,8 @@ public class Access extends AbstractApiBean {
         return apiTokenUser;
     }
 
-    private URI handleCustomZipDownload(String customZipServiceUrl, String fileIds, String apiToken, User apiTokenUser, UriInfo uriInfo, HttpHeaders headers, boolean gbrecs, boolean orig) throws WebApplicationException {
+    private URI handleCustomZipDownload(String customZipServiceUrl, String fileIds, String apiToken, User apiTokenUser, UriInfo uriInfo, HttpHeaders headers, boolean donotwriteGBResponse, boolean orig) throws WebApplicationException {
+        
         String zipServiceKey = null; 
         Timestamp timestamp = null; 
         
@@ -1901,7 +1938,7 @@ public class Access extends AbstractApiBean {
                     validFileCount++;
                     if (isAccessAuthorized(file, apiToken)) {
                         logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
-                        if (gbrecs != true && file.isReleased()) {
+                        if (donotwriteGBResponse != true && file.isReleased()) {
                             GuestbookResponse gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
                             guestbookResponseService.save(gbr);
                             MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, file);
