@@ -113,24 +113,26 @@ public class DataverseSession implements Serializable{
         if ( user == null ) {
             user = GuestUser.get();
             FacesContext context = FacesContext.getCurrentInstance();
-            HttpSession httpSession = (HttpSession) context.getExternalContext().getSession(false);
-            if (httpSession != null) {
-                Object o = httpSession.getAttribute("passiveChecked");
-                if(o==null) {
-                    logger.info("No passiveChecked: Setting cookie to 0: " + LocalDateTime.now().toString());
-                    //QDR - remove SSO cookie when user changes
-                    Cookie passiveSSOCookie = new Cookie("_check_is_passive_dv", "0");
-                    passiveSSOCookie.setMaxAge(0);
-                    String QDRDrupalSiteURL = settingsWrapper.get(":QDRDrupalSiteURL");
-                    String QDRDrupalSiteHost = QDRDrupalSiteURL;
-                    int index = QDRDrupalSiteURL.indexOf("://");
-                    if (index >=0) {
-                        QDRDrupalSiteHost = QDRDrupalSiteURL.substring(index + 3);
+            if (context != null) {
+                HttpSession httpSession = (HttpSession) context.getExternalContext().getSession(false);
+                if (httpSession != null) {
+                    Object o = httpSession.getAttribute("passiveChecked");
+                    if (o == null) {
+                        logger.info("No passiveChecked: Setting cookie to 0: " + LocalDateTime.now().toString());
+                        // QDR - remove SSO cookie when user changes
+                        Cookie passiveSSOCookie = new Cookie("_check_is_passive_dv", "0");
+                        passiveSSOCookie.setMaxAge(0);
+                        String QDRDrupalSiteURL = settingsWrapper.get(":QDRDrupalSiteURL");
+                        String QDRDrupalSiteHost = QDRDrupalSiteURL;
+                        int index = QDRDrupalSiteURL.indexOf("://");
+                        if (index >= 0) {
+                            QDRDrupalSiteHost = QDRDrupalSiteURL.substring(index + 3);
+                        }
+                        // In QDR config, common domain for Drupal and Dataverse is '.<Drupal dns name>'
+                        passiveSSOCookie.setDomain("." + QDRDrupalSiteHost);
+                        ((HttpServletResponse) context.getExternalContext().getResponse()).addCookie(passiveSSOCookie);
+                        httpSession.setAttribute("passiveChecked", true);
                     }
-                    //In QDR config, common domain for Drupal and Dataverse is '.<Drupal dns name>'
-                    passiveSSOCookie.setDomain("." + QDRDrupalSiteHost);
-                    ((HttpServletResponse) context.getExternalContext().getResponse()).addCookie(passiveSSOCookie);
-                    httpSession.setAttribute("passiveChecked", true);
                 }
             }
         }
