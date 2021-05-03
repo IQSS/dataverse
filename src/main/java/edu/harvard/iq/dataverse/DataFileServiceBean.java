@@ -580,6 +580,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         Map<Long, Integer> datatableMap = new HashMap<>();
         Map<Long, Integer> categoryMap = new HashMap<>();
         Map<Long, Set<Integer>> fileTagMap = new HashMap<>();
+        Map<Long, List<AuthenticatedUser>> accessRequestMap = new HashMap<>();
         
         List<String> fileTagLabels = DataFileTag.listTags();
         
@@ -627,8 +628,24 @@ public class DataFileServiceBean implements java.io.Serializable {
         dataTagsResults = null;
         
         logger.fine("Retrieved "+i+" data tags.");
-        
-        i = 0; 
+
+        i = 0;
+        List<Object[]> accessRequests = em.createNativeQuery("SELECT t0.ID, t2.AUTHENTICATED_USER_ID FROM DVOBJECT t0, DATAFILE t1, FILEACCESSREQUESTS t2 WHERE ((t0.OWNER_ID = " + owner.getId() + ") AND ((t1.ID = t0.ID) AND (t0.DTYPE = 'DataFile'))) AND (t1.ID = t2.DATAFILE_ID) ORDER BY t0.ID").getResultList();
+        for (Object[] result : accessRequests) {
+            Long datafile_id = (Long) result[0];
+            Integer authuser_id = (Integer) result[1];
+            if (accessRequestMap.get(datafile_id) == null) {
+                accessRequestMap.put(datafile_id, new ArrayList<>());
+            }
+            AuthenticatedUser authUser = userService.find(authuser_id);
+            accessRequestMap.get(datafile_id).add(authUser);
+            i++;
+        }
+        accessRequests = null;
+
+        logger.fine("Retrieved " + i + " access requests.");
+
+        i = 0;
         
         List<Object[]> fileResults = em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t1.CONTENTTYPE, t0.STORAGEIDENTIFIER, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t1.CHECKSUMTYPE, t1.PREVIOUSDATAFILEID, t1.ROOTDATAFILEID, t0.PROTOCOL, t0.AUTHORITY, t0.IDENTIFIER FROM DVOBJECT t0, DATAFILE t1 WHERE ((t0.OWNER_ID = " + owner.getId() + ") AND ((t1.ID = t0.ID) AND (t0.DTYPE = 'DataFile'))) ORDER BY t0.ID").getResultList(); 
     
@@ -775,8 +792,9 @@ public class DataFileServiceBean implements java.io.Serializable {
                 }
             }            
             if (dataFile.isRestricted()) {
-                // retrieveFileAccessRequesters is expensive. Only call it for restricted files.
-                dataFile.setFileAccessRequesters(retrieveFileAccessRequesters(dataFile));
+                if (accessRequestMap.get(dataFile.getId()) != null) {
+                    dataFile.setFileAccessRequesters(accessRequestMap.get(dataFile.getId()));
+                }
             } else {
                 // Ok to set to empty array because file is not restricted.
                 dataFile.setFileAccessRequesters(new ArrayList<>());
@@ -806,23 +824,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         owner.setFiles(dataFiles);
     }
-    
-     private List<AuthenticatedUser> retrieveFileAccessRequesters(DataFile fileIn){
-        List<AuthenticatedUser> retList = new ArrayList<>();
-        
-        List<Object> requesters  = em.createNativeQuery("select authenticated_user_id from fileaccessrequests where datafile_id = "+fileIn.getId()).getResultList();
-        
-        for (Object userIdObj : requesters){
-            Long userId = (Long) userIdObj;
-            AuthenticatedUser user = userService.find(userId);
-            if (user != null){
-                retList.add(user);
-            }
-        }
-        
-        return retList;
-    }
-    
+
     private List<FileMetadata> retrieveFileMetadataForVersion(Dataset dataset, DatasetVersion version, List<DataFile> dataFiles, Map<Long, Integer> filesMap, Map<Long, Integer> categoryMap) {
         List<FileMetadata> retList = new ArrayList<>();
         Map<Long, Set<Long>> categoryMetaMap = new HashMap<>();
