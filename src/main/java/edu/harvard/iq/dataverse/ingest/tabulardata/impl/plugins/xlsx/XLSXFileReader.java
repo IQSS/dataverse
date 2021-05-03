@@ -410,7 +410,7 @@ public class XLSXFileReader extends TabularDataFileReader {
             // Do it now, as characters() may be called more than once
             if (nextIsString) {
                 int idx = Integer.parseInt(cellContents);
-                cellContents = sst.getItemAt(idx).toString();
+                cellContents = sst.getItemAt(idx).getString();
                 nextIsString = false;
             }
 
