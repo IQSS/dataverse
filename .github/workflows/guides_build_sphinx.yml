@@ -1,6 +1,8 @@
 name: "Guides Build Status"
 on: 
-- pull_request
+  pull_request:
+    paths:
+      - 'doc/sphinx-guides/**/*.rst'
 
 jobs:
   docs:
@@ -9,4 +11,4 @@ jobs:
     - uses: actions/checkout@v2
     - uses: ammaraskar/sphinx-action@master
       with:
-        docs-folder: "doc/sphinx-guides/source/"
+        docs-folder: "doc/sphinx-guides/"
