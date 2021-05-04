@@ -712,7 +712,7 @@ public class JsonPrinter {
 
         @Override
         public void controledVocabularyValue(ControlledVocabularyValue cvv) {
-            valueArrStack.peek().add(cvv.getStrValue());
+            valueArrStack.peek().add(cvv.getLocaleStrValue());
         }
 
         @Override
