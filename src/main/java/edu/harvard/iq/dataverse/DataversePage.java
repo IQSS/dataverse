@@ -1216,50 +1216,8 @@ public class DataversePage implements java.io.Serializable {
    		return label;
     }
     
-    Map<String,String> languageMap = null;
-    
-    public Map<String, String> getBaseMetadataLanguageMap() {
-        if (languageMap == null) {
-            languageMap = new HashMap<String, String>();
-
-            String mlString = settingsWrapper.get(SettingsServiceBean.Key.MetadataLanguages.toString(),
-                    "{\"" + BundleUtil.getCurrentLocale().getDisplayLanguage() + "\":\""
-                            + BundleUtil.getCurrentLocale().getLanguage() + "\"}");
-            JsonReader jsonReader = Json.createReader(new StringReader(mlString));
-            JsonObject languages = jsonReader.readObject();
-            languages.forEach((lang, code) -> languageMap.put(code.toString(), lang));
-        }
-        return languageMap;
-    }
-    
     public Map<String, String> getMetadataLanguages() {
-        Map<String,String> currentMap = new HashMap<String,String>();
-        currentMap.putAll(getBaseMetadataLanguageMap());
-        languageMap.put(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE, getDefaultMetadataLanguageLabel());
-        return languageMap;
+        return systemConfig.getMetadataLanguages(this.dataverse);
     }
     
-    public String getDefaultMetadataLanguageLabel() {
-        String ml = DvObjectContainer.DEFAULT_METADATA_LANGUAGE;
-        Dataverse parent = dataverse.getOwner();
-        boolean fromAncestor=false;
-        if(parent != null) {
-            ml = parent.getEffectiveMetadataLanguage();
-            //recurse dataverse chain to root and if any have a metadata language set, fromAncestor is true
-            while(parent!=null) {
-                if(!parent.getMetadataLanguage().equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
-                    fromAncestor=true;
-                    break;
-                }
-                parent=parent.getOwner();
-            }
-        }
-        String label = getBaseMetadataLanguageMap().get(ml);
-        if(fromAncestor) {
-            label = label + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
-        } else {
-            label = label + " " + BundleUtil.getStringFromBundle("dataverse.default");
-        }
-        return label;
-    }
 }

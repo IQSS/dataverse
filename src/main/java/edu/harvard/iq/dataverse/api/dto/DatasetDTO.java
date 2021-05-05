@@ -15,6 +15,7 @@ public class DatasetDTO implements java.io.Serializable {
         private String globalIdCreateTime;
         private String publisher;
         private String publicationDate;
+        private String metadataLanguage;
         private DatasetVersionDTO datasetVersion;
         private List<DataFileDTO> dataFiles;
 	public static final String DOI_PROTOCOL = "doi";
@@ -96,6 +97,14 @@ public class DatasetDTO implements java.io.Serializable {
     @Override
     public String toString() {
         return "DatasetDTO{" + "id=" + id + ", identifier=" + identifier + ", protocol=" + protocol + ", authority=" + authority + ", globalIdCreateTime=" + globalIdCreateTime + ", datasetVersion=" + datasetVersion + ", dataFiles=" + dataFiles + '}';
+    }
+
+    public String getMetadataLanguage() {
+        return metadataLanguage;
+    }
+
+    public void setMetadataLanguage(String metadataLanguage) {
+        this.metadataLanguage = metadataLanguage;
     }
         
 }

@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.util;
 import com.ocpsoft.pretty.PrettyContext;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -14,11 +15,14 @@ import edu.harvard.iq.dataverse.validation.PasswordValidatorUtil;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Year;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -26,6 +30,10 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+
 import org.passay.CharacterRule;
 import org.apache.commons.io.IOUtils;
 
@@ -1061,5 +1069,52 @@ public class SystemConfig {
 		//As of 5.0 the 'doi.dataciterestapiurlstring' is the documented jvm option. Prior versions used 'doi.mdcbaseurlstring' or were hardcoded to api.datacite.org, so the defaults are for backward compatibility.
         return System.getProperty("doi.dataciterestapiurlstring", System.getProperty("doi.mdcbaseurlstring", "https://api.datacite.org"));
 	}
+	
+    Map<String,String> languageMap = null;
+    
+    public Map<String, String> getBaseMetadataLanguageMap(boolean refresh) {
+        if (languageMap == null || refresh) {
+            languageMap = new HashMap<String, String>();
+
+            String mlString = settingsService.get(SettingsServiceBean.Key.MetadataLanguages.toString(),
+                    "{\"" + BundleUtil.getCurrentLocale().getDisplayLanguage() + "\":\""
+                            + BundleUtil.getCurrentLocale().getLanguage() + "\"}");
+            JsonReader jsonReader = Json.createReader(new StringReader(mlString));
+            JsonObject languages = jsonReader.readObject();
+            languages.forEach((lang, code) -> languageMap.put(code.toString(), lang));
+        }
+        return languageMap;
+    }
+    
+    public Map<String, String> getMetadataLanguages(DvObjectContainer target) {
+        Map<String,String> currentMap = new HashMap<String,String>();
+        currentMap.putAll(getBaseMetadataLanguageMap(true));
+        languageMap.put(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE, getDefaultMetadataLanguageLabel(target));
+        return languageMap;
+    }
+    
+    private String getDefaultMetadataLanguageLabel(DvObjectContainer target) {
+        String ml = DvObjectContainer.DEFAULT_METADATA_LANGUAGE;
+        Dataverse parent = target.getOwner();
+        boolean fromAncestor=false;
+        if(parent != null) {
+            ml = parent.getEffectiveMetadataLanguage();
+            //recurse dataverse chain to root and if any have a metadata language set, fromAncestor is true
+            while(parent!=null) {
+                if(!parent.getMetadataLanguage().equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+                    fromAncestor=true;
+                    break;
+                }
+                parent=parent.getOwner();
+            }
+        }
+        String label = getBaseMetadataLanguageMap(false).get(ml);
+        if(fromAncestor) {
+            label = label + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
+        } else {
+            label = label + " " + BundleUtil.getStringFromBundle("dataverse.default");
+        }
+        return label;
+    }
 
 }

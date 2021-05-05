@@ -328,7 +328,8 @@ public class JsonPrinter {
                 .add("authority", ds.getAuthority())
                 .add("publisher", BrandingUtil.getInstallationBrandName())
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
-                .add("storageIdentifier", ds.getStorageIdentifier());
+                .add("storageIdentifier", ds.getStorageIdentifier())
+                .add("metadataLanguage", ds.getMetadataLanguage());
     }
 
     public static JsonObjectBuilder json(DatasetVersion dsv) {
@@ -712,7 +713,7 @@ public class JsonPrinter {
 
         @Override
         public void controledVocabularyValue(ControlledVocabularyValue cvv) {
-            valueArrStack.peek().add(cvv.getLocaleStrValue());
+            valueArrStack.peek().add(cvv.getStrValue());
         }
 
         @Override
