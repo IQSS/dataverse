@@ -33,6 +33,7 @@ import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.json.JsonString;
 
 import org.passay.CharacterRule;
 import org.apache.commons.io.IOUtils;
@@ -1081,7 +1082,7 @@ public class SystemConfig {
                             + BundleUtil.getCurrentLocale().getLanguage() + "\"}");
             JsonReader jsonReader = Json.createReader(new StringReader(mlString));
             JsonObject languages = jsonReader.readObject();
-            languages.forEach((lang, code) -> languageMap.put(code.toString(), lang));
+            languages.forEach((lang, langCode) -> languageMap.put(((JsonString)langCode).getString(), lang));
         }
         return languageMap;
     }
