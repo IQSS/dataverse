@@ -94,10 +94,10 @@
         <o:importFunctions type="java.util.Collections" />
         <div class="panel-group">
             <p>
-                <h:outputFormat rendered="#{(editMode == 'CREATE')" value="#{bundle['dataset.metadatalanguage.create.guidance']}" escape="false">
+                <h:outputFormat rendered="#{(editMode == 'CREATE')}" value="#{bundle['dataset.metadatalanguage.create.guidance']}" escape="false">
                     <f:param value="#{mdLang}"/>
                 </h:outputFormat>
-                <h:outputFormat rendered="#{(editMode == 'METADATA')" value="#{bundle['dataset.metadatalanguage.view.guidance']}" escape="false">
+                <h:outputFormat rendered="#{(editMode == 'METADATA')}" value="#{bundle['dataset.metadatalanguage.view.guidance']}" escape="false">
                     <f:param value="#{mdLang}"/>
                 </h:outputFormat>
             </p>
