@@ -78,4 +78,3 @@ datasetfieldtype.socialScienceNotes.watermark=
 datasetfieldtype.socialScienceNotesType.watermark=
 datasetfieldtype.socialScienceNotesSubject.watermark=
 datasetfieldtype.socialScienceNotesText.watermark=
-controlledvocabulary.samplingProcedure=TotalUniverseCompleteEnumeration

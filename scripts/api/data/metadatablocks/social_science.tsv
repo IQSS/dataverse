@@ -1,19 +1,19 @@
 #metadataBlock	name	dataverseAlias	displayName												
 	socialscience		Social Science and Humanities Metadata												
-#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
-	unitOfAnalysis	Unit of Analysis	Basic unit of analysis or observation that this Dataset describes, such as individuals, families/households, groups, institutions/organizations, administrative units, and more. For information about the DDI's controlled vocabulary for this element, please refer to the DDI web page at http://www.ddialliance.org/controlled-vocabularies.		textbox	0		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		socialscience
+#datasetField	name	title	description	watermark	fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id
+	unitOfAnalysis	Unit of Analysis	Basic unit of analysis or observation that this Dataset describes, such as individuals, families/households, groups, institutions/organizations, administrative units, and more. For information about the DDI's controlled vocabulary for this element, please refer to the DDI web page at http://www.ddialliance.org/controlled-vocabularies.		textbox	0		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		socialscience
 	universe	Universe	Description of the population covered by the data in the file; the group of people or other elements that are the object of the study and to which the study results refer. Age, nationality, and residence commonly help to  delineate a given universe, but any number of other factors may be used, such as age limits, sex, marital status, race, ethnic group, nationality, income, veteran status, criminal convictions, and more. The universe may consist of elements other than persons, such as housing units, court cases, deaths, countries, and so on. In general, it should be possible to tell from the description of the universe whether a given individual or element is a member of the population under study. Also known as the universe of interest, population of interest, and target population.		textbox	1		TRUE	FALSE	TRUE	TRUE	FALSE	FALSE		socialscience
-	timeMethod	Time Method	The time method or time dimension of the data collection, such as panel, cross-sectional, trend, time- series, or other.		text	2		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		socialscience
+	timeMethod	Time Method	The time method or time dimension of the data collection, such as panel, cross-sectional, trend, time- series, or other.		text	2		TRUE	TRUE	FALSE	TRUE	FALSE	FALSE		socialscience
 	dataCollector	Data Collector	Individual, agency or organization responsible for  administering the questionnaire or interview or compiling the data.	FamilyName, GivenName or Organization	text	3		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
 	collectorTraining	Collector Training	Type of training provided to the data collector		text	4		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
 	frequencyOfDataCollection	Frequency	If the data collected includes more than one point in time, indicate the frequency with which the data was collected; that is, monthly, quarterly, or other.		text	5		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		socialscience
-	samplingProcedure	Sampling Procedure	Type of sample and sample design used to select the survey respondents to represent the population. May include reference to the target sample size and the sampling fraction.		textbox	6		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
+	samplingProcedure	Sampling Procedure	Type of sample and sample design used to select the survey respondents to represent the population. May include reference to the target sample size and the sampling fraction.		text	6		FALSE	TRUE	FALSE	TRUE	FALSE	FALSE		socialscience
 	targetSampleSize	Target Sample Size	Specific information regarding the target sample size, actual  sample size, and the formula used to determine this.		none	7		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
 	targetSampleActualSize	Actual	Actual sample size.	Enter an integer...	int	8		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	targetSampleSize	socialscience
 	targetSampleSizeFormula	Formula	Formula used to determine target sample size.		text	9		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	targetSampleSize	socialscience
 	deviationsFromSampleDesign	Major Deviations for Sample Design	Show correspondence as well as discrepancies between the sampled units (obtained) and available statistics for the population (age, sex-ratio, marital status, etc.) as a whole.		text	10		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
-	collectionMode	Collection Mode	Method used to collect the data; instrumentation characteristics (e.g., telephone interview, mail questionnaire, or other).		textbox	11		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
-	researchInstrument	Type of Research Instrument	Type of data collection instrument used. Structured indicates an instrument in which all respondents are asked the same questions/tests, possibly with precoded answers. If a small portion of such a questionnaire includes open-ended questions, provide appropriate comments. Semi-structured indicates that the research instrument contains mainly open-ended questions. Unstructured indicates that in-depth interviews were conducted.		text	12		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
+	collectionMode	Collection Mode	Method used to collect the data; instrumentation characteristics (e.g., telephone interview, mail questionnaire, or other).		text	11		FALSE	TRUE	TRUE	TRUE	FALSE	FALSE		socialscience
+	researchInstrument	Type of Research Instrument	Type of data collection instrument used. Structured indicates an instrument in which all respondents are asked the same questions/tests, possibly with precoded answers. If a small portion of such a questionnaire includes open-ended questions, provide appropriate comments. Semi-structured indicates that the research instrument contains mainly open-ended questions. Unstructured indicates that in-depth interviews were conducted.		text	12		FALSE	TRUE	FALSE	TRUE	FALSE	FALSE		socialscience
 	dataCollectionSituation	Characteristics of Data Collection Situation	Description of noteworthy aspects of the data collection situation. Includes information on factors such as cooperativeness of respondents, duration of interviews, number of call backs, or similar.		textbox	13		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
 	actionsToMinimizeLoss	Actions to Minimize Losses	Summary of actions taken to minimize data loss. Include information on actions such as follow-up visits, supervisory checks, historical matching, estimation, and so on.		text	14		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
 	controlOperations	Control Operations	Control OperationsMethods to facilitate data control performed by the primary investigator or by the data archive.		text	15		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		socialscience
@@ -27,3 +27,112 @@
 	socialScienceNotesType	Type	Type of note.		text	23		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	socialScienceNotes	socialscience
 	socialScienceNotesSubject	Subject	Note subject.		text	24		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	socialScienceNotes	socialscience
 	socialScienceNotesText	Text	Text for this note.		textbox	25		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	socialScienceNotes	socialscience
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder											
+	unitOfAnalysis	Individual	Individual	0											
+	unitOfAnalysis	OrganizationOrInstitution	OrganizationOrInstitution	1											
+	unitOfAnalysis	Family	Family	2											
+	unitOfAnalysis	Family.HouseholdFamily	Family.HouseholdFamily	3											
+	unitOfAnalysis	Household	Household	4											
+	unitOfAnalysis	HousingUnit	HousingUnit	5											
+	unitOfAnalysis	EventOrProcessOrActivity	EventOrProcessOrActivity	6											
+	unitOfAnalysis	GeographicUnit	GeographicUnit	7											
+	unitOfAnalysis	PoliticalAdministrativeArea	PoliticalAdministrativeArea	8											
+	unitOfAnalysis	TimeUnit	TimeUnit	9											
+	unitOfAnalysis	MediaUnit	MediaUnit	10											
+	unitOfAnalysis	MediaUnit.Sound	MediaUnit.Sound	11											
+	unitOfAnalysis	MediaUnit.StillImage	MediaUnit.StillImage	12											
+	unitOfAnalysis	MediaUnit.Text	MediaUnit.Text	13											
+	unitOfAnalysis	MediaUnit.Video	MediaUnit.Video	14											
+	unitOfAnalysis	Group	Group	15											
+	unitOfAnalysis	Object	Object	16											
+	unitOfAnalysis	Other	Other	17											
+	timeMethod	Longitudinal	Longitudinal	0											
+	timeMethod	Longitudinal.CohortEventBased	Longitudinal.CohortEventBased	1											
+	timeMethod	Longitudinal.TrendRepeatedCrossSection	Longitudinal.TrendRepeatedCrossSection	2											
+	timeMethod	Longitudinal.Panel	Longitudinal.Panel	3											
+	timeMethod	Longitudinal.Panel.Continuous	Longitudinal.Panel.Continuous	4											
+	timeMethod	Longitudinal.Panel.Interval	Longitudinal.Panel.Interval	5											
+	timeMethod	TimeSeries	TimeSeries	6											
+	timeMethod	TimeSeries.Continuous	TimeSeries.Continuous	7											
+	timeMethod	TimeSeries.Discrete	TimeSeries.Discrete	8											
+	timeMethod	CrossSection	CrossSection	9											
+	timeMethod	CrossSectionAdHocFollowUp	CrossSectionAdHocFollowUp	10											
+	timeMethod	Other	Other	11											
+	samplingProcedure	TotalUniverseCompleteEnumeration	TotalUniverseCompleteEnumeration	0											
+	samplingProcedure	Probability	Probability	1											
+	samplingProcedure	Probability.SimpleRandom	Probability.SimpleRandom	2											
+	samplingProcedure	Probability.SystematicRandom	Probability.SystematicRandom	3											
+	samplingProcedure	Probability.Stratified	Probability.Stratified	4											
+	samplingProcedure	Probability.Stratified.Proportional	Probability.Stratified.Proportional	5											
+	samplingProcedure	Probability.Stratified.Disproportional	Probability.Stratified.Disproportional	6											
+	samplingProcedure	Probability.Cluster	Probability.Cluster	7											
+	samplingProcedure	Probability.Cluster.SimpleRandom	Probability.Cluster.SimpleRandom	8											
+	samplingProcedure	Probability.Cluster.StratifiedRandom	Probability.Cluster.StratifiedRandom	9											
+	samplingProcedure	Probability.Multistage	Probability.Multistage	10											
+	samplingProcedure	Nonprobability	Nonprobability	11											
+	samplingProcedure	Nonprobability.Availability	Nonprobability.Availability	12											
+	samplingProcedure	Nonprobability.Purposive	Nonprobability.Purposive	13											
+	samplingProcedure	Nonprobability.Quota	Nonprobability.Quota	14											
+	samplingProcedure	Nonprobability.RespondentAssisted	Nonprobability.RespondentAssisted	15											
+	samplingProcedure	MixedProbabilityNonprobability	MixedProbabilityNonprobability	16											
+	samplingProcedure	Other	Other	17											
+	collectionMode	Interview	Interview	0											
+	collectionMode	Interview.FaceToFace	Interview.FaceToFace	1											
+	collectionMode	Interview.FaceToFace.CAPIorCAMI	Interview.FaceToFace.CAPIorCAMI	2											
+	collectionMode	Interview.FaceToFace.PAPI	Interview.FaceToFace.PAPI	3											
+	collectionMode	Interview.Telephone	Interview.Telephone	4											
+	collectionMode	Interview.Telephone.CATI	Interview.Telephone.CATI	5											
+	collectionMode	Interview.Email	Interview.Email	6											
+	collectionMode	Interview.WebBased	Interview.WebBased	7											
+	collectionMode	SelfAdministeredQuestionnaire	SelfAdministeredQuestionnaire	8											
+	collectionMode	SelfAdministeredQuestionnaire.Email	SelfAdministeredQuestionnaire.Email	9											
+	collectionMode	SelfAdministeredQuestionnaire.Paper	SelfAdministeredQuestionnaire.Paper	10											
+	collectionMode	SelfAdministeredQuestionnaire.SMSorMMS	SelfAdministeredQuestionnaire.SMSorMMS	11											
+	collectionMode	SelfAdministeredQuestionnaire.CAWI	SelfAdministeredQuestionnaire.CAWI	12											
+	collectionMode	SelfAdministeredQuestionnaire.CASI	SelfAdministeredQuestionnaire.CASI	13											
+	collectionMode	FocusGroup	FocusGroup	14											
+	collectionMode	FocusGroup.FaceToFace	FocusGroup.FaceToFace	15											
+	collectionMode	FocusGroup.Telephone	FocusGroup.Telephone	16											
+	collectionMode	FocusGroup.Online	FocusGroup.Online	17											
+	collectionMode	SelfAdministeredWritingsAndDiaries	SelfAdministeredWritingsAndDiaries	18											
+	collectionMode	SelfAdministeredWritingsAndDiaries.Email	SelfAdministeredWritingsAndDiaries.Email	19											
+	collectionMode	SelfAdministeredWritingsAndDiaries.Paper	SelfAdministeredWritingsAndDiaries.Paper	20											
+	collectionMode	SelfAdministeredWritingsAndDiaries.WebBased	SelfAdministeredWritingsAndDiaries.WebBased	21											
+	collectionMode	Observation	Observation	22											
+	collectionMode	Observation.Field	Observation.Field	23											
+	collectionMode	Observation.Field.Participant	Observation.Field.Participant	24											
+	collectionMode	Observation.Field.Nonparticipant	Observation.Field.Nonparticipant	25											
+	collectionMode	Observation.Laboratory	Observation.Laboratory	26											
+	collectionMode	Observation.Laboratory.Participant	Observation.Laboratory.Participant	27											
+	collectionMode	Observation.Laboratory.Nonparticipant	Observation.Laboratory.Nonparticipant	28											
+	collectionMode	Observation.ComputerBased	Observation.ComputerBased	29											
+	collectionMode	Experiment	Experiment	30											
+	collectionMode	Experiment.Laboratory	Experiment.Laboratory	31											
+	collectionMode	Experiment.FieldIntervention	Experiment.FieldIntervention	32											
+	collectionMode	Experiment.WebBased	Experiment.WebBased	33											
+	collectionMode	Recording	Recording	34											
+	collectionMode	ContentCoding	ContentCoding	35											
+	collectionMode	Transcription	Transcription	36											
+	collectionMode	CompilationSynthesis	CompilationSynthesis	37											
+	collectionMode	Summary	Summary	38											
+	collectionMode	Aggregation	Aggregation	39											
+	collectionMode	Simulation	Simulation	40											
+	collectionMode	MeasurementsAndTests	MeasurementsAndTests	41											
+	collectionMode	MeasurementsAndTests.Educational	MeasurementsAndTests.Educational	42											
+	collectionMode	MeasurementsAndTests.Physical	MeasurementsAndTests.Physical	43											
+	collectionMode	MeasurementsAndTests.Psychological	MeasurementsAndTests.Psychological	44											
+	collectionMode	Other	Other	45											
+	researchInstrument	Questionnaire	Questionnaire	0											
+	researchInstrument	Questionnaire.Structured	Questionnaire.Structured	1											
+	researchInstrument	Questionnaire.Semistructured	Questionnaire.Semistructured	2											
+	researchInstrument	Questionnaire.Unstructured	Questionnaire.Unstructured	3											
+	researchInstrument	InterviewSchemeAndThemes	InterviewSchemeAndThemes	4											
+	researchInstrument	DataCollectionGuidelines	DataCollectionGuidelines	5											
+	researchInstrument	DataCollectionGuidelines.ObservationGuide	DataCollectionGuidelines.ObservationGuide	6											
+	researchInstrument	DataCollectionGuidelines.DiscussionGuide	DataCollectionGuidelines.DiscussionGuide	7											
+	researchInstrument	DataCollectionGuidelines.SelfAdministeredWritingsGuide	DataCollectionGuidelines.SelfAdministeredWritingsGuide	8											
+	researchInstrument	DataCollectionGuidelines.SecondaryDataCollectionGuide	DataCollectionGuidelines.SecondaryDataCollectionGuide	9											
+	researchInstrument	ParticipantTasks	ParticipantTasks	10											
+	researchInstrument	TechnicalInstruments	TechnicalInstruments	11											
+	researchInstrument	ProgrammingScript	ProgrammingScript	12											
+	researchInstrument	Other	Other	13											
