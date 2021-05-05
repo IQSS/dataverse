@@ -81,6 +81,11 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
         // DATAVERSE
         Dataverse doomedAndMerged = ctxt.em().merge(doomed);
         ctxt.em().remove(doomedAndMerged);
+    }
+
+    @Override 
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+
         // Remove from index        
         ctxt.index().delete(doomed);
         List<String> solrIdsToDelete = new ArrayList<>();
@@ -89,5 +94,7 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
             boolean add = solrIdsToDelete.add(dvObjectSolrDoc.getSolrId() + IndexServiceBean.discoverabilityPermissionSuffix);
         });
         var deleteMultipleSolrIds = ctxt.solrIndex().deleteMultipleSolrIds(solrIdsToDelete);
+        return true;
     }
+
 }

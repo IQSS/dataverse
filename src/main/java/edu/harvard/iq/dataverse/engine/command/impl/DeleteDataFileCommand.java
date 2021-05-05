@@ -221,6 +221,20 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
          */
         // ctxt.em().flush();
 
+    }
+    
+    @Override 
+    public String describe() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(super.describe());
+        sb.append("DataFile:");
+        sb.append(doomed.getId());
+        sb.append(" ");
+        return sb.toString();
+    }
+
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Object r) {
         /**
          * We *could* re-index the entire dataset but it's more efficient to
          * target individual files for deletion, which should always be drafts.
@@ -235,16 +249,6 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
          * https://redmine.hmdc.harvard.edu/issues/3643
          */
 
+        return true;
     }
-    
-    @Override 
-    public String describe() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(super.describe());
-        sb.append("DataFile:");
-        sb.append(doomed.getId());
-        sb.append(" ");
-        return sb.toString();
-    }
-
 }
