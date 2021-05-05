@@ -260,7 +260,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
                 " SELECT id, owner_id FROM dvobject WHERE id in (" + datasetIdStr + "))" +
                 " UNION\n" +
                 " SELECT o.id, o.owner_id FROM path_elements p, dvobject o WHERE o.id = p.owner_id) " +
-                "SELECT id, owner_id FROM path_elements WHERE owner_id IS NOT NULL;"; // ORDER by id ASC;";
+                "SELECT id, owner_id FROM path_elements";
 
         List<Object[]> searchResults;
 
@@ -292,9 +292,7 @@ public class DvObjectServiceBean implements java.io.Serializable {
 
                 ownerId = (Long) result[1];
                 logger.fine("OBJECT PATH: id: " + objectId + ", owner: " + ownerId);
-                if (ownerId != null && (ownerId != 1L)) {
-                    treeMap.put(objectId, ownerId);
-                }
+                treeMap.put(objectId, ownerId);
             }
         }
 

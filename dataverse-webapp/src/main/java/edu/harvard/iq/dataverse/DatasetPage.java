@@ -288,7 +288,7 @@ public class DatasetPage implements java.io.Serializable {
 
     public boolean canLinkDatasetToSomeDataverse() {
         return !systemConfig.isReadonlyMode() && session.getUser().isAuthenticated()
-                && workingVersion.isDeaccessioned() && dataset.isReleased();
+                && !workingVersion.isDeaccessioned() && dataset.isReleased();
     }
 
     /*
