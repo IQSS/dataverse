@@ -3405,6 +3405,8 @@ public class DatasetPage implements java.io.Serializable {
 
         try {
             if (editMode == EditMode.CREATE) {
+                //Lock the metadataLanguage once created
+                dataset.setMetadataLanguage(dataset.getOwner().getEffectiveMetadataLanguage());
                 if ( selectedTemplate != null ) {
                     if ( isSessionUserAuthenticated() ) {
                         cmd = new CreateNewDatasetCommand(dataset, dvRequestService.getDataverseRequest(), false, selectedTemplate);
@@ -3413,9 +3415,6 @@ public class DatasetPage implements java.io.Serializable {
                         return null;
                     }
                 } else {
-                    //Lock the metadataLanguage once created
-                    dataset.setMetadataLanguage(dataset.getOwner().getEffectiveMetadataLanguage());
-                    
                    cmd = new CreateNewDatasetCommand(dataset, dvRequestService.getDataverseRequest());
                 }
 
