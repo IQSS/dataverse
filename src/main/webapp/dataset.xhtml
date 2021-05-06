@@ -690,6 +690,7 @@
                             <ui:param name="metadataBlocks" value="#{!empty DatasetPage.editMode ? DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray(): DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()}"/>
                             <ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDateFormattedYYYYMMDD}"/>
                             <ui:param name="globalId" value="#{DatasetPage.dataset.globalIdString}"/>
+                            <ui:param name="mdLang" value="#{DatasetPage.dataset.effectiveMetadataLanguage}"/>
                         </ui:include>
                     </ui:fragment>
                     <!-- Create/Save Dataset Button Panel TOP editMode -->
