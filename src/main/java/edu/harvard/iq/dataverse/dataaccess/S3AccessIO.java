@@ -769,6 +769,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
     }
 
+    // Rename this getAuxiliaryKey(), maybe? 
     String getDestinationKey(String auxItemTag) throws IOException {
         if (isDirectAccess() || dvObject instanceof DataFile) {
             return getMainFileKey() + "." + auxItemTag;
@@ -835,7 +836,16 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         return false;
     }
     
-    public String generateTemporaryS3Url() throws IOException {
+    /**
+     * Generates a temporary URL for a direct S3 download; 
+     * either for the main physical file, or (optionally) for an auxiliary. 
+     * @param auxiliaryTag (optional) 
+     * @param auxiliaryType (optional) - aux. mime type, if different from the main type
+     * @param auxiliaryFileName (optional) - file name, if different from the main file label. 
+     * @return redirect url
+     * @throws IOException.
+     */
+    public String generateTemporaryS3Url(String auxiliaryTag, String auxiliaryType, String auxiliaryFileName) throws IOException {
         //Questions:
         // Q. Should this work for private and public?
         // A. Yes! Since the URL has a limited, short life span. -- L.A. 
@@ -845,7 +855,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             throw new IOException("ERROR: s3 not initialised. ");
         }
         if (dvObject instanceof DataFile) {
-            key = getMainFileKey();
+            String key = auxiliaryTag == null ? getMainFileKey() : getDestinationKey(auxiliaryTag);
             java.util.Date expiration = new java.util.Date();
             long msec = expiration.getTime();
             msec += 60 * 1000 * getUrlExpirationMinutes();
@@ -862,7 +872,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             // Most browsers are happy with just "filename="+URLEncoder.encode(this.getDataFile().getDisplayName(), "UTF-8") 
             // in the header. But Firefox appears to require that "UTF8" is 
             // specified explicitly, as below:
-            responseHeaders.setContentDisposition("attachment; filename*=UTF-8''" + URLEncoder.encode(this.getDataFile().getDisplayName(), "UTF-8")
+            String fileName = auxiliaryFileName == null ? this.getDataFile().getDisplayName() : auxiliaryFileName; 
+            responseHeaders.setContentDisposition("attachment; filename*=UTF-8''" + URLEncoder.encode(fileName, "UTF-8")
                     .replaceAll("\\+", "%20"));
             // - without it, download will work, but Firefox will leave the special
             // characters in the file name encoded. For example, the file name 
@@ -870,7 +881,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             // where the dash is the "long dash", represented by a 3-byte UTF8 
             // character "\xE2\x80\x93"
             
-            responseHeaders.setContentType(this.getDataFile().getContentType());
+            String contentType = auxiliaryType == null ? this.getDataFile().getContentType() : auxiliaryType; 
+            responseHeaders.setContentType(contentType);
             generatePresignedUrlRequest.setResponseHeaders(responseHeaders);
 
             URL s; 
