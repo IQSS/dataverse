@@ -4,7 +4,7 @@ If your installation uses S3 for storage, and have "direct downloads" enabled, p
 
 `/api/access/datafile/12345?format=original`
 
-`/api/access/datafile/:persistentId?persistentId=doi:1234/ABCDE/FGHIJ?imageThumb=true`
+`/api/access/datafile/:persistentId?persistentId=doi:1234/ABCDE/FGHIJ&imageThumb=true`
 
 etc., that were previously excluded.
 
