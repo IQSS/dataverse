@@ -2,10 +2,9 @@
 
 If your installation uses S3 for storage, and have "direct downloads" enabled, please note that, as of this release, it will cover the following download types that were not handled by redirects in the earlier versions: saved originals of tabular data files, cached RData frames, resized thumbnails for image files and other auxiliary files. In other words, all the forms of the file download API that take extra arguments, such as "format" or "imageThumb" - for example:
 
-```
-   /api/access/datafile/12345?format=original
-   /api/access/datafile/:persistentId?persistentId=doi:1234/ABCDE/FGHIJ?imageThumb=true
-```
+`/api/access/datafile/12345?format=original`
+
+`/api/access/datafile/:persistentId?persistentId=doi:1234/ABCDE/FGHIJ?imageThumb=true`
 
 etc., that were previously excluded.
 
