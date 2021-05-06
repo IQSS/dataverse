@@ -1079,16 +1079,22 @@ public class DatasetPage implements java.io.Serializable {
         return true;
     }
     
-    public boolean canDownloadFiles(){
-        //returns true if the page user has permission to download at least one file
+    Boolean canDownloadFiles = null;
+    //caching can download files to limit trips to File Download Helper
+    public boolean canDownloadFiles() {
+        if (canDownloadFiles != null) {
+            return canDownloadFiles;
+        }
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
              if (fileDownloadHelper.canDownloadFile(fmd)) {
-                 return true;
+                 canDownloadFiles = true;
+                 return canDownloadFiles;
              }
         }
-        return false;
+        canDownloadFiles = true;
+        return canDownloadFiles;
     }
-    
+
     /*
     in getComputeUrl(), we are sending the container/dataset name and the exipiry and signature 
     for the temporary url of only ONE datafile within the dataset. This is because in the 
@@ -1872,7 +1878,8 @@ public class DatasetPage implements java.io.Serializable {
                 } else {
                     // an attempt to retreive both the filemetadatas and datafiles early on, so that 
                     // we don't have to do so later (possibly, many more times than necessary):
-                    datafileService.findFileMetadataOptimizedExperimental(dataset);
+                    AuthenticatedUser au = session.getUser() instanceof AuthenticatedUser ? (AuthenticatedUser) session.getUser() : null;
+                    datafileService.findFileMetadataOptimizedExperimental(dataset, au);
                 }
                 
                 // This will default to all the files in the version, if the search term
@@ -2706,7 +2713,8 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         if (readOnly) {
-            datafileService.findFileMetadataOptimizedExperimental(dataset);
+            AuthenticatedUser au = session.getUser() instanceof AuthenticatedUser ? (AuthenticatedUser) session.getUser() : null;
+            datafileService.findFileMetadataOptimizedExperimental(dataset, au);
         }
         
         fileMetadatasSearch = selectFileMetadatasForDisplay();

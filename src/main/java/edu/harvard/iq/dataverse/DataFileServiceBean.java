@@ -564,10 +564,8 @@ public class DataFileServiceBean implements java.io.Serializable {
      * It should only be used to retrieve filemetadata for the DatasetPage!
      * It is not guaranteed to adequately perform anywhere else. 
     */
-    public void findFileMetadataOptimizedExperimental(Dataset owner) {
-        findFileMetadataOptimizedExperimental(owner, null);
-    }
-    public void findFileMetadataOptimizedExperimental(Dataset owner, DatasetVersion requestedVersion) {
+
+    public void findFileMetadataOptimizedExperimental(Dataset owner, AuthenticatedUser au) {
         List<DataFile> dataFiles = new ArrayList<>();
         List<DataTable> dataTables = new ArrayList<>();
         //List<FileMetadata> retList = new ArrayList<>(); 
@@ -629,21 +627,21 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         logger.fine("Retrieved "+i+" data tags.");
 
-        i = 0;
-        List<Object[]> accessRequests = em.createNativeQuery("SELECT t0.ID, t2.AUTHENTICATED_USER_ID FROM DVOBJECT t0, DATAFILE t1, FILEACCESSREQUESTS t2 WHERE ((t0.OWNER_ID = " + owner.getId() + ") AND ((t1.ID = t0.ID) AND (t0.DTYPE = 'DataFile'))) AND (t1.ID = t2.DATAFILE_ID) ORDER BY t0.ID").getResultList();
-        for (Object[] result : accessRequests) {
-            Long datafile_id = (Long) result[0];
-            Integer authuser_id = (Integer) result[1];
-            if (accessRequestMap.get(datafile_id) == null) {
-                accessRequestMap.put(datafile_id, new ArrayList<>());
+        //Only need to check for access requests if there is an authenticated user       
+        if (au != null) {
+            i = 0;
+            List<Object> accessRequests = em.createNativeQuery("SELECT t0.ID FROM DVOBJECT t0, DATAFILE t1, FILEACCESSREQUESTS t2 WHERE ((t0.OWNER_ID = " + owner.getId() + ") AND ((t1.ID = t0.ID) AND (t0.DTYPE = 'DataFile'))) AND (t1.ID = t2.DATAFILE_ID)  and t2.AUTHENTICATED_USER_ID = " + au.getId() + " ORDER BY t0.ID").getResultList();
+            for (Object result : accessRequests) {               
+                Long datafile_id = Long.valueOf((Integer)result);
+                if (accessRequestMap.get(datafile_id) == null) {
+                    accessRequestMap.put(datafile_id, new ArrayList<>());
+                }
+                accessRequestMap.get(datafile_id).add(au);
+                i++;
             }
-            AuthenticatedUser authUser = userService.find(authuser_id);
-            accessRequestMap.get(datafile_id).add(authUser);
-            i++;
+            accessRequests = null;
+            logger.fine("Retrieved " + i + " access requests.");
         }
-        accessRequests = null;
-
-        logger.fine("Retrieved " + i + " access requests.");
 
         i = 0;
         
@@ -813,15 +811,18 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         
         logger.fine("Retrieved "+i+" file categories attached to the dataset.");
-        
+        /*
+        SEK 05/06/21 removed specific requested version handling
+        which was not being used
         if (requestedVersion != null) {
             requestedVersion.setFileMetadatas(retrieveFileMetadataForVersion(owner, requestedVersion, dataFiles, filesMap, categoryMap));
         } else {
+        */
             for (DatasetVersion version : owner.getVersions()) {
                 version.setFileMetadatas(retrieveFileMetadataForVersion(owner, version, dataFiles, filesMap, categoryMap));
                 logger.fine("Retrieved "+version.getFileMetadatas().size()+" filemetadatas for the version "+version.getId());
             }
-        }
+        //}
         owner.setFiles(dataFiles);
     }
 
