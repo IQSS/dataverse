@@ -365,12 +365,14 @@ public class AddReplaceFileHelper{
      * @param dataset
      * @param newFileName
      * @param newFileContentType
+     * @param newStorageIdentifier2 
      * @param newFileInputStream
      * @return 
      */
     public boolean runForceReplaceFile(Long oldFileId,
                         String newFileName, 
                         String newFileContentType, 
+                        String newStorageIdentifier,
                         InputStream newFileInputStream,
                         OptionalFileParams optionalFileParams){
         
@@ -392,13 +394,14 @@ public class AddReplaceFileHelper{
         }
 
         
-        return this.runAddReplaceFile(fileToReplace.getOwner(), newFileName, newFileContentType, newFileInputStream, optionalFileParams);
+        return this.runAddReplaceFile(fileToReplace.getOwner(), newFileName, newFileContentType, newStorageIdentifier, newFileInputStream, optionalFileParams);
     }
     
 
 	public boolean runReplaceFile(Long oldFileId,
                             String newFileName, 
                             String newFileContentType, 
+                            String newStorageIdentifier, 
                             InputStream newFileInputStream,
                             OptionalFileParams optionalFileParams){
     
@@ -418,7 +421,7 @@ public class AddReplaceFileHelper{
         if (!this.step_005_loadFileToReplaceById(oldFileId)){
             return false;
         }
-        return this.runAddReplaceFile(fileToReplace.getOwner(), newFileName, newFileContentType, newFileInputStream, optionalFileParams);
+        return this.runAddReplaceFile(fileToReplace.getOwner(), newFileName, newFileContentType, newStorageIdentifier, newFileInputStream, optionalFileParams);
     }
     
     
@@ -442,10 +445,6 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    private boolean runAddReplaceFile(Dataset owner, String newFileName, String newFileContentType,
-			InputStream newFileInputStream, OptionalFileParams optionalFileParams) {
-		return runAddReplaceFile(owner,newFileName, newFileContentType, null, newFileInputStream, optionalFileParams);
-	}
     
     private boolean runAddReplaceFile(Dataset owner,  
             String newFileName, String newFileContentType, 
