@@ -478,6 +478,8 @@ public class JsonPrinter {
         JsonObjectBuilder blockBld = jsonObjectBuilder();
 
         blockBld.add("displayName", block.getDisplayName());
+        blockBld.add("name", block.getName());
+        
         final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
 
         DatasetFieldWalker.walk(fields, settingsService, new DatasetFieldsToJson(fieldsArray));

@@ -10,6 +10,7 @@ import java.util.List;
  */
 public  class MetadataBlockDTO {
          String displayName;
+         String name;
          List<FieldDTO> fields = new ArrayList<FieldDTO>();
 
         public String getDisplayName() {
@@ -71,5 +72,13 @@ public  class MetadataBlockDTO {
         @Override
         public String toString() {
             return "MetadataBlockDTO{" + "displayName=" + displayName + ", fields=" + fields + '}';
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
         }
      }

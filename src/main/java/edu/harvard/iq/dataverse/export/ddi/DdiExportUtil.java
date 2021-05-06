@@ -248,7 +248,7 @@ public class DdiExportUtil {
         ////////
         xmlw.writeEndElement(); // stdyInfo
 
-        writeMethodElement(xmlw, version);
+        writeMethodElement(xmlw, version, datasetDto.getMetadataLanguage());
         writeDataAccess(xmlw , version);
         writeOtherStudyMaterial(xmlw , version);
 
@@ -516,14 +516,14 @@ public class DdiExportUtil {
 
     }
     
-    private static void writeMethodElement(XMLStreamWriter xmlw , DatasetVersionDTO version) throws XMLStreamException{
+    private static void writeMethodElement(XMLStreamWriter xmlw , DatasetVersionDTO version, String lang) throws XMLStreamException{
         xmlw.writeStartElement("method");
         xmlw.writeStartElement("dataColl");
         writeFullElement(xmlw, "timeMeth", dto2Primitive(version, DatasetFieldConstant.timeMethod)); 
         writeFullElement(xmlw, "dataCollector", dto2Primitive(version, DatasetFieldConstant.dataCollector));         
         writeFullElement(xmlw, "collectorTraining", dto2Primitive(version, DatasetFieldConstant.collectorTraining));   
         writeFullElement(xmlw, "frequenc", dto2Primitive(version, DatasetFieldConstant.frequencyOfDataCollection));      
-        writeFullElement(xmlw, "sampProc", dto2Primitive(version, DatasetFieldConstant.samplingProcedure));
+        writeI18NElement(xmlw, "sampProc", version, DatasetFieldConstant.samplingProcedure, lang);
 
         writeTargetSampleElement(xmlw, version);
 
@@ -1323,7 +1323,7 @@ public class DdiExportUtil {
                 if (datasetFieldTypeName.equals(fieldDTO.getTypeName())) {
                     String rawVal = fieldDTO.getSinglePrimitive();
                     if (fieldDTO.getTypeClass().equals("controlledVocabulary")) {
-                        String localeVal = getLocaleStrValue(rawVal, datasetFieldTypeName, value.getDisplayName(),
+                        String localeVal = getLocaleStrValue(rawVal, datasetFieldTypeName, value.getName(),
                                 locale);
                         if (localeVal != null) {
                             rawVal = localeVal;
@@ -1342,7 +1342,9 @@ public class DdiExportUtil {
         key = StringUtils.stripAccents(key);
         try {
             //String val = BundleUtil.getStringFromPropertyFile("controlledvocabulary." + fieldTypeName + "." + key, metadataBlockName); 
+            logger.fine("looking for " +  "controlledvocabulary." + fieldTypeName + "." + key + " in " + metadataBlockName);
             String val = BundleUtil.getStringFromBundle("controlledvocabulary." + fieldTypeName + "." + key, null, BundleUtil.getResourceBundle(metadataBlockName, locale));
+            logger.fine("Found: " + val);
             return val;
         } catch (MissingResourceException | NullPointerException e) {
             return null;
@@ -1409,7 +1411,7 @@ public class DdiExportUtil {
         }
     }
     
-    private static void writeI18nElement(XMLStreamWriter xmlw, String name, DatasetVersionDTO version, String fieldTypeName,
+    private static void writeI18NElement(XMLStreamWriter xmlw, String name, DatasetVersionDTO version, String fieldTypeName,
             String lang)  throws XMLStreamException {
         String val = dto2Primitive(version, fieldTypeName);
         Locale defaultLocale = Locale.getDefault();
