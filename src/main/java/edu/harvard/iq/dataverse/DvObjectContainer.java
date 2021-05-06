@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
+import java.util.Locale;
+
 import javax.persistence.MappedSuperclass;
 import org.apache.commons.lang.StringUtils;
 
@@ -16,7 +18,7 @@ public abstract class DvObjectContainer extends DvObject {
 	
     
     //Default to "file" is for tests only
-    public static final String DEFAULT_METADATA_LANGUAGE = BundleUtil.getCurrentLocale().getDisplayLanguage();
+    public static final String DEFAULT_METADATA_LANGUAGE = Locale.getDefault().getDisplayLanguage();
     public static final String UNDEFINED_METADATA_LANGUAGE_CODE = "undefined"; //Used in dataverse.xhtml as a non-null selection option value (indicating inheriting the default)
     
     
