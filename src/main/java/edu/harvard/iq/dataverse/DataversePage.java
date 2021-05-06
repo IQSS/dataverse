@@ -1216,8 +1216,8 @@ public class DataversePage implements java.io.Serializable {
    		return label;
     }
     
-    public Map<String, String> getMetadataLanguages() {
-        return systemConfig.getMetadataLanguages(this.dataverse);
+    public Set<Entry<String, String>> getMetadataLanguages() {
+        return systemConfig.getMetadataLanguages(this.dataverse).entrySet();
     }
     
 }

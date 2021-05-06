@@ -234,7 +234,7 @@
                                         </h:outputLabel>
                                         <div class="form-col-container">
                                             <h:selectOneMenu id="dsMetadataLanguage" styleClass="form-control" value="#{DataversePage.dataverse.metadataLanguage}">
-                                                <f:selectItems value="#{DataversePage.getMetadataLanguages()}" var="lang" itemLabel="#{lang.getKey()}" itemValue="#{lang.getValue()}"/>
+                                                <f:selectItems value="#{DataversePage.getMetadataLanguages()}" var="lang" itemLabel="#{lang.getValue()}" itemValue="#{lang.getKey()}"/>
                                             </h:selectOneMenu>
                                             <p:message for="dsMetadataLanguage" display="text"/>
                                         </div>
