@@ -131,6 +131,8 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
     @Override 
     public boolean onSuccess(CommandContext ctxt, Object r) {
 
+        boolean retVal = true;
+        
        // all the real Solr work is done here
        // delete orphaned Solr ids
         IndexResponse resultOfSolrDeletionAttempt = ctxt.solrIndex().deleteMultipleSolrIds(datasetAndFileSolrIdsToDelete);
@@ -143,9 +145,10 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
             String failureLogText = "Post-destroy dataset indexing of the owning dataverse failed. You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + toReIndex.getId().toString();
             failureLogText += "\r\n" + e.getLocalizedMessage();
             LoggingUtil.writeOnSuccessFailureLog(this, failureLogText,  toReIndex);
+            retVal = false;
         }
         
-        return true;
+        return retVal;
     }
 
 }
