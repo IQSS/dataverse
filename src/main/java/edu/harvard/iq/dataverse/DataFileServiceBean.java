@@ -565,7 +565,7 @@ public class DataFileServiceBean implements java.io.Serializable {
      * It is not guaranteed to adequately perform anywhere else. 
     */
 
-    public void findFileMetadataOptimizedExperimental(Dataset owner, AuthenticatedUser au) {
+    public void findFileMetadataOptimizedExperimental(Dataset owner, DatasetVersion version, AuthenticatedUser au) {
         List<DataFile> dataFiles = new ArrayList<>();
         List<DataTable> dataTables = new ArrayList<>();
         //List<FileMetadata> retList = new ArrayList<>(); 
@@ -800,7 +800,110 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         logger.fine("Retrieved "+i+" file categories attached to the dataset.");
 
+        version.setFileMetadatas(retrieveFileMetadataForVersion(owner, version, dataFiles, filesMap, categoryMap));
+        logger.fine("Retrieved " + version.getFileMetadatas().size() + " filemetadatas for the version " + version.getId());
+
+
         owner.setFiles(dataFiles);
+    }
+    
+        private List<FileMetadata> retrieveFileMetadataForVersion(Dataset dataset, DatasetVersion version, List<DataFile> dataFiles, Map<Long, Integer> filesMap, Map<Long, Integer> categoryMap) {
+        List<FileMetadata> retList = new ArrayList<>();
+        Map<Long, Set<Long>> categoryMetaMap = new HashMap<>();
+        
+        List<Object[]> categoryResults = em.createNativeQuery("select t0.filecategories_id, t0.filemetadatas_id from filemetadata_datafilecategory t0, filemetadata t1 where (t0.filemetadatas_id = t1.id) AND (t1.datasetversion_id = "+version.getId()+")").getResultList();
+        int i = 0;
+        for (Object[] result : categoryResults) {
+            Long category_id = (Long) result[0];
+            Long filemeta_id = (Long) result[1];
+            if (categoryMetaMap.get(filemeta_id) == null) {
+                categoryMetaMap.put(filemeta_id, new HashSet<>());
+            }
+            categoryMetaMap.get(filemeta_id).add(category_id);
+            i++;
+        }
+        logger.fine("Retrieved and mapped "+i+" file categories attached to files in the version "+version.getId());
+        
+        List<Object[]> metadataResults = em.createNativeQuery("select id, datafile_id, DESCRIPTION, LABEL, RESTRICTED, DIRECTORYLABEL, prov_freeform from FileMetadata where datasetversion_id = "+version.getId() + " ORDER BY LABEL").getResultList();
+        
+        for (Object[] result : metadataResults) {
+            Integer filemeta_id = (Integer) result[0];
+            
+            if (filemeta_id == null) {
+                continue;
+            }
+            
+            Long file_id = (Long) result[1];
+            if (file_id == null) {
+                continue;
+            }
+            
+            Integer file_list_id = filesMap.get(file_id);
+            if (file_list_id == null) {
+                continue;
+            }
+            FileMetadata fileMetadata = new FileMetadata();
+            fileMetadata.setId(filemeta_id.longValue());
+            fileMetadata.setCategories(new LinkedList<>());
+
+            if (categoryMetaMap.get(fileMetadata.getId()) != null) {
+                for (Long cat_id : categoryMetaMap.get(fileMetadata.getId())) {
+                    if (categoryMap.get(cat_id) != null) {
+                        fileMetadata.getCategories().add(dataset.getCategories().get(categoryMap.get(cat_id)));
+                    }
+                }
+            }
+
+            fileMetadata.setDatasetVersion(version);
+            
+            // Link the FileMetadata object to the DataFile:
+            fileMetadata.setDataFile(dataFiles.get(file_list_id));
+            // ... and the DataFile back to the FileMetadata:
+            fileMetadata.getDataFile().getFileMetadatas().add(fileMetadata);
+            
+            String description = (String) result[2]; 
+            
+            if (description != null) {
+                fileMetadata.setDescription(description);
+            }
+            
+            String label = (String) result[3];
+            
+            if (label != null) {
+                fileMetadata.setLabel(label);
+            }
+                        
+            Boolean restricted = (Boolean) result[4];
+            if (restricted != null) {
+                fileMetadata.setRestricted(restricted);
+            }
+            
+            String dirLabel = (String) result[5];
+            if (dirLabel != null){
+                fileMetadata.setDirectoryLabel(dirLabel);
+            }
+            
+            String provFreeForm = (String) result[6];
+            if (provFreeForm != null){
+                fileMetadata.setProvFreeForm(provFreeForm);
+            }
+                        
+            retList.add(fileMetadata);
+        }
+        
+        logger.fine("Retrieved "+retList.size()+" file metadatas for version "+version.getId()+" (inside the retrieveFileMetadataForVersion method).");
+                
+        
+        /* 
+            We no longer perform this sort here, just to keep this filemetadata
+            list as identical as possible to when it's produced by the "traditional"
+            EJB method. When it's necessary to have the filemetadatas sorted by 
+            FileMetadata.compareByLabel, the DatasetVersion.getFileMetadatasSorted()
+            method should be called. 
+        
+        Collections.sort(retList, FileMetadata.compareByLabel); */
+        
+        return retList; 
     }
     
     public List<DataFile> findIngestsInProgress() {

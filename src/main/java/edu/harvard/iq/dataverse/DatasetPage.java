@@ -435,7 +435,7 @@ public class DatasetPage implements java.io.Serializable {
         this.removeUnusedTags = removeUnusedTags;
     }
 
-    private List<FileMetadata> fileMetadatas;
+ //   private List<FileMetadata> fileMetadatas;
     private String fileSortField;
     private String fileSortOrder;
 
@@ -1873,9 +1873,6 @@ public class DatasetPage implements java.io.Serializable {
 
 
             if (initFull) {
-                tooLargeToDownload = getSizeOfDatasetNumeric() > settingsWrapper.getZipDownloadLimit();
-                tooLargeToDownloadOriginal = getSizeOfDatasetOrigNumeric() > settingsWrapper.getZipDownloadLimit();
-                tooLargeToDownloadArchival = getSizeOfDatasetArchivalNumeric() > settingsWrapper.getZipDownloadLimit();
 
                 // init the list of FileMetadatas
                 if (workingVersion.isDraft() && canUpdateDataset()) {
@@ -1884,19 +1881,16 @@ public class DatasetPage implements java.io.Serializable {
                     // an attempt to retreive both the filemetadatas and datafiles early on, so that
                     // we don't have to do so later (possibly, many more times than necessary):
                     AuthenticatedUser au = session.getUser() instanceof AuthenticatedUser ? (AuthenticatedUser) session.getUser() : null;
-                    datafileService.findFileMetadataOptimizedExperimental(dataset, au);
+                    datafileService.findFileMetadataOptimizedExperimental(dataset, workingVersion, au);
                 }
-
                 // This will default to all the files in the version, if the search term
                 // parameter hasn't been specified yet:
                 fileMetadatasSearch = selectFileMetadatasForDisplay();
-
                 ownerId = dataset.getOwner().getId();
                 datasetNextMajorVersion = this.dataset.getNextMajorVersionString();
                 datasetNextMinorVersion = this.dataset.getNextMinorVersionString();
                 datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion, false);
                 updateDatasetFieldInputLevels();
-
                 setExistReleasedVersion(resetExistRealeaseVersion());
                 //moving setVersionTabList to tab change event
                 //setVersionTabList(resetVersionTabList());
@@ -1924,7 +1918,10 @@ public class DatasetPage implements java.io.Serializable {
                         logger.warning("Problem getting rsync script (Command Exception): " + cex.getLocalizedMessage());
                     }
                 }
-
+               
+                tooLargeToDownload = getSizeOfDatasetNumeric() > settingsWrapper.getZipDownloadLimit();
+                tooLargeToDownloadOriginal = getSizeOfDatasetOrigNumeric() > settingsWrapper.getZipDownloadLimit();
+                tooLargeToDownloadArchival = getSizeOfDatasetArchivalNumeric() > settingsWrapper.getZipDownloadLimit();
             }
         } else if (ownerId != null) {
             // create mode for a new child dataset
@@ -2719,7 +2716,7 @@ public class DatasetPage implements java.io.Serializable {
 
         if (readOnly) {
             AuthenticatedUser au = session.getUser() instanceof AuthenticatedUser ? (AuthenticatedUser) session.getUser() : null;
-            datafileService.findFileMetadataOptimizedExperimental(dataset, au);
+            datafileService.findFileMetadataOptimizedExperimental(dataset, workingVersion, au);
         }
 
         fileMetadatasSearch = selectFileMetadatasForDisplay();
@@ -5007,6 +5004,7 @@ public class DatasetPage implements java.io.Serializable {
         this.fileSortOrder = fileSortOrder;
     }
 
+    /*
     public List<FileMetadata> getFileMetadatas() {
         if (isSortButtonEnabled()) {
             return fileMetadatas;
@@ -5014,7 +5012,7 @@ public class DatasetPage implements java.io.Serializable {
             return new ArrayList<>();
         }
     }
-
+*/
     public String getFileSortFieldName() {
         return FileSortFieldAndOrder.label;
     }
