@@ -19,52 +19,53 @@ The Metrics API includes several categories of endpoints that provide different 
 
 * Total - an aggregate count over all-time:
 
-    Form: GET https://$SERVER/api/info/metrics/$type
+  * Form: GET https://$SERVER/api/info/metrics/$type
 
-    where ``$type`` can be set, for example, to ``dataverses`` (Dataverse collections), ``datasets``, ``files`` or ``downloads``.
+  * where ``$type`` can be set, for example, to ``dataverses`` (Dataverse collections), ``datasets``, ``files`` or ``downloads``.
 
-    Example: ``curl https://demo.dataverse.org/api/info/metrics/downloads``
+  * Example: ``curl https://demo.dataverse.org/api/info/metrics/downloads``
 
-    Return: Most of these calls return a simple JSON object with a ``count`` whose value is the metric's total count. Some calls, such as ``filedownloads`` return aggregate metrics per item (e.g. per file or by subject) as a JSONArray or CSV (see Return Formats below)
+  * Return: Most of these calls return a simple JSON object with a ``count`` whose value is the metric's total count. Some calls, such as ``filedownloads`` return aggregate metrics per item (e.g. per file or by subject) as a JSONArray or CSV (see Return Formats below)
 
 * To-Month - a count of various objects in dataverse up to and including a specified month ``$YYYY-DD`` in YYYY-MM format (e.g. ``2018-01``):
 
-    Form: GET https://$SERVER/api/info/metrics/$type/toMonth/$YYYY-DD
+  * Form: GET https://$SERVER/api/info/metrics/$type/toMonth/$YYYY-DD
 
-    where ``$type`` can be set, for example, to ``dataverses`` (Dataverse collections), ``datasets``, ``files`` or ``downloads``.
+  * where ``$type`` can be set, for example, to ``dataverses`` (Dataverse collections), ``datasets``, ``files`` or ``downloads``.
 
-    Example: ``curl https://demo.dataverse.org/api/info/metrics/dataverses/toMonth/2018-01``
+  * Example: ``curl https://demo.dataverse.org/api/info/metrics/dataverses/toMonth/2018-01``
     
-    Return: Most of these calls return a simple JSON object with a ``count`` whose value is the metric's total count. One variant, ``/api/info/metrics/datasets/bySubject/toMonth`` return aggregate metrics per Dataset Subject as a JSONArray or CSV (see Return Formats below)
+  * Return: Most of these calls return a simple JSON object with a ``count`` whose value is the metric's total count. One variant, ``/api/info/metrics/datasets/bySubject/toMonth`` return aggregate metrics per Dataset Subject as a JSONArray or CSV (see Return Formats below)
 
 * Past Days - a count of various objects in a Dataverse installation for the past ``$days`` (e.g. ``30``):
 
-    Form: GET https://$SERVER/api/info/metrics/$type/pastDays/$days
+  * Form: GET https://$SERVER/api/info/metrics/$type/pastDays/$days
 
-    where ``$type`` can be set, for example, to ``dataverses`` (Dataverse collections), ``datasets``, ``files`` or ``downloads``.
+  * where ``$type`` can be set, for example, to ``dataverses`` (Dataverse collections), ``datasets``, ``files`` or ``downloads``.
 
-    Example: ``curl https://demo.dataverse.org/api/info/metrics/datasets/pastDays/30``
+  * Example: ``curl https://demo.dataverse.org/api/info/metrics/datasets/pastDays/30``
 
-    Return: A simple JSON object with a ``count`` whose value is the metric's total count.
+  * Return: A simple JSON object with a ``count`` whose value is the metric's total count.
 
 * Monthly - a time series of the metric with aggregate values per month with counts up to and including the given month:
 
-    Form: GET https://$SERVER/api/info/metrics/$type/monthly
+  * Form: GET https://$SERVER/api/info/metrics/$type/monthly
 
-    where ``$type`` can be set, for example, to ``dataverses`` (Dataverse collections), ``datasets``, ``files`` or ``downloads``.
+  * where ``$type`` can be set, for example, to ``dataverses`` (Dataverse collections), ``datasets``, ``files`` or ``downloads``.
 
-    Example: ``curl https://demo.dataverse.org/api/info/metrics/downloads/monthly``
+  * Example: ``curl https://demo.dataverse.org/api/info/metrics/downloads/monthly``
 
-    Return: A JSON Array or CSV file with an array of counts per month. Variants of this this category that provide a time series per object return that information in the same formats (JSON array, CSV) with one time-series column per item (see Return Formats below).
+  * Return: A JSON Array or CSV file with an array of counts per month. Variants of this this category that provide a time series per object return that information in the same formats (JSON array, CSV) with one time-series column per item (see Return Formats below).
 
 * Tree - endpoints that describe the structure of the tree of published Dataverses, as of now or as of the end of a specified month. The monthly version could be used to show growth of the Dataverse instance over time, but the initial use case for these endpoints was to provide a means to list the tree in a selection widget to scope the metrics displayed in the local Dataverse metrics page in the `dataverse-metrics app <https://github.com/IQSS/dataverse-metrics>`_.
 
-    Form: GET https://$SERVER/api/info/metrics/tree
-          GET https://$SERVER/api/info/metrics/tree/toMonth/$YYYY-DD
+  * Form: GET https://$SERVER/api/info/metrics/tree
+  * or
+  * Form: GET https://$SERVER/api/info/metrics/tree/toMonth/$YYYY-DD
 
-    Example: ``curl https://demo.dataverse.org/api/info/metrics/tree``
+  * Example: ``curl https://demo.dataverse.org/api/info/metrics/tree``
 
-    Return: A nested JSON array containing JSON objects for each Dataverse collection with key/values for id, ownerId, alias, depth, and name, and a JSON array containing analogous objects for Dataverse collections within the current one.
+  * Return: A nested JSON array containing JSON objects for each Dataverse collection with key/values for id, ownerId, alias, depth, and name, and a JSON array containing analogous objects for Dataverse collections within the current one.
 
 Return Formats
 --------------
@@ -73,13 +74,13 @@ There are a number of API calls that provide time series, information reported p
 
 * application/json - a JSON array of objects. For time-series, the objects include key/values for the ``date`` and ``count`` for that month. For per-item calls, the objects include the item (e.g. for a subject), or it's id/pid (for a dataset or datafile). For timeseries per-item, the objects also include a date. In all cases, the response is a single array.
 
-    Example: ``curl -H 'Accept:application/json' https://demo.dataverse.org/api/info/metrics/downloads/monthly``
+  * Example: ``curl -H 'Accept:application/json' https://demo.dataverse.org/api/info/metrics/downloads/monthly``
 
 * comma-separated-value (CSV) - a CSV file with rows corresponding to each JSON object in the application/json format. Column headers are included (e.g. ``date,count`` or ``subject,count`` or ``date,pid,id,count`` (for a time series per file)).
 
-    Example: ``curl -H 'Accept:text/csv' https://demo.dataverse.org/api/info/metrics/downloads/monthly``
+  * Example: ``curl -H 'Accept:text/csv' https://demo.dataverse.org/api/info/metrics/downloads/monthly``
 
-    The default format is CSV, so ``curl https://demo.dataverse.org/api/info/metrics/downloads/monthly``, or typing this URL into a browser return the CSV format.
+  * The default format is CSV, so ``curl https://demo.dataverse.org/api/info/metrics/downloads/monthly``, or typing this URL into a browser return the CSV format.
 
 .. |CORS| raw:: html
 
