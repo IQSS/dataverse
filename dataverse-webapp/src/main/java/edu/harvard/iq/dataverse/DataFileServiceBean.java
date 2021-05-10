@@ -52,7 +52,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -1186,7 +1185,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         Path tempFile = null;
 
         Long fileSizeLimit = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);
-
+        Long uncompressedSize = 0L;
         if (getFilesTempDirectory() != null) {
             tempFile = saveInputStreamInTempFile(inputStream, fileSizeLimit).toPath();
         } else {
@@ -1290,7 +1289,7 @@ public class DataFileServiceBean implements java.io.Serializable {
                 File unZippedTempFile = saveInputStreamInTempFile(uncompressedIn, fileSizeLimit);
                 DataFile.ChecksumType checksumType = DataFile.ChecksumType.fromString(settingsService.getValueForKey(SettingsServiceBean.Key.FileFixityChecksumAlgorithm));
                 datafile = createSingleDataFile(version, unZippedTempFile, finalFileName, ApplicationMimeType.UNDETERMINED_DEFAULT
-                        .getMimeValue(), checksumType);
+                        .getMimeValue(), checksumType, uncompressedSize);
             } catch (IOException | FileExceedsMaxSizeException ioex) {
                 datafile = null;
             } finally {
@@ -1328,29 +1327,6 @@ public class DataFileServiceBean implements java.io.Serializable {
             long fileNumberLimit = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.ZipUploadFilesLimit);
 
             try {
-                Charset charset = null;
-                /*
-                TODO: (?)
-                We may want to investigate somehow letting the user specify
-                the charset for the filenames in the zip file...
-                - otherwise, ZipInputStream bails out if it encounteres a file
-                name that's not valid in the current charest (i.e., UTF-8, in
-                our case). It would be a bit trickier than what we're doing for
-                SPSS tabular ingests - with the lang. encoding pulldown menu -
-                because this encoding needs to be specified *before* we upload and
-                attempt to unzip the file.
-                        -- L.A. 4.0 beta12
-                logger.info("default charset is "+Charset.defaultCharset().name());
-                if (Charset.isSupported("US-ASCII")) {
-                    logger.info("charset US-ASCII is supported.");
-                    charset = Charset.forName("US-ASCII");
-                    if (charset != null) {
-                        logger.info("was able to obtain charset for US-ASCII");
-                    }
-
-                }
-                */
-
                 unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()));
 
                 while (true) {
@@ -1375,7 +1351,7 @@ public class DataFileServiceBean implements java.io.Serializable {
                     // simply skip them:
 
                     if (!zipEntry.isDirectory()) {
-                        if (datafiles.size() > fileNumberLimit) {
+                        if (datafiles.size() >= fileNumberLimit) {
                             logger.warn("Zip upload - too many files.");
                             errorKey = IngestError.UNZIP_FILE_LIMIT_FAIL;
                             throw new IOException();
@@ -1395,10 +1371,10 @@ public class DataFileServiceBean implements java.io.Serializable {
                                 // OK, this seems like an OK file entry - we'll try
                                 // to read it and create a DataFile with it:
 
-                                File unZippedTempFile = saveInputStreamInTempFile(unZippedIn, fileSizeLimit);
+                                File unZippedTempFile = saveInputStreamInTempFile(unZippedIn, fileSizeLimit, false);
                                 DataFile.ChecksumType checksumType = DataFile.ChecksumType.fromString(settingsService.getValueForKey(SettingsServiceBean.Key.FileFixityChecksumAlgorithm));
                                 DataFile datafile = createSingleDataFile(version, unZippedTempFile, shortName, ApplicationMimeType.UNDETERMINED_DEFAULT
-                                        .getMimeValue(), checksumType, false);
+                                        .getMimeValue(), checksumType, uncompressedSize,false);
 
                                 if (!fileEntryName.equals(shortName)) {
                                     // If the filename looks like a hierarchical folder name (i.e., contains slashes and backslashes),
@@ -1446,7 +1422,9 @@ public class DataFileServiceBean implements java.io.Serializable {
                 // ingest default to creating a single DataFile out
                 // of the unzipped file.
                 logger.warn("Failed to unzip the file. Saving the file as is.", ioex);
-                if (errorKey == null) {
+                if (errorKey == IngestError.UNZIP_FILE_LIMIT_FAIL) {
+                    uncompressedSize = extractZipContentsSize(tempFile);
+                } else if (errorKey == null) {
                     errorKey = IngestError.UNZIP_FAIL;
                 }
 
@@ -1464,20 +1442,6 @@ public class DataFileServiceBean implements java.io.Serializable {
                 }
             }
             if (datafiles.size() > 0) {
-                // link the data files to the dataset/version:
-                // (except we no longer want to do this! -- 4.6)
-                /*Iterator<DataFile> itf = datafiles.iterator();
-                while (itf.hasNext()) {
-                    DataFile datafile = itf.next();
-                    datafile.setOwner(version.getDataset());
-                    if (version.getFileMetadatas() == null) {
-                        version.setFileMetadatas(new ArrayList());
-                    }
-                    version.addFileMetadata(datafile.getFileMetadata());
-                    datafile.getFileMetadata().setDatasetVersion(version);
-
-                    version.getDataset().getFiles().add(datafile);
-                } */
                 // remove the uploaded zip file:
                 try {
                     Files.delete(tempFile);
@@ -1488,7 +1452,9 @@ public class DataFileServiceBean implements java.io.Serializable {
                 // and return:
                 return datafiles;
             }
-
+        } else if (finalType.equals("application/zip")
+                && settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.ZipUploadFilesLimit) == 0) {
+            uncompressedSize = extractZipContentsSize(tempFile);
         } else if (finalType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)) {
             // Shape files may have to be split into multiple files,
             // one zip archive per each complete set of shape files:
@@ -1516,7 +1482,8 @@ public class DataFileServiceBean implements java.io.Serializable {
 
                     File unZippedShapeTempFile = saveInputStreamInTempFile(finalFileInputStream, fileSizeLimit);
                     DataFile.ChecksumType checksumType = DataFile.ChecksumType.fromString(settingsService.getValueForKey(SettingsServiceBean.Key.FileFixityChecksumAlgorithm));
-                    DataFile new_datafile = createSingleDataFile(version, unZippedShapeTempFile, finalFile.getName(), finalType, checksumType);
+                    DataFile new_datafile = createSingleDataFile(version, unZippedShapeTempFile, finalFile.getName(),
+                            finalType, checksumType, uncompressedSize);
                     if (new_datafile != null) {
                         datafiles.add(new_datafile);
                     } else {
@@ -1555,7 +1522,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         // if we were unable to unpack an uploaded file, etc.), we'll just
         // create and return a single DataFile:
         DataFile.ChecksumType checksumType = DataFile.ChecksumType.fromString(settingsService.getValueForKey(SettingsServiceBean.Key.FileFixityChecksumAlgorithm));
-        DataFile datafile = createSingleDataFile(version, tempFile.toFile(), fileName, finalType, checksumType);
+        DataFile datafile = createSingleDataFile(version, tempFile.toFile(), fileName, finalType, checksumType, uncompressedSize);
 
         if (datafile != null) {
 
@@ -1577,8 +1544,37 @@ public class DataFileServiceBean implements java.io.Serializable {
         return null;
     } // end createDataFiles
 
+    private long extractZipContentsSize(Path tempFile) {
+        long size = 0;
+        try (ZipInputStream unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()))) {
+            ZipEntry zipEntry;
+            while (true) {
+                try {
+                    zipEntry = unZippedIn.getNextEntry();
+                } catch (IllegalArgumentException iaex) {
+                    logger.warn("Failed to unpack Zip file. (Unknown Character Set used in a file name?) Saving the file as is.", iaex);
+                    zipEntry = null;
+                }
+                if (zipEntry == null) {
+                    break;
+                }
+                if (!zipEntry.isDirectory()) {
+                    size += zipEntry.getSize();
+                }
+                unZippedIn.closeEntry();
+            }
+        } catch (IOException ioe) {
+            logger.warn("Exception encountered: ", ioe);
+        }
+        return size;
+    }
 
     private File saveInputStreamInTempFile(InputStream inputStream, Long fileSizeLimit)
+            throws IOException, FileExceedsMaxSizeException {
+        return saveInputStreamInTempFile(inputStream, fileSizeLimit, true);
+    }
+
+    private File saveInputStreamInTempFile(InputStream inputStream, Long fileSizeLimit, boolean closeStream)
             throws IOException, FileExceedsMaxSizeException {
         Path tempFile = Files.createTempFile(Paths.get(getFilesTempDirectory()), "tmp", "upload");
 
@@ -1603,7 +1599,9 @@ public class DataFileServiceBean implements java.io.Serializable {
                 outStream.write(buffer, 0, bytesRead);
             }
         } finally {
-            inputStream.close();
+            if (closeStream) {
+                inputStream.close();
+            }
         }
 
         return tempFile.toFile();
@@ -1619,11 +1617,12 @@ public class DataFileServiceBean implements java.io.Serializable {
      * been figured out.
      */
 
-    private DataFile createSingleDataFile(DatasetVersion version, File tempFile, String fileName, String contentType, DataFile.ChecksumType checksumType) {
-        return createSingleDataFile(version, tempFile, fileName, contentType, checksumType, false);
+    private DataFile createSingleDataFile(DatasetVersion version, File tempFile, String fileName, String contentType,
+                          DataFile.ChecksumType checksumType, Long uncompressedSize) {
+        return createSingleDataFile(version, tempFile, fileName, contentType, checksumType, uncompressedSize, false);
     }
 
-    private DataFile createSingleDataFile(DatasetVersion version, File tempFile, String fileName, String contentType, DataFile.ChecksumType checksumType, boolean addToDataset) {
+    private DataFile createSingleDataFile(DatasetVersion version, File tempFile, String fileName, String contentType, DataFile.ChecksumType checksumType, Long uncompressedSize, boolean addToDataset) {
 
         if (tempFile == null) {
             return null;
@@ -1639,6 +1638,7 @@ public class DataFileServiceBean implements java.io.Serializable {
          * the dataset level, for example.
          */
         datafile.setPermissionModificationTime(new Timestamp(new Date().getTime()));
+        datafile.setUncompressedSize(uncompressedSize);
         FileMetadata fmd = new FileMetadata();
 
         // TODO: add directoryLabel?
@@ -1734,5 +1734,4 @@ public class DataFileServiceBean implements java.io.Serializable {
         return contentType;
 
     }
-
 }

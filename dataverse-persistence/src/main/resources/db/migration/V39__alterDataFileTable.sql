@@ -1,0 +1,1 @@
+ALTER TABLE datafile ADD COLUMN uncompressedsize BIGINT NOT NULL DEFAULT 0;

@@ -231,6 +231,10 @@ public class DataFile extends DvObject implements Comparable {
     @BatchFetch(BatchFetchType.JOIN)
     private Dataset thumbnailForDataset;
 
+    @Column
+    private Long uncompressedSize = 0L;
+
+
     public DataFile() {
         this.fileMetadatas = new ArrayList<>();
         initFileReplaceAttributes();
@@ -873,8 +877,13 @@ public class DataFile extends DvObject implements Comparable {
         return null;
     }
 
+    public Long getUncompressedSize() {
+        return uncompressedSize;
+    }
 
-
+    public void setUncompressedSize(Long uncompressedSize) {
+        this.uncompressedSize = uncompressedSize;
+    }
 } // end of class
 
 
