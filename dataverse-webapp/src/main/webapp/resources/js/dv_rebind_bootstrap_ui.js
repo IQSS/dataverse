@@ -722,7 +722,6 @@ function reinitializePrimefacesComponentsJS() {
             originalPaginatorInit.apply(this, [cfg]);
             
             var currentPage = this.pagesContainer.find('.ui-paginator-page.ui-state-active');
-            console.log(currentPage);
             currentPage.attr('aria-label', currentPage.attr('aria-label') + ' ' + PrimeFaces.getLocaleSettings().ariaCurrentPagePaginator)
         }
         
@@ -730,7 +729,6 @@ function reinitializePrimefacesComponentsJS() {
             originalPaginatorUpdatePageLinks.apply(this);
             
             var currentPage = this.pagesContainer.find('.ui-paginator-page.ui-state-active');
-            console.log(currentPage);
             currentPage.attr('aria-label', currentPage.attr('aria-label') + ' ' + PrimeFaces.getLocaleSettings().ariaCurrentPagePaginator)
         }
     }
@@ -740,7 +738,12 @@ function reinitializePrimefacesComponentsJS() {
         var originalBlockUIShow = PrimeFaces.widget.BlockUI.prototype.show;
         var originalBlockUIHide = PrimeFaces.widget.BlockUI.prototype.hide;
         
-        // change: change position of block element only when overlay is visible 
+        // BlockUI component will sometimes change css position property of block element
+        // to properly position overlay over block element. This doesn't play nice
+        // with fix_submenus_overflow() - calculations done there to properly position
+        // submenus will be incorrect.
+        // As a workaround we change css position of block element only for the time
+        // when overlay is visible.
         PrimeFaces.widget.BlockUI.prototype.render= function() {
             this.originalBlockPosition = this.block.css("position");
             
@@ -749,6 +752,7 @@ function reinitializePrimefacesComponentsJS() {
             this.block.css('position', this.originalBlockPosition);
         }
         PrimeFaces.widget.BlockUI.prototype.show= function() {
+            var position = this.block.css('position');
             if (position !== "fixed" && position  !== "absolute") {
                 this.block.css('position', 'relative');
             }
