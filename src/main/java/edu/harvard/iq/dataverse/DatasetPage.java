@@ -1080,17 +1080,17 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     Boolean canDownloadFiles = null;
+
     //caching can download files to limit trips to File Download Helper
     public boolean canDownloadFiles() {
-        if (canDownloadFiles != null) {
-            return canDownloadFiles;
-        }
-        canDownloadFiles = false;
-        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-             if (fileDownloadHelper.canDownloadFile(fmd)) {
-                 canDownloadFiles = true;
-                 break;
-             }
+        if (canDownloadFiles == null) {
+            canDownloadFiles = false;
+            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+                if (fileDownloadHelper.canDownloadFile(fmd)) {
+                    canDownloadFiles = true;
+                    break;
+                }
+            }
         }
         return canDownloadFiles;
     }
