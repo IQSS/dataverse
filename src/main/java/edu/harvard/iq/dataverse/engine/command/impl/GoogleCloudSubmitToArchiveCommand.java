@@ -197,11 +197,11 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                         logger.fine("GoogleCloud Submission step: Content Transferred");
 
                         // Document the location of dataset archival copy location (actually the URL
-                        // where you can
-                        // view it as an admin)
+                        // where you can view it as an admin)
+                        //Changed to point at bucket where the zip and datacite.xml are visible
 
                         StringBuffer sb = new StringBuffer("https://console.cloud.google.com/storage/browser/");
-                        sb.append(blobIdString);
+                        sb.append(bag.getBlobId().getBucket());
                         dv.setArchivalCopyLocation(sb.toString());
                     } catch (RuntimeException rte) {
                         logger.severe("Error creating datacite xml file during GoogleCloud Archiving: " + rte.getMessage());
