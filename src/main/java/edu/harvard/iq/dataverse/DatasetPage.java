@@ -1085,13 +1085,13 @@ public class DatasetPage implements java.io.Serializable {
         if (canDownloadFiles != null) {
             return canDownloadFiles;
         }
+        canDownloadFiles = false;
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
              if (fileDownloadHelper.canDownloadFile(fmd)) {
                  canDownloadFiles = true;
-                 return canDownloadFiles;
+                 break;
              }
         }
-        canDownloadFiles = false;
         return canDownloadFiles;
     }
 
