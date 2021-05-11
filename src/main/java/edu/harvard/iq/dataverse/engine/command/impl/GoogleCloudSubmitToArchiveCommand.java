@@ -73,7 +73,6 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                     Map<String, String> metadata = dc.getDataCiteMetadata();
                     String dataciteXml = DOIDataCiteRegisterService.getMetadataFromDvObject(
                             dv.getDataset().getGlobalId().asString(), metadata, dv.getDataset());
-                    String blobIdString = null;
                     MessageDigest messageDigest = MessageDigest.getInstance("MD5");
                     try (PipedInputStream dataciteIn = new PipedInputStream(); DigestInputStream digestInputStream = new DigestInputStream(dataciteIn, messageDigest)) {
                         // Add datacite.xml file
@@ -179,7 +178,6 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                             if(bag.getSize()==0) {
                                 throw new IOException("Empty Bag");
                             }
-                            blobIdString = bag.getBlobId().getBucket() + "/" + bag.getBlobId().getName();
                             checksum = bag.getMd5ToHexString();
                             logger.fine("Bag: " + fileName + " added with checksum: " + checksum);
                             localchecksum = Hex.encodeHexString(digestInputStream2.getMessageDigest().digest());
@@ -197,11 +195,11 @@ public class GoogleCloudSubmitToArchiveCommand extends AbstractSubmitToArchiveCo
                         logger.fine("GoogleCloud Submission step: Content Transferred");
 
                         // Document the location of dataset archival copy location (actually the URL
-                        // where you can
-                        // view it as an admin)
+                        // where you can view it as an admin)
+                        //Changed to point at bucket where the zip and datacite.xml are visible
 
                         StringBuffer sb = new StringBuffer("https://console.cloud.google.com/storage/browser/");
-                        sb.append(blobIdString);
+                        sb.append(bucketName + "/" + spaceName);
                         dv.setArchivalCopyLocation(sb.toString());
                     } catch (RuntimeException rte) {
                         logger.severe("Error creating datacite xml file during GoogleCloud Archiving: " + rte.getMessage());
