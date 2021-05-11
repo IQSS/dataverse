@@ -542,12 +542,11 @@ public class Access extends AbstractApiBean {
      * GET method for retrieving various auxiliary files associated with 
      * a tabular datafile.
      *
-     * TODO: Consider removing "metadata" from the path.
      */
     
-    @Path("datafile/{fileId}/metadata/{formatTag}/{formatVersion}")
+    @Path("datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}")
     @GET    
-    public DownloadInstance tabularDatafileMetadataAux(@PathParam("fileId") String fileId,
+    public DownloadInstance downloadAuxiliaryFile(@PathParam("fileId") String fileId,
             @PathParam("formatTag") String formatTag,
             @PathParam("formatVersion") String formatVersion,
             @QueryParam("key") String apiToken, 
@@ -1206,9 +1205,8 @@ public class Access extends AbstractApiBean {
      * @param formDataBodyPart
      * @return 
      *
-     * TODO: Consider removing "metadata" from the path.
      */
-    @Path("datafile/{fileId}/metadata/{formatTag}/{formatVersion}")
+    @Path("datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}")
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
 
