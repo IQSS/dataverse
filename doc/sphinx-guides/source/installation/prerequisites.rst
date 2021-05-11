@@ -14,7 +14,7 @@ After following all the steps below, you can proceed to the :doc:`installation-m
 Linux
 -----
 
-We assume you plan to run your Dataverse installation on Linux and we recommend RHEL or a derivative such as RockyLinux or AlmaLinux, which is the distribution family tested by the Dataverse Project team. Please be aware that while EL8 (RHEL/derivatives) is the recommended platform, the steps below were orginally written for EL6 and may need to be updated (please feel free to make a pull request!). A number of community members have installed Dataverse in Debian/Ubuntu.
+We assume you plan to run your Dataverse installation on Linux and we recommend RHEL or a derivative such as RockyLinux or AlmaLinux, which is the distribution family tested by the Dataverse Project team. Please be aware that while EL8 (RHEL/derivatives) is the recommended platform, the steps below were orginally written for EL6 and may need to be updated (please feel free to make a pull request!). A number of community members have installed the Dataverse Software in Debian/Ubuntu environments.
 
 Java
 ----
