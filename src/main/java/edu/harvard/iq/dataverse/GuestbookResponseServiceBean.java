@@ -581,7 +581,7 @@ public class GuestbookResponseServiceBean {
         return guestbook;
 
     }
-
+    
     public String getUserName(User user) {
         if (user.isAuthenticated()) {
             AuthenticatedUser authUser = (AuthenticatedUser) user;
@@ -821,9 +821,6 @@ public class GuestbookResponseServiceBean {
             guestbookResponse.setGuestbook(datasetGuestbook);            
         }
 
-       if(dataset.getLatestVersion() != null && dataset.getLatestVersion().isDraft()){
-            guestbookResponse.setWriteResponse(false);
-        }
         if (dataFile != null){
             guestbookResponse.setDataFile(dataFile);
         }        
@@ -894,7 +891,7 @@ public class GuestbookResponseServiceBean {
         em.persist(guestbookResponse);
     }
     
-    
+        
     public Long getCountGuestbookResponsesByDataFileId(Long dataFileId) {
         // datafile id is null, will return 0
         Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.datafile_id  = " + dataFileId);

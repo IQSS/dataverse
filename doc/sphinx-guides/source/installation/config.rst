@@ -242,7 +242,7 @@ As for the "Remote only" authentication mode, it means that:
 File Storage: Using a Local Filesystem and/or Swift and/or S3 object stores
 ---------------------------------------------------------------------------
 
-By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara5/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.directory`` JVM option described below.
+By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara5/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.\<id\>.directory`` JVM option described below.
 
 A Dataverse installation can alternately store files in a Swift or S3-compatible object store, and can now be configured to support multiple stores at once. With a multi-store configuration, the location for new files can be controlled on a per-Dataverse collection basis.
 
@@ -594,7 +594,7 @@ You may also want to look at samples at https://github.com/shlake/LibraDataHomep
 A simpler option to brand and customize your installation is to utilize the Dataverse collection theme, which each Dataverse collection has, that allows you to change colors, add a logo, tagline or website link to the Dataverse collection header section of the page. Those options are outlined in the :doc:`/user/dataverse-management` section of the User Guide.
 
 Custom Homepage
-++++++++++++++++
++++++++++++++++
 
 The Dataverse Software allows you to use a custom homepage or welcome page in place of the default root Dataverse collection page. This allows for complete control over the look and feel of your installation's homepage.
 
@@ -613,7 +613,7 @@ For more background on what this curl command above is doing, see the "Database 
 ``curl -X DELETE http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
 
 Custom Navbar Logo
-+++++++++++++++++++
+++++++++++++++++++
 
 The Dataverse Software allows you to replace the default Dataverse Project icon and name branding in the navbar with your own custom logo. Note that this logo is separate from the *root dataverse theme* logo.
 
@@ -667,7 +667,7 @@ Internationalization
 The Dataverse Software is being translated into multiple languages by the Dataverse Project Community! Please see below for how to help with this effort!
 
 Adding Multiple Languages to the Dropdown in the Header
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 The presence of the :ref:`:Languages` database setting adds a dropdown in the header for multiple languages. For example to add English and French to the dropdown:
 
@@ -1030,7 +1030,7 @@ dataverse.siteUrl
 dataverse.files.directory
 +++++++++++++++++++++++++
 
-This is how you configure the path to which files uploaded by users are stored.
+This is how you configure the path Dataverse uses for temporary files. (File store specific dataverse.files.\<id\>.directory options set the permanent data storage locations.)
 
 dataverse.auth.password-reset-timeout-in-minutes
 ++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1465,7 +1465,7 @@ Please note that the authority cannot have a slash ("/") in it.
 .. _:Shoulder:
 
 :Shoulder
-++++++++++++
++++++++++
 
 Out of the box, the DOI shoulder is set to "FK2/" but this is for testing only! When you apply for your DOI namespace, you may have requested a shoulder. The following is only an example and a trailing slash is optional.
 
@@ -1509,9 +1509,9 @@ The chart below shows examples from each possible combination of parameters from
 |                 | randomString  | sequentialNumber |
 |                 |               |                  |
 +=================+===============+==================+
-| **DEPENDENT**   | TJCLKP/MLGWJO |     100001/1     |
+| **DEPENDENT**   | TJCLKP/MLGWJO | 100001/1         |
 +-----------------+---------------+------------------+
-| **INDEPENDENT** |    MLGWJO     |      100002      |
+| **INDEPENDENT** | MLGWJO        | 100002           |
 +-----------------+---------------+------------------+
 
 As seen above, in cases where ``:IdentifierGenerationStyle`` is set to *sequentialNumber* and ``:DataFilePIDFormat`` is set to *DEPENDENT*, each file within a dataset will be assigned a number *within* that dataset starting with "1".
@@ -1536,7 +1536,7 @@ Note: File-level PID registration was added in Dataverse Software 4.9; it could 
 .. _:IndependentHandleService:
 
 :IndependentHandleService
-+++++++++++++++++++++++++++
++++++++++++++++++++++++++
 
 Specific for Handle PIDs. Set this setting to true if you want to use a Handle service which is setup to work 'independently' (No communication with the Global Handle Registry).
 By default this setting is absent and the Dataverse Software assumes it to be false.
@@ -2035,7 +2035,7 @@ Set the name of the cloud environment you've integrated with your Dataverse inst
 .. _:PublicInstall:
 
 :PublicInstall
-+++++++++++++++++++++
+++++++++++++++
 
 Setting an installation to public will remove the ability to restrict data files or datasets. This functionality of the Dataverse Software will be disabled from your installation.
 
@@ -2224,3 +2224,15 @@ This is the local file system path to be used with the LocalSubmitToArchiveComma
 +++++++++++++++++++
 
 These are the bucket and project names to be used with the GoogleCloudSubmitToArchiveCommand class. Further information is in the :ref:`Google Cloud Configuration` section above.
+
+.. _:InstallationName:
+
+:InstallationName
++++++++++++++++++
+
+By default, the name of the root Dataverse collection is used as the 'brandname' of the repository, i.e. in emails and metadata exports. If set, :InstallationName overrides this default, allowing the root collection name and brandname to be set independently. (Note that, since metadata export files are cached, they will have to be reexported (see :doc:`/admin/metadataexport`) before they incorporate a change in this setting.)
+
+:ExportInstallationAsDistributorOnlyWhenNotSet
+++++++++++++++++++++++++++++++++++++++++++++++
+
+In the DDI metadata exports, the default behavior is to always add the repository (using its brandname - the root collection name or the value of :ref:`:InstallationName <:InstallationName>`) to the stdyDscr/distStmt/distrbtr element. If this setting is true, this will only be done when a Distributor is not already defined in the Dataset metadata. (Note that, since metadata export files are cached, they will have to be reexported (see :doc:`/admin/metadataexport`) before they incorporate a change in this setting.) 
