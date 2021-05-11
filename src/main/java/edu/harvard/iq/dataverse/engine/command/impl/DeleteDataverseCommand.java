@@ -94,6 +94,15 @@ public class DeleteDataverseCommand extends AbstractVoidCommand {
             boolean add = solrIdsToDelete.add(dvObjectSolrDoc.getSolrId() + IndexServiceBean.discoverabilityPermissionSuffix);
         });
         var deleteMultipleSolrIds = ctxt.solrIndex().deleteMultipleSolrIds(solrIdsToDelete);
+        /**
+        * @todo: this method currently always returns true because the 
+        * underlying methods (already existing) handle exceptions and don't 
+        * return a boolean value
+        * we need to consider reworking the code such that methods throw
+        * indexing exception to callers that may need to handle effects such
+        * as on data integrity where related operations like database updates
+        * or deletes are expected to be coordinated with indexing operations
+        */
         return true;
     }
 

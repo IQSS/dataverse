@@ -244,10 +244,16 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         String indexingResult = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + IndexServiceBean.draftSuffix);
         String indexingResult2 = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + IndexServiceBean.draftSuffix + IndexServiceBean.discoverabilityPermissionSuffix);
         /**
-         * @todo check indexing result for success or failure. Really, we need
-         * an indexing queuing system:
-         * https://redmine.hmdc.harvard.edu/issues/3643
-         */
+        * @todo: check indexing result for success or failure. This method 
+        * currently always returns true because the underlying methods 
+        * (already existing) handle exceptions and don't return a boolean value.
+        * Previously an indexing queuing system was proposed:
+        *  https://redmine.hmdc.harvard.edu/issues/3643
+        * but we are considering reworking the code such that methods throw
+        * indexing exception to callers that may need to handle effects such
+        * as on data integrity where related operations like database updates
+        * or deletes are expected to be coordinated with indexing operations
+        */
 
         return true;
     }
