@@ -435,7 +435,6 @@ public class DatasetPage implements java.io.Serializable {
         this.removeUnusedTags = removeUnusedTags;
     }
 
- //   private List<FileMetadata> fileMetadatas;
     private String fileSortField;
     private String fileSortOrder;
 
@@ -5004,15 +5003,6 @@ public class DatasetPage implements java.io.Serializable {
         this.fileSortOrder = fileSortOrder;
     }
 
-    /*
-    public List<FileMetadata> getFileMetadatas() {
-        if (isSortButtonEnabled()) {
-            return fileMetadatas;
-        } else {
-            return new ArrayList<>();
-        }
-    }
-*/
     public String getFileSortFieldName() {
         return FileSortFieldAndOrder.label;
     }
