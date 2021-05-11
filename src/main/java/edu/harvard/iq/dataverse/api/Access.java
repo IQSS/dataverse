@@ -572,7 +572,7 @@ public class Access extends AbstractApiBean {
         
         /* 
           The special case for "preprocessed" metadata should not be here at all. 
-          Access to it to the format should be handled by the /api/access/datafile/{id}?format=prep
+          Access to the format should be handled by the /api/access/datafile/{id}?format=prep
           form exclusively (this is what Data Explorer and Tworavens have been
           using all along). We may have advertised /api/access/datafile/{id}/metadata/preprocessed
           in the past - but it has been broken since 5.3 anyway, since the /{formatVersion}
