@@ -1091,7 +1091,7 @@ public class DatasetPage implements java.io.Serializable {
                  return canDownloadFiles;
              }
         }
-        canDownloadFiles = true;
+        canDownloadFiles = false;
         return canDownloadFiles;
     }
 
