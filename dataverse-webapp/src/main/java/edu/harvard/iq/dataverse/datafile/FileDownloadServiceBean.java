@@ -174,7 +174,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
 
     public void downloadCitationBibtex(FileMetadata fileMetadata, DatasetVersion datasetVersion, boolean direct) {
         downloadCitation(fileMetadata, datasetVersion, direct,
-                "text/plain", //BibTeX isn't JSON. Firefox will fail to parse it if set to json content type.
+                "text/plain; charset=UTF-8", //BibTeX isn't JSON. Firefox will fail to parse it if set to json content type.
                 Citation::toBibtexString,
                 (f, c) -> createFileNameString(f, c, "inline", FileCitationExtension.BIBTEX));
     }
