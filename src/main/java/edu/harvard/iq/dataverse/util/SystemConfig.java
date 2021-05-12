@@ -22,6 +22,7 @@ import java.time.Year;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Properties;
@@ -1095,11 +1096,15 @@ public class SystemConfig {
     }
     
     private String getDefaultMetadataLanguageLabel(DvObjectContainer target) {
-        String ml = DvObjectContainer.DEFAULT_METADATA_LANGUAGE;
+        String mlLabel = Locale.getDefault().getDisplayLanguage();
+/*        Locale l = Locale.getDefault();
+        if(mlLabel==null) mlLabel = l.getDisplayLanguage();
+        if(mlLabel==null) mlLabel = l.getLanguage();
+*/
         Dataverse parent = target.getOwner();
         boolean fromAncestor=false;
         if(parent != null) {
-            ml = parent.getEffectiveMetadataLanguage();
+            mlLabel = parent.getEffectiveMetadataLanguage();
             //recurse dataverse chain to root and if any have a metadata language set, fromAncestor is true
             while(parent!=null) {
                 if(!parent.getMetadataLanguage().equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
@@ -1109,13 +1114,12 @@ public class SystemConfig {
                 parent=parent.getOwner();
             }
         }
-        String label = getBaseMetadataLanguageMap(false).get(ml);
         if(fromAncestor) {
-            label = label + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
+            mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
         } else {
-            label = label + " " + BundleUtil.getStringFromBundle("dataverse.default");
+            mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.default");
         }
-        return label;
+        return mlLabel;
     }
 
 }

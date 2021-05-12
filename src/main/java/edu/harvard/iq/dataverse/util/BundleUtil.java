@@ -67,8 +67,12 @@ public class BundleUtil {
         }
     }
 
-    public static String getStringFromPropertyFile(String key, String propertyFileName  ) throws MissingResourceException {
-        ResourceBundle bundle = getResourceBundle(propertyFileName);
+    public static String getStringFromPropertyFile(String key, String propertyFileName) throws MissingResourceException {
+        return getStringFromPropertyFile(key, propertyFileName, null);
+    }
+    
+    public static String getStringFromPropertyFile(String key, String propertyFileName, Locale locale) throws MissingResourceException {
+        ResourceBundle bundle = getResourceBundle(propertyFileName,locale);
         if (bundle == null) {
             return null;
         }

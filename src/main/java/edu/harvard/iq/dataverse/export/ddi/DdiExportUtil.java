@@ -1,6 +1,8 @@
 package edu.harvard.iq.dataverse.export.ddi;
 
 import com.google.gson.Gson;
+
+import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
@@ -224,7 +226,7 @@ public class DdiExportUtil {
             xmlw.writeCharacters(datasetDto.getPublisher());
             xmlw.writeEndElement(); //distrbtr
         }
-        writeDistributorsElement(xmlw, version);
+        writeDistributorsElement(xmlw, version, datasetDto.getMetadataLanguage());
         writeContactsElement(xmlw, version);
         writeFullElement(xmlw, "distDate", dto2Primitive(version, DatasetFieldConstant.distributionDate));
         writeFullElement(xmlw, "depositr", dto2Primitive(version, DatasetFieldConstant.depositor));
@@ -324,7 +326,7 @@ public class DdiExportUtil {
         xmlw.writeStartElement("docDscr");
         xmlw.writeStartElement("citation");
         xmlw.writeStartElement("titlStmt");
-        writeFullElement(xmlw, "titl", dto2Primitive(version, DatasetFieldConstant.title));
+        writeFullElement(xmlw, "titl", dto2Primitive(version, DatasetFieldConstant.title), datasetDto.getMetadataLanguage());
         xmlw.writeStartElement("IDNo");
         writeAttribute(xmlw, "agency", persistentAgency);
         xmlw.writeCharacters(persistentProtocol + ":" + persistentAuthority + "/" + persistentId);
@@ -567,16 +569,7 @@ public class DdiExportUtil {
             if ("citation".equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.subject.equals(fieldDTO.getTypeName())){
-                        for ( String subject : fieldDTO.getMultipleVocab()){
-                            xmlw.writeStartElement("keyword");
-                            xmlw.writeCharacters(subject);
-                            xmlw.writeEndElement(); //Keyword
-                        }
-                        //SPO Test - should duplicate elements above 
-                        writeFullElementList(xmlw, "keyword", fieldDTO.getMultipleVocab());
-                        //SPO Test - should duplicate elements above with locale val and translation 
                         writeI18NElementList(xmlw, "keyword", fieldDTO.getMultipleVocab(), "subject", "controlledVocabulary", "citation", lang);
-                        
                     }
                     
                     if (DatasetFieldConstant.keyword.equals(fieldDTO.getTypeName())) {
@@ -816,7 +809,7 @@ public class DdiExportUtil {
         xmlw.writeEndElement(); //prodStmt
     }
     
-    private static void writeDistributorsElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
+    private static void writeDistributorsElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String lang) throws XMLStreamException {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
@@ -850,6 +843,9 @@ public class DdiExportUtil {
                             }
                             if (!distributorName.isEmpty()) {
                                 xmlw.writeStartElement("distrbtr");
+                                if(lang!=null) {
+                                    writeAttribute(xmlw, "xml:lang", lang);
+                                }
                                 if (!distributorAffiliation.isEmpty()) {
                                     writeAttribute(xmlw, "affiliation", distributorAffiliation);
                                 }
@@ -1323,8 +1319,8 @@ public class DdiExportUtil {
                 if (datasetFieldTypeName.equals(fieldDTO.getTypeName())) {
                     String rawVal = fieldDTO.getSinglePrimitive();
                     if (fieldDTO.getTypeClass().equals("controlledVocabulary")) {
-                        String localeVal = getLocaleStrValue(rawVal, datasetFieldTypeName, value.getName(),
-                                locale);
+                        String localeVal = ControlledVocabularyValue.getLocaleStrValue(rawVal, datasetFieldTypeName, value.getName(),
+                                locale, false);
                         if (localeVal != null) {
                             rawVal = localeVal;
                         }
@@ -1335,22 +1331,6 @@ public class DdiExportUtil {
         }
         return null;
     }
-    
-    public static String getLocaleStrValue(String strValue, String fieldTypeName, String metadataBlockName, Locale locale)
-    {
-        String key = strValue.toLowerCase().replace(" " , "_");
-        key = StringUtils.stripAccents(key);
-        try {
-            //String val = BundleUtil.getStringFromPropertyFile("controlledvocabulary." + fieldTypeName + "." + key, metadataBlockName); 
-            logger.fine("looking for " +  "controlledvocabulary." + fieldTypeName + "." + key + " in " + metadataBlockName);
-            String val = BundleUtil.getStringFromBundle("controlledvocabulary." + fieldTypeName + "." + key, null, BundleUtil.getResourceBundle(metadataBlockName, locale));
-            logger.fine("Found: " + val);
-            return val;
-        } catch (MissingResourceException | NullPointerException e) {
-            return null;
-        }
-    }
-    
     
     private static List<String> dto2PrimitiveList(DatasetVersionDTO datasetVersionDTO, String datasetFieldTypeName) {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
@@ -1383,7 +1363,7 @@ public class DdiExportUtil {
             Locale defaultLocale = Locale.getDefault();
             for (String value : values) {
                 if (fieldTypeClass.equals("controlledVocabulary")) {
-                    String localeVal = getLocaleStrValue(value, fieldTypeName, metadataBlockName, defaultLocale);
+                    String localeVal = ControlledVocabularyValue.getLocaleStrValue(value, fieldTypeName, metadataBlockName, defaultLocale, false);
                     if (localeVal != null) {
                         
                         value = localeVal;
@@ -1396,14 +1376,13 @@ public class DdiExportUtil {
                 }
             }
             if (lang != null && !defaultLocale.getLanguage().equals(lang)) {
-
                 // Get values in dataset metadata language
                 // Loop before testing fieldTypeClass to be ready for external CVV
                 for (String value : values) {
                     if (fieldTypeClass.equals("controlledVocabulary")) {
-                        String localeVal = getLocaleStrValue(value, fieldTypeName, metadataBlockName, new Locale(lang));
+                        String localeVal = ControlledVocabularyValue.getLocaleStrValue(value, fieldTypeName, metadataBlockName, new Locale(lang), false);
                         if (localeVal != null) {
-                            writeFullElement(xmlw, name, value, defaultLocale.getLanguage());
+                            writeFullElement(xmlw, name, localeVal, lang);
                         }
                     }
                 }

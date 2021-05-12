@@ -13,7 +13,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.logging.Logger;
 import java.util.MissingResourceException;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -22,7 +24,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -34,6 +35,8 @@ import javax.persistence.Table;
 @Entity
 @Table(indexes = {@Index(columnList="datasetfieldtype_id"), @Index(columnList="displayorder")})
 public class ControlledVocabularyValue implements Serializable  {
+    
+    private static final Logger logger = Logger.getLogger(ControlledVocabularyValue.class.getCanonicalName());
     
     public static final Comparator<ControlledVocabularyValue> DisplayOrder = new Comparator<ControlledVocabularyValue>() {
         @Override
@@ -113,17 +116,29 @@ public class ControlledVocabularyValue implements Serializable  {
 
     public String getLocaleStrValue()
     {
+        return getLocaleStrValue(strValue, this.datasetFieldType.getName(),getDatasetFieldType().getMetadataBlock().getName(),null, true);
+    }
+    
+    public String getLocaleStrValue(String language)
+    {
+        return getLocaleStrValue(strValue, this.datasetFieldType.getName(),getDatasetFieldType().getMetadataBlock().getName(),language == null ? null : new Locale(language), true);
+    }
+    
+    public static String getLocaleStrValue(String strValue, String fieldTypeName, String metadataBlockName, Locale locale, boolean sendDefault)
+    {
         String key = strValue.toLowerCase().replace(" " , "_");
         key = StringUtils.stripAccents(key);
         try {
-            String val = BundleUtil.getStringFromPropertyFile("controlledvocabulary." + this.datasetFieldType.getName() + "." + key, getDatasetFieldType().getMetadataBlock().getName()); 
-            if( val == null) {
-                //Default to raw value 
-                val=strValue; 
-            }
+            logger.fine("Looking for : " + "controlledvocabulary." + fieldTypeName + "." + key + " in " + metadataBlockName + " : " + locale.getLanguage());
+            String val = BundleUtil.getStringFromPropertyFile("controlledvocabulary." + fieldTypeName + "." + key, metadataBlockName, locale); 
+            logger.fine("Found : " + val);
+            if(!val.isBlank()) {
             return val;
+            } else {
+                return sendDefault ? strValue : null;
+            }
         } catch (MissingResourceException | NullPointerException e) {
-            return strValue;
+            return sendDefault ? strValue : null;
         }
     }
 
