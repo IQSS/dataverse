@@ -75,7 +75,8 @@ public class SignpostingResources {
     private String getAuthors(List<DatasetAuthor> datasetAuthors) {
         String singleAuthorString;
         String identifierSchema = "";
-        if (datasetAuthors.size() > maxAuthors) {return "";}
+        int visibleAuthorCounter = 0;
+//        if (datasetAuthors.size() > maxAuthors) {return "";}
         for (DatasetAuthor da : datasetAuthors) {
             logger.info(String.format(
                     "idtype: %s; idvalue: %s, affiliation: %s; identifierUrl: %s",
@@ -88,6 +89,9 @@ public class SignpostingResources {
             String authorURL = "";
             authorURL = getAuthorUrl(da);
             if (!Objects.equals(authorURL, "")) {
+                visibleAuthorCounter++;
+                // return empty if number of visible author more than max allowed
+                if (visibleAuthorCounter >= maxAuthors) return "";
                 singleAuthorString = "<" + authorURL + ">;rel=\"author\"";
                 if (Objects.equals(identifierSchema, "")) {
                     identifierSchema = singleAuthorString;
@@ -251,9 +255,12 @@ public class SignpostingResources {
         JsonObjectBuilder mandatory = jsonObjectBuilder()
                 .add("anchor", landingPage)
                 .add("cite-as", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", ds.getPersistentURL())))
-                .add("type", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", "https://schema.org/AboutPage")));
+                .add("type", Json.createArrayBuilder()
+                        .add(jsonObjectBuilder().add("href", "https://schema.org/AboutPage"))
+                        .add(jsonObjectBuilder().add("href", defaultFileTypeValue))
+                        );
 
-        if (useDefaultFileType) mandatory.add("type", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", defaultFileTypeValue)));
+//        if (useDefaultFileType) mandatory.add("type", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", defaultFileTypeValue)));
 
         if (authors != null) {
             mandatory.add("author", authors);
@@ -269,22 +276,13 @@ public class SignpostingResources {
         }
         linksetJsonObj.add(mandatory);
 
-        if (useDefaultFileType) {
-            for (FileMetadata fm : fms) {
-                DataFile df = fm.getDataFile();
-                JsonObjectBuilder itemAnchor = jsonObjectBuilder().add("anchor", getPublicDownloadUrl(df));
-                itemAnchor.add("collection", Json.createArrayBuilder().add(jsonObjectBuilder()
-                        .add("href", landingPage)).add(jsonObjectBuilder().add("type", defaultFileTypeValue)));
-                linksetJsonObj.add(itemAnchor);
-            }
-        } else {
-            for (FileMetadata fm : fms) {
-                DataFile df = fm.getDataFile();
-                JsonObjectBuilder itemAnchor = jsonObjectBuilder().add("anchor", getPublicDownloadUrl(df));
-                itemAnchor.add("collection", Json.createArrayBuilder().add(jsonObjectBuilder()
-                        .add("href", landingPage)));
-                linksetJsonObj.add(itemAnchor);
-            }
+        // remove scholarly type as shown already on landing page
+        for (FileMetadata fm : fms) {
+            DataFile df = fm.getDataFile();
+            JsonObjectBuilder itemAnchor = jsonObjectBuilder().add("anchor", getPublicDownloadUrl(df));
+            itemAnchor.add("collection", Json.createArrayBuilder().add(jsonObjectBuilder()
+                    .add("href", landingPage)));
+            linksetJsonObj.add(itemAnchor);
         }
 
         return linksetJsonObj;
