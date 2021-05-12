@@ -95,6 +95,7 @@ import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
+import edu.harvard.iq.dataverse.metrics.MetricsUtil;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
@@ -1380,7 +1381,7 @@ public class Datasets extends AbstractApiBean {
                 logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
                 return error(Response.Status.FORBIDDEN, "Failed to lock the dataset (dataset id="+dataset.getId()+")");
             }
-            return ok(scriptRequestResponse.getScript(), MediaType.valueOf(MediaType.TEXT_PLAIN));
+            return ok(scriptRequestResponse.getScript(), MediaType.valueOf(MediaType.TEXT_PLAIN), null);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         } catch (EJBException ex) {
@@ -2192,7 +2193,13 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             if (yyyymm != null) {
                 // We add "-01" because we store "2018-05-01" rather than "2018-05" in the "monthyear" column.
                 // Dates come to us as "2018-05-01" in the SUSHI JSON ("begin-date") and we decided to store them as-is.
-                monthYear = yyyymm + "-01";
+                monthYear = MetricsUtil.sanitizeYearMonthUserInput(yyyymm) + "-01";
+            }
+            if (country != null) {
+                country = country.toLowerCase();
+                if (!MakeDataCountUtil.isValidCountryCode(country)) {
+                    return error(Response.Status.BAD_REQUEST, "Country must be one of the ISO 1366 Country Codes");
+                }
             }
             DatasetMetrics datasetMetrics = datasetMetricsSvc.getDatasetMetricsByDatasetForDisplay(dataset, monthYear, country);
             if (datasetMetrics == null) {
@@ -2273,6 +2280,9 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             return ok(jsonObjectBuilder);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
+        } catch (Exception e) {
+            //bad date - caught in sanitize call
+            return error(BAD_REQUEST, e.getMessage());
         }
     }
     
