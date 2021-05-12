@@ -1668,7 +1668,7 @@ public class FileUtil implements java.io.Serializable  {
             return false;
         }
         
-        if (file.isHarvested() || "".equals(file.getStorageIdentifier())) {
+        if (file.isHarvested() || StringUtil.isEmpty(file.getStorageIdentifier())) {
             return false;
         }
         
