@@ -4,6 +4,7 @@
   "persistentUrl": "https://doi.org/10.5072/FK2/PCA2E3",
   "protocol": "doi",
   "authority": "10.5072/FK2",
+  "metadataLanguage": "fr",
   "datasetVersion": {
     "id": 2,
     "versionNumber": 1,
@@ -374,8 +375,22 @@
                         ]
                     }
                 ]
-            }
-        },
+            },
+      "social_science": {
+        "displayName": "Social Science and Humanities Metadata",
+        "name":"socialscience",
+        "fields": [
+          {
+            "typeName": "samplingProcedure",
+            "multiple": false,
+            "typeClass": "controlledVocabulary",
+            "value": [
+              "TotalUniverseCompleteEnumeration"
+            ]
+          }
+        ]
+      }
+    },
     "files": [],
     "citation": "Finch, Fiona, 2015, \"Darwin's Finches\", https://doi.org/10.5072/FK2/PCA2E3,  Root Dataverse,  V1"
   }
