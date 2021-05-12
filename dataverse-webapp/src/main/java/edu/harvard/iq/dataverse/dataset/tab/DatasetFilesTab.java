@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.datafile.file.FileMetadataService;
 import edu.harvard.iq.dataverse.datafile.file.dto.LazyFileMetadataModel;
 import edu.harvard.iq.dataverse.datafile.page.FileDownloadHelper;
 import edu.harvard.iq.dataverse.datafile.page.FileDownloadRequestHelper;
+import edu.harvard.iq.dataverse.datafile.page.RequestedDownloadType;
 import edu.harvard.iq.dataverse.dataset.EmbargoAccessService;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
@@ -111,6 +112,7 @@ public class DatasetFilesTab implements Serializable {
     private DataverseRequestServiceBean dvRequestService;
     private DatasetFilesTabFacade datasetFilesTabFacade;
 
+    private RequestedDownloadType requestedDownloadType;
     private GuestbookResponseDialog guestbookResponseDialog;
 
 
@@ -187,7 +189,8 @@ public class DatasetFilesTab implements Serializable {
                            GuestbookResponseServiceBean guestbookResponseService, EmbargoAccessService embargoAccess,
                            SettingsServiceBean settingsService, EjbDataverseEngine commandEngine,
                            ExternalToolServiceBean externalToolService, TermsOfUseFormMapper termsOfUseFormMapper,
-                           FileDownloadRequestHelper fileDownloadRequestHelper, GuestbookResponseDialog guestbookResponseDialog,
+                           FileDownloadRequestHelper fileDownloadRequestHelper, RequestedDownloadType requestedDownloadType,
+                           GuestbookResponseDialog guestbookResponseDialog,
                            ImageThumbConverter imageThumbConverter,
                            FileMetadataService fileMetadataService,
                            DatasetFilesTabFacade datasetFilesTabFacade) {
@@ -204,6 +207,7 @@ public class DatasetFilesTab implements Serializable {
         this.commandEngine = commandEngine;
         this.externalToolService = externalToolService;
         this.termsOfUseFormMapper = termsOfUseFormMapper;
+        this.requestedDownloadType = requestedDownloadType;
         this.guestbookResponseDialog = guestbookResponseDialog;
         this.fileMetadataService = fileMetadataService;
         this.imageThumbConverter = imageThumbConverter;
@@ -473,7 +477,7 @@ public class DatasetFilesTab implements Serializable {
         return permissionsWrapper.canCurrentUserUpdateDataset(dataset);
     }
 
-    public void updateMultipleFileOptionFlags() {
+    private void updateMultipleFileOptionFlags() {
 
         boolean versionContainsNonDownloadableFiles = datasetFilesTabFacade.isVersionContainsNonDownloadableFiles(workingVersion.getId());
 

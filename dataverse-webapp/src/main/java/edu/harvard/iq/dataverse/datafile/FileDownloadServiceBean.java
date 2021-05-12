@@ -84,67 +84,18 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
 
-    // The "guestBookRecord(s)AlreadyWritten" parameter in the 2 methods
-    // below (redirectToBatchDownloadAPI() and redirectToDownloadAPI(), for the
-    // multiple- and single-file downloads respectively) are passed to the
-    // Download API, where it is treated as a "SKIP writing the GuestbookResponse
-    // record for this download on the API side" flag. In other words, we want
-    // to create and save this record *either* on the UI, or the API side - but
-    // not both.
-    // As of now (Aug. 2018) we always set this flag to true when redirecting the
-    // user to the Access API. That's because we have either just created the
-    // record ourselves, on the UI side; or we have skipped creating one,
-    // because this was a draft file and we don't want to count the download.
-    // But either way, it is NEVER the API side's job to count the download that
-    // was initiated in the GUI.
-    // But note that this may change - there may be some future situations where it will
-    // become necessary again, to pass the job of creating the access record
-    // to the API.
-    public void redirectToBatchDownloadAPI(List<Long> fileIds, boolean guestbookRecordsAlreadyWritten, ApiBatchDownloadType downloadType) {
-        String filesDownloadUrl = FileUtil.getBatchFilesDownloadUrlPath(fileIds, guestbookRecordsAlreadyWritten, downloadType);
-        try {
-            FacesContext.getCurrentInstance().getExternalContext().redirect(filesDownloadUrl);
-        } catch (IOException ex) {
-            logger.info("Failed to issue a redirect to file download url.");
-        }
-    }
-
-    public String redirectToDownloadWholeDataset(DatasetVersion dsv, boolean guestbookRecordsAlreadyWritten, ApiBatchDownloadType downloadType) {
-        String filesDownloadUrl = FileUtil.getDownloadWholeDatasetUrlPath(dsv, guestbookRecordsAlreadyWritten, downloadType);
-
-        try {
-            FacesContext.getCurrentInstance().getExternalContext().redirect(filesDownloadUrl);
-        } catch (IOException ex) {
-            logger.info("Failed to issue a redirect to dataset download url.");
-        }
-
-        return filesDownloadUrl;
-    }
-
-
-    public void redirectToDownloadAPI(ApiDownloadType downloadType, Long fileId, boolean guestBookRecordAlreadyWritten) {
-        String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, guestBookRecordAlreadyWritten);
-        logger.fine("Redirecting to file download url: " + fileDownloadUrl);
-        try {
-            FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
-        } catch (IOException ex) {
-            logger.info("Failed to issue a redirect to file download url (" + fileDownloadUrl + "): " + ex);
-        }
-    }
-
     /**
      * Launch an "explore" tool which is a type of ExternalTool such as
      * TwoRavens or Data Explorer. This method may be invoked directly from the
      * xhtml if no popup is required (no terms of use, no guestbook, etc.).
      */
-    public void explore(FileMetadata fmd, ExternalTool externalTool) {
+    public void explore(DataFile dataFile, ExternalTool externalTool) {
         ApiToken apiToken = null;
         User user = session.getUser();
         if (user instanceof AuthenticatedUser) {
             AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
             apiToken = authService.findApiTokenByUser(authenticatedUser);
         }
-        DataFile dataFile = fmd.getDataFile();
         //For tools to get the dataset and datasetversion ids, we need a full DataFile object (not a findCheapAndEasy() copy)
         if (dataFile.getFileMetadata() == null) {
             dataFile = datafileService.find(dataFile.getId());
@@ -160,9 +111,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
 
-    public String startWorldMapDownloadLink(FileMetadata fileMetadata) {
+    public String startWorldMapDownloadLink(DataFile file) {
 
-        DataFile file = fileMetadata.getDataFile();
         String retVal = worldMapPermissionHelper.getMapLayerMetadata(file).getLayerLink();
 
         try {

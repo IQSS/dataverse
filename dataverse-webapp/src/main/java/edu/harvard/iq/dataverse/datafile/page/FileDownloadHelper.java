@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.datafile.FileDownloadServiceBean;
 import edu.harvard.iq.dataverse.guestbook.GuestbookResponseServiceBean;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
@@ -17,6 +18,7 @@ import edu.harvard.iq.dataverse.persistence.guestbook.GuestbookResponse;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.PrimefacesUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.primefaces.PrimeFaces;
 
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -85,10 +87,18 @@ public class FileDownloadHelper implements java.io.Serializable {
         DownloadType fileFormat = requestedDownloadType.getFileFormat();
         List<FileMetadata> fileMetadatas = requestedDownloadType.getFileMetadatas();
         
-        writeGuestbookResponsesForFiles(fileMetadatas, fileFormat, userProvidedGuestbookResponse);
+        userProvidedGuestbookResponse.setDownloadtype(buildGuestbookResponseDownloadType(fileFormat, requestedDownloadType.getTool()));
         
-        startDownloadAccordingToType(fileMetadatas, fileFormat, requestedDownloadType.getTool());
-        
+        for (FileMetadata fileMetadata: fileMetadatas) {
+            DataFile dataFile = fileMetadata.getDataFile();
+            
+            if (dataFile.isReleased()) {
+                userProvidedGuestbookResponse.setDataFile(fileMetadata.getDataFile());
+                fileDownloadService.writeGuestbookResponseRecord(userProvidedGuestbookResponse);
+            }
+        }
+
+        startDownloadAccordingToType(fileMetadatas, fileFormat, requestedDownloadType.getTool(), true);
     }
     
     /**
@@ -113,14 +123,9 @@ public class FileDownloadHelper implements java.io.Serializable {
     public String requestDownloadOfWholeDataset(DatasetVersion dsv, boolean requestedOriginalDownload) {
 
         DownloadType downloadType = requestedOriginalDownload ? DownloadType.ORIGINAL : DownloadType.DOWNLOAD;
-        List<FileMetadata> fileMetadatas = dsv.getFileMetadatas();
 
-        if (!dsv.isDraft()) {
-            GuestbookResponse downloadOnlyGuestbook = guestbookResponseService.initGuestbookResponseForFragment(fileMetadatas.get(0), session);
-            writeGuestbookResponsesForFiles(fileMetadatas, downloadType, downloadOnlyGuestbook);
-        }
-
-        fileDownloadService.redirectToDownloadWholeDataset(dsv, true, downloadType.getApiBatchDownloadEquivalent());
+        String filesDownloadUrl = FileUtil.getDownloadWholeDatasetUrlPath(dsv, false, downloadType.getApiBatchDownloadEquivalent());
+        PrimeFaces.current().ajax().addCallbackParam("apiDownloadLink", filesDownloadUrl);
 
         return StringUtils.EMPTY;
     }
@@ -140,13 +145,8 @@ public class FileDownloadHelper implements java.io.Serializable {
             PrimefacesUtil.showDialog("downloadPopup");
             return StringUtils.EMPTY;
         }
-        
-        if (!fileMetadatas.get(0).getDatasetVersion().isDraft()) {
-            GuestbookResponse downloadOnlyGuestbook = guestbookResponseService.initGuestbookResponseForFragment(fileMetadatas.get(0), session);
-            writeGuestbookResponsesForFiles(fileMetadatas, fileFormat, downloadOnlyGuestbook);
-        }
-        
-        startDownloadAccordingToType(fileMetadatas, fileFormat, requestedDownloadType.getTool());
+
+        startDownloadAccordingToType(fileMetadatas, fileFormat, requestedDownloadType.getTool(), false);
         return StringUtils.EMPTY;
     }
 
@@ -181,44 +181,50 @@ public class FileDownloadHelper implements java.io.Serializable {
 
     // -------------------- PRIVATE --------------------
 
-    private void startDownloadAccordingToType(List<FileMetadata> fileMetadatas, DownloadType fileFormat, ExternalTool tool) {
+    private void startDownloadAccordingToType(List<FileMetadata> fileMetadatas, DownloadType fileFormat, ExternalTool tool, boolean guestbookRecordsAlreadyWritten) {
         if (fileMetadatas.size() > 1) {
-            fileDownloadService.redirectToBatchDownloadAPI(
-                    fileMetadatas.stream().map(x -> x.getDataFile().getId()).collect(toList()),
-                    true, fileFormat.getApiBatchDownloadEquivalent());
+            String filesDownloadUrl = FileUtil.getBatchFilesDownloadUrlPath(
+                    fileMetadatas.stream().map(x -> x.getDataFile().getId()).collect(toList()), guestbookRecordsAlreadyWritten,
+                    fileFormat.getApiBatchDownloadEquivalent());
+            PrimeFaces.current().ajax().addCallbackParam("apiDownloadLink", filesDownloadUrl);
+            
             return;
         }
 
-        FileMetadata fileMetadata = fileMetadatas.get(0);
+        DataFile dataFile = fileMetadatas.get(0).getDataFile();
 
         if (fileFormat.isCompatibleWithApiDownload()) {
-            fileDownloadService.redirectToDownloadAPI(fileFormat.getApiDownloadEquivalent(), fileMetadata.getDataFile().getId(), true);
+            String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(
+                        fileFormat.getApiDownloadEquivalent(),
+                        dataFile.getId(),
+                        guestbookRecordsAlreadyWritten);
+            PrimeFaces.current().ajax().addCallbackParam("apiDownloadLink", fileDownloadUrl);
 
         } else if (fileFormat == DownloadType.SUBSET) {
+            writeGuestbookResponseIfReleased(dataFile, DownloadType.SUBSET, null, guestbookRecordsAlreadyWritten);
             PrimefacesUtil.showDialog("downloadDataSubsetPopup");
 
         } else if (fileFormat == DownloadType.WORLDMAP) {
-            fileDownloadService.startWorldMapDownloadLink(fileMetadata);
+            writeGuestbookResponseIfReleased(dataFile, DownloadType.WORLDMAP, null, guestbookRecordsAlreadyWritten);
+            fileDownloadService.startWorldMapDownloadLink(dataFile);
 
         } else if (fileFormat == DownloadType.EXTERNALTOOL) {
-            fileDownloadService.explore(fileMetadata, tool);
+            writeGuestbookResponseIfReleased(dataFile, DownloadType.EXTERNALTOOL, tool, guestbookRecordsAlreadyWritten);
+            fileDownloadService.explore(dataFile, tool);
 
         } else if (fileFormat == DownloadType.PACKAGE) {
             PrimefacesUtil.showDialogAndResize("downloadPackagePopup");
         }
     }
 
-    private void writeGuestbookResponsesForFiles(List<FileMetadata> fileMetadatas, DownloadType fileFormat, 
-            GuestbookResponse guestbookResponseBase) {
-        
-        guestbookResponseBase.setDataset(fileMetadatas.get(0).getDatasetVersion().getDataset());
-        guestbookResponseBase.setDownloadtype(buildGuestbookResponseDownloadType(fileFormat, requestedDownloadType.getTool()));
-        
-        for (FileMetadata fileMetadata: fileMetadatas) {
-            
-            guestbookResponseBase.setDataFile(fileMetadata.getDataFile());
-            
-            fileDownloadService.writeGuestbookResponseRecord(guestbookResponseBase);
+    private void writeGuestbookResponseIfReleased(DataFile dataFile, DownloadType fileFormat, ExternalTool tool, boolean guestbookRecordsAlreadyWritten) {
+        if (!guestbookRecordsAlreadyWritten && dataFile.isReleased()) {
+
+            GuestbookResponse downloadOnlyGuestbook = guestbookResponseService.initUIGuestbookResponseWithoutFile(
+                    dataFile.getOwner(), session);
+            downloadOnlyGuestbook.setDownloadtype(buildGuestbookResponseDownloadType(fileFormat, tool));
+            downloadOnlyGuestbook.setDataFile(dataFile);
+            fileDownloadService.writeGuestbookResponseRecord(downloadOnlyGuestbook);
         }
     }
     

@@ -194,6 +194,10 @@
                             </div>
                         </div>
                     </div>
+                    <a id="currentDownloadRequestLink" href="#" target="_blank" rel="noopener noreferrer" download="" style="display: none;">
+                        download requested files
+                    </a>
+                    
                     <!-- END topDatasetBlock -->
                     <div id="fileImageTitle" class="row">
                         <div id="file-preview-icon-block" class="col-sm-4">
@@ -649,6 +653,14 @@
                         </div>
                     </p:dialog>
                 </h:form>
+                
+                <script type="text/javascript">
+
+                    function refreshAndClickDownloadLink(apiDownloadLink) {
+                        $('#currentDownloadRequestLink').attr('href', apiDownloadLink);
+                        $('#currentDownloadRequestLink')[0].click();
+                    }
+                </script>
             </ui:define>
         </ui:composition>
     </h:body>

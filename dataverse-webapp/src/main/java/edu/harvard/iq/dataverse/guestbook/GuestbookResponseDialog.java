@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
 import edu.harvard.iq.dataverse.persistence.guestbook.GuestbookResponse;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import org.apache.commons.lang.StringUtils;
+
 import javax.faces.view.ViewScoped;
 
 import javax.inject.Inject;
@@ -45,7 +46,7 @@ public class GuestbookResponseDialog implements Serializable {
     public void initForDatasetVersion(DatasetVersion workingVersion) {
         this.workingVersion = workingVersion;
         if (isDownloadPopupRequired()) {
-            guestbookResponse = guestbookResponseService.initGuestbookResponseForFragment(workingVersion, null, session);
+            guestbookResponse = guestbookResponseService.initUIGuestbookResponseWithoutFile(workingVersion.getDataset(), session);
         }
     }
     

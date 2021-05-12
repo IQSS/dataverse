@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.util;
 
 import com.google.common.collect.Lists;
+import edu.harvard.iq.dataverse.arquillian.facesmock.FacesContextMocker;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
@@ -13,6 +14,7 @@ import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
 import edu.harvard.iq.dataverse.util.FileUtil.ApiBatchDownloadType;
 import edu.harvard.iq.dataverse.util.FileUtil.ApiDownloadType;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.io.File;
 import java.io.IOException;
@@ -59,53 +61,6 @@ public class FileUtilTest {
     }
 
     @Test
-    public void testIsDownloadPopupRequiredLicenseCC0() {
-        DatasetVersion dsv1 = new DatasetVersion();
-        dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
-        TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
-        termsOfUseAndAccess.setLicense(TermsOfUseAndAccess.License.CC0);
-        dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
-        assertEquals(false, FileUtil.isDownloadPopupRequired(dsv1));
-    }
-
-    @Test
-    public void testIsDownloadPopupRequiredHasTermsOfUseAndCc0License() {
-        DatasetVersion dsv1 = new DatasetVersion();
-        dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
-        TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
-        /**
-         * @todo Ask if setting the license to CC0 should be enough to not show
-         * the popup when the are Terms of Use. This feels like a bug since the
-         * Terms of Use should probably be shown.
-         */
-        termsOfUseAndAccess.setLicense(TermsOfUseAndAccess.License.CC0);
-        termsOfUseAndAccess.setTermsOfUse("be excellent to each other");
-        dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
-        assertEquals(false, FileUtil.isDownloadPopupRequired(dsv1));
-    }
-
-    @Test
-    public void testIsDownloadPopupRequiredHasTermsOfUseAndNoneLicense() {
-        DatasetVersion dsv1 = new DatasetVersion();
-        dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
-        TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
-        termsOfUseAndAccess.setLicense(TermsOfUseAndAccess.License.NONE);
-        termsOfUseAndAccess.setTermsOfUse("be excellent to each other");
-        dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
-        assertEquals(true, FileUtil.isDownloadPopupRequired(dsv1));
-    }
-
-    @Test
-    public void testIsDownloadPopupRequiredHasTermsOfAccess() {
-        DatasetVersion dsv1 = new DatasetVersion();
-        dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
-        TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
-        termsOfUseAndAccess.setTermsOfAccess("Terms of *Access* is different than Terms of Use");
-        dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
-        assertEquals(true, FileUtil.isDownloadPopupRequired(dsv1));
-    }
-
-    @Test
     public void testIsDownloadPopupRequiredHasGuestBook() {
         DatasetVersion datasetVersion = new DatasetVersion();
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
@@ -138,21 +93,6 @@ public class FileUtilTest {
     }
 
     @Test
-    public void testIsPubliclyDownloadable2() {
-
-        FileMetadata nonRestrictedFileMetadata = MocksFactory.makeFileMetadata(123l, "file.txt", 0);
-        DatasetVersion dsv = new DatasetVersion();
-        TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
-        termsOfUseAndAccess.setTermsOfUse("be excellent to each other");
-        dsv.setTermsOfUseAndAccess(termsOfUseAndAccess);
-        dsv.setVersionState(DatasetVersion.VersionState.RELEASED);
-        nonRestrictedFileMetadata.setDatasetVersion(dsv);
-        Dataset dataset = new Dataset();
-        dsv.setDataset(dataset);
-        assertFalse(FileUtil.isPubliclyDownloadable(nonRestrictedFileMetadata));
-    }
-
-    @Test
     public void testgetFileDownloadUrl() {
         Long fileId = 42l;
         assertEquals("/api/access/datafile/42", FileUtil.getFileDownloadUrlPath(ApiDownloadType.DEFAULT, fileId, false));
@@ -178,6 +118,22 @@ public class FileUtilTest {
     }
 
     @Test
+    public void testGetDownloadWholeDatasetUrlPath() {
+        //given
+        DatasetVersion dsv = new DatasetVersion();
+        dsv.setId(11L);
+        Dataset dataset = new Dataset();
+        dataset.setId(1L);
+        dsv.setDataset(dataset);
+
+        // when & then
+        assertEquals("/api/datasets/1/versions/11/files/download?format=original", FileUtil.getDownloadWholeDatasetUrlPath(dsv, false, ApiBatchDownloadType.ORIGINAL));
+        assertEquals("/api/datasets/1/versions/11/files/download", FileUtil.getDownloadWholeDatasetUrlPath(dsv, false, ApiBatchDownloadType.DEFAULT));
+        assertEquals("/api/datasets/1/versions/11/files/download?gbrecs=true&format=original", FileUtil.getDownloadWholeDatasetUrlPath(dsv, true, ApiBatchDownloadType.ORIGINAL));
+        assertEquals("/api/datasets/1/versions/11/files/download?gbrecs=true", FileUtil.getDownloadWholeDatasetUrlPath(dsv, true, ApiBatchDownloadType.DEFAULT));
+    }
+
+    @Test
     public void testGetPublicDownloadUrl() {
         assertEquals(null, FileUtil.getPublicDownloadUrl(null, null, null));
         assertEquals("https://demo.dataverse.org/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/TLU3EP", FileUtil.getPublicDownloadUrl("https://demo.dataverse.org", "doi:10.5072/FK2/TLU3EP", 33L)); //pid before fileId
@@ -198,29 +154,17 @@ public class FileUtilTest {
         assertEquals(".xlsx", FileUtil.generateOriginalExtension("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
     }
 
-    /* 
-     * The method below has been removed from FileUtil
     @Test
-    public void testRescaleImage() throws IOException {
-        assertEquals(null, FileUtil.rescaleImage(null));
+    public void testDetermineFileType() throws IOException {
+        // given
+        JhoveConfigurationInitializer jhoveInit = new JhoveConfigurationInitializer();
+        jhoveInit.initializeJhoveConfig();
+        
         File file = new File("src/main/webapp/resources/images/cc0.png");
-        String imageAsBase64actual = FileUtil.rescaleImage(file);
-        String imageAsBase64expected = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAQCAYAAABQrvyxAAABxUlEQVR42tVWu42DQBR0By6BBpBcAqIARAmuwCInIXFEgOnAJbgEl+DAEYlJQPgiRHJ3nITeaWzNagEjnUEnm5WeePt/M/N2l8XiXmSmdg9+roUgeh2e54lhGC20QRBI0zRS17WYpvlWKqjAy7JUHa7ryul0urXv93vV7jiOZFkmq9Xq/QDAX6/Xqg4Ax+NR1QEKYzabjZzP555CHGtZljLWSQb34zy9DQTqfU8BQMosl0sVbJdhljRNb/WqqsT3/RYA2BAAnaQuAPQjbScpgC8ZINMICIvDxwZ6EFEUyeVyaQGgD/BQ43A4tAJEG/pQdMDcm3uMBtA53S2fGxMggiqKYnBhqAl7JpiR52oYANIKLMLX0+ARAJwdMEwlMIYqoA6fSu52O7U+farDcfxOSiG971EK5XneSyEETLUIhKnClGJwOE86eSRJP/D/dojxHmy32x4AMMpAqBwBEAQB8ObB3joA3majrlEwNnSNEhTUwC2kL8QU4pvBoLEGUwLzQBJB8oLAnMkp1H3IuBjamKcMFOzbtv1+DxkL2Ov+SgAECn4nkiSROI4lDMOXmgLwU3/92ervz5sqH9erXIv8paYAzNl+AXxcLdKhqOWiAAAAAElFTkSuQmCC";
-        assertEquals(imageAsBase64expected, imageAsBase64actual);
-    }*/
-
-    @Test
-    public void testDetermineFileType() {
-        File file = new File("src/main/webapp/resources/images/cc0.png");
-        try {
-            assertEquals("image/png", FileUtil.determineFileType(file, "cc0.png"));
-        } catch (IOException ex) {
-            Logger.getLogger(FileUtilTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
+        
+        // when & then
+        assertEquals("image/png", FileUtil.determineFileType(file, "cc0.png"));
     }
-
-    // isThumbnailSuppported() has been moved from DataFileService to FileUtil:
 
     /**
      * Expect that {@code null}, a DataFile without content type and a DataFile

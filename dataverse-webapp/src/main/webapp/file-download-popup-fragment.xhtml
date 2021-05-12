@@ -31,8 +31,7 @@
                         <div class="col-sm-6">
                             <p:inputText id="guestbookuser_nameText" styleClass="form-control"
                                          value="#{GuestbookResponseDialog.guestbookResponse.name}"
-                                         pt:aria-required="#{GuestbookResponseDialog.guestbook.nameRequired}"
-                                         required="#{param['DO_GB_VALIDATION'] and GuestbookResponseDialog.guestbook.nameRequired}"
+                                         required="#{GuestbookResponseDialog.guestbook.nameRequired}"
                                          requiredMessage="#{bundle['requiredField']}">
 
                                 <o:validator validatorId="javax.faces.Length" maximum="255"
@@ -50,8 +49,7 @@
                     <div class="col-sm-6">
                         <p:inputText id="guestbookuser_email" styleClass="form-control"
                                      value="#{GuestbookResponseDialog.guestbookResponse.email}"
-                                     pt:aria-required="#{GuestbookResponseDialog.guestbook.emailRequired}"
-                                     required="#{param['DO_GB_VALIDATION'] and GuestbookResponseDialog.guestbook.emailRequired}"
+                                     required="#{GuestbookResponseDialog.guestbook.emailRequired}"
                                      requiredMessage="#{bundle['requiredField']}">
 
                                 <o:validator validatorId="javax.faces.Length" maximum="255"
@@ -68,8 +66,7 @@
                     <div class="col-sm-6">
                         <p:inputText id="guestbookuser_institution" styleClass="form-control"
                                      value="#{GuestbookResponseDialog.guestbookResponse.institution}"
-                                     pt:aria-required="#{GuestbookResponseDialog.guestbook.institutionRequired}"
-                                     required="#{param['DO_GB_VALIDATION'] and GuestbookResponseDialog.guestbook.institutionRequired}"
+                                     required="#{GuestbookResponseDialog.guestbook.institutionRequired}"
                                      requiredMessage="#{bundle['requiredField']}">
                                      
                                 <o:validator validatorId="javax.faces.Length" maximum="255"
@@ -87,7 +84,7 @@
                         <p:inputText id="guestbookuser_position" styleClass="form-control"
                                      value="#{GuestbookResponseDialog.guestbookResponse.position}"
                                      pt:aria-required="#{GuestbookResponseDialog.guestbook.positionRequired}"
-                                     required="#{param['DO_GB_VALIDATION'] and GuestbookResponseDialog.guestbook.positionRequired}"
+                                     required="#{GuestbookResponseDialog.guestbook.positionRequired}"
                                      requiredMessage="#{bundle['requiredField']}">
                                      
                                 <o:validator validatorId="javax.faces.Length" maximum="255"
@@ -113,14 +110,14 @@
                                     <p:inputText id="customQuestionResponse"
                                                  styleClass="form-control" value="#{customQuestionResponse.response}"
                                                  pt:aria-required="#{customQuestionResponse.customQuestion.required}"
-                                                 required="#{param['DO_GB_VALIDATION'] and  customQuestionResponse.customQuestion.required}"
+                                                 required="#{customQuestionResponse.customQuestion.required}"
                                                  rendered="#{customQuestionResponse.customQuestion.questionType=='text'}"
                                                  requiredMessage="#{bundle['requiredField']}">
                                     </p:inputText>
                                     <p:selectOneMenu id="customQuestionResponseSelect"
                                                      styleClass="form-control" value="#{customQuestionResponse.response}"
                                                      pt:aria-required="#{customQuestionResponse.customQuestion.required}"
-                                                     required="#{param['DO_GB_VALIDATION'] and customQuestionResponse.customQuestion.required}"
+                                                     required="#{customQuestionResponse.customQuestion.required}"
                                                      rendered="#{customQuestionResponse.customQuestion.questionType=='options'}"
                                                      requiredMessage="#{bundle['requiredField']}">
                                         <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true" />
@@ -139,10 +136,12 @@
         </div>
         <div class="button-block">
             <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}"
-                           action="#{GuestbookResponseDialog.saveAndStartDownload()}"
+                           actionListener="#{GuestbookResponseDialog.saveAndStartDownload()}"
+                           process="@widgetVar(downloadPopup)"
                            update="guestbookUIFragment @widgetVar(downloadPackagePopup) @widgetVar(downloadDataSubsetPopup)"
-                           oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('downloadPopup').hide(); }">
-                <f:param name="DO_GB_VALIDATION" value="true"/> 
+                           oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('downloadPopup').hide(); }
+                                       if (args &amp;&amp; args.apiDownloadLink) { $('#currentDownloadRequestLink').attr('href', args.apiDownloadLink); $('#currentDownloadRequestLink')[0].click(); }"
+                           >
             </p:commandButton>
             
             <button type="button" class="btn btn-default" onclick="PF('downloadPopup').hide();" value="#{bundle.cancel}">#{bundle.cancel}</button>

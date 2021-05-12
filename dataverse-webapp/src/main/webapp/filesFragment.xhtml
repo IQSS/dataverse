@@ -128,14 +128,20 @@
                             <ul class="dropdown-menu multi-level text-left" style="left:auto" role="menu">
                                 <li>
                                     <p:commandLink action="#{datasetFilesTab.startDatasetFilesDownload(true)}"
+                                                   process="@this"
+                                                   oncomplete="if (args &amp;&amp; args.apiDownloadLink) { refreshAndClickDownloadLink(args.apiDownloadLink); }"
                                                    id="downloadOriginalFiles">
                                         <h:outputText value="#{bundle['file.download.dataset.original']}"/>
+                                        <o:skipValidators />
                                     </p:commandLink>
                                 </li>
                                 <li>
                                     <p:commandLink action="#{datasetFilesTab.startDatasetFilesDownload(false)}"
+                                                   process="@this"
+                                                   oncomplete="if (args &amp;&amp; args.apiDownloadLink) { refreshAndClickDownloadLink(args.apiDownloadLink); }"
                                                    id="downloadFormated">
                                         <h:outputText value="#{bundle['file.download.dataset.tab']}"/>
+                                        <o:skipValidators />
                                     </p:commandLink>
                                 </li>
                             </ul>
@@ -147,8 +153,10 @@
                                         and !datasetFilesTab.isHasTabular()}">
                             <p:commandLink type="button" styleClass="btn btn-default btn-download"
                                            action="#{datasetFilesTab.startDatasetFilesDownload(true)}"
-                                           update="@form">
+                                           oncomplete="if (args &amp;&amp; args.apiDownloadLink) { refreshAndClickDownloadLink(args.apiDownloadLink); }"
+                                           process="@this" update="@form">
                                 <span class="glyphicon glyphicon-download-alt"/> #{bundle['file.download.dataset']}
+                                <o:skipValidators />
                             </p:commandLink>
                         </p:outputPanel>
 
@@ -308,6 +316,7 @@
                                 <li class="#{datasetFilesTab.lockedFromEdits ? 'disabled' : ''}">
                                     <p:commandLink onclick="testFilesSelectedForEditMetadata();"
                                                    id="editMetadataSelectedFile"
+                                                   process="@this"
                                                    action="#{datasetFilesTab.editFileMetadata()}">
                                         <h:outputText value="#{bundle['file.metadata']}"/>
                                     </p:commandLink>
@@ -417,6 +426,10 @@
                 </div>
             </p:column>
         </p:dataTable>
+        
+        <a id="currentDownloadRequestLink" href="#" target="_blank" rel="noopener noreferrer" download="" style="display: none;">
+          download requested files
+        </a>
 
         <p:remoteCommand name="refreshTagsCommand"
                          onstart="#{FileTagModal.initForMultipleFiles(datasetFilesTab.retrieveSelectedFiles(), datasetFilesTab.dataset)}"
@@ -692,6 +705,11 @@
                     // commandButton. -- L.A. 4.2.1
                     //openEditFilesPageCommand();
                     //}
+                }
+
+                function refreshAndClickDownloadLink(apiDownloadLink) {
+                    $('#currentDownloadRequestLink').attr('href', apiDownloadLink);
+                    $('#currentDownloadRequestLink')[0].click();
                 }
                 </script>
     </ui:fragment>

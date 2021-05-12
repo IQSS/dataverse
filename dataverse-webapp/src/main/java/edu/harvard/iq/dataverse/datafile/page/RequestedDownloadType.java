@@ -36,7 +36,7 @@ public class RequestedDownloadType implements Serializable {
     
 
     // -------------------- GETTERS --------------------
-    
+
     public DownloadType getFileFormat() {
         return fileFormat;
     }
@@ -106,7 +106,6 @@ public class RequestedDownloadType implements Serializable {
         this.fileFormat = DownloadType.ORIGINAL;
     }
     
-    
     public boolean isSingleFileRequested() {
         return fileMetadatas.size() == 1;
     }
@@ -114,5 +113,5 @@ public class RequestedDownloadType implements Serializable {
     public FileMetadata getSingleFileMetadata() {
         return fileMetadatas.get(0);
     }
-    
+
 }

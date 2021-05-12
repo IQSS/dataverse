@@ -51,7 +51,7 @@ public class ExternalToolHandler {
     
     // TODO: rename to handleRequest() to someday handle sending headers as well as query parameters.
     private String getQueryParametersForUrl(ExternalTool externalTool, DataFile datafile, ApiToken apiToken, String dataverseUrl) {
-        Dataset dataset = datafile.getFileMetadata().getDatasetVersion().getDataset();
+        Dataset dataset = datafile.getLatestFileMetadata().getDatasetVersion().getDataset();
         
         String queryString = parseToolParameters(externalTool).entrySet().stream()
                 .map(keyValue -> new Tuple2<>(keyValue.getKey(), resolvePlaceholder(keyValue.getValue(),

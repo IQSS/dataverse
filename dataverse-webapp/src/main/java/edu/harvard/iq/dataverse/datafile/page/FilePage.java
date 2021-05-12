@@ -208,7 +208,7 @@ public class FilePage implements java.io.Serializable {
         return null;
     }
 
-    private boolean canViewUnpublishedDataset() {
+    public boolean canViewUnpublishedDataset() {
         return permissionsWrapper.canViewUnpublishedDataset(fileMetadata.getDatasetVersion().getDataset());
     }
 
