@@ -5,8 +5,6 @@
  */
 package edu.harvard.iq.dataverse.api;
 
-//import java.io.ByteArrayOutputStream;
-
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.dataaccess.OptionalAccessService;
@@ -15,20 +13,11 @@ import edu.harvard.iq.dataverse.persistence.guestbook.GuestbookResponse;
 import java.util.List;
 
 /**
+ * Used alongside {@link DownloadInstanceWriter} to return file instance in api.
+ *
  * @author Leonid Andreev
  */
 public class DownloadInstance {
-    
-     /*
-     private ByteArrayOutputStream outStream = null;
-
-     public ByteArrayOutputStream getOutStream() {
-     return outStream;
-     }
-
-     public void setOutStream(ByteArrayOutputStream outStream) {
-     this.outStream = outStream;
-     }*/
 
     private List<Object> extraArguments = null;
 

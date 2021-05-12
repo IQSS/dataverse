@@ -29,7 +29,6 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -39,6 +38,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -314,9 +315,10 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
             String mimeType = storageIO.getMimeType();
 
             // Provide both the "Content-disposition" and "Content-Type" headers,
-            // to satisfy the widest selection of browsers out there. 
+            // to satisfy the widest selection of browsers out there.
 
-            httpHeaders.add("Content-disposition", "attachment; filename=\"" + fileName + "\"");
+            fileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString());
+            httpHeaders.add("Content-Disposition", "attachment; filename*=utf-8''"+ fileName + "; filename="+fileName);
             httpHeaders.add("Content-Type", mimeType + "; name=\"" + fileName + "\"");
 
             long contentSize = getContentSize(storageIO);

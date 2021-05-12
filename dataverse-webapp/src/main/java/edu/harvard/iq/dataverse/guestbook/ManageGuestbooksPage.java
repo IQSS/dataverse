@@ -16,7 +16,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -118,9 +119,10 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         FacesContext ctx = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("text/comma-separated-values");
-        String fileNameString = "attachment;filename=" + getFileName();
-        response.setHeader("Content-Disposition", fileNameString);
         try {
+            String fileName = URLEncoder.encode(getFileName(), StandardCharsets.UTF_8.toString());
+            response.setHeader("Content-Disposition", "attachment; filename*=utf-8''"+ fileName + "; filename="+fileName);
+
             ServletOutputStream out = response.getOutputStream();
             guestbookResponseService.streamResponsesByDataverseIdAndGuestbookId(out, dataverseId, null);
             out.flush();
