@@ -4,16 +4,18 @@ import edu.harvard.iq.dataverse.engine.command.AbstractVoidCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.PrivateUrlUser;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
@@ -92,11 +94,26 @@ public class DeleteDatasetVersionCommand extends AbstractVoidCommand {
                     }
                 }
                 boolean doNormalSolrDocCleanUp = true;
+                removeLockAndUpdateDataset(ctxt);
                 ctxt.index().indexDataset(doomed, doNormalSolrDocCleanUp);
                 return;
             }
 
             throw new IllegalCommandException("Cannot delete a released version", this);
         }
+    }
+
+    /**
+     * Removes potential lock, otherwise the dataset would be permanently locked for user without ability to edit it.
+     */
+    private void removeLockAndUpdateDataset(CommandContext ctxt) {
+        doomed.getLocks().stream()
+              .filter(datasetLock -> datasetLock.getReason().equals(DatasetLock.Reason.InReview))
+              .findAny()
+              .ifPresent(datasetLock -> {
+                  ctxt.datasets().removeDatasetLocks(doomed, DatasetLock.Reason.InReview);
+                  doomed.setModificationTime(new Timestamp(new Date().getTime()));
+                  ctxt.em().merge(doomed);
+              });
     }
 }
