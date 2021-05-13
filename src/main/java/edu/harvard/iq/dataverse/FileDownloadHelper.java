@@ -329,6 +329,9 @@ public class FileDownloadHelper implements java.io.Serializable {
 
          if (fileDownloadService.requestAccess(file.getId())) {
              // update the local file object so that the page properly updates
+             if(file.getFileAccessRequesters() == null){
+                 file.setFileAccessRequesters(new ArrayList());
+             }
              file.getFileAccessRequesters().add((AuthenticatedUser) session.getUser());
              // create notification if necessary
              if (sendNotification) {
