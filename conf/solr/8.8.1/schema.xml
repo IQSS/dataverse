@@ -450,7 +450,7 @@
     <copyField source="universe" dest="_text_" maxChars="3000"/>
     <copyField source="weighting" dest="_text_" maxChars="3000"/>
     <copyField source="westLongitude" dest="_text_" maxChars="3000"/>
-<!-- End: Dataverse-specific -->
+    <!-- End: Dataverse-specific -->
     
     <!-- This can be enabled, in case the client does not know what fields may be searched. It isn't enabled by default
          because it's very expensive to index everything twice. -->
