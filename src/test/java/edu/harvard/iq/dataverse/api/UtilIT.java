@@ -651,13 +651,13 @@ public class UtilIT {
         if (type != null) {
             requestSpecification.multiPart("type", type);
         }
-        return requestSpecification.post("/api/access/datafile/" + fileId + "/metadata/" + formatTag + "/" + formatVersion);
+        return requestSpecification.post("/api/access/datafile/" + fileId + "/auxiliary/" + formatTag + "/" + formatVersion);
     }
 
     static Response downloadAuxFile(Long fileId, String formatTag, String formatVersion, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .get("/api/access/datafile/" + fileId + "/metadata/" + formatTag + "/" + formatVersion);
+                .get("/api/access/datafile/" + fileId + "/auxiliary/" + formatTag + "/" + formatVersion);
         return response;
     }
 
