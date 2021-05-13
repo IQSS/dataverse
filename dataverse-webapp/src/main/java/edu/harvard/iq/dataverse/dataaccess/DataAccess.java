@@ -22,6 +22,7 @@ package edu.harvard.iq.dataverse.dataaccess;
 
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 
@@ -55,9 +56,7 @@ public class DataAccess {
      */
     public <T extends DvObject> StorageIO<T> getStorageIO(T dvObject) throws IOException {
 
-        if (dvObject == null
-                || dvObject.getStorageIdentifier() == null
-                || dvObject.getStorageIdentifier().isEmpty()) {
+        if (dvObject == null || StringUtils.isEmpty(dvObject.getStorageIdentifier())) {
             throw new IOException("getDataAccessObject: null or invalid datafile.");
         }
 
@@ -65,7 +64,7 @@ public class DataAccess {
                 || (!dvObject.getStorageIdentifier().matches("^[a-z][a-z0-9]*://.*"))) {
             return new FileAccessIO<>(dvObject, SystemConfig.getFilesDirectoryStatic());
         } else if (dvObject.getStorageIdentifier().startsWith("s3://")) {
-            return new S3AccessIO<>(dvObject, s3ClientFactory.getClient());
+            return new S3AccessIO<>(dvObject, s3ClientFactory.getClient(), s3ClientFactory.getDefaultBucketName());
         } else if (dvObject.getStorageIdentifier().startsWith("tmp://")) {
             throw new IOException("DataAccess IO attempted on a temporary file that hasn't been permanently saved yet.");
         }
@@ -90,33 +89,29 @@ public class DataAccess {
     /**
      * createDataAccessObject() methods create a *new*, empty DataAccess objects,
      * for saving new, not yet saved datafiles.
+     * Note that method will generate {@link DvObject#getStorageIdentifier()} which
+     * in turn must be saved in database.
      */
-    public <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag) throws IOException {
+    public <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject) throws IOException {
 
-        return createNewStorageIO(dvObject, storageTag, DEFAULT_STORAGE_DRIVER_IDENTIFIER);
+        return createNewStorageIO(dvObject, StringUtils.defaultString(DEFAULT_STORAGE_DRIVER_IDENTIFIER, "file"));
     }
 
     // -------------------- PRIVATE --------------------
 
-    private <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag, String driverIdentifier) throws IOException {
-        if (dvObject == null
-                || storageTag == null
-                || storageTag.isEmpty()) {
-            throw new IOException("getDataAccessObject: null or invalid datafile.");
+    private <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String driverIdentifier) throws IOException {
+        if (dvObject == null || StringUtils.isNotEmpty(dvObject.getStorageIdentifier())) {
+            throw new IOException("createNewStorageIO: null dvobject or dvobject have storage id already assigned.");
         }
 
         StorageIO<T> storageIO = null;
 
-        dvObject.setStorageIdentifier(storageTag);
-
-        if (driverIdentifier == null) {
-            driverIdentifier = "file";
-        }
-
         if (driverIdentifier.equals("file")) {
+            dvObject.setStorageIdentifier(FileAccessIO.createStorageId(dvObject));
             storageIO = new FileAccessIO<>(dvObject, SystemConfig.getFilesDirectoryStatic());
         } else if (driverIdentifier.equals("s3")) {
-            storageIO = new S3AccessIO<>(dvObject, s3ClientFactory.getClient());
+            dvObject.setStorageIdentifier(S3AccessIO.createStorageId(dvObject, s3ClientFactory.getDefaultBucketName()));
+            storageIO = new S3AccessIO<>(dvObject, s3ClientFactory.getClient(), s3ClientFactory.getDefaultBucketName());
         } else {
             throw new IOException("createDataAccessObject: Unsupported storage method " + driverIdentifier);
         }
@@ -124,6 +119,5 @@ public class DataAccess {
         storageIO.open(DataAccessOption.WRITE_ACCESS);
         return storageIO;
     }
-
 
 }

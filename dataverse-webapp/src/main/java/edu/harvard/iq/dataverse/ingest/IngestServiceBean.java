@@ -74,7 +74,6 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SumStatCalculator;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.control.Option;
-import org.apache.commons.io.IOUtils;
 import org.dataverse.unf.UNFUtil;
 import org.dataverse.unf.UnfException;
 
@@ -96,11 +95,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -181,24 +176,21 @@ public class IngestServiceBean {
             Dataset dataset = version.getDataset();
 
             for (DataFile dataFile : newFiles) {
-                String tempFileLocation = FileUtil.getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier();
 
-                // Try to save the file in its permanent location: 
-                String storageId = dataFile.getStorageIdentifier().replaceFirst("^tmp://", "");
-
-                Path tempLocationPath = Paths.get(FileUtil.getFilesTempDirectory() + "/" + storageId);
+                Path tempLocationPath = Paths.get(FileUtil.getFilesTempDirectory() + "/" + dataFile.getStorageIdentifier());
 
                 boolean unattached = false;
                 boolean savedSuccess = false;
                 StorageIO<DataFile> storageIO = null;
 
                 try {
-                    logger.fine("Attempting to create a new storageIO object for " + storageId);
+                    logger.fine("Attempting to create a new storageIO object for " + dataFile.getStorageIdentifier());
                     if (dataFile.getOwner() == null) {
                         unattached = true;
                         dataFile.setOwner(dataset);
                     }
-                    storageIO = dataAccess.createNewStorageIO(dataFile, storageId);
+                    dataFile.setStorageIdentifier(null);
+                    storageIO = dataAccess.createNewStorageIO(dataFile);
 
                     logger.fine("Successfully created a new storageIO object.");
 
@@ -217,7 +209,7 @@ public class IngestServiceBean {
                 // dataset directory. We should also remember to delete any such files in the
                 // temp directory:
                 List<Path> generatedTempFiles = listGeneratedTempFiles(Paths.get(FileUtil.getFilesTempDirectory()),
-                                                                       storageId);
+                                                                       dataFile.getStorageIdentifier());
                 if (generatedTempFiles != null) {
                     for (Path generated : generatedTempFiles) {
                         if (savedSuccess) { // no need to try to save this aux file permanently, if we've failed to save the main file!
@@ -287,7 +279,7 @@ public class IngestServiceBean {
                             // FITS is the only type supported for metadata 
                             // extraction, as of now. -- L.A. 4.0 
                             dataFile.setContentType("application/fits");
-                            metadataExtracted = extractMetadata(tempFileLocation, dataFile, version);
+                            metadataExtracted = extractMetadata(tempLocationPath.toString(), dataFile, version);
                         } catch (IOException mex) {
                             logger.severe("Caught exception trying to extract indexable metadata from file " + fileName + ",  " + mex.getMessage());
                         }

@@ -20,6 +20,7 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -33,24 +34,19 @@ public class StoredOriginalFile {
     private static Logger logger = Logger.getLogger(StoredOriginalFile.class.getPackage().getName());
 
 
-    public static StorageIO<DataFile> retreive(StorageIO<DataFile> storageIO) {
+    public static StorageIO<DataFile> retreive(StorageIO<DataFile> storageIO, DataTable dataTable) {
 
-        DataFile dataFile = storageIO.getDataFile();
-
-        if (dataFile == null) {
-            return null;
-        }
-        if (dataFile.getDataTable() == null) {
+        if (dataTable == null) {
             return null;
         }
 
-        String originalMimeType = dataFile.getDataTable().getOriginalFileFormat();
+        String originalMimeType = dataTable.getOriginalFileFormat();
         
         
         try {
             storageIO.open();
-            long storedOriginalSize = dataFile.getDataTable().getOriginalFileSize() != null ?
-                    dataFile.getDataTable().getOriginalFileSize() :
+            long storedOriginalSize = dataTable.getOriginalFileSize() != null ?
+                    dataTable.getOriginalFileSize() :
                     storageIO.getAuxObjectSize(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION);
 
             String mimeType = generateOriginalFileMimeType(originalMimeType);

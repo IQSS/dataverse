@@ -124,17 +124,13 @@ public class DataConverter {
         // download API instance writer:
         if (convertedFileStream != null && convertedFileSize > 0) {
 
-            InputStreamIO inputStreamIO = new InputStreamIO(convertedFileStream, convertedFileSize);
-
-            inputStreamIO.setMimeType(formatType);
-
             String fileName = storageIO.getFileName();
             if (fileName == null || fileName.isEmpty()) {
                 fileName = "f" + file.getId().toString();
             }
-            inputStreamIO.setFileName(generateAltFileName(formatRequested, fileName));
+            fileName = generateAltFileName(formatRequested, fileName);
 
-            return inputStreamIO;
+            return new InputStreamIO(convertedFileStream, convertedFileSize, fileName, formatType);
         }
 
         return null;

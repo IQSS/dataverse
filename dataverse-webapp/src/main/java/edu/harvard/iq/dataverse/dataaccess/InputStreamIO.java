@@ -22,20 +22,14 @@ public class InputStreamIO extends StorageIO<DataFile> {
 
     private long size;
 
-    public InputStreamIO(InputStream inputStream, long size) {
+    public InputStreamIO(InputStream inputStream, long size, String fileName, String mimeType) {
         super();
-
         this.setIsLocalFile(false);
         this.setInputStream(inputStream);
         setChannel(Channels.newChannel(inputStream));
         this.size = size;
-    }
-
-    public InputStreamIO(InputStream inputStream, long size, String fileName, String mimeType) {
-        this(inputStream, size);
-
-        setMimeType(mimeType);
-        setFileName(fileName);
+        this.fileName = fileName;
+        this.mimeType = mimeType;
     }
 
     @Override
@@ -51,6 +45,16 @@ public class InputStreamIO extends StorageIO<DataFile> {
     @Override
     public long getSize() throws IOException {
         return size;
+    }
+
+    @Override
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    @Override
+    public String getFileName() {
+        return fileName;
     }
 
     @Override

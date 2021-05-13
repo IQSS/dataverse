@@ -153,7 +153,6 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
         api.setDvObject(target);
         api.setIdentifierRegistered(target.isIdentifierRegistered());
         api.setGlobalIdCreateTime(target.getGlobalIdCreateTime());
-        api.setStorageLocationDesignator(true);
         ctxt.em().persist(api);
         target.setProtocol(null);
         target.setAuthority(null);

@@ -248,7 +248,7 @@ public class DatasetThumbnailService {
         StorageIO<Dataset> storageIO = null;
 
         try {
-            storageIO = dataAccess.createNewStorageIO(dataset, "placeholder");
+            storageIO = dataAccess.getStorageIO(dataset);
         } catch (IOException ioex) {
             //TODO: Add a suitable waing message
             logger.warning("Failed to save the file, storage id " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");

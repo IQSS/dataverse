@@ -508,22 +508,7 @@ public class Dataset extends DvObjectContainer {
     }
 
     public Path getFileSystemDirectory(String filesRootDirectory) {
-        Path studyDir = null;
-
-        if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
-            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
-                if (api.isStorageLocationDesignator()) {
-                    studyDir = Paths.get(filesRootDirectory, api.getAuthority(), api.getIdentifier());
-                    return studyDir;
-                }
-            }
-        }
-
-        if (this.getAuthority() != null && this.getIdentifier() != null) {
-            studyDir = Paths.get(filesRootDirectory, this.getAuthority(), this.getIdentifier());
-        }
-
-        return studyDir;
+        return Paths.get(filesRootDirectory, this.getStorageIdentifier());
     }
 
     public String getAlternativePersistentIdentifier() {
@@ -534,16 +519,6 @@ public class Dataset extends DvObjectContainer {
                 retVal += api.getProtocol() + ":";
                 retVal += api.getAuthority() + "/";
                 retVal += api.getIdentifier();
-            }
-        }
-        return retVal;
-    }
-
-    public String getProtocolForFileStorage() {
-        String retVal = getProtocol();
-        if (this.getAlternativePersistentIndentifiers() != null && !this.getAlternativePersistentIndentifiers().isEmpty()) {
-            for (AlternativePersistentIdentifier api : this.getAlternativePersistentIndentifiers()) {
-                retVal = api.getProtocol();
             }
         }
         return retVal;

@@ -1,10 +1,10 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 import com.google.common.io.Resources;
-import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -17,8 +17,8 @@ import java.nio.channels.Channel;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
@@ -26,7 +26,22 @@ import static org.junit.Assert.fail;
  * @author oscardssmith
  */
 public class StorageIOTest {
-    StorageIO<Dataset> instance = new FileAccessIO<>("/tmp/files/tmp/dataset/Dataset");
+    StorageIO<Dataset> instance;
+
+
+    @Before
+    public void setUpClass() throws IOException {
+        Dataset dataset = new Dataset();
+        dataset.setStorageIdentifier("storageId");
+        instance = new FileAccessIO<>(dataset, "/tmp/files/tmp/dataset/Dataset");
+    }
+
+    @Test
+    public void constructor_not_supported_dv_object() {
+        // when & then
+        assertThatThrownBy(() -> new FileAccessIO<>(new Dataverse(), "/tmp"))
+            .isInstanceOf(IllegalStateException.class);
+    }
 
     @Test
     public void testGetChannel() throws IOException {
@@ -49,28 +64,6 @@ public class StorageIOTest {
     }
 
     @Test
-    public void testGetDvObject() {
-        assertEquals(null, instance.getDvObject());
-        instance.setDvObject(new Dataset());
-        assertEquals(new Dataset(), instance.getDataset());
-
-        try {
-            instance.getDataFile();
-            fail("This should have thrown");
-        } catch (ClassCastException ex) {
-            assertEquals("edu.harvard.iq.dataverse.persistence.dataset.Dataset cannot be cast to edu.harvard.iq.dataverse.persistence.datafile.DataFile", ex.getMessage());
-        }
-        try {
-            instance.getDataverse();
-            fail("This should have thrown");
-        } catch (ClassCastException ex) {
-            assertEquals("edu.harvard.iq.dataverse.persistence.dataset.Dataset cannot be cast to edu.harvard.iq.dataverse.persistence.dataverse.Dataverse", ex.getMessage());
-        }
-        assertEquals(new DataFile(), new FileAccessIO<>(new DataFile(), null).getDataFile());
-        assertEquals(new Dataverse(), new FileAccessIO<>(new Dataverse(), null).getDataverse());
-    }
-
-    @Test
     public void testInputStream() throws IOException {
         assertEquals(null, instance.getInputStream());
         InputStream is = new ByteArrayInputStream("Test".getBytes());
@@ -85,20 +78,6 @@ public class StorageIOTest {
         OutputStream os = new ByteArrayOutputStream();
         instance.setOutputStream(os);
         assertEquals(os, instance.getOutputStream());
-    }
-
-    @Test
-    public void testMimeType() {
-        assertEquals(null, instance.getMimeType());
-        instance.setMimeType("Test");
-        assertEquals("Test", instance.getMimeType());
-    }
-
-    @Test
-    public void testFileName() {
-        assertEquals(null, instance.getFileName());
-        instance.setFileName("Test");
-        assertEquals("Test", instance.getFileName());
     }
 
     @Test

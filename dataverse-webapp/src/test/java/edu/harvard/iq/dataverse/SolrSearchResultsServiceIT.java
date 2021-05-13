@@ -78,5 +78,6 @@ public class SolrSearchResultsServiceIT extends WebappArquillianDeployment {
         assertThat(file.getFilesize()).isEqualTo(3L);
         assertThat(file.getIngestStatus()).isEqualTo('A');
         assertThat(file.getOwner()).isNotNull();
+        assertThat(file.getOwner().getStorageIdentifier()).isEqualTo("file://10.18150/FK2/MLXK1N");
     }
 }

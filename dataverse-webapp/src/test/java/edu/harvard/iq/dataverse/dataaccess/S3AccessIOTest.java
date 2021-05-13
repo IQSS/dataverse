@@ -17,11 +17,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.STRICT_STUBS)
@@ -35,16 +34,18 @@ public class S3AccessIOTest {
     private Dataset dataSet;
     private DataFile dataFile;
     private String dataFileId;
+    private String defaultBucketName = "defaultBucketName";
 
     @BeforeEach
     public void setup() throws IOException {
         dataFile = MocksFactory.makeDataFile();
         dataSet = MocksFactory.makeDataset();
+        dataSet.setStorageIdentifier("s3://dataset/storage/id");
         dataFile.setOwner(dataSet);
         dataFileId = UtilIT.getRandomIdentifier();
         dataFile.setStorageIdentifier("s3://bucket:" + dataFileId);
-        dataSetAccess = new S3AccessIO<>(dataSet, s3client);
-        dataFileAccess = new S3AccessIO<>(dataFile, s3client);
+        dataSetAccess = new S3AccessIO<>(dataSet, s3client, defaultBucketName);
+        dataFileAccess = new S3AccessIO<>(dataFile, s3client, defaultBucketName);
     }
     
     /*
@@ -63,43 +64,22 @@ public class S3AccessIOTest {
      */
 
     @Test
-    void keyNull_getMainFileKey() throws IOException {
+    void constructor_dvObject_with_incorrect_storage_prefix() {
         // given
-        String authOwner = dataSet.getAuthority();
-        String idOwner = dataSet.getIdentifier();
+        dataSet.setStorageIdentifier("invalid://abc");
+        // when & then
+        assertThatThrownBy(() -> new S3AccessIO<>(dataSet, s3client, defaultBucketName))
+            .isInstanceOf(IllegalStateException.class);
+    }
+    
+    @Test
+    void keyNull_getMainFileKey() throws IOException {
 
         // when
         String key = dataFileAccess.getMainFileKey();
 
         // then
-        assertEquals(authOwner + "/" + idOwner + "/" + dataFileId, key);
-    }
-
-    @Test
-    void keyNullstorageIdNullOrEmpty_getMainFileKey() throws IOException {
-        // given
-        dataFile.setStorageIdentifier(null);
-        // when & then
-        assertThrows(FileNotFoundException.class, () -> {
-            dataFileAccess.getMainFileKey();
-        });
-
-        // given
-        dataFile.setStorageIdentifier("");
-        // when & then
-        assertThrows(FileNotFoundException.class, () -> {
-            dataFileAccess.getMainFileKey();
-        });
-    }
-
-    @Test
-    void keyNullstorageIdNull_getMainFileKey() throws IOException {
-        // given
-        dataFile.setStorageIdentifier("invalid://abcd");
-        // when & then
-        assertThrows(IOException.class, () -> {
-            dataFileAccess.getMainFileKey();
-        });
+        assertEquals("dataset/storage/id/" + dataFileId, key);
     }
 
     @Test

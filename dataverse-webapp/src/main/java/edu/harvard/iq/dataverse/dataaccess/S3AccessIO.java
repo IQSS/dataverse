@@ -20,7 +20,7 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
-
+import com.google.common.base.Preconditions;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile.ChecksumType;
@@ -33,10 +33,10 @@ import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import javax.validation.constraints.NotNull;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,11 +70,19 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     private static final Logger logger = Logger.getLogger(S3AccessIO.class.getName());
 
+    public final static String S3_STORAGE_IDENTIFIER_PREFIX = "s3://";
+    private final static long S3_MULTIPART_UPLOAD_THRESHOLD = 100 * 1024 * 1024;
+
     private static final String MD5_METADATA_KEY = "MD5";
+
+    private AmazonS3 s3 = null;
+
+    private String bucketName;
+    private String key;
 
 
     public S3AccessIO(String storageLocation, AmazonS3 s3client) {
-        super((T) null);
+        super();
         this.setIsLocalFile(false);
 
         // TODO: validate the storage location supplied
@@ -83,31 +91,31 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         this.s3 = s3client;
     }
 
-    public S3AccessIO(T dvObject, @NotNull AmazonS3 s3client) {
+    public S3AccessIO(T dvObject, @NotNull AmazonS3 s3client, String defaultBucketName) {
         super(dvObject);
+        Preconditions.checkState(dvObject.getStorageIdentifier().startsWith(S3_STORAGE_IDENTIFIER_PREFIX),
+                "StorageIO: No local storage identifier defined for this dvobject.");
+        
         this.setIsLocalFile(false);
+        bucketName = defaultBucketName;
         this.s3 = s3client;
     }
 
-    public final static String S3_IDENTIFIER_PREFIX = "s3";
-    private final static long S3_MULTIPART_UPLOAD_THRESHOLD = 100 * 1024 * 1024;
+    public static String createStorageId(DvObject dvObject, String defaultBucketName) {
+        Preconditions.checkState(dvObject instanceof Dataset || dvObject instanceof DataFile,
+                "StorageIO: Unsupported DvObject type: " + dvObject.getClass().getName());
 
-    private AmazonS3 s3 = null;
+        if (dvObject instanceof DataFile) {
+            return S3_STORAGE_IDENTIFIER_PREFIX + defaultBucketName + ":" + FileUtil.generateStorageIdentifier();
+        } else {
+            Dataset dataset = (Dataset) dvObject;
+            return S3_STORAGE_IDENTIFIER_PREFIX + dataset.getAuthority() + "/" + dataset.getIdentifier();
+        }
+    }
 
-
-    private String bucketName = System.getProperty("dataverse.files.s3-bucket-name");
-    private String key;
-
+    
     @Override
     public void open(DataAccessOption... options) throws IOException {
-
-        try {
-            if (bucketName == null || !s3.doesBucketExist(bucketName)) {
-                throw new IOException("ERROR: S3AccessIO - You must create and configure a bucket before creating datasets.");
-            }
-        } catch (SdkClientException sce) {
-            throw new IOException("ERROR: S3AccessIO - Failed to look up bucket " + bucketName + " (is AWS properly configured?)");
-        }
 
         if (isWriteAccessRequested(options)) {
             isWriteAccess = true;
@@ -118,16 +126,12 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
 
         if (dvObject instanceof DataFile) {
-            String storageIdentifier = dvObject.getStorageIdentifier();
 
-            DataFile dataFile = this.getDataFile();
+            DataFile dataFile = (DataFile)dvObject;
 
-            if (storageIdentifier == null || "".equals(storageIdentifier)) {
-                throw new FileNotFoundException("Data Access: No local storage identifier defined for this datafile.");
-            }
+            key = getMainFileKey();
 
             if (isReadAccess) {
-                key = getMainFileKey();
 
                 if (dataFile.getContentType() != null
                         && dataFile.getContentType().equals("text/tab-separated-values")
@@ -140,33 +144,13 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
                     this.setVarHeader(varHeaderLine);
                 }
 
-            } else if (isWriteAccess) {
-                key = dataFile.getOwner().getAuthorityForFileStorage() + "/" + this.getDataFile().getOwner().getIdentifierForFileStorage();
-
-                if (storageIdentifier.startsWith(S3_IDENTIFIER_PREFIX + "://")) {
-                    key += "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);
-                } else {
-                    key += "/" + storageIdentifier;
-                    dvObject.setStorageIdentifier(S3_IDENTIFIER_PREFIX + "://" + bucketName + ":" + storageIdentifier);
-                }
-
-            }
-
-            this.setMimeType(dataFile.getContentType());
-
-            try {
-                this.setFileName(dataFile.getFileMetadata().getLabel());
-            } catch (Exception ex) {
-                this.setFileName("unknown");
             }
         } else if (dvObject instanceof Dataset) {
-            Dataset dataset = this.getDataset();
-            key = dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage();
-            dataset.setStorageIdentifier(S3_IDENTIFIER_PREFIX + "://" + key);
+            key = dvObject.getStorageIdentifier().substring(S3_STORAGE_IDENTIFIER_PREFIX.length());
         } else if (dvObject instanceof Dataverse) {
             throw new IOException("Data Access: Storage driver does not support dvObject type Dataverse yet");
         } else {
-            throw new IOException("Data Access: Invalid DvObject type");
+            throw new IOException("Data Access: Usupported DvObject type");
         }
     }
 
@@ -470,14 +454,11 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     //TODO: Do we need this? - Answer: yes! 
     @Override
-    public String getStorageLocation() throws IOException {
+    public String getStorageLocation() {
+        Preconditions.checkState(dvObject instanceof DataFile, "getStorageLocation() is supported only for datafiles");
         String locationKey = getMainFileKey();
 
-        if (locationKey == null) {
-            throw new IOException("Failed to obtain the S3 key for the file");
-        }
-
-        return S3_IDENTIFIER_PREFIX + "://" + bucketName + "/" + locationKey;
+        return S3_STORAGE_IDENTIFIER_PREFIX + bucketName + "/" + locationKey;
     }
 
     @Override
@@ -584,25 +565,17 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
      * @return Main File Key
      * @throws IOException
      */
-    String getMainFileKey() throws IOException {
+    String getMainFileKey() {
         if (key == null) {
             // TODO: (?) - should we worry here about the datafile having null for the owner here? 
             // or about the owner dataset having null for the authority and/or identifier?
             // we should probably check for that and throw an exception. (unless we are 
             // super positive that this condition would have been intercepted by now)
-            String baseKey = this.getDataFile().getOwner().getAuthorityForFileStorage() + "/" + this.getDataFile().getOwner().getIdentifierForFileStorage();
+            String baseKey = dvObject.getOwner().getStorageIdentifier().substring(S3_STORAGE_IDENTIFIER_PREFIX.length());
             String storageIdentifier = dvObject.getStorageIdentifier();
 
-            if (storageIdentifier == null || "".equals(storageIdentifier)) {
-                throw new FileNotFoundException("Data Access: No local storage identifier defined for this datafile.");
-            }
-
-            if (storageIdentifier.startsWith(S3_IDENTIFIER_PREFIX + "://")) {
-                bucketName = storageIdentifier.substring((S3_IDENTIFIER_PREFIX + "://").length(), storageIdentifier.lastIndexOf(":"));
-                key = baseKey + "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);
-            } else {
-                throw new IOException("S3AccessIO: DataFile (storage identifier " + storageIdentifier + ") does not appear to be an S3 object.");
-            }
+            bucketName = storageIdentifier.substring(S3_STORAGE_IDENTIFIER_PREFIX.length(), storageIdentifier.lastIndexOf(":"));
+            key = baseKey + "/" + storageIdentifier.substring(storageIdentifier.lastIndexOf(":") + 1);
         }
 
         return key;
@@ -614,9 +587,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         // A. Yes! Since the URL has a limited, short life span. -- L.A. 
         // Q. how long should the download url work?
         // A. 1 hour by default seems like an OK number. Making it configurable seems like a good idea too. -- L.A.
-        if (s3 == null) {
-            throw new IOException("ERROR: s3 not initialised. ");
-        }
+
         if (dvObject instanceof DataFile) {
             key = getMainFileKey();
             java.util.Date expiration = new java.util.Date();
@@ -635,14 +606,14 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             // Most browsers are happy with just "filename="+URLEncoder.encode(this.getDataFile().getDisplayName(), "UTF-8") 
             // in the header. But Firefox appears to require that "UTF8" is 
             // specified explicitly, as below:
-            responseHeaders.setContentDisposition("attachment; filename*=UTF-8''" + URLEncoder.encode(this.getDataFile().getDisplayName(), "UTF-8"));
+            responseHeaders.setContentDisposition("attachment; filename*=UTF-8''" + URLEncoder.encode(this.getFileName(), "UTF-8"));
             // - without it, download will work, but Firefox will leave the special
             // characters in the file name encoded. For example, the file name 
             // will look like "1976%E2%80%932016.txt" instead of "1976–2016.txt", 
             // where the dash is the "long dash", represented by a 3-byte UTF8 
             // character "\xE2\x80\x93"
 
-            responseHeaders.setContentType(this.getDataFile().getContentType());
+            responseHeaders.setContentType(this.getMimeType());
             generatePresignedUrlRequest.setResponseHeaders(responseHeaders);
 
             URL s;
@@ -670,18 +641,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
     int getUrlExpirationMinutes() {
         String optionValue = System.getProperty("dataverse.files.s3-url-expiration-minutes");
-        if (optionValue != null) {
-            Integer num;
-            try {
-                num = new Integer(optionValue);
-            } catch (NumberFormatException ex) {
-                num = null;
-            }
-            if (num != null) {
-                return num;
-            }
-        }
-        return 60;
+        return NumberUtils.toInt(optionValue, 60);
     }
     
     
@@ -693,7 +653,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             } catch (DecoderException e) {
                 throw new IOException(e);
             }
-            Map<String, String> userMetadata = new HashMap<String, String>();
+            Map<String, String> userMetadata = new HashMap<>();
             userMetadata.put(MD5_METADATA_KEY, providedMD5Checksum);
             metadata.setUserMetadata(userMetadata);
         }

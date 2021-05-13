@@ -32,15 +32,14 @@ public class StoredOriginalFileTest {
     @DisplayName("Should retreive storage content as saved in aux file")
     public void retreive() throws IOException {
         // given
-        DataFile dataFile = createDataFileWithDataTable("text/csv", 1234L);
+        DataTable dataTable = createDataTable("text/csv", 1234L);
 
-        when(storageIO.getDataFile()).thenReturn(dataFile);
         when(storageIO.getFileName()).thenReturn("ingested.tab");
         when(storageIO.getAuxFileAsInputStream(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION))
                 .thenReturn(originalFileInputStream);
 
         // when
-        StorageIO<DataFile> originalFileStorageIO = StoredOriginalFile.retreive(storageIO);
+        StorageIO<DataFile> originalFileStorageIO = StoredOriginalFile.retreive(storageIO, dataTable);
 
         // then
         assertThat(originalFileStorageIO.getInputStream()).hasBinaryContent(originalFileBytes);
@@ -50,15 +49,14 @@ public class StoredOriginalFileTest {
     @DisplayName("Should retreive storage with assigned size from DataTable original size")
     public void retreive_file_size() throws IOException {
         // given
-        DataFile dataFile = createDataFileWithDataTable("text/csv", 1234L);
+        DataTable dataTable = createDataTable("text/csv", 1234L);
 
-        when(storageIO.getDataFile()).thenReturn(dataFile);
         when(storageIO.getFileName()).thenReturn("ingested.tab");
         when(storageIO.getAuxFileAsInputStream(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION))
                 .thenReturn(originalFileInputStream);
 
         // when
-        StorageIO<DataFile> originalFileStorageIO = StoredOriginalFile.retreive(storageIO);
+        StorageIO<DataFile> originalFileStorageIO = StoredOriginalFile.retreive(storageIO, dataTable);
 
         // then
         assertThat(originalFileStorageIO.getSize()).isEqualTo(1234);
@@ -68,9 +66,8 @@ public class StoredOriginalFileTest {
     @DisplayName("Should retrive storage with assigned size from aux file size as fallback")
     public void retreive_file_size_fallback() throws IOException {
         // given
-        DataFile dataFile = createDataFileWithDataTable("text/csv", null);
+        DataTable dataTable = createDataTable("text/csv", null);
 
-        when(storageIO.getDataFile()).thenReturn(dataFile);
         when(storageIO.getFileName()).thenReturn("ingested.tab");
         when(storageIO.getAuxFileAsInputStream(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION))
                 .thenReturn(originalFileInputStream);
@@ -78,7 +75,7 @@ public class StoredOriginalFileTest {
                 .thenReturn(5555L);
 
         // when
-        StorageIO<DataFile> originalFileStorageIO = StoredOriginalFile.retreive(storageIO);
+        StorageIO<DataFile> originalFileStorageIO = StoredOriginalFile.retreive(storageIO, dataTable);
 
         // then
         assertThat(originalFileStorageIO.getSize()).isEqualTo(5555);
@@ -92,15 +89,14 @@ public class StoredOriginalFileTest {
         ", application/x-unknown"})
     public void retreive_mime_type(String originalFileMimeType, String expectedFileMimeType) throws IOException {
         // given
-        DataFile dataFile = createDataFileWithDataTable(originalFileMimeType, 1234L);
+        DataTable dataTable = createDataTable(originalFileMimeType, 1234L);
 
-        when(storageIO.getDataFile()).thenReturn(dataFile);
         when(storageIO.getFileName()).thenReturn("ingested.tab");
         when(storageIO.getAuxFileAsInputStream(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION))
                 .thenReturn(originalFileInputStream);
 
         // when
-        StorageIO<DataFile> originalFileStorageIO = StoredOriginalFile.retreive(storageIO);
+        StorageIO<DataFile> originalFileStorageIO = StoredOriginalFile.retreive(storageIO, dataTable);
 
         // then
         assertThat(originalFileStorageIO.getMimeType()).isEqualTo(expectedFileMimeType);
@@ -122,15 +118,14 @@ public class StoredOriginalFileTest {
         "ingested.tab, , ingested",})
     public void retreive_filename(String fileName, String originalFileMimeType, String expectedFileName) throws IOException {
         // given
-        DataFile dataFile = createDataFileWithDataTable(originalFileMimeType, 1234L);
+        DataTable dataTable = createDataTable(originalFileMimeType, 1234L);
 
-        when(storageIO.getDataFile()).thenReturn(dataFile);
         when(storageIO.getFileName()).thenReturn(fileName);
         when(storageIO.getAuxFileAsInputStream(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION))
                 .thenReturn(originalFileInputStream);
 
         // when
-        StorageIO<DataFile> originalFileStorageIO = StoredOriginalFile.retreive(storageIO);
+        StorageIO<DataFile> originalFileStorageIO = StoredOriginalFile.retreive(storageIO, dataTable);
 
         // then
         assertThat(originalFileStorageIO.getFileName()).isEqualTo(expectedFileName);
@@ -138,14 +133,10 @@ public class StoredOriginalFileTest {
 
     // -------------------- PRIVATE --------------------
 
-    private DataFile createDataFileWithDataTable(String originalFileFormat, Long originalFileSize) {
-        DataFile dataFile = new DataFile();
-
+    private DataTable createDataTable(String originalFileFormat, Long originalFileSize) {
         DataTable dataTable = new DataTable();
         dataTable.setOriginalFileFormat(originalFileFormat);
         dataTable.setOriginalFileSize(originalFileSize);
-        dataFile.setDataTable(dataTable);
-
-        return dataFile;
+        return dataTable;
     }
 }

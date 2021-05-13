@@ -86,7 +86,7 @@ public class DataFileZipper {
 
         Boolean gotOriginal = false;
         if (getOriginal) {
-            StorageIO<DataFile> tempAccessObject = StoredOriginalFile.retreive(accessObject);
+            StorageIO<DataFile> tempAccessObject = StoredOriginalFile.retreive(accessObject, dataFile.getDataTable());
             if (null != tempAccessObject) { //If there is an original, use it
                 gotOriginal = true;
                 accessObject = tempAccessObject;

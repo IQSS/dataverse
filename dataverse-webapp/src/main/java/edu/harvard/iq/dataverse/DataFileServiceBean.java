@@ -29,6 +29,7 @@ import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.io.FileUtils;
@@ -545,32 +546,6 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
 
     /*moving to the fileutil*/
-
-    public void generateStorageIdentifier(DataFile dataFile) {
-        dataFile.setStorageIdentifier(generateStorageIdentifier());
-    }
-
-    private String generateStorageIdentifier() {
-
-        UUID uid = UUID.randomUUID();
-
-        logger.info("UUID value: {0}", uid.toString());
-
-        // last 6 bytes, of the random UUID, in hex:
-
-        String hexRandom = uid.toString().substring(24);
-
-        logger.info("UUID (last 6 bytes, 12 hex digits): {0}", hexRandom);
-
-        String hexTimestamp = Long.toHexString(new Date().getTime());
-
-        logger.info("(not UUID) timestamp in hex: {0}", hexTimestamp);
-
-        String storageIdentifier = hexTimestamp + "-" + hexRandom;
-
-        logger.info("timestamp/UUID hybrid: {0}", storageIdentifier);
-        return storageIdentifier;
-    }
 
     public boolean isSpssPorFile(DataFile file) {
         return (file != null) && ApplicationMimeType.SPSS_POR.getMimeValue().equalsIgnoreCase(file.getContentType());
@@ -1663,7 +1638,7 @@ public class DataFileServiceBean implements java.io.Serializable {
             version.getDataset().getFiles().add(datafile);
         }
 
-        generateStorageIdentifier(datafile);
+        datafile.setStorageIdentifier(FileUtil.generateStorageIdentifier());
         if (!tempFile.renameTo(new File(getFilesTempDirectory() + "/" + datafile.getStorageIdentifier()))) {
             return null;
         }

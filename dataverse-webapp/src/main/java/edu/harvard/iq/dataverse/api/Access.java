@@ -689,18 +689,13 @@ public class Access extends AbstractApiBean {
         StorageIO<DataFile> thumbnailDataAccess = null;
 
         try {
-            StorageIO<DataFile> dataAccess = DataAccess.dataAccess().getStorageIO(df);
-            if (dataAccess != null) { // && dataAccess.isLocalFile()) {
-                dataAccess.open();
+            if ("application/pdf".equalsIgnoreCase(df.getContentType())
+                    || df.isImage()
+                    || "application/zipped-shapefile".equalsIgnoreCase(df.getContentType())) {
 
-                if ("application/pdf".equalsIgnoreCase(df.getContentType())
-                        || df.isImage()
-                        || "application/zipped-shapefile".equalsIgnoreCase(df.getContentType())) {
-
-                    thumbnailDataAccess = imageThumbConverter.getImageThumbnailAsInputStream(dataAccess, 48);
-                    if (thumbnailDataAccess != null && thumbnailDataAccess.getInputStream() != null) {
-                        return thumbnailDataAccess.getInputStream();
-                    }
+                thumbnailDataAccess = imageThumbConverter.getImageThumbnailAsInputStream(df, 48);
+                if (thumbnailDataAccess != null && thumbnailDataAccess.getInputStream() != null) {
+                    return thumbnailDataAccess.getInputStream();
                 }
             }
         } catch (IOException ioEx) {
@@ -736,11 +731,7 @@ public class Access extends AbstractApiBean {
             if (logoDataFile != null) {
 
                 try {
-                    StorageIO<DataFile> dataAccess = DataAccess.dataAccess().getStorageIO(logoDataFile);
-                    if (dataAccess != null) { // && dataAccess.isLocalFile()) {
-                        dataAccess.open();
-                        thumbnailDataAccess = imageThumbConverter.getImageThumbnailAsInputStream(dataAccess, 48);
-                    }
+                    thumbnailDataAccess = imageThumbConverter.getImageThumbnailAsInputStream(logoDataFile, 48);
                     if (thumbnailDataAccess != null && thumbnailDataAccess.getInputStream() != null) {
                         return thumbnailDataAccess.getInputStream();
                     }

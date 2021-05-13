@@ -66,10 +66,11 @@ public class SolrSearchResultsService {
     private static final int DATAFILES_QUERY_DATASET_ID = 13;
     private static final int DATAFILES_QUERY_DATASET_IDENTIFIER = 14;
     private static final int DATAFILES_QUERY_DATASET_AUTHORITY = 15;
-    private static final int DATAFILES_QUERY_DATATABLE_ID = 16;
-    private static final int DATAFILES_QUERY_DATATABLE_UNF = 17;
-    private static final int DATAFILES_QUERY_DATATABLE_CASEQUANTITY = 18;
-    private static final int DATAFILES_QUERY_DATATABLE_VARQUANTITY = 19;
+    private static final int DATAFILES_QUERY_DATASET_STORAGEIDENTIFIER = 16;
+    private static final int DATAFILES_QUERY_DATATABLE_ID = 17;
+    private static final int DATAFILES_QUERY_DATATABLE_UNF = 18;
+    private static final int DATAFILES_QUERY_DATATABLE_CASEQUANTITY = 19;
+    private static final int DATAFILES_QUERY_DATATABLE_VARQUANTITY = 20;
 
     private static final String DATAFILETAGS_QUERY_BASE_NAME = "DataFileTag.findData";
 
@@ -295,6 +296,7 @@ public class SolrSearchResultsService {
         }
         setIfNotNull((String) fileData[DATAFILES_QUERY_DATASET_AUTHORITY], owner::setAuthority);
         setIfNotNull((String) fileData[DATAFILES_QUERY_DATASET_IDENTIFIER], owner::setIdentifier);
+        setIfNotNull((String) fileData[DATAFILES_QUERY_DATASET_STORAGEIDENTIFIER], owner::setStorageIdentifier);
         dataFile.setOwner(owner);
         return dataFile;
     }

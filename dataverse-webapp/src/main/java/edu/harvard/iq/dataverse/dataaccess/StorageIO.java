@@ -21,11 +21,12 @@
 package edu.harvard.iq.dataverse.dataaccess;
 
 
+import com.google.common.base.Preconditions;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
-import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,15 +45,43 @@ import java.util.List;
 
 public abstract class StorageIO<T extends DvObject> {
 
+    private InputStream in;
+    private OutputStream out;
+    protected Channel channel;
+    protected DvObject dvObject;
+
+    protected String mimeType;
+    protected String fileName;
+    private String varHeader;
+
+    private boolean isLocalFile = false;
+    private boolean noVarHeader = false;
+
     public StorageIO() {
 
     }
 
     public StorageIO(T dvObject) {
+        Preconditions.checkState(dvObject instanceof Dataset || dvObject instanceof DataFile,
+                "StorageIO: Unsupported DvObject type: " + dvObject.getClass().getName());
+        Preconditions.checkState(StringUtils.isNotEmpty(dvObject.getStorageIdentifier()),
+                "StorageIO: No local storage identifier defined for this dvobject.");
+
         this.dvObject = dvObject;
+
+        if (dvObject instanceof DataFile) {
+            DataFile datafile = (DataFile)dvObject;
+
+            this.mimeType = datafile.getContentType();
+
+            try {
+                this.fileName = datafile.getLatestFileMetadata().getLabel();
+            } catch (Exception ex) {
+                this.fileName = "unknown";
+            }
+        }
     }
-
-
+    
     // Abstract methods to be implemented by the storage drivers:
 
     public abstract void open(DataAccessOption... option) throws IOException;
@@ -68,7 +97,7 @@ public abstract class StorageIO<T extends DvObject> {
         return isWriteAccess;
     }
 
-    public abstract String getStorageLocation() throws IOException;
+    public abstract String getStorageLocation();
 
     // This method will return a Path, if the storage method is a 
     // local filesystem. Otherwise should throw an IOException. 
@@ -144,18 +173,6 @@ public abstract class StorageIO<T extends DvObject> {
 
     public abstract String getAuxObjectMD5(String auxItemTag) throws IOException;
 
-    private InputStream in;
-    private OutputStream out;
-    protected Channel channel;
-    protected DvObject dvObject;
-
-    private String mimeType;
-    private String fileName;
-    private String varHeader;
-
-    private boolean isLocalFile = false;
-    private boolean noVarHeader = false;
-
     // getters:
 
     public Channel getChannel() throws IOException {
@@ -168,22 +185,6 @@ public abstract class StorageIO<T extends DvObject> {
         }
 
         return (ReadableByteChannel) channel;
-    }
-
-    public DvObject getDvObject() {
-        return dvObject;
-    }
-
-    public DataFile getDataFile() {
-        return (DataFile) dvObject;
-    }
-
-    public Dataset getDataset() {
-        return (Dataset) dvObject;
-    }
-
-    public Dataverse getDataverse() {
-        return (Dataverse) dvObject;
     }
 
     public InputStream getInputStream() throws IOException {
@@ -242,14 +243,6 @@ public abstract class StorageIO<T extends DvObject> {
 
     public void setChannel(Channel c) {
         channel = c;
-    }
-
-    public void setMimeType(String mt) {
-        mimeType = mt;
-    }
-
-    public void setFileName(String fn) {
-        fileName = fn;
     }
 
     public void setVarHeader(String vh) {

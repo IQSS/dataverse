@@ -8,7 +8,6 @@ package edu.harvard.iq.dataverse;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
@@ -18,12 +17,13 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.common.files.mime.PackageMimeType;
+import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
+import edu.harvard.iq.dataverse.dataaccess.S3ClientFactory;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.FileUtil;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -51,27 +51,21 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
 
     private static final Logger logger = Logger.getLogger(S3PackageImporter.class.getName());
 
-    private AmazonS3 s3 = null;
-
     @EJB
     DataFileServiceBean dataFileServiceBean;
 
     @EJB
     EjbDataverseEngine commandEngine;
 
+    private S3ClientFactory s3ClientFactory = new S3ClientFactory();
+
     //Copies from another s3 bucket to our own
     public void copyFromS3(Dataset dataset, String s3ImportPath) throws IOException {
-        try {
-            s3 = AmazonS3ClientBuilder.standard().defaultClient();
-        } catch (Exception e) {
-            throw new AmazonClientException(
-                    "Cannot instantiate a S3 client using; check your AWS credentials and region",
-                    e);
-        }
+        AmazonS3 s3 = s3ClientFactory.getClient();
 
         String dcmBucketName = System.getProperty("dataverse.files.dcm-s3-bucket-name");
         String dcmDatasetKey = s3ImportPath;
-        String dvBucketName = System.getProperty("dataverse.files.s3-bucket-name");
+        String dvBucketName = s3ClientFactory.getDefaultBucketName();
 
         String dvDatasetKey = getS3DatasetKey(dataset);
 
@@ -133,13 +127,14 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
     }
 
     public DataFile createPackageDataFile(Dataset dataset, String folderName, long totalSize) throws IOException {
+        AmazonS3 s3 = s3ClientFactory.getClient();
         DataFile packageFile = new DataFile(PackageMimeType.DATAVERSE_PACKAGE.getMimeValue());
         packageFile.setChecksumType(DataFile.ChecksumType.SHA1);
 
         //This is a brittle calculation, changes of the dcm post_upload script will blow this up
         String rootPackageName = "package_" + folderName.replace("/", "");
 
-        String dvBucketName = System.getProperty("dataverse.files.s3-bucket-name");
+        String dvBucketName = s3ClientFactory.getDefaultBucketName();
         String dvDatasetKey = getS3DatasetKey(dataset);
 
         //getting the name of the .sha file via substring, ${packageName}.sha
@@ -209,7 +204,7 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
         dataset.getLatestVersion().addFileMetadata(fmd);
         fmd.setDatasetVersion(dataset.getLatestVersion());
 
-        FileUtil.generateS3PackageStorageIdentifier(packageFile);
+        generateS3PackageStorageIdentifier(packageFile, s3ClientFactory.getDefaultBucketName());
 
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(packageFile.getProtocol(), commandEngine.getContext());
         if (packageFile.getIdentifier() == null || packageFile.getIdentifier().isEmpty()) {
@@ -246,7 +241,12 @@ public class S3PackageImporter extends AbstractApiBean implements java.io.Serial
         return packageFile;
     }
 
-    public String getS3DatasetKey(Dataset dataset) {
+    private String getS3DatasetKey(Dataset dataset) {
         return dataset.getAuthority() + "/" + dataset.getIdentifier();
+    }
+    
+    private void generateS3PackageStorageIdentifier(DataFile dataFile, String defaultBucketName) {
+        String storageId = S3AccessIO.S3_STORAGE_IDENTIFIER_PREFIX + defaultBucketName + ":" + dataFile.getFileMetadata().getLabel();
+        dataFile.setStorageIdentifier(storageId);
     }
 }

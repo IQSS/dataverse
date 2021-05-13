@@ -97,13 +97,9 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         }
         if (theDataset.getStorageIdentifier() == null) {
             try {
-                ctxt.dataAccess().createNewStorageIO(theDataset, "placeholder");
+                ctxt.dataAccess().createNewStorageIO(theDataset);
             } catch (IOException ioex) {
-                // if setting the storage identifier through createNewStorageIO fails, dataset creation
-                // does not have to fail. we just set the storage id to a default -SF
-                String storageDriver = (System.getProperty("dataverse.files.storage-driver-id") != null) ? System.getProperty("dataverse.files.storage-driver-id") : "file";
-                theDataset.setStorageIdentifier(storageDriver + "://" + theDataset.getGlobalId().asString());
-                logger.log(Level.INFO, "Failed to create StorageIO. StorageIdentifier set to default. Not fatal.({0})", ioex.getMessage());
+                throw new CommandExecutionException("Dataset storage could not be created", ioex, this);
             }
         }
         if (theDataset.getIdentifier() == null) {

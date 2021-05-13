@@ -222,7 +222,7 @@ public class FileRecordWriter extends AbstractItemWriter {
      */
     private DataFile createPackageDataFile(List<File> files) {
         DataFile packageFile = new DataFile(PackageMimeType.DATAVERSE_PACKAGE.getMimeValue());
-        FileUtil.generateStorageIdentifier(packageFile);
+        packageFile.setStorageIdentifier(FileUtil.generateStorageIdentifier());
 
         String datasetDirectory = null;
         String folderName = null;
