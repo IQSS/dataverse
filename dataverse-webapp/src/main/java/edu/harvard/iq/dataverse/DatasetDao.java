@@ -131,7 +131,7 @@ public class DatasetDao implements java.io.Serializable {
     public Dataset merge(Dataset ds) {
         return em.merge(ds);
     }
-    
+
     public Dataset mergeAndFlush(Dataset ds) {
         Dataset merged = em.merge(ds);
         em.flush();
@@ -179,7 +179,7 @@ public class DatasetDao implements java.io.Serializable {
             StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierAsSequentialNumber");
             query.execute();
             Integer identifierNumeric = (Integer) query.getOutputParameterValue(1);
-            // some diagnostics here maybe - is it possible to determine that it's failing 
+            // some diagnostics here maybe - is it possible to determine that it's failing
             // because the stored procedure hasn't been created in the database?
             if (identifierNumeric == null) {
                 return null;
@@ -323,10 +323,10 @@ public class DatasetDao implements java.io.Serializable {
                     });
         }
     }
-    
+
     /*
     getTitleFromLatestVersion methods use native query to return a dataset title
-    
+
         There are two versions:
      1) The version with datasetId param only will return the title regardless of version state
      2)The version with the param 'includeDraft' boolean  will return the most recently published title if the param is set to false
@@ -485,7 +485,7 @@ public class DatasetDao implements java.io.Serializable {
         try {
             em.createNativeQuery("UPDATE dataset SET thumbnailfile_id=" + dataFile.getId() + " WHERE id=" + dataset.getId()).executeUpdate();
         } catch (Exception ex) {
-            // it's ok to just ignore... 
+            // it's ok to just ignore...
         }
     }
 
@@ -497,10 +497,10 @@ public class DatasetDao implements java.io.Serializable {
     @Asynchronous
     public void callFinalizePublishCommandAsynchronously(Long datasetId, CommandContext ctxt, DataverseRequest request, boolean isPidPrePublished)  {
 
-        // Since we are calling the next command asynchronously anyway - sleep here 
-        // for a few seconds, just in case, to make sure the database update of 
-        // the dataset initiated by the PublishDatasetCommand has finished, 
-        // to avoid any concurrency/optimistic lock issues. 
+        // Since we are calling the next command asynchronously anyway - sleep here
+        // for a few seconds, just in case, to make sure the database update of
+        // the dataset initiated by the PublishDatasetCommand has finished,
+        // to avoid any concurrency/optimistic lock issues.
         try {
             Thread.sleep(15000);
         } catch (Exception ex) {

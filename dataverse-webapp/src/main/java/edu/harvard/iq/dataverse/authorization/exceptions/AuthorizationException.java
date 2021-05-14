@@ -5,6 +5,7 @@ package edu.harvard.iq.dataverse.authorization.exceptions;
  *
  * @author michael
  */
+
 public class AuthorizationException extends Exception {
 
     public AuthorizationException(String message) {

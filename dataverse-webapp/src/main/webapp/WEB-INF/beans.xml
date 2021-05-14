@@ -4,6 +4,7 @@
        xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
     <interceptors>
         <class>edu.harvard.iq.dataverse.interceptors.LoggedCallInterceptor</class>
+        <class>edu.harvard.iq.dataverse.interceptors.SuperuserRequiredInterceptor</class>
         <class>edu.harvard.iq.dataverse.interceptors.RestrictedInterceptor</class>
     </interceptors>
 </beans>

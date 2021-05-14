@@ -13,6 +13,7 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,7 +27,7 @@ public class DatasetDeaccessionService {
     private IndexServiceBean indexService;
 
     // -------------------- LOGIC --------------------
-    
+
     @LoggedCall
     @Restricted(@PermissionNeeded(needs = {Permission.PublishDataset}))
     public List<DatasetVersion> deaccessVersions(
@@ -55,6 +56,7 @@ public class DatasetDeaccessionService {
         deaccessionVersion.setVersionNote(deaccessionReason);
         deaccessionVersion.setArchiveNote(deaccessionForwardURLFor);
         deaccessionVersion.setVersionState(DatasetVersion.VersionState.DEACCESSIONED);
+        deaccessionVersion.setLastUpdateTime(new Date());
         DatasetVersion merged = em.merge(deaccessionVersion);
 
         Dataset dataset = merged.getDataset();

@@ -514,7 +514,6 @@
             <artifactId>jhove-ext-modules</artifactId>
             <version>${jhove.version}</version>
         </dependency>
-
         <!-- EXPERIMENTAL: -->
         <!-- lyncode xoai OAI-PMH implementation: -->
         <!-- unfortunately, their 4.10 version -->
