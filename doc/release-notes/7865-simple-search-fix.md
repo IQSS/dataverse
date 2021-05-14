@@ -16,6 +16,6 @@ In existing schema.xml files, this section currently includes only one line:
 `<xi:include href="schema_dv_mdb_copies.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />`.
 
 In this release, that line has already been replaced with the default set of `<copyFields>`. 
-It doesn't matter whether schema_dv_mdb_copies.xml was originally created manually or via the recommended updateSchemaMDB.sh script and this fix will work with all prior versions of Dataverse from v4.17 on. 
+It doesn't matter whether schema_dv_mdb_copies.xml was originally created manually or via the recommended updateSchemaMDB.sh script and this fix will work with all prior versions of Dataverse from v4.17 on. If you make further changes to metadata blocks in your installation, you can repeat this process (i.e. run updateSchemaMDB.sh, copy the entries in schema_dv_mdb_copies.xml into the same section of schema.xml, restart solr, and reindex.)
 
 Once schema.xml is updated, solr should be restarted and a ['Reindex in Place'](https://guides.dataverse.org/en/latest/admin/solr-search-index.html#reindex-in-place) will be required. (Future Dataverse versions will avoid this manual copy step.)
