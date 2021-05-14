@@ -191,17 +191,6 @@ public class HarvestingClient implements Serializable {
         this.archiveUrl = archiveUrl;
     }
 
-    @Column(columnDefinition = "TEXT")
-    private String archiveDescription;
-
-    public String getArchiveDescription() {
-        return this.archiveDescription;
-    }
-
-    public void setArchiveDescription(String archiveDescription) {
-        this.archiveDescription = archiveDescription;
-    }
-
     private String harvestingSet;
 
     public String getHarvestingSet() {

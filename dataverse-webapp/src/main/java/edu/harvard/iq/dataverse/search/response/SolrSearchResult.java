@@ -113,7 +113,6 @@ public class SolrSearchResult {
     private List<String> userRole;
     private boolean harvested = false;
     private String dvTree;
-    private String harvestingDescription = null;
     private List<String> fileCategories = null;
     private List<String> tabularDataTags = null;
 
@@ -145,23 +144,6 @@ public class SolrSearchResult {
     public void setHarvested(boolean harvested) {
         this.harvested = harvested;
     }
-
-    public String getHarvestingDescription() {
-        //if (this.isHarvested()) {
-        return harvestingDescription;
-        //}
-        //return null;
-    }
-
-    public void setHarvestingDescription(String harvestingDescription) {
-        this.harvestingDescription = harvestingDescription;
-    }
-//    public boolean isStatePublished() {
-//        return statePublished;
-//    }
-//    public void setStatePublished(boolean statePublished) {
-//        this.statePublished = statePublished;
-//    }
 
     public boolean isPublishedState() {
         return publishedState;

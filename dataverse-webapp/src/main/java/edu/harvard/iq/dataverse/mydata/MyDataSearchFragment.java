@@ -486,31 +486,6 @@ public class MyDataSearchFragment implements java.io.Serializable {
 
         thumbnailServiceWrapper.resetObjectMaps();
 
-        // Now, make another pass, and add the remote archive descriptions to the
-        // harvested dataset and datafile cards (at the expense of one extra
-        // SQL query:
-
-        if (harvestedDatasetIds != null) {
-            Map<Long, String> descriptionsForHarvestedDatasets = datasetDao.getArchiveDescriptionsForHarvestedDatasets(harvestedDatasetIds);
-            if (descriptionsForHarvestedDatasets != null && descriptionsForHarvestedDatasets.size() > 0) {
-                for (SolrSearchResult result : searchResultsList) {
-                    if (result.isHarvested()) {
-                        if (result.getType() == SearchObjectType.FILES) {
-                            if (descriptionsForHarvestedDatasets.containsKey(result.getParentIdAsLong())) {
-                                result.setHarvestingDescription(descriptionsForHarvestedDatasets.get(result.getParentIdAsLong()));
-                            }
-                        } else if (result.getType() == SearchObjectType.DATASETS) {
-                            if (descriptionsForHarvestedDatasets.containsKey(result.getEntityId())) {
-                                result.setHarvestingDescription(descriptionsForHarvestedDatasets.get(result.getEntityId()));
-                            }
-                        }
-                    }
-                }
-            }
-            descriptionsForHarvestedDatasets = null;
-            harvestedDatasetIds = null;
-        }
-
         // determine which of the objects are linked:
 
         if (!this.isRootDv()) {

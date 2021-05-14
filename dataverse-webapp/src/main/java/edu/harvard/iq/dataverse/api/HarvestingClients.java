@@ -304,7 +304,6 @@ public class HarvestingClients extends AbstractApiBean {
                 add("type", harvestingConfig.getHarvestType()).
                 add("harvestUrl", harvestingConfig.getHarvestingUrl()).
                 add("archiveUrl", harvestingConfig.getArchiveUrl()).
-                add("archiveDescription", harvestingConfig.getArchiveDescription()).
                 add("metadataFormat", harvestingConfig.getMetadataPrefix()).
                 add("set", harvestingConfig.getHarvestingSet() == null ? "N/A" : harvestingConfig.getHarvestingSet()).
                 add("schedule", harvestingConfig.isScheduled() ? harvestingConfig.getScheduleDescription() : "none").

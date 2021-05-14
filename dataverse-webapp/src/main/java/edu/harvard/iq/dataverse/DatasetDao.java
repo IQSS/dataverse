@@ -19,7 +19,6 @@ import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowComment;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.apache.commons.lang.RandomStringUtils;
-import org.ocpsoft.common.util.Strings;
 
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
@@ -36,11 +35,8 @@ import javax.persistence.TypedQuery;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -386,53 +382,6 @@ public class DatasetDao implements java.io.Serializable {
 
 
         return null;
-    }
-
-    /**
-     * Used to identify and properly display Harvested objects on the dataverse page.
-     *
-     * @param datasetIds
-     * @return
-     */
-    public Map<Long, String> getArchiveDescriptionsForHarvestedDatasets(Set<Long> datasetIds) {
-        if (datasetIds == null || datasetIds.size() < 1) {
-            return null;
-        }
-
-        String datasetIdStr = Strings.join(datasetIds, ", ");
-
-        String qstr = "SELECT d.id, h.archiveDescription FROM harvestingClient h, dataset d WHERE d.harvestingClient_id = h.id AND d.id IN (" + datasetIdStr + ")";
-        List<Object[]> searchResults;
-
-        try {
-            searchResults = em.createNativeQuery(qstr).getResultList();
-        } catch (Exception ex) {
-            searchResults = null;
-        }
-
-        if (searchResults == null) {
-            return null;
-        }
-
-        Map<Long, String> ret = new HashMap<>();
-
-        for (Object[] result : searchResults) {
-            Long dsId;
-            if (result[0] != null) {
-                try {
-                    dsId = (Long) result[0];
-                } catch (Exception ex) {
-                    dsId = null;
-                }
-                if (dsId == null) {
-                    continue;
-                }
-
-                ret.put(dsId, (String) result[1]);
-            }
-        }
-
-        return ret;
     }
 
     public void updateLastExportTimeStamp(Long datasetId) {

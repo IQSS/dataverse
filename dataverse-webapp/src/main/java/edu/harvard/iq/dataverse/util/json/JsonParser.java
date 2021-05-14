@@ -793,7 +793,6 @@ public class JsonParser {
         harvestingClient.setHarvestType(obj.getString("type", null));
         harvestingClient.setHarvestingUrl(obj.getString("harvestUrl", null));
         harvestingClient.setArchiveUrl(obj.getString("archiveUrl", null));
-        harvestingClient.setArchiveDescription(obj.getString("archiveDescription"));
         harvestingClient.setMetadataPrefix(obj.getString("metadataFormat", null));
         harvestingClient.setHarvestingSet(obj.getString("set", null));
 

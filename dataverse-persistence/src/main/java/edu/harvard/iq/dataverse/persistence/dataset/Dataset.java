@@ -701,14 +701,6 @@ public class Dataset extends DvObjectContainer {
         return null;
     }
 
-    public String getHarvestingDescription() {
-        if (isHarvested()) {
-            return this.getHarvestedFrom().getArchiveDescription();
-        }
-
-        return null;
-    }
-
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set

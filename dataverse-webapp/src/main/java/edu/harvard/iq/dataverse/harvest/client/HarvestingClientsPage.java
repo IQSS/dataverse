@@ -344,8 +344,6 @@ public class HarvestingClientsPage implements java.io.Serializable {
         // archival sources, when harvested datasets are displayed in search results),
         // from the harvesting url:
         newHarvestingClient.setArchiveUrl(makeDefaultArchiveUrl());
-        // set default description - they can customize it as they see fit:
-        newHarvestingClient.setArchiveDescription(BundleUtil.getStringFromBundle("harvestclients.viewEditDialog.archiveDescription.default.generic"));
 
         Try.of(() -> harvestingClientsService.createHarvestingClient(newHarvestingClient))
                 .onSuccess(harvestingClient -> {

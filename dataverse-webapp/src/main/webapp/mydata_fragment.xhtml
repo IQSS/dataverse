@@ -507,8 +507,8 @@
                                 </ui:repeat>
                             </ui:repeat>
     
-                            <div jsf:rendered="#{result.harvested and !empty result.harvestingDescription}" class="text-muted small margin-top-half">
-                                <h:outputText value="#{result.harvestingDescription}"/>
+                            <div jsf:rendered="#{result.harvested}" class="text-muted small margin-top-half">
+                                <h:outputText value="#{bundle['result.harvested.description']}"/>
                             </div>
                         </div>
                     </div>
@@ -593,8 +593,8 @@
                                 </ui:repeat>
                             </div>
     
-                            <div jsf:rendered="#{result.harvested and !empty result.harvestingDescription}">
-                                <h:outputText value="#{result.harvestingDescription}" styleClass="text-muted" style="margin-right:.5em;"/>
+                            <div jsf:rendered="#{result.harvested}">
+                                <h:outputText value="#{bundle['result.harvested.description']}" styleClass="text-muted" style="margin-right:.5em;"/>
                             </div>
                         </div>
                     </div>
