@@ -71,7 +71,7 @@ public class CSVFileReader extends TabularDataFileReader {
     private static final String FORMAT_IEEE754 = "%+#." + DIGITS_OF_PRECISION_DOUBLE + "e";
     private MathContext doubleMathContext;
     private CSVFormat inFormat;
-    private final Set<Character> firstNumCharSet = new HashSet<>();
+    //private final Set<Character> firstNumCharSet = new HashSet<>();
 
     // DATE FORMATS
     private static SimpleDateFormat[] DATE_FORMATS = new SimpleDateFormat[]{
@@ -99,7 +99,7 @@ public class CSVFileReader extends TabularDataFileReader {
 
     private void init() throws IOException {
         doubleMathContext = new MathContext(DIGITS_OF_PRECISION_DOUBLE, RoundingMode.HALF_EVEN);
-        firstNumCharSet.addAll(Arrays.asList(new Character[]{'+', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}));
+        //firstNumCharSet.addAll(Arrays.asList(new Character[]{'+', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}));
     }
 
     /**
@@ -207,8 +207,7 @@ public class CSVFileReader extends TabularDataFileReader {
                                            && varString != null
                                            && (varString.isEmpty()
                                                || varString.equals("null")
-                                               || (firstNumCharSet.contains(varString.charAt(0))
-                                                   && StringUtils.isNumeric(varString.substring(1))));
+                                               || varString.matches("^[+-]?[0-9]+$"));
                     if (isNumericVariable[i]) {
                         // If variable might be "numeric" test to see if this value is a parsable number:
                         if (varString != null && !varString.isEmpty()) {
