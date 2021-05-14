@@ -10,10 +10,13 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.impl.ChangeUserIdentifierCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.GetUserTracesCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.MergeInAccountCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RevokeAllRolesCommand;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -189,6 +192,33 @@ public class Users extends AbstractApiBean {
             return ok(json(authenticatedUser));
         }
 
+    }
+
+    @POST
+    @Path("{identifier}/removeRoles")
+    public Response removeUserRoles(@PathParam("identifier") String identifier) {
+        try {
+            AuthenticatedUser userToModify = authSvc.getAuthenticatedUser(identifier);
+            if (userToModify == null) {
+                return error(Response.Status.BAD_REQUEST, "Cannot find user based on " + identifier + ".");
+            }
+            execCommand(new RevokeAllRolesCommand(userToModify, createDataverseRequest(findUserOrDie())));
+            return ok("Roles removed for user " + identifier + ".");
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
+    @GET
+    @Path("{identifier}/traces")
+    public Response getTraces(@PathParam("identifier") String identifier) {
+        try {
+            AuthenticatedUser userToQuery = authSvc.getAuthenticatedUser(identifier);
+            JsonObjectBuilder jsonObj = execCommand(new GetUserTracesCommand(createDataverseRequest(findUserOrDie()), userToQuery));
+            return ok(jsonObj);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
     }
 
 }
