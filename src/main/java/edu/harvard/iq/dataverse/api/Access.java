@@ -542,12 +542,11 @@ public class Access extends AbstractApiBean {
      * GET method for retrieving various auxiliary files associated with 
      * a tabular datafile.
      *
-     * TODO: Consider removing "metadata" from the path.
      */
     
-    @Path("datafile/{fileId}/metadata/{formatTag}/{formatVersion}")
+    @Path("datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}")
     @GET    
-    public DownloadInstance tabularDatafileMetadataAux(@PathParam("fileId") String fileId,
+    public DownloadInstance downloadAuxiliaryFile(@PathParam("fileId") String fileId,
             @PathParam("formatTag") String formatTag,
             @PathParam("formatVersion") String formatVersion,
             @QueryParam("key") String apiToken, 
@@ -571,6 +570,17 @@ public class Access extends AbstractApiBean {
         DownloadInstance downloadInstance;
         AuxiliaryFile auxFile = null;
         
+        /* 
+          The special case for "preprocessed" metadata should not be here at all. 
+          Access to the format should be handled by the /api/access/datafile/{id}?format=prep
+          form exclusively (this is what Data Explorer and Tworavens have been
+          using all along). We may have advertised /api/access/datafile/{id}/metadata/preprocessed
+          in the past - but it has been broken since 5.3 anyway, since the /{formatVersion}
+          element was added to the @Path. 
+          Now that the api method has been renamed /api/access/datafile/{id}/auxiliary/..., 
+          nobody should be using it to access the "preprocessed" format. 
+          Leaving the special case below commented-out, for now. - L.A.
+        
         // formatTag=preprocessed is handled as a special case. 
         // This is (as of now) the only aux. tabular metadata format that Dataverse
         // can generate (and cache) itself. (All the other formats served have 
@@ -582,21 +592,21 @@ public class Access extends AbstractApiBean {
             if (downloadInstance.checkIfServiceSupportedAndSetConverter("format", "prep")) {
                 logger.fine("Preprocessed data for tabular file "+fileId);
             }
-        } else {
-            // All other (deposited) formats:
-            auxFile = auxiliaryFileService.lookupAuxiliaryFile(df, formatTag, formatVersion);
-            
-            if (auxFile == null) {
-                throw new NotFoundException("Auxiliary metadata format "+formatTag+" is not available for datafile "+fileId);
-            }
+        } else { */
+        // All other (deposited) formats:
+        auxFile = auxiliaryFileService.lookupAuxiliaryFile(df, formatTag, formatVersion);
 
-            // Don't consider aux file public unless data file is published.
-            if (auxFile.getIsPublic() && df.getPublicationDate() != null) {
-                publiclyAvailable = true;
-            }
-            downloadInstance = new DownloadInstance(dInfo);
-            downloadInstance.setAuxiliaryFile(auxFile);
+        if (auxFile == null) {
+            throw new NotFoundException("Auxiliary metadata format " + formatTag + " is not available for datafile " + fileId);
         }
+
+        // Don't consider aux file public unless data file is published.
+        if (auxFile.getIsPublic() && df.getPublicationDate() != null) {
+            publiclyAvailable = true;
+        }
+        downloadInstance = new DownloadInstance(dInfo);
+        downloadInstance.setAuxiliaryFile(auxFile);
+        /*}*/
         
         // Unless this format is explicitly authorized to be publicly available, 
         // the following will check access authorization (based on the access rules
@@ -1206,9 +1216,8 @@ public class Access extends AbstractApiBean {
      * @param formDataBodyPart
      * @return 
      *
-     * TODO: Consider removing "metadata" from the path.
      */
-    @Path("datafile/{fileId}/metadata/{formatTag}/{formatVersion}")
+    @Path("datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}")
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
 
