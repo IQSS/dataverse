@@ -186,7 +186,9 @@ public class LinkToDataverseDialog implements java.io.Serializable {
 
 
         for (Dataverse selectDV : dataversesForLinking) {
-            linkingDVSelectItems.add(new SelectItem(selectDV.getId(), selectDV.getDisplayName()));
+            linkingDVSelectItems.add(new SelectItem(selectDV.getId(),
+                    selectDV.getDisplayName() + " (" + BundleUtil.getStringFromBundle("dataverse.alias")
+                            + ": " + selectDV.getAlias() + ")"));
         }
 
         if (dataversesForLinking.size() == 1 && dataversesForLinking.get(0) != null) {
