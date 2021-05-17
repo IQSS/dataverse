@@ -72,7 +72,7 @@ $(document).ready(function() {
       $("#" + selectId).select2(
         {
            theme : "bootstrap",
-           //tags : true,
+           tags : true,
            delay : 500,
            templateResult : function(item) {
              // No need to template the searching text
