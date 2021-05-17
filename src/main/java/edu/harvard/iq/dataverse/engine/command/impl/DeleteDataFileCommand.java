@@ -24,9 +24,6 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
-import edu.harvard.iq.dataverse.UserNotification;
-import java.sql.Timestamp;
-import java.util.Date;
 
 /**
  * Deletes a data file, both DB entity and filesystem object.
@@ -224,19 +221,6 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
          */
         // ctxt.em().flush();
 
-        /**
-         * We *could* re-index the entire dataset but it's more efficient to
-         * target individual files for deletion, which should always be drafts.
-         *
-         * See also https://redmine.hmdc.harvard.edu/issues/3786
-         */
-        String indexingResult = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + "_draft");
-        /**
-         * @todo check indexing result for success or failure. Really, we need
-         * an indexing queuing system:
-         * https://redmine.hmdc.harvard.edu/issues/3643
-         */
-
     }
     
     @Override 
@@ -249,4 +233,28 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         return sb.toString();
     }
 
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+        /**
+         * We *could* re-index the entire dataset but it's more efficient to
+         * target individual files for deletion, which should always be drafts.
+         *
+         * See also https://redmine.hmdc.harvard.edu/issues/3786
+         */
+        String indexingResult = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + IndexServiceBean.draftSuffix);
+        String indexingResult2 = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + IndexServiceBean.draftSuffix + IndexServiceBean.discoverabilityPermissionSuffix);
+        /**
+        * @todo: check indexing result for success or failure. This method 
+        * currently always returns true because the underlying methods 
+        * (already existing) handle exceptions and don't return a boolean value.
+        * Previously an indexing queuing system was proposed:
+        *  https://redmine.hmdc.harvard.edu/issues/3643
+        * but we are considering reworking the code such that methods throw
+        * indexing exception to callers that may need to handle effects such
+        * as on data integrity where related operations like database updates
+        * or deletes are expected to be coordinated with indexing operations
+        */
+
+        return true;
+    }
 }

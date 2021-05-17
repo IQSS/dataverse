@@ -63,6 +63,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -76,6 +77,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 
@@ -706,7 +708,15 @@ public abstract class AbstractApiBean {
     protected Response ok( JsonArrayBuilder bld ) {
         return Response.ok(Json.createObjectBuilder()
             .add("status", STATUS_OK)
-            .add("data", bld).build()).build();
+            .add("data", bld).build())
+            .type(MediaType.APPLICATION_JSON).build();
+    }
+    
+    protected Response ok( JsonArray ja ) {
+        return Response.ok(Json.createObjectBuilder()
+            .add("status", STATUS_OK)
+            .add("data", ja).build())
+            .type(MediaType.APPLICATION_JSON).build();
     }
 
     protected Response ok( JsonObjectBuilder bld ) {
@@ -715,6 +725,14 @@ public abstract class AbstractApiBean {
             .add("data", bld).build() )
             .type(MediaType.APPLICATION_JSON)
             .build();
+    }
+    
+    protected Response ok( JsonObject jo ) {
+        return Response.ok( Json.createObjectBuilder()
+                .add("status", STATUS_OK)
+                .add("data", jo).build() )
+                .type(MediaType.APPLICATION_JSON)
+                .build();    
     }
 
     protected Response ok( String msg ) {
@@ -743,10 +761,15 @@ public abstract class AbstractApiBean {
     /**
      * @param data Payload to return.
      * @param mediaType Non-JSON media type.
+     * @param downloadFilename - add Content-Disposition header to suggest filename if not null
      * @return Non-JSON response, such as a shell script.
      */
-    protected Response ok(String data, MediaType mediaType) {
-        return Response.ok().entity(data).type(mediaType).build();
+    protected Response ok(String data, MediaType mediaType, String downloadFilename) {
+        ResponseBuilder res =Response.ok().entity(data).type(mediaType);
+        if(downloadFilename != null) {
+            res = res.header("Content-Disposition", "attachment; filename=" + downloadFilename);
+        }
+        return res.build();
     }
 
     protected Response created( String uri, JsonObjectBuilder bld ) {
