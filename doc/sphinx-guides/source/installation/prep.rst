@@ -51,7 +51,7 @@ Required Components
 
 When planning your installation you should be aware of the following components of the Dataverse Software architecture:
 
-- Linux: RHEL/CentOS is highly recommended since all development and QA happens on this distribution.
+- Linux: RHEL or derivative is highly recommended since all development and QA happens on this distribution.
 - App server: Payara is the recommended Jakarta EE application server.
 - PostgreSQL: a relational database.
 - Solr: a search engine. A Dataverse Software-specific schema is provided.
