@@ -175,7 +175,7 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setAuthors(dataset.getLatestVersion().getDatasetAuthors());
         if (dvObject.isInstanceofDataset()) {
             //While getDescriptionPlainText strips < and > from HTML, it leaves '&' (at least so we need to xml escape as well
-            String description = StringEscapeUtils.escapeXml(dataset.getLatestVersion().getDescriptionPlainText());
+            String description = StringEscapeUtils.escapeXml10(dataset.getLatestVersion().getDescriptionPlainText());
             if (description.isEmpty() || description.equals(DatasetField.NA_VALUE)) {
                 description = AbstractGlobalIdServiceBean.UNAVAILABLE;
             }
