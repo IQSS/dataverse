@@ -59,6 +59,7 @@ import java.util.Base64;
 public class ImageThumbConverter {
     public static String THUMBNAIL_SUFFIX = "thumb";
     public static String THUMBNAIL_MIME_TYPE = "image/png";
+    public static String THUMBNAIL_FILE_EXTENSION = ".png";
 
     public static int DEFAULT_CARDIMAGE_SIZE = 48;
     public static int DEFAULT_THUMBNAIL_SIZE = 64;
@@ -158,7 +159,7 @@ public class ImageThumbConverter {
 
             String fileName = storageIO.getFileName();
             if (fileName != null) {
-                fileName = fileName.replaceAll("\\.[^\\.]*$", ".png");
+                fileName = fileName.replaceAll("\\.[^\\.]*$", THUMBNAIL_FILE_EXTENSION);
                 inputStreamIO.setFileName(fileName);
             }
             return inputStreamIO;

@@ -135,33 +135,28 @@ different people. For our purposes, an integration test can have two flavors:
 Running the Full API Test Suite Using EC2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To run the API test suite in an EC2 instance you should first follow the steps in the :doc:`deployment` section to get set up for AWS in general and EC2 in particular.
+**Prerequisite:** To run the API test suite in an EC2 instance you should first follow the steps in the :doc:`deployment` section to get set up with the AWS binary to launch EC2 instances. If you're here because you just want to spin up a branch, you'll still want to follow the AWS deployment setup steps, but may find the `ec2-create README.md <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/blob/master/ec2/README.md>`_ Quick Start section helpful.
 
-You may always retrieve a current copy of the ec2-create-instance.sh script and accompanying group_var.yml file from the `dataverse-ansible repo <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/>`_:
+You may always retrieve a current copy of the ec2-create-instance.sh script and accompanying group_var.yml file from the `dataverse-ansible repo <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/>`_. Since we want to run the test suite, let's grab the group_vars used by Jenkins:
 
 - `ec2-create-instance.sh <https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/ec2/ec2-create-instance.sh>`_
-- `main.yml <https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/defaults/main.yml>`_
+- `jenkins.yml <https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/tests/group_vars/jenkins.yml>`_
 
-Edit ``main.yml`` to set the desired GitHub repo, branch, and to ensure that the API test suite is enabled:
+Edit ``jenkins.yml`` to set the desired GitHub repo and branch, and to adjust any other options to meet your needs:
 
 - ``dataverse_repo: https://github.com/IQSS/dataverse.git``
 - ``dataverse_branch: develop``
 - ``dataverse.api.test_suite: true``
+- ``dataverse.unittests.enabled: true``
 - ``dataverse.sampledata.enabled: true``
 
-If you wish, you may pass the local path of a logging directory, which will tell ec2-create-instance.sh to `grab various logs <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/blob/master/ec2/ec2-create-instance.sh#L185>`_ for your review.
+If you wish, you may pass the script a ``-l`` flag with a local relative path in which the script will `copy various logs <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/blob/master/ec2/ec2-create-instance.sh#L185>`_ at the end of the test suite for your review.
 
 Finally, run the script:
 
 .. code-block:: bash
 
-  $ ./ec2-create-instance.sh -g main.yml -l log_dir
-
-Near the beginning and at the end of the ec2-create-instance.sh output you will see instructions for connecting to the instance via SSH. If you are actively working on a branch and want to refresh the warfile after each commit, you may wish to call a `redeploy.sh <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/blob/master/templates/redeploy.sh.j2>`_ script placed by the Ansible role, which will do a "git pull" against your branch, build the warfile, deploy the warfile, then restart the app server. By default this script is written to /tmp/dataverse/redeploy.sh. You may invoke the script by appending it to the SSH command in ec2-create's output:
-
-.. code-block:: bash
-
-  $ ssh -i your_pem.pem user@ec2-host.aws.com /tmp/dataverse/redeploy.sh
+  $ ./ec2-create-instance.sh -g jenkins.yml -l log_dir
 
 Running the full API test suite using Docker
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
