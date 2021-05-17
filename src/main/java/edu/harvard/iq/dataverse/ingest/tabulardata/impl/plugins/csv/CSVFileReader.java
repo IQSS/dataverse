@@ -207,7 +207,9 @@ public class CSVFileReader extends TabularDataFileReader {
                                            && varString != null
                                            && (varString.isEmpty()
                                                || varString.equals("null")
-                                               || varString.matches("^[+-]?[0-9]+$"));
+                                               || (StringUtils.isNumeric(varString)
+                                                    || (varString.substring(0,1).matches("[+-]") 
+                                                        && StringUtils.isNumeric(varString.substring(1)))));
                     if (isNumericVariable[i]) {
                         // If variable might be "numeric" test to see if this value is a parsable number:
                         if (varString != null && !varString.isEmpty()) {
