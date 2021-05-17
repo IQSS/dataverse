@@ -774,6 +774,10 @@ public class SearchServiceBean {
             return BundleUtil.getStringFromBundle(key);
         }
 
+        if(formattedFacetCategoryName.equals(SearchFields.METADATA_SOURCE) && formattedFacetLabelName.equals("harvested")) {
+            return BundleUtil.getStringFromBundle(formattedFacetLabelName);
+        }
+
         return facetLabelName;
     }
 
