@@ -122,4 +122,8 @@ public class WorkflowComment implements Serializable {
         datasetVersion = dv;
     }
 
+    public void setAuthenticatedUser(AuthenticatedUser authenticatedUser){
+        this.authenticatedUser = authenticatedUser;
+    }
+
 }

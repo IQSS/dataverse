@@ -12,11 +12,12 @@ import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.inject.Inject;
 
 import static org.junit.Assert.assertEquals;
@@ -40,9 +41,6 @@ public class ChangeUserIdentifierServiceIT extends WebappArquillianDeployment {
     @EJB
     private BuiltinUserServiceBean builtinUserService;
 
-    @Inject
-    private DataverseRoleServiceBean roleService;
-
     @EJB
     private RoleAssigneeServiceBean roleAssigneeService;
 
@@ -52,23 +50,32 @@ public class ChangeUserIdentifierServiceIT extends WebappArquillianDeployment {
     @EJB
     private DataverseDao dataverseDao;
 
-    @Before
-    public void setUp() {
-        dataverseSession.setUser(authenticationService.getAdminUser());
+    @Test
+    public void changeUserIdentifier_notSuperuser() {
+        // given
+        dataverseSession.setUser(authenticationService.getAuthenticatedUser("filedownloader"));
+
+        // when
+        Exception exception = Assertions.assertThrows(EJBException.class, () -> {
+            changeUserIdentifierService.changeUserIdentifier("oldId", "newId");
+        });
+        assertEquals("User is not authorized to call this method. Only superuser is allowed to do it.", exception.getCause().getMessage());
     }
 
     @Test
     public void changeUserIdentifier() {
         // given
+        dataverseSession.setUser(authenticationService.getAdminUser());
+
         String userIdBefore = "filedownloader";
         String userIdAfter = "changedUserIdentifier";
         RoleAssignment roleAssignment = new RoleAssignment(dataverseRoleService.find(2L),
                 authenticationService.getAuthenticatedUser(userIdBefore),
                 dataverseDao.find(67L), "privateUrl");
-        roleService.save(roleAssignment);
+        dataverseRoleService.save(roleAssignment);
 
         // when
-        changeUserIdentifierService.changeUserIdentifier(authenticationService.getAdminUser(), userIdBefore, userIdAfter);
+        changeUserIdentifierService.changeUserIdentifier(userIdBefore, userIdAfter);
 
         //then
         assertNull(authenticationService.getAuthenticatedUser(userIdBefore));

@@ -122,6 +122,18 @@ public class IndexServiceBean {
     private static final String groupPerUserPrefix = "group_user";
     public static final String HARVESTED = "Harvested";
 
+
+    public Future<String> indexDvObject(DvObject objectIn){
+
+        if (objectIn.isInstanceofDataset() ){
+            return (indexDataset((Dataset)objectIn, true));
+        }
+        if (objectIn.isInstanceofDataverse() ){
+            return (indexDataverse((Dataverse)objectIn));
+        }
+        return null;
+    }
+
     @TransactionAttribute(REQUIRES_NEW)
     public Future<String> indexDataverseInNewTransaction(Dataverse dataverse) {
         return indexDataverse(dataverse);

@@ -116,6 +116,12 @@ public class GuestbookResponseServiceBean {
         return null;
     }
 
+    public List<GuestbookResponse> findByAuthenticatedUserId(AuthenticatedUser user) {
+        Query query = em.createNamedQuery("GuestbookResponse.findByAuthenticatedUserId");
+        query.setParameter("authenticatedUserId", user.getId());
+        return query.getResultList();
+    }
+
     /* 
        This method is used for streaming downloads of guestbook responses, in 
        CSV format, both for individual guestbooks, and for entire dataverses

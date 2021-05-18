@@ -24,7 +24,17 @@ public class UserNotificationDao {
     private EntityManager em;
 
     public List<UserNotification> findByUser(Long userId) {
-        TypedQuery<UserNotification> query = em.createQuery("select un from UserNotification un where un.user.id =:userId order by un.sendDate desc", UserNotification.class);
+        TypedQuery<UserNotification> query =
+                em.createQuery("select un from UserNotification un where un.user.id =:userId order by un.sendDate desc",
+                        UserNotification.class);
+        query.setParameter("userId", userId);
+        return query.getResultList();
+    }
+
+    public List<UserNotification> findByRequestor(Long userId) {
+        TypedQuery<UserNotification> query =
+                em.createQuery("select un from UserNotification un where un.requestor.id =:userId order by un.sendDate desc",
+                        UserNotification.class);
         query.setParameter("userId", userId);
         return query.getResultList();
     }

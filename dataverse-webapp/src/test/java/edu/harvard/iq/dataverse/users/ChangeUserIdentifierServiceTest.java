@@ -29,19 +29,6 @@ public class ChangeUserIdentifierServiceTest {
     private BuiltinUserServiceBean builtinUserService;
 
     @Test
-    public void changeUserIdentifier_notSuperuser() {
-        // given
-        AuthenticatedUser user = MocksFactory.makeAuthenticatedUser("Jurek","Kiler");
-        user.setSuperuser(false);
-
-        // when
-        Exception exception = Assertions.assertThrows(SecurityException.class, () -> {
-            changeUserIdentifierService.changeUserIdentifier(user, "oldId", "newId");
-        });
-        Assertions.assertEquals("Only superusers can change userIdentifiers", exception.getMessage());
-    }
-
-    @Test
     public void changeUserIdentifier_OldUserDoesNotExist() {
         // given
         AuthenticatedUser user = MocksFactory.makeAuthenticatedUser("Jurek","Kiler");
@@ -50,7 +37,7 @@ public class ChangeUserIdentifierServiceTest {
 
         // when
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            changeUserIdentifierService.changeUserIdentifier(user, "oldId", "newId");
+            changeUserIdentifierService.changeUserIdentifier("oldId", "newId");
         });
         Assertions.assertEquals("User oldId not found in AuthenticatedUser",
                 exception.getMessage());
@@ -64,13 +51,13 @@ public class ChangeUserIdentifierServiceTest {
 
         // when
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            changeUserIdentifierService.changeUserIdentifier(user, null, "newId");
+            changeUserIdentifierService.changeUserIdentifier(null, "newId");
         });
         Assertions.assertEquals("Old identifier provided to change is empty.",
                 exception.getMessage());
 
         exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            changeUserIdentifierService.changeUserIdentifier(user, "", "newId");
+            changeUserIdentifierService.changeUserIdentifier("", "newId");
         });
         Assertions.assertEquals("Old identifier provided to change is empty.",
                 exception.getMessage());
@@ -84,13 +71,13 @@ public class ChangeUserIdentifierServiceTest {
 
         // when
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            changeUserIdentifierService.changeUserIdentifier(user, "oldId", null);
+            changeUserIdentifierService.changeUserIdentifier("oldId", null);
         });
         Assertions.assertEquals("New identifier provided to change is empty.",
                 exception.getMessage());
 
         exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            changeUserIdentifierService.changeUserIdentifier(user, "oldId", "");
+            changeUserIdentifierService.changeUserIdentifier("oldId", "");
         });
         Assertions.assertEquals("New identifier provided to change is empty.",
                 exception.getMessage());
@@ -104,7 +91,7 @@ public class ChangeUserIdentifierServiceTest {
 
         // when
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            changeUserIdentifierService.changeUserIdentifier(user, "oldId", "oldId");
+            changeUserIdentifierService.changeUserIdentifier("oldId", "oldId");
         });
         Assertions.assertEquals("New identifier must differ from the old.",
                 exception.getMessage());
@@ -119,7 +106,7 @@ public class ChangeUserIdentifierServiceTest {
 
         // when
         Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            changeUserIdentifierService.changeUserIdentifier(user, "oldId", "newId");
+            changeUserIdentifierService.changeUserIdentifier("oldId", "newId");
         });
         Assertions.assertEquals("Validation of submitted data failed. Details:  User newId already exists. Cannot use this as new identifier",
                 exception.getMessage());
@@ -140,7 +127,7 @@ public class ChangeUserIdentifierServiceTest {
 
         // when
         Exception exception = Assertions.assertThrows(IllegalStateException.class, () -> {
-            changeUserIdentifierService.changeUserIdentifier(user, "oldId", "x");
+            changeUserIdentifierService.changeUserIdentifier("oldId", "x");
         });
         Assertions.assertTrue(exception.getMessage().contains(EXPECTED_ERROR_MSG));
     }

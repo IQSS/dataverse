@@ -6,7 +6,6 @@
 package edu.harvard.iq.dataverse.persistence.guestbook;
 
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
-import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
@@ -19,12 +18,13 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -40,6 +40,10 @@ import java.util.List;
         @Index(columnList = "datafile_id"),
         @Index(columnList = "dataset_id")
 })
+@NamedQueries(
+        @NamedQuery(name = "GuestbookResponse.findByAuthenticatedUserId",
+                query = "SELECT gbr FROM GuestbookResponse gbr WHERE gbr.authenticatedUser.id=:authenticatedUserId")
+)
 public class GuestbookResponse implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id

@@ -132,7 +132,7 @@ INSERT INTO dvobject (id, dtype, owner_id, previewimageavailable, protocol, auth
     VALUES (52, 'Dataset', 51, false, 'doi', '10.18150', 'FK2/MLXK1N', NULL, false, 'file://10.18150/FK2/MLXK1N', NULL, NULL,
             2, '2019-08-22 08:22:33.069', '2019-09-27 12:00:43.188', '2019-08-22 08:22:33.069', NULL, NULL);
 INSERT INTO dataset (id, fileaccessrequest, harvestidentifier, usegenericthumbnail, citationdatedatasetfieldtype_id, harvestingclient_id, guestbook_id, thumbnailfile_id)
-    VALUES (52, NULL, NULL, false, NULL, NULL, NULL, NULL);
+    VALUES (52, NULL, NULL, false, NULL, NULL, 2, NULL);
 INSERT INTO datafilecategory (id, name, dataset_id) VALUES (11, 'Code', 52);
 INSERT INTO datafilecategory (id, name, dataset_id) VALUES (12, 'CustomCategory', 52);
 INSERT INTO datafilecategory (id, name, dataset_id) VALUES (13, 'UnassignedCategory', 52);
@@ -256,6 +256,9 @@ INSERT INTO roleassignment (id, assigneeidentifier, privateurltoken, definitionp
 INSERT INTO roleassignment (id, assigneeidentifier, privateurltoken, definitionpoint_id, role_id) VALUES (101, '&mail/toDelete', NULL, 51, 1);
 INSERT INTO roleassignment (id, assigneeidentifier, privateurltoken, definitionpoint_id, role_id) VALUES (102, '&mail/toDelete', NULL, 19, 1);
 
+-------------------- GUESTBOOK RESPONSES --------------------
+INSERT INTO guestbookresponse (id, downloadtype, email, institution, name, position, responsetime, sessionid, authenticateduser_id, datafile_id, dataset_id, datasetversion_id, guestbook_id)
+VALUES (1, NULL, 'mail@test.com', NULL, 'testResponse', NULL, NULL, NULL, 2, 53, 52, NULL, 2);
 
 -------------------- TEMPLATES --------------------
 INSERT INTO template (id, createtime, name, usagecount, dataverse_id, termsofuseandaccess_id)

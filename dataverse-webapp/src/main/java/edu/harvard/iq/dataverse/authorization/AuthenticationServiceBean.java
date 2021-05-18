@@ -30,6 +30,7 @@ import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
 import edu.harvard.iq.dataverse.persistence.user.ConfirmEmailData;
 import edu.harvard.iq.dataverse.persistence.user.PasswordResetData;
 import edu.harvard.iq.dataverse.persistence.user.UserNotificationDao;
+import edu.harvard.iq.dataverse.persistence.workflow.WorkflowComment;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
@@ -44,6 +45,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -651,6 +653,12 @@ public class AuthenticationServiceBean {
 
     public List<AuthenticatedUser> findSuperUsers() {
         return em.createNamedQuery("AuthenticatedUser.findSuperUsers", AuthenticatedUser.class).getResultList();
+    }
+
+    public List <WorkflowComment> getWorkflowCommentsByAuthenticatedUser(AuthenticatedUser user){
+        Query query = em.createQuery("SELECT wc FROM WorkflowComment wc WHERE wc.authenticatedUser.id = :auid");
+        query.setParameter("auid", user.getId());
+        return query.getResultList();
     }
 
 

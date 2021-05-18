@@ -4,11 +4,11 @@ import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.interceptors.LoggedCall;
+import edu.harvard.iq.dataverse.interceptors.SuperuserRequired;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserLookup;
 import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
-import edu.harvard.iq.dataverse.persistence.user.User;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -34,12 +34,9 @@ public class ChangeUserIdentifierService {
     // -------------------- LOGIC --------------------
 
     @LoggedCall
-    public void changeUserIdentifier(User user, String oldIdentifier, String newIdentifier)
-        throws IllegalStateException, IllegalArgumentException, SecurityException {
-
-        if(!user.isSuperuser()) {
-            throw new SecurityException("Only superusers can change userIdentifiers");
-        }
+    @SuperuserRequired
+    public void changeUserIdentifier(String oldIdentifier, String newIdentifier)
+        throws IllegalStateException, IllegalArgumentException {
 
         if(oldIdentifier == null || oldIdentifier.isEmpty()) {
             throw new IllegalArgumentException("Old identifier provided to change is empty.");

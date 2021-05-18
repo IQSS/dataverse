@@ -1,11 +1,8 @@
 package edu.harvard.iq.dataverse.persistence;
 
-import edu.harvard.iq.dataverse.persistence.AlternativePersistentIdentifier;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.persistence.DvObjectContainer;
-import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 
@@ -56,7 +53,9 @@ import java.util.Set;
         @NamedQuery(name = "DvObject.findByProtocolIdentifierAuthority",
                 query = "SELECT o FROM DvObject o WHERE o.identifier=:identifier and o.authority=:authority and o.protocol=:protocol"),
         @NamedQuery(name = "DvObject.findByOwnerId",
-                query = "SELECT o FROM DvObject o WHERE o.owner.id=:ownerId")
+                query = "SELECT o FROM DvObject o WHERE o.owner.id=:ownerId"),
+        @NamedQuery(name = "DvObject.findByAuthenticatedUserId",
+                query = "SELECT o FROM DvObject o WHERE o.creator.id=:ownerId or o.releaseUser.id=:releaseUserId")
 })
 @Entity
 // Inheritance strategy "JOINED" will create 4 db tables - 

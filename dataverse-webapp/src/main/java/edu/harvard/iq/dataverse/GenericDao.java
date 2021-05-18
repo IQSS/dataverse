@@ -17,4 +17,6 @@ public class GenericDao {
     public <T> T merge(T entity) {
         return em.merge(entity);
     }
+
+    public void remove(Object entity) { em.remove(entity); }
 }

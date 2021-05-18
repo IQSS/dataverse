@@ -10,7 +10,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation that marks api enpoints that
+ * Annotation that marks api endpoints that
  * performs some write operations on database or storage.
  * <br/>
  * Information about write operations is used to block

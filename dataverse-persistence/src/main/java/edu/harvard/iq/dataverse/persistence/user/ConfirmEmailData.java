@@ -102,4 +102,8 @@ public class ConfirmEmailData implements Serializable {
     public ConfirmEmailData() {
     }
 
+    public void setAuthenticatedUser(AuthenticatedUser authenticatedUser) {
+        this.authenticatedUser = authenticatedUser;
+    }
+
 }

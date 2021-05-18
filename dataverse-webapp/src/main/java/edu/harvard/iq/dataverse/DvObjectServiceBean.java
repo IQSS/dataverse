@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.DvObjectContainer;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import org.apache.commons.lang.StringUtils;
 import org.ocpsoft.common.util.Strings;
 
@@ -111,6 +112,13 @@ public class DvObjectServiceBean implements java.io.Serializable {
             logger.info("Invalid identifier: " + globalIdString);
             return null;
         }
+    }
+
+    public List<DvObject> findByAuthenticatedUserId(AuthenticatedUser user) {
+        Query query = em.createNamedQuery("DvObject.findByAuthenticatedUserId");
+        query.setParameter("ownerId", user.getId());
+        query.setParameter("releaseUserId", user.getId());
+        return query.getResultList();
     }
 
     public DvObject updateContentIndexTime(DvObject dvObject) {

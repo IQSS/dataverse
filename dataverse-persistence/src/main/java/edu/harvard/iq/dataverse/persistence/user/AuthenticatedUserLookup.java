@@ -68,6 +68,10 @@ public class AuthenticatedUserLookup implements Serializable {
     public AuthenticatedUserLookup() {
     }
 
+    public long getId() {
+        return id;
+    }
+
     public AuthenticatedUser getAuthenticatedUser() {
         return authenticatedUser;
     }

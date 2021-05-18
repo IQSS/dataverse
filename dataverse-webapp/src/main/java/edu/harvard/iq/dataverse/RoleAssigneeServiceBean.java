@@ -382,6 +382,12 @@ public class RoleAssigneeServiceBean {
         return roleAssigneeList;
     }
 
+    public void removeAllRolesForUserByIdentifier(String identifier) {
+        em.createNamedQuery("RoleAssignment.deleteAllByAssigneeIdentifier", RoleAssignment.class)
+                .setParameter("assigneeIdentifier", identifier)
+                .executeUpdate();
+    }
+
     private void msg(String s) {
         //System.out.println(s);
     }
