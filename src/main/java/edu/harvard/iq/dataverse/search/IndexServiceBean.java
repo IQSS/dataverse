@@ -1467,8 +1467,8 @@ public class IndexServiceBean {
         } catch (Exception ex) {
             logger.info("failed to find dataverseSegments for dataversePaths for " + SearchFields.SUBTREE + ": " + ex);
         }
-        List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
-        if (dataversePaths.size() > 0) {
+        List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);       
+        if (dataversePaths.size() > 0 && dv != null) {
             // don't show yourself while indexing or in search results:
             // https://redmine.hmdc.harvard.edu/issues/3613
             // logger.info(dataverse.getName() + " size " + dataversePaths.size());
