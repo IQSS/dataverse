@@ -35,7 +35,7 @@ import javax.xml.stream.XMLStreamWriter;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang.*;
+import org.apache.commons.lang.ArrayUtils;
 
 /**
  *
