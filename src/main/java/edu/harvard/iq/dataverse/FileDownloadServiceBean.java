@@ -281,7 +281,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
 
     public void redirectToAuxFileDownloadAPI(Long fileId, String formatTag, String formatVersion) {
-        String fileDownloadUrl = "/api/access/datafile/" + fileId + "/metadata/" + formatTag + "/" + formatVersion;
+        String fileDownloadUrl = "/api/access/datafile/" + fileId + "/auxiliary/" + formatTag + "/" + formatVersion;
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
         } catch (IOException ex) {
