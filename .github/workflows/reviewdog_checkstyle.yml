@@ -1,5 +1,8 @@
 name: Maven CheckStyle Task
-on: pull_request
+on:
+   pull_request:
+       paths:
+           - "**.java"
 
 jobs:
     checkstyle_job:
