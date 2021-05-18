@@ -15,6 +15,12 @@ public class FileIntegrityFail {
         this.checkResult = checkResult;
     }
 
+    // -------------------- LOGIC --------------------
+
+    public String getFailedFileUrl() {
+        return "/file.xhtml?fileId=" + integrityFailFile.getId();
+    }
+
     // -------------------- GETTERS --------------------
 
     public DataFile getIntegrityFailFile() {

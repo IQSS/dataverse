@@ -1,15 +1,17 @@
 package edu.harvard.iq.dataverse.datafile.pojo;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class FilesIntegrityReport {
 
     private int checkedCount;
-    
     private int skippedChecksumVerification;
+    private Map<FileIntegrityCheckResult, Integer> failsCount = new HashMap<>();
     
     private List<FileIntegrityFail> suspicious = new ArrayList<>();
 
@@ -34,6 +36,10 @@ public class FilesIntegrityReport {
         suspicious.add(new FileIntegrityFail(dataFile, checkResult));
     }
 
+    public void incrementFailCount(FileIntegrityCheckResult checkResult) {
+        failsCount.put(checkResult, failsCount.getOrDefault(checkResult, 0) + 1);
+    }
+
     public void incrementCheckedCount() {
         ++checkedCount;
     }
@@ -44,6 +50,10 @@ public class FilesIntegrityReport {
 
     public String getSummaryInfo() {
         return String.format("Found %d files in repository. Found %d suspicious files.", checkedCount, suspicious.size());
+    }
+
+    public int getFailCountFor(FileIntegrityCheckResult checkResult) {
+        return failsCount.getOrDefault(checkResult, 0);
     }
 
     // -------------------- SETTERS --------------------
