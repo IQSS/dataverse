@@ -11,7 +11,6 @@ jobs:
             - name: Run check style
               uses: nikitasavinov/checkstyle-action@master
               with:
-                  level: error
                   reporter: github-pr-review
                   checkstyle_config: checkstyle.xml
                   github_token: ${{ secrets.GITHUB_TOKEN }}
