@@ -342,7 +342,7 @@
                         <p:commandLink type="button" styleClass="btn btn-default btn-download"
                                         action="#{datasetFilesTab.validateFilesForDownload(false)}"
                                         update="@form">
-                            <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
+                            <span class="glyphicon glyphicon-download-alt"/> #{bundle['file.download.header']}
                         </p:commandLink>
                     </div>
                     <div jsf:id="downloadButtonBlockTabular" class="btn-group"
@@ -350,19 +350,25 @@
                                         and datasetFilesTab.downloadButtonAvailable
                                         and datasetFilesTab.isHasTabular()}">
                         <button type="button" class="btn btn-default btn-download dropdown-toggle" data-toggle="dropdown">
-                                <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"/>
+                                <span class="glyphicon glyphicon-download-alt"/> #{bundle['file.download.header']} <span class="caret"/>
                             </button>
                             <ul jsf:id="downloadDropdownOptions" class="dropdown-menu multi-level pull-right text-left" role="menu">
                                 <li>
                                     <p:commandLink action="#{datasetFilesTab.validateFilesForDownload(true)}"
-                                                    update="@form">
-                                        #{bundle.downloadOriginal}
+                                                   oncomplete="if (args &amp;&amp; args.apiDownloadLink) { refreshAndClickDownloadLink(args.apiDownloadLink); }"
+                                                   update="@form"
+                                                   process="@this"
+                                    >
+                                        <h:outputText value="#{bundle['file.download.dataset.original']}"/>
                                     </p:commandLink>
                                 </li>
                                 <li>
                                     <p:commandLink action="#{datasetFilesTab.validateFilesForDownload(false)}"
-                                                    update="@form">
-                                        #{bundle.downloadArchival}
+                                                   oncomplete="if (args &amp;&amp; args.apiDownloadLink) { refreshAndClickDownloadLink(args.apiDownloadLink); }"
+                                                   update="@form"
+                                                   process="@this"
+                                    >
+                                        <h:outputText value="#{bundle['file.download.dataset.tab']}"/>
                                     </p:commandLink>
                                 </li>
                             </ul>

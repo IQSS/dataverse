@@ -105,7 +105,7 @@
                    action="#{cc.attrs.downloadRequestFunction}"
                    update="#{cc.attrs.updateOnDownloadRequest}">
         <!-- package data file: -->
-        <span class="glyphicon glyphicon-download-alt" aria-hidden="true"/> #{bundle.download}
+        <span class="glyphicon glyphicon-download-alt" aria-hidden="true"/> #{bundle['file.download.header']}
     </p:commandLink>
     
     </ui:fragment>
@@ -120,7 +120,7 @@
                    update="#{cc.attrs.updateOnDownloadRequest}"
                    oncomplete="if (args &amp;&amp; args.apiDownloadLink) { refreshAndClickDownloadLink(args.apiDownloadLink); }">
         <!-- non-tabular data file: -->
-        <span class="glyphicon glyphicon-download-alt" aria-hidden="true"/> #{bundle.download}
+        <span class="glyphicon glyphicon-download-alt" aria-hidden="true"/> #{bundle['file.download.header']}
     </p:commandLink>
     
     </ui:fragment>
@@ -129,7 +129,7 @@
         <!-- Download Dropdown -->
         <button type="button" class="btn btn-default btn-download dropdown-toggle" data-toggle="dropdown"
                 aria-haspopup="true" aria-expanded="false">
-            <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"/>
+            <span class="glyphicon glyphicon-download-alt"/> #{bundle['file.download.header']} <span class="caret"/>
         </button>
         <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
             <li jsf:rendered="#{!(cc.attrs.fileMetadata.dataFile.originalFormatLabel == 'UNKNOWN')}">
