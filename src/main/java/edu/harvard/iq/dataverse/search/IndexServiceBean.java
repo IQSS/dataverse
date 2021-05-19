@@ -1317,23 +1317,25 @@ public class IndexServiceBean {
     }
     
     private List<String> findLinkingDataversePaths(Dataverse dataverse) {
-
+        List<Dataverse> ancestorList = dataverse.getOwners();
+        ancestorList.add(dataverse);
         List<String> pathListAccumulator = new ArrayList<>();
 
-        List<Dataverse> linkingDVs = dvLinkingService.findLinkingDataverses(dataverse.getId());
+        for (Dataverse owner : ancestorList) {
+            List<Dataverse> linkingDVs = dvLinkingService.findLinkingDataverses(owner.getId());
+            for (Dataverse toAdd : linkingDVs) {
+                //get paths for each linking dataverse
+                List<String> linkingDataversePathSegmentsAccumulator = findPathSegments(toAdd, new ArrayList<>());
+                List<String> linkingDataversePaths = getDataversePathsFromSegments(linkingDataversePathSegmentsAccumulator);
 
-        for (Dataverse toAdd : linkingDVs) {
-            //get paths for each linking dataverse
-            List<String> linkingDataversePathSegmentsAccumulator = findPathSegments(toAdd, new ArrayList<>());
-            List<String> linkingDataversePaths = getDataversePathsFromSegments(linkingDataversePathSegmentsAccumulator);
+                while (linkingDataversePaths.size() > 1) {
+                    //we only want the final path for linked
+                    linkingDataversePaths.remove(0);
+                }
 
-            while (linkingDataversePaths.size() > 1) {
-                //we only want the final path for linked
-                linkingDataversePaths.remove(0);
-            }
-
-            for (String dvPath : linkingDataversePaths) {
-                pathListAccumulator.add(dvPath);
+                for (String dvPath : linkingDataversePaths) {
+                    pathListAccumulator.add(dvPath);
+                }
             }
         }
 
