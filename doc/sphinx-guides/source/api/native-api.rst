@@ -239,7 +239,7 @@ Datasets
 
 **Note** Creation of new datasets is done with a ``POST`` onto dataverses. See Dataverses_ section.
 
-**Note** In all commands below, dataset versions can be referred to as:
+**Note** In all commands below, except where it's stated that version is referred by its ID, dataset versions can be referred to as:
 
 * ``:draft``  the draft version, if any
 * ``:latest`` either a draft (if exists) or the latest published version.
@@ -304,12 +304,36 @@ Please note that the ``schema.org`` format has changed in backwards-incompatible
 
 Both forms are valid according to Google's Structured Data Testing Tool at https://search.google.com/structured-data/testing-tool . (This tool will report "The property affiliation is not recognized by Google for an object of type Thing" and this known issue is being tracked at https://github.com/IQSS/dataverse/issues/5029 .) Schema.org JSON-LD is an evolving standard that permits a great deal of flexibility. For example, https://schema.org/docs/gs.html#schemaorg_expected indicates that even when objects are expected, it's ok to just use text. As with all metadata export formats, we will try to keep the Schema.org JSON-LD format Dataverse emits backward-compatible to made integrations more stable, despite the flexibility that's afforded by the standard.
 
+.. _list-dataset-version-files:
+
 List Files in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 |CORS| Lists all the file metadata, for the given dataset and version::
 
   GET http://$SERVER/api/datasets/$id/versions/$versionId/files?key=$apiKey
+
+Download Files in a Dataset Version
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+|CORS| Downloads, available to a given user, files from a specified dataset version.
+
+A ``format=original`` parameter can be added in order to download tabular data files in their original, not-ingested, format.::
+
+    GET http://$SERVER/api/datasets/$id/versions/$versionId/files/download?key=$apiKey
+
+.. note:: As a result a zip file called ``dataverse_files.zip`` will be saved in your current directory. Except dataset version files this archive includes ``MANIFEST.txt`` file with additional information - like why some files couldn't have been downloaded.
+
+.. note:: To get specific dataset version id you can call :ref:`List Files in a Dataset <list-dataset-version-files>` endpoint.
+
+A curl example using a DOI::
+
+    export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    export SERVER_URL=https://demo.dataverse.org
+    export PERSISTENT_ID=doi:10.70122/FK2/N2XGBJ
+    export VERSION=2.0
+
+    curl -O -J -H "X-Dataverse-key: $API_TOKEN" -X GET $SERVER_URL/api/datasets/:persistentId/versions/$VERSION_ID/files/download?persistentId=$PID&format=original
 
 List All Metadata Blocks for a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1282,7 +1306,7 @@ POSTed JSON example::
 .. _merge-accounts-label:
 
 Merge User Accounts
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
 If a user has created multiple accounts and has been performed actions under both accounts that need to be preserved, these accounts can be combined.  One account can be merged into another account and all data associated with both accounts will be combined in the surviving account. Only accessible to superusers.::
 
