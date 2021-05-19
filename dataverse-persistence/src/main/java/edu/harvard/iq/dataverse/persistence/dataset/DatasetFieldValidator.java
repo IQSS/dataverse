@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.persistence.dataset;
 
-import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.config.EMailValidator;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -43,8 +42,9 @@ public class DatasetFieldValidator implements ConstraintValidator<ValidateDatase
         }
         if (StringUtils.isBlank(value.getValue()) && dsfType.isPrimitive() && isRequiredInDataverse(value)) {
             try {
-                context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + BundleUtil.getStringFromBundle(
-                        "isrequired")).addConstraintViolation();
+                context.buildConstraintViolationWithTemplate(
+                        BundleUtil.getStringFromBundle("isrequired", dsfType.getDisplayName()))
+                        .addConstraintViolation();
             } catch (NullPointerException npe) {
                 logger.log(Level.FINE, "Error occurred during validation", npe);
             }
@@ -60,7 +60,9 @@ public class DatasetFieldValidator implements ConstraintValidator<ValidateDatase
             boolean valid = value.getValue().matches(value.getDatasetFieldType().getValidationFormat());
             if (!valid) {
                 try {
-                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + BundleUtil.getStringFromBundle("isNotValidEntry")).addConstraintViolation();
+                    context.buildConstraintViolationWithTemplate(
+                            BundleUtil.getStringFromBundle("isNotValidEntry", dsfType.getDisplayName()))
+                            .addConstraintViolation();
                 } catch (NullPointerException e) {
                     return false;
                 }
@@ -92,7 +94,9 @@ public class DatasetFieldValidator implements ConstraintValidator<ValidateDatase
 
             if (!valid) {
                 try {
-                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + BundleUtil.getStringFromBundle("isNotValidDate", YYYYMMDDformat, YYYYMMformat, YYYYformat)).addConstraintViolation();
+                    context.buildConstraintViolationWithTemplate(
+                            BundleUtil.getStringFromBundle("isNotValidDate", dsfType.getDisplayName(), YYYYMMDDformat, YYYYMMformat, YYYYformat))
+                            .addConstraintViolation();
                 } catch (NullPointerException npe) {
                     logger.log(Level.FINE, "Error occurred during validation", npe);
                 }
@@ -107,7 +111,9 @@ public class DatasetFieldValidator implements ConstraintValidator<ValidateDatase
             } catch (NumberFormatException e) {
                 logger.fine("Float value failed validation: " + value.getValue() + " (" + dsfType.getDisplayName() + ")");
                 try {
-                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + BundleUtil.getStringFromBundle("isNotValidNumber")).addConstraintViolation();
+                    context.buildConstraintViolationWithTemplate(
+                            BundleUtil.getStringFromBundle("isNotValidNumber", dsfType.getDisplayName()))
+                            .addConstraintViolation();
                 } catch (NullPointerException npe) {
                     logger.log(Level.FINE, "Error occurred during validation", npe);
                 }
@@ -121,7 +127,9 @@ public class DatasetFieldValidator implements ConstraintValidator<ValidateDatase
                 Integer.parseInt(value.getValue());
             } catch (NumberFormatException e) {
                 try {
-                    context.buildConstraintViolationWithTemplate(dsfType.getDisplayName() + " " + BundleUtil.getStringFromBundle("isNotValidInteger")).addConstraintViolation();
+                    context.buildConstraintViolationWithTemplate(
+                            BundleUtil.getStringFromBundle("isNotValidInteger", dsfType.getDisplayName()))
+                            .addConstraintViolation();
                 } catch (NullPointerException npe) {
                     logger.log(Level.FINE, "Error occurred during validation", npe);
                 }
@@ -137,8 +145,8 @@ public class DatasetFieldValidator implements ConstraintValidator<ValidateDatase
             } catch (MalformedURLException e) {
                 try {
                     context.buildConstraintViolationWithTemplate(
-                            dsfType.getDisplayName() + " " + value.getValue() + " " +
-                                    BundleUtil.getStringFromBundle("isNotValidUrl")).addConstraintViolation();
+                            BundleUtil.getStringFromBundle("isNotValidUrl", dsfType.getDisplayName(), value.getValue()))
+                            .addConstraintViolation();
                 } catch (NullPointerException npe) {
                     logger.log(Level.FINE, "Error occurred during validation", npe);
                 }
