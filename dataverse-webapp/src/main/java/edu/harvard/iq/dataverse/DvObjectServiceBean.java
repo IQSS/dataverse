@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.DvObjectContainer;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import org.apache.commons.lang.StringUtils;
 import org.ocpsoft.common.util.Strings;
@@ -319,5 +320,16 @@ public class DvObjectServiceBean implements java.io.Serializable {
             ret.put(objectId, treePath);
         }
         return ret;
+    }
+
+    public String getDataverseHierarchyFor(DvObject dvObject) {
+        StringBuilder path = new StringBuilder();
+        if (dvObject.getOwner() != null) {
+            path.append(getDataverseHierarchyFor(dvObject.getOwner()));
+        }
+        if (dvObject instanceof Dataverse) {
+            path.append("/").append(((Dataverse) dvObject).getAlias());
+        }
+        return path.toString();
     }
 }

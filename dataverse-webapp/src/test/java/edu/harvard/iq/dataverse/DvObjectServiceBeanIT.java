@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.arquillian.arquillianexamples.WebappArquillianDeployment;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Assert;
 import org.junit.Test;
@@ -17,6 +18,9 @@ public class DvObjectServiceBeanIT extends WebappArquillianDeployment {
 
     @Inject
     private DvObjectServiceBean dvObjectServiceBean;
+
+    @Inject
+    private DataFileServiceBean dataFileService;
 
     // -------------------- TESTS --------------------
 
@@ -38,4 +42,15 @@ public class DvObjectServiceBeanIT extends WebappArquillianDeployment {
         Assert.assertEquals(expectedResults, results);
     }
 
+    @Test
+    public void getDataverseHierarchyFor() {
+        // given
+        DataFile dataFile = dataFileService.find(53L);
+
+        // when
+        String result = dvObjectServiceBean.getDataverseHierarchyFor(dataFile);
+
+        // then
+        Assert.assertEquals("/root/unreleased", result);
+    }
 }

@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.dataset;
 
 import edu.harvard.iq.dataverse.DatasetDao;
+import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.guestbook.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.interceptors.SuperuserRequired;
@@ -43,8 +44,8 @@ public class DatasetReportService {
     private static final Logger logger = LoggerFactory.getLogger(DatasetReportService.class);
 
     private DatasetDao datasetDao;
-
     private GuestbookResponseServiceBean guestbookResponseService;
+    private DvObjectServiceBean dvObjectService;
 
     private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -53,9 +54,12 @@ public class DatasetReportService {
     public DatasetReportService() { }
 
     @Inject
-    public DatasetReportService(DatasetDao datasetDao, GuestbookResponseServiceBean guestbookResponseService) {
+    public DatasetReportService(DatasetDao datasetDao,
+                                GuestbookResponseServiceBean guestbookResponseService,
+                                DvObjectServiceBean dvObjectService) {
         this.datasetDao = datasetDao;
         this.guestbookResponseService = guestbookResponseService;
+        this.dvObjectService = dvObjectService;
     }
 
     // -------------------- LOGIC --------------------
@@ -150,6 +154,7 @@ public class DatasetReportService {
         fileRecord.setLicense(license);
         fileRecord.setContentType(dataFile.getContentType());
         fileRecord.setNumberOfDownloads(guestbookResponseService.getCountGuestbookResponsesByDataFileId(dataFile.getId()));
+        fileRecord.setFileDataverseHierarchy(dvObjectService.getDataverseHierarchyFor(dataFile));
         return fileRecord;
     }
 
@@ -173,6 +178,7 @@ public class DatasetReportService {
         DATASET_PID("Dataset PID"),
         DATASET_TITLE("Dataset title"),
         VERSION_NUMBER("Version No."),
+        FILE_DATAVERSE_HIERARCHY("File dataverse hierarchy"),
         DATASET_VERSION_PUBLICATION_DATE("Dataset version publication date"),
         DATASET_VERSION_STATE("Dataset version state"),
         LAST_MODIFICATION_DATE("Last modification date"),
@@ -325,6 +331,10 @@ public class DatasetReportService {
 
         public void setDatasetVersionState(String versionState) {
             data.put(FileDataField.DATASET_VERSION_STATE, versionState);
+        }
+
+        public void setFileDataverseHierarchy(String path) {
+            data.put(FileDataField.FILE_DATAVERSE_HIERARCHY, path);
         }
     }
 }
