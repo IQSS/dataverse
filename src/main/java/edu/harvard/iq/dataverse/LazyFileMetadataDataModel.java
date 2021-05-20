@@ -15,7 +15,7 @@ import org.primefaces.model.SortOrder;
  *
  * @author skraffmi
  */
-public class LazyFileMetadataDataModel extends LazyDataModel<FileMetadata> {
+public class LazyFileMetadataDataModel /* extends LazyDataModel<FileMetadata> */ {
     
     private final DataFileServiceBean fileServiceBean;
     private final Long datasetVersionId;
@@ -26,7 +26,7 @@ public class LazyFileMetadataDataModel extends LazyDataModel<FileMetadata> {
     }
     
     
-    @Override
+//    @Override
     public List<FileMetadata> load(int first, int pageSize, String sortField,
             SortOrder sortOrder, Map<String, FilterMeta> filters) {
 
