@@ -433,7 +433,12 @@ public class SettingsServiceBean {
          * Installation Brand Name is always included (default/false) or is not included
          * when the Distributor field (citation metadatablock) is set (true)
          */
-        ExportInstallationAsDistributorOnlyWhenNotSet
+        ExportInstallationAsDistributorOnlyWhenNotSet,
+        /**
+         * LDN Inbox Allowed Hosts - a comma separated list of IP addresses allowed to submit messages to the inbox
+         */
+        MessageHosts
+        
         ;
 
         @Override

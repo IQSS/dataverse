@@ -167,7 +167,7 @@ public class MailServiceBean implements java.io.Serializable {
         return sent;
     }
 
-    private InternetAddress getSystemAddress() {
+    public InternetAddress getSystemAddress() {
        String systemEmail = settingsService.getValueForKey(Key.SystemEmail);
        return MailUtil.parseSystemAddress(systemEmail);
     }
