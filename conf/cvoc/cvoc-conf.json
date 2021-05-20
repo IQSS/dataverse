@@ -1,0 +1,16 @@
+[
+{
+  "vocab-name":"cvocDemo",
+  "minChars": 1,
+  "cvoc-url":"https://skosmos.dev.finto.fi/",
+  "language":"en",
+  "js-url":"/resources/js/cvoc-interface.js",
+  "protocol": "skosmos",
+  "retrieval-uri":"'https://skosmos.dev.finto.fi/rest/v1/data?uri={0}'
+  "vocab-uri" : "http://skos.um.es/unescothes/CS000", 
+  "term-parent-uri": "",
+  "vocabs":["unesco","stw","agrovoc"],
+  "vocab-codes": ["cvocDemoVocabulary", "cvocDemoTerm", "cvocDemoTermURI", "cvocDemoVocabularyURI"]
+}
+]
+
