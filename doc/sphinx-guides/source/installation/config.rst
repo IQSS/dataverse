@@ -242,7 +242,7 @@ As for the "Remote only" authentication mode, it means that:
 File Storage: Using a Local Filesystem and/or Swift and/or S3 object stores
 ---------------------------------------------------------------------------
 
-By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara5/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.directory`` JVM option described below.
+By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara5/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.\<id\>.directory`` JVM option described below.
 
 A Dataverse installation can alternately store files in a Swift or S3-compatible object store, and can now be configured to support multiple stores at once. With a multi-store configuration, the location for new files can be controlled on a per-Dataverse collection basis.
 
@@ -1030,7 +1030,7 @@ dataverse.siteUrl
 dataverse.files.directory
 +++++++++++++++++++++++++
 
-This is how you configure the path to which files uploaded by users are stored.
+This is how you configure the path Dataverse uses for temporary files. (File store specific dataverse.files.\<id\>.directory options set the permanent data storage locations.)
 
 dataverse.auth.password-reset-timeout-in-minutes
 ++++++++++++++++++++++++++++++++++++++++++++++++
