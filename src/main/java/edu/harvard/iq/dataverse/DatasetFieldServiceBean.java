@@ -1,13 +1,41 @@
 package edu.harvard.iq.dataverse;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.ejb.Asynchronous;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonException;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonString;
+import javax.json.stream.JsonParsingException;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
+
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 /**
  *
@@ -19,6 +47,11 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+    
+    private static final Logger logger = Logger.getLogger(DatasetFieldServiceBean.class.getCanonicalName());
+
+    @EJB
+    SettingsServiceBean settingsService;
 
     private static final String NAME_QUERY = "SELECT dsfType from DatasetFieldType dsfType where dsfType.name= :fieldName";
 
@@ -96,7 +129,6 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         } catch (NoResultException nre) {
             return null;
         }
-
         // TODO: cache looked up results.
     }
 
@@ -196,5 +228,182 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     public ControlledVocabAlternate save(ControlledVocabAlternate alt) {
         return em.merge(alt);
     } 
+    
+    Map <Long, JsonObject> cvocMap = null;
+    String oldHash = null;
+    
+    public Map<Long, JsonObject> getCVocConf(){
+        
+        //ToDo - change to an API call to be able to provide feedback if the json is invalid?
+        String cvocSetting = settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf);
+        if (cvocSetting == null || cvocSetting.isEmpty()) {
+            oldHash=null;
+            return new HashMap<>();
+    } 
+        String newHash = DigestUtils.md5Hex(cvocSetting);
+        logger.info("NH: " + newHash);
+        if(newHash.equals(oldHash)) {
+            return cvocMap;
+        } 
+            oldHash=newHash;
+        cvocMap=new HashMap<>();
+        
+        try (JsonReader jsonReader = Json.createReader(new StringReader(settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf)))) {
+        JsonArray cvocConfJsonArray = jsonReader.readArray();
+        logger.info("Size: " + cvocConfJsonArray.size());
+        logger.info("array is " + cvocConfJsonArray.toString());
+            for (JsonObject jo : cvocConfJsonArray.getValuesAs(JsonObject.class)) {
+                DatasetFieldType dft = findByNameOpt(jo.getString("vocab-name"));
+                if(dft!=null) {
+                    cvocMap.put(dft.getId(), jo);
+                   } else {
+                       logger.warning("Ignoring External Vocabulary setting for non-existent field: " + jo.getString("vocab-name"));
+                   }
+                JsonArray vocabCodes = jo.getJsonArray("vocab-codes");
+                for (JsonString elm: vocabCodes.getValuesAs(JsonString.class)){
+                    dft = findByNameOpt(elm.getString());
+                    logger.info("Found: " + dft.getName());
+                    if(dft==null) {
+                        logger.warning("Ignoring External Vocabulary setting for non-existent child field: " + elm.getString());
+                    }
+                }
+            }
+            } catch(JsonException e) {
+                logger.warning("Ignoring External Vocabulary setting due to parsing error: " + e.getLocalizedMessage());
+            }
+        return cvocMap;
+    }
 
+    public void registerExternalVocabValues(DatasetField df) {
+        DatasetFieldType dft =df.getDatasetFieldType(); 
+        logger.info("Registering for field: " + dft.getName());
+        if(dft.isPrimitive()) {
+            for(DatasetFieldValue dfv: df.getDatasetFieldValues()) {
+                registerExternalTerm(dfv.getValue(), dft);
+            }
+            } else {
+                logger.warning("Compound field sent: " + dft.getName());
+            }
+    }
+    
+    @Asynchronous
+    private void registerExternalTerm(String term, DatasetFieldType dft) {
+        try {
+            URI uri = new URI(term);
+            ExternalVocabularyValue evv = null;
+            try {
+                evv = em.createQuery("select object(o) from ExternalVocabularyValue as o where o.uri=:uri",
+                        ExternalVocabularyValue.class).setParameter("uri", term).getSingleResult();
+            } catch (NoResultException nre) {
+                evv = new ExternalVocabularyValue(term, null);
+            }
+            if (evv.getValue() == null) {
+                
+                JsonObject vocabConfig = getCVocConf().get(dft.getId());
+                String retrievalUri = vocabConfig.getString("retrievalUri");
+                retrievalUri.replace("{0}", term);
+                logger.info("Didn't find " + term + ", calling " + retrievalUri);
+                try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+                    HttpGet httpGet = new HttpGet(retrievalUri);
+                    httpGet.addHeader("Accept", "application/json+ld, application/json");
+
+                    HttpResponse response = httpClient.execute(httpGet);
+                    String data = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+                    int statusCode = response.getStatusLine().getStatusCode();
+                    if (statusCode == 200) {
+                        try (JsonReader jsonReader = Json.createReader(new StringReader(data))) {
+                            evv.setValue(jsonReader.readObject());
+                            em.merge(evv);
+                            em.flush();
+                            logger.fine("Wrote value for term: " + term);
+                        } catch (JsonException je) {
+                            logger.warning("Error retrieving: " + retrievalUri + " : " + je.getMessage());
+                        }
+                    } else {
+                        logger.warning("Received response code : " + statusCode + " when retrieving " + retrievalUri
+                                + " : " + data);
+                    }
+                } catch (IOException ioe) {
+                    logger.warning("IOException when retrieving url: " + retrievalUri + " : " + ioe.getMessage());
+                }
+
+            }
+        } catch (URISyntaxException e) {
+            logger.fine("Text entry found: " + term + " for field: " + dft.getName());
+        }
+
+    }
+    
+    /*
+    public class CVoc {
+        String cvocUrl;
+        String language;
+        String protocol;
+        String vocabUri;
+        String termParentUri;
+        String jsUrl;
+        String mapId;
+        String mapQuery;
+        boolean readonly;
+        boolean hideReadonlyUrls;
+        int minChars;
+        List<String> vocabs;
+        List<String> keys;
+        public CVoc(String cvocUrl, String language, String protocol, String vocabUri, String termParentUri, boolean readonly, boolean hideReadonlyUrls, int minChars,
+                    List<String> vocabs, List<String> keys, String jsUrl, String mapId, String mapQuery){
+            this.cvocUrl = cvocUrl;
+            this.language = language;
+            this.protocol = protocol;
+            this.readonly = readonly;
+            this.hideReadonlyUrls = hideReadonlyUrls;
+            this.minChars = minChars;
+            this.vocabs = vocabs;
+            this.vocabUri = vocabUri;
+            this.termParentUri = termParentUri;
+            this.keys = keys;
+            this.jsUrl = jsUrl;
+            this.mapId = mapId;
+            this.mapQuery = mapQuery;
+        }
+
+        public String getCVocUrl() {
+            return cvocUrl;
+        }
+        public String getLanguage() {
+            return language;
+        }
+        public String getProtocol() { return protocol; }
+        public String getVocabUri() {
+            return vocabUri;
+        }
+        public String getTermParentUri() {
+            return termParentUri;
+        }
+        public boolean isReadonly() {
+            return readonly;
+        }
+        public boolean isHideReadonlyUrls() {
+            return hideReadonlyUrls;
+        }
+        public int getMinChars() { return minChars; }
+        public List<String> getVocabs() {
+            return vocabs;
+        }
+        public List<String> getKeys() {
+            return keys;
+        }
+
+        public String getJsUrl() {
+            return jsUrl;
+        }
+
+        public String getMapId() {
+            return mapId;
+        }
+
+        public String getMapQuery() {
+            return mapQuery;
+        }
+    }
+*/
 }

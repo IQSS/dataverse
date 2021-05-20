@@ -10,10 +10,11 @@
     <ui:remove>
         <!-- input text start UPDATE: UI:REMOVE applied due to duplicate ID errors, left code as reference incase test scripts complain -->
         <span id="pre-input-#{dsf.datasetFieldType.name}" class="pre-input-tag"/></ui:remove>
-    <c:set var="displayCV" value="#{cvoc.size() > 0 and (dsfv.datasetField.datasetFieldType.name ==cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[0]
-                    or dsfv.datasetField.datasetFieldType.name==cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[1]
-                    or dsfv.datasetField.datasetFieldType.name==cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[2]
-                    or dsfv.datasetField.datasetFieldType.name==cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[3])}"/>
+        
+    <c:set var="displayCV" value="#{cvoc.size() > 0 and (dsfv.datasetField.datasetFieldType.name ==cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocab-codes')[0].getString()
+                    or dsfv.datasetField.datasetFieldType.name==cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocab-codes')[1].getString()
+                    or dsfv.datasetField.datasetFieldType.name==cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocab-codes')[2].getString()
+                    or dsfv.datasetField.datasetFieldType.name==cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocab-codes')[3].getString())}"/>
     <p:inputText value="#{dsfv.valueForEdit}" id="inputText" pt:aria-required="#{dsf.required}"
                  styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
                  rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary and !displayCV
@@ -24,79 +25,79 @@
                              or dsfv.datasetField.datasetFieldType.fieldType == 'DATE'
                              or dsfv.datasetField.datasetFieldType.fieldType == 'EMAIL')}"/>
     <p:watermark for="inputText" value="#{dsfv.datasetField.datasetFieldType.localeWatermark}"></p:watermark>
-    <ui:fragment rendered="#{displayCV and dsfv.datasetField.datasetFieldType.name==cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[0]}">
-        <div id="akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[0]}">
+    <ui:fragment rendered="#{displayCV and dsfv.datasetField.datasetFieldType.name==cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocab-codes')[0].getString()}">
+        <div id="akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocab-codes')[0].getString()}">
             <p:autoComplete id="cv_vocabs_#{valCount.index+1}_k" value="#{dsfv.valueForEdit}"
-                            completeMethod="#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getVocabs()}"
+                            completeMethod="#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocabs')}"
                             style="width:100%;"
-                            readonly="#{facesContext.renderResponse and cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getVocabs().size() == 1
-                            and cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).isReadonly()}"/>
+                            readonly="#{facesContext.renderResponse and cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocabs').size() == 1
+                            and cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('readonly').asBoolean()}"/>
 
         </div>
     </ui:fragment>
-    <ui:fragment rendered="#{displayCV and dsfv.datasetField.datasetFieldType.name==cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[1]}">
-        <div id="akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[1]}">
+    <ui:fragment rendered="#{displayCV and dsfv.datasetField.datasetFieldType.name==cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocab-codes')[1].getString()}">
+        <div id="akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocab-codes')[1].getString()}">
             <p:inputText value="#{dsfv.valueForEdit}" id="cv_term_#{valCount.index+1}"
                          styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"/>
         </div>
     </ui:fragment>
-    <ui:fragment rendered="#{displayCV and dsfv.datasetField.datasetFieldType.name==cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[2] }">
-        <div id="akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[2]}">
+    <ui:fragment rendered="#{displayCV and dsfv.datasetField.datasetFieldType.name==cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocab-codes')[2].getString() }">
+        <div id="akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocab-codes')[2].getString()}">
             <p:inputText value="#{dsfv.valueForEdit}" id="cv_url_#{valCount.index+1}"
-                         readonly="#{facesContext.renderResponse and cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).isReadonly()}" 
+                         readonly="#{facesContext.renderResponse and cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('readonly').asBoolean()}" 
                          styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"/>
         </div>
-        <script src="#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getJsUrl()}">
+        <script src="#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).getString('js-url')}">
         </script>
         <script>
         //<![CDATA[
                 $(document).ready(function() {
                     var jsonResult = {};
-                    var cvocUrl = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getCVocUrl()}";
-                    var cvocLang = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getLanguage()}";
-                    var cvocProtocol = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getProtocol()}";
-                    var vocabUri ="#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getVocabUri()}";
-                    var termParentUri ="#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getTermParentUri()}";
-                    var vocabsize = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getVocabs().size()}";
-                    var readonly = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).isReadonly()}" === "true";
-                    var hideReadonlyUrls = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).isHideReadonlyUrls()}" === "true";
-                    //$("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[3]}").find("input[name*='cv_vocab_url_'").css('background-color' , '#EEEEEE');
-                    $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[3]}").find("input[name*='cv_vocab_url_'").val(vocabUri);
+                    var cvocUrl = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).getString('cvoc-url')}";
+                    var cvocLang = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).getString('language')}";
+                    var cvocProtocol = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).getString('protocol')}";
+                    var vocabUri ="#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).getString('vocab-uri')}";
+                    var termParentUri ="#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).getString('term-parent-uri')}";
+                    var vocabsize = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocabs').size()}";
+                    var readonly = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('readonly').asBoolean()}";
+                    var hideReadonlyUrls = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('hideReadonlyUrls').asBoolean()}";
+                    //$("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocab-codes')[3].getString()}").find("input[name*='cv_vocab_url_'").css('background-color' , '#EEEEEE');
+                    $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocab-codes')[3].getString()}").find("input[name*='cv_vocab_url_'").val(vocabUri);
                     if (vocabsize == 1 && readonly) {
                         // make it look readonly
-                        $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[0]}").find("input[name*='cv_vocabs_'").css('background-color' , '#EEEEEE');
+                        $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocab-codes')[0].getString()}").find("input[name*='cv_vocabs_'").css('background-color' , '#EEEEEE');
                         // Note that we could decide to not display this at all
-                        //$("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[0]}").parent().css('display' , 'none');
+                        //$("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocab-codes')[0].getString()}").parent().css('display' , 'none');
                     }
                     if (readonly && hideReadonlyUrls) {
                         // do not display URL fields and their labels
-                        $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[2]}").parent().css('display' , 'none');
-                        $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[3]}").parent().css('display' , 'none');
+                        $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocab-codes')[2].getString()}").parent().css('display' , 'none');
+                        $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocab-codes')[3].getString()}").parent().css('display' , 'none');
                     }
                     var selectedVocab = "";
-                    var vocabFieldValue = $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[0]}").find("input[name*='cv_vocabs_'").val();
+                    var vocabFieldValue = $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocab-codes')[0].getString()}").find("input[name*='cv_vocabs_'").val();
                     if (vocabFieldValue =='' && vocabsize == 1) {
-                            selectedVocab = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getVocabs()[0]}";
-                            $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[0]}").find("input[name*='cv_vocabs_'").val(selectedVocab);
+                            selectedVocab = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocab-codes')[0].getString()}";
+                            $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocab-codes')[0].getString()}").find("input[name*='cv_vocabs_'").val(selectedVocab);
                     }
-                    $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[0]}").find("input[name*='cv_vocabs_'").on("focusout", function(){
+                    $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).get('vocab-codes')[0].getString()}").find("input[name*='cv_vocabs_'").on("focusout", function(){
                           selectedVocab = $(this).val();
                         });
 
-                    var mapquery = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getMapQuery()}";
-                    var mapid = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getMapId()}";
+                    var mapquery = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).getString('map-query')}";
+                    var mapid = "#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).getString('map-id')}";
                     var mapping = { query: mapquery,  id: mapid };
                     // Using jQuery UI Autocomplete for the term input
-                    $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[1]}").find("input[name*='cv_term_']").autocomplete(
+                    $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocab-codes')[1].getString()}").find("input[name*='cv_term_']").autocomplete(
                     {
                           source: function( request, response ) {
                             cv = { 'cvocUrl' : cvocUrl, 'protocol': cvocProtocol, 'lang': cvocLang, 'termParentUri': termParentUri, 'selectedVocab': selectedVocab, 'term': request.term };
                         autointerface(request, response, cv, mapping);
                           },
-                          minLength: #{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getMinChars()},
+                          minLength: #{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).getInt('minChars')},
                           select: function(event, ui) {
                                $.each(ui, function(i, v) {
-                               $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[2]}").find("input[name*='cv_url_']").val(v.id);
+                               $("#akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocab-codes')[2].getString()}").find("input[name*='cv_url_']").val(v.id);
                                }
                              )}
                         }
@@ -122,10 +123,10 @@
             }
         </style>
     </ui:fragment>
-    <ui:fragment rendered="#{displayCV and dsfv.datasetField.datasetFieldType.name==cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[3]}">
-        <div id="akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).getKeys()[3]}">
+    <ui:fragment rendered="#{displayCV and dsfv.datasetField.datasetFieldType.name==cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocab-codes')[3].getString()}">
+        <div id="akmi_#{valCount.index+1}_#{cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('vocab-codes')[3].getString()}">
             <p:inputText value="#{dsfv.valueForEdit}" id="cv_vocab_url_#{valCount.index+1}"
-                         readonly="#{facesContext.renderResponse and cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.name).isReadonly()}"
+                         readonly="#{facesContext.renderResponse and cvoc.get(dsfv.datasetField.datasetFieldType.parentDatasetFieldType.id).get('readonly').asBoolean()}"
                          styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"/>
         </div>
     </ui:fragment>

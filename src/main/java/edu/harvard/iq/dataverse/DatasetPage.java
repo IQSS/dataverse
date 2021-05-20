@@ -3444,6 +3444,20 @@ public class DatasetPage implements java.io.Serializable {
                 ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
             }
             dataset = commandEngine.submit(cmd);
+            for (DatasetField df : dataset.getLatestVersion().getDatasetFields()) {
+                if (fieldService.getCVocConf().containsKey(df.getDatasetFieldType().getId())) {
+                    fieldService.registerExternalVocabValues(df);
+                }
+                if (df.getDatasetFieldType().isCompound()) {
+                    for (DatasetFieldCompoundValue cv : df.getDatasetFieldCompoundValues()) {
+                        for (DatasetField cdf : cv.getChildDatasetFields())
+                            if (fieldService.getCVocConf().containsKey(cdf.getDatasetFieldType().getId())) {
+                                fieldService.registerExternalVocabValues(cdf);
+                            }
+                    }
+                }
+
+            }
             if (editMode == EditMode.CREATE) {
                 if (session.getUser() instanceof AuthenticatedUser) {
                     userNotificationService.sendNotification((AuthenticatedUser) session.getUser(), dataset.getCreateDate(), UserNotification.Type.CREATEDS, dataset.getLatestVersion().getId());
@@ -5483,150 +5497,9 @@ public class DatasetPage implements java.io.Serializable {
 
         return dataFile.getDeleted();
     }
-
-    public Map<String, CVoc> getCVocConf(){
-        Map <String, CVoc> cvocMap = new HashMap<>();
-        String cvocSetting = settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf);
-        if (cvocSetting == null || cvocSetting.isEmpty())
-            return cvocMap;
-
-        JsonReader jsonReader = Json.createReader(new StringReader(settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf)));
-        JsonArray cvocConfJsonArray = jsonReader.readArray();
-        jsonReader.close();
-        if (cvocConfJsonArray != null) {
-            for (JsonObject jo : cvocConfJsonArray.getValuesAs(JsonObject.class)) {
-                JsonArray vocabs = jo.getJsonArray("vocabs");
-                List<String> vocabsList = new ArrayList<>();
-                for (JsonString elm: vocabs.getValuesAs(JsonString.class)){
-                    vocabsList.add(elm.getString());
-                }
-                JsonArray vocabCodes = jo.getJsonArray("vocab-codes");
-                List<String> vocabCodesList = new ArrayList<>();
-                for (JsonString elm: vocabCodes.getValuesAs(JsonString.class)){
-                    vocabCodesList.add(elm.getString());
-                    logger.fine("cvoc - vocab-codes: " + elm.getString());
-                }
-                String cvocLang = BundleUtil.getDefaultLocale().getLanguage();//default
-                if (jo.containsKey("language"))
-                    cvocLang = jo.getString("language"); // in case of "language":"", "&lang=" will be send to the middleware
-                logger.fine("cvoc - language: " + cvocLang);
-                boolean cvocReadonly = false;
-                if (jo.containsKey("readonly") && jo.getString("readonly").toLowerCase().equals("true"))
-                    cvocReadonly = true;
-                logger.fine("cvoc - readonly: " + cvocReadonly);
-                boolean cvocHideReadonlyUrls = false;
-                if (jo.containsKey("hideReadonlyUrls") && jo.getString("hideReadonlyUrls").toLowerCase().equals("true"))
-                    cvocHideReadonlyUrls = true;
-                logger.fine("cvoc - cvocHideReadonlyUrls: " + cvocHideReadonlyUrls);
-                int cvocMinChars = 0;
-                if (jo.containsKey("minChars") && jo.getInt("minChars") >= 0)
-                    cvocMinChars = jo.getInt("minChars");
-                logger.fine("cvoc - minChars: " + cvocMinChars);
-                String cvocProtocol = "skosmos";//default
-                if (jo.containsKey("protocol"))
-                    cvocProtocol = jo.getString("protocol");
-                logger.fine("cvoc - protocol: " + cvocProtocol);
-                String cvocMapId = "uri" ;//default
-                if (jo.containsKey("map-id"))
-                    cvocMapId = jo.getString("map-id");
-                logger.fine("cvoc - map-id: " + cvocMapId);
-                String cvocMapQuery = "prefLabel" ;//default
-                if (jo.containsKey("map-query"))
-                    cvocMapQuery = jo.getString("map-query");
-                logger.fine("cvoc - map-query: " + cvocMapQuery);
-                String cvocJsUrl = "/resources/js/cvoc-interface.js";
-                if (jo.containsKey("js-url"))
-                    cvocJsUrl = jo.getString("js-url");
-                logger.fine("cvoc - js-url: " + cvocJsUrl);
-                String cvocTermParentUri = "";
-                if (jo.containsKey("term-parent-uri"))
-                    cvocTermParentUri = jo.getString("term-parent-uri");
-                logger.fine("cvoc - term-parent-uri: " + cvocTermParentUri);
-                String cvocVocabUri = "";
-                if (jo.containsKey("vocab-uri"))
-                    cvocVocabUri = jo.getString("vocab-uri");
-                logger.fine("cvoc - vocab-uri: " + cvocVocabUri);
-                String cvocUrl = "http://localhost/Skosmos";
-                if (jo.containsKey("cvoc-url"))
-                    cvocUrl = jo.getString("cvoc-url");
-                logger.fine("cvoc - cvoc-url: " + cvocUrl);
-                CVoc cvoc = new CVoc(cvocUrl, cvocLang, cvocProtocol, cvocVocabUri, cvocTermParentUri, cvocReadonly, cvocHideReadonlyUrls, cvocMinChars, vocabsList, vocabCodesList
-                        , cvocJsUrl, cvocMapId, cvocMapQuery);
-                cvocMap.put(jo.getString("vocab-name"), cvoc);
-            }
-        }
-        return cvocMap;
-    }
-    public class CVoc {
-        String cvocUrl;
-        String language;
-        String protocol;
-        String vocabUri;
-        String termParentUri;
-        String jsUrl;
-        String mapId;
-        String mapQuery;
-        boolean readonly;
-        boolean hideReadonlyUrls;
-        int minChars;
-        List<String> vocabs;
-        List<String> keys;
-        public CVoc(String cvocUrl, String language, String protocol, String vocabUri, String termParentUri, boolean readonly, boolean hideReadonlyUrls, int minChars,
-                    List<String> vocabs, List<String> keys, String jsUrl, String mapId, String mapQuery){
-            this.cvocUrl = cvocUrl;
-            this.language = language;
-            this.protocol = protocol;
-            this.readonly = readonly;
-            this.hideReadonlyUrls = hideReadonlyUrls;
-            this.minChars = minChars;
-            this.vocabs = vocabs;
-            this.vocabUri = vocabUri;
-            this.termParentUri = termParentUri;
-            this.keys = keys;
-            this.jsUrl = jsUrl;
-            this.mapId = mapId;
-            this.mapQuery = mapQuery;
-        }
-
-        public String getCVocUrl() {
-            return cvocUrl;
-        }
-        public String getLanguage() {
-            return language;
-        }
-        public String getProtocol() { return protocol; }
-        public String getVocabUri() {
-            return vocabUri;
-        }
-        public String getTermParentUri() {
-            return termParentUri;
-        }
-        public boolean isReadonly() {
-            return readonly;
-        }
-        public boolean isHideReadonlyUrls() {
-            return hideReadonlyUrls;
-        }
-        public int getMinChars() { return minChars; }
-        public List<String> getVocabs() {
-            return vocabs;
-        }
-        public List<String> getKeys() {
-            return keys;
-        }
-
-        public String getJsUrl() {
-            return jsUrl;
-        }
-
-        public String getMapId() {
-            return mapId;
-        }
-
-        public String getMapQuery() {
-            return mapQuery;
-        }
-    }
     
-    
+    public Map<Long, JsonObject> getCVocConf() {
+        logger.info("CVOC says: " + fieldService.getCVocConf().toString());
+        return fieldService.getCVocConf();
+    }
 }
