@@ -585,8 +585,8 @@
                 <div class="file-icon-restricted-block"
                      jsf:rendered="#{!result.entity.notaryServiceBound}">
                             
-                            <span class="text-danger glyphicon glyphicon-lock" title="#{bundle.restricted}" jsf:rendered="#{result.entity.restricted and !permissionsWrapper.hasDownloadFilePermission(result.entity)}"/>
-                            <span class="text-success icon-unlock" title="#{bundle.restrictedaccess}" jsf:rendered="#{result.entity.restricted and permissionsWrapper.hasDownloadFilePermission(result.entity)}"/>
+                            <span class="text-danger glyphicon glyphicon-lock" data-toggle="tooltip" title="#{bundle.restricted}" jsf:rendered="#{result.entity.restricted and !permissionsWrapper.hasDownloadFilePermission(result.entity)}"/>
+                            <span class="text-success icon-unlock" data-toggle="tooltip" title="#{bundle.restrictedaccess}" jsf:rendered="#{result.entity.restricted and permissionsWrapper.hasDownloadFilePermission(result.entity)}"/>
                 </div>
                 <div class="file-icon-restricted-block" jsf:rendered="#{result.entity.notaryServiceBound}">
    <span  title="Notary Service Bound" class="glyphicon glyphicon-tower text-danger"/>
