@@ -181,6 +181,36 @@ Additional download options available for tabular data (found in the same drop-d
 
 Differentially Private (DP) Metadata can also be accessed for restricted tabular files if the data depositor has created a DP Metadata Release. See :ref:`dp-release-create` for more information.
 
+Research Code
+-------------
+
+Code files - such as Stata, R, MATLAB, or Python files or scripts - have become a frequent addition to the research data deposited in Dataverse repositories. Research code is typically developed by few researchers with the primary goal of obtaining results, while its reproducibility and reuse aspects are sometimes overlooked. Because several independent studies reported issues trying to rerun research code, please consider the following guidelines if your dataset contains code.
+
+The following are general guidelines applicable to all programming languages.
+
+- Create a README text file in the top-level directory to introduce your project. It should answer questions that reviewers or reusers would likely have, such as how to install and use your code. If in doubt, consider using existing templates such as `a  README template for social science replication packages <https://social-science-data-editors.github.io/template_README/template-README.html>`_.
+- Depending on the number of files in your dataset, consider having data and code in distinct directories, each of which should have some documentation like a README. 
+- Consider adding a license to your source code. You can do that by creating a LICENSE file in the dataset or by specifying the license(s) in the README or directly in the code. Find out more about code licenses at `the Open Source Initiative webpage <https://opensource.org/licenses>`_.
+- If possible, use free and open-source file formats and software to make your research outputs more reusable and accessible.
+- Consider testing your code in a clean environment before sharing it, as it could help you identify missing files or other errors. For example, your code should use relative file paths instead of absolute (or full) file paths, as they can cause an execution error.
+- Consider providing notes (in the README) on the expected code outputs or adding tests in the code, which would ensure that its functionality is intact.
+
+Capturing code dependencies will help other researchers recreate the necessary runtime environment. Without it, your code will not be able to run correctly (or at all). 
+One option is to use platforms such as `Whole Tale <https://wholetale.org>`_, `Jupyter Binder <https://mybinder.org>`_ or `Renku <https://renkulab.io>`_, which facilitate research reproducibility. Have a look at `Dataverse Integrations <https://guides.dataverse.org/en/5.4/admin/integrations.html>`_ for more information. 
+Another option is to use an automatic code dependency capture, which is often supported through the programming language. Here are a few examples:
+
+- If you are using the conda package manager, you can export your environment with the command ``conda env export > environment.yml``. For more information, see the `official documentation <https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#sharing-an-environment>`__.
+- Python has multiple conventions for capturing its dependencies, but probably the best-known one is with the ``requirements.txt`` file, which is created using the command ``pip freeze > requirements. txt``. Managing environments with ``pip`` is explained in the `official documentation <https://docs.python.org/3/tutorial/venv.html#managing-packages-with-pip>`__.
+- If you are using the R programming language, create a file called ``install.R``, and list all library dependencies that your code requires. This file should be executable in R to set up the environment. See also other strategies for capturing the environment proposed by RStudio in the `official documentation <https://environments.rstudio.com>`__.
+- In case you are using multiple programming languages or different versions of the same language, consider using a containerization technology such as Docker. You can create a Dockerfile that builds your environment and deposit it within your dataset (see `the official documentation <https://docs.docker.com/language/python/build-images/>`__). It is worth noting that creating a reliable Dockerfile may be tricky. If you choose this route, make sure to specify dependency versions and check out `Docker's best practices <https://docs.docker.com/develop/develop-images/dockerfile_best-practices/>`_.
+
+Finally, automating your code can be immensely helpful to the code and research reviewers. Here are a few options on how to automate your code.
+
+- A simple way to automate your code is using a bash script or Make. The Turing Way Community has `a detailed guide <https://the-turing-way.netlify.app/reproducible-research/make.html>`_ on how to use the Make build automation tool.
+- Consider using research workflow tools to automate your analysis. A popular workflow tool is called Common Workflow Language, and you can find more information about it `from the Common Workflow Language User Guide <https://www.commonwl.org/user_guide/>`_.
+
+**Note:** Capturing code dependencies and automating your code will create new files in your directory. Make sure to include them when depositing your dataset.
+
 Astronomy (FITS)
 ----------------
 

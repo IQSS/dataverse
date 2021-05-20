@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.makedatacount;
 
 import edu.harvard.iq.dataverse.Dataset;
 import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -217,10 +218,8 @@ public class DatasetMetrics implements Serializable {
     }
 
     public void setCountryCode(String countryCode) {
-        this.countryCode = countryCode;
+        this.countryCode = ((countryCode == null) ? null : countryCode.toLowerCase());
     }
-    
-
     
     @Transient private Long viewsUnique;
     @Transient private Long viewsTotal;
