@@ -68,6 +68,7 @@ public class LDNInbox extends AbstractApiBean {
     protected HttpServletRequest httpRequest;
 
     @POST
+    @Path("/")
     @Consumes(MediaType.APPLICATION_JSON + "+ld")
     public Response acceptMessage(String body) {
         IpAddress origin = new DataverseRequest(null, httpRequest).getSourceAddress();
@@ -82,26 +83,29 @@ public class LDNInbox extends AbstractApiBean {
                 throw new BadRequestException(
                         "Could not parse message to find acceptable citation link to a dataset.");
             }
-            if (jsonld.containsKey(JsonLDTerm.schemaOrg("identifier").toString())) {
-                citingPID = jsonld.getJsonObject(JsonLDTerm.schemaOrg("identifier").toString()).getString("@id");
-
+            if (jsonld.containsKey(JsonLDTerm.schemaOrg("identifier").getUrl())) {
+                citingPID = jsonld.getJsonObject(JsonLDTerm.schemaOrg("identifier").getUrl()).getString("@id");
+                logger.fine("Citing PID: " + citingPID);
                 if (jsonld.containsKey("@type")) {
                     citingType = jsonld.getString("@type");
                     if (citingType.startsWith(JsonLDNamespace.schema.getUrl())) {
                         citingType.replace(JsonLDNamespace.schema.getUrl(), "");
                     }
-                    if (jsonld.containsKey(JsonLDTerm.schemaOrg("citation").toString())) {
-                        JsonObject citation = jsonld.getJsonObject(JsonLDTerm.schemaOrg("citation").toString());
+                    logger.fine("Citing Type: " + citingType);
+                    if (jsonld.containsKey(JsonLDTerm.schemaOrg("citation").getUrl())) {
+                        JsonObject citation = jsonld.getJsonObject(JsonLDTerm.schemaOrg("citation").getUrl());
                         if (citation != null) {
                             if (citation.containsKey("@type")
-                                    && citation.getString("@type").equals(JsonLDTerm.schemaOrg("Dataset").toString())
-                                    && citation.containsKey(JsonLDTerm.schemaOrg("identifier").toString())) {
-                                String pid = citation.getString("@value");
+                                    && citation.getString("@type").equals(JsonLDTerm.schemaOrg("Dataset").getUrl())
+                                    && citation.containsKey(JsonLDTerm.schemaOrg("identifier").getUrl())) {
+                                String pid = citation.getString(JsonLDTerm.schemaOrg("identifier").getUrl());
+                                logger.fine("Raw PID: " + pid);
                                 if (pid.startsWith(GlobalId.DOI_RESOLVER_URL)) {
                                     pid.replace(GlobalId.DOI_RESOLVER_URL, GlobalId.DOI_PROTOCOL + ":");
                                 } else if (pid.startsWith(GlobalId.HDL_RESOLVER_URL)) {
                                     pid.replace(GlobalId.HDL_RESOLVER_URL, GlobalId.HDL_PROTOCOL + ":");
                                 }
+                                logger.fine("Protocol PID: " + pid);
                                 Optional<GlobalId> id = GlobalId.parse(pid);
                                 Dataset dataset = datasetSvc.findByGlobalId(pid);
                                 if (dataset != null) {
@@ -126,22 +130,22 @@ public class LDNInbox extends AbstractApiBean {
                         }
                     }
                 }
-
-
-                if (!sent) {
-                    if (citingPID == null || citingType == null) {
-                        throw new BadRequestException(
-                                "Could not parse message to find acceptable citation link to a dataset.");
-                    } else {
-                        throw new ServiceUnavailableException(
-                                "Unable to process message. Please contact the administrators.");
-                    }
-                }
-            } else {
-                logger.info("Ignoring message from IP address: " + origin.toString());
-                throw new ForbiddenException("Inbox does not acept messages from this address");
             }
+
+            if (!sent) {
+                if (citingPID == null || citingType == null) {
+                    throw new BadRequestException(
+                            "Could not parse message to find acceptable citation link to a dataset.");
+                } else {
+                    throw new ServiceUnavailableException(
+                            "Unable to process message. Please contact the administrators.");
+                }
+            }
+        } else {
+            logger.info("Ignoring message from IP address: " + origin.toString());
+            throw new ForbiddenException("Inbox does not acept messages from this address");
         }
+
         return ok("Message Received");
     }
 }
