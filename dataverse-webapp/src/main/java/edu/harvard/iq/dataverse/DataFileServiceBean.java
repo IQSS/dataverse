@@ -37,6 +37,8 @@ import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
+import org.apache.commons.compress.archivers.sevenz.SevenZFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -1449,6 +1451,20 @@ public class DataFileServiceBean implements java.io.Serializable {
         } else if (finalType.equals("application/zip")
                 && settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.ZipUploadFilesLimit) == 0) {
             uncompressedSize = extractZipContentsSize(tempFile);
+        } else if ("application/x-7z-compressed".equals(finalType)) {
+            long size = 0L;
+            try {
+                SevenZFile archive = new SevenZFile(tempFile.toFile());
+                SevenZArchiveEntry entry;
+                while ((entry = archive.getNextEntry()) != null) {
+                    if (!entry.isDirectory()) {
+                        size += entry.getSize();
+                    }
+                }
+            } catch (IOException ioe) {
+                logger.warn("Exception while checking contents of 7z file: " + tempFile.getFileName(), ioe);
+            }
+            uncompressedSize = size;
         } else if (finalType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)) {
             // Shape files may have to be split into multiple files,
             // one zip archive per each complete set of shape files:
