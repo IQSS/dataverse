@@ -511,18 +511,6 @@ public class DataversePage implements java.io.Serializable {
         }
         setEditInputLevel(false);
     }
-    
-    public void toggleInputLevel( Long mdbId, long dsftId){
-        for (MetadataBlock mdb : allMetadataBlocks) {
-            if (mdb.getId().equals(mdbId)) {
-                for (DatasetFieldType dsftTest : mdb.getDatasetFieldTypes()) {
-                    if (dsftTest.getId().equals(dsftId)) {
-                            dsftTest.setRequiredDV(!dsftTest.isRequiredDV());                           
-                    }
-                }
-            }
-        }        
-    }
 
     public void updateInclude(Long mdbId, long dsftId) {
         List<DatasetFieldType> childDSFT = new ArrayList<>();
@@ -561,14 +549,19 @@ public class DataversePage implements java.io.Serializable {
     public List<SelectItem> resetSelectItems(DatasetFieldType typeIn) {
         List<SelectItem> retList = new ArrayList<>();
         if ((typeIn.isHasParent() && typeIn.getParentDatasetFieldType().isInclude()) || (!typeIn.isHasParent() && typeIn.isInclude())) {
-            SelectItem requiredItem = new SelectItem();
-            requiredItem.setLabel(BundleUtil.getStringFromBundle("dataverse.item.required"));
-            requiredItem.setValue(true);
-            retList.add(requiredItem);
-            SelectItem optional = new SelectItem();
-            optional.setLabel(BundleUtil.getStringFromBundle("dataverse.item.optional"));
-            optional.setValue(false);
-            retList.add(optional);
+                SelectItem requiredItem = new SelectItem();
+                requiredItem.setLabel(BundleUtil.getStringFromBundle("dataverse.item.required"));
+                requiredItem.setValue(true);
+                retList.add(requiredItem);
+                SelectItem optional = new SelectItem();
+                // When parent field is not required and child is; default level is "Conditionally Required"
+                if (typeIn.isRequired() && typeIn.isHasParent() && !typeIn.getParentDatasetFieldType().isRequired()) {
+                    optional.setLabel(BundleUtil.getStringFromBundle("dataverse.item.required.conditional"));
+                } else {
+                    optional.setLabel(BundleUtil.getStringFromBundle("dataverse.item.optional"));                    
+                }
+                optional.setValue(false);
+                retList.add(optional);
         } else {
             SelectItem hidden = new SelectItem();
             hidden.setLabel(BundleUtil.getStringFromBundle("dataverse.item.hidden"));
@@ -618,24 +611,30 @@ public class DataversePage implements java.io.Serializable {
                 if (dataverse.isMetadataBlockRoot() && (mdb.isSelected() || mdb.isRequired())) {
                     selectedBlocks.add(mdb);
                     for (DatasetFieldType dsft : mdb.getDatasetFieldTypes()) {
-                        if (dsft.isRequiredDV() && !dsft.isRequired()
-                                && ((!dsft.isHasParent() && dsft.isInclude())
-                                || (dsft.isHasParent() && dsft.getParentDatasetFieldType().isInclude()))) {
-                            DataverseFieldTypeInputLevel dftil = new DataverseFieldTypeInputLevel();
-                            dftil.setDatasetFieldType(dsft);
-                            dftil.setDataverse(dataverse);
-                            dftil.setRequired(true);
-                            dftil.setInclude(true);
-                            listDFTIL.add(dftil);
+                        // currently we don't allow input levels for setting an optional field as conditionally required
+                        // so we skip looking at parents (which get set automatically with their children)
+                        if (!dsft.isHasChildren() && dsft.isRequiredDV()) {
+                            boolean addRequiredInputLevels = false;
+                            
+                            if (!dsft.isHasParent() && dsft.isInclude()) {
+                                addRequiredInputLevels = !dsft.isRequired();
+                            }
+                            if (dsft.isHasParent() && dsft.getParentDatasetFieldType().isInclude()) {
+                                addRequiredInputLevels = !dsft.isRequired() || !dsft.getParentDatasetFieldType().isRequired();
+                            }
+                            
+                            if (addRequiredInputLevels) {
+                                listDFTIL.add(new DataverseFieldTypeInputLevel(dsft, dataverse,true, true));
+                            
+                                //also add the parent as required
+                                if (dsft.isHasParent()) {
+                                    listDFTIL.add(new DataverseFieldTypeInputLevel(dsft.getParentDatasetFieldType(), dataverse,true, true));
+                                }      
+                            }
                         }
                         if ((!dsft.isHasParent() && !dsft.isInclude())
                                 || (dsft.isHasParent() && !dsft.getParentDatasetFieldType().isInclude())) {
-                            DataverseFieldTypeInputLevel dftil = new DataverseFieldTypeInputLevel();
-                            dftil.setDatasetFieldType(dsft);
-                            dftil.setDataverse(dataverse);
-                            dftil.setRequired(false);
-                            dftil.setInclude(false);
-                            listDFTIL.add(dftil);
+                            listDFTIL.add(new DataverseFieldTypeInputLevel(dsft, dataverse,false, false));                        
                         }
                     }
                 }
@@ -706,7 +705,7 @@ public class DataversePage implements java.io.Serializable {
             return null;
         }
     }
-
+    
     public String cancel() {
         // reset values
         dataverse = dataverseService.find(dataverse.getId());
@@ -787,18 +786,9 @@ public class DataversePage implements java.io.Serializable {
             return "";
         }
 
-        AuthenticatedUser savedSearchCreator = getAuthenticatedUser();
-        if (savedSearchCreator == null) {
-            String msg = BundleUtil.getStringFromBundle("dataverse.link.user");
-            logger.severe(msg);
-            JsfHelper.addErrorMessage(msg);
-            return returnRedirect();
-        }
-
         linkingDataverse = dataverseService.find(linkingDataverseId);
 
         LinkDataverseCommand cmd = new LinkDataverseCommand(dvRequestService.getDataverseRequest(), linkingDataverse, dataverse);
-        //LinkDvObjectCommand cmd = new LinkDvObjectCommand (session.getUser(), linkingDataverse, dataverse);
         try {
             commandEngine.submit(cmd);
         } catch (CommandException ex) {
@@ -808,32 +798,9 @@ public class DataversePage implements java.io.Serializable {
             JsfHelper.addErrorMessage(msg);
             return returnRedirect();
         }
-
-        SavedSearch savedSearchOfChildren = createSavedSearchForChildren(savedSearchCreator);
-
-        boolean createLinksAndIndexRightNow = false;
-        if (createLinksAndIndexRightNow) {
-            try {
-                // create links (does indexing) right now (might be expensive)
-                boolean debug = false;
-                DataverseRequest dataverseRequest = new DataverseRequest(savedSearchCreator, SavedSearchServiceBean.getHttpServletRequest());
-                savedSearchService.makeLinksForSingleSavedSearch(dataverseRequest, savedSearchOfChildren, debug);              
-                JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.linked.success", getSuccessMessageArguments()));                   
-                return returnRedirect();
-            } catch (SearchException | CommandException ex) {
-                // error: solr is down, etc. can't link children right now
-                JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.linked.internalerror", getSuccessMessageArguments()));
-                String msg = dataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName() + " but contents will not appear until an internal error has been fixed.";
-                logger.log(Level.SEVERE, "{0} {1}", new Object[]{msg, ex});
-                //JsfHelper.addErrorMessage(msg);
-                return returnRedirect();
-            }
-        } else {
-            // defer: please wait for the next timer/cron job
-            //JsfHelper.addSuccessMessage(dataverse.getDisplayName() + " has been successfully linked to " + linkingDataverse.getDisplayName() + ". Please wait for its contents to appear.");
-            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.linked.success.wait", getSuccessMessageArguments()));
-            return returnRedirect();
-        }
+        
+        JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataverse.linked.success.wait", getSuccessMessageArguments()));
+        return returnRedirect();        
     }
     
     private List<String> getSuccessMessageArguments() {
@@ -935,7 +902,7 @@ public class DataversePage implements java.io.Serializable {
 
             }
         } else {
-            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.publish.not.authorized"));            
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataverse.release.authenticatedUsersOnly"));
         }
         return returnRedirect();
 
@@ -1042,7 +1009,9 @@ public class DataversePage implements java.io.Serializable {
                                 child.setRequiredDV(dsfIlChild.isRequired());
                                 child.setInclude(dsfIlChild.isInclude());
                             } else {
-                                child.setRequiredDV(child.isRequired());
+                                // in the case of conditionally required (child = true, parent = false)
+                                // we set this to false; i.e this is the default "don't override" value
+                                child.setRequiredDV(child.isRequired() && dsft.isRequired());
                                 child.setInclude(true);
                             }
                             child.setOptionSelectItems(resetSelectItems(child));

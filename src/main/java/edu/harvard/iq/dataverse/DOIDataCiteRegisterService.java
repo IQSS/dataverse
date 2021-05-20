@@ -5,7 +5,8 @@
  */
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.AbstractGlobalIdServiceBean.GlobalIdMetadataTemplate;
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,7 +20,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
@@ -174,7 +174,8 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setCreators(Util.getListFromStr(metadata.get("datacite.creator")));
         metadataTemplate.setAuthors(dataset.getLatestVersion().getDatasetAuthors());
         if (dvObject.isInstanceofDataset()) {
-            String description = dataset.getLatestVersion().getDescriptionPlainText();
+            //While getDescriptionPlainText strips < and > from HTML, it leaves '&' (at least so we need to xml escape as well
+            String description = StringEscapeUtils.escapeXml(dataset.getLatestVersion().getDescriptionPlainText());
             if (description.isEmpty() || description.equals(DatasetField.NA_VALUE)) {
                 description = AbstractGlobalIdServiceBean.UNAVAILABLE;
             }
@@ -205,7 +206,7 @@ public class DOIDataCiteRegisterService {
         }
         
         metadataTemplate.setTitle(title);
-        String producerString = dataset.getLatestVersion().getRootDataverseNameforCitation();
+        String producerString = BrandingUtil.getRootDataverseCollectionName();
         if (producerString.isEmpty() || producerString.equals(DatasetField.NA_VALUE)) {
             producerString = AbstractGlobalIdServiceBean.UNAVAILABLE;
         }

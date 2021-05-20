@@ -8,7 +8,6 @@ import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
-import edu.harvard.iq.dataverse.datasetutility.WorldMapPermissionHelper;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateGuestbookResponseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
@@ -86,7 +85,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     @Inject
     DataverseRequestServiceBean dvRequestService;
     
-    @Inject WorldMapPermissionHelper worldMapPermissionHelper;
     @Inject FileDownloadHelper fileDownloadHelper;
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
@@ -98,7 +96,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
     }
     
     public void writeGuestbookAndStartBatchDownload(GuestbookResponse guestbookResponse, Boolean doNotSaveGuestbookRecord){
-         
+
         if (guestbookResponse == null || guestbookResponse.getSelectedFileIds() == null) {
             return;
         }
@@ -282,6 +280,14 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         redirectToBatchDownloadAPI(multiFileString, true, downloadOriginal);
     }
 
+    public void redirectToAuxFileDownloadAPI(Long fileId, String formatTag, String formatVersion) {
+        String fileDownloadUrl = "/api/access/datafile/" + fileId + "/auxiliary/" + formatTag + "/" + formatVersion;
+        try {
+            FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
+        } catch (IOException ex) {
+            logger.info("Failed to issue a redirect to aux file download url (" + fileDownloadUrl + "): " + ex);
+        }
+    }
     
     /**
      * Launch an "explore" tool which is a type of ExternalTool such as
@@ -334,45 +340,10 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
     }
 
-    public String startWorldMapDownloadLink(GuestbookResponse guestbookResponse, FileMetadata fmd){
-                
-        if (guestbookResponse != null  && guestbookResponse.isWriteResponse() && ((fmd != null && fmd.getDataFile() != null) || guestbookResponse.getDataFile() != null)){
-            if(guestbookResponse.getDataFile() == null && fmd != null){
-                guestbookResponse.setDataFile(fmd.getDataFile());
-            }
-            if (fmd == null || !fmd.getDatasetVersion().isDraft()){
-                writeGuestbookResponseRecord(guestbookResponse);
-            }
-        }
-        DataFile file = null;
-        if (fmd != null){
-            file  = fmd.getDataFile();
-        }
-        if (guestbookResponse != null && guestbookResponse.getDataFile() != null && file == null){
-            file  = guestbookResponse.getDataFile();
-        }
-        
-
-        String retVal = worldMapPermissionHelper.getMapLayerMetadata(file).getLayerLink();
-        
-        try {
-            FacesContext.getCurrentInstance().getExternalContext().redirect(retVal);
-            return retVal;
-        } catch (IOException ex) {
-            logger.info("Failed to issue a redirect to file download url.");
-        }
-        return retVal;
-    }
-
     public Boolean canSeeTwoRavensExploreButton(){
         return false;
     }
-    
-    
-    public Boolean canUserSeeExploreWorldMapButton(){
-        return false;
-    }
-    
+
     public void downloadDatasetCitationXML(Dataset dataset) {
         downloadCitationXML(null, dataset, false);
     }

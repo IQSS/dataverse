@@ -136,9 +136,9 @@ public class IngestServiceBean {
     @EJB
     SystemConfig systemConfig;
 
-    @Resource(mappedName = "jms/DataverseIngest")
+    @Resource(lookup = "java:app/jms/queue/ingest")
     Queue queue;
-    @Resource(mappedName = "jms/IngestQueueConnectionFactory")
+    @Resource(lookup = "java:app/jms/factory/ingest")
     QueueConnectionFactory factory;
     
 

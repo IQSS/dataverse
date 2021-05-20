@@ -24,9 +24,6 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
-import edu.harvard.iq.dataverse.UserNotification;
-import java.sql.Timestamp;
-import java.util.Date;
 
 /**
  * Deletes a data file, both DB entity and filesystem object.
@@ -213,31 +210,7 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         } catch (Exception e) {
             logger.log(Level.WARNING, "Identifier deletion was not successfull:", e.getMessage());
         }
-        
-        // If there is a Map Layer associated with this file, we may need to 
-        // try and remove the layer data on the WorldMap side. 
-        if (ctxt.mapLayerMetadata().findMetadataByDatafile(doomed) != null) {
-            // (We need an AuthenticatedUser in order to produce a WorldMap token!)
-            String id = getUser().getIdentifier();
-            id = id.startsWith("@") ? id.substring(1) : id;
-            AuthenticatedUser authenticatedUser = ctxt.authentication().getAuthenticatedUser(id);
-            try {
-                ctxt.mapLayerMetadata().deleteMapLayerFromWorldMap(doomed, authenticatedUser);
 
-                // We have the dedicatd command DeleteMapLayerMetadataCommand, but 
-                // there's no need to use it explicitly, since the Dataverse-side
-                // MapLayerMetadata entity will be deleted by the database 
-                // cascade on the DataFile. -- L.A. Apr. 2020
-
-            } catch (Exception ex) {
-                // We are not going to treat it as a fatal condition and bail out, 
-                // but we will send a notification to the user, warning them 
-                // there may still be some data associated with the mapped layer, 
-                // on the WorldMap side, un-deleted:
-                ctxt.notifications().sendNotification(authenticatedUser, new Timestamp(new Date().getTime()), UserNotification.Type.MAPLAYERDELETEFAILED, doomed.getFileMetadata().getId());
-            }
-
-        }
         DataFile doomedAndMerged = ctxt.em().merge(doomed);
         ctxt.em().remove(doomedAndMerged);
         /**
@@ -247,19 +220,6 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
          * deleted.
          */
         // ctxt.em().flush();
-
-        /**
-         * We *could* re-index the entire dataset but it's more efficient to
-         * target individual files for deletion, which should always be drafts.
-         *
-         * See also https://redmine.hmdc.harvard.edu/issues/3786
-         */
-        String indexingResult = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + "_draft");
-        /**
-         * @todo check indexing result for success or failure. Really, we need
-         * an indexing queuing system:
-         * https://redmine.hmdc.harvard.edu/issues/3643
-         */
 
     }
     
@@ -273,4 +233,28 @@ public class DeleteDataFileCommand extends AbstractVoidCommand {
         return sb.toString();
     }
 
+    @Override
+    public boolean onSuccess(CommandContext ctxt, Object r) {
+        /**
+         * We *could* re-index the entire dataset but it's more efficient to
+         * target individual files for deletion, which should always be drafts.
+         *
+         * See also https://redmine.hmdc.harvard.edu/issues/3786
+         */
+        String indexingResult = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + IndexServiceBean.draftSuffix);
+        String indexingResult2 = ctxt.index().removeSolrDocFromIndex(IndexServiceBean.solrDocIdentifierFile + doomed.getId() + IndexServiceBean.draftSuffix + IndexServiceBean.discoverabilityPermissionSuffix);
+        /**
+        * @todo: check indexing result for success or failure. This method 
+        * currently always returns true because the underlying methods 
+        * (already existing) handle exceptions and don't return a boolean value.
+        * Previously an indexing queuing system was proposed:
+        *  https://redmine.hmdc.harvard.edu/issues/3643
+        * but we are considering reworking the code such that methods throw
+        * indexing exception to callers that may need to handle effects such
+        * as on data integrity where related operations like database updates
+        * or deletes are expected to be coordinated with indexing operations
+        */
+
+        return true;
+    }
 }

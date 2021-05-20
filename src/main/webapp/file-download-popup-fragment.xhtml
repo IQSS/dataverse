@@ -164,7 +164,6 @@
             <!--Note: the guestbookResponse.fileFormat is being set in xhtml via the initial download buttons in file-download-button-fragment.xhtml -->
             <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}"
                              rendered="#{guestbookResponse.fileFormat != 'externalTool' and
-                                         guestbookResponse.fileFormat != 'worldMap' and
                                          guestbookResponse.fileFormat != 'package' and
                                          popupContext != 'previewTab'}"
                              actionListener="#{fileDownloadHelper.writeGuestbookAndStartDownload(guestbookResponse)}"
@@ -177,12 +176,6 @@
                              actionListener="#{FilePage.showPreview(guestbookResponse)}"
                              process="previewTab"
                              update="fileForm:tabView">
-                <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
-            </p:commandButton>
-            <!--WORLDMAP BUTTON-->
-            <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}" rendered="#{guestbookResponse.fileFormat == 'worldMap'}"
-                             actionListener="#{fileDownloadHelper.startWorldMapDownloadLink(guestbookResponse, null)}"
-                             update="guestbookUIFragment">
                 <f:param name="DO_GB_VALIDATION_#{popupContext}" value="true"/>
             </p:commandButton>
             <!--EXTERNAL TOOL BUTTON-->
