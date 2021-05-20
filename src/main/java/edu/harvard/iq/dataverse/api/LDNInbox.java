@@ -101,9 +101,9 @@ public class LDNInbox extends AbstractApiBean {
                                 String pid = citation.getString(JsonLDTerm.schemaOrg("identifier").getUrl());
                                 logger.fine("Raw PID: " + pid);
                                 if (pid.startsWith(GlobalId.DOI_RESOLVER_URL)) {
-                                    pid.replace(GlobalId.DOI_RESOLVER_URL, GlobalId.DOI_PROTOCOL + ":");
+                                    pid = pid.replace(GlobalId.DOI_RESOLVER_URL, GlobalId.DOI_PROTOCOL + ":");
                                 } else if (pid.startsWith(GlobalId.HDL_RESOLVER_URL)) {
-                                    pid.replace(GlobalId.HDL_RESOLVER_URL, GlobalId.HDL_PROTOCOL + ":");
+                                    pid = pid.replace(GlobalId.HDL_RESOLVER_URL, GlobalId.HDL_PROTOCOL + ":");
                                 }
                                 logger.fine("Protocol PID: " + pid);
                                 Optional<GlobalId> id = GlobalId.parse(pid);
