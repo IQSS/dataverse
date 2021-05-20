@@ -435,7 +435,6 @@ public class DatasetPage implements java.io.Serializable {
         this.removeUnusedTags = removeUnusedTags;
     }
 
-    private List<FileMetadata> fileMetadatas;
     private String fileSortField;
     private String fileSortOrder;
 
@@ -1079,15 +1078,21 @@ public class DatasetPage implements java.io.Serializable {
         }
         return true;
     }
+    
+    Boolean canDownloadFiles = null;
 
-    public boolean canDownloadFiles(){
-        //returns true if the page user has permission to download at least one file
-        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-             if (fileDownloadHelper.canDownloadFile(fmd)) {
-                 return true;
-             }
+    //caching can download files to limit trips to File Download Helper
+    public boolean canDownloadFiles() {
+        if (canDownloadFiles == null) {
+            canDownloadFiles = false;
+            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+                if (fileDownloadHelper.canDownloadFile(fmd)) {
+                    canDownloadFiles = true;
+                    break;
+                }
+            }
         }
-        return false;
+        return canDownloadFiles;
     }
 
     /*
@@ -1867,9 +1872,6 @@ public class DatasetPage implements java.io.Serializable {
 
 
             if (initFull) {
-                tooLargeToDownload = getSizeOfDatasetNumeric() > settingsWrapper.getZipDownloadLimit();
-                tooLargeToDownloadOriginal = getSizeOfDatasetOrigNumeric() > settingsWrapper.getZipDownloadLimit();
-                tooLargeToDownloadArchival = getSizeOfDatasetArchivalNumeric() > settingsWrapper.getZipDownloadLimit();
 
                 // init the list of FileMetadatas
                 if (workingVersion.isDraft() && canUpdateDataset()) {
@@ -1877,19 +1879,17 @@ public class DatasetPage implements java.io.Serializable {
                 } else {
                     // an attempt to retreive both the filemetadatas and datafiles early on, so that
                     // we don't have to do so later (possibly, many more times than necessary):
-                    datafileService.findFileMetadataOptimizedExperimental(dataset);
+                    AuthenticatedUser au = session.getUser() instanceof AuthenticatedUser ? (AuthenticatedUser) session.getUser() : null;
+                    datafileService.findFileMetadataOptimizedExperimental(dataset, workingVersion, au);
                 }
-
                 // This will default to all the files in the version, if the search term
                 // parameter hasn't been specified yet:
                 fileMetadatasSearch = selectFileMetadatasForDisplay();
-
                 ownerId = dataset.getOwner().getId();
                 datasetNextMajorVersion = this.dataset.getNextMajorVersionString();
                 datasetNextMinorVersion = this.dataset.getNextMinorVersionString();
                 datasetVersionUI = datasetVersionUI.initDatasetVersionUI(workingVersion, false);
                 updateDatasetFieldInputLevels();
-
                 setExistReleasedVersion(resetExistRealeaseVersion());
                 //moving setVersionTabList to tab change event
                 //setVersionTabList(resetVersionTabList());
@@ -1917,7 +1917,10 @@ public class DatasetPage implements java.io.Serializable {
                         logger.warning("Problem getting rsync script (Command Exception): " + cex.getLocalizedMessage());
                     }
                 }
-
+               
+                tooLargeToDownload = getSizeOfDatasetNumeric() > settingsWrapper.getZipDownloadLimit();
+                tooLargeToDownloadOriginal = getSizeOfDatasetOrigNumeric() > settingsWrapper.getZipDownloadLimit();
+                tooLargeToDownloadArchival = getSizeOfDatasetArchivalNumeric() > settingsWrapper.getZipDownloadLimit();
             }
         } else if (ownerId != null) {
             // create mode for a new child dataset
@@ -2711,7 +2714,8 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         if (readOnly) {
-            datafileService.findFileMetadataOptimizedExperimental(dataset);
+            AuthenticatedUser au = session.getUser() instanceof AuthenticatedUser ? (AuthenticatedUser) session.getUser() : null;
+            datafileService.findFileMetadataOptimizedExperimental(dataset, workingVersion, au);
         }
 
         fileMetadatasSearch = selectFileMetadatasForDisplay();
@@ -4999,14 +5003,6 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setFileSortOrder(String fileSortOrder) {
         this.fileSortOrder = fileSortOrder;
-    }
-
-    public List<FileMetadata> getFileMetadatas() {
-        if (isSortButtonEnabled()) {
-            return fileMetadatas;
-        } else {
-            return new ArrayList<>();
-        }
     }
 
     public String getFileSortFieldName() {
