@@ -89,7 +89,7 @@ public class LDNInbox extends AbstractApiBean {
                 if (jsonld.containsKey("@type")) {
                     citingType = jsonld.getString("@type");
                     if (citingType.startsWith(JsonLDNamespace.schema.getUrl())) {
-                        citingType.replace(JsonLDNamespace.schema.getUrl(), "");
+                        citingType = citingType.replace(JsonLDNamespace.schema.getUrl(), "");
                     }
                     logger.fine("Citing Type: " + citingType);
                     if (jsonld.containsKey(JsonLDTerm.schemaOrg("citation").getUrl())) {
@@ -118,11 +118,12 @@ public class LDNInbox extends AbstractApiBean {
                                                     citingType, 
                                                     citingPID,
                                                     systemConfig.getDataverseSiteUrl(),
-                                                    dataset.getGlobalId().toString(), dataset.getDisplayName()));
-
+                                                    dataset.getGlobalId().toString(), 
+                                                    dataset.getDisplayName()));
+// Subject: <<<Root: You have been assigned a role>>>. Body: Root Support, the Root has just been notified that the http://schema.org/ScholarlyArticle <a href={3}/dataset.xhtml?persistentId={4}>http://ec2-3-236-45-73.compute-1.amazonaws.com</a> cites "<a href={5}>Une Démonstration</a>.<br><br>You may contact us for support at qqmyers@hotmail.com.<br><br>Thank you,<br>Root Support
                                     sent = mailService.sendSystemEmail(
                                             BrandingUtil.getSupportTeamEmailAddress(systemAddress),
-                                            BundleUtil.getStringFromBundle("notification.email.assign.role.subject",
+                                            BundleUtil.getStringFromBundle("api.ldninbox.citation.subject",
                                                     Arrays.asList(BrandingUtil.getInstallationBrandName())),
                                             citationMessage, true);
                                 }
