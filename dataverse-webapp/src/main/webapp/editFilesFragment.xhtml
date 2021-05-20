@@ -551,12 +551,12 @@
                                         <span class="caret"></span>
                                     </button>
                                     <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
-                                        <li class="#{lockedFromEdits? 'disabled' : ''}">
+                                        <li class="#{lockedFromEdits ? 'disabled' : ''}">
                                             <p:commandLink onclick="checkFilesSelected();">
                                                 <h:outputText value="#{bundle['file.delete']}"/>
                                             </p:commandLink>
                                         </li>
-                                        <li jsf:rendered="#{isDatasetSection}">
+                                        <li class="#{lockedFromEdits ? 'disabled' : ''}">
                                             <p:commandLink onclick="checkFilesForLicenseEdit();">
                                                 <h:outputText value="#{bundle['file.license']}"/>
                                             </p:commandLink>
