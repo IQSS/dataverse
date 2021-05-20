@@ -487,6 +487,12 @@
             <artifactId>handle</artifactId>
             <version>8.1.1</version>
         </dependency>
+        <!-- RAR -->
+        <dependency>
+            <groupId>com.github.junrar</groupId>
+            <artifactId>junrar</artifactId>
+            <version>7.4.0</version>
+        </dependency>
         <!-- UNF v5 (buggy), (temporarily) added for testing ingest against DVN v3  - L.A. -->
         <dependency>
             <groupId>edu.harvard.iq.dvn</groupId>

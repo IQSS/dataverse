@@ -1,5 +1,9 @@
 package edu.harvard.iq.dataverse;
 
+import com.github.junrar.ContentDescription;
+import com.github.junrar.Junrar;
+import com.github.junrar.exception.RarException;
+import com.github.junrar.exception.UnsupportedRarV5Exception;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.files.mime.ApplicationMimeType;
 import edu.harvard.iq.dataverse.common.files.mime.ImageMimeType;
@@ -28,6 +32,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.ExternalRarDataUtil;
 import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.ShapefileHandler;
@@ -67,7 +72,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -1291,10 +1295,25 @@ public class DataFileServiceBean implements java.io.Serializable {
                 datafiles.add(datafile);
                 return datafiles;
             }
-
-            // If it's a ZIP file, we are going to unpack it and create multiple
-            // DataFile objects from its contents:
-        } else if (finalType.equals("application/zip") && settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.ZipUploadFilesLimit) > 0) {
+        } else if ("application/vnd.rar".equals(finalType)) {
+            try {
+                List<ContentDescription> contentsDescription = Junrar.getContentsDescription(tempFile.toFile());
+                uncompressedSize = contentsDescription.stream()
+                        .mapToLong(d -> d.size)
+                        .sum();
+            } catch (UnsupportedRarV5Exception r5e) {
+                uncompressedSize = new ExternalRarDataUtil(
+                    settingsService.getValueForKey(SettingsServiceBean.Key.RarDataUtilCommand),
+                    settingsService.getValueForKey(SettingsServiceBean.Key.RarDataUtilOpts),
+                    settingsService.getValueForKey(SettingsServiceBean.Key.RarDataLineBeforeResultDelimiter))
+                    .checkRarExternally(tempFile);
+            } catch (RarException re) {
+                logger.warn("Exception during rar file scan: " + tempFile.toString(), re);
+            }
+        }
+        // If it's a ZIP file, we are going to unpack it and create multiple
+        // DataFile objects from its contents:
+        else if (finalType.equals("application/zip") && settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.ZipUploadFilesLimit) > 0) {
 
             ZipInputStream unZippedIn = null;
             ZipEntry zipEntry = null;
@@ -1518,7 +1537,6 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         return null;
     } // end createDataFiles
-
     private long extractZipContentsSize(Path tempFile) {
         long size = 0;
         try (ZipInputStream unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()))) {
