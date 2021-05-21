@@ -1,3 +1,0 @@
-## Major Use Cases
-
-- Users can retrieve new types of metrics and per-collection metrics. The new capabilities are described in the guides. A new version of the [Dataverse Metrics web app](https://github.com/IQSS/dataverse-metrics) adds interactive graphs to display these metrics. Anyone running the existing Dataverse Metrics app will need to upgrade or apply [a small patch](https://github.com/IQSS/dataverse-metrics/pull/60) to continue retrieving metrics from Dataverse instances upgrading to this release. Issue #7177/PR #7178
