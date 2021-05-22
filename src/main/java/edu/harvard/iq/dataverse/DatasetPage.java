@@ -5131,9 +5131,9 @@ public class DatasetPage implements java.io.Serializable {
     private boolean showLinkingPopup = false;
     
 
-    public void createPrivateUrl() {
+    public void createPrivateUrl(boolean anonymizedAccess) {
         try {
-            PrivateUrl createdPrivateUrl = commandEngine.submit(new CreatePrivateUrlCommand(dvRequestService.getDataverseRequest(), dataset));
+            PrivateUrl createdPrivateUrl = commandEngine.submit(new CreatePrivateUrlCommand(dvRequestService.getDataverseRequest(), dataset, anonymizedAccess));
             privateUrl = createdPrivateUrl;
             JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.privateurl.header"),
                     BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageAuthor", Arrays.asList(getPrivateUrlLink(privateUrl))));
@@ -5163,6 +5163,9 @@ public class DatasetPage implements java.io.Serializable {
         return privateUrl.getLink();
     }
     
+    public boolean isPrivateUrlAnonymized() {
+        return privateUrl.isAnonymizedAccess();
+    }
     
     // todo: we should be able to remove - this is passed in the html pages to other fragments, but they could just access this service bean directly.
     public FileDownloadServiceBean getFileDownloadService() {

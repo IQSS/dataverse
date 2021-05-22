@@ -1446,10 +1446,10 @@ public class Datasets extends AbstractApiBean {
 
     @POST
     @Path("{id}/privateUrl")
-    public Response createPrivateUrl(@PathParam("id") String idSupplied) {
+    public Response createPrivateUrl(@PathParam("id") String idSupplied,@DefaultValue("false") @QueryParam ("anonymizedAccess") boolean anonymizedAccess) {
         return response( req -> 
                 ok(json(execCommand(
-                new CreatePrivateUrlCommand(req, findDatasetOrDie(idSupplied))))));
+                new CreatePrivateUrlCommand(req, findDatasetOrDie(idSupplied), anonymizedAccess)))));
     }
 
     @DELETE
