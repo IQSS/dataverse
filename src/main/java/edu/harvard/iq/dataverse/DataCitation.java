@@ -187,9 +187,16 @@ public class DataCitation {
     static String separator = ". ";
     
     public String toString(boolean html) {
+        return toString(html, false);
+    }
+    public String toString(boolean html, boolean anonymized) {
         // first add comma separated parts
         List<String> citationList = new ArrayList<>();
-        citationList.add(formatString(getAuthorsString(), html));
+        if(anonymized) {
+            citationList.add("Author name(s) withheld");
+        } else {
+            citationList.add(formatString(getAuthorsString(), html));
+        }
         citationList.add(year);
         if ((fileTitle != null) && isDirect()) {
             citationList.add(formatString(fileTitle, html, "\""));

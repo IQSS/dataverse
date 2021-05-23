@@ -1817,9 +1817,6 @@ public class DatasetPage implements java.io.Serializable {
                 JsfHelper.addWarningMessage(retrieveDatasetVersionResponse.getDifferentVersionMessage());//BundleUtil.getStringFromBundle("dataset.message.metadataSuccess"));
             }
             
-            // init the citation
-            displayCitation = dataset.getCitation(true, workingVersion);
-            
             if(workingVersion.isPublished()) {
                 MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, workingVersion);
                 mdcLogService.logEntry(entry);
@@ -1954,7 +1951,12 @@ public class DatasetPage implements java.io.Serializable {
                         BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageReviewer"));
             }
         }
-                
+          
+        
+        // init the citation
+        //Need to do this after privateUrl is initialized (
+        displayCitation = dataset.getCitation(true, workingVersion, isAnonymizedAccess());
+  
         displayLockInfo(dataset);
             
         for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
@@ -5163,8 +5165,12 @@ public class DatasetPage implements java.io.Serializable {
         return privateUrl.getLink();
     }
     
-    public boolean isPrivateUrlAnonymized() {
-        return privateUrl.isAnonymizedAccess();
+    public boolean isAnonymizedAccess() {
+        if (privateUrl != null && session.getUser() instanceof PrivateUrlUser) {
+            return privateUrl.isAnonymizedAccess();
+        } else {
+            return false;
+        }
     }
     
     // todo: we should be able to remove - this is passed in the html pages to other fragments, but they could just access this service bean directly.
