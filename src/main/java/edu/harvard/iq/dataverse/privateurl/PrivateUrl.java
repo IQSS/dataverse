@@ -27,15 +27,12 @@ public class PrivateUrl {
      * String.
      */
     private final String link;
-    
-    private boolean anonymizedAccess=false;
 
-    public PrivateUrl(RoleAssignment roleAssignment, Dataset dataset, String dataverseSiteUrl, boolean anonymizedAccess) {
+    public PrivateUrl(RoleAssignment roleAssignment, Dataset dataset, String dataverseSiteUrl) {
         this.token = roleAssignment.getPrivateUrlToken();
         this.link = dataverseSiteUrl + "/privateurl.xhtml?token=" + token;
         this.dataset = dataset;
         this.roleAssignment = roleAssignment;
-        this.anonymizedAccess = anonymizedAccess;
     }
 
     public Dataset getDataset() {
@@ -55,7 +52,7 @@ public class PrivateUrl {
     }
 
     public boolean isAnonymizedAccess() {
-        return anonymizedAccess;
+        return roleAssignment.isAnonymizedAccess();
     }
 
 }
