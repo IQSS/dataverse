@@ -256,15 +256,14 @@ public class IndexServiceBean {
         List<String> dataverseSegments = findPathSegments(dataverse, dataversePathSegmentsAccumulator);
         List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
         if (dataversePaths.size() > 0) {
-            // don't show yourself while indexing or in search results:
-            // https://redmine.hmdc.harvard.edu/issues/3613
-            // logger.info(dataverse.getName() + " size " + dataversePaths.size());
+            // removing the dataverse's own id from the paths
             dataversePaths.remove(dataversePaths.size() - 1);
         }
 
         //Add paths for my linking dataverses
-        List<String> linkingDataversePaths = findLinkingDataversePaths(dataverse);
-        for (String dvPath : linkingDataversePaths) {
+        List<Dataverse> linkingDataverses = findAllLinkingDataverses(dataverse);
+        List<String> linkingDataversePaths = findLinkingDataversePaths(linkingDataverses);
+        for (String dvPath:linkingDataversePaths ){
             dataversePaths.add(dvPath);
         }
         //only do this if we're indexing an individual dataverse ie not full re-index
@@ -1316,24 +1315,50 @@ public class IndexServiceBean {
         return false;
     }
     
-    private List<String> findLinkingDataversePaths(Dataverse dataverse) {
-        List<Dataverse> ancestorList = dataverse.getOwners();
-        ancestorList.add(dataverse);
-        List<String> pathListAccumulator = new ArrayList<>();
-
+    private List<Dataverse> findAllLinkingDataverses(DvObject dvObject){
+        /*
+        here we find the linking dataverse of the input object
+        then any linked dvs in its owners list
+        */
+        Dataset dataset = null;
+        Dataverse dv = null;
+        Dataverse rootDataverse = findRootDataverseCached();        
+        List <Dataverse>linkingDataverses = new ArrayList();
+        List<Dataverse> ancestorList = new ArrayList();
+        
+        try {
+            if(dvObject.isInstanceofDataset()){
+                dataset = (Dataset) dvObject;
+                linkingDataverses = dsLinkingService.findLinkingDataverses(dataset.getId());
+                ancestorList = dataset.getOwner().getOwners();
+            }
+            if(dvObject.isInstanceofDataverse()){
+                dv = (Dataverse) dvObject;
+                linkingDataverses = dvLinkingService.findLinkingDataverses(dv.getId());
+                ancestorList = dv.getOwners();
+            }
+        } catch (Exception ex) {
+            logger.info("failed to find Linking Dataverses for " + SearchFields.SUBTREE + ": " + ex);
+        }
+        
         for (Dataverse owner : ancestorList) {
-            List<Dataverse> linkingDVs = dvLinkingService.findLinkingDataverses(owner.getId());
-            for (Dataverse toAdd : linkingDVs) {
-                //get paths for each linking dataverse
-                List<String> linkingDataversePathSegmentsAccumulator = findPathSegments(toAdd, new ArrayList<>());
-                List<String> linkingDataversePaths = getDataversePathsFromSegments(linkingDataversePathSegmentsAccumulator);
+            if (!owner.equals(rootDataverse)) {
+            linkingDataverses.addAll(dvLinkingService.findLinkingDataverses(owner.getId()));
+            }
+        }       
+        
+        return linkingDataverses;
+    }
+    
+    private List<String> findLinkingDataversePaths(List<Dataverse> linkingDVs) {
 
-                while (linkingDataversePaths.size() > 1) {
-                    //we only want the final path for linked
-                    linkingDataversePaths.remove(0);
-                }
-
-                for (String dvPath : linkingDataversePaths) {
+        List<String> pathListAccumulator = new ArrayList<>();
+        for (Dataverse toAdd : linkingDVs) {
+            //get paths for each linking dataverse
+            List<String> linkingDataversePathSegmentsAccumulator = findPathSegments(toAdd, new ArrayList<>());
+            List<String> linkingDataversePaths = getDataversePathsFromSegments(linkingDataversePathSegmentsAccumulator);
+            for (String dvPath : linkingDataversePaths) {
+                if (!pathListAccumulator.contains(dvPath)) {
                     pathListAccumulator.add(dvPath);
                 }
             }
@@ -1468,38 +1493,15 @@ public class IndexServiceBean {
             }
         } catch (Exception ex) {
             logger.info("failed to find dataverseSegments for dataversePaths for " + SearchFields.SUBTREE + ": " + ex);
-        }
-        List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);       
-        if (dataversePaths.size() > 0 && dv != null) {
-            // don't show yourself while indexing or in search results:
-            // https://redmine.hmdc.harvard.edu/issues/3613
-            // logger.info(dataverse.getName() + " size " + dataversePaths.size());
-            dataversePaths.remove(dataversePaths.size() - 1);
-        }
-        // Add Paths for linking dataverses
-        List <Dataverse>linkingDataverses = new ArrayList();
-        if (dataset != null){
-            linkingDataverses = dsLinkingService.findLinkingDataverses(dataset.getId());
-        } else{
-            linkingDataverses = dvLinkingService.findLinkingDataverses(dv.getId());
-        }
-        for (Dataverse linkingDataverse : linkingDataverses) {
-            List<String> linkingDataversePathSegmentsAccumulator = new ArrayList<>();
-            List<String> linkingdataverseSegments = findPathSegments(linkingDataverse, linkingDataversePathSegmentsAccumulator);
-            List<String> linkingDataversePaths = getDataversePathsFromSegments(linkingdataverseSegments);
-            for (String dvPath : linkingDataversePaths) {
-                dataversePaths.add(dvPath);
-            }
-        }
-
-        //Add paths for my parent linking dataverses
-        List<String> linkingDataversePaths = new ArrayList();
-        if (dataset != null) {
-            linkingDataversePaths = findLinkingDataversePaths(dataset.getOwner());
-        } else {
-            linkingDataversePaths = findLinkingDataversePaths(dv.getOwner());
-        }
-
+        }        
+        List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
+        /*
+        First get all linking dataverses
+        Then get their respective paths
+        And finally add to the "normal" path
+        */
+        List<Dataverse> linkingDataverses = findAllLinkingDataverses(dvo);
+        List<String> linkingDataversePaths = findLinkingDataversePaths(linkingDataverses);
         for (String dvPath : linkingDataversePaths) {
             dataversePaths.add(dvPath);
         }
