@@ -5151,7 +5151,11 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean isAnonymizedAccess() {
-        if (privateUrl != null && session.getUser() instanceof PrivateUrlUser) {
+        if (session.getUser() instanceof PrivateUrlUser) {
+            if(privateUrl==null) {
+                privateUrl = privateUrlService.getPrivateUrlFromDatasetId(((PrivateUrlUser)session.getUser()).getDatasetId());
+                logger.info("Url was null");
+            }
             logger.info("User has anon: " + ((PrivateUrlUser)session.getUser()).hasAnonymizedAccess());
             logger.info("URL has: anon"  + privateUrl.isAnonymizedAccess());
             return privateUrl.isAnonymizedAccess();
