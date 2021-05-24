@@ -24,11 +24,11 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.FileVersionDifference;
+import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseIcon;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -507,18 +507,18 @@ public class FilePage implements java.io.Serializable {
         return thumbnailAvailable;
     }
 
-    public boolean isLicenseIconAvailable(FileMetadata fileMetadata) {
-        if (fileMetadata.getTermsOfUse().getTermsOfUseType() != TermsOfUseType.LICENSE_BASED) {
+    public boolean isLicenseIconAvailable(FileTermsOfUse termsOfUse) {
+        if (termsOfUse.getTermsOfUseType() != TermsOfUseType.LICENSE_BASED) {
             return false;
         }
-        return fileMetadata.getTermsOfUse().getLicense().getIcon() != null;
+        return termsOfUse.getLicense().getIcon() != null;
     }
 
-    public Optional<StreamedContent> getLicenseIconContent(FileMetadata fileMetadata) {
-        if (!isLicenseIconAvailable(fileMetadata)) {
+    public Optional<StreamedContent> getLicenseIconContent(FileTermsOfUse termsOfUse) {
+        if (!isLicenseIconAvailable(termsOfUse)) {
             return Optional.empty();
         }
-        LicenseIcon licenseIcon = fileMetadata.getTermsOfUse().getLicense().getIcon();
+        LicenseIcon licenseIcon = termsOfUse.getLicense().getIcon();
         return Optional.of(DefaultStreamedContent.builder()
                            .contentType(licenseIcon.getContentType())
                            .stream(() -> new ByteArrayInputStream(licenseIcon.getContent()))

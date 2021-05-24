@@ -580,6 +580,10 @@
                                                 <p class="text-block">
                                                     #{DatasetPage.termsOfUseOfFirstFile.get().license.getLocalizedName(dataverseSession.locale)}
                                                 </p>
+                                                <ui:include src="license-icon-fragment.xhtml">
+                                                    <ui:param name="termsOfUse" value="#{DatasetPage.termsOfUseOfFirstFile.get()}"/>
+                                                    <ui:param name="licenseIcon" value="#{DatasetPage.getLicenseIconContent(DatasetPage.termsOfUseOfFirstFile.get())}"/>
+                                                </ui:include>
                                             </div>
                                         </div>
                                         <div class="form-group"

@@ -364,13 +364,10 @@
                                             <span style="vertical-align: middle;">
                                                 #{bundle['file.license']}: #{FilePage.fileMetadata.termsOfUse.license.getLocalizedName(dataverseSession.locale)}
                                             </span>
-                                            <p:link href="#{FilePage.fileMetadata.termsOfUse.license.url}" target="_blank"
-                                                    rendered="#{FilePage.getLicenseIconContent(FilePage.fileMetadata).present}"
-                                                    title="#{bundle['file.license.link.title']} #{bundle.opensInNewWindow}"
-                                                    >
-                                                <p:graphicImage value="#{FilePage.getLicenseIconContent(FilePage.fileMetadata).get()}" stream="false" width="81" height="31"
-                                                        alt="#{FilePage.fileMetadata.termsOfUse.license.getLocalizedName(dataverseSession.locale)}"/>
-                                            </p:link>
+                                            <ui:include src="license-icon-fragment.xhtml">
+                                                <ui:param name="termsOfUse" value="#{FilePage.fileMetadata.termsOfUse}"/>
+                                                <ui:param name="licenseIcon" value="#{FilePage.getLicenseIconContent(FilePage.fileMetadata.termsOfUse)}"/>
+                                            </ui:include>
                                         </div>
                                         <div jsf:rendered="#{FilePage.fileMetadata.termsOfUse.termsOfUseType == termsOfUseTypeEnum.ALL_RIGHTS_RESERVED}">
                                             #{bundle['file.termsOfAccess']}: #{bundle['file.allRightsReserved']}
