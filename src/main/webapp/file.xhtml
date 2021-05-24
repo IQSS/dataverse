@@ -620,7 +620,7 @@
                             <p:tab id="versionsTab" title="#{bundle['file.dataFilesTab.versions']}">
                                 <!-- Versions -->
                                 <ui:include src="file-versions.xhtml"></ui:include>
-                                <ui:param name="anonymized" value="FilePage.anonymizedAccess"/>
+                                <ui:param name="anonymized" value="#{FilePage.anonymizedAccess}"/>
                             </p:tab>
                         </p:tabView>
                     </div>

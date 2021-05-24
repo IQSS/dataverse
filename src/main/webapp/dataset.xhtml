@@ -789,6 +789,7 @@
                                         </ul>
                                     </div>
                                 </div>
+
                                 <ui:include src="metadataFragment.xhtml">
                                     <ui:param name="datasetPage" value="true"/>
                                     <ui:param name="editMode" value="#{!empty DatasetPage.editMode ? DatasetPage.editMode : ''}"/>
@@ -796,6 +797,7 @@
                                     <ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDate != null ? DatasetPage.dataset.publicationDateFormattedYYYYMMDD : ''}"/>
                                     <ui:param name="globalId" value="#{DatasetPage.dataset.globalIdString}"/>
                                     <ui:param name="altPID" value="#{DatasetPage.dataset.alternativePersistentIdentifier}"/>
+                                    <ui:param name="anonymized" value="#{DatasetPage.anonymizedAccess}"/>
                                 </ui:include>
                             </p:tab>
                             <!-- 4.2.1: see comment above -->
@@ -810,7 +812,7 @@
                             <!-- 4.2.1: see above -->
                             <p:tab id="versionsTab" title="#{bundle['file.dataFilesTab.versions']}" rendered="#{empty DatasetPage.editMode}">
                                 <ui:include src="dataset-versions.xhtml">
-                                    <ui:param name="anonymized" value="DatasetPage.anonymizedAccess"/>
+                                    <ui:param name="anonymized" value="#{DatasetPage.anonymizedAccess}"/>
                                 </ui:include>
                             </p:tab>
                         </p:tabView>
