@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.globalid;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;

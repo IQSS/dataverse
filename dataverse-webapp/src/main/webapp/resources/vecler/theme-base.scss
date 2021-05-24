@@ -2370,16 +2370,33 @@ div.panelSearchForm input.search-input {
 	}
 	
 }
-#metrics-block.col-sm-4 {
+#metrics-block {
 	padding: 0;
 	border: none;
 	color: $main-text-color;
+
+    a {
+        padding: 0;
+
+        &:hover, &:focus {
+            text-decoration: underline;
+        }
+    }
 }
 @media screen and (max-width: $screen-xs-max) {
-	#metrics-block.col-sm-4 + div.pull-right {
-		padding-top: 15px;
-	}
+    #dataverseForm #metrics-block + div.pull-right {
+        padding-top: 15px;
+    }
+    #fileForm #metrics-block + div.pull-right {
+        padding-top: 15px;
+    }
 }
+@media screen and (max-width: $screen-sm-max) {
+    #datasetForm #metrics-block + div.pull-right {
+        padding-top: 15px;
+    }
+}
+
 
 #metrics-label {
 	background: #fff;
@@ -2389,20 +2406,20 @@ div.panelSearchForm input.search-input {
 	.glyphicon-stats {
 		color: $icon-color;
 	}
-
-	a {
-		padding: 0;
-
-		&:hover, &:focus {
-			text-decoration: underline;
-		}
-	}
 }
 
 #metrics-content {
 	border-radius: 0 6px 6px 0;
 	border: 1px solid $gray-border-color;
 	border-left: none;
+	display: flex;
+
+    .metric {
+        flex: 1;
+    }
+    .metric + .metric {
+        border-left: 1px solid $gray-border-color;
+    }
 }
 
 @media screen and (min-width: $screen-xs-max) and (max-width: 1199px) {
@@ -3868,6 +3885,12 @@ body.font-size-percent-200 {
 		background-color: $contrast-background-color;
 		color:  $contrast-foreground-color;
 	}
+
+    #metrics-content {
+        .metric + .metric {
+            border-color: $contrast-foreground-color;
+        }
+    }
 
 	.ui-state-highlight:not(tr), .ui-widget-content .ui-state-highlight:not(tr), .ui-widget-header .ui-state-highlight,
 	.ui-picklist .ui-picklist-list-wrapper .ui-widget-content .ui-state-highlight {

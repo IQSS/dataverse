@@ -1,26 +1,21 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.timer;
 
-import edu.harvard.iq.dataverse.DatasetDao;
-import edu.harvard.iq.dataverse.DataverseDao;
+import com.google.api.client.util.Preconditions;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.datafile.FileIntegrityChecker;
-import edu.harvard.iq.dataverse.datafile.FileService;
 import edu.harvard.iq.dataverse.datafile.pojo.FilesIntegrityReport;
+import edu.harvard.iq.dataverse.dataset.DatasetCitationsCountUpdater;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.harvest.client.HarvestTimerInfo;
 import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientDao;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
-import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -35,11 +30,7 @@ import javax.ejb.TimerConfig;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -60,27 +51,21 @@ import java.util.logging.Logger;
  * ported by
  * @author Leonid Andreev
  */
-//@Stateless
-
 @Singleton
 @Startup
 @DependsOn("StartupFlywayMigrator")
 public class DataverseTimerServiceBean implements Serializable {
+    private static final Logger logger = Logger.getLogger(DataverseTimerServiceBean.class.getCanonicalName());
+
     @Resource
     javax.ejb.TimerService timerService;
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
-    private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean");
+
     @EJB
     HarvesterServiceBean harvesterService;
-    @EJB
-    DataverseDao dataverseDao;
     @EJB
     HarvestingClientDao harvestingClientService;
     @EJB
     AuthenticationServiceBean authSvc;
-    @EJB
-    DatasetDao datasetDao;
     @EJB
     OAISetServiceBean oaiSetService;
     @EJB
@@ -89,10 +74,8 @@ public class DataverseTimerServiceBean implements Serializable {
     SettingsServiceBean settingsService;
     @EJB
     FileIntegrityChecker fileIntegrityChecker;
-
-
-    // The init method that wipes and recreates all the timers on startup
-    //@PostConstruct
+    @Inject
+    DatasetCitationsCountUpdater datasetCitationsCountUpdater;
 
     @PostConstruct
     public void init() {
@@ -113,6 +96,7 @@ public class DataverseTimerServiceBean implements Serializable {
             createExportTimer();
             
             createIntegrityCheckTimer();
+            createCitationCountUpdateTimer();
 
         } else {
             logger.info("Skipping timer server init (I am not the dedicated timer server)");
@@ -137,7 +121,7 @@ public class DataverseTimerServiceBean implements Serializable {
      */
     @Timeout
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public void handleTimeout(javax.ejb.Timer timer) {
+    public void handleTimeout(Timer timer) {
         // We have to put all the code in a try/catch block because
         // if an exception is thrown from this method, Glassfish will automatically
         // call the method a second time. (The minimum number of re-tries for a Timer method is 1)
@@ -209,6 +193,8 @@ public class DataverseTimerServiceBean implements Serializable {
             FilesIntegrityReport report = fileIntegrityChecker.checkFilesIntegrity();
 
             logger.info(report.getSummaryInfo());
+        } else if (timer.getInfo() instanceof CitationCountUpdateTimerInfo) {
+            datasetCitationsCountUpdater.updateCitationCount();
         }
 
     }
@@ -297,7 +283,7 @@ public class DataverseTimerServiceBean implements Serializable {
                 initExpirationDate.setTime(initExpiration.getTimeInMillis() + intervalDuration);
             }
             logger.log(Level.INFO, "Setting timer for harvesting client " + harvestingClient.getName() + ", initial expiration: " + initExpirationDate);
-            createTimer(initExpirationDate, intervalDuration, new HarvestTimerInfo(harvestingClient.getId(), harvestingClient.getName(), harvestingClient.getSchedulePeriod(), harvestingClient.getScheduleHourOfDay(), harvestingClient.getScheduleDayOfWeek()));
+            createTimer(initExpirationDate, intervalDuration, new HarvestTimerInfo(harvestingClient.getId()));
         }
     }
 
@@ -344,36 +330,47 @@ public class DataverseTimerServiceBean implements Serializable {
         createTimer(initExpirationDate, intervalDuration, info);
     }
 
-    public void createExportTimer(Dataverse dataverse) {
-        /* Not yet implemented. The DVN 3 implementation can be used as a model */
-
-    }
-
-    public void removeExportTimer() {
-        /* Not yet implemented. The DVN 3 implementation can be used as a model */
-    }
-
     public void createIntegrityCheckTimer() {
-        String cronExpression = settingsService.getValueForKey(SettingsServiceBean.Key.FilesIntegrityCheckTimerExpression);
+        String cronExpression = settingsService.getValueForKey(Key.FilesIntegrityCheckTimerExpression);
+        
         if (StringUtils.isNotBlank(cronExpression)) {
-            final String[] parts = cronExpression.split(" ");
-            if (parts.length == 5) {
-                ScheduleExpression expression = new ScheduleExpression()
-                    .minute(parts[0])
-                    .hour(parts[1])
-                    .dayOfMonth(parts[2])
-                    .month(parts[3])
-                    .dayOfWeek(parts[4]);
-                TimerConfig timerConfig = new TimerConfig();
-                timerConfig.setInfo(new FilesIntegrityCheckTimerInfo());
-                timerService.createCalendarTimer(expression, timerConfig);
-            } else {
-                logger.log(Level.SEVERE, "Invalid expression for files integrity check timer: " + cronExpression);
-            }
+            ScheduleExpression expression = cronToScheduleExpression(cronExpression);
+
+            TimerConfig timerConfig = new TimerConfig();
+            timerConfig.setInfo(new FilesIntegrityCheckTimerInfo());
+            timerService.createCalendarTimer(expression, timerConfig);
         }
     }
 
+    public void createCitationCountUpdateTimer() {
+        String cronExpression = settingsService.getValueForKey(Key.CitationCountUpdateTimerExpression);
+        
+        if (StringUtils.isNotBlank(cronExpression)) {
+            ScheduleExpression expression = cronToScheduleExpression(cronExpression);
+
+            TimerConfig timerConfig = new TimerConfig();
+            timerConfig.setInfo(new CitationCountUpdateTimerInfo());
+            Timer timer = timerService.createCalendarTimer(expression, timerConfig);
+            logger.info("CitationCountUpdateTimerExpression: timer created, initial expiration: " + timer.getNextTimeout());
+        } else {
+            logger.info("CitationCountUpdateTimerExpression is empty. Skipping creation of timer.");
+        }
+
+    }
+
     /* Utility methods: */
+    private ScheduleExpression cronToScheduleExpression(String cronExpression) {
+        final String[] parts = cronExpression.split(" ");
+        Preconditions.checkArgument(parts.length == 5, "Invalid cron expression {} Expression should have 5 parts", cronExpression);
+        
+        return new ScheduleExpression()
+            .minute(parts[0])
+            .hour(parts[1])
+            .dayOfMonth(parts[2])
+            .month(parts[3])
+            .dayOfWeek(parts[4]);
+    }
+    
     private void logException(Throwable e, Logger logger) {
 
         boolean cause = false;

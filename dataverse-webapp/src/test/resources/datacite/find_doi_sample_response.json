@@ -1,0 +1,198 @@
+{
+   "data":{
+      "id":"10.5438/0012",
+      "type":"dois",
+      "attributes":{
+         "doi":"10.5438/0012",
+         "prefix":"10.5438",
+         "suffix":"0012",
+         "identifiers":[
+            
+         ],
+         "alternateIdentifiers":[
+            
+         ],
+         "creators":[
+            {
+               "name":"Example, Example",
+               "nameType":"Personal",
+               "givenName":"Example",
+               "familyName":"Example",
+               "affiliation":[
+                  
+               ],
+               "nameIdentifiers":[
+                  
+               ]
+            }
+         ],
+         "titles":[
+            {
+               "lang":null,
+               "title":"Example",
+               "titleType":null
+            }
+         ],
+         "publisher":"DataCite",
+         "container":{
+            
+         },
+         "publicationYear":2020,
+         "subjects":[
+            
+         ],
+         "contributors":[
+            
+         ],
+         "dates":[
+            
+         ],
+         "language":null,
+         "types":{
+            "ris":"DATA",
+            "bibtex":"misc",
+            "citeproc":"dataset",
+            "schemaOrg":"Dataset",
+            "resourceTypeGeneral":"Dataset"
+         },
+         "relatedIdentifiers":[
+            
+         ],
+         "sizes":[
+            
+         ],
+         "formats":[
+            
+         ],
+         "version":null,
+         "rightsList":[
+            
+         ],
+         "descriptions":[
+            
+         ],
+         "geoLocations":[
+            
+         ],
+         "fundingReferences":[
+            
+         ],
+         "xml":"PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHJlc291cmNlIHhtbG5zOnhzaT0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEtaW5zdGFuY2UiIHhtbG5zPSJodHRwOi8vZGF0YWNpdGUub3JnL3NjaGVtYS9rZXJuZWwtNCIgeHNpOnNjaGVtYUxvY2F0aW9uPSJodHRwOi8vZGF0YWNpdGUub3JnL3NjaGVtYS9rZXJuZWwtNCBodHRwOi8vc2NoZW1hLmRhdGFjaXRlLm9yZy9tZXRhL2tlcm5lbC00L21ldGFkYXRhLnhzZCI+CiAgPGlkZW50aWZpZXIgaWRlbnRpZmllclR5cGU9IkRPSSI+MTAuNTQzOC8wMDEyPC9pZGVudGlmaWVyPgogIDxjcmVhdG9ycz4KICAgIDxjcmVhdG9yPgogICAgICA8Y3JlYXRvck5hbWUgbmFtZVR5cGU9IlBlcnNvbmFsIj5FeGFtcGxlLCBFeGFtcGxlPC9jcmVhdG9yTmFtZT4KICAgICAgPGdpdmVuTmFtZT5FeGFtcGxlPC9naXZlbk5hbWU+CiAgICAgIDxmYW1pbHlOYW1lPkV4YW1wbGU8L2ZhbWlseU5hbWU+CiAgICA8L2NyZWF0b3I+CiAgPC9jcmVhdG9ycz4KICA8dGl0bGVzPgogICAgPHRpdGxlPkV4YW1wbGU8L3RpdGxlPgogIDwvdGl0bGVzPgogIDxwdWJsaXNoZXI+RGF0YUNpdGU8L3B1Ymxpc2hlcj4KICA8cHVibGljYXRpb25ZZWFyPjIwMjA8L3B1YmxpY2F0aW9uWWVhcj4KICA8cmVzb3VyY2VUeXBlIHJlc291cmNlVHlwZUdlbmVyYWw9IkRhdGFzZXQiLz4KICA8c2l6ZXMvPgogIDxmb3JtYXRzLz4KICA8dmVyc2lvbi8+CjwvcmVzb3VyY2U+Cg==",
+         "url":"https://example.org",
+         "contentUrl":[
+            
+         ],
+         "metadataVersion":0,
+         "schemaVersion":"http://datacite.org/schema/kernel-4",
+         "source":"fabricaForm",
+         "isActive":true,
+         "state":"findable",
+         "reason":null,
+         "viewCount":0,
+         "viewsOverTime":[
+            
+         ],
+         "downloadCount":0,
+         "downloadsOverTime":[
+            
+         ],
+         "referenceCount":0,
+         "citationCount":5,
+         "citationsOverTime":[
+            {
+               "year":"2017",
+               "total":1
+            },
+            {
+               "year":"2018",
+               "total":2
+            },
+            {
+               "year":"2019",
+               "total":1
+            },
+            {
+               "year":"2020",
+               "total":1
+            }
+         ],
+         "partCount":0,
+         "partOfCount":0,
+         "versionCount":0,
+         "versionOfCount":0,
+         "created":"2019-09-30T18:41:21.000Z",
+         "registered":"2020-08-07T13:09:50.000Z",
+         "published":"2020",
+         "updated":"2020-08-13T19:31:56.000Z"
+      },
+      "relationships":{
+         "client":{
+            "data":{
+               "id":"datacite.datacite",
+               "type":"clients"
+            }
+         },
+         "provider":{
+            "data":{
+               "id":"datacite",
+               "type":"providers"
+            }
+         },
+         "media":{
+            "data":{
+               "id":"10.5438/0012",
+               "type":"media"
+            }
+         },
+         "references":{
+            "data":[
+               
+            ]
+         },
+         "citations":{
+            "data":[
+               {
+                  "id":"10.1007/s11082-018-1327-1",
+                  "type":"dois"
+               },
+               {
+                  "id":"10.1007/978-3-319-67008-9_7",
+                  "type":"dois"
+               },
+               {
+                  "id":"10.1007/978-3-658-16937-4_4-1",
+                  "type":"dois"
+               },
+               {
+                  "id":"10.5438/mk65-3m12",
+                  "type":"dois"
+               },
+               {
+                  "id":"10.5438/08a0-3f64",
+                  "type":"dois"
+               }
+            ]
+         },
+         "parts":{
+            "data":[
+               
+            ]
+         },
+         "partOf":{
+            "data":[
+               
+            ]
+         },
+         "versions":{
+            "data":[
+               
+            ]
+         },
+         "versionOf":{
+            "data":[
+               
+            ]
+         }
+      }
+   }
+}

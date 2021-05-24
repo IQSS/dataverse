@@ -11,10 +11,11 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 
-import static edu.harvard.iq.dataverse.GlobalIdServiceBean.logger;
+import java.util.logging.Logger;
 
 @Stateless
 public class DashboardUsersService {
+    private static final Logger logger = Logger.getLogger(DashboardUsersService.class.getCanonicalName());
 
     private EjbDataverseEngine commandEngine;
     private DataverseRequestServiceBean dvRequestService;

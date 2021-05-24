@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.api.ZipperWrapper;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.common.NullSafeJsonBuilder;
+import edu.harvard.iq.dataverse.dashboard.DashboardUsersService;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIOConstants;
@@ -52,12 +53,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import static edu.harvard.iq.dataverse.GlobalIdServiceBean.logger;
 
 @Stateless
 public class FileDownloadAPIHandler {
+    private static final Logger logger = Logger.getLogger(FileDownloadAPIHandler.class.getCanonicalName());
 
     private DatasetVersionRepository datasetVersionRepository;
     private SettingsServiceBean settingsService;

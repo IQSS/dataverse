@@ -226,6 +226,10 @@ INSERT INTO datafile (id, checksumtype, checksumvalue, contenttype, filesize, in
 INSERT INTO filetermsofuse (id, allrightsreserved, restrictcustomtext, restricttype, license_id) VALUES (120, false, NULL, 'NOT_FOR_REDISTRIBUTION', null);
 INSERT INTO filemetadata (id, description, directorylabel, label, prov_freeform, restricted, version, datafile_id, datasetversion_id, displayorder, termsofuse_id) VALUES (113, '', NULL, 'restricted.zip', NULL, NULL, 5, 58, 36, 2, 120);
 
+-------------------- DATASET CITATION COUNTS --------------------
+
+INSERT INTO datasetCitationscount(id, dataset_id, citationsCount) VALUES(1, 56, 8); 
+
 -------------------- GROUPS --------------------
 
 INSERT INTO explicitgroup (id, description, displayname, groupalias, groupaliasinowner, owner_id)

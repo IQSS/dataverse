@@ -26,25 +26,9 @@ import java.io.Serializable;
  * @author Leonid Andreev
  * This is the "Mother Timer", that runs on the dedicated timer service and
  * starts other timers.
+ * It is used only to distinguish it between timers of
+ * other type.
  */
 public class MotherTimerInfo implements Serializable {
-
-    String serverId;
-
-    public String getServerId() {
-        return serverId;
-    }
-
-    public void setServerId(String serverId) {
-        this.serverId = serverId;
-    }
-
-    public MotherTimerInfo() {
-
-    }
-
-    public MotherTimerInfo(String serverId) {
-        this.serverId = serverId;
-    }
 
 }

@@ -15,7 +15,7 @@
 
     <p:link href="#{termsOfUse.license.url}" target="_blank"
             rendered="#{licenseIcon.present}"
-            title="#{bundle['file.license.link.title']} #{bundle.opensInNewWindow}"
+            title="#{bundle['file.license.link.title']} #{bundle.opensInNewTab}"
     >
         <p:graphicImage value="#{licenseIcon.get()}" stream="false" width="81" height="31"
                         alt="#{termsOfUse.license.getLocalizedName(dataverseSession.locale)}"/>

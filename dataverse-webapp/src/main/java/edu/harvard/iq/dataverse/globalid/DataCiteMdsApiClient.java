@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.globalid;
 
 
 import org.apache.http.HttpResponse;
@@ -27,20 +27,22 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * DataCiteRESTfullClient
+ * Http client for communicating with datacite via mds api
+ * 
  *
  * @author luopc
+ * @see https://support.datacite.org/docs/mds-api-guide
  */
-public class DataCiteRESTfullClient implements Closeable {
+public class DataCiteMdsApiClient implements Closeable {
 
-    private static final Logger logger = Logger.getLogger(DataCiteRESTfullClient.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(DataCiteMdsApiClient.class.getCanonicalName());
 
     private String url;
     private CloseableHttpClient httpClient;
     private HttpClientContext context;
     private String encoding = "utf-8";
 
-    public DataCiteRESTfullClient(String url, String username, String password) throws IOException {
+    public DataCiteMdsApiClient(String url, String username, String password) throws IOException {
         this.url = url;
         try {
             context = HttpClientContext.create();
@@ -214,7 +216,7 @@ public class DataCiteRESTfullClient implements Closeable {
 
     public static void main(String[] args) throws Exception {
         String doi = "10.5072/DVN/274533";
-        DataCiteRESTfullClient client = new DataCiteRESTfullClient("https://mds.test.datacite.org", "DATACITE.HARVARD", "DVNapitest");
+        DataCiteMdsApiClient client = new DataCiteMdsApiClient("https://mds.test.datacite.org", "DATACITE.HARVARD", "DVNapitest");
 //		System.out.println(client.getUrl(doi));
 //		System.out.println(client.getMetadata(doi));
 //        System.out.println(client.postMetadata(readAndClose("C:/Users/luopc/Desktop/datacite.xml", "utf-8")));

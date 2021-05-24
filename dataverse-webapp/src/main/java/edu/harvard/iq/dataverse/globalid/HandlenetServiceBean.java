@@ -18,7 +18,7 @@
    Version 3.0.
 */
 
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.globalid;
 
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.GlobalId;

@@ -88,6 +88,10 @@ public class SettingsWrapper implements java.io.Serializable {
         return "";
     }
 
+    public String getDataCiteCitationsPageUrl() {
+        return settingService.getValueForKey(SettingsServiceBean.Key.DoiDataCiteCitationsPageUrl);
+    }
+
     // -------------------- LOGIC --------------------
 
     public Boolean isHasDropBoxKey() {

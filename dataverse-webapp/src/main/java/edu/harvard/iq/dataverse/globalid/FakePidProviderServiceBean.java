@@ -1,6 +1,5 @@
-package edu.harvard.iq.dataverse.pidproviders;
+package edu.harvard.iq.dataverse.globalid;
 
-import edu.harvard.iq.dataverse.AbstractGlobalIdServiceBean;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
 

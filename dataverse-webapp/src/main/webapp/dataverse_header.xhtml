@@ -82,7 +82,7 @@
     
                         <li jsf:rendered="#{settingsWrapper.getConfiguredAboutUrls().size() == 1}">
                             <ui:repeat value="#{settingsWrapper.getConfiguredAboutUrls().entrySet().toArray()}" var="about">
-                                <h:outputLink value="#{about.key}" target="_blank" title="#{bundle['opensInNewWindow']}">
+                                <h:outputLink value="#{about.key}" target="_blank" title="#{bundle['opensInNewTab']}">
                                     <h:outputText value="#{about.value}"/>
                                 </h:outputLink>
                             </ui:repeat>
@@ -96,7 +96,7 @@
                             <ul class="dropdown-menu">
                                 <ui:repeat value="#{settingsWrapper.getConfiguredAboutUrls().entrySet().toArray()}" var="about">
                                     <li>
-                                        <h:outputLink value="#{about.key}" target="_blank" title="#{bundle['opensInNewWindow']}">
+                                        <h:outputLink value="#{about.key}" target="_blank" title="#{bundle['opensInNewTab']}">
                                             <h:outputText value="#{about.value}"/>
                                         </h:outputLink>
                                     </li>
@@ -112,7 +112,7 @@
                             <ul class="dropdown-menu">
                                 <li>
                                     <h:outputLink value="#{settingsWrapper.guidesBaseUrl}/#{settingsWrapper.guidesVersion}/user/index.html"
-                                                  target="_blank" title="#{bundle['opensInNewWindow']}">
+                                                  target="_blank" title="#{bundle['opensInNewTab']}">
                                         <h:outputText value="#{bundle['header.guides.user']}"/>
                                     </h:outputLink>
                                 </li>

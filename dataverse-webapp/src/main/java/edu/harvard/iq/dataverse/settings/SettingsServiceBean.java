@@ -189,11 +189,7 @@ public class SettingsServiceBean {
          * Shoulder for global id - used to create a common prefix on identifiers
          */
         Shoulder,
-        /* Removed for now - tried to add here but DOI Service Bean didn't like it at start-up
-        DoiUsername,
-        DoiPassword,
-        DoiBaseurlstring,
-        */
+
         /**
          * Optionally override http://guides.dataverse.org .
          */
@@ -447,6 +443,8 @@ public class SettingsServiceBean {
         ThumbnailPDFSizeLimit,
 
         DropboxKey,
+        DoiDataCiteCitationsPageUrl,
+        DoiDataCiteRestApiUrl,
         DoiBaseUrlString,
         DoiUsername,
         DoiPassword,
@@ -593,6 +591,18 @@ public class SettingsServiceBean {
          */
         RarDataLineBeforeResultDelimiter,
 
+        /**
+         * Cron expression that indicates how often
+         * updating of citation counts should take place.
+         * Note that current implementation is heavily based
+         * on DataCite api. If your installation uses some
+         * other global id provider then this process will
+         * not work as expected.
+         * If empty then updating of citation counts will be skipped.
+         * Default value: empty.
+         */
+        CitationCountUpdateTimerExpression,
+        
         /**
          * If true then instance will run in readonly mode.
          * Installation in readonly mode will have functionality

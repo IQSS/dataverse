@@ -1,9 +1,9 @@
 package edu.harvard.iq.dataverse.export;
 
-import edu.harvard.iq.dataverse.DOIDataCiteRegisterService;
 import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
+import edu.harvard.iq.dataverse.globalid.DOIDataCiteRegisterService;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 
 import javax.enterprise.context.ApplicationScoped;

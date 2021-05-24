@@ -1,13 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.globalid;
 
 import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
-import edu.harvard.iq.dataverse.pidproviders.FakePidProviderServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +12,7 @@ import static org.junit.Assert.assertNull;
 /**
  * @author michael
  */
-public class PersistentIdentifierServiceBeanTest {
+public class GlobalIdServiceBeanTest {
 
 
     DOIEZIdServiceBean ezidServiceBean = new DOIEZIdServiceBean();

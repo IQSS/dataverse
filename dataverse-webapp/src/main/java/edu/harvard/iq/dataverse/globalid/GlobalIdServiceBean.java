@@ -1,4 +1,4 @@
-package edu.harvard.iq.dataverse;
+package edu.harvard.iq.dataverse.globalid;
 
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.persistence.DvObject;
@@ -12,7 +12,7 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static edu.harvard.iq.dataverse.GlobalIdServiceBean.logger;
+import static edu.harvard.iq.dataverse.globalid.GlobalIdServiceBean.logger;
 
 public interface GlobalIdServiceBean {
 

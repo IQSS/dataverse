@@ -576,15 +576,6 @@ div[id$='roleDisplay'] span.label, div[id$='roleDetails'] span.label {display:in
 #metrics-label a:hover {text-decoration:none;}
 #metrics-label span.metrics-label-text {}
 #metrics-content {color:#333;background:#fff;padding:8px 10px;}
-/* --
-#metrics-tabs a {background:#428bca;display:block;width:38px;line-height:13px;}
-#metrics-tabs a:hover {text-decoration:none;}
-
-#metrics-block .metrics-views {background:#428bca;}
-#metrics-block .metrics-downloads {background:#5cb85c;}
-#metrics-block .metrics-citations {background:#c55b28;}
-#metrics-block .metrics-shares {background:#f0ad4e;}
--- */
 
 /* -------- SHARRRE -------- */
 #sharrre-block a {display:block; float:left; padding:6px 12px; margin-right:1em; background:#6f5499;}
