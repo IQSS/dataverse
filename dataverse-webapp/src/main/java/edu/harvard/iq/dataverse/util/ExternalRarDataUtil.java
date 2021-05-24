@@ -53,9 +53,7 @@ public class ExternalRarDataUtil {
         return size;
     }
 
-    // -------------------- PRIVATE --------------------
-
-    private long parseOutput(String[] contents) {
+    long parseOutput(String[] contents) {
         // Output has to have at least two lines
         if (contents.length < 2) {
             return 0L;

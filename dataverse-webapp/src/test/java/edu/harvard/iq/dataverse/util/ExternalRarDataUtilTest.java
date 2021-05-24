@@ -1,40 +1,23 @@
 package edu.harvard.iq.dataverse.util;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@ExtendWith(MockitoExtension.class)
 class ExternalRarDataUtilTest {
 
-    @Mock
-    private Path empty;
-
-    @BeforeEach
-    void setUp() {
-        Mockito.when(empty.toString()).thenReturn("");
-    }
+    private ExternalRarDataUtil util = new ExternalRarDataUtil("", "", "-");
 
     // -------------------- TESTS --------------------
 
     @Test
     @DisplayName("Should read size from output")
-    void checkRarExternally() {
-        // given
-        ExternalRarDataUtil util = createUtilWithGivenOutput("---------\n12345");
-
-        // when
-        long size = util.checkRarExternally(empty);
+    void parseOutput() {
+        // given & when
+        long size = util.parseOutput(toLines("---------\n12345"));
 
         // then
         assertThat(size).isEqualTo(12345L);
@@ -44,16 +27,14 @@ class ExternalRarDataUtilTest {
     @DisplayName("Should return 0 on pathological outputs")
     @ValueSource(strings = {
             "\n",
+            " \n ",
             "-----------------",
             "-----------------\nabc",
-            "-----------------\n"
+            "-----------------\n "
     })
-    void checkRarExternally__erroneousOutputs(String output) {
-        // given
-        ExternalRarDataUtil util = createUtilWithGivenOutput(output);
-
-        // when
-        long size = util.checkRarExternally(empty);
+    void parseOutput__erroneousOutputs(String output) {
+        // given & when
+        long size = util.parseOutput(toLines(output));
 
         // then
         assertThat(size).isEqualTo(0L);
@@ -61,9 +42,7 @@ class ExternalRarDataUtilTest {
 
     // -------------------- PRIVATE --------------------
 
-    private ExternalRarDataUtil createUtilWithGivenOutput(String output) {
-        // We use echo instead of some rar util in order to create
-        // desired output.
-        return new ExternalRarDataUtil("echo", output, "-");
+    private String[] toLines(String data) {
+        return data.split("\n");
     }
 }
