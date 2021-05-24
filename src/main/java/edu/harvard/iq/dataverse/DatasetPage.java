@@ -1951,8 +1951,11 @@ public class DatasetPage implements java.io.Serializable {
         } catch (CommandException ex) {
             // No big deal. The user simply doesn't have access to create or delete a Private URL.
         }
+        logger.info("PrivateUser: " + (session.getUser() instanceof PrivateUrlUser));
         if (session.getUser() instanceof PrivateUrlUser) {
+            
             PrivateUrlUser privateUrlUser = (PrivateUrlUser) session.getUser();
+            logger.info("Anon: " + privateUrlUser.hasAnonymizedAccess());
             if (dataset != null && dataset.getId().equals(privateUrlUser.getDatasetId())) {
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.privateurl.header"),
                         BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageReviewer"));
@@ -5149,8 +5152,11 @@ public class DatasetPage implements java.io.Serializable {
     
     public boolean isAnonymizedAccess() {
         if (privateUrl != null && session.getUser() instanceof PrivateUrlUser) {
+            logger.info("User has anon: " + ((PrivateUrlUser)session.getUser()).hasAnonymizedAccess());
+            logger.info("URL has: anon"  + privateUrl.isAnonymizedAccess());
             return privateUrl.isAnonymizedAccess();
         } else {
+            logger.info("Not private");
             return false;
         }
     }
