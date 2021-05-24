@@ -5154,6 +5154,15 @@ public class DatasetPage implements java.io.Serializable {
         }
     }
     
+    public boolean isAnonymizedPrivateUrl() {
+        if (privateUrl != null) {
+            return privateUrl.isAnonymizedAccess();
+        } else {
+            return false;
+        }
+    }
+    
+    
     // todo: we should be able to remove - this is passed in the html pages to other fragments, but they could just access this service bean directly.
     public FileDownloadServiceBean getFileDownloadService() {
         return fileDownloadService;
