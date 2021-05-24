@@ -34,7 +34,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.asJsonArray;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 

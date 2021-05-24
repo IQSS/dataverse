@@ -84,7 +84,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
-import static org.apache.commons.lang.StringUtils.isNumeric;
+import static org.apache.commons.lang3.StringUtils.isNumeric;
 
 /**
  * Base class for API beans

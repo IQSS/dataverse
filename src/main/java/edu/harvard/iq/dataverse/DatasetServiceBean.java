@@ -55,7 +55,7 @@ import javax.persistence.StoredProcedureQuery;
 import javax.persistence.TypedQuery;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.ocpsoft.common.util.Strings;
 
 /**

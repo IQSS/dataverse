@@ -21,6 +21,7 @@ Dataverse is a trademark of President and Fellows of Harvard College and is regi
 [![API Test Coverage](https://img.shields.io/jenkins/coverage/jacoco?jobUrl=https%3A%2F%2Fjenkins.dataverse.org%2Fjob%2FIQSS-dataverse-develop&label=API%20Test%20Coverage)](https://jenkins.dataverse.org/job/IQSS-dataverse-develop/ws/target/coverage-it/index.html)
 [![Unit Test Status](https://img.shields.io/travis/IQSS/dataverse?label=Unit%20Test%20Status)](https://travis-ci.org/IQSS/dataverse)
 [![Unit Test Coverage](https://img.shields.io/coveralls/github/IQSS/dataverse?label=Unit%20Test%20Coverage)](https://coveralls.io/github/IQSS/dataverse?branch=develop)
+[![Guides Build Status](https://github.com/IQSS/dataverse/actions/workflows/guides_build_sphinx.yml/badge.svg)](https://github.com/IQSS/dataverse/actions/workflows/guides_build_sphinx.yml)
 
 [dataverse.org]: https://dataverse.org
 [demo.dataverse.org]: https://demo.dataverse.org

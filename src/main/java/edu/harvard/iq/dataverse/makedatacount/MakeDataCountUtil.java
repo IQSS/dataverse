@@ -87,7 +87,15 @@ public class MakeDataCountUtil {
                     }
                 }
             }
-            throw new IllegalArgumentException("MetricType must be one of these values: " + Arrays.asList(MetricType.values()) + ".");
+            throw new IllegalArgumentException("MetricType must be one of these values: " + getMetricNameList() + ".");
+        }
+        
+        private static List<String> getMetricNameList() {
+           ArrayList<String> names = new ArrayList<String>();
+           for(MetricType mt: MetricType.values()) {
+               names.add(mt.text);
+           }
+            return names;
         }
 
         @Override

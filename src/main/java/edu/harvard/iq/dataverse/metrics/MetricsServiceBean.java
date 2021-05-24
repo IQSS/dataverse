@@ -367,7 +367,7 @@ public class MetricsServiceBean implements Serializable {
     public JsonArray filesByType(Dataverse d) {
         // SELECT DISTINCT df.contenttype, sum(df.filesize) FROM datafile df, dvObject ob where ob.id = df.id and dob.owner_id< group by df.contenttype
         // ToDo - published only?
-        Query query = em.createNativeQuery("SELECT DISTINCT df.contenttype, count(df.id), sum(df.filesize) "
+        Query query = em.createNativeQuery("SELECT DISTINCT df.contenttype, count(df.id), coalesce(sum(df.filesize), 0) "
                 + " FROM DataFile df, DvObject ob"
                 + " where ob.id = df.id "
                 + ((d == null) ? "" : "and ob.owner_id in (" + getCommaSeparatedIdStringForSubtree(d, "Dataset") + ")\n")
@@ -376,6 +376,9 @@ public class MetricsServiceBean implements Serializable {
         try {
             List<Object[]> results = query.getResultList();
             for (Object[] result : results) {
+                if((BigDecimal)result[2]==BigDecimal.ZERO) {
+                    logger.warning("File(s) of type " + (String) result[0] + " are reported as having 0 total size");
+                }
                 JsonObject stats = Json.createObjectBuilder().add(MetricsUtil.CONTENTTYPE, (String) result[0]).add(MetricsUtil.COUNT, (long) result[1]).add(MetricsUtil.SIZE, (BigDecimal) result[2]).build();
                 jab.add(stats);
             }

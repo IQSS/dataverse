@@ -763,12 +763,6 @@ public class DataFile extends DvObject implements Comparable {
     
     public boolean isHarvested() {
         
-        // (storageIdentifier is not nullable - so no need to check for null
-        // pointers below):
-        if (this.getStorageIdentifier().startsWith("http://") || this.getStorageIdentifier().startsWith("https://")) {
-            return true;
-        }
-        
         Dataset ownerDataset = this.getOwner();
         if (ownerDataset != null) {
             return ownerDataset.isHarvested(); 

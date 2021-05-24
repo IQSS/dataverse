@@ -102,7 +102,7 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import java.util.Arrays;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * a 4.0 implementation of the DVN FileUtil;
@@ -1013,7 +1013,10 @@ public class FileUtil implements java.io.Serializable  {
                     datafiles.clear();
                 } finally {
                     if (unZippedIn != null) {
-                        try {unZippedIn.close();} catch (Exception zEx) {}
+                        try {
+                            unZippedIn.close();
+                        } catch (Exception zEx) {
+                        }
                     }
                 }
                 if (datafiles.size() > 0) {
@@ -1686,7 +1689,7 @@ public class FileUtil implements java.io.Serializable  {
             return false;
         }
 
-        if (file.isHarvested() || "".equals(file.getStorageIdentifier())) {
+        if (file.isHarvested() || StringUtil.isEmpty(file.getStorageIdentifier())) {
             return false;
         }
 
@@ -1874,18 +1877,6 @@ public class FileUtil implements java.io.Serializable  {
         return location.substring(0,bucketEnd) + ":" + location.substring(location.lastIndexOf("/") + 1);
     }
 
-    public static String jsonToCSV(JsonArray jsonArray, String... headers) {
-        StringBuilder csvSB = new StringBuilder(String.join(",", headers));
-        jsonArray.forEach((jv) -> {
-            JsonObject jo = (JsonObject) jv;
-            String[] values = new String[headers.length];
-            for (int i = 0; i < headers.length; i++) {
-                values[i] = jo.get(headers[i]).toString();
-            }
-            csvSB.append("\n").append(String.join(",", values));
-        });
-        return csvSB.toString();
-    }
     public static void deleteTempFile(DataFile dataFile, Dataset dataset, IngestServiceBean ingestService) {
     	logger.info("Deleting " + dataFile.getStorageIdentifier());
     	// Before we remove the file from the list and forget about 
@@ -2091,4 +2082,31 @@ public class FileUtil implements java.io.Serializable  {
                 (originals ? "&original=true" : "");
     }
 
+    /**
+     * This method takes a JsonArray of JsonObjects and extracts the fields of those
+     * objects corresponding to the supplied list of headers to create a rectangular
+     * CSV file (with headers) that lists the values from each object in rows. It
+     * was developed for use with the metrics API but could be useful in other calls
+     * that require the same transformation.
+     * 
+     * @param jsonArray
+     *            - the array of JsonObjects containing key/value pairs with keys
+     *            matching the headers. Keys that don't match a header are
+     *            ignored/not included.
+     * @param headers
+     *            - strings to use as CSV headers
+     * @return - the CSV file as a string, rows separated by '\n'
+     */
+    public static String jsonArrayOfObjectsToCSV(JsonArray jsonArray, String... headers) {
+        StringBuilder csvSB = new StringBuilder(String.join(",", headers));
+        jsonArray.forEach((jv) -> {
+            JsonObject jo = (JsonObject) jv;
+            String[] values = new String[headers.length];
+            for (int i = 0; i < headers.length; i++) {
+                values[i] = jo.get(headers[i]).toString();
+            }
+            csvSB.append("\n").append(String.join(",", values));
+        });
+        return csvSB.toString();
+    }
 }
