@@ -93,7 +93,7 @@ public class PrivateUrlUtil {
         }
         Dataset dataset = getDatasetFromRoleAssignment(roleAssignment);
         if (dataset != null) {
-            PrivateUrlUser privateUrlUser = new PrivateUrlUser(dataset.getId());
+            PrivateUrlUser privateUrlUser = new PrivateUrlUser(dataset.getId(), roleAssignment.isAnonymizedAccess());
             return privateUrlUser;
         }
         return null;
