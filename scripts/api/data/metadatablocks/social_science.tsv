@@ -28,21 +28,22 @@
 	contactAttemptsDifferentDays	Contact attempts on different days of week required	Indicate if there was a requirement of contact attempts on different days of week. 		text	24	#NAME: #VALUE	FALSE	TRUE	FALSE	FALSE	FALSE	FALSE	contactAttempts	VOCABULARY_SELECT	{}	socialscience	
 	researchInstrument	Type of Research Instrument	Type of used data collection instrument.		text	25		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		VOCABULARY_SELECT	{}	socialscience	
 	dataCollectionSituation	Characteristics of Data Collection Situation	Description of the context of the study, that could have an impact on the collected data.		textbox	26		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience	
-	weighting	Weight	Select type of weight applied to produce accurate statistical results.		text	27		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		VOCABULARY_SELECT	{}	socialscience	
-	actionsToMinimizeLoss	Actions to Minimize Losses	Summary of actions taken to minimize data loss. Include information on actions such as follow-up visits, supervisory checks, historical matching, estimation, and so on.		textbox	28		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience	
-	controlOperations	Control Operations	Methods to facilitate data control performed by the primary investigator or by the data archive.		textbox	29		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience	
-	interviewsBackcheck	Interviews' Back-Check	Description of back-check control of completed interviews with respect to the fact and correctness of their fulfillment, e.g. by coordinator.  		none	30	#NEWLINE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience	
-	interviewsBackcheckPercentage	Percentage of Interviews	Approximate percentage of back-checked interviews.	Enter an integer...	int	31	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	interviewsBackcheck	TEXT	{}	socialscience	
-	interviewsBackcheckProcedureDescription	Back-Check Procedure Description	A detailed description of back-check procedure.		textbox	32	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	interviewsBackcheck	TEXTBOX	{}	socialscience	
-	cleaningOperations	Cleaning Operations	Description of data cleaning and logical control procedures.		textbox	33		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience	
-	datasetLevelErrorNotes	Study Level Error Notes	Description of known errors and difficulties that occurred during the study and data processing.		textbox	34		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience	
-	responseRate	Response Rate	Response rate according to AAPOR definition. 	Enter a floating-point number...	float	35		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience	
-	samplingErrorEstimates	Estimates of Sampling Error	Measure of how precisely one can estimate a population value from a given sample.		textbox	36		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience	
-	otherDataAppraisal	otherDataAppraisal	Other issues pertaining to the data appraisal. Describe issues such as response variance, nonresponse rate and testing for bias, interviewer and response bias, confidence levels, question bias, or similar.		textbox	37		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience	
-	socialScienceNotes	Notes	General notes about this Dataset.		none	38	#NEWLINE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience	
-	socialScienceNotesType	Type	Type of note.		text	39	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	socialScienceNotes	TEXT	{}	socialscience	
-	socialScienceNotesSubject	Subject	Note subject.		text	40	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	socialScienceNotes	TEXT	{}	socialscience	
-	socialScienceNotesText	Text	Text for this note.		textbox	41		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	socialScienceNotes	TEXTBOX	{}	socialscience	
+	weighting	Weight	Select the type of weight provided with the dataset and available to the user. 		text	27		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		VOCABULARY_SELECT	{}	socialscience
+	weightingDescription	Description of the Weight	Description of the weight and the way it was constructed: its components, algorithm used for its calculation e.g. IPF, sum to marginal distributions, regression based etc., calibration (normalization) if used.		textbox	28		FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		TEXTBOX	{}	socialscience
+	actionsToMinimizeLoss	Actions to Minimize Losses	Summary of actions taken to minimize data loss. Include information on actions such as follow-up visits, supervisory checks, historical matching, estimation, and so on.		textbox	29		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience
+	controlOperations	Control Operations	Methods to facilitate data control performed by the primary investigator or by the data archive.		textbox	30		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience
+	interviewsBackcheck	Interviews' Back-Check	Description of back-check control of completed interviews with respect to the fact and correctness of their fulfillment, e.g. by coordinator.  		none	31	#NEWLINE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience
+	interviewsBackcheckPercentage	Percentage of Interviews	Approximate percentage of back-checked interviews.	Enter an integer...	int	32	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	interviewsBackcheck	TEXT	{}	socialscience
+	interviewsBackcheckProcedureDescription	Back-Check Procedure Description	A detailed description of back-check procedure.		textbox	33	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	interviewsBackcheck	TEXTBOX	{}	socialscience
+	cleaningOperations	Cleaning Operations	Description of data cleaning and logical control procedures.		textbox	34		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience
+	datasetLevelErrorNotes	Study Level Error Notes	Description of known errors and difficulties that occurred during the study and data processing.		textbox	35		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience
+	responseRate	Response Rate	Response rate according to AAPOR definition. 	Enter a floating-point number...	float	36		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience
+	samplingErrorEstimates	Estimates of Sampling Error	Measure of how precisely one can estimate a population value from a given sample.		textbox	37		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience
+	otherDataAppraisal	otherDataAppraisal	Other issues pertaining to the data appraisal. Describe issues such as response variance, nonresponse rate and testing for bias, interviewer and response bias, confidence levels, question bias, or similar.		textbox	38		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	socialscience
+	socialScienceNotes	Notes	General notes about this Dataset.		none	39	#NEWLINE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	socialscience
+	socialScienceNotesType	Type	Type of note.		text	40	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	socialScienceNotes	TEXT	{}	socialscience
+	socialScienceNotesSubject	Subject	Note subject.		text	41	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	socialScienceNotes	TEXT	{}	socialscience
+	socialScienceNotesText	Text	Text for this note.		textbox	42		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	socialScienceNotes	TEXTBOX	{}	socialscience
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder														
 	unitOfAnalysis	Individual		0														
 	unitOfAnalysis	Organization		1														
