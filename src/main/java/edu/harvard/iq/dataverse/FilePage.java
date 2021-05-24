@@ -1223,6 +1223,7 @@ public class FilePage implements java.io.Serializable {
             logger.info("FP: anon: " +  ((PrivateUrlUser)session.getUser()).hasAnonymizedAccess());
             return ((PrivateUrlUser)session.getUser()).hasAnonymizedAccess();
         }
+        logger.info("user is: " + session.getUser().getIdentifier());
         return false;
     }
 }
