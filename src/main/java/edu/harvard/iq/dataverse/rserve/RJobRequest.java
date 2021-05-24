@@ -25,9 +25,15 @@ package edu.harvard.iq.dataverse.rserve;
  * @author Leonid Andreev
  */
 import edu.harvard.iq.dataverse.datavariable.DataVariable;
-import java.util.*;
-import java.util.logging.*;
-import org.apache.commons.lang.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
+
+import org.apache.commons.lang3.StringUtils;
 
 
 public class RJobRequest {
