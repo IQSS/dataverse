@@ -971,7 +971,6 @@
                                         }">
                                     <p class="highlight" jsf:rendered="#{DatasetPage.anonymizedPrivateUrl}">#{bundle['dataset.privateurl.anonymized']}</p>
                                     <p class="highlight" jsf:rendered="#{!DatasetPage.anonymizedPrivateUrl}">#{bundle['dataset.privateurl.full']}</p>
-                                    dataset.privateurl.full
                                     <ui:param name="privateUrlLink" value="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" />
                                     <p class="no-margin-bottom">
                                         <span>#{privateUrlLink}</span>

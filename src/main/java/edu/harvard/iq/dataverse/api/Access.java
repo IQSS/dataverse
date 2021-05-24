@@ -576,6 +576,7 @@ public class Access extends AbstractApiBean {
                 job.add("fileSize", auxFile.getFileSize());
                 job.add("contentType", auxFile.getContentType());
                 job.add("isPublic", auxFile.getIsPublic());
+                job.add("type",  auxFile.getType());
                 jab.add(job);
             }
         });

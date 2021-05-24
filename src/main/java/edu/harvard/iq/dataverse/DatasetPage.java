@@ -1962,6 +1962,7 @@ public class DatasetPage implements java.io.Serializable {
         // init the citation
         //Need to do this after privateUrl is initialized (
         displayCitation = dataset.getCitation(true, workingVersion, isAnonymizedAccess());
+        logger.info("Citation: " + displayCitation);
 
         displayLockInfo(dataset);
 
@@ -5155,9 +5156,12 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean isAnonymizedPrivateUrl() {
-        if (privateUrl != null) {
+        if(privateUrl != null) {
+            logger.info("PU: " + privateUrl.isAnonymizedAccess());
+            logger.info("RA: " + privateUrl.getRoleAssignment().isAnonymizedAccess());
             return privateUrl.isAnonymizedAccess();
         } else {
+            logger.info("PU is null");
             return false;
         }
     }
