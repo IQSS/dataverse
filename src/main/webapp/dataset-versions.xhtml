@@ -136,7 +136,7 @@
                 <h:outputText value="#{versionTab.contributorNames}" />
             </ui:fragment>
             <ui:fragment rendered="#{!empty(versionTab.contributorNames) and anonymized}">
-                <h:outputText value="bundle['file.dataFilesTab.versions.headers.contributors.withheld']" />
+                <h:outputText value="#{bundle['file.dataFilesTab.versions.headers.contributors.withheld']}" />
             </ui:fragment>
             
         </p:column><!-- end: contributor column -->
