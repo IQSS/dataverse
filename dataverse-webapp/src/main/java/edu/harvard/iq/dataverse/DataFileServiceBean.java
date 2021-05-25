@@ -1309,9 +1309,9 @@ public class DataFileServiceBean implements java.io.Serializable {
                     settingsService.getValueForKey(SettingsServiceBean.Key.RarDataUtilCommand),
                     settingsService.getValueForKey(SettingsServiceBean.Key.RarDataUtilOpts),
                     settingsService.getValueForKey(SettingsServiceBean.Key.RarDataLineBeforeResultDelimiter))
-                    .checkRarExternally(tempFile);
+                    .checkRarExternally(tempFile, fileName);
             } catch (RarException re) {
-                logger.warn("Exception during rar file scan: " + tempFile.toString(), re);
+                logger.warn("Exception during rar file scan: " + fileName, re);
             }
         }
         // If it's a ZIP file, we are going to unpack it and create multiple
@@ -1463,9 +1463,34 @@ public class DataFileServiceBean implements java.io.Serializable {
                     }
                 }
             } catch (IOException ioe) {
-                logger.warn("Exception while checking contents of 7z file: " + tempFile.getFileName(), ioe);
+                logger.warn("Exception while checking contents of 7z file: " + fileName, ioe);
             }
             uncompressedSize = size;
+        } else if ("application/gzip".equals(finalType) || "application/x-compressed-tar".equals(finalType)) {
+            Long maxInputSize = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.GzipMaxInputFileSizeInBytes);
+            Long maxOutputSize = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.GzipMaxOutputFileSizeInBytes);
+
+            maxInputSize = maxInputSize != null ? maxInputSize : 0L;
+            maxOutputSize = maxOutputSize != null ? maxOutputSize : 0L;
+
+            long inputSize = tempFile.toFile().length();
+            if (inputSize > 0L && inputSize <= maxInputSize) {
+                File outputFile = null;
+                try (GZIPInputStream output = new GZIPInputStream(new FileInputStream(tempFile.toFile()))) {
+                    outputFile = saveInputStreamInTempFile(output, maxOutputSize);
+                    uncompressedSize = outputFile.length();
+                } catch (FileExceedsMaxSizeException femse) {
+                    logger.warn(
+                        String.format("The contents of file [%s] exceed the max allowed size of uncompressed output", fileName),
+                        femse);
+                } catch (IOException ioe) {
+                    logger.warn("Exception while trying to uncompress file: " + fileName, ioe);
+                } finally {
+                    if (outputFile != null) {
+                        outputFile.delete();
+                    }
+                }
+            }
         } else if (finalType.equalsIgnoreCase(ShapefileHandler.SHAPEFILE_FILE_TYPE)) {
             // Shape files may have to be split into multiple files,
             // one zip archive per each complete set of shape files:
@@ -1554,6 +1579,7 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         return null;
     } // end createDataFiles
+
     private long extractZipContentsSize(Path tempFile) {
         long size = 0;
         try (ZipInputStream unZippedIn = new ZipInputStream(new FileInputStream(tempFile.toFile()))) {

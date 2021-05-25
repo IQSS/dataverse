@@ -29,7 +29,7 @@ public class ExternalRarDataUtil {
 
     // -------------------- LOGIC --------------------
 
-    public long checkRarExternally(Path tempFile) {
+    public long checkRarExternally(Path tempFile, String fileName) {
         long size = 0L;
         if (StringUtils.isBlank(utilPath)) {
             return size;
@@ -44,7 +44,8 @@ public class ExternalRarDataUtil {
                 size = parseOutput(reader.lines().toArray(String[]::new));
             }
         } catch (IOException ioe) {
-            logger.warn("Exception during processing file: " + tempFile.toString(), ioe);
+            fileName = StringUtils.isBlank(fileName) ? tempFile.getFileName().toString() : fileName;
+            logger.warn("Exception during processing file: " + fileName, ioe);
         } finally {
             if (output != null) {
                 output.delete();

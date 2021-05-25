@@ -592,6 +592,18 @@ public class SettingsServiceBean {
         RarDataLineBeforeResultDelimiter,
 
         /**
+         * Sets the maximal size of gzip file (in bytes) that would be
+         * subject to checking of uncompressed content size.
+         */
+        GzipMaxInputFileSizeInBytes,
+
+        /**
+         * Sets the maximal size of output file (in bytes) that could be
+         * unpacked from gzip file in order to check its uncompressed size.
+         */
+        GzipMaxOutputFileSizeInBytes,
+
+        /**
          * Cron expression that indicates how often
          * updating of citation counts should take place.
          * Note that current implementation is heavily based
@@ -602,7 +614,7 @@ public class SettingsServiceBean {
          * Default value: empty.
          */
         CitationCountUpdateTimerExpression,
-        
+
         /**
          * If true then instance will run in readonly mode.
          * Installation in readonly mode will have functionality
