@@ -3445,18 +3445,10 @@ public class DatasetPage implements java.io.Serializable {
             }
             dataset = commandEngine.submit(cmd);
             for (DatasetField df : dataset.getLatestVersion().getDatasetFields()) {
+                logger.info("Found id: " + df.getDatasetFieldType().getId());
                 if (fieldService.getCVocConf().containsKey(df.getDatasetFieldType().getId())) {
                     fieldService.registerExternalVocabValues(df);
                 }
-                if (df.getDatasetFieldType().isCompound()) {
-                    for (DatasetFieldCompoundValue cv : df.getDatasetFieldCompoundValues()) {
-                        for (DatasetField cdf : cv.getChildDatasetFields())
-                            if (fieldService.getCVocConf().containsKey(cdf.getDatasetFieldType().getId())) {
-                                fieldService.registerExternalVocabValues(cdf);
-                            }
-                    }
-                }
-
             }
             if (editMode == EditMode.CREATE) {
                 if (session.getUser() instanceof AuthenticatedUser) {
@@ -5501,5 +5493,9 @@ public class DatasetPage implements java.io.Serializable {
     public Map<Long, JsonObject> getCVocConf() {
         logger.info("CVOC says: " + fieldService.getCVocConf().toString());
         return fieldService.getCVocConf();
+    }
+    
+    public List<String> getVocabList(long id) {
+        return getCVocConf().get(id).getJsonArray("vocabs").getValuesAs(JsonString::getString);
     }
 }

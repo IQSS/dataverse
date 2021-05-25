@@ -241,7 +241,6 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             return new HashMap<>();
     } 
         String newHash = DigestUtils.md5Hex(cvocSetting);
-        logger.info("NH: " + newHash);
         if(newHash.equals(oldHash)) {
             return cvocMap;
         } 
@@ -253,14 +252,25 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         logger.info("Size: " + cvocConfJsonArray.size());
         logger.info("array is " + cvocConfJsonArray.toString());
             for (JsonObject jo : cvocConfJsonArray.getValuesAs(JsonObject.class)) {
-                DatasetFieldType dft = findByNameOpt(jo.getString("vocab-name"));
+                DatasetFieldType dft = findByNameOpt(jo.getString("field-name"));
                 if(dft!=null) {
                     cvocMap.put(dft.getId(), jo);
                    } else {
-                       logger.warning("Ignoring External Vocabulary setting for non-existent field: " + jo.getString("vocab-name"));
+                       logger.warning("Ignoring External Vocabulary setting for non-existent field: " + jo.getString("field-name"));
                    }
-                JsonArray vocabCodes = jo.getJsonArray("vocab-codes");
-                for (JsonString elm: vocabCodes.getValuesAs(JsonString.class)){
+                if(jo.containsKey("term-uri-field")) {
+                    DatasetFieldType childdft = findByNameOpt(jo.getString("term-uri-field"));
+                    logger.info("Found term child field: " + childdft.getName());
+                    if(childdft.getParentDatasetFieldType()!=dft) {
+                        logger.warning("Term URI field (" + childdft.getDisplayName() + ") not a child of parent: " + dft.getDisplayName());
+                    }
+                    if(dft==null) {
+                        logger.warning("Ignoring External Vocabulary setting for non-existent child field: " + jo.getString("term-uri-field"));
+                    }
+
+                }
+                JsonArray childFields = jo.getJsonArray("child-fields");
+                for (JsonString elm: childFields.getValuesAs(JsonString.class)){
                     dft = findByNameOpt(elm.getString());
                     logger.info("Found: " + dft.getName());
                     if(dft==null) {
@@ -279,15 +289,30 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         logger.info("Registering for field: " + dft.getName());
         if(dft.isPrimitive()) {
             for(DatasetFieldValue dfv: df.getDatasetFieldValues()) {
-                registerExternalTerm(dfv.getValue(), dft);
+                registerExternalTerm(dfv.getValue(), getCVocConf().get(dft.getId()).getString("retrievalUri"));
             }
             } else {
-                logger.warning("Compound field sent: " + dft.getName());
+                if (df.getDatasetFieldType().isCompound()) {
+                    DatasetFieldType termdft = findByNameOpt(getCVocConf().get(dft.getId()).getString("term-uri-field"));
+                    for (DatasetFieldCompoundValue cv : df.getDatasetFieldCompoundValues()) {
+                        for (DatasetField cdf : cv.getChildDatasetFields()) {
+                            logger.info("Found term uri field type id: " + cdf.getDatasetFieldType().getId());
+                            if(cdf.getDatasetFieldType().equals(termdft)) {
+                                registerExternalTerm(cdf.getValue(), getCVocConf().get(dft.getId()).getString("retrieval-uri"));
+                            }
+                        }
+                    }
+                }
             }
     }
     
     @Asynchronous
-    private void registerExternalTerm(String term, DatasetFieldType dft) {
+    private void registerExternalTerm(String term, String retrievalUri) {
+        if(term.isBlank()) {
+            logger.fine("Ingoring blank term");
+            return;
+        }
+        logger.fine("Registering term: " + term);
         try {
             URI uri = new URI(term);
             ExternalVocabularyValue evv = null;
@@ -298,10 +323,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 evv = new ExternalVocabularyValue(term, null);
             }
             if (evv.getValue() == null) {
-                
-                JsonObject vocabConfig = getCVocConf().get(dft.getId());
-                String retrievalUri = vocabConfig.getString("retrievalUri");
-                retrievalUri.replace("{0}", term);
+                retrievalUri = retrievalUri.replace("{0}", term);
                 logger.info("Didn't find " + term + ", calling " + retrievalUri);
                 try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
                     HttpGet httpGet = new HttpGet(retrievalUri);
@@ -311,8 +333,11 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                     String data = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
                     int statusCode = response.getStatusLine().getStatusCode();
                     if (statusCode == 200) {
+                        logger.fine("Returned data: " + data);
                         try (JsonReader jsonReader = Json.createReader(new StringReader(data))) {
-                            evv.setValue(jsonReader.readObject());
+                            String dataObj =jsonReader.readObject().toString(); 
+                            evv.setValue(dataObj);
+                            logger.fine("JsonObject: " + dataObj);
                             em.merge(evv);
                             em.flush();
                             logger.fine("Wrote value for term: " + term);
@@ -329,7 +354,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
 
             }
         } catch (URISyntaxException e) {
-            logger.fine("Text entry found: " + term + " for field: " + dft.getName());
+            logger.fine("Term is not a URI: " + term);
         }
 
     }

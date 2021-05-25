@@ -41,7 +41,7 @@ public class ExternalVocabularyValue implements Serializable {
     public ExternalVocabularyValue() {
     }
 
-    public ExternalVocabularyValue(String uri, JsonObject value) {
+    public ExternalVocabularyValue(String uri, String value) {
         this.uri = uri;
         this.value = value;
     }
@@ -56,17 +56,16 @@ public class ExternalVocabularyValue implements Serializable {
 
     public void setUri(String uri) {
         this.uri = uri;
-
     }
 
-    @Column(columnDefinition = "JSONB", nullable = true)
-    private JsonObject value;
+    @Column(columnDefinition = "TEXT", nullable = true)
+    private String value;
 
-    public JsonObject getValue() {
+    public String getValue() {
         return value;
     }
 
-    public void setValue(JsonObject value) {
+    public void setValue(String value) {
         this.value = value;
     }
 
