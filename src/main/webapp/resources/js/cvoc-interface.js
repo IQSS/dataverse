@@ -17,9 +17,13 @@ function skosmos(request, response, cv, mapping) {
     var termParentUri = "";
     if (cv.termParentUri != "")
         termParentUri = "&parent=" + cv.termParentUri;
+    var langParam = "";
+    if (cv.lang != "")
+        langParam = "&lang=" + cv.lang;
+
     var result = [];
     var tmp = $.ajax({
-        url:  cv.cvocUrl + '/rest/v1/search?unique=true&vocab=' + cv.selectedVocab + termParentUri,
+        url:  cv.cvocUrl + '/rest/v1/search?unique=true&vocab=' + cv.selectedVocab + termParentUri + langParam,
         dataType: "json",
         data: { query: request.term + '*' },
         success: function(data) {
