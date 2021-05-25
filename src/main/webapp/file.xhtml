@@ -97,7 +97,7 @@
                                                 <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released and FilePage.fileMetadata.datasetVersion.draft}"
                                                       data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
                                             </div>
-                                            <div class="pull-left row col-sm-9 padding-none" jsf:rendered="#{!FilePage.anonymizedAccess}>
+                                            <div class="pull-left row col-sm-9 padding-none" jsf:rendered="#{!FilePage.anonymizedAccess}">
                                                 <div class="col-sm-3 col-md-4 col-lg-3 btn-group margin-bottom citation-download" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                                     <button type="button" class="btn btn-link dropdown-toggle padding-none downloadCitation" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                          #{bundle['file.cite.file.downloadBtn']} <span class="caret"></span>
@@ -143,7 +143,7 @@
                                                 <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}"
                                                       data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
                                             </div>
-                                            <div class="pull-left row col-sm-9 padding-none"  jsf:rendered="#{!FilePage.anonymizedAccess}>
+                                            <div class="pull-left row col-sm-9 padding-none"  jsf:rendered="#{!FilePage.anonymizedAccess}">
                                                 <div class="col-sm-3 col-md-4 col-lg-3 btn-group margin-bottom citation-download" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                                     <button type="button" class="btn btn-link dropdown-toggle padding-none downloadCitation" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                         #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
