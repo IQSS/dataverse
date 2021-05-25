@@ -76,7 +76,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         if (theDataset.getLatestVersion().getVersionState() != RELEASED
                 && theDataset.getLatestVersion().getMinorVersionNumber() != null
                 && theDataset.getLatestVersion().getMinorVersionNumber().equals((long) 0)
-                && ctxt.systemConfig().isDatafileValidationOnPublishEnabled()) {
+                && ctxt.systemConfig().isDatafileValidationOnPublishEnabled()
+                && !theDataset.isTrsaCoupled()) {
             // some imported datasets may already be released.
 
             // validate the physical files (verify checksums):

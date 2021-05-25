@@ -87,5 +87,5 @@ COPY configure_doi.bash /opt/dv
 
 # healthcheck for payara only (assumes modified domain.xml);
 #  does not check dataverse application status.
-HEALTHCHECK CMD curl --fail http://localhost:4848/monitoring/domain/server.json || exit 1
+HEALTHCHECK CMD curl --fail http://localhost:8080/ || exit 1
 CMD ["/opt/dv/entrypoint.bash"]
