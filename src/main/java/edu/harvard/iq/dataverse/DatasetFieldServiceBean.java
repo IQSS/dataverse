@@ -259,22 +259,32 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                        logger.warning("Ignoring External Vocabulary setting for non-existent field: " + jo.getString("field-name"));
                    }
                 if(jo.containsKey("term-uri-field")) {
-                    DatasetFieldType childdft = findByNameOpt(jo.getString("term-uri-field"));
-                    logger.info("Found term child field: " + childdft.getName());
-                    if(childdft.getParentDatasetFieldType()!=dft) {
-                        logger.warning("Term URI field (" + childdft.getDisplayName() + ") not a child of parent: " + dft.getDisplayName());
+                    String termUriField=jo.getString("term-uri-field");
+                    if (!dft.isHasChildren()) {
+                        if (termUriField.equals(dft.getName())) {
+                            logger.info("Found primitive field for term uri : " + dft.getName());
+                        }
+                    } else {
+                        DatasetFieldType childdft = findByNameOpt(jo.getString("term-uri-field"));
+                        logger.info("Found term child field: " + childdft.getName());
+                        if (childdft.getParentDatasetFieldType() != dft) {
+                            logger.warning("Term URI field (" + childdft.getDisplayName() + ") not a child of parent: "
+                                    + dft.getDisplayName());
+                        }
                     }
                     if(dft==null) {
                         logger.warning("Ignoring External Vocabulary setting for non-existent child field: " + jo.getString("term-uri-field"));
                     }
 
-                }
-                JsonArray childFields = jo.getJsonArray("child-fields");
-                for (JsonString elm: childFields.getValuesAs(JsonString.class)){
-                    dft = findByNameOpt(elm.getString());
-                    logger.info("Found: " + dft.getName());
-                    if(dft==null) {
-                        logger.warning("Ignoring External Vocabulary setting for non-existent child field: " + elm.getString());
+                }if(jo.containsKey("child-fields")) {
+                    JsonArray childFields = jo.getJsonArray("child-fields");
+                    for (JsonString elm : childFields.getValuesAs(JsonString.class)) {
+                        dft = findByNameOpt(elm.getString());
+                        logger.info("Found: " + dft.getName());
+                        if (dft == null) {
+                            logger.warning("Ignoring External Vocabulary setting for non-existent child field: "
+                                    + elm.getString());
+                        }
                     }
                 }
             }

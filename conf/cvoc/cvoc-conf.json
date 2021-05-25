@@ -12,5 +12,29 @@
   "term-parent-uri": "",
   "vocabs":["unesco","stw","agrovoc"],
   "child-fields": ["cvocDemoVocabulary", "cvocDemoTerm", "cvocDemoVocabularyURI"]
+},
+{
+  "field-name":"creator",
+  "term-uri-field":"creator",
+  "trigger-class":"person",
+  "language":"en",
+  "js-url":"/resources/js/people.js",
+  "protocol": "orcid",
+  "retrieval-uri":"https://pub.orcid.org/v3.0/{0}/person",
+  "prefix":"https://orcid.org",
+  "term-parent-uri": "",
+  "vocabs":["orcid"]
+},
+{
+  "field-name":"skosterm",
+  "term-uri-field":"cvocDemoTermURI",
+  "trigger-class":"unesco, stw, agrovac",
+  "minChars": 1,
+  "cvoc-url":"https://skosmos.dev.finto.fi/",
+  "language":"en",
+  "js-url":"/resources/js/cvoc-interface2.js",
+  "protocol": "notskosmos",
+  "retrieval-uri":"https://skosmos.dev.finto.fi/rest/v1/data?uri={0}",
+  "term-parent-uri": ""
 }
 ]
