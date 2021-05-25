@@ -100,7 +100,7 @@ public class AddReplaceFileHelper{
     public static String FILE_ADD_OPERATION = "FILE_ADD_OPERATION";
     public static String FILE_REPLACE_OPERATION = "FILE_REPLACE_OPERATION";
     public static String FILE_REPLACE_FORCE_OPERATION = "FILE_REPLACE_FORCE_OPERATION";
-    
+    public static String MULTIPLEFILES_ADD_OPERATION = "MULTIPLEFILES_ADD_OPERATION";
             
     private String currentOperation;
     
@@ -299,33 +299,49 @@ public class AddReplaceFileHelper{
         this.user = dvRequest.getUser();
         
     }
-    
+
     /**
-     * 
+     *
      * @param chosenDataset
      * @param newFileName
      * @param newFileContentType
      * @param newFileInputStream
      * @param optionalFileParams
-     * @return 
+     * @return
      */
-    public boolean runAddFileByDataset(Dataset chosenDataset, 
-            String newFileName, 
-            String newFileContentType, 
-            String newStorageIdentifier,
-            InputStream newFileInputStream,
-            OptionalFileParams optionalFileParams){
-        
+    public boolean runAddFileByDataset(Dataset chosenDataset,
+                                       String newFileName,
+                                       String newFileContentType,
+                                       String newStorageIdentifier,
+                                       InputStream newFileInputStream,
+                                       OptionalFileParams optionalFileParams){
+        return this.runAddFileByDataset(chosenDataset,newFileName,newFileContentType,newStorageIdentifier,newFileInputStream,optionalFileParams,false);
+
+    }
+
+    public boolean runAddFileByDataset(Dataset chosenDataset,
+                                       String newFileName,
+                                       String newFileContentType,
+                                       String newStorageIdentifier,
+                                       InputStream newFileInputStream,
+                                       OptionalFileParams optionalFileParams,
+                                       boolean multipleFiles) {
+
         msgt(">> runAddFileByDatasetId");
 
         initErrorHandling();
-        
-        this.currentOperation = FILE_ADD_OPERATION;
-        
+
+        if(multipleFiles) {
+            this.currentOperation = MULTIPLEFILES_ADD_OPERATION;
+        }
+        else {
+            this.currentOperation = FILE_ADD_OPERATION;
+        }
+
         if (!this.step_001_loadDataset(chosenDataset)){
             return false;
         }
-        
+
         //return this.runAddFile(this.dataset, newFileName, newFileContentType, newFileInputStream, optionalFileParams);
         return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newStorageIdentifier, newFileInputStream, optionalFileParams);
 
@@ -727,8 +743,10 @@ public class AddReplaceFileHelper{
             
         }else{
             msgt("step_070_run_update_dataset_command");
-            if (!this.step_070_run_update_dataset_command()){
-                return false;            
+            if (!this.isMultipleFilesAddOperation()) {
+                if (!this.step_070_run_update_dataset_command()) {
+                    return false;
+                }
             }
         }
         
@@ -789,6 +807,16 @@ public class AddReplaceFileHelper{
     public boolean isFileAddOperation(){
     
         return this.currentOperation.equals(FILE_ADD_OPERATION);
+    }
+
+    /**
+     * Is this a multiple files add operation ?
+     * @return
+     */
+
+    public boolean isMultipleFilesAddOperation(){
+
+        return this.currentOperation.equals(MULTIPLEFILES_ADD_OPERATION);
     }
 
     /**
@@ -1864,14 +1892,13 @@ public class AddReplaceFileHelper{
         //if (true){
             //return true;
         //}
-        
-        msg("pre ingest start");
-        // start the ingest!
-        //
-               
-        ingestService.startIngestJobsForDataset(dataset, dvRequest.getAuthenticatedUser());
-        
-        msg("post ingest start");
+
+        if (!this.isMultipleFilesAddOperation()) {
+            msg("pre ingest start");
+            // start the ingest!
+            ingestService.startIngestJobsForDataset(dataset, dvRequest.getAuthenticatedUser());
+            msg("post ingest start");
+        }
         return true;
     }
 
