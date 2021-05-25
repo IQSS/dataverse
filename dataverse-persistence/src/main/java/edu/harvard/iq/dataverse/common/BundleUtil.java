@@ -18,6 +18,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 public class BundleUtil {
@@ -97,14 +98,16 @@ public class BundleUtil {
      * method tries to get the name from default bundles otherwise it returns empty string.
      */
     private static String getStringFromPropertyFile(String bundleKey, String bundleName, Locale locale) throws MissingResourceException {
-        Optional<String> displayNameFromExternalBundle = Optional.empty();
+        String displayNameFromExternalBundle = StringUtils.EMPTY;
 
         if ((!DefaultMetadataBlocks.METADATA_BLOCK_NAMES.contains(bundleName) && !INTERNAL_BUNDLE_NAMES.contains(bundleName))
                 && System.getProperty("dataverse.lang.directory") != null) {
             displayNameFromExternalBundle = getStringFromExternalBundle(bundleKey, bundleName, locale);
         }
 
-        return displayNameFromExternalBundle.orElseGet(() -> getStringFromInternalBundle(bundleKey, bundleName, locale));
+        return StringUtils.isBlank(displayNameFromExternalBundle)
+                ? getStringFromInternalBundle(bundleKey, bundleName, locale)
+                : displayNameFromExternalBundle;
     }
 
     private static String getStringFromInternalBundle(String bundleKey, String bundleName, Locale locale) {
@@ -123,23 +126,35 @@ public class BundleUtil {
                     ? resourceBundle.getString(bundleKey)
                     : StringUtils.EMPTY;
         } catch (Exception ex) {
-            logger.warning("Could not find key \"" + bundleKey + "\" in bundle file: " + bundleName);
+            logger.finest("Could not find key \"" + bundleKey + "\" in bundle file: " + bundleName);
             return StringUtils.EMPTY;
         }
     }
 
-    private static Optional<String> getStringFromExternalBundle(String bundleKey, String bundleName, Locale locale) {
+    // IMPORTANT: this method is nearly exact copy of getStringFromInternalBundle(…), however
+    // any attempt in extracting common code from these two and pass differing parts as lambdas
+    // would cause great decrease in performance of WHOLE dataverse app.
+    private static String getStringFromExternalBundle(String bundleKey, String bundleName, Locale locale) {
+        String key = bundleName + "_" + locale.getLanguage();
+        ResourceBundle resourceBundle = bundleCache.get(key);
+        if (resourceBundle == null) {
+            try {
+                URL customBundlesDir = Paths.get(System.getProperty("dataverse.lang.directory")).toUri().toURL();
+                URLClassLoader externalBundleDirURL = new URLClassLoader(new URL[]{customBundlesDir});
+                resourceBundle = ResourceBundle.getBundle(bundleName, locale, externalBundleDirURL);
+            } catch (MalformedURLException | MissingResourceException ex) {
+                resourceBundle = EMPTY_BUNDLE;
+            }
+            bundleCache.putIfAbsent(key, resourceBundle);
+        }
         try {
-            URL customBundlesDir = Paths.get(System.getProperty("dataverse.lang.directory")).toUri().toURL();
-            URLClassLoader externalBundleDirURL = new URLClassLoader(new URL[]{customBundlesDir});
-
-            ResourceBundle resourceBundle =
-                    ResourceBundle.getBundle(bundleName, locale, externalBundleDirURL);
-
-            return Optional.of(resourceBundle.getString(bundleKey));
-        } catch (MalformedURLException | MissingResourceException ex) {
-            logger.warning(ex.getMessage());
-            return Optional.empty();
+            return !EMPTY_BUNDLE.equals(resourceBundle)
+                    ? resourceBundle.getString(bundleKey)
+                    : StringUtils.EMPTY;
+        } catch (Exception ex) {
+            logger.finest("Could not find key \"" + bundleKey + "\" in bundle file: " + bundleName);
+            return StringUtils.EMPTY;
         }
     }
 }
+
