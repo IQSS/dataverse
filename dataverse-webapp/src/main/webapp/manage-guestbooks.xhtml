@@ -90,8 +90,8 @@
                             </div>
                         </div>
                         
-                        <p:dataTable id="allGuestbooks" styleClass="manageTable" var="guestbook" value="#{manageGuestbooksPage.guestbooks}"
-                                     rendered="#{!empty manageGuestbooksPage.guestbooks}">
+                        <p:dataTable id="allGuestbooks" styleClass="manageTable" var="guestbook" widgetVar="allGuestbooks" value="#{manageGuestbooksPage.guestbooks}"
+                                     rendered="#{!empty manageGuestbooksPage.guestbooks}" sortMode="single" sortBy="#{guestbook.name}">
                             <p:column width="25%" sortBy="#{guestbook.name}" headerText="#{bundle['dataset.manageGuestbooks.tab.header.name']}">
                                 <h:outputText value="#{guestbook.name}" />
                             </p:column>
@@ -114,17 +114,17 @@
                                 </div>
                                 <div class="button-block">
                                     <p:commandLink type="button" styleClass="btn btn-default btn-access"
-                                                   value="#{bundle['dataset.manageGuestbooks.tab.action.btn.enable']}"
                                                    rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and !guestbook.enabled}"
-                                                   action="#{manageGuestbooksPage.enableGuestbook(guestbook)}"
-                                                   update="@form,:messagePanel"
-                                                   oncomplete="bind_tooltip_popover();"/>
+                                                   actionListener="#{manageGuestbooksPage.enableGuestbook(guestbook)}"
+                                                   update="@widgetVar(allGuestbooks)">
+                                        #{bundle['dataset.manageGuestbooks.tab.action.btn.enable']}
+                                    </p:commandLink>
                                     <p:commandLink type="button" styleClass="btn btn-default btn-access"
-                                                   value="#{bundle['dataset.manageGuestbooks.tab.action.btn.disable']}"
                                                    rendered="#{manageGuestbooksPage.dataverse.id eq guestbook.dataverse.id and guestbook.enabled}"
-                                                   action="#{manageGuestbooksPage.disableGuestbook(guestbook)}"
-                                                   update="@form,:messagePanel"
-                                                   oncomplete="bind_tooltip_popover();"/>
+                                                   actionListener="#{manageGuestbooksPage.disableGuestbook(guestbook)}"
+                                                   update="@widgetVar(allGuestbooks)">
+                                        #{bundle['dataset.manageGuestbooks.tab.action.btn.disable']}
+                                    </p:commandLink>
                                     <div class="btn-group" role="group">
                                         <p:commandLink type="button" styleClass="btn btn-default btn-access bootstrap-button-tooltip"
                                                        action="#{manageGuestbooksPage.viewSelectedGuestbook(guestbook)}"

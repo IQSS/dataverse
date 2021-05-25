@@ -40,7 +40,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
     private List<Guestbook> guestbooks;
     private Dataverse dataverse;
     private Long dataverseId;
-    private boolean inheritGuestbooksValue;
+    private boolean inheritGuestbooksValue = true;
     private boolean displayDownloadAll = false;
     private Guestbook selectedGuestbook = null;
 
@@ -110,7 +110,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
             displayDownloadAll = true;
         }
 
-        refreshGuestbooks();
+        loadGuestbooks();
 
         return null;
     }
@@ -134,21 +134,21 @@ public class ManageGuestbooksPage implements java.io.Serializable {
 
     public void deleteGuestbook() {
         Try.of(() -> manageGuestbooksService.deleteGuestbook(selectedGuestbook.getId()))
-                .onSuccess(dv -> refreshGuestbooks())
+                .onSuccess(dv -> guestbooks.remove(selectedGuestbook))
                 .onSuccess(dv -> JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.deleteSuccess")))
                 .onFailure(throwable -> JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.deleteFailure"), StringUtils.EMPTY));
     }
 
-    public void enableGuestbook(Guestbook selectedGuestbook) {
-        Try.of(() -> manageGuestbooksService.enableGuestbook(selectedGuestbook.getId()))
-                .onSuccess(guestbook -> refreshGuestbooks())
+    public void enableGuestbook(Guestbook gb) {
+        Try.of(() -> manageGuestbooksService.enableGuestbook(gb.getId()))
+                .onSuccess(guestbook -> guestbooks.stream().filter(g -> g.getId().equals(gb.getId())).findFirst().ifPresent(g -> g.setEnabled(true)))
                 .onSuccess(guestbook -> JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.enableSuccess")))
                 .onFailure(throwable -> JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.enableFailure"), StringUtils.EMPTY));
     }
 
-    public void disableGuestbook(Guestbook selectedGuestbook) {
-        Try.of(() -> manageGuestbooksService.disableGuestbook(selectedGuestbook.getId()))
-                .onSuccess(guestbook -> refreshGuestbooks())
+    public void disableGuestbook(Guestbook gb) {
+        Try.of(() -> manageGuestbooksService.disableGuestbook(gb.getId()))
+                .onSuccess(guestbook -> guestbooks.stream().filter(g -> g.getId().equals(gb.getId())).findFirst().ifPresent(g -> g.setEnabled(false)))
                 .onSuccess(guestbook -> JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.disableSuccess")))
                 .onFailure(throwable -> JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.manageGuestbooks.message.disableFailure"), StringUtils.EMPTY));
     }
@@ -156,22 +156,29 @@ public class ManageGuestbooksPage implements java.io.Serializable {
     public void updateGuestbooksRoot(javax.faces.event.AjaxBehaviorEvent event) throws javax.faces.event.AbortProcessingException {
 
         Try.of(() -> manageGuestbooksService.updateAllowGuestbooksFromRootStatus(dataverse.getId(), !inheritGuestbooksValue))
-                .onSuccess(dv -> refreshGuestbooks())
+                .onSuccess(dv -> manageInheritedGuestbooks())
                 .onFailure(throwable -> Logger.getLogger(ManageGuestbooksPage.class.getName()).log(Level.SEVERE, null, throwable));
     }
 
     // -------------------- PRIVATE ---------------------
-    private void refreshGuestbooks() {
-        dataverse = dvService.find(dataverseId);
+    private void loadGuestbooks() {
         guestbooks = new LinkedList<>();
-        setInheritGuestbooksValue(!dataverse.isGuestbookRoot());
-        if (inheritGuestbooksValue && dataverse.getOwner() != null) {
-            for (Guestbook pg : dataverse.getParentGuestbooks()) {
-                pg.setUsageCount(guestbookService.findCountUsages(pg.getId(), dataverseId));
-                pg.setResponseCount(guestbookResponseService.findCountByGuestbookId(pg.getId(), dataverseId));
-                guestbooks.add(pg);
-            }
+        if (!dataverse.isGuestbookRoot()) {
+            setInheritGuestbooksValue(true);
+            loadInheritedGuestbooks();
         }
+        addDataverseGuestbooks();
+    }
+
+    private void manageInheritedGuestbooks() {
+        if (inheritGuestbooksValue) {
+            loadInheritedGuestbooks();
+        } else {
+            unloadInheritedGuestbooks();
+        }
+    }
+
+    private void addDataverseGuestbooks() {
         for (Guestbook cg : dataverse.getGuestbooks()) {
             cg.setDeletable(true);
             cg.setUsageCount(guestbookService.findCountUsages(cg.getId(), dataverseId));
@@ -185,6 +192,18 @@ public class ManageGuestbooksPage implements java.io.Serializable {
             cg.setDataverse(dataverse);
             guestbooks.add(cg);
         }
+    }
+
+    private void loadInheritedGuestbooks() {
+        for (Guestbook pg : dataverse.getParentGuestbooks()) {
+            pg.setUsageCount(guestbookService.findCountUsages(pg.getId(), dataverseId));
+            pg.setResponseCount(guestbookResponseService.findCountByGuestbookId(pg.getId(), dataverseId));
+            guestbooks.add(pg);
+        }
+    }
+
+    private void unloadInheritedGuestbooks() {
+        guestbooks.removeIf(guestbook -> !guestbook.getDataverse().getId().equals(dataverseId));
     }
 
     // -------------------- SETTERS --------------------
