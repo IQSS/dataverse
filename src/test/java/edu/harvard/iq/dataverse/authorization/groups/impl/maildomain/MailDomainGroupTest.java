@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.authorization.groups.impl.maildomain;
 
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 

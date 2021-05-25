@@ -295,7 +295,6 @@
     <!-- <copyField source="*_i" dest="_text_" maxChars="3000"/> -->
 
     <!-- Dataverse copyField from http://localhost:8080/api/admin/index/solr/schema -->
-    <!--  include doesn't work see #7864<xi:include href="schema_dv_mdb_copies.xml" xmlns:xi="http://www.w3.org/2001/XInclude" /> -->
     <copyField source="accessToSources" dest="_text_" maxChars="3000"/>
     <copyField source="actionsToMinimizeLoss" dest="_text_" maxChars="3000"/>
     <copyField source="alternativeTitle" dest="_text_" maxChars="3000"/>
@@ -456,7 +455,7 @@
     <copyField source="universe" dest="_text_" maxChars="3000"/>
     <copyField source="weighting" dest="_text_" maxChars="3000"/>
     <copyField source="westLongitude" dest="_text_" maxChars="3000"/>
-<!-- End: Dataverse-specific -->
+    <!-- End: Dataverse-specific -->
     
     <!-- This can be enabled, in case the client does not know what fields may be searched. It isn't enabled by default
          because it's very expensive to index everything twice. -->

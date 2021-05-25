@@ -248,6 +248,7 @@ public class FilePage implements java.io.Serializable {
             return permissionsWrapper.notFound();
         }
 
+
         return null;
     }
     
@@ -1216,5 +1217,13 @@ public class FilePage implements java.io.Serializable {
 
     public void setFileAccessRequest(boolean fileAccessRequest) {
         this.fileAccessRequest = fileAccessRequest;
-    }  
+    }
+    public boolean isAnonymizedAccess() {
+        if(session.getUser() instanceof PrivateUrlUser) {
+            logger.info("FP: anon: " +  ((PrivateUrlUser)session.getUser()).hasAnonymizedAccess());
+            return ((PrivateUrlUser)session.getUser()).hasAnonymizedAccess();
+        }
+        logger.info("user is: " + session.getUser().getIdentifier());
+        return false;
+    }
 }

@@ -524,8 +524,16 @@ public class DatasetUtil {
      * size for tabular files.
      */
     public static String getDownloadSize(DatasetVersion dsv, boolean original) {
+        return FileSizeChecker.bytesToHumanReadable(getDownloadSizeNumeric(dsv, original));
+    }
+    
+    public static Long getDownloadSizeNumeric(DatasetVersion dsv, boolean original) {
+        return getDownloadSizeNumericBySelectedFiles(dsv.getFileMetadatas(), original);
+    }
+    
+    public static Long getDownloadSizeNumericBySelectedFiles(List<FileMetadata> fileMetadatas, boolean original) {
         long bytes = 0l;
-        for (FileMetadata fileMetadata : dsv.getFileMetadatas()) {
+        for (FileMetadata fileMetadata : fileMetadatas) {
             DataFile dataFile = fileMetadata.getDataFile();
             if (original && dataFile.isTabularData()) {                
                 bytes += dataFile.getOriginalFileSize() == null ? 0 : dataFile.getOriginalFileSize();
@@ -533,6 +541,6 @@ public class DatasetUtil {
                 bytes += dataFile.getFilesize();
             }
         }
-        return FileSizeChecker.bytesToHumanReadable(bytes);
+        return bytes;
     }
 }

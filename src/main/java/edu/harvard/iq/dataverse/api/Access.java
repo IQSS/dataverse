@@ -67,7 +67,6 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -118,15 +117,13 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import javax.ws.rs.core.StreamingOutput;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.net.URISyntaxException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.ws.rs.RedirectionException;
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MediaType;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import org.glassfish.jersey.media.multipart.FormDataBodyPart;
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-
-import com.google.gson.JsonObject;
 
 /*
     Custom API exceptions [NOT YET IMPLEMENTED]
@@ -549,7 +546,7 @@ public class Access extends AbstractApiBean {
      * a tabular datafile.
      */
     
-    @Path("datafile/{fileId}/metadata/aux/{origin}")
+    @Path("datafile/{fileId}/auxiliary/{origin}")
     @GET
     public Response listDatafileMetadataAux(@PathParam("fileId") String fileId,
             @PathParam("origin") String origin,
@@ -579,6 +576,7 @@ public class Access extends AbstractApiBean {
                 job.add("fileSize", auxFile.getFileSize());
                 job.add("contentType", auxFile.getContentType());
                 job.add("isPublic", auxFile.getIsPublic());
+                job.add("type",  auxFile.getType());
                 jab.add(job);
             }
         });
@@ -590,9 +588,9 @@ public class Access extends AbstractApiBean {
      * a tabular datafile.
      */
     
-    @Path("datafile/{fileId}/metadata/{formatTag}/{formatVersion}")
+    @Path("datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}")
     @GET    
-    public DownloadInstance datafileMetadataAux(@PathParam("fileId") String fileId,
+    public DownloadInstance downloadAuxiliaryFile(@PathParam("fileId") String fileId,
             @PathParam("formatTag") String formatTag,
             @PathParam("formatVersion") String formatVersion,
             @QueryParam("key") String apiToken, 
@@ -612,6 +610,17 @@ public class Access extends AbstractApiBean {
         DownloadInstance downloadInstance;
         AuxiliaryFile auxFile = null;
         
+        /* 
+          The special case for "preprocessed" metadata should not be here at all. 
+          Access to the format should be handled by the /api/access/datafile/{id}?format=prep
+          form exclusively (this is what Data Explorer and Tworavens have been
+          using all along). We may have advertised /api/access/datafile/{id}/metadata/preprocessed
+          in the past - but it has been broken since 5.3 anyway, since the /{formatVersion}
+          element was added to the @Path. 
+          Now that the api method has been renamed /api/access/datafile/{id}/auxiliary/..., 
+          nobody should be using it to access the "preprocessed" format. 
+          Leaving the special case below commented-out, for now. - L.A.
+        
         // formatTag=preprocessed is handled as a special case. 
         // This is (as of now) the only aux. tabular metadata format that Dataverse
         // can generate (and cache) itself. (All the other formats served have 
@@ -623,20 +632,21 @@ public class Access extends AbstractApiBean {
             if (downloadInstance.checkIfServiceSupportedAndSetConverter("format", "prep")) {
                 logger.fine("Preprocessed data for tabular file "+fileId);
             }
-        } else {
-            // All other (deposited) formats:
-            auxFile = auxiliaryFileService.lookupAuxiliaryFile(df, formatTag, formatVersion);
-            
-            if (auxFile == null) {
-                throw new NotFoundException("Auxiliary metadata format "+formatTag+" is not available for datafile "+fileId);
-            }
-            
-            if (auxFile.getIsPublic()) {
-                publiclyAvailable = true;
-            }
-            downloadInstance = new DownloadInstance(dInfo);
-            downloadInstance.setAuxiliaryFile(auxFile);
+        } else { */
+        // All other (deposited) formats:
+        auxFile = auxiliaryFileService.lookupAuxiliaryFile(df, formatTag, formatVersion);
+
+        if (auxFile == null) {
+            throw new NotFoundException("Auxiliary metadata format " + formatTag + " is not available for datafile " + fileId);
         }
+
+        // Don't consider aux file public unless data file is published.
+        if (auxFile.getIsPublic() && df.getPublicationDate() != null) {
+            publiclyAvailable = true;
+        }
+        downloadInstance = new DownloadInstance(dInfo);
+        downloadInstance.setAuxiliaryFile(auxFile);
+        /*}*/
         
         // Unless this format is explicitly authorized to be publicly available, 
         // the following will check access authorization (based on the access rules
@@ -670,9 +680,38 @@ public class Access extends AbstractApiBean {
     @Produces({"application/zip"})
     public Response downloadAllFromLatest(@PathParam("id") String datasetIdOrPersistentId, @QueryParam("gbrecs") boolean gbrecs, @QueryParam("key") String apiTokenParam, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws WebApplicationException {
         try {
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
-            final Dataset retrieved = execCommand(new GetDatasetCommand(req, findDatasetOrDie(datasetIdOrPersistentId)));
-            final DatasetVersion latest = execCommand(new GetLatestAccessibleDatasetVersionCommand(req, retrieved));
+            User user = findUserOrDie(); 
+            DataverseRequest req = createDataverseRequest(user);
+            final Dataset retrieved = findDatasetOrDie(datasetIdOrPersistentId);
+            if (!(user instanceof GuestUser)) {
+                // The reason we are only looking up a draft version for a NON-guest user
+                // is that we know that guest never has the Permission.ViewUnpublishedDataset. 
+                final DatasetVersion draft = versionService.getDatasetVersionById(retrieved.getId(), DatasetVersion.VersionState.DRAFT.toString());
+                if (draft != null && permissionService.requestOn(req, retrieved).has(Permission.ViewUnpublishedDataset)) {                    
+                    String fileIds = getFileIdsAsCommaSeparated(draft.getFileMetadatas());
+                    // We don't want downloads from Draft versions to be counted, 
+                    // so we are setting the gbrecs (aka "do not write guestbook response") 
+                    // variable accordingly:
+                    return downloadDatafiles(fileIds, true, apiTokenParam, uriInfo, headers, response);
+                }
+            }
+            
+            // OK, it was not the draft. Let's see if we can serve a published version.
+            
+            final DatasetVersion latest = versionService.getLatestReleasedVersionFast(retrieved.getId()); 
+            
+            // Make sure to throw a clean error code if we have failed to locate an 
+            // accessible version:
+            // (A "Not Found" would be more appropriate here, I believe, than a "Bad Request". 
+            // But we've been using the latter for a while, and it's a popular API... 
+            // and this return code is expected by our tests - so I'm choosing it to keep 
+            // -- L.A.)
+            
+            if (latest == null) {
+                return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.exception.dataset.not.found"));
+                //throw new NotFoundException();
+            }
+            
             String fileIds = getFileIdsAsCommaSeparated(latest.getFileMetadatas());
             return downloadDatafiles(fileIds, gbrecs, apiTokenParam, uriInfo, headers, response);
         } catch (WrappedResponse wr) {
@@ -710,9 +749,19 @@ public class Access extends AbstractApiBean {
                 }
             }));
             if (dsv == null) {
+                // (A "Not Found" would be more appropriate here, I believe, than a "Bad Request". 
+                // But we've been using the latter for a while, and it's a popular API... 
+                // and this return code is expected by our tests - so I'm choosing it to keep 
+                // -- L.A.)
                 return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.exception.version.not.found"));
             }
             String fileIds = getFileIdsAsCommaSeparated(dsv.getFileMetadatas());
+            // We don't want downloads from Draft versions to be counted, 
+            // so we are setting the gbrecs (aka "do not write guestbook response") 
+            // variable accordingly:
+            if (dsv.isDraft()) {
+                gbrecs = true;
+            }
             return downloadDatafiles(fileIds, gbrecs, apiTokenParam, uriInfo, headers, response);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
@@ -738,7 +787,7 @@ public class Access extends AbstractApiBean {
         return downloadDatafiles(fileIds, gbrecs, apiTokenParam, uriInfo, headers, response);
     }
 
-    private Response downloadDatafiles(String rawFileIds, boolean gbrecs, String apiTokenParam, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response) throws WebApplicationException /* throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    private Response downloadDatafiles(String rawFileIds, boolean donotwriteGBResponse, String apiTokenParam, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response) throws WebApplicationException /* throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         long setLimit = systemConfig.getZipDownloadLimit();
         if (!(setLimit > 0L)) {
             setLimit = DataFileZipper.DEFAULT_ZIPFILE_LIMIT;
@@ -782,7 +831,7 @@ public class Access extends AbstractApiBean {
         if (useCustomZipService) {
             URI redirect_uri = null; 
             try {
-                redirect_uri = handleCustomZipDownload(customZipServiceUrl, fileIds, apiToken, apiTokenUser, uriInfo, headers, gbrecs, true); 
+                redirect_uri = handleCustomZipDownload(customZipServiceUrl, fileIds, apiToken, apiTokenUser, uriInfo, headers, donotwriteGBResponse, true); 
             } catch (WebApplicationException wae) {
                 throw wae;
             }
@@ -826,7 +875,7 @@ public class Access extends AbstractApiBean {
                                     
                                     logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
                                     //downloadInstance.addDataFile(file);
-                                    if (gbrecs != true && file.isReleased()){
+                                    if (donotwriteGBResponse != true && file.isReleased()){
                                         GuestbookResponse  gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
                                         guestbookResponseService.save(gbr);
                                         MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, file);                                        
@@ -1201,12 +1250,13 @@ public class Access extends AbstractApiBean {
      * @param formatVersion
      * @param origin
      * @param isPublic
+     * @param type
      * @param fileInputStream
      * @param contentDispositionHeader
      * @param formDataBodyPart
      * @return 
      */
-    @Path("datafile/{fileId}/metadata/{formatTag}/{formatVersion}")
+    @Path("datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}")
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
 
@@ -1215,6 +1265,7 @@ public class Access extends AbstractApiBean {
             @PathParam("formatVersion") String formatVersion,
             @FormDataParam("origin") String origin,
             @FormDataParam("isPublic") boolean isPublic,
+            @FormDataParam("type") String type,
             @FormDataParam("file") InputStream fileInputStream
           
     ) {
@@ -1234,8 +1285,13 @@ public class Access extends AbstractApiBean {
             return error(FORBIDDEN, "User not authorized to edit the dataset.");
         }
 
-        AuxiliaryFile saved = auxiliaryFileService.processAuxiliaryFile(fileInputStream, dataFile, formatTag, formatVersion, origin, isPublic);
-        return ok(json(saved));
+        AuxiliaryFile saved = auxiliaryFileService.processAuxiliaryFile(fileInputStream, dataFile, formatTag, formatVersion, origin, isPublic, type);
+
+        if (saved!=null) {
+            return ok(json(saved));
+        } else {
+            return error(BAD_REQUEST, "Error saving Auxiliary file.");
+        }
     }
   
 
@@ -1251,7 +1307,7 @@ public class Access extends AbstractApiBean {
      * @param formDataBodyPart
      * @return 
      */
-    @Path("datafile/{fileId}/metadata/{formatTag}/{formatVersion}")
+    @Path("datafile/{fileId}/auxiliary/{formatTag}/{formatVersion}")
     @DELETE
     public Response deleteAuxiliaryFileWithVersion(@PathParam("fileId") Long fileId,
             @PathParam("formatTag") String formatTag,
@@ -1941,7 +1997,8 @@ public class Access extends AbstractApiBean {
         return apiTokenUser;
     }
 
-    private URI handleCustomZipDownload(String customZipServiceUrl, String fileIds, String apiToken, User apiTokenUser, UriInfo uriInfo, HttpHeaders headers, boolean gbrecs, boolean orig) throws WebApplicationException {
+    private URI handleCustomZipDownload(String customZipServiceUrl, String fileIds, String apiToken, User apiTokenUser, UriInfo uriInfo, HttpHeaders headers, boolean donotwriteGBResponse, boolean orig) throws WebApplicationException {
+        
         String zipServiceKey = null; 
         Timestamp timestamp = null; 
         
@@ -1968,7 +2025,7 @@ public class Access extends AbstractApiBean {
                     validFileCount++;
                     if (isAccessAuthorized(file, apiToken)) {
                         logger.fine("adding datafile (id=" + file.getId() + ") to the download list of the ZippedDownloadInstance.");
-                        if (gbrecs != true && file.isReleased()) {
+                        if (donotwriteGBResponse != true && file.isReleased()) {
                             GuestbookResponse gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
                             guestbookResponseService.save(gbr);
                             MakeDataCountEntry entry = new MakeDataCountEntry(uriInfo, headers, dvRequestService, file);

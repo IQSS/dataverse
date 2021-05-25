@@ -22,14 +22,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.xml.transform.Source;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -214,7 +213,7 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setAuthors(dataset.getLatestVersion().getDatasetAuthors());
         if (dvObject.isInstanceofDataset()) {
             //While getDescriptionPlainText strips < and > from HTML, it leaves '&' (at least so we need to xml escape as well
-            String description = StringEscapeUtils.escapeXml(dataset.getLatestVersion().getDescriptionPlainText());
+            String description = StringEscapeUtils.escapeXml10(dataset.getLatestVersion().getDescriptionPlainText());
             if (description.isEmpty() || description.equals(DatasetField.NA_VALUE)) {
                 description = AbstractGlobalIdServiceBean.UNAVAILABLE;
             }
@@ -224,7 +223,7 @@ public class DOIDataCiteRegisterService {
             DataFile df = (DataFile) dvObject;
             //Note: File metadata is not escaped like dataset metadata is, so adding an xml escape here.
             //This could/should be removed if the datafile methods add escaping
-            String fileDescription = StringEscapeUtils.escapeXml(df.getDescription());
+            String fileDescription = StringEscapeUtils.escapeXml10(df.getDescription());
             metadataTemplate.setDescription(fileDescription == null ? AbstractGlobalIdServiceBean.UNAVAILABLE : fileDescription);
             String datasetPid = df.getOwner().getGlobalId().asString();
             metadataTemplate.setDatasetIdentifier(datasetPid);
@@ -237,7 +236,7 @@ public class DOIDataCiteRegisterService {
         String title = dvObject.getCurrentName();
         if(dvObject.isInstanceofDataFile()) {
             //Note file title is not currently escaped the way the dataset title is, so adding it here.
-            title = StringEscapeUtils.escapeXml(title);
+            title = StringEscapeUtils.escapeXml10(title);
         }
         
         if (title.isEmpty() || title.equals(DatasetField.NA_VALUE)) {

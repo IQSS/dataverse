@@ -795,7 +795,10 @@ View Dataset Files and Folders as a Directory Index
 
 .. code-block:: bash
 
-  curl $SERVER_URL/api/datasets/$ID/dirindex/
+  curl $SERVER_URL/api/datasets/${ID}/dirindex/
+  # or
+  curl ${SERVER_URL}/api/datasets/:persistentId/dirindex?persistentId=doi:${PERSISTENT_ID}
+
 
 Optional parameters:
 
@@ -867,7 +870,9 @@ An example of a ``wget`` command line for crawling ("recursive downloading") of 
 
 .. code-block:: bash
 
-  wget -r -e robots=off -nH --cut-dirs=3 --content-disposition https://demo.dataverse.org/api/datasets/24/dirindex/
+  wget -r -e robots=off -nH --cut-dirs=3 --content-disposition https://demo.dataverse.org/api/datasets/${ID}/dirindex/
+  # or
+  wget -r -e robots=off -nH --cut-dirs=3 --content-disposition https://demo.dataverse.org/api/datasets/:persistentId/dirindex?persistentId=doi:${PERSISTENT_ID}
 
 .. note:: In addition to the files and folders in the dataset, the command line above will also save the directory index of each folder, in a separate folder "dirindex".
 
@@ -2979,7 +2984,7 @@ List users with the options to search and "page" through results. Only accessibl
 * ``searchTerm`` A string that matches the beginning of a user identifier, first name, last name or email address.
 * ``itemsPerPage`` The number of detailed results to return.  The default is 25.  This number has no limit. e.g. You could set it to 1000 to return 1,000 results
 * ``selectedPage`` The page of results to return.  The default is 1.
-* ``sortKey`` A string that represents a field that is used for sorting the results. Possible values are "id", "useridentifier" (username), "lastname" (last name), "firstname" (first name), "email" (email address), "affiliation" (affiliation), "superuser" (flag that denotes if the user is an administrator of the site), "position", "createdtime" (created time), "lastlogintime" (last login time), "lastapiusetime" (last API use time). The default is "useridentifier".
+* ``sortKey`` A string that represents a field that is used for sorting the results. Possible values are "id", "useridentifier" (username), "lastname" (last name), "firstname" (first name), "email" (email address), "affiliation" (affiliation), "superuser" (flag that denotes if the user is an administrator of the site), "position", "createdtime" (created time), "lastlogintime" (last login time), "lastapiusetime" (last API use time), "authproviderid" (the authentication provider ID). To sort in reverse order you can add " desc" e.g. "id desc". The default value is "useridentifier".
 
 .. code-block:: bash
 
@@ -3487,5 +3492,3 @@ Recursively applies the role assignments of the specified Dataverse collection, 
   GET http://$SERVER/api/admin/dataverse/{dataverse alias}/addRoleAssignmentsToChildren
   
 Note: setting ``:InheritParentRoleAssignments`` will automatically trigger inheritance of the parent Dataverse collection's role assignments for a newly created Dataverse collection. Hence this API call is intended as a way to update existing child Dataverse collections or to update children after a change in role assignments has been made on a parent Dataverse collection.
-
-

@@ -33,7 +33,7 @@ import edu.harvard.iq.dataverse.ingest.tabulardata.spi.TabularDataFileReaderSpi;
 import edu.harvard.iq.dataverse.ingest.tabulardata.TabularDataIngest;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
@@ -410,7 +410,7 @@ public class XLSXFileReader extends TabularDataFileReader {
             // Do it now, as characters() may be called more than once
             if (nextIsString) {
                 int idx = Integer.parseInt(cellContents);
-                cellContents = new XSSFRichTextString(sst.getEntryAt(idx)).toString();
+                cellContents = sst.getItemAt(idx).getString();
                 nextIsString = false;
             }
 

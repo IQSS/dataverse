@@ -49,7 +49,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import javax.validation.constraints.Size;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -1371,7 +1371,11 @@ public class DatasetVersion implements Serializable {
     }
 
     public String getCitation(boolean html) {
-        return new DataCitation(this).toString(html);
+        return getCitation(html, false);
+    }
+    
+    public String getCitation(boolean html, boolean anonymized) {
+        return new DataCitation(this).toString(html, anonymized);
     }
     
     public Date getCitationDate() {

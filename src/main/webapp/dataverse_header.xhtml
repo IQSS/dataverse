@@ -211,7 +211,7 @@
         <div id="dataverseHeader" class="container bg-muted"
                 style="background:##{!empty dataverse.dataverseTheme.backgroundColor ? dataverse.dataverseTheme.backgroundColor : 'FFFFFF'};"
                 jsf:rendered="#{showDataverseHeader and !widgetWrapper.widgetView and !dataverseHeaderFragment.isRootDataverseThemeDisabled(dataverse)}">
-            <o:importFunctions type="org.apache.commons.lang.StringEscapeUtils"/>
+            <o:importFunctions type="org.apache.commons.text.StringEscapeUtils"/>
             <!--  QDR - move status message -->
             <div>
                 <h:outputLink value="#" onclick="PF('statusInfo').show()" rendered="#{!empty settingsWrapper.get(':StatusMessageText')}">
@@ -229,7 +229,6 @@
                  jsf:rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'RECTANGLE'}">
                 <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{of:format1(bundle['alt.logo'], dataverse.name)}"/>
             </div>
-        
             <div class="dataverseHeaderBlock">
                 <div class="dataverseHeaderCell dataverseHeaderLogo" jsf:rendered="#{!empty dataverse.dataverseTheme.logo and dataverse.dataverseTheme.logoFormat == 'SQUARE'}">
                     <img src="/logos/#{dataverse.logoOwnerId}/#{dataverse.dataverseTheme.logo}" alt="#{of:format1(bundle['alt.logo'], dataverse.name)}"/>
@@ -243,11 +242,11 @@
                     <h:outputText value="#{bundle.unpublished}" styleClass="label label-warning label-unpublished" rendered="#{!dataverse.released}"/>
                 </div>
                 <div class="dataverseHeaderCell dataverseHeaderTagline" jsf:rendered="#{!empty dataverse.dataverseTheme.tagline and empty dataverse.dataverseTheme.linkUrl}">
-                    <h:outputText escape="false" style="color:##{!empty dataverse.dataverseTheme.textColor ? dataverse.dataverseTheme.textColor : '888888'};" value="#{StringEscapeUtils:escapeHtml(dataverse.dataverseTheme.tagline)}" />
+                    <h:outputText escape="false" style="color:##{!empty dataverse.dataverseTheme.textColor ? dataverse.dataverseTheme.textColor : '888888'};" value="#{StringEscapeUtils:escapeHtml4(dataverse.dataverseTheme.tagline)}" />
                 </div>
                 <div class="dataverseHeaderCell dataverseHeaderLink" jsf:rendered="#{!empty dataverse.dataverseTheme.tagline and !empty dataverse.dataverseTheme.linkUrl}">
                     <h:outputLink value="#{dataverse.dataverseTheme.linkUrl}" style="color:##{!empty dataverse.dataverseTheme.linkColor ? dataverse.dataverseTheme.linkColor : '428bca'};" target="_blank" rel="noopener">
-                        <h:outputText value="#{StringEscapeUtils:escapeHtml(dataverse.dataverseTheme.tagline)}" escape="false"/>
+                        <h:outputText value="#{StringEscapeUtils:escapeHtml4(dataverse.dataverseTheme.tagline)}" escape="false"/>
                     </h:outputLink>
                 </div>
             </div>
