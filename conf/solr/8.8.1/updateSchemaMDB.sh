@@ -62,21 +62,54 @@ TMPFILE=`mktemp`
 curl -f -sS "${DATAVERSE_URL}/api/admin/index/solr/schema${UNBLOCK_KEY}" > $TMPFILE
 
 ### Fail gracefull if Dataverse is not ready yet.
-if [[ "`wc -l ${TMPFILE}`" < "3" ]]; then
+if [[ `wc -l < ${TMPFILE}` -lt 3 ]]; then
   echo "Dataverse responded with empty file. When running on K8s: did you bootstrap yet?"
   exit 123
 fi
 
-### Processing
-echo "Writing ${TARGET}/schema_dv_mdb_fields.xml"
-echo "<fields>" > ${TARGET}/schema_dv_mdb_fields.xml
-cat ${TMPFILE} | grep ".*<field" >> ${TARGET}/schema_dv_mdb_fields.xml
-echo "</fields>" >> ${TARGET}/schema_dv_mdb_fields.xml
+### Processing field entries
+echo "Replacing field lines"
+START='<!-- Dynamic Dataverse fields from http://localhost:8080/api/admin/index/solr/schema -->'
+INCL='<xi:include href="schema_dv_mdb_fields.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />'
+END='<!-- End of Dynamic Dataverse fields -->'
 
-echo "Writing ${TARGET}/schema_dv_mdb_copies.xml"
-echo "<schema>" > ${TARGET}/schema_dv_mdb_copies.xml
-cat ${TMPFILE} | grep ".*<copyField" >> ${TARGET}/schema_dv_mdb_copies.xml
-echo "</schema>" >> ${TARGET}/schema_dv_mdb_copies.xml
+### -- create temp file with new content
+TMPF=`mktemp`
+echo "$START" > ${TMPF}
+cat ${TMPFILE} | grep ".*<field" >> ${TMPF}
+echo "$END" >> ${TMPF}
+
+### -- first replace INCL with END if it is still there
+sed -e 's@'"$INCL"'@'"$END"'@' -i ${TARGET}/schema.xml
+
+### -- replace START->END with content of temp file
+sed -e '\@'"$START"'@,\@'"$END"'@!b' -e '\@'"$END"'@!d;r '"$TMPF" -e 'd' -i ${TARGET}/schema.xml
+
+### -- remove temp file
+rm "${TMPF}"
+
+### -- field processing done
+echo
+
+### Processing copyField entries
+echo "Replacing copyField lines"
+START='<!-- Dataverse copyField from http://localhost:8080/api/admin/index/solr/schema -->'
+END='<!-- End: Dataverse-specific -->'
+
+### -- create temp file with new content
+TMPCF=`mktemp`
+echo "$START" > ${TMPCF}
+cat ${TMPFILE} | grep ".*<copyField" >> ${TMPCF}
+echo "$END" >> ${TMPCF}
+
+### -- replace START->END with content of temp file
+sed -e '\@'"$START"'@,\@'"$END"'@!b' -e '\@'"$END"'@!d;r '"$TMPCF" -e 'd' -i ${TARGET}/schema.xml
+
+### -- remove temp file
+rm "${TMPCF}"
+
+### -- copyField processing done
+echo
 
 rm ${TMPFILE}*
 
