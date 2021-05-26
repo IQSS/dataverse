@@ -2593,13 +2593,6 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                                 .add("fileDetails", fileJson);
                         jarr.add(fileoutput);
 
-                    } catch (ClassCastException | com.google.gson.JsonParseException ex) {
-                        Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
-                        JsonObjectBuilder fileoutput = Json.createObjectBuilder()
-                                .add("errorCode", Response.Status.BAD_REQUEST.getStatusCode())
-                                .add("message", BundleUtil.getStringFromBundle("file.addreplace.error.parsing"))
-                                .add("fileDetails", fileJson);
-                        jarr.add(fileoutput);
                     }
                     catch (NoFilesException ex) {
                         Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
@@ -2638,7 +2631,12 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
             }
         }
+        catch ( javax.json.stream.JsonParsingException ex) {
+            ex.printStackTrace();
+            return error(BAD_REQUEST, "Json Parsing Exception :" + ex.getMessage());
+        }
         catch (Exception e) {
+            e.printStackTrace();
             return error(BAD_REQUEST, e.getMessage());
         }
 
