@@ -31,7 +31,7 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLInputFactory;
 
 import edu.harvard.iq.dataverse.util.json.ControlledVocabularyException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *

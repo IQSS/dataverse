@@ -52,8 +52,8 @@ import org.primefaces.model.DualListModel;
 import javax.ejb.EJBException;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.primefaces.PrimeFaces;
 import org.primefaces.event.TransferEvent;
 
@@ -805,8 +805,8 @@ public class DataversePage implements java.io.Serializable {
     
     private List<String> getSuccessMessageArguments() {
         List<String> arguments = new ArrayList<>();
-        arguments.add(StringEscapeUtils.escapeHtml(dataverse.getDisplayName()));
-        String linkString = "<a href=\"/dataverse/" + linkingDataverse.getAlias() + "\">" + StringEscapeUtils.escapeHtml(linkingDataverse.getDisplayName()) + "</a>";
+        arguments.add(StringEscapeUtils.escapeHtml4(dataverse.getDisplayName()));
+        String linkString = "<a href=\"/dataverse/" + linkingDataverse.getAlias() + "\">" + StringEscapeUtils.escapeHtml4(linkingDataverse.getDisplayName()) + "</a>";
         arguments.add(linkString);
         return arguments;
     }
@@ -867,7 +867,7 @@ public class DataversePage implements java.io.Serializable {
             commandEngine.submit(cmd);
 
             List<String> arguments = new ArrayList<>();           
-            String linkString = "<a href=\"/dataverse/" + linkingDataverse.getAlias() + "\">" + StringEscapeUtils.escapeHtml(linkingDataverse.getDisplayName()) + "</a>";
+            String linkString = "<a href=\"/dataverse/" + linkingDataverse.getAlias() + "\">" + StringEscapeUtils.escapeHtml4(linkingDataverse.getDisplayName()) + "</a>";
             arguments.add(linkString);
             String successMessageString = BundleUtil.getStringFromBundle("dataverse.saved.search.success", arguments);
             JsfHelper.addSuccessMessage(successMessageString);
