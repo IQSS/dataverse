@@ -20,7 +20,7 @@
             <ui:param name="dataverse" value="#{manageGuestbooksPage.dataverse}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>
             <ui:define name="body">
-                <o:importFunctions type="org.apache.commons.lang.StringEscapeUtils" />
+                <o:importFunctions type="org.apache.commons.text.StringEscapeUtils" />
                 <h:form id="manageGuestbooksForm">
                     <div class="row" id="resultsCountPaginatorBlock">
                         <div class="col-xs-6" jsf:rendered="#{manageGuestbooksPage.dataverse.owner ne null}">

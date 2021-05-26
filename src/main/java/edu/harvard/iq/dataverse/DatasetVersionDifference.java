@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Arrays;
 import java.util.Date;

@@ -145,6 +145,10 @@ public class SettingsWrapper implements java.io.Serializable {
     public String getGuidesVersion() {
         return systemConfig.getGuidesVersion();
     }
+    
+    public Long getZipDownloadLimit(){
+        return systemConfig.getZipDownloadLimit();
+    }
 
     public boolean isPublicInstall(){
         return systemConfig.isPublicInstall();
