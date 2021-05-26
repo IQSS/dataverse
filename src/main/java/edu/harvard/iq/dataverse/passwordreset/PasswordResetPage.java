@@ -91,6 +91,8 @@ public class PasswordResetPage implements java.io.Serializable {
     String newPassword;
     
     PasswordResetData passwordResetData;
+
+    boolean validationFailed;
     
     private List<String> passwordErrors;
 
@@ -100,6 +102,10 @@ public class PasswordResetPage implements java.io.Serializable {
             passwordResetData = passwordResetExecResponse.getPasswordResetData();
             if (passwordResetData != null) {
                 user = passwordResetData.getBuiltinUser();
+                if (passwordResetData.getReason().equals(PasswordResetData.Reason.UPGRADE_REQUIRED)){
+                    newPassword = (String) FacesContext.getCurrentInstance().getExternalContext().getFlash().get("silentUpgradePasswd");
+                    validationFailed = false;
+                }
             } else {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, 
                         BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetLinkTitle"),
@@ -143,6 +149,7 @@ public class PasswordResetPage implements java.io.Serializable {
 
     public String resetPassword() {
         PasswordChangeAttemptResponse response = passwordResetService.attemptPasswordReset(user, newPassword, this.token);
+        validationFailed = response.getMessageDetail().contains("Password Reset Problem");
         if (response.isChanged()) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, response.getMessageSummary(), response.getMessageDetail()));
             String builtinAuthProviderId = BuiltinAuthenticationProvider.PROVIDER_ID;
@@ -198,6 +205,10 @@ public class PasswordResetPage implements java.io.Serializable {
         this.token = token;
     }
 
+    public boolean isFailedValidation(){
+        return validationFailed;
+    }
+
     public BuiltinUser getUser() {
         return user;
     }
@@ -230,6 +241,10 @@ public class PasswordResetPage implements java.io.Serializable {
         this.passwordResetData = passwordResetData;
     }
 
+    public boolean isSilentPasswordAlgorithmUpdateEnabled(){
+        return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.SilentPasswordAlgorithmUpdateEnabled, false);
+    }
+
     public String getGoodPasswordDescription() {
         // FIXME: Pass the errors in.
         return passwordValidatorService.getGoodPasswordDescription(null);
@@ -240,8 +255,24 @@ public class PasswordResetPage implements java.io.Serializable {
         if(customPasswordResetAlertMessage != null && !customPasswordResetAlertMessage.isEmpty()){
             return customPasswordResetAlertMessage;
         } else {
-            String defaultPasswordResetAlertMessage = BundleUtil.getStringFromBundle("passwdReset.newPasswd.details");
-            return defaultPasswordResetAlertMessage;
+            return BundleUtil.getStringFromBundle("passwdReset.newPasswd.details");
+        }
+    }
+
+    public String getCustomPasswordResetAlertIntro() {
+        String customPasswordResetAlertIntro = settingsWrapper.getValueForKey(SettingsServiceBean.Key.CustomPasswordResetAlertIntro);
+        if(customPasswordResetAlertIntro != null && !customPasswordResetAlertIntro.isEmpty()){
+            return customPasswordResetAlertIntro;
+        } else {
+            return BundleUtil.getStringFromBundle("passwdReset.alert.intro");
+        }
+    }
+    public String getCustomPasswordResetButton() {
+        String customPasswordResetButton = settingsWrapper.getValueForKey(SettingsServiceBean.Key.CustomPasswordResetButton);
+        if(customPasswordResetButton != null && !customPasswordResetButton.isEmpty()){
+            return customPasswordResetButton;
+        } else {
+            return BundleUtil.getStringFromBundle("passwdReset.resetBtn");
         }
     }
 }

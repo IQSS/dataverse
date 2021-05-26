@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.AuthenticationResponse;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.CredentialsAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedException;
+import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -159,12 +160,16 @@ public class LoginPage implements java.io.Serializable {
         
         AuthenticationRequest authReq = new AuthenticationRequest();
         List<FilledCredential> filledCredentialsList = getFilledCredentials();
+        boolean silentPasswordAlgorithmUpdate = settingsService.isTrueForKey(SettingsServiceBean.Key.SilentPasswordAlgorithmUpdateEnabled, false);
         if ( filledCredentialsList == null ) {
             logger.info("Credential list is null!");
             return null;
         }
         for ( FilledCredential fc : filledCredentialsList ) {       
             authReq.putCredential(fc.getCredential().getKey(), fc.getValue());
+        }
+        if (silentPasswordAlgorithmUpdate){
+            FacesContext.getCurrentInstance().getExternalContext().getFlash().put("silentUpgradePasswd",authReq.getCredential(BuiltinAuthenticationProvider.KEY_PASSWORD));
         }
         authReq.setIpAddress( dvRequestService.getDataverseRequest().getSourceAddress() );
         try {
