@@ -38,39 +38,38 @@
                                        <h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.txt.description']}" escape="false"/>
                                    </p>
                                </ui:fragment>
-                               <ui:fragment rendered="#{empty editMode and termsOfUseAndAccess.license == 'NONE'}">
+                               <ui:fragment rendered="#{empty editMode and empty termsOfUseAndAccess.license}">
                                    <p><h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.no.waiver.txt']}" escape="false"/></p>
                                </ui:fragment>
                                <ui:fragment rendered="#{!empty editMode}">
                                    <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.description']}" escape="false"/></p>
-                                   <p:selectOneRadio id="options" value="#{termsOfUseAndAccess.license}">
-                                       <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.select.CCO']}" itemValue="CC0" />
-                                       <f:selectItem itemLabel="#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.select.notCCO']}" itemValue="NONE" />
+                                   <p:selectOneMenu id="licenses" value="#{DatasetPage.licenseId}" style="width: 40%">
+                                       <f:selectItem itemLabel="#{bundle['license.custom']}" itemValue="" />
+                                       <f:selectItems value="#{DatasetPage.licenseSelectItems}" />
                                        <p:ajax update="touFragment" oncomplete="javascript:bind_bsui_components();" />
-                                   </p:selectOneRadio>
+                                   </p:selectOneMenu>
                                </ui:fragment>
-                               <ui:fragment rendered="#{termsOfUseAndAccess.license == 'CC0'}">
-                                   <p>#{bundle['file.dataFilesTab.terms.list.termsOfUse.waiver.txt']} <img src="/resources/images/cc0.png" alt="#{bundle['file.cc0.icon.alttxt']}" class="waiver-CC0-inline"/></p>
-                               </ui:fragment>
-                           </div>
-                       </div>
-                       <div class="form-group" jsf:rendered="#{termsOfUseAndAccess.license != 'CC0'}">
-                           <label for="metadata_TermsUse" class="col-sm-3 control-label">
-                               #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
-                               <span class="glyphicon glyphicon-question-sign tooltip-icon"
-                                     data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse.title']}"></span>
-                           </label>
-                           <div class="col-sm-9">
-                               <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.termsOfUse)}" escape="false" rendered="#{empty editMode}"/>
-                               <ui:fragment rendered="#{!empty editMode}">
-                                   <p class="help-block"><h:outputText value="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse.description']}" escape="false"/></p>
-                                   <p:inputTextarea value="#{termsOfUseAndAccess.termsOfUse}" rows="5" cols="60" styleClass="form-control" title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}"/>
+                               <ui:fragment rendered="#{!empty termsOfUseAndAccess.license}">
+                                   <p>
+                                       <img src="#{termsOfUseAndAccess.license.iconUrl}" alt="#{bundle['file.icon.alttxt']}" width="15%" height="15%"/>
+                                       <a href="#{termsOfUseAndAccess.license.uri}">#{termsOfUseAndAccess.license.name}</a>
+                                   </p>
                                </ui:fragment>
                            </div>
                        </div>
 
                        <!-- Additional Information -->
-                        <ui:fragment rendered="#{empty editMode}">
+                        <ui:fragment rendered="#{empty editMode and empty termsOfUseAndAccess.license}">
+                            <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.termsOfUse}">
+                                <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse.title']}"></span>
+                                </label>
+                                <div class="col-sm-9">
+                                    <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(termsOfUseAndAccess.termsOfUse)}" escape="false"/>
+                               </div>
+                            </div>
                             <div class="form-group" jsf:rendered="#{!empty termsOfUseAndAccess.confidentialityDeclaration}">
                                 <label for="confidentialityDeclaration" class="col-sm-3 control-label">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration']}
@@ -142,7 +141,17 @@
                                 </div>
                             </div>
                         </ui:fragment>
-                        <ui:fragment rendered="#{!empty editMode}">
+                        <ui:fragment rendered="#{!empty editMode and DatasetPage.licenseId == null}">
+                            <div class="form-group">
+                                <label for="metadata_TermsUse" class="col-sm-3 control-label">
+                                    #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse.title']}"></span>
+                                </label>
+                                <div class="col-sm-9">
+                                    <p:inputTextarea id="metadata_TermsUse" value="#{termsOfUseAndAccess.termsOfUse}" rows="5" cols="60" styleClass="form-control" title="#{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}"/>
+                                </div>
+                            </div>
                             <div class="form-group">
                                 <label for="confidentialityDeclaration" class="col-sm-3 control-label">
                                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.addInfo.declaration']}

@@ -33,7 +33,7 @@ public class DatasetUtilTest {
         dataFile.setStorageIdentifier("testfile://src/test/resources/images/coffeeshop.png");
 
         System.out.println(ImageThumbConverter.isThumbnailAvailable(dataFile));
-        DatasetVersion version = dataset.getCreateVersion();
+        DatasetVersion version = dataset.getCreateVersion(null);
         List<FileMetadata> fmds = new ArrayList<>();
         fmds.add(MocksFactory.addFileMetadata(dataFile));
         version.setFileMetadatas(fmds);

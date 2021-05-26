@@ -313,7 +313,7 @@ public class Template implements Serializable {
         return dsf;
     }
 
-    public Template cloneNewTemplate(Template source) {
+    public Template cloneNewTemplate(Template source, License license) {
         Template newTemplate = new Template();
         Template latestVersion = source;
         //if the latest version has values get them copied over
@@ -325,7 +325,7 @@ public class Template implements Serializable {
             terms = source.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
         } else {
             terms = new TermsOfUseAndAccess();
-            terms.setLicense(TermsOfUseAndAccess.defaultLicense);
+            terms.setLicense(license);
         }
         newTemplate.setTermsOfUseAndAccess(terms);
         return newTemplate;

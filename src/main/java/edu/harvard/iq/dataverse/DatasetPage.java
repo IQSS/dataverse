@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.api.FetchException;
 import edu.harvard.iq.dataverse.provenance.ProvPopupFragmentBean;
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -72,6 +73,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Collection;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
@@ -232,6 +234,8 @@ public class DatasetPage implements java.io.Serializable {
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
     @Inject DataverseHeaderFragment dataverseHeaderFragment;
+    @Inject
+    LicenseServiceBean licenseServiceBean;
 
     private Dataset dataset = new Dataset();
     
@@ -284,6 +288,7 @@ public class DatasetPage implements java.io.Serializable {
     private List<SelectItem> linkingDVSelectItems;
     private Dataverse linkingDataverse;
     private Dataverse selectedHostDataverse;
+    private List<SelectItem> licenseSelectItems;
 
     public Dataverse getSelectedHostDataverse() {
         return selectedHostDataverse;
@@ -331,6 +336,16 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setShowIngestSuccess(boolean showIngestSuccess) {
         this.showIngestSuccess = showIngestSuccess;
+    }
+    
+    private Long licenseId;
+
+    public Long getLicenseId() {
+        return licenseId;
+    }
+
+    public void setLicenseId(Long licenseId) {
+        this.licenseId = licenseId;
     }
         
     // TODO: Consider renaming "configureTools" to "fileConfigureTools".
@@ -1190,6 +1205,14 @@ public class DatasetPage implements java.io.Serializable {
         this.linkingDataverseId = linkingDataverseId;
     }
 
+    public List<SelectItem> getLicenseSelectItems() {
+        return licenseSelectItems;
+    }
+
+    public void setLicenseSelectItems(List<SelectItem> licenseSelectItems) {
+        this.licenseSelectItems = licenseSelectItems;
+    }
+
 
     
     public void updateReleasedVersions(){
@@ -1593,10 +1616,10 @@ public class DatasetPage implements java.io.Serializable {
         selectedTemplate = (Template) event.getNewValue();
         if (selectedTemplate != null) {
             //then create new working version from the selected template
-            workingVersion.updateDefaultValuesFromTemplate(selectedTemplate); 
+            workingVersion.updateDefaultValuesFromTemplate(selectedTemplate, licenseServiceBean.getCC0()); 
             updateDatasetFieldInputLevels();
         } else { 
-            workingVersion.initDefaultValues();
+            workingVersion.initDefaultValues(licenseServiceBean.getCC0());
             updateDatasetFieldInputLevels();
         }
         resetVersionUI();
@@ -1953,10 +1976,10 @@ public class DatasetPage implements java.io.Serializable {
                         selectedTemplate = testT;
                     }
                 }
-                workingVersion = dataset.getEditVersion(selectedTemplate, null);
+                workingVersion = dataset.getEditVersion(selectedTemplate, null, licenseServiceBean.getCC0());
                 updateDatasetFieldInputLevels();
             } else {
-                workingVersion = dataset.getCreateVersion();
+                workingVersion = dataset.getCreateVersion(licenseServiceBean.getCC0());
                 updateDatasetFieldInputLevels();
             }
             
@@ -2018,7 +2041,9 @@ public class DatasetPage implements java.io.Serializable {
         previewTools = externalToolService.findFileToolsByType(ExternalTool.Type.PREVIEW);
         datasetExploreTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
-      
+        licenseSelectItems = licenseServiceBean.listAll().stream()
+                                                             .map(license -> new SelectItem(license.getId().toString(), license.getName()))
+                                                             .collect(Collectors.toList());
         
         
         return null;
@@ -2383,7 +2408,7 @@ public class DatasetPage implements java.io.Serializable {
             dataset = datasetService.find(dataset.getId());
         }
         workingVersion = dataset.getEditVersion();
-        clone = workingVersion.cloneDatasetVersion();
+        clone = workingVersion.cloneDatasetVersion(licenseServiceBean.getCC0());
         if (editMode == EditMode.INFO) {
             // ?
         } else if (editMode == EditMode.FILE) {
@@ -2395,6 +2420,10 @@ public class DatasetPage implements java.io.Serializable {
             JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.editMetadata.label"), BundleUtil.getStringFromBundle("dataset.message.editMetadata.message"));
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset Metadata", " - Add more metadata about your dataset to help others easily find it."));
         } else if (editMode.equals(EditMode.LICENSE)){
+            License license = dataset.getEditVersion().getTermsOfUseAndAccess().getLicense();
+            if (license != null) {
+                licenseId = license.getId();
+            }
             JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.editTerms.label"), BundleUtil.getStringFromBundle("dataset.message.editTerms.message"));
             //FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Edit Dataset License and Terms", " - Update your dataset's license and terms of use."));
         }
@@ -3405,6 +3434,7 @@ public class DatasetPage implements java.io.Serializable {
                 if (!filesToBeDeleted.isEmpty()) {
                     deleteStorageLocations = datafileService.getPhysicalFilesToDelete(filesToBeDeleted);
                 }
+                setLicense(dataset.getEditVersion());
                 cmd = new UpdateDatasetVersionCommand(dataset, dvRequestService.getDataverseRequest(), filesToBeDeleted, clone );
                 ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);  
             }
@@ -3433,8 +3463,10 @@ public class DatasetPage implements java.io.Serializable {
             logger.log(Level.SEVERE, "CommandException, when attempting to update the dataset: " + ex.getMessage(), ex);
             populateDatasetUpdateFailureMessage();
             return returnToDraftVersion();
+        } catch (FetchException e) {
+            logger.log(Level.SEVERE,"Exception: " + e.getMessage());
         }
-        
+
         // Have we just deleted some draft datafiles (successfully)? 
         // finalize the physical file deletes:
         // (DataFileService will double-check that the datafiles no 
@@ -3531,6 +3563,21 @@ public class DatasetPage implements java.io.Serializable {
         logger.fine("Redirecting to the Dataset page.");
         
         return returnToDraftVersion();
+    }
+
+    /**
+     * Sets the license to null if id is null, otherwise sets it to a license.
+     * 
+     * @param editVersion
+     */
+    private void setLicense(DatasetVersion editVersion) throws FetchException {
+        TermsOfUseAndAccess terms = editVersion.getTermsOfUseAndAccess();
+        if (licenseId == null) {
+            terms.setLicense(null);
+        } else {
+            License license = licenseServiceBean.getById(licenseId);
+            terms.setLicense(license);
+        }
     }
     
     private void populateDatasetUpdateFailureMessage(){

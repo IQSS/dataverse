@@ -298,7 +298,7 @@ public class Dataset extends DvObjectContainer {
         this.versions = versions;
     }
 
-    private DatasetVersion createNewDatasetVersion(Template template, FileMetadata fmVarMet) {
+    private DatasetVersion createNewDatasetVersion(Template template, FileMetadata fmVarMet, License license) {
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
         dsv.setFileMetadatas(new ArrayList<>());
@@ -306,7 +306,7 @@ public class Dataset extends DvObjectContainer {
 
         //if the latest version has values get them copied over
         if (template != null) {
-            dsv.updateDefaultValuesFromTemplate(template);
+            dsv.updateDefaultValuesFromTemplate(template, license);
             setVersions(new ArrayList());
         } else {
             latestVersion = getLatestVersionForCopy();
@@ -324,7 +324,7 @@ public class Dataset extends DvObjectContainer {
             } else {
                 TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
                 terms.setDatasetVersion(dsv);
-                terms.setLicense(TermsOfUseAndAccess.License.CC0);
+                terms.setLicense(license);
                 dsv.setTermsOfUseAndAccess(terms);
             }
 
@@ -380,18 +380,18 @@ public class Dataset extends DvObjectContainer {
      * @return The edit version {@code this}.
      */
     public DatasetVersion getEditVersion() {
-        return getEditVersion(null, null);
+        return getEditVersion(null, null, null);
     }
 
     public DatasetVersion getEditVersion(FileMetadata fm) {
-        return getEditVersion(null, fm);
+        return getEditVersion(null, fm, null);
     }
 
-    public DatasetVersion getEditVersion(Template template, FileMetadata fm) {
+    public DatasetVersion getEditVersion(Template template, FileMetadata fm, License license) {
         DatasetVersion latestVersion = this.getLatestVersion();
         if (!latestVersion.isWorkingCopy() || template != null) {
             // if the latest version is released or archived, create a new version for editing
-            return createNewDatasetVersion(template, fm);
+            return createNewDatasetVersion(template, fm, license);
         } else {
             // else, edit existing working copy
             return latestVersion;
@@ -402,11 +402,11 @@ public class Dataset extends DvObjectContainer {
      * @todo Investigate if this method should be deprecated in favor of
      * createNewDatasetVersion.
      */
-    public DatasetVersion getCreateVersion() {
+    public DatasetVersion getCreateVersion(License license) {
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
         dsv.setDataset(this);
-        dsv.initDefaultValues();
+        dsv.initDefaultValues(license);
         this.setVersions(new ArrayList<>());
         getVersions().add(0, dsv);
         return dsv;

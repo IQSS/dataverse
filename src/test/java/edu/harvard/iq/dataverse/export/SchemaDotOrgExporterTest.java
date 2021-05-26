@@ -242,7 +242,7 @@ public class SchemaDotOrgExporterTest {
         version.setReleaseTime(publicationDate);
         version.setVersionNumber(1l);
         TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-        terms.setLicense(TermsOfUseAndAccess.License.CC0);
+        terms.setLicense(terms.getCC0());
         version.setTermsOfUseAndAccess(terms);
 
         Dataset dataset = new Dataset();

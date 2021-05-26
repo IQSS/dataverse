@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.LicenseServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
@@ -222,6 +223,9 @@ public class Datasets extends AbstractApiBean {
     
     @Inject
     DataverseRequestServiceBean dvRequestService;
+    
+    @Inject
+    LicenseServiceBean licenseServiceBean;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -1881,7 +1885,8 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                                                 fileService,
                                                 permissionSvc,
                                                 commandEngine,
-                                                systemConfig);
+                                                systemConfig,
+                                                licenseServiceBean);
 
 
         //-------------------

@@ -56,6 +56,9 @@ public class ManageTemplatesPage implements java.io.Serializable {
     
     @Inject
     PermissionsWrapper permissionsWrapper;
+    
+    @Inject
+    LicenseServiceBean licenseServiceBean;
 
     private List<Template> templates;
     private Dataverse dataverse;
@@ -109,7 +112,7 @@ public class ManageTemplatesPage implements java.io.Serializable {
     }
 
     public String cloneTemplate(Template templateIn) {
-        Template newOne = templateIn.cloneNewTemplate(templateIn);
+        Template newOne = templateIn.cloneNewTemplate(templateIn, licenseServiceBean.getCC0());
         String name = BundleUtil.getStringFromBundle("page.copy") +" " + templateIn.getName();
         newOne.setName(name);
         newOne.setUsageCount(new Long(0));

@@ -18,7 +18,6 @@ import edu.harvard.iq.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess.License;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroup;
@@ -30,6 +29,8 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
+import java.net.URI;
+import java.net.URISyntaxException;
 import org.apache.commons.validator.routines.DomainValidator;
 
 import java.io.StringReader;
@@ -359,11 +360,15 @@ public class JsonParser {
         }
     }
     
-    private License parseLicense(String inString) {
-        if (inString != null && inString.equalsIgnoreCase("CC0")) {
-            return TermsOfUseAndAccess.License.CC0;
-        }
-        return TermsOfUseAndAccess.License.NONE;       
+    private edu.harvard.iq.dataverse.License parseLicense(String inString) {
+        try {
+            if (inString != null) {
+                return new edu.harvard.iq.dataverse.License(inString, "", new URI("https://creativecommons.org/publicdomain/zero/1.0/"), new URI(""), true);
+            }
+            return null;
+        } catch (URISyntaxException e) {
+            return null;
+        }       
     }
 
     public List<DatasetField> parseMetadataBlocks(JsonObject json) throws JsonParseException {

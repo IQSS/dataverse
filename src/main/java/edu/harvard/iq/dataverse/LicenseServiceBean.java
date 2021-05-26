@@ -32,7 +32,7 @@ public class LicenseServiceBean {
         return em.createNamedQuery("License.findAll", License.class).getResultList();
     }
 
-    public License getById(long id) throws FetchException {
+    public License getById(Long id) throws FetchException {
         List<License> licenses = em.createNamedQuery("License.findById", License.class)
                 .setParameter("id", id )
                 .getResultList();
@@ -48,6 +48,21 @@ public class LicenseServiceBean {
                 .getResultList();
         if (licenses.isEmpty()) {
             throw new FetchException("License with that name doesn't exist.");
+        }
+        return licenses.get(0);
+    }
+
+    public License getCC0() {
+        List<License> licenses = em.createNamedQuery("License.findDefault", License.class)
+                .getResultList();
+        if (licenses.isEmpty()) {
+            String shortDescription = "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.";
+            URI uri = URI.create("https://creativecommons.org/publicdomain/zero/1.0/");
+            URI iconUrl = URI.create("https://www.researchgate.net/profile/Donat-Agosti/publication/51971424/figure/fig2/AS:203212943564807@1425461149299/Logo-of-the-CC-Zero-or-CC0-Public-Domain-Dedication-License-No-Rights-Reserved-CC.png");
+            License license = new License("CC0", shortDescription, uri, iconUrl, true);
+            em.persist(license);
+            em.flush();
+            return license;
         }
         return licenses.get(0);
     }

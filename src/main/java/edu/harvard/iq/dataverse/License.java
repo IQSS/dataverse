@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,6 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
@@ -23,6 +25,8 @@ import javax.persistence.UniqueConstraint;
             query = "SELECT l FROM License l WHERE l.id=:id"),
     @NamedQuery( name="License.findByName",
             query = "SELECT l FROM License l WHERE l.name=:name"),
+    @NamedQuery( name="License.findDefault",
+            query = "SELECT l FROM License l WHERE l.name='CC0'"),
     @NamedQuery( name="License.findByNameOrUri",
             query = "SELECT l FROM License l WHERE l.name=:name OR l.uri=:uri"),
     @NamedQuery( name="License.deleteById",
@@ -55,6 +59,9 @@ public class License {
 
     @Column(nullable = false)
     private boolean active;
+    
+    @OneToMany(mappedBy="license")
+    private List<TermsOfUseAndAccess> termsOfUseAndAccess;
 
     public License() {
     }
@@ -123,17 +130,20 @@ public class License {
         this.active = active;
     }
 
+    public List<TermsOfUseAndAccess> getTermsOfUseAndAccess() {
+        return termsOfUseAndAccess;
+    }
+
+    public void setTermsOfUseAndAccess(List<TermsOfUseAndAccess> termsOfUseAndAccess) {
+        this.termsOfUseAndAccess = termsOfUseAndAccess;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         License license = (License) o;
-        return active == license.active &&
-                Objects.equals(id, license.id) &&
-                Objects.equals(name, license.name) &&
-                Objects.equals(shortDescription, license.shortDescription) &&
-                Objects.equals(uri, license.uri) &&
-                Objects.equals(iconUrl, license.iconUrl);
+        return active == license.active && id.equals(license.id) && name.equals(license.name) && shortDescription.equals(license.shortDescription) && uri.equals(license.uri) && iconUrl.equals(license.iconUrl);
     }
 
     @Override

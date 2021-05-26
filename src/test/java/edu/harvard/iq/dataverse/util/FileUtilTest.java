@@ -126,7 +126,7 @@ public class FileUtilTest {
             DatasetVersion dsv1 = new DatasetVersion();
             dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
             TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
-            termsOfUseAndAccess.setLicense(TermsOfUseAndAccess.License.CC0);
+            termsOfUseAndAccess.setLicense(termsOfUseAndAccess.getCC0());
             dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
             assertEquals(false, FileUtil.isDownloadPopupRequired(dsv1));
         }
@@ -141,7 +141,7 @@ public class FileUtilTest {
              * the popup when the are Terms of Use. This feels like a bug since the
              * Terms of Use should probably be shown.
              */
-            termsOfUseAndAccess.setLicense(TermsOfUseAndAccess.License.CC0);
+            termsOfUseAndAccess.setLicense(termsOfUseAndAccess.getCC0());
             termsOfUseAndAccess.setTermsOfUse("be excellent to each other");
             dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
             assertEquals(false, FileUtil.isDownloadPopupRequired(dsv1));
@@ -152,7 +152,7 @@ public class FileUtilTest {
             DatasetVersion dsv1 = new DatasetVersion();
             dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
             TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
-            termsOfUseAndAccess.setLicense(TermsOfUseAndAccess.License.NONE);
+            termsOfUseAndAccess.setLicense(null);
             termsOfUseAndAccess.setTermsOfUse("be excellent to each other");
             dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
             assertEquals(true, FileUtil.isDownloadPopupRequired(dsv1));

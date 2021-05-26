@@ -12,8 +12,8 @@ import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.LicenseServiceBean;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
@@ -93,6 +93,8 @@ public class Files extends AbstractApiBean {
     SettingsServiceBean settingsService;
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
+    @Inject
+    LicenseServiceBean licenseServiceBean; 
     
     private static final Logger logger = Logger.getLogger(Files.class.getName());
     
@@ -250,7 +252,8 @@ public class Files extends AbstractApiBean {
                                                 this.fileService,
                                                 this.permissionSvc,
                                                 this.commandEngine,
-                                                this.systemConfig);
+                                                this.systemConfig,
+                                                this.licenseServiceBean);
 
         // (5) Run "runReplaceFileByDatasetId"
         long fileToReplaceId = 0;

@@ -13,15 +13,13 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.LicenseServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.AbstractCreateDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -37,7 +35,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -113,6 +110,7 @@ public class AddReplaceFileHelper{
     private PermissionServiceBean permissionService;
     private EjbDataverseEngine commandEngine;
     private SystemConfig systemConfig;
+    private LicenseServiceBean licenseServiceBean; 
     
     // -----------------------------------
     // Instance variables directly added
@@ -246,7 +244,8 @@ public class AddReplaceFileHelper{
                             DataFileServiceBean fileService,
                             PermissionServiceBean permissionService,
                             EjbDataverseEngine commandEngine,
-                            SystemConfig systemConfig){
+                            SystemConfig systemConfig,
+                            LicenseServiceBean licenseServiceBean){
 
         // ---------------------------------
         // make sure DataverseRequest isn't null and has a user
@@ -288,6 +287,7 @@ public class AddReplaceFileHelper{
         this.permissionService = permissionService;
         this.commandEngine = commandEngine;
         this.systemConfig = systemConfig;
+        this.licenseServiceBean = licenseServiceBean;
         
         
         
@@ -1148,7 +1148,7 @@ public class AddReplaceFileHelper{
 
         // Load the working version of the Dataset
         workingVersion = dataset.getEditVersion();
-        clone =   workingVersion.cloneDatasetVersion();
+        clone =   workingVersion.cloneDatasetVersion(licenseServiceBean.getCC0());
         try {
             initialFileList = FileUtil.createDataFiles(workingVersion,
                     this.newFileInputStream,

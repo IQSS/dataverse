@@ -134,6 +134,8 @@ public class EditDatafilesPage implements java.io.Serializable {
     @Inject ProvPopupFragmentBean provPopupFragmentBean;
     @Inject
     SettingsWrapper settingsWrapper;
+    @Inject
+    LicenseServiceBean licenseServiceBean;
 
     private Dataset dataset = new Dataset();
     
@@ -511,7 +513,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             return permissionsWrapper.notAuthorized();
         }
         
-        clone = workingVersion.cloneDatasetVersion();   
+        clone = workingVersion.cloneDatasetVersion(licenseServiceBean.getCC0());   
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();        
 
@@ -534,7 +536,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                                                 datafileService,
                                                 permissionService,
                                                 commandEngine,
-                                                systemConfig);
+                                                systemConfig,
+                                                licenseServiceBean);
                         
             fileReplacePageHelper = new FileReplacePageHelper(addReplaceFileHelper,
                                                 dataset, 
