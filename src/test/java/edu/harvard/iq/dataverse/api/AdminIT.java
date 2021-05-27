@@ -71,10 +71,15 @@ public class AdminIT {
 
         Response deleteNonSuperuser = UtilIT.deleteUser(nonSuperuserUsername);
         assertEquals(200, deleteNonSuperuser.getStatusCode());
+        assertEquals(
+          "{\"status\":\"OK\",\"data\":{\"message\":\"AuthenticatedUser @" + nonSuperuserUsername + " deleted.\"}}",
+          deleteNonSuperuser.getBody().asString());
 
         Response deleteSuperuser = UtilIT.deleteUser(superuserUsername);
         assertEquals(200, deleteSuperuser.getStatusCode());
-
+        assertEquals(
+          "{\"status\":\"OK\",\"data\":{\"message\":\"AuthenticatedUser @" + superuserUsername + " deleted.\"}}",
+          deleteSuperuser.getBody().asString());
     }
 
     
