@@ -11,6 +11,8 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
+import edu.harvard.iq.dataverse.GuestbookServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
@@ -98,10 +100,15 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.xml.stream.XMLStreamException;
 
 /**
@@ -123,6 +130,12 @@ public class Dataverses extends AbstractApiBean {
     
     @EJB
     SettingsServiceBean settingsService;
+    
+    @EJB
+    GuestbookResponseServiceBean guestbookResponseService;
+    
+    @EJB
+    GuestbookServiceBean guestbookService;
 
     @POST
     public Response addRoot(String body) {
@@ -831,6 +844,41 @@ public class Dataverses extends AbstractApiBean {
         return response(req -> ok(json(findExplicitGroupOrDie(findDataverseOrDie(dvIdtf),
                 req,
                 grpAliasInOwner))));
+    }
+    
+    @GET
+    @Path("{identifier}/guestbookResponses/")
+    @Produces({"application/download"})
+    public Response getGuestbookResponsesByDataverse(@PathParam("identifier") String dvIdtf,
+            @QueryParam("guestbookId") Long gbId) {
+        Dataverse dv = findDataverse(dvIdtf);       
+
+        try  {
+                    
+        String filename = dv.getAlias() + "GBResponses.csv";
+        String contentDispositionString = "attachment;filename=" + filename;
+        File file = new File(filename);
+        System.out.print("filename: " + filename);
+        ResponseBuilder response = Response.ok((Object) file);
+        response.header("Content-Disposition", contentDispositionString);
+            FileOutputStream outputStream = new FileOutputStream(filename);
+            Map<Integer, Object> customQandAs = guestbookResponseService.mapCustomQuestionAnswersAsStrings(dv.getId(), gbId);
+
+            List<Object[]> guestbookResults = guestbookResponseService.getGuestbookResults(dv.getId(), gbId);          
+            outputStream.write("Guestbook, Dataset, Dataset PID, Date, Type, File Name, File Id, File PID, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
+            for (Object[] result : guestbookResults) {
+                StringBuilder sb = guestbookResponseService.convertGuestbookResponsesToCSV(customQandAs, result);
+                outputStream.write(sb.toString().getBytes());
+                outputStream.flush();
+            }
+
+            return response.build();
+        } catch (IOException io) {
+            return error(Status.BAD_REQUEST, "exception: " + io.getMessage());
+
+        }
+
+      //  return error(Status.BAD_REQUEST, "filler");
     }
 
     @PUT
