@@ -305,15 +305,14 @@ public class SettingsWrapper implements java.io.Serializable {
     
     List<String> anonymizedFieldTypes = null;
 
-    public boolean shouldBeAnonymized(DatasetFieldType dft) {
+    public boolean shouldBeAnonymized(DatasetField df) {
         // Set up once per view
         if (anonymizedFieldTypes == null) {
             anonymizedFieldTypes = new ArrayList<String>();
             String names = get(SettingsServiceBean.Key.AnonymizedFieldTypeNames.toString(), "");
             anonymizedFieldTypes.addAll(Arrays.asList(names.split(",\\s")));
-            anonymizedFieldTypes.contains(dft.getName());
         }
-        return anonymizedFieldTypes.contains(dft.getName());
+        return anonymizedFieldTypes.contains(df.getDatasetFieldType().getName());
     }
 
 }

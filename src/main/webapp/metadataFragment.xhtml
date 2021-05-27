@@ -53,7 +53,7 @@
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                         </th>
                                         settingsWrapper.get(Settings
-                                          <td jsf:rendered="#{!anonymized or !settingsWrapper.shouldBeAnonymized(dsf.datasetFieldType.name)}">
+                                          <td jsf:rendered="#{!anonymized or !settingsWrapper.shouldBeAnonymized(dsf)}">
                                             <!-- Primitive datasetFields -->
                                             <ui:fragment rendered="#{dsf.datasetFieldType.primitive}">   
                                                 <h:outputText value="#{dsf.displayValue}" rendered="#{!dsf.datasetFieldType.allowMultiples}"
