@@ -71,7 +71,7 @@
                                                     </p>
                                                 </ui:fragment>
                                                 <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue">
-                                                    <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">                                           
+                                                    <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">
                                                         <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first}"/>
                                                         <h:outputText value="#{cvPart.value}"
                                                                       escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}"/>
@@ -80,7 +80,7 @@
                                                 </ui:repeat>
                                             </ui:fragment>
                                           </td>
-                                          <td jsf:rendered="#{anonymized and settingsWrapper.shouldBeAnonymized(dsf.datasetFieldType.name)}">
+                                          <td jsf:rendered="#{anonymized and settingsWrapper.shouldBeAnonymized(dsf)}">
                                             <h:outputText value="#{bundle['dataset.anonymized.withheld']}"/>
                                           </td>
                                     </tr>
