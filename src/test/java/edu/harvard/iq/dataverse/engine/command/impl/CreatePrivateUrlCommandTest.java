@@ -19,6 +19,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class CreatePrivateUrlCommandTest {
 
@@ -97,7 +98,7 @@ public class CreatePrivateUrlCommandTest {
         String actual = null;
         PrivateUrl privateUrl = null;
         try {
-            privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset));
+            privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset, false));
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
@@ -112,7 +113,7 @@ public class CreatePrivateUrlCommandTest {
         String actual = null;
         PrivateUrl privateUrl = null;
         try {
-            privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset));
+            privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset, false));
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
@@ -133,7 +134,7 @@ public class CreatePrivateUrlCommandTest {
         String actual = null;
         PrivateUrl privateUrl = null;
         try {
-            privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset));
+            privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset, false));
         } catch (CommandException ex) {
             actual = ex.getMessage();
         }
@@ -145,7 +146,7 @@ public class CreatePrivateUrlCommandTest {
     public void testCreatePrivateUrlSuccessfully() throws CommandException {
         dataset = new Dataset();
         dataset.setId(createDatasetLong);
-        PrivateUrl privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset));
+        PrivateUrl privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset, false));
         assertNotNull(privateUrl);
         assertNotNull(privateUrl.getDataset());
         assertNotNull(privateUrl.getRoleAssignment());
@@ -155,6 +156,24 @@ public class CreatePrivateUrlCommandTest {
         assertEquals(expectedUser.isAuthenticated(), false);
         assertEquals(expectedUser.getDisplayInfo().getTitle(), "Private URL Enabled");
         assertNotNull(privateUrl.getToken());
+        assertEquals("https://dataverse.example.edu/privateurl.xhtml?token=" + privateUrl.getToken(), privateUrl.getLink());
+    }
+    
+    @Test
+    public void testCreateAnonymizedAccessPrivateUrlSuccessfully() throws CommandException {
+        dataset = new Dataset();
+        dataset.setId(createDatasetLong);
+        PrivateUrl privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset, true));
+        assertNotNull(privateUrl);
+        assertNotNull(privateUrl.getDataset());
+        assertNotNull(privateUrl.getRoleAssignment());
+        PrivateUrlUser expectedUser = new PrivateUrlUser(dataset.getId());
+        assertEquals(expectedUser.getIdentifier(), privateUrl.getRoleAssignment().getAssigneeIdentifier());
+        assertEquals(expectedUser.isSuperuser(), false);
+        assertEquals(expectedUser.isAuthenticated(), false);
+        assertEquals(expectedUser.getDisplayInfo().getTitle(), "Private URL Enabled");
+        assertNotNull(privateUrl.getToken());
+        assertTrue(privateUrl.isAnonymizedAccess());
         assertEquals("https://dataverse.example.edu/privateurl.xhtml?token=" + privateUrl.getToken(), privateUrl.getLink());
     }
 

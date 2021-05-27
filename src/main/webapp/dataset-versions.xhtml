@@ -132,9 +132,13 @@
 
         <!-- contributor column -->
         <p:column headerText="#{bundle['file.dataFilesTab.versions.headers.contributors']}" class="col-sm-3">
-            <ui:fragment rendered="#{!empty(versionTab.contributorNames)}">
+            <ui:fragment rendered="#{!empty(versionTab.contributorNames) and !anonymized}">
                 <h:outputText value="#{versionTab.contributorNames}" />
             </ui:fragment>
+            <ui:fragment rendered="#{!empty(versionTab.contributorNames) and anonymized}">
+                <h:outputText value="#{bundle['file.dataFilesTab.versions.headers.contributors.withheld']}" />
+            </ui:fragment>
+            
         </p:column><!-- end: contributor column -->
 
         <!-- date column -->

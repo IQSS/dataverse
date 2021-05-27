@@ -22,10 +22,12 @@ public class CreatePrivateUrlCommand extends AbstractCommand<PrivateUrl> {
     private static final Logger logger = Logger.getLogger(CreatePrivateUrlCommand.class.getCanonicalName());
 
     final Dataset dataset;
+    final boolean anonymizedAccess;
 
-    public CreatePrivateUrlCommand(DataverseRequest dataverseRequest, Dataset theDataset) {
+    public CreatePrivateUrlCommand(DataverseRequest dataverseRequest, Dataset theDataset, boolean anonymizedAccess) {
         super(dataverseRequest, theDataset);
         dataset = theDataset;
+        this.anonymizedAccess = anonymizedAccess;
     }
 
     @Override
@@ -57,10 +59,10 @@ public class CreatePrivateUrlCommand extends AbstractCommand<PrivateUrl> {
             logger.info(message);
             throw new IllegalCommandException(message, this);
         }
-        PrivateUrlUser privateUrlUser = new PrivateUrlUser(dataset.getId());
+        PrivateUrlUser privateUrlUser = new PrivateUrlUser(dataset.getId(), anonymizedAccess);
         DataverseRole memberRole = ctxt.roles().findBuiltinRoleByAlias(DataverseRole.MEMBER);
         final String privateUrlToken = UUID.randomUUID().toString();
-        RoleAssignment roleAssignment = ctxt.engine().submit(new AssignRoleCommand(privateUrlUser, memberRole, dataset, getRequest(), privateUrlToken));
+        RoleAssignment roleAssignment = ctxt.engine().submit(new AssignRoleCommand(privateUrlUser, memberRole, dataset, getRequest(), privateUrlToken, anonymizedAccess));
         PrivateUrl privateUrl = new PrivateUrl(roleAssignment, dataset, ctxt.systemConfig().getDataverseSiteUrl());
         return privateUrl;
     }
