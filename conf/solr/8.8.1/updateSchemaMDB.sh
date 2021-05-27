@@ -23,7 +23,7 @@ usage() {
   echo "    -d <url>      Dataverse URL, defaults to http://localhost:8080"
   echo "    -h            Show this help text"
   echo "    -s <url>      Solr URL, defaults to http://localhost:8983"
-  echo "    -t <path>     Directory where to write the XML files. Defaults to /tmp"
+  echo "    -t <path>     Directory where the schema.xml is located. Defaults to /tmp"
   echo "    -u <key/file> Dataverse unblock key either as key string or path to keyfile"
 }
 
@@ -54,6 +54,13 @@ if [ ! -z "${UNBLOCK_KEY}" ]; then
   else
     UNBLOCK_KEY="?unblock-key=${UNBLOCK_KEY}"
   fi
+fi
+
+# Check if schema.xml file exists
+if [ ! -f "${TARGET}/schema.xml" ]; then
+  echo "'schema.xml' file not found in target dir '${TARGET}'"
+  usage
+  exit 0
 fi
 
 ### Retrieval
