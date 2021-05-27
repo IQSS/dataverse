@@ -52,7 +52,8 @@
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                         </th>
-                                          <td jsf:rendered="#{!(dsf.datasetFieldType.name =='author' or dsf.datasetFieldType.name =='datasetContact' or dsf.datasetFieldType.name =='depositor') or !anonymized}">
+                                        settingsWrapper.get(Settings
+                                          <td jsf:rendered="#{!anonymized or !settingsWrapper.shouldBeAnonymized(dsf.datasetFieldType.name))}">
                                             <!-- Primitive datasetFields -->
                                             <ui:fragment rendered="#{dsf.datasetFieldType.primitive}">   
                                                 <h:outputText value="#{dsf.displayValue}" rendered="#{!dsf.datasetFieldType.allowMultiples}"
@@ -79,8 +80,8 @@
                                                 </ui:repeat>
                                             </ui:fragment>
                                           </td>
-                                          <td jsf:rendered="#{(dsf.datasetFieldType.name =='author' or dsf.datasetFieldType.name =='datasetContact' or dsf.datasetFieldType.name =='depositor') and anonymized}">
-                                            <h:outputText value="#{bundle['dataset.anonymized.names.withheld']}"/>
+                                          <td jsf:rendered="#{anonymized and settingsWrapper.shouldBeAnonymized(dsf.datasetFieldType.name))}">
+                                            <h:outputText value="#{bundle['dataset.anonymized.withheld']}"/>
                                           </td>
                                     </tr>
                                 </ui:repeat>
