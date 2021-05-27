@@ -1951,11 +1951,10 @@ public class DatasetPage implements java.io.Serializable {
         } catch (CommandException ex) {
             // No big deal. The user simply doesn't have access to create or delete a Private URL.
         }
-        logger.info("PrivateUser: " + (session.getUser() instanceof PrivateUrlUser));
+        logger.fine("PrivateUser: " + (session.getUser() instanceof PrivateUrlUser));
         if (session.getUser() instanceof PrivateUrlUser) {
-            
             PrivateUrlUser privateUrlUser = (PrivateUrlUser) session.getUser();
-            logger.info("Anon: " + privateUrlUser.hasAnonymizedAccess());
+            logger.fine("Anon: " + privateUrlUser.hasAnonymizedAccess());
             if (dataset != null && dataset.getId().equals(privateUrlUser.getDatasetId())) {
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.privateurl.header"),
                         BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageReviewer"));
@@ -1965,7 +1964,7 @@ public class DatasetPage implements java.io.Serializable {
         // init the citation
         //Need to do this after privateUrl is initialized (
         displayCitation = dataset.getCitation(true, workingVersion, isAnonymizedAccess());
-        logger.info("Citation: " + displayCitation);
+        logger.fine("Citation: " + displayCitation);
 
         displayLockInfo(dataset);
 
@@ -5127,7 +5126,7 @@ public class DatasetPage implements java.io.Serializable {
             privateUrlWasJustCreated = true;
         } catch (CommandException ex) {
             String msg = BundleUtil.getStringFromBundle("dataset.privateurl.noPermToCreate", PrivateUrlUtil.getRequiredPermissions(ex));
-            logger.info("Unable to create a Private URL for dataset id " + dataset.getId() + ". Message to user: " + msg + " Exception: " + ex);
+            logger.warning("Unable to create a Private URL for dataset id " + dataset.getId() + ". Message to user: " + msg + " Exception: " + ex);
             JH.addErrorMessage(msg);
         }
     }
@@ -5152,25 +5151,19 @@ public class DatasetPage implements java.io.Serializable {
     
     public boolean isAnonymizedAccess() {
         if (session.getUser() instanceof PrivateUrlUser) {
-            logger.info("User has anon: " + ((PrivateUrlUser)session.getUser()).hasAnonymizedAccess());
             return ((PrivateUrlUser)session.getUser()).hasAnonymizedAccess();
         } else {
-            logger.info("Not private");
             return false;
         }
     }
     
     public boolean isAnonymizedPrivateUrl() {
         if(privateUrl != null) {
-            logger.info("PU: " + privateUrl.isAnonymizedAccess());
-            logger.info("RA: " + privateUrl.getRoleAssignment().isAnonymizedAccess());
             return privateUrl.isAnonymizedAccess();
         } else {
-            logger.info("PU is null");
             return false;
         }
     }
-    
     
     // todo: we should be able to remove - this is passed in the html pages to other fragments, but they could just access this service bean directly.
     public FileDownloadServiceBean getFileDownloadService() {
