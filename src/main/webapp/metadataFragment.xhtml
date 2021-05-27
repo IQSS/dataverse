@@ -53,7 +53,7 @@
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                         </th>
                                         settingsWrapper.get(Settings
-                                          <td jsf:rendered="#{!anonymized or !settingsWrapper.shouldBeAnonymized(dsf.datasetFieldType.name))}">
+                                          <td jsf:rendered="#{!anonymized or !settingsWrapper.shouldBeAnonymized(dsf.datasetFieldType.name)}">
                                             <!-- Primitive datasetFields -->
                                             <ui:fragment rendered="#{dsf.datasetFieldType.primitive}">   
                                                 <h:outputText value="#{dsf.displayValue}" rendered="#{!dsf.datasetFieldType.allowMultiples}"
@@ -80,7 +80,7 @@
                                                 </ui:repeat>
                                             </ui:fragment>
                                           </td>
-                                          <td jsf:rendered="#{anonymized and settingsWrapper.shouldBeAnonymized(dsf.datasetFieldType.name))}">
+                                          <td jsf:rendered="#{anonymized and settingsWrapper.shouldBeAnonymized(dsf.datasetFieldType.name)}">
                                             <h:outputText value="#{bundle['dataset.anonymized.withheld']}"/>
                                           </td>
                                     </tr>
