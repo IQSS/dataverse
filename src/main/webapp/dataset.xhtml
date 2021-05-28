@@ -561,9 +561,12 @@
                                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).description}"></span>
                                                     </th>
-                                                    <td>
+                                                    <td jsf:rendered="#{!DatasetPage.anonymizedAccess or !settingsWrapper.shouldBeAnonymized(dsf)}">
                                                         <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetVersionUI.relPublicationCitation)}" escape="false"/>
                                                         <a href="#{DatasetPage.datasetVersionUI.relPublicationUrl}" title="#{DatasetPage.datasetVersionUI.relPublicationUrl}" target="_blank" rel="noopener">#{DatasetPage.datasetVersionUI.relPublicationId}</a>
+                                                    </td>
+                                                    <td jsf:rendered="#{DatasetPage.anonymizedAccess and settingsWrapper.shouldBeAnonymized(dsf)}">
+                                                        <h:outputText value="#{bundle['dataset.anonymized.withheld']}"/>
                                                     </td>
                                                 </tr>
                                                 <tr id="#{dsf.datasetFieldType.name}" jsf:rendered="#{dsf.datasetFieldType.name!='publication' and dsf.datasetFieldType.name!='keyword'}">
@@ -572,7 +575,7 @@
                                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                                     </th>
-                                                    <td>
+                                                    <td jsf:rendered="#{!DatasetPage.anonymizedAccess or !settingsWrapper.shouldBeAnonymized(dsf)}">
                                                         <!-- Primitive datasetFields -->
                                                         <ui:fragment rendered="#{dsf.datasetFieldType.primitive}">
                                                             <h:outputText value="#{dsf.displayValue}" rendered="#{!dsf.datasetFieldType.allowMultiples}"
@@ -599,6 +602,9 @@
                                                                 </div>
                                                             </ui:repeat>
                                                         </ui:fragment>
+                                                    </td>
+                                                    <td jsf:rendered="#{DatasetPage.anonymizedAccess and settingsWrapper.shouldBeAnonymized(dsf)}">
+                                                        <h:outputText value="#{bundle['dataset.anonymized.withheld']}"/>
                                                     </td>
                                                 </tr>
                                             </ui:repeat>
