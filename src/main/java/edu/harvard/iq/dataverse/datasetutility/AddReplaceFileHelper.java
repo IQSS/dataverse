@@ -1990,8 +1990,7 @@ public class AddReplaceFileHelper{
         this.duplicateFileWarning = duplicateFileWarning;
     }
 
-    public Response addFiles(String jsonData, Dataset dataset, User authUser)
-    {
+    public Response addFiles(String jsonData, Dataset dataset, User authUser) {
         msgt("(addFilesToDataset) jsonData: " + jsonData.toString());
 
         JsonArrayBuilder jarr = Json.createArrayBuilder();
