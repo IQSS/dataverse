@@ -257,7 +257,7 @@ public class IngestUtil {
         // #6942 added proxy for existing files to a boolean set when dataset version copy is done
         for (Iterator<FileMetadata> fmIt = version.getFileMetadatas().iterator(); fmIt.hasNext();) {
             FileMetadata fm = fmIt.next();
-            if((fm.isInPriorVersion() || fm.getId() != null) && (replacedFmd==null) || (!fm.getDataFile().equals(replacedFmd.getDataFile()))) {
+            if((fm.isInPriorVersion() || fm.getId() != null) && (replacedFmd==null || !fm.getDataFile().equals(replacedFmd.getDataFile()))) {
                 String existingName = fm.getLabel();
                 String existingDir = fm.getDirectoryLabel();
 
