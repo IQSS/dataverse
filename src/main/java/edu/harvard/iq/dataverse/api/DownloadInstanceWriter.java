@@ -467,7 +467,6 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             logger.fine("not writing guestbook response");
                         }
 
-                        instream.close();
                         outstream.close();
                         return;
                     }
