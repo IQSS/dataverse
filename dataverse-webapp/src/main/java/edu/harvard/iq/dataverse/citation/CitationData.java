@@ -33,7 +33,6 @@ public class CitationData {
     private String publisher;
     private List<String> funders = new ArrayList<>();
     private String seriesTitle;
-    private String description;
     private List<String> datesOfCollection = new ArrayList<>();
     private List<String> keywords = new ArrayList<>();
     private List<String> kindsOfData = new ArrayList<>();
@@ -127,10 +126,6 @@ public class CitationData {
 
     public String getSeriesTitle() {
         return seriesTitle;
-    }
-
-    public String getDescription() {
-        return description;
     }
 
     public List<String> getDatesOfCollection() {
@@ -262,11 +257,6 @@ public class CitationData {
 
     public CitationData setSeriesTitle(String seriesTitle) {
         this.seriesTitle = seriesTitle;
-        return this;
-    }
-
-    public CitationData setDescription(String description) {
-        this.description = description;
         return this;
     }
 

@@ -135,6 +135,13 @@ public abstract class AbstractCitationFormatsConverter implements CitationFormat
             return this;
         }
 
+        public BibTeXCitationBuilder removeLastDelimiter(String delimiter) {
+            if (sb.length() >= delimiter.length() && sb.toString().endsWith(delimiter)) {
+                sb.setLength(sb.length() - delimiter.length());
+            }
+            return this;
+        }
+
         @Override
         public String toString() {
             return sb.toString();
@@ -151,15 +158,20 @@ public abstract class AbstractCitationFormatsConverter implements CitationFormat
         // -------------------- LOGIC --------------------
 
         public RISCitationBuilder line(String value) {
-            sb.append(value)
-                    .append("\r\n");
+            if(StringUtils.isNotBlank(value)) {
+                sb.append(value)
+                        .append("\r\n");
+            }
             return this;
         }
 
         public RISCitationBuilder line(String label, String value) {
-            sb.append(label)
-                    .append("  - ");
-            return line(value);
+            if(StringUtils.isNotBlank(value) || label.equals("ER")) {
+                sb.append(label)
+                        .append("  - ");
+                return line(value);
+            }
+            return this;
         }
 
         public RISCitationBuilder lines(String label, Collection<String> values) {
@@ -200,9 +212,11 @@ public abstract class AbstractCitationFormatsConverter implements CitationFormat
         }
 
         public EndNoteCitationBuilder addTagWithValue(String tag, String value) throws XMLStreamException {
-            writer.writeStartElement(tag);
-            writer.writeCharacters(value);
-            writer.writeEndElement();
+            if (StringUtils.isNotBlank(value)) {
+                writer.writeStartElement(tag);
+                writer.writeCharacters(value);
+                writer.writeEndElement();
+            }
             return this;
         }
 

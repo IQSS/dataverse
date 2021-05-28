@@ -53,7 +53,6 @@ public class CitationDataExtractor {
 
         data.setDirect(direct)
                 .setFileTitle(fileMetadata.getLabel())
-                .setDescription(fileMetadata.getDescription())
                 .setPersistentId(extractPID(dsv, df, direct)) // Global Id of datafile (if published & isDirect==true) or dataset as appropriate
                 .setPidOfDataset(extractDatasetPID(dsv))
                 .setPidOfFile(extractFilePID(dsv, df, direct));
@@ -66,27 +65,32 @@ public class CitationDataExtractor {
     // -------------------- PRIVATE --------------------
 
     private void extractAndWriteCommonValues(DatasetVersion dsv, CitationData data) {
-        data.getAuthors().addAll(extractAuthors(dsv));
-        data.getProducers().addAll(extractProducers(dsv));
-        data.getDistributors().addAll(dsv.getDatasetFieldValuesByTypeName(DatasetFieldConstant.distributorName));
-        data.getFunders().addAll(dsv.getUniqueGrantAgencyValues());
-        data.getKindsOfData().addAll(dsv.getKindOfData());
-        data.getDatesOfCollection().addAll(dsv.getDatesOfCollection());
-        data.getLanguages().addAll(dsv.getLanguages());
-        data.getSpatialCoverages().addAll(dsv.getSpatialCoverages());
-        data.getKeywords().addAll(dsv.getKeywords());
-        data.getOtherIds().addAll(dsv.getDatasetFieldValuesByTypeName(DatasetFieldConstant.otherIdValue));
+        Date dataDate = extractCitationDate(dsv);
 
-        data.setDate(extractCitationDate(dsv))
-                .setYear(new SimpleDateFormat("yyyy").format(data.getDate()))
-                .setProductionPlace(extractField(dsv, DatasetFieldConstant.productionPlace))
-                .setProductionDate(extractProductionDate(dsv))
-                .setReleaseYear(extractReleaseYear(dsv))
-                .setRootDataverseName(dsv.getRootDataverseNameforCitation())
-                .setTitle(dsv.getTitle())
-                .setSeriesTitle(dsv.getSeriesTitle())
-                .setPublisher(extractPublisher(dsv))
-                .setVersion(extractVersion(dsv));
+        data.getAuthors().addAll(extractAuthors(dsv));
+        data.setYear(new SimpleDateFormat("yyyy").format(dataDate))
+                .setTitle(dsv.getTitle());
+
+        if (!dsv.getDataset().isHarvested()) {
+            data.getProducers().addAll(extractProducers(dsv));
+            data.getDistributors().addAll(dsv.getDatasetFieldValuesByTypeName(DatasetFieldConstant.distributorName));
+            data.getFunders().addAll(dsv.getUniqueGrantAgencyValues());
+            data.getKindsOfData().addAll(dsv.getKindOfData());
+            data.getDatesOfCollection().addAll(dsv.getDatesOfCollection());
+            data.getLanguages().addAll(dsv.getLanguages());
+            data.getSpatialCoverages().addAll(dsv.getSpatialCoverages());
+            data.getKeywords().addAll(dsv.getKeywords());
+            data.getOtherIds().addAll(dsv.getDatasetFieldValuesByTypeName(DatasetFieldConstant.otherIdValue));
+
+            data.setDate(dataDate)
+                    .setProductionPlace(extractField(dsv, DatasetFieldConstant.productionPlace))
+                    .setProductionDate(extractProductionDate(dsv))
+                    .setReleaseYear(extractReleaseYear(dsv))
+                    .setRootDataverseName(dsv.getRootDataverseNameforCitation())
+                    .setSeriesTitle(dsv.getSeriesTitle())
+                    .setPublisher(extractPublisher(dsv))
+                    .setVersion(extractVersion(dsv));
+        }
     }
 
     private String extractField(DatasetVersion dsv, String typeName) {
@@ -182,15 +186,10 @@ public class CitationDataExtractor {
     }
 
     private String extractPublisher(DatasetVersion dsv) {
-        return !dsv.getDataset().isHarvested()
-                ? dsv.getRootDataverseNameforCitation()
-                : dsv.getDistributorName();
+        return dsv.getRootDataverseNameforCitation();
     }
 
     private String extractVersion(DatasetVersion dsv) {
-        if (dsv.getDataset().isHarvested()) {
-            return StringUtils.EMPTY;
-        }
         String version = StringUtils.EMPTY;
         if (dsv.isDraft()) {
             version = BundleUtil.getStringFromBundle("draftversion");
