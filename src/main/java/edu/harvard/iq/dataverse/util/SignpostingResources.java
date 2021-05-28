@@ -19,8 +19,6 @@ package edu.harvard.iq.dataverse.util;
 import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.SwiftAccessIO;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -66,7 +64,7 @@ public class SignpostingResources {
 
     /**
      * Get identifier schema for each author
-     *
+     * <p>
      * For example:
      * if author has VIAF
      * Link: <http://viaf.org/viaf/:id/>; rel="author"
@@ -74,10 +72,11 @@ public class SignpostingResources {
      * @param datasetAuthors list of all DatasetAuthor object
      * @return all the non empty author links in a string
      */
-    private String getIdentifierSchema(List<DatasetAuthor> datasetAuthors) {
+    private String getAuthors(List<DatasetAuthor> datasetAuthors) {
         String singleAuthorString;
         String identifierSchema = "";
-
+        int visibleAuthorCounter = 0;
+//        if (datasetAuthors.size() > maxAuthors) {return "";}
         for (DatasetAuthor da : datasetAuthors) {
             logger.info(String.format(
                     "idtype: %s; idvalue: %s, affiliation: %s; identifierUrl: %s",
@@ -86,8 +85,14 @@ public class SignpostingResources {
                     da.getAffiliation(),
                     da.getIdentifierAsUrl()
             ));
-            if (da.getIdentifierAsUrl() != null && !da.getIdentifierAsUrl().trim().isEmpty()) {
-                singleAuthorString = "<" + da.getIdentifierAsUrl() + ">;rel=\"author\"";
+
+            String authorURL = "";
+            authorURL = getAuthorUrl(da);
+            if (!Objects.equals(authorURL, "")) {
+                visibleAuthorCounter++;
+                // return empty if number of visible author more than max allowed
+                if (visibleAuthorCounter >= maxAuthors) return "";
+                singleAuthorString = "<" + authorURL + ">;rel=\"author\"";
                 if (Objects.equals(identifierSchema, "")) {
                     identifierSchema = singleAuthorString;
                 } else {
@@ -109,7 +114,7 @@ public class SignpostingResources {
         List<String> valueList = new LinkedList<>();
         Dataset ds = workingDatasetVersion.getDataset();
 
-        String identifierSchema = getIdentifierSchema(workingDatasetVersion.getDatasetAuthors());
+        String identifierSchema = getAuthors(workingDatasetVersion.getDatasetAuthors());
         if (!identifierSchema.equals("")) {
             valueList.add(identifierSchema);
         }
@@ -119,21 +124,33 @@ public class SignpostingResources {
             valueList.add(citeAs);
         }
 
+        List<FileMetadata> fms = workingDatasetVersion.getFileMetadatas();
+        String items = getItems(fms);
+        if (items != null && !Objects.equals(items, "")) {
+            valueList.add(items);
+        }
+
         String describedby = "<" + describedByJsonObj.getString(ds.getProtocol()) + ds.getAuthority() + "/"
                 + ds.getIdentifier() + ">;rel=\"describedby\"" + ";type=\"" + describedByJsonObj.getString("type") + "\"";
         describedby += ",<" + systemConfig.getDataverseSiteUrl() + "/api/datasets/export?exporter=schema.org&persistentId="
                 + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier() + ">;rel=\"describedby\"" + ";type=\"application/json+ld\"";
         valueList.add(describedby);
 
-        String type = "<https://schema.org/AboutPage>;rel=\"type\"";
+        String type = "<https://schema.org/AboutPage>;rel=\"type\"";;
+        if (useDefaultFileType) {
+            type = "<https://schema.org/AboutPage>;rel=\"type\",<" + defaultFileTypeValue + ">;rel=\"type\"";
+        }
         valueList.add(type);
 
         // TODO: support only CC0 now, should add flexible license support when flex-terms is ready
-        String license;
-        if (workingDatasetVersion.getTermsOfUseAndAccess().getLicense() == TermsOfUseAndAccess.License.CC0) {
+        TermsOfUseAndAccess.License license = workingDatasetVersion.getTermsOfUseAndAccess().getLicense();
+        String licenseString = "";
+        if (license == TermsOfUseAndAccess.License.CC0 || license == TermsOfUseAndAccess.License.NONE) {
             // On the current Dataverse, only None and CC0. In the signposting protocol: cardinality is 1
-            license = "<https://creativecommons.org/publicdomain/zero/1.0/>;rel=\"license\"";
-            valueList.add(license);
+            licenseString = "<https://creativecommons.org/publicdomain/zero/1.0/>;rel=\"license\"";
+            valueList.add(licenseString);
+        } else {
+            valueList.add(license.toString());
         }
 
         String linkset = "<" + systemConfig.getDataverseSiteUrl() + "/api/datasets/:persistentId/versions/"
@@ -145,21 +162,49 @@ public class SignpostingResources {
         return String.join(", ", valueList);
     }
 
-    private JsonArrayBuilder getIdentifiersSchema(List<DatasetAuthor> datasetAuthors) {
-        if (datasetAuthors.size() > maxAuthors) return null;
+    private String getAuthorUrl(DatasetAuthor da) {
+        String authorURL = "";
+        if (da.getIdValue() != null && !da.getIdValue().trim().isEmpty()) {
+            authorURL = da.getIdValue();
+        } else if (da.getIdentifierAsUrl() != null && !da.getIdentifierAsUrl().trim().isEmpty()) {
+            authorURL = da.getIdentifierAsUrl();
+        }
+        return authorURL;
+    }
+
+    private JsonArrayBuilder getJsonAuthors(List<DatasetAuthor> datasetAuthors) {
         JsonArrayBuilder authors = Json.createArrayBuilder();
         boolean returnNull = true;
+        String authorURL = "";
         for (DatasetAuthor da : datasetAuthors) {
-            if (da.getIdentifierAsUrl() != null && !da.getIdentifierAsUrl().trim().isEmpty()) {
-                authors.add(jsonObjectBuilder().add("href", da.getIdentifierAsUrl()));
+            authorURL = getAuthorUrl(da);
+            if (!Objects.equals(authorURL, "")) {
+                authors.add(jsonObjectBuilder().add("href", authorURL));
                 returnNull = false;
             }
         }
         return returnNull ? null : authors;
     }
 
+    private String getItems(List<FileMetadata> fms) {
+        if (fms.size() > maxItems) {
+            logger.info(String.format("maxItem is %s and fms size is %s", maxItems, fms.size()));
+            return null;
+        }
+
+        String result = "";
+        for (FileMetadata fm : fms) {
+            DataFile df = fm.getDataFile();
+            if (Objects.equals(result, "")) {
+                 result = "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"" + df.getContentType() + "\"";
+            } else {
+                 result = String.join(",", result, "<" + getPublicDownloadUrl(df) + ">;rel=\"item\";type=\"" + df.getContentType() + "\"");
+            }
+        }
+        return result;
+    }
+
     private JsonArrayBuilder getJsonItems(List<FileMetadata> fms) {
-        if (fms.size() > maxItems) return null;
         JsonArrayBuilder items = Json.createArrayBuilder();
         for (FileMetadata fm : fms) {
             DataFile df = fm.getDataFile();
@@ -172,14 +217,17 @@ public class SignpostingResources {
     public JsonArrayBuilder getJsonLinkset() {
         Dataset ds = workingDatasetVersion.getDataset();
         String landingPage = systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + ds.getProtocol() + ":" + ds.getAuthority() + "/" + ds.getIdentifier();
-        JsonArrayBuilder authors = getIdentifiersSchema(workingDatasetVersion.getDatasetAuthors());
+        JsonArrayBuilder authors = getJsonAuthors(workingDatasetVersion.getDatasetAuthors());
 
         List<FileMetadata> fms = workingDatasetVersion.getFileMetadatas();
         JsonArrayBuilder items = getJsonItems(fms);
 
-        String license = "";
-        if (workingDatasetVersion.getTermsOfUseAndAccess().getLicense() == TermsOfUseAndAccess.License.CC0) {
-            license = licJsonObj.getString(TermsOfUseAndAccess.License.CC0.name());
+        TermsOfUseAndAccess.License license = workingDatasetVersion.getTermsOfUseAndAccess().getLicense();
+        String licenseString = "";
+        if (license == TermsOfUseAndAccess.License.CC0 || license == TermsOfUseAndAccess.License.NONE) {
+            licenseString = licJsonObj.getString(TermsOfUseAndAccess.License.CC0.name());
+        } else {
+            licenseString = license.toString();
         }
 
         JsonArrayBuilder mediaTypes = Json.createArrayBuilder();
@@ -207,13 +255,18 @@ public class SignpostingResources {
         JsonObjectBuilder mandatory = jsonObjectBuilder()
                 .add("anchor", landingPage)
                 .add("cite-as", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", ds.getPersistentURL())))
-                .add("type", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", "https://schema.org/AboutPage")));
+                .add("type", Json.createArrayBuilder()
+                        .add(jsonObjectBuilder().add("href", "https://schema.org/AboutPage"))
+                        .add(jsonObjectBuilder().add("href", defaultFileTypeValue))
+                        );
+
+//        if (useDefaultFileType) mandatory.add("type", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", defaultFileTypeValue)));
 
         if (authors != null) {
             mandatory.add("author", authors);
         }
-        if (license != null && !license.trim().isEmpty()) {
-            mandatory.add("license", jsonObjectBuilder().add("href", license));
+        if (licenseString != null && !Objects.equals(licenseString, "")) {
+            mandatory.add("license", jsonObjectBuilder().add("href", licenseString));
         }
         if (!mediaTypes.toString().trim().isEmpty()) {
             mandatory.add("describedby", mediaTypes);
@@ -223,22 +276,13 @@ public class SignpostingResources {
         }
         linksetJsonObj.add(mandatory);
 
-        if (useDefaultFileType) {
-            for (FileMetadata fm : fms) {
-                DataFile df = fm.getDataFile();
-                JsonObjectBuilder itemAnchor = jsonObjectBuilder().add("anchor", getPublicDownloadUrl(df));
-                itemAnchor.add("collection", Json.createArrayBuilder().add(jsonObjectBuilder()
-                        .add("href", landingPage)).add(jsonObjectBuilder().add("type", defaultFileTypeValue)));
-                linksetJsonObj.add(itemAnchor);
-            }
-        } else {
-            for (FileMetadata fm : fms) {
-                DataFile df = fm.getDataFile();
-                JsonObjectBuilder itemAnchor = jsonObjectBuilder().add("anchor", getPublicDownloadUrl(df));
-                itemAnchor.add("collection", Json.createArrayBuilder().add(jsonObjectBuilder()
-                        .add("href", landingPage)));
-                linksetJsonObj.add(itemAnchor);
-            }
+        // remove scholarly type as shown already on landing page
+        for (FileMetadata fm : fms) {
+            DataFile df = fm.getDataFile();
+            JsonObjectBuilder itemAnchor = jsonObjectBuilder().add("anchor", getPublicDownloadUrl(df));
+            itemAnchor.add("collection", Json.createArrayBuilder().add(jsonObjectBuilder()
+                    .add("href", landingPage)));
+            linksetJsonObj.add(itemAnchor);
         }
 
         return linksetJsonObj;
