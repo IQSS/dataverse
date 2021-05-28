@@ -243,7 +243,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
 
         try {
             oaiSetService.save(newOaiSet);
-            configuredHarvestingSets = oaiSetService.findAll();
+            configuredHarvestingSets.add(newOaiSet);
             String successMessage = BundleUtil.getStringFromBundle("harvestserver.newSetDialog.success");
             successMessage = successMessage.replace("{0}", newOaiSet.getSpec());
             JsfHelper.addFlashSuccessMessage(successMessage);
@@ -259,7 +259,6 @@ public class HarvestingSetsPage implements java.io.Serializable {
             OAISet savedSet = oaiSetService.findBySpec(getNewSetSpec());
             if (savedSet != null) {
                 runSetExport(savedSet);
-                configuredHarvestingSets = oaiSetService.findAll();
             }
         }
 
@@ -287,7 +286,6 @@ public class HarvestingSetsPage implements java.io.Serializable {
 
         try {
             oaiSetService.save(oaiSet);
-            configuredHarvestingSets = oaiSetService.findAll();
             JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("harvest.oaiupdate.success", oaiSet.isDefaultSet() ? "default" : oaiSet.getSpec()));
             success = true;
 
@@ -300,7 +298,6 @@ public class HarvestingSetsPage implements java.io.Serializable {
             OAISet createdSet = oaiSetService.findBySpec(getNewSetSpec());
             if (createdSet != null) {
                 runSetExport(createdSet);
-                configuredHarvestingSets = oaiSetService.findAll();
             }
         }
 
@@ -315,9 +312,10 @@ public class HarvestingSetsPage implements java.io.Serializable {
             try {
                 oaiSetService.setDeleteInProgress(selectedSet.getId());
                 oaiSetService.remove(selectedSet.getId());
+                selectedSet.setDeleteInProgress(true);
+                configuredHarvestingSets.remove(selectedSet);
                 selectedSet = null;
 
-                configuredHarvestingSets = oaiSetService.findAll();
                 JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("harvestserver.tab.header.action.delete.infomessage"));
             } catch (Exception ex) {
                 JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("harvest.delete.fail"), ex.getMessage());
@@ -344,7 +342,7 @@ public class HarvestingSetsPage implements java.io.Serializable {
 
         try {
             oaiSetService.save(newOaiSet);
-            configuredHarvestingSets = oaiSetService.findAll();
+            configuredHarvestingSets.add(newOaiSet);
             success = true;
 
         } catch (Exception ex) {
@@ -357,7 +355,6 @@ public class HarvestingSetsPage implements java.io.Serializable {
             OAISet savedSet = oaiSetService.findBySpec(getNewSetSpec());
             if (savedSet != null) {
                 runSetExport(savedSet);
-                configuredHarvestingSets = oaiSetService.findAll();
             }
         }
 
@@ -558,13 +555,16 @@ public class HarvestingSetsPage implements java.io.Serializable {
         }
 
         String successMessage = BundleUtil.getStringFromBundle("harvestserver.actions.runreexport.success");
-        successMessage = successMessage.replace("{0}", oaiSet.getSpec());
+        successMessage = successMessage.replace("{0}", StringUtils.isNotBlank(oaiSet.getSpec()) ? oaiSet.getSpec() : "DEFAULT");
         JsfHelper.addFlashSuccessMessage(successMessage);
-        configuredHarvestingSets = oaiSetService.findAll();
     }
 
     public void runSetExport(OAISet oaiSet) {
         oaiSetService.setUpdateInProgress(oaiSet.getId());
+        configuredHarvestingSets
+                .stream().filter(s -> s.getId().equals(oaiSet.getId()))
+                .forEach(s -> s.setUpdateInProgress(true));
+
         oaiSetService.exportOaiSetAsync(oaiSet);
     }
 }

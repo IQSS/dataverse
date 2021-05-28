@@ -93,7 +93,9 @@
                     </p:fragment>
                     
                     <p:dataTable id="setsTable" styleClass="manageTable" var="oaiSet" value="#{harvestingSetsPage.configuredOAISets}"
-                                 rendered="#{harvestingSetsPage.harvestingServerEnabled and !empty harvestingSetsPage.configuredOAISets}">
+                                 rendered="#{harvestingSetsPage.harvestingServerEnabled and !empty harvestingSetsPage.configuredOAISets}"
+                                 sortBy="#{oaiSet.name}"
+                    >
                         <f:facet name="header">
                             <div class="row">
                                 <div class="col-sm-6 text-left">
