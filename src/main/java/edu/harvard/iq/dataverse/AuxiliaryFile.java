@@ -150,7 +150,7 @@ public class AuxiliaryFile implements Serializable {
     }
 
     public String getTypeFriendly() {
-        try {
+		try {
             return BundleUtil.getStringFromPropertyFile("file.auxfiles.types." + type, "Bundle");
         } catch (MissingResourceException ex) {
             return null;
