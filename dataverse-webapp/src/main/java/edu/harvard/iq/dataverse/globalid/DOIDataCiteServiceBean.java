@@ -1,12 +1,10 @@
 package edu.harvard.iq.dataverse.globalid;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
-import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +28,7 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
 
     @Override
     public boolean registerWhenPublished() {
-        return true;
+        return false;
     }
 
     @Override
@@ -71,7 +69,7 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         Map<String, String> metadata = getMetadataForCreateIndicator(dvObject);
         metadata.put("_status", "reserved");
         try {
-            String retString = doiDataCiteRegisterService.createIdentifierLocal(identifier, metadata, dvObject);
+            String retString = doiDataCiteRegisterService.reserveIdentifier(identifier, metadata, dvObject);
             logger.log(Level.FINE, "create DOI identifier retString : " + retString);
             return retString;
         } catch (Exception e) {
@@ -139,37 +137,6 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         return identifier;
     }
 
-    public void deleteRecordFromCache(Dataset datasetIn) {
-        logger.log(Level.FINE, "deleteRecordFromCache");
-        String identifier = getIdentifier(datasetIn);
-        HashMap doiMetadata = new HashMap();
-        try {
-            doiMetadata = doiDataCiteRegisterService.getMetadata(identifier);
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "get matadata failed cannot delete");
-            logger.log(Level.WARNING, "String {0}", e.toString());
-            logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
-            logger.log(Level.WARNING, "cause", e.getCause());
-            logger.log(Level.WARNING, "message {0}", e.getMessage());
-        }
-
-        String idStatus = (String) doiMetadata.get("_status");
-
-        if (idStatus == null || idStatus.equals("reserved")) {
-            logger.log(Level.WARNING, "Delete status is reserved..");
-            try {
-                doiDataCiteRegisterService.deleteIdentifier(identifier);
-            } catch (Exception e) {
-                logger.log(Level.WARNING, "delete failed");
-                logger.log(Level.WARNING, "String {0}", e.toString());
-                logger.log(Level.WARNING, "localized message {0}", e.getLocalizedMessage());
-                logger.log(Level.WARNING, "cause", e.getCause());
-                logger.log(Level.WARNING, "message {0}", e.getMessage());
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
     @Override
     public void deleteIdentifier(DvObject dvObject) throws Exception {
         logger.log(Level.FINE, "deleteIdentifier");
@@ -195,15 +162,12 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
                     break;
 
                 case "public":
-                    //if public then it has been released set to unavailable and reset target to n2t url
-                    updateIdentifierStatus(dvObject, "unavailable");
+                    Map<String, String> metadata = getDOIMetadataForDestroyedDataset();
+                    metadata.put("_status", "registered");
+                    metadata.put("_target", getTargetUrl(dvObject));
+                    doiDataCiteRegisterService.deactivateIdentifier(identifier, metadata, dvObject);
                     break;
             }
-            return;
-        }
-        if (idStatus != null && idStatus.equals("public")) {
-            //if public then it has been released set to unavailable and reset target to n2t url
-            doiDataCiteRegisterService.deactivateIdentifier(identifier);
         }
     }
 

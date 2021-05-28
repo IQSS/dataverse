@@ -214,6 +214,23 @@ public class DataCiteMdsApiClient implements Closeable {
         }
     }
 
+    public String deleteDoi(String doi) {
+        HttpDelete httpDelete = new HttpDelete(this.url + "/doi/" + doi);
+        try {
+            HttpResponse response = httpClient.execute(httpDelete, context);
+            String data = EntityUtils.toString(response.getEntity(), encoding);
+            if (response.getStatusLine().getStatusCode() != 200) {
+                String errMsg = "Response code: " + response.getStatusLine().getStatusCode() + ", " + data;
+                logger.log(Level.SEVERE, errMsg);
+                throw new RuntimeException(errMsg);
+            }
+            return data;
+        } catch (IOException ioe) {
+            logger.log(Level.SEVERE, "IOException when inactive dataset");
+            throw new RuntimeException("IOException when inactive dataset", ioe);
+        }
+    }
+
     public static void main(String[] args) throws Exception {
         String doi = "10.5072/DVN/274533";
         DataCiteMdsApiClient client = new DataCiteMdsApiClient("https://mds.test.datacite.org", "DATACITE.HARVARD", "DVNapitest");

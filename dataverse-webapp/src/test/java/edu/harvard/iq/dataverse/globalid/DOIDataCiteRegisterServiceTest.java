@@ -1,19 +1,43 @@
 package edu.harvard.iq.dataverse.globalid;
 
-import edu.harvard.iq.dataverse.globalid.DOIDataCiteRegisterService;
+import com.google.api.client.util.Lists;
+import edu.harvard.iq.dataverse.persistence.cache.DOIDataCiteRegisterCache;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
+import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class DOIDataCiteRegisterServiceTest {
+
+    @Mock
+    private EntityManager em;
+
+    @Mock
+    private TypedQuery typedQuery;
+
+    @Mock
+    private DataCiteMdsApiClient dataCiteRESTfulClient;
+
+    @InjectMocks
+    private DOIDataCiteRegisterService doiDataCiteRegisterService;
 
     // -------------------- TESTS --------------------
 
@@ -48,6 +72,84 @@ class DOIDataCiteRegisterServiceTest {
         // then
         assertThat(xml).contains(
                 "<description descriptionType=\"Abstract\">\u00A0Description\u00A0\u00A0\u00A01\u00A0</description>");
+    }
+
+    @Test
+    void reserveIdentifier() throws IOException {
+        //given
+        String identifier = "Testid";
+        Dataset dataset = createDataset();
+        dataset.setIdentifier(identifier);
+
+        //when
+        Mockito.when(em.createNamedQuery("DOIDataCiteRegisterCache.findByDoi",
+                                         DOIDataCiteRegisterCache.class))
+               .thenReturn(typedQuery);
+
+        Mockito.when(((typedQuery).getResultList()))
+               .thenReturn(Lists.newArrayList());
+
+        Mockito.when(dataCiteRESTfulClient.postMetadata(Mockito.any())).thenReturn(
+                DOIDataCiteRegisterService.getMetadataFromDvObject(identifier, new HashMap<>(), dataset));
+
+        String uploadedXml = doiDataCiteRegisterService.reserveIdentifier(identifier, new HashMap<>(), dataset);
+
+        //then
+        Mockito.verify(em, times(1)).merge(Mockito.any(DOIDataCiteRegisterCache.class));
+        assertThat(uploadedXml).isEqualTo("<resource xsi:schemaLocation=\"http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd\"\n" +
+                                                  "          xmlns=\"http://datacite.org/schema/kernel-4\"\n" +
+                                                  "          xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
+                                                  "    <identifier identifierType=\"DOI\">Testid</identifier>\n" +
+                                                  "    <creators></creators>\n" +
+                                                  "    <titles>\n" +
+                                                  "        <title></title>\n" +
+                                                  "    </titles>\n" +
+                                                  "    <publisher>:unav</publisher>\n" +
+                                                  "    <publicationYear>9999</publicationYear>\n" +
+                                                  "    <resourceType resourceTypeGeneral=\"Dataset\"/>\n" +
+                                                  "    \n" +
+                                                  "    <descriptions>\n" +
+                                                  "        <description descriptionType=\"Abstract\"></description>\n" +
+                                                  "    </descriptions>\n" +
+                                                  "    <contributors></contributors>\n" +
+                                                  "</resource>\n");
+
+    }
+
+    @Test
+    void getMetadataForDeactivateIdentifier() {
+        //given
+        String identifier = "Testid";
+        Dataset dataset = createDataset();
+        dataset.setIdentifier(identifier);
+
+        final HashMap<String, String> metadata = new HashMap<>();
+        metadata.put("datacite.title", "testTitle");
+        metadata.put("datacite.publicationyear", "2002");
+
+        //when
+        String metadataForDeactivateIdentifier = DOIDataCiteRegisterService
+                .getMetadataForDeactivateIdentifier(identifier, metadata, dataset);
+
+        //then
+        assertThat(metadataForDeactivateIdentifier).isEqualTo("<resource xsi:schemaLocation=\"http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd\"\n" +
+                                                                      "          xmlns=\"http://datacite.org/schema/kernel-4\"\n" +
+                                                                      "          xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
+                                                                      "    <identifier identifierType=\"DOI\">Testid</identifier>\n" +
+                                                                      "    <creators></creators>\n" +
+                                                                      "    <titles>\n" +
+                                                                      "        <title>testTitle</title>\n" +
+                                                                      "    </titles>\n" +
+                                                                      "    <publisher>:unav</publisher>\n" +
+                                                                      "    <publicationYear>2002</publicationYear>\n" +
+                                                                      "    <resourceType resourceTypeGeneral=\"Dataset\"/>\n" +
+                                                                      "    \n" +
+                                                                      "    <descriptions>\n" +
+                                                                      "        <description descriptionType=\"Abstract\">:unav</description>\n" +
+                                                                      "    </descriptions>\n" +
+                                                                      "    <contributors></contributors>\n" +
+                                                                      "</resource>\n");
+
     }
 
     // -------------------- PRIVATE --------------------

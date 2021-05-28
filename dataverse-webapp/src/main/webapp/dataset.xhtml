@@ -57,6 +57,7 @@
             <meta property="article:published_time" content="#{DatasetPage.workingVersion.publicationDateAsString}"/>
         </ui:define>
         <ui:define name="body">
+            <c:set var="conditionallyDisable" value="#{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) or (settingsWrapper.dataCiteInstallation and DatasetPage.dataset.globalIdCreateTime == null) ? 'disabled' : ''}"/>
             <o:importFunctions type="edu.harvard.iq.dataverse.common.MarkupChecker"/>
             <f:metadata>
                 <o:importConstants
@@ -203,7 +204,7 @@
                                                                 and !DatasetPage.canPublishDataset())}">
                                         <!-- Publish Buttons -->
                                         <p:commandLink type="button"
-                                                       styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}"
+                                                       styleClass="btn btn-default btn-access #{conditionallyDisable}"
                                                        onclick="PF('publishConfirm').show()"
                                                        rendered="#{!DatasetPage.dataset.released
                                                                    and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
@@ -214,7 +215,7 @@
                                         </p:commandLink>
     
                                         <p:commandLink type="button"
-                                                       styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}"
+                                                       styleClass="btn btn-default btn-access #{conditionallyDisable}"
                                                        onclick="PF('noFilesInDataset').show()"
                                                        rendered="#{!DatasetPage.dataset.released
                                                                    and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
@@ -224,7 +225,7 @@
                                         </p:commandLink>
     
                                         <p:commandLink type="button"
-                                                       styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}"
+                                                       styleClass="btn btn-default btn-access #{conditionallyDisable}"
                                                        onclick="PF('releaseDraft').show()"
                                                        rendered="#{DatasetPage.dataset.released
                                                         and DatasetPage.dataset.latestVersion.versionState=='DRAFT'
@@ -236,7 +237,7 @@
     
                                         <!-- 4.2.1:  replaced permissionServiceBean.on(DatasetPage.dataset.owner).has('PublishDataverse') with DatasetPage.canPublishDataverse() -->
                                         <p:commandLink type="button"
-                                                       styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}"
+                                                       styleClass="btn btn-default btn-access #{conditionallyDisable}"
                                                        onclick="PF('mayNotRelease').show()"
                                                        rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and
                                                         !DatasetPage.dataset.owner.released
@@ -247,7 +248,7 @@
                                         </p:commandLink>
     
                                         <p:commandLink type="button"
-                                                       styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}"
+                                                       styleClass="btn btn-default btn-access #{conditionallyDisable}"
                                                        onclick="PF('publishParent').show()"
                                                        rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
                                                                    and DatasetPage.canPublishDataverse()
@@ -259,7 +260,7 @@
                                         </p:commandLink>
     
                                         <p:commandLink type="button"
-                                                       styleClass="btn btn-default btn-access #{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}"
+                                                       styleClass="btn btn-default btn-access #{conditionallyDisable}"
                                                        rendered="#{DatasetPage.dataset.latestVersion.versionState=='DRAFT' and !DatasetPage.dataset.owner.released
                                                                    and DatasetPage.canPublishDataverse()
                                                                    and (DatasetPage.dataset.owner.owner != null and !DatasetPage.dataset.owner.owner.released)

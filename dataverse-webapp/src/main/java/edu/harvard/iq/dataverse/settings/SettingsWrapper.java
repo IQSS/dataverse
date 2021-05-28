@@ -122,6 +122,11 @@ public class SettingsWrapper implements java.io.Serializable {
         return configuredAboutUrls.get();
     }
 
+    public boolean isDataCiteInstallation() {
+        String protocol = getEnumSettingValue(SettingsServiceBean.Key.DoiProvider);
+        return "DataCite".equals(protocol);
+    }
+
     // -------------------- PRIVATE --------------------
 
     private Map<String, String> languagesLoader() {

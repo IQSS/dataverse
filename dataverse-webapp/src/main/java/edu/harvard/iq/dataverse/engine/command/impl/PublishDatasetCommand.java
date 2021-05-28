@@ -1,10 +1,12 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.NoDatasetFilesException;
+import edu.harvard.iq.dataverse.globalid.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
@@ -62,6 +64,13 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
         //              When importing a released dataset, the latest version is marked as RELEASED.
 
         Dataset theDataset = getDataset();
+
+        String protocol = getDataset().getProtocol();
+        GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
+        if (isReservingPidEnabled(idServiceBean) && theDataset.getGlobalIdCreateTime() == null) {
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("Cannot publish dataset because its" +
+                                                                                         " persistent identifier has not been reserved."), this);
+        }
 
         // Set the version numbers:
 
@@ -138,6 +147,13 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
                 return new PublishDatasetResult(theDataset, true);
             }
         }
+    }
+
+    /**
+     * Indicates whether there should be an attempt to reserve pid through DOI api, otherwise it is created locally only.
+     */
+    private boolean isReservingPidEnabled(GlobalIdServiceBean idServiceBean) {
+        return !idServiceBean.registerWhenPublished();
     }
 
     /**
