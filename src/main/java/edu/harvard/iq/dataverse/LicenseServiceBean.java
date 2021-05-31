@@ -32,6 +32,10 @@ public class LicenseServiceBean {
         return em.createNamedQuery("License.findAll", License.class).getResultList();
     }
 
+    public List<License> listAllActive() {
+        return em.createNamedQuery("License.findAllActive", License.class).getResultList();
+    }
+
     public License getById(Long id) throws FetchException {
         List<License> licenses = em.createNamedQuery("License.findById", License.class)
                 .setParameter("id", id )
