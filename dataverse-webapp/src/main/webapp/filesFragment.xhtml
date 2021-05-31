@@ -648,15 +648,20 @@
                         <table>
                             <ui:repeat var="resFile" value="#{datasetFilesTab.selectedNonDownloadableFiles}">
                                 <tr>
-                                    <td>#{resFile.label}</td>
+                                    <td>#{resFile}</td>
                                 </tr>
                             </ui:repeat>
                         </table>
                         <div class="button-block">
                             <p class="help-block">#{bundle['dataset.downloadUnrestricted']}</p>
                             <ui:fragment>
-                                <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()"
-                                                 action="#{datasetFilesTab.startMultipleFileDownload()}"/>
+                                <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}"
+                                                 actionListener="#{datasetFilesTab.startMultipleFileDownload()}"
+                                                 process="@this"
+                                                 oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('downloadMixed').hide(); }
+                                       if (args &amp;&amp; args.apiDownloadLink) { refreshAndClickDownloadLink(args.apiDownloadLink);  }"
+                                >
+                                </p:commandButton>
                             </ui:fragment>
                             <p:commandButton value="#{bundle.cancel}" onclick="PF('downloadMixed').hide();" type="button"/>
                         </div>
