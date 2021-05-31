@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
@@ -30,8 +31,10 @@ import javax.inject.Named;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Stack;
 import java.util.logging.Level;
@@ -215,7 +218,21 @@ public class EjbDataverseEngine {
             }
 
             DataverseRequest dvReq = aCommand.getRequest();
-            
+
+            AuthenticatedUser authenticatedUser = dvReq.getAuthenticatedUser();
+            if (authenticatedUser != null) {
+                AuthenticatedUser auFreshLookup = authentication.findByID(authenticatedUser.getId());
+                if (auFreshLookup == null) {
+                    logger.fine("submit method found user no longer exists (was deleted).");
+                    throw new CommandException(BundleUtil.getStringFromBundle("command.exception.user.deleted", Arrays.asList(aCommand.getClass().getSimpleName())), aCommand);
+                } else {
+                    if (auFreshLookup.isDeactivated()) {
+                        logger.fine("submit method found user is deactivated.");
+                        throw new CommandException(BundleUtil.getStringFromBundle("command.exception.user.deactivated", Arrays.asList(aCommand.getClass().getSimpleName())), aCommand);
+                    }
+                }
+            }
+
             Map<String, DvObject> affectedDvObjects = aCommand.getAffectedDvObjects();
             logRec.setInfo(aCommand.describe());
             for (Map.Entry<String, ? extends Set<Permission>> pair : requiredMap.entrySet()) {

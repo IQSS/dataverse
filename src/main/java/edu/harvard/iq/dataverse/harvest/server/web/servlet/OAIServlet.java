@@ -40,7 +40,7 @@ import edu.harvard.iq.dataverse.harvest.server.xoai.XlistRecords;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayOutputStream;
 
@@ -132,11 +132,11 @@ public class OAIServlet extends HttpServlet {
     }
     
     private void addSupportedMetadataFormats(Context context) {
-        for (String[] provider : ExportService.getInstance(settingsService).getExportersLabels()) {
+        for (String[] provider : ExportService.getInstance().getExportersLabels()) {
             String formatName = provider[1];
             Exporter exporter;
             try {
-                exporter = ExportService.getInstance(settingsService).getExporter(formatName);
+                exporter = ExportService.getInstance().getExporter(formatName);
             } catch (ExportException ex) {
                 exporter = null;
             }
@@ -177,7 +177,7 @@ public class OAIServlet extends HttpServlet {
         // some of the settings below - such as the max list numbers - 
         // need to be configurable!
         
-        String dataverseName = dataverseService.findRootDataverse().getName();
+        String dataverseName = dataverseService.getRootDataverseName();
         String repositoryName = StringUtils.isEmpty(dataverseName) || "Root".equals(dataverseName) ? "Test Dataverse OAI Archive" : dataverseName + " Dataverse OAI Archive";
         InternetAddress internetAddress = MailUtil.parseSystemAddress(settingsService.getValueForKey(SettingsServiceBean.Key.SystemEmail));
 

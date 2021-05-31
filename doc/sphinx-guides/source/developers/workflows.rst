@@ -18,12 +18,14 @@ Steps can be internal (say, writing some data to the log) or external. External 
 
 The external system reports the step result back to the Dataverse installation, by sending a HTTP ``POST`` command to ``api/workflows/{invocation-id}`` with Content-Type: text/plain. The body of the request is passed to the paused step for further processing.
 
+Steps can define messages to send to the log and to users. If defined, the message to users is sent as a user notification (creating an email and showing in the user notification tab) and will show once for the given user if/when they view the relevant dataset page. The latter provides a means for the asynchronous workflow execution to report success or failure analogous to the way the publication and other processes report on the page.
+
 If a step in a workflow fails, the Dataverse installation makes an effort to roll back all the steps that preceded it. Some actions, such as writing to the log, cannot be rolled back. If such an action has a public external effect (e.g. send an EMail to a mailing list) it is advisable to put it in the post-release workflow.
 
 .. tip::
   For invoking external systems using a REST api, the Dataverse Software's internal step
   provider offers two steps for sending and receiving customizable HTTP requests.
-  *http/sr* and *http/authExt*, detailed below, with the latter able to use the API to make changes to the dataset being processed. Both lock the dataset to prevent other processes from changing the dataset between the time the step is launched to when the external process responds to the Dataverse instance.
+  *http/sr* and *http/authExt*, detailed below, with the latter able to use the API to make changes to the dataset being processed. (Both lock the dataset to prevent other processes from changing the dataset between the time the step is launched to when the external process responds to the Dataverse instance.)
 
 Administration
 ~~~~~~~~~~~~~~
@@ -70,6 +72,23 @@ The pause step is intended for testing - the invocationId required to end the pa
       "stepType":"pause"
   }
 
+pause/message
++++++++++++++
+
+A variant of the  pause step that pauses the workflow and allows the external process to send a success/failure message. The workflow is paused until a POST request is sent to ``/api/workflows/{invocation-id}``. 
+The response in the POST body (Content-type:application/json) should be a json object (the same as for the http/extauth step) containing:
+- "status" - can be "success" or "failure"
+- "reason" - a message that will be logged
+- "message" - a message to send to the user that will be sent as a notification and as a banner on the relevant dataset page.
+An unparsable reponse will be considered a Failure that will be logged with no user message. (See the http/authext step for an example POST call)
+
+.. code:: json
+
+  {
+      "provider":":internal",
+      "stepType":"pause/message"
+  }
+
 
 http/sr
 +++++++
@@ -113,11 +132,20 @@ The invocationId must be sent as an 'X-Dataverse-invocationId' HTTP Header or as
 Once this step completes and responds, the invocationId is invalidated and will not allow further access.
 
 The url, content type, and message body can use data from the workflow context, using a simple markup language. This step has specific parameters for rollback.
-The workflow is restarted when the external system replies with a POST request  to ``/api/workflows/{invocation-id}``.
+The workflow is restarted when the external system replies with a POST request  to ``/api/workflows/{invocation-id}`` (Content-Type: application/json).
+
 The response has is expected to be a json object with three keys:
-- "Status" - can be "Success" or "Failure"
-- "Reason" - a message that will be logged
-- "Message" - a message to send to the user (message sending is not yet implemented).
+- "status" - can be "success" or "failure"
+- "reason" - a message that will be logged
+- "message" - a message to send to the user that will be sent as a notification and as a banner on the relevant dataset page.
+
+.. code-block:: bash
+
+  export INVOCATION_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export MESSAGE={"status":"success", "reason":"Workflow completed in 10 seconds", "message":"An external workflow to virus check your data was successfully run prior to publication of your data"}
+ 
+  curl -H 'Content-Type:application/json' -X POST -d $MESSAGE "$SERVER_URL/api/workflows/$INVOCATION_ID"
 
 .. code:: json
 
