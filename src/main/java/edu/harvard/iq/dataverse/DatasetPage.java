@@ -45,8 +45,11 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrlUtil;
 import edu.harvard.iq.dataverse.search.SearchFilesServiceBean;
 import edu.harvard.iq.dataverse.search.SortBy;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.*;
-
+import edu.harvard.iq.dataverse.util.ArchiverUtil;
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileSortFieldAndOrder;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
 
@@ -82,8 +85,6 @@ import javax.inject.Named;
 
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
-
-import javax.json.*;
 import javax.validation.ConstraintViolation;
 import org.apache.commons.httpclient.HttpClient;
 //import org.primefaces.context.RequestContext;
@@ -129,6 +130,7 @@ import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrClientService;
+import edu.harvard.iq.dataverse.util.SignpostingResources;
 import java.util.Comparator;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
@@ -1916,7 +1918,7 @@ public class DatasetPage implements java.io.Serializable {
                         logger.warning("Problem getting rsync script (Command Exception): " + cex.getLocalizedMessage());
                     }
                 }
-               
+
                 tooLargeToDownload = getSizeOfDatasetNumeric() > settingsWrapper.getZipDownloadLimit();
                 tooLargeToDownloadOriginal = getSizeOfDatasetOrigNumeric() > settingsWrapper.getZipDownloadLimit();
                 tooLargeToDownloadArchival = getSizeOfDatasetArchivalNumeric() > settingsWrapper.getZipDownloadLimit();
@@ -2939,7 +2941,7 @@ public class DatasetPage implements java.io.Serializable {
         this.setSelectedFiles(workingVersion.getFileMetadatas());
         startDownload(true);
     }
-    
+
     public void startDownloadSelectedArchival() {
         startDownload(false);
     }
@@ -2947,7 +2949,7 @@ public class DatasetPage implements java.io.Serializable {
     public void startDownloadSelectedOriginal() {
         startDownload(true);
     }
-    
+
     private void startDownload(boolean downloadOriginal){
         boolean guestbookRequired = isDownloadPopupRequired();
         boolean validate = validateFilesForDownload(guestbookRequired, downloadOriginal);
@@ -3018,7 +3020,7 @@ public class DatasetPage implements java.io.Serializable {
             setValidateFilesOutcome("Mixed");
             return true;
         }
-        
+
         if (guestbookRequired) {
             setValidateFilesOutcome("GuestbookRequired");
         }
@@ -3026,7 +3028,7 @@ public class DatasetPage implements java.io.Serializable {
         return true;
 
     }
-    
+
     private void updateGuestbookResponse (boolean guestbookRequired, boolean downloadOriginal) {
         // Note that the GuestbookResponse object may still have information from
         // the last download action performed by the user. For example, it may
@@ -5468,6 +5470,15 @@ public class DatasetPage implements java.io.Serializable {
         this.fileAccessRequest = fileAccessRequest;
     }
 
+    // wrapper method to see if the file has been deleted (or replaced) in the current version
+    public boolean isFileDeleted (DataFile dataFile) {
+        if (dataFile.getDeleted() == null) {
+            dataFile.setDeleted(datafileService.hasBeenDeleted(dataFile));
+        }
+
+        return dataFile.getDeleted();
+    }
+
     /**
      * Add Signposting
      * @return String
@@ -5477,14 +5488,5 @@ public class DatasetPage implements java.io.Serializable {
             return "DRAFT";
         SignpostingResources sr = new SignpostingResources(systemConfig, workingVersion, settingsService.getValueForKey(SettingsServiceBean.Key.SignpostingConf));
         return sr.getLinks();
-    }
-
-    // wrapper method to see if the file has been deleted (or replaced) in the current version
-    public boolean isFileDeleted (DataFile dataFile) {
-        if (dataFile.getDeleted() == null) {
-            dataFile.setDeleted(datafileService.hasBeenDeleted(dataFile));
-        }
-
-        return dataFile.getDeleted();
     }
 }

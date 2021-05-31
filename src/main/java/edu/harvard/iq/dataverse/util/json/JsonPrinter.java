@@ -913,7 +913,7 @@ public class JsonPrinter {
                 .add("author", ds.getPersistentURL())
                 .add("protocol", ds.getProtocol())
                 .add("authority", ds.getAuthority())
-                .add("publisher", getRootDataverseNameforCitation(ds))
+                .add("publisher", BrandingUtil.getInstallationBrandName())
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
                 .add("storageIdentifier", ds.getStorageIdentifier());
     }
