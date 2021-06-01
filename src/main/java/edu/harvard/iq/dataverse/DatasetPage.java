@@ -2049,7 +2049,7 @@ public class DatasetPage implements java.io.Serializable {
         previewTools = externalToolService.findFileToolsByType(ExternalTool.Type.PREVIEW);
         datasetExploreTools = externalToolService.findDatasetToolsByType(ExternalTool.Type.EXPLORE);
         rowsPerPage = 10;
-        licenseSelectItems = licenseServiceBean.listAll().stream()
+        licenseSelectItems = licenseServiceBean.listAllActive().stream()
                                                              .map(license -> new SelectItem(license.getId().toString(), license.getName()))
                                                              .collect(Collectors.toList());
         

@@ -20,7 +20,9 @@ import javax.persistence.UniqueConstraint;
  */
  @NamedQueries({
     @NamedQuery( name="License.findAll",
-                query="SELECT l FROM License l"),
+            query="SELECT l FROM License l"),
+    @NamedQuery( name="License.findAllActive",
+            query="SELECT l FROM License l WHERE l.active='true'"),
     @NamedQuery( name="License.findById",
             query = "SELECT l FROM License l WHERE l.id=:id"),
     @NamedQuery( name="License.findByName",
