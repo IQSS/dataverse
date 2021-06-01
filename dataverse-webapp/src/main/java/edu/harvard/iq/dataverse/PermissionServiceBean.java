@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
+import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.DvObjectContainer;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
@@ -31,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -93,6 +95,9 @@ public class PermissionServiceBean {
 
     @EJB
     private SystemConfig systemConfig;
+
+    @Inject
+    private ConfirmEmailServiceBean confirmEmailService;
 
     /**
      * A request-level permission query (e.g includes IP ras).
@@ -228,8 +233,16 @@ public class PermissionServiceBean {
         ras.add(user);
         List<RoleAssignment> parentsAsignments = roleService.directRoleAssignmentsByAssigneesAndDvObjects(ras, parents);
 
+        boolean unconfirmedMailMode = confirmEmailService.hasEffectivelyUnconfirmedMail(user);
+
         for (RoleAssignment asmnt : parentsAsignments) {
-            required.removeAll(asmnt.getRole().permissions());
+            Set<Permission> permissions = unconfirmedMailMode
+                    ? asmnt.getRole().permissions()
+                        .stream()
+                        .filter(p -> !p.isRequiresWrite())
+                        .collect(Collectors.toSet())
+                    : asmnt.getRole().permissions();
+            required.removeAll(permissions);
         }
         if (required.isEmpty()) {
             // All permissions are met by role assignments on the request
@@ -239,8 +252,7 @@ public class PermissionServiceBean {
         // Looking at each child at a time now.
         // 1. Map childs to permissions
         List<RoleAssignment> childrenAssignments = roleService.directRoleAssignmentsByAssigneesAndDvObjects(ras,
-                                                                                     includeReleased ? children.stream().filter(child ->
-                                                                                                                                        (!child.isReleased())).collect(toList()) : children);
+                 includeReleased ? children.stream().filter(child -> !child.isReleased()).collect(toList()) : children);
 
         Map<DvObject, Set<Permission>> roleMap = new HashMap<>();
         childrenAssignments.forEach(assignment -> {
@@ -253,22 +265,34 @@ public class PermissionServiceBean {
         });
 
         // 2. Filter by permission map created at (1).
-        return children.stream().filter(child ->
-                                                ((includeReleased && child.isReleased())
-                                                        || ((roleMap.containsKey(child)) &&
-                                                        (roleMap.get(child).containsAll(required.stream().filter(perm -> perm.appliesTo(child.getClass())).collect(Collectors.toSet())))))
-        ).collect(toList());
+        return children.stream().filter(
+                child -> ((includeReleased && child.isReleased())
+                            || hasPermissions(required, roleMap, child, unconfirmedMailMode)))
+                .collect(toList());
 
     }
 
+    private boolean hasPermissions(Set<Permission> required, Map<DvObject, Set<Permission>> roleMap, DvObject child,
+                                   boolean unconfirmedMailMode) {
+        Set<Permission> permissionsApplicableToObject = required.stream()
+                .filter(p -> p.appliesTo(child.getClass()))
+                .collect(Collectors.toSet());
+        return roleMap.containsKey(child)
+                && roleMap.get(child).containsAll(permissionsApplicableToObject)
+                && unconfirmedMailMode
+                    ? !permissionsApplicableToObject.stream().anyMatch(Permission::isRequiresWrite)
+                    : true;
+    }
+
     // A shortcut for calling the method above, with the assumption that all the
-    // released dataverses and datasets should be included: 
+    // released dataverses and datasets should be included:
     public List<DvObject> whichChildrenHasPermissionsForOrReleased(DataverseRequest req, DvObjectContainer dvo, Set<Permission> required) {
         return whichChildrenHasPermissionsFor(req, dvo, required, true);
     }
 
     private boolean hasPermissionsFor(DataverseRequest req, DvObject dvo, Set<Permission> required) {
-        if (systemConfig.isReadonlyMode() && required.stream().anyMatch(WRITE_PERMISSIONS::contains)) {
+        if ((systemConfig.isReadonlyMode() || confirmEmailService.hasEffectivelyUnconfirmedMail(req.getUser()))
+                && required.stream().anyMatch(WRITE_PERMISSIONS::contains)) {
             return false;
         }
         User user = req.getUser();
@@ -288,7 +312,8 @@ public class PermissionServiceBean {
     }
 
     private boolean hasPermissionsFor(RoleAssignee ra, DvObject dvo, Set<Permission> required) {
-        if (systemConfig.isReadonlyMode() && required.stream().anyMatch(WRITE_PERMISSIONS::contains)) {
+        boolean unconfirmedEmail = ra instanceof User && confirmEmailService.hasEffectivelyUnconfirmedMail((User) ra);
+        if ((systemConfig.isReadonlyMode() || unconfirmedEmail) && required.stream().anyMatch(WRITE_PERMISSIONS::contains)) {
             return false;
         }
 
@@ -330,7 +355,8 @@ public class PermissionServiceBean {
      * @return Permissions of {@code req.getUser()} over {@code dvo}.
      */
     public Set<Permission> permissionsFor(DataverseRequest req, DvObject dvo) {
-        if (req.getUser().isSuperuser()) {
+        User user = req.getUser();
+        if (user.isSuperuser()) {
             if (systemConfig.isReadonlyMode()) {
               Set<Permission> readonlyPermissions = EnumSet.allOf(Permission.class);
               readonlyPermissions.removeAll(WRITE_PERMISSIONS);
@@ -343,13 +369,13 @@ public class PermissionServiceBean {
 
         // Add permissions gained from ras
         Set<RoleAssignee> ras = new HashSet<>(groupService.groupsFor(req, dvo));
-        ras.add(req.getUser());
+        ras.add(user);
         addGroupPermissionsFor(ras, dvo, permissions);
 
-        if (systemConfig.isReadonlyMode()) {
+        if (systemConfig.isReadonlyMode() || confirmEmailService.hasEffectivelyUnconfirmedMail(user)) {
             permissions.removeAll(WRITE_PERMISSIONS);
         }
-        if (!req.getUser().isAuthenticated()) {
+        if (!user.isAuthenticated()) {
             permissions.removeAll(PERMISSIONS_FOR_AUTHENTICATED_USERS_ONLY);
         }
         return permissions;
@@ -385,7 +411,7 @@ public class PermissionServiceBean {
      */
     private boolean isPublicallyDownloadable(DvObject dvo) {
         if (dvo instanceof DataFile) {
-            // unrestricted files that are part of a release dataset 
+            // unrestricted files that are part of a release dataset
             // automatically get download permission for everybody:
             //      -- L.A. 4.0 beta12
 
@@ -429,7 +455,7 @@ public class PermissionServiceBean {
             if (currentDvObject instanceof Dataverse && currentDvObject.isEffectivelyPermissionRoot()) {
                 return ancestors;
             }
-            
+
             currentDvObject = currentDvObject.getOwner();
         }
         return ancestors;
@@ -548,7 +574,7 @@ public class PermissionServiceBean {
     public void checkDownloadFileLock(Dataset dataset, DataverseRequest dataverseRequest, Command command) throws IllegalCommandException {
         if (dataset.isLocked()) {
             if (dataset.isLockedFor(DatasetLock.Reason.InReview)) {
-                // The "InReview" lock is not really a lock for curators or contributors. They can still download.                
+                // The "InReview" lock is not really a lock for curators or contributors. They can still download.
                 if (!isUserAllowedOn(dataverseRequest.getUser(), new UpdateDatasetVersionCommand(dataset, dataverseRequest), dataset)) {
                     throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.message.locked.downloadNotAllowedInReview"), command);
                 }

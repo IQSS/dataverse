@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.mail.confirmemail;
 
-import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
@@ -11,8 +10,10 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.ConfirmEmailData;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
+import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.persistence.user.UserNotification;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import javax.ejb.EJB;
@@ -131,7 +132,7 @@ public class ConfirmEmailServiceBean {
     }
 
     public ConfirmEmailData createToken(AuthenticatedUser au) {
-        ConfirmEmailData confirmEmailData = new ConfirmEmailData(au, settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MinutesUntilConfirmEmailTokenExpires));
+        ConfirmEmailData confirmEmailData = new ConfirmEmailData(au, settingsService.getValueForKeyAsLong(Key.MinutesUntilConfirmEmailTokenExpires));
         em.persist(confirmEmailData);
         return confirmEmailData;
     }
@@ -151,7 +152,7 @@ public class ConfirmEmailServiceBean {
             logger.info("Can't return confirm email message. No ConfirmEmailData for user id " + user.getId());
             return emptyString;
         }
-        String expTime = ConfirmEmailUtil.friendlyExpirationTime(settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MinutesUntilConfirmEmailTokenExpires), user.getNotificationsLanguage());
+        String expTime = ConfirmEmailUtil.friendlyExpirationTime(settingsService.getValueForKeyAsLong(Key.MinutesUntilConfirmEmailTokenExpires), user.getNotificationsLanguage());
         String confirmEmailUrl = systemConfig.getDataverseSiteUrl() + "/confirmemail.xhtml?token=" + confirmEmailData.getToken();
 
         String optionalConfirmEmailMsg = BundleUtil.getStringFromBundleWithLocale("notification.email.welcomeConfirmEmailAddOn", user.getNotificationsLanguage(), confirmEmailUrl, expTime);
@@ -170,7 +171,52 @@ public class ConfirmEmailServiceBean {
         return (hasTimestamp && hasNoStaleVerificationTokens) || isVerifiedByAuthProvider;
     }
 
+    /**
+     * This method should be used ONLY in the context of restricting
+     * users with unconfirmed e-mail as it can produce different results
+     * depending on app installation context.
+     * <p>If the UnconfirmedMailRestrictionModeEnabled property is
+     * not set to true, all calls will return false, otherwise:
+     * <ul>
+     *     <li>For the superuser the method returns false;
+     *     <li>For the guest user the method returns false;
+     *     <li>For the authenticated user which is not the superuser the
+     *     method returns false or true, depending of mail confirmation status.
+     * </ul>
+     */
+    public boolean hasEffectivelyUnconfirmedMail(User user) {
+        return getEffectiveMailConfirmationStatus(user) == EffectiveMailConfirmationStatus.UNCONFIRMED;
+    }
+
     // -------------------- PRIVATE --------------------
+
+    /**
+     * This method should be used ONLY in the context of restricting
+     * users with unconfirmed e-mail as it can produce different results
+     * depending on app installation context.
+     * <p>If the UnconfirmedMailRestrictionModeEnabled property is
+     * not set to true, all calls will return NOT_APPLICABLE, otherwise:
+     * <ul>
+     *     <li>For the superuser the method returns NOT_APPLICABLE;
+     *     <li>For the guest user the method returns NOT_APPLICABLE;
+     *     <li>For the authenticated user which is not the superuser the
+     *     method returns CONFIRMED or UNCONFIRMED, depending of mail
+     *     confirmation status.
+     * </ul>
+     */
+    private EffectiveMailConfirmationStatus getEffectiveMailConfirmationStatus(User user) {
+        if (!systemConfig.isUnconfirmedMailRestrictionModeEnabled() || user.isSuperuser()) {
+            return EffectiveMailConfirmationStatus.NOT_APPLICABLE;
+        }
+
+        if (user instanceof AuthenticatedUser) {
+            return hasVerifiedEmail((AuthenticatedUser) user)
+                    ? EffectiveMailConfirmationStatus.CONFIRMED : EffectiveMailConfirmationStatus.UNCONFIRMED;
+        } else {
+            return EffectiveMailConfirmationStatus.NOT_APPLICABLE;
+        }
+    }
+
 
     private ConfirmEmailInitResponse sendConfirm(AuthenticatedUser aUser, boolean sendEmail) throws ConfirmEmailException {
         // delete old tokens for the user
@@ -182,7 +228,7 @@ public class ConfirmEmailServiceBean {
         aUser.setEmailConfirmed(null);
         aUser = em.merge(aUser);
         // create a fresh token for the user iff they don't have an existing token
-        ConfirmEmailData confirmEmailData = new ConfirmEmailData(aUser, settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MinutesUntilConfirmEmailTokenExpires));
+        ConfirmEmailData confirmEmailData = new ConfirmEmailData(aUser, settingsService.getValueForKeyAsLong(Key.MinutesUntilConfirmEmailTokenExpires));
         try {
             /**
              * @todo This "persist" is causing lots of noise in Glassfish's
@@ -211,7 +257,7 @@ public class ConfirmEmailServiceBean {
         String messageBody = BundleUtil.getStringFromBundleWithLocale("notification.email.changeEmail", aUser.getNotificationsLanguage(),
                 aUser.getFirstName(),
                 confirmationUrl,
-                ConfirmEmailUtil.friendlyExpirationTime(settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MinutesUntilConfirmEmailTokenExpires), aUser.getNotificationsLanguage())
+                ConfirmEmailUtil.friendlyExpirationTime(settingsService.getValueForKeyAsLong(Key.MinutesUntilConfirmEmailTokenExpires), aUser.getNotificationsLanguage())
         );
         logger.log(Level.FINE, "messageBody:{0}", messageBody);
 

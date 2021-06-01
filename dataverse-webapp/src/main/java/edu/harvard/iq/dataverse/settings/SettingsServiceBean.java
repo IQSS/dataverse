@@ -576,6 +576,12 @@ public class SettingsServiceBean {
         FilesIntegrityCheckTimerExpression,
 
         /**
+         * If set to true, the set of actions that could be performed by the
+         * users with unconfirmed emails will be severely limited.
+         */
+        UnconfirmedMailRestrictionModeEnabled,
+
+        /**
          * Command or path for external utility for RAR5 size checking
          */
         RarDataUtilCommand,

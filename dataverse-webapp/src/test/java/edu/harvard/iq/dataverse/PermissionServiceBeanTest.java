@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
+import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -55,17 +56,20 @@ public class PermissionServiceBeanTest {
 
     @Mock
     private GroupServiceBean groupService;
-    
+
+    @Mock
+    private ConfirmEmailServiceBean confirmEmailServiceBean;
+
     private AuthenticatedUser authenticatedUser = MocksFactory.makeAuthenticatedUser("John", "Doe");
     private DataverseRequest authenticatedUserRequest = new DataverseRequest(authenticatedUser, IpAddress.valueOf("127.0.0.1"));
-    
+
     private GuestUser guestUser = GuestUser.get();
     private DataverseRequest guestUserRequest = new DataverseRequest(guestUser, IpAddress.valueOf("127.0.0.1"));
-    
+
     private Dataset dataset = MocksFactory.makeDataset();
-    
+
     // -------------------- TESTS --------------------
-    
+
     @Test
     @DisplayName("Should have permission when authenticated user have role assignments that contains checked permission")
     public void requestOn_user_have_correct_role_assignment() {
@@ -75,7 +79,7 @@ public class PermissionServiceBeanTest {
 
         // when
         boolean hasPermission = permissionServiceBean.requestOn(authenticatedUserRequest, dataset).has(Permission.ViewUnpublishedDataset);
-        
+
         // then
         assertTrue(hasPermission);
         verify(roleService).directRoleAssignmentsByAssigneesAndDvObjects(
@@ -88,14 +92,14 @@ public class PermissionServiceBeanTest {
     public void requestOn_user_have_correct_role_assignment_by_group_assignment() {
         // given
         Group group = mock(Group.class);
-        
+
         when(groupService.groupsFor(authenticatedUserRequest, dataset)).thenReturn(Sets.newHashSet(group));
         when(roleService.directRoleAssignmentsByAssigneesAndDvObjects(any(), any()))
             .thenReturn(Lists.newArrayList(buildRoleAssignmentForRoleWithPermissions(Permission.ViewUnpublishedDataset, Permission.EditDataset)));
 
         // when
         boolean hasPermission = permissionServiceBean.requestOn(authenticatedUserRequest, dataset).has(Permission.ViewUnpublishedDataset);
-        
+
         // then
         assertTrue(hasPermission);
         verify(roleService).directRoleAssignmentsByAssigneesAndDvObjects(
@@ -112,7 +116,7 @@ public class PermissionServiceBeanTest {
 
         // when
         boolean hasPermission = permissionServiceBean.requestOn(authenticatedUserRequest, dataset).has(Permission.PublishDataset);
-        
+
         // then
         assertFalse(hasPermission);
         verify(roleService).directRoleAssignmentsByAssigneesAndDvObjects(
@@ -129,7 +133,7 @@ public class PermissionServiceBeanTest {
 
         // when
         boolean hasPermission = permissionServiceBean.requestOn(guestUserRequest, dataset).has(Permission.ViewUnpublishedDataset);
-        
+
         // then
         assertTrue(hasPermission);
         verify(roleService).directRoleAssignmentsByAssigneesAndDvObjects(
@@ -142,7 +146,7 @@ public class PermissionServiceBeanTest {
     public void requestOn_guestUser_permission_is_for_authenticated_users_only() {
         // when
         boolean hasPermission = permissionServiceBean.requestOn(guestUserRequest, dataset).has(Permission.EditDataset);
-        
+
         // then
         assertFalse(hasPermission);
         verifyZeroInteractions(roleService);
@@ -156,7 +160,7 @@ public class PermissionServiceBeanTest {
 
         // when
         boolean hasPermission = permissionServiceBean.requestOn(authenticatedUserRequest, dataset).has(Permission.PublishDataset);
-        
+
         // then
         assertFalse(hasPermission);
         verifyZeroInteractions(groupService, roleService);
@@ -172,15 +176,15 @@ public class PermissionServiceBeanTest {
 
         // when
         boolean hasPermission = permissionServiceBean.requestOn(authenticatedUserRequest, dataset).has(Permission.ViewUnpublishedDataset);
-        
+
         // then
         assertTrue(hasPermission);
         verify(roleService).directRoleAssignmentsByAssigneesAndDvObjects(
                 Sets.newHashSet(authenticatedUser),
                 Sets.newHashSet(dataset, dataset.getOwner()));
     }
-    
-    
+
+
     @Test
     @DisplayName("Should have same permissions as defined by role assignments when user is authenticated")
     public void permissionsFor_authenticated_user() {
@@ -190,14 +194,14 @@ public class PermissionServiceBeanTest {
 
         // when
         Set<Permission> permissions = permissionServiceBean.permissionsFor(authenticatedUserRequest, dataset);
-        
+
         // then
         assertThat(permissions).containsExactlyInAnyOrder(Permission.ViewUnpublishedDataset, Permission.EditDataset);
         verify(roleService).directRoleAssignmentsByAssigneesAndDvObjects(
                 Sets.newHashSet(authenticatedUser),
                 Sets.newHashSet(dataset, dataset.getOwner()));
     }
-    
+
     @Test
     @DisplayName("Should have all permissions when user is superadmin")
     public void permissionsFor_superuser() {
@@ -206,11 +210,11 @@ public class PermissionServiceBeanTest {
 
         // when
         Set<Permission> permissions = permissionServiceBean.permissionsFor(authenticatedUserRequest, dataset);
-        
+
         // then
         assertThat(permissions).containsExactlyInAnyOrder(Permission.values());
     }
-    
+
     @Test
     @DisplayName("Should have permissions without any permission dedicated for authenticated users only")
     public void permissionsFor_guest() {
@@ -223,11 +227,11 @@ public class PermissionServiceBeanTest {
 
         // when
         Set<Permission> permissions = permissionServiceBean.permissionsFor(guestUserRequest, dataset);
-        
+
         // then
         assertThat(permissions).containsExactlyInAnyOrder(Permission.ViewUnpublishedDataset);
     }
-    
+
     @Test
     @DisplayName("Should have only read permissions when user is authenticated and readonly mode is on")
     public void permissionsFor_authenticated_users_in_readonly_mode() {
@@ -238,11 +242,11 @@ public class PermissionServiceBeanTest {
 
         // when
         Set<Permission> permissions = permissionServiceBean.permissionsFor(authenticatedUserRequest, dataset);
-        
+
         // then
         assertThat(permissions).containsExactlyInAnyOrder(Permission.ViewUnpublishedDataverse, Permission.ViewUnpublishedDataset, Permission.DownloadFile);
     }
-    
+
     @Test
     @DisplayName("Should have only read permissions when user is superuser and readonly mode is on")
     public void permissionsFor_superuser_in_readonly_mode() {
@@ -252,11 +256,11 @@ public class PermissionServiceBeanTest {
 
         // when
         Set<Permission> permissions = permissionServiceBean.permissionsFor(authenticatedUserRequest, dataset);
-        
+
         // then
         assertThat(permissions).containsExactlyInAnyOrder(Permission.ViewUnpublishedDataverse, Permission.ViewUnpublishedDataset, Permission.DownloadFile);
     }
-    
+
     @Test
     public void verifyIfDataverseAdminIsVerifiedAsSuch() {
         //given

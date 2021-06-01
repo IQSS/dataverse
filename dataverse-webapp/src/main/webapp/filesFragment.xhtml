@@ -432,7 +432,7 @@
                 </div>
             </p:column>
         </p:dataTable>
-        
+
         <a id="currentDownloadRequestLink" href="#" target="_blank" rel="noopener noreferrer" download="" style="display: none;">
           download requested files
         </a>
@@ -593,7 +593,8 @@
 
                     <p:dialog id="requestAccessPopup" styleClass="largePopUp" header="#{bundle['file.requestAccess']}"
                               widgetVar="requestAccessPopup" modal="true">
-                        <div jsf:rendered="#{not systemConfig.isReadonlyMode()}">
+                        <div jsf:rendered="#{not systemConfig.isReadonlyMode()
+                        and not datasetFilesTab.shouldAllowRestrictedFileRequest()}">
                             <ui:include src="file-request-access-popup-fragment.xhtml" />
                         </div>
                         <div jsf:rendered="#{systemConfig.isReadonlyMode()}">
@@ -601,6 +602,20 @@
                                 <span class="glyphicon glyphicon-exclamation-sign text-danger"/>&#160;
                                 <h:outputText styleClass="text-danger" value="#{bundle['file.requestAccess.dialog.readonly.msg']}">
                                 </h:outputText>
+                            </p>
+                            <div class="button-block">
+                                <p:commandButton value="#{bundle.close}" onclick="PF('requestAccessPopup').hide();"/>
+                            </div>
+                        </div>
+                        <div jsf:rendered="#{datasetFilesTab.shouldAllowRestrictedFileRequest()}">
+                            <p class="help-block">
+                                <span class="glyphicon glyphicon-exclamation-sign text-danger"/>&#160;
+                                <h:outputText styleClass="text-danger" value="#{bundle['unconfirmed.mail.restricted.access.dialog.text']}">
+                                </h:outputText>
+                                <h:outputLink value="/dataverseuser.xhtml?selectTab=accountInfo">
+                                    <h:outputText value=" "/>
+                                    <h:outputText value="#{bundle['unconfirmed.mail.restricted.access.dialog.link.text']}"/>
+                                </h:outputLink>.
                             </p>
                             <div class="button-block">
                                 <p:commandButton value="#{bundle.close}" onclick="PF('requestAccessPopup').hide();"/>

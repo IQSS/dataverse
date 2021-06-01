@@ -77,8 +77,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.io.StringReader;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -590,8 +588,11 @@ public abstract class AbstractApiBean {
              * There's valuable information in there that can help people reason
              * about permissions!
              */
-            throw new WrappedResponse(error(Response.Status.UNAUTHORIZED,
-                                            "User " + cmd.getRequest().getUser().getIdentifier() + " is not permitted to perform requested action."));
+            String message = "User " + cmd.getRequest().getUser().getIdentifier() + " is not permitted to perform requested action.";
+            if (systemConfig.isUnconfirmedMailRestrictionModeEnabled()) {
+                message += " Alternatively user has not confirmed e-mail yet.";
+            }
+            throw new WrappedResponse(error(Response.Status.UNAUTHORIZED, message));
 
         } catch (CommandException ex) {
             Logger.getLogger(AbstractApiBean.class.getName()).log(Level.SEVERE, "Error while executing command " + cmd, ex);

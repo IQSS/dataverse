@@ -117,7 +117,7 @@ $main-logo-mono: "\f203";
 
 
 /**
-	General rules 
+	General rules
 */
 
 
@@ -200,7 +200,7 @@ pre {
 	left: 0;
 	right: 0;
 	z-index: 931;
-	
+
 	margin: 0 auto;
 	padding: 0.3em 1em;
 
@@ -210,7 +210,7 @@ pre {
 
 	border-radius: 0 0 0.5em 0.5em;
 	border: 1px solid #fff;
-	
+
 	background: $icon-color;
 	color: #fff;
 	text-align: center;
@@ -224,7 +224,7 @@ pre {
 	background: #fff;
 	border: 1px solid $gray-border-color;
 	color: $link-color;
-	
+
 	&:hover {
 		background: $gray-border-color;
 	}
@@ -309,7 +309,7 @@ pre {
 		padding: 20px 23px;
 		border-radius: $border-radius;
 		color: $main-text-color;
-	
+
 		.ui-icon {
 			background-image: url($primefaces-main);
 		}
@@ -330,7 +330,7 @@ pre {
 		font-family: "Glyphicons Halflings";
 		font-size: 1.467em;
 	}
-	
+
 	.ui-message-info-icon::before,
 	.ui-messages-info-icon::before {
 		content: "\e086";
@@ -363,7 +363,7 @@ pre {
 
 @mixin link-color {
 	color: $link-color;
-	
+
 	&:hover, &:focus {
 		color: $main-color;
 	}
@@ -556,7 +556,7 @@ div.form-group .glyphicon.glyphicon-asterisk {
 }
 
 button,
-a.btn, 
+a.btn,
 .owl-item a,
 input,
 .navbar-brand,
@@ -687,7 +687,7 @@ div.ui-selectonemenu.form-control {
 
 .ui-selectcheckboxmenu .ui-selectcheckboxmenu-multiple-container  {
 	padding-right: 2em; /* same as primefaces ui-selectcheckboxmenu-trigger width */
-	
+
 	.ui-selectcheckboxmenu-token {
 		background: #FFF;
 		border: 1px solid $main-color;
@@ -698,7 +698,7 @@ div.ui-selectonemenu.form-control {
 	top: 5px;
 }
 .without-select-all .ui-selectcheckboxmenu-header .ui-chkbox {
-	display: none; 
+	display: none;
 }
 .ui-selectcheckboxmenu-label-container {
 	display: inline-block;
@@ -858,7 +858,7 @@ div.form-col-container.edit-compound-field div.form-col-container.form-hidden-co
 			&:last-child {
 				border: 1px solid transparent;
 				box-shadow: none;
-		
+
 				&:active {
 					box-shadow: inset 0 3px 5px rgba(0,0,0,.125);
 				}
@@ -890,7 +890,7 @@ div.form-col-container.edit-compound-field div.form-col-container.form-hidden-co
 	max-width: 40em;
 
 	&:not(:last-child) {
-		margin-bottom: 20px; 
+		margin-bottom: 20px;
 	}
 }
 .banner-mini-preview {
@@ -935,7 +935,7 @@ div.form-col-container.edit-compound-field div.form-col-container.form-hidden-co
 	&.disabled {
 		.ui-fileupload-content {
 			background: $gray-border-color;
-	
+
 			#dragdropMsg {
 				visibility: hidden;
 			}
@@ -987,7 +987,7 @@ div.form-col-container.edit-compound-field div.form-col-container.form-hidden-co
 
 .ui-chkbox-box {
 	font-weight: normal;
-	position: relative; 
+	position: relative;
 
 	.ui-chkbox-icon::before {
 		@include checkbox;
@@ -1090,7 +1090,7 @@ input.fancy-checkbox[type=checkbox] {
 		border: 2px solid $icon-color;
 		line-height: 0.667em;
 		text-align: center;
-	
+
 		.ui-radiobutton-icon {
 			position: absolute;
 			left: calc(0.2em - 1px);
@@ -1103,23 +1103,23 @@ input.fancy-checkbox[type=checkbox] {
 			background-color: $icon-color;
 			border-radius: 100%;
 		}
-	
+
 		&:not(.ui-state-active):not(.ui-state-focus) .ui-radiobutton-icon {
 			display: none;
 		}
-		
+
 		&.ui-state-focus {
 			border-color: $focus-color;
-	
+
 			.ui-radiobutton-icon {
 				background-color: $focus-color;
 			}
 		}
-	
+
 		&.ui-state-disabled {
 			border: 2px solid $main-text-color;
 			opacity: 0.65;
-	
+
 			.ui-radiobutton-icon {
 				background-color: $main-text-color;
 			}
@@ -1234,7 +1234,7 @@ input.fancy-checkbox[type=checkbox] {
 	font-size: 0.733em;
 	font-weight: normal;
 	text-transform: uppercase;
-	
+
 	&.label-primary {
 		background: #007cad;
 		border: 1px solid #007cad;
@@ -1242,31 +1242,31 @@ input.fancy-checkbox[type=checkbox] {
 	&.label-warning {
 		background: #fff;
 		border: 1px solid $main-color;
-	
+
 		color: #4a4a4a;
 	}
 	&.label-danger {
 		background: #c53635;
 		border: 1px solid #c53635;
-	
+
 		color: #fff;
 	}
 	&.label-success {
 		background: #008a00;
 		border: 1px solid #008a00;
-	
+
 		color: #fff;
 	}
 	&.label-info {
 		background: $main-color;
 		border: 1px solid $main-color;
-	
+
 		color: #fff;
 	}
 	&.label-default {
 		background: #fff;
 		border: 1px solid $main-color;
-	
+
 		color: #4a4a4a;
 		text-transform: none;
 	}
@@ -1314,7 +1314,7 @@ input.fancy-checkbox[type=checkbox] {
 .ui-autocomplete-panel {
 	border: none;
 	border-radius: 9px;
-	
+
 	.ui-autocomplete-table {
 		border: none;
 		border-color: $gray-border-color;
@@ -1343,7 +1343,7 @@ input.fancy-checkbox[type=checkbox] {
 			}
 		}
 
-		
+
 	}
 }
 
@@ -1393,7 +1393,7 @@ button.btn-default.ui-button-text-only .ui-button-text {
 	&.ui-tabs-top > .ui-tabs-nav {
 		padding: 0.2em 0 0 0;
 	}
-	
+
 	.ui-tabs-nav {
 		&.ui-widget-header li a {
 			line-height: 1.2em;
@@ -1489,7 +1489,7 @@ div[id$="notifications"].ui-tabs-panel {
 		tr {
 			td {
 				border-color: $gray-border-color;
-				
+
 				& + td {
 					border-left: none;
 				}
@@ -1748,7 +1748,7 @@ div.filesTable {
 			width: 100%;
 		}
 
-		table { 
+		table {
 			&, tbody, tr, td {
 				display: block;
 				width: 100%;
@@ -1849,6 +1849,30 @@ $navbar-height: 102px;
 		}
 	}
 
+	#unconfirmed-mail-banner {
+		padding: 6px 0 10px 0;
+		background: #feecee;
+		color: #f00;
+		text-align: center;
+
+		form {
+			margin: 0 auto;
+
+			button {
+				margin-left: 15px;
+				background: #ecabb1;
+				border-color: #fff;
+				color: #fff;
+				text-shadow: none;
+
+				&:hover {
+					background: #fff;
+					color: #ecabb1;
+				}
+			}
+		}
+	}
+
 	.navbar-brand {
 		position: relative;
 		height: $navbar-height;
@@ -1871,8 +1895,8 @@ $navbar-height: 102px;
 			background-size: contain;
 			background-repeat: no-repeat;
 			background-position: center center;
-	
-			&.icon-dataverse {	
+
+			&.icon-dataverse {
 				&::before {
 					background: none;
 					content: $main-logo-mono;
@@ -1924,16 +1948,16 @@ $navbar-height: 102px;
 			> a {
 				padding: 0.667em 1.333em;
 			}
-	
+
 			> a, > form > a {
 				color: $main-text-color;
 				border-radius: $border-radius;
 				text-shadow: none;
-	
+
 				&:hover, &:active, &:focus {
 					color: $main-color;
 				}
-	
+
 				.caret {
 					color: $icon-color;
 				}
@@ -1942,12 +1966,12 @@ $navbar-height: 102px;
 				}
 			}
 		}
-	
+
 		> form {
 			position: relative;
 			bottom: 1px;
 		}
-	
+
 		.header-flag {
 			position: relative;
 			bottom: 2px;
@@ -2010,7 +2034,7 @@ $navbar-height: 102px;
 			top: 0.288em;
 			left: 0.55em;
 			font-size: 50px;
-	
+
 			& + span {
 				padding-left: 60px;
 			}
@@ -2228,7 +2252,7 @@ body.wcag-text-toggle #wcag-text-mode-selector button {
 		&.widget-view .poweredbylogo {
 			text-align: inherit;
 		}
-		
+
 		div[class^="col-"] {
 			text-align: center;
 		}
@@ -2264,7 +2288,7 @@ html, body {
 
 #dataverse-info-dropdown {
 	width: auto;
-	
+
 	.dataverse-info-general {
 		width: auto;
 	}
@@ -2273,7 +2297,7 @@ html, body {
 #dataverseForm {
 	margin-left: -10px;
 	margin-right: 20px;
-} 
+}
 
 #dataverseDesc {
 	margin-left: 15px;
@@ -2355,7 +2379,7 @@ div.panelSearchForm input.search-input {
 	.ui-paginator-last {
 		position: relative;
 		top: calc(0.7139em - 7.992px);
-	
+
 		.ui-icon {
 			height: 16px;
 			margin: calc(0.7139em - 7.992px) 0;
@@ -2363,12 +2387,12 @@ div.panelSearchForm input.search-input {
 			color: transparent;
 			text-shadow: none;
 		}
-	
+
 		&.ui-state-disabled span {
 			filter: saturate(0);
 		}
 	}
-	
+
 }
 #metrics-block {
 	padding: 0;
@@ -2427,7 +2451,7 @@ div.panelSearchForm input.search-input {
 		#metrics-label {
 			font-size: 0;
 		}
-	
+
 		#metrics-label .glyphicon-stats {
 			font-size: 18px;
 		}
@@ -2443,19 +2467,19 @@ div.panelSearchForm input.search-input {
 		width: auto;
 		margin: 42px 0;
 		padding: 0;
-	
+
 		a.btn {
 			&:active {
 				box-shadow: none;
 			}
-	
+
 			&.prev1,
 			&.next1 {
 				padding-left: 0;
 				padding-right: 0;
 			}
 		}
-	
+
 		span.glyphicon {
 			font-size: 1em;
 			color: $icon-color;
@@ -2482,7 +2506,7 @@ div.panelSearchForm input.search-input {
 		img {
 			margin: 0 15px;
 		}
-	
+
 		.icon-dataverse {
 			top: 5px;
 			margin-left: 12px;
@@ -2498,7 +2522,7 @@ div.panelSearchForm input.search-input {
 			width: 100%;
 			padding-left: 17px;
 		}
-	} 
+	}
 }
 
 #carouselBlocksWrapper {
@@ -2523,7 +2547,7 @@ div.panelSearchForm input.search-input {
 		.owl-wrapper-outer {
 			text-align: center;
 		}
-	
+
 		.owl-wrapper {
 			width: auto !important;
 			display: inline-block !important;
@@ -2540,11 +2564,11 @@ div.panelSearchForm input.search-input {
 	&.owl-hide-navigation {
 		width: calc(100% + 30px);
 		margin-left: 0;
-	
+
 		.customNavigation {
 			display: none;
 		}
-	
+
 		#featuredDataversesList {
 			width: 100%;
 		}
@@ -2611,14 +2635,14 @@ div[id$="facetCategoryList"] div li div.ui-widget {
 		#dv-sidebar {
 			visibility: hidden;
 			opacity: 0;
-		
+
 			transition: opacity 0.25s ease-in-out;
 		}
-	
+
 		&.active #dv-sidebar {
 			visibility: visible;
 			opacity: 1;
-		
+
 			transition: opacity 0.25s ease-in-out;
 		}
 	}
@@ -2676,7 +2700,7 @@ div.alert-info.bg-citation {
 table[id$="resultsTable"] {
 	div[class*="Result"] {
 		font-size: inherit;
-		
+
 		> div.card-preview-icon-block {
 			font-size: inherit;
 		}
@@ -2721,7 +2745,7 @@ table[id$="resultsTable"] {
 		.text-brand, .text-info, .glyphicon.text-muted {
 			color: $icon-color;
 		}
-	} 
+	}
 
 	.card-content-container {
 		> a, > span.text-muted, .card-title-icon-block + div {
@@ -2829,7 +2853,7 @@ div.filesTable .ui-paginator {
 
 	.col-xs-6.text-right  {
 		padding-top: 7px;
-		
+
 		label {
 			position: relative;
 			top: -3px;
@@ -2890,7 +2914,7 @@ div.filesTable .ui-paginator {
 
 		> #preview-square {
 			padding-bottom: 420px;
-	
+
 			> img.img-responsive {
 				position: unset;
 				transform: none;
@@ -2901,7 +2925,7 @@ div.filesTable .ui-paginator {
 				font-size: 21.5em;
 			}
 		}
-	} 
+	}
 }
 
 /* Dataset/Dataverse preview */
@@ -3037,7 +3061,7 @@ div.filesTable {
 	.ui-icon {
 		background-image: url($primefaces-main);
 	}
-} 
+}
 
 .form-control {
 	font-size: 1em;
@@ -3074,7 +3098,7 @@ div.filesTable {
 	border-radius: $border-radius;
 	box-shadow: 0 5px 10px rgba(0,0,0,0.2);
 	background: #fff;
-	
+
 	.ui-dialog-titlebar {
 		color: $main-text-color;
 		border-bottom: 1px solid $gray-border-color;
@@ -3132,9 +3156,9 @@ div.filesTable {
 			}
 		}
 	}
-	
+
 	.button-block {
-		
+
 		&:not(.not-main-dialog-button-block) {
 		    border-top: 1px solid $gray-border-color;
 		    margin: 49px 0 0 0;
@@ -3165,14 +3189,14 @@ div.filesTable {
 			&:last-child {
 				border: 1px solid transparent;
 				box-shadow: none;
-		
+
 				&:active {
 					box-shadow: inset 0 3px 5px rgba(0,0,0,.125);
 				}
 			}
-		}	
+		}
 	}
-	
+
 	.ui-state-default, a.btn {
 		&:not(input):not(textarea):not(th):not(ul):not(.ui-radiobutton-box) {
 			@include btn-access;
@@ -3349,9 +3373,9 @@ input[type=password].form-control {
 }
 
 .restricted-terms-of-use {
-	margin-bottom: 15px; 
+	margin-bottom: 15px;
 	margin-top: 5px;
-	padding: 5px; 
+	padding: 5px;
 
 	background-color: #eee;
 	border-radius: $border-radius;
@@ -3368,7 +3392,7 @@ div.ui-dialog.largePopUp {
 .consent-label {
 	padding-left: 1% !important;
 }
-  
+
 .no-bottom-border {
     border-bottom: none !important;
 }
@@ -3416,7 +3440,7 @@ body.wcag-text-toggle {
 /* Override hamburger menu style */
 body.font-size-percent-150,
 body.font-size-percent-200 {
-	@media (min-width: $screen-sm-min) { 
+	@media (min-width: $screen-sm-min) {
 		.navbar-toggle {
 			display: block;
 		}
@@ -3449,7 +3473,7 @@ body.font-size-percent-200 {
 				> li, .navbar-left {
 					float: none !important;
 				}
-	
+
 				.open .dropdown-menu {
 					position: static;
 					float: none;
@@ -3459,15 +3483,15 @@ body.font-size-percent-200 {
 					border: 0;
 					-webkit-box-shadow: none;
 					box-shadow: none;
-		
+
 					> li > a {
 						line-height: 20px;
-			
+
 						&:focus, &:hover {
 							background-image: none;
 						}
 					}
-		
+
 					.dropdown-header, > li > a, > li > form > a {
 						padding: 0.667em 1em !important;
 					}
@@ -3477,7 +3501,7 @@ body.font-size-percent-200 {
 
 		@include accessibility-controls-mobile;
 	}
-		
+
 	.navbar-default #topNavBar .navbar-nav .open .dropdown-menu {
 		.dropdown-header, > li > a, > li > form > a {
 			padding: 0.667em 1em !important;
@@ -3560,7 +3584,7 @@ body.font-size-percent-200 {
 /* Force form mobile mode */
 body.font-size-percent-150,
 body.font-size-percent-200 {
-	@media (min-width: $screen-sm-min) { 
+	@media (min-width: $screen-sm-min) {
 		form[id$="Form"], form[id$="form"], .form-group, .row.panelSearchForm, .resultsCountPaginatorBlock, #footer {
 			*[class*="col-md"],
 			*[class*="col-sm"] {
@@ -3578,7 +3602,7 @@ body.font-size-percent-200 {
 					margin-left: 0;
 				}
 			}
-	
+
 			.form-horizontal .control-label {
 				text-align: left;
 			}
@@ -3650,7 +3674,7 @@ body.font-size-percent-200 {
 	.ui-fileupload-buttonbar .ui-icon-plusthick,
 	.ui-fileupload-cancel .ui-icon-close,
 	#ajaxStatusPanel_start,
-	#rolesPermissionsForm\:editRolePermissionPanel_content input { 
+	#rolesPermissionsForm\:editRolePermissionPanel_content input {
 		transform: scale(2);
 		image-rendering: pixelated;
 		image-rendering: -moz-crisp-edges;
@@ -3666,7 +3690,7 @@ body.font-size-percent-200 {
 		cursor: default;
 	}
 
-	.ql-formats button { 
+	.ql-formats button {
 		margin: 0 10px;
 
 		&:focus {
@@ -3713,7 +3737,7 @@ body.font-size-percent-200 {
 	.card-content-container {
 		margin-left: 0;
   }
-  
+
 	.ui-inputfield {
 		&[style*="width:60%"], &[style*="width: 60%"] {
 			width: 100% !important;
@@ -3727,7 +3751,7 @@ body.font-size-percent-200 {
 	.label-container.pull-right {
 		float: none !important;
 	}
-	
+
 	/*
 	This fixes pull-right offscreen menus - might be neeeded in the future
 
@@ -4009,7 +4033,7 @@ body.font-size-percent-200 {
 		background: none;
 	}
 
-	.ui-message, .ui-messages, * {	
+	.ui-message, .ui-messages, * {
 		.ui-message-info, .ui-message-warn, .ui-message-error, .ui-message-fatal,
 		.ui-messages-info, .ui-messages-warn, .ui-messages-error, .ui-messages-fatal {
 			color: $contrast-foreground-color;
@@ -4018,7 +4042,7 @@ body.font-size-percent-200 {
 				background-image: url($contrast-primefaces-main);
 			}
 		}
-		
+
 		.ui-message-info-icon::before,
 		.ui-messages-info-icon::before,
 		.ui-message-warn-icon::before,
@@ -4039,7 +4063,7 @@ body.font-size-percent-200 {
 
 	.alert {
 		color: $contrast-foreground-color;
-	
+
 		&.alert-info, &.alert-success, &.alert-danger, &.alert-warning {
 			background: $contrast-background-color;
 			border-color: $contrast-foreground-color;
@@ -4126,7 +4150,7 @@ body.font-size-percent-200 {
 			@include contrast-cancel-button($contrast-background-color, $contrast-foreground-color, $contrast-hover-color, $contrast-link-color);
 		}
 	}
-	
+
 	input[type="text"], input[type="password"], textarea, .ui-inputfield, .ui-widget-content .ui-inputfield, .ui-widget-header .ui-inputfield {
 		&, &.form-control {
 			border-color: $contrast-link-color;
@@ -4170,7 +4194,7 @@ body.font-size-percent-200 {
 			background-color: $contrast-hover-color;
 		}
 	}
-	
+
 	.ui-selectonemenu, .ui-selectcheckboxmenu {
 		border-color: $contrast-link-color;
 		text-decoration: underline;
@@ -4298,7 +4322,7 @@ body.font-size-percent-200 {
 			}
 		}
 	}
-	
+
 	.ui-chkbox-box.ui-state-focus .ui-chkbox-icon::before,
 	.ui-chkbox-box.ui-state-focus .ui-chkbox-icon.ui-icon-check::before {
 		color: $contrast-alt-focus-color;
@@ -4320,7 +4344,7 @@ body.font-size-percent-200 {
 
 		&.ui-state-focus {
 			border-color: $contrast-alt-focus-color;
-	
+
 			.ui-radiobutton-icon {
 				background-color: $contrast-alt-focus-color;
 			}
@@ -4415,7 +4439,7 @@ body.font-size-percent-200 {
 			}
 		}
 	}
-	
+
 	#featuredDataversesBlock div.customNavigation {
 		span.glyphicon {
 			border-color: $contrast-foreground-color;
@@ -4430,7 +4454,7 @@ body.font-size-percent-200 {
 			}
 		}
 	}
-	
+
 	#resultsFacetsTopBlock a.facetLink.facetSelected {
 		background: $contrast-alt-background-color;
 	}
@@ -4471,11 +4495,11 @@ body.font-size-percent-200 {
 	.ui-tabs {
 		.ui-tabs-nav.ui-widget-header {
 			border-bottom-color: $contrast-link-color;
-	
+
 			li {
 				border-color: $contrast-link-color;
 				background: $contrast-background-color;
-	
+
 				a {
 					color: $contrast-link-color;
 					text-decoration: underline;
@@ -4484,16 +4508,16 @@ body.font-size-percent-200 {
 					color: $contrast-foreground-color;
 				}
 			}
-	
+
 			li.ui-state-hover {
 				border-color: $contrast-foreground-color $contrast-foreground-color $contrast-link-color $contrast-foreground-color;
 				background: $contrast-background-color;
-	
+
 				a {
 					color: $contrast-foreground-color;
 				}
 			}
-	
+
 			li.ui-state-active {
 				border-color: $contrast-link-color $contrast-link-color transparent $contrast-link-color;
 				background: $contrast-background-color;
@@ -4509,7 +4533,7 @@ body.font-size-percent-200 {
 			border-bottom-color: $contrast-link-color;
 		}
 	}
-	
+
 	.ui-datatable.ui-widget table {
 		thead#datasetForm\:tabView\:filesTable_head tr,
 		thead#datasetForm\:filesTable_head tr,
@@ -4517,22 +4541,22 @@ body.font-size-percent-200 {
 			background: $contrast-background-color;
 			color: $contrast-foreground-color;
 			border-color: $contrast-link-color;
-	
+
 			th.ui-state-default {
 				background: $contrast-background-color;
-	
+
 				.ui-chkbox-icon.ui-icon {
 					background: $contrast-background-color;
 				}
 			}
-	
+
 			&.ui-datatable-odd {
 				background: $contrast-background-color;
 				border-color: $contrast-link-color;
-		
+
 				th.ui-state-default {
 					background: $contrast-background-color;
-		
+
 					.ui-chkbox-icon.ui-icon {
 						background: $contrast-background-color;
 					}
@@ -4545,7 +4569,7 @@ body.font-size-percent-200 {
 			border-color: $contrast-link-color;
 		}
 	}
-		
+
 	.ui-datatable.ui-widget tr.ui-widget-content {
 		.text-muted {
 			background: transparent;
@@ -4563,7 +4587,7 @@ body.font-size-percent-200 {
 		&.ui-state-highlight td {
 			background: $contrast-foreground-color;
 			color: $contrast-background-color;
-	
+
 			.ui-chkbox-box::before, .ui-chkbox-icon.ui-icon::before {
 				background: $contrast-foreground-color;
 				color: $contrast-background-color;
@@ -4664,19 +4688,19 @@ body.font-size-percent-200 {
 			}
 		}
 	}
-	
+
 	.ui-autocomplete-multiple-container {
 		border-color: $contrast-link-color;
 	}
-	
+
 	.ui-autocomplete-panel {
 		.ui-autocomplete-table {
 			border-color: $contrast-link-color;
-	
+
 			&.ui-widget-content {
 				tr {
 					color: $contrast-foreground-color;
-	
+
 					&.ui-widget-header {
 						td {
 							background: $contrast-alt-background-color;
@@ -4705,7 +4729,7 @@ body.font-size-percent-200 {
 	/* Navbar, footer */
 
 	.sr-only.impaired-navigation:focus  {
-		border-color: $contrast-background-color;		
+		border-color: $contrast-background-color;
 	}
 
 	#navbarFixed {
@@ -4728,7 +4752,7 @@ body.font-size-percent-200 {
 			background-color: $contrast-foreground-color;
 			color: $contrast-background-color;
 			text-decoration: underline;
-	
+
 			&:hover {
 				border-color: $contrast-foreground-color;
 				background-color: $contrast-background-color;
@@ -4754,17 +4778,17 @@ body.font-size-percent-200 {
 		#topNavBar .navbar-nav {
 			a {
 				color: $contrast-link-color;
-	
+
 				&:hover, &:active, &:focus {
 					color: $contrast-foreground-color;
 					text-decoration: underline;
 				}
 			}
-	
+
 			> .open > a {
 				background: $contrast-alt-background-color
 			}
-	
+
 			> li > a .caret, .navbar-nav > form > a .caret {
 				color: $contrast-foreground-color;
 			}
@@ -4774,7 +4798,7 @@ body.font-size-percent-200 {
 			&:hover {
 				background: $contrast-hover-color;
 			}
-	
+
 			.icon-bar {
 				background-color: $contrast-foreground-color;
 			}
@@ -4853,7 +4877,7 @@ body.font-size-percent-200 {
 			button .ui-icon {
 				background-image: url($contrast-primefaces-main-alt);
 			}
-		} 
+		}
 
 		.ui-dialog-content, .help-block {
 			color: $contrast-foreground-color;
@@ -4875,7 +4899,7 @@ body.font-size-percent-200 {
 	}
 
 	/* Bootstrap tooltips, popovers */
-	
+
 	.tooltip {
 		.tooltip-inner {
 			background-color: $contrast-foreground-color;
@@ -4944,7 +4968,7 @@ body.high-contrast-yellow-on-black {
 /*
 body.high-contrast-white-on-black {
 	@include high-contrast-template (
-		$contrast-foreground-color: #fff, 
+		$contrast-foreground-color: #fff,
 		$contrast-link-color: #ff0,
 		$contrast-primefaces-main: "img/primefaces-main-white.png",
 		$contrast-ajax-spinner-filter: invert(1) hue-rotate(35deg) saturate(16) grayscale(1)

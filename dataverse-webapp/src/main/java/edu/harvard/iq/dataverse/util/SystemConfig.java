@@ -117,6 +117,10 @@ public class SystemConfig {
         return settingsService.isTrueForKey(SettingsServiceBean.Key.ReadonlyMode);
     }
 
+    public boolean isUnconfirmedMailRestrictionModeEnabled() {
+        return settingsService.isTrueForKey(Key.UnconfirmedMailRestrictionModeEnabled);
+    }
+
     public boolean isSignupAllowed() {
         if (isReadonlyMode()) {
             return false;

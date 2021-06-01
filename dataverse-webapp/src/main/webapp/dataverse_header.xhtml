@@ -29,6 +29,17 @@
                                     oncomplete="document.getElementById('cookie-banner').style.display='none'"/>
             </h:form>
         </div>
+        <div id="unconfirmed-mail-banner" jsf:rendered="#{dataverseHeaderFragment.shouldShowUnconfirmedMailInfoBanner()}">
+            <h:form class="container">
+                #{bundle['unconfirmed.mail.banner.text']}
+                <h:outputLink value="/dataverseuser.xhtml?selectTab=accountInfo">
+                    <h:outputText value="#{bundle['unconfirmed.mail.banner.link.text']}"/>
+                </h:outputLink>.
+                <p:commandButton id="hide-unconfirmed-mail-banner"
+                                 value="#{bundle['unconfirmed.mail.banner.button.close.text']}"
+                                 oncomplete="document.getElementById('unconfirmed-mail-banner').style.display='none'"/>
+            </h:form>
+        </div>
         <div class="container">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar" aria-expanded="false">
@@ -39,7 +50,7 @@
                 </button>
                 <a href="/" class="navbar-brand">
                     <ui:fragment rendered="#{empty settingsWrapper.getSettingValue(':LogoCustomizationFile')}">
-                        <i id="site-logo" class="icon-dataverse"></i> 
+                        <i id="site-logo" class="icon-dataverse"></i>
                         <span>
                             <span id="site-title">
                                 <h:outputText value="#{systemConfig.getSiteName(dataverseSession.locale)}" escape="false"/>
@@ -79,7 +90,7 @@
                                 </li>
                             </ul>
                         </li>
-    
+
                         <li jsf:rendered="#{settingsWrapper.getConfiguredAboutUrls().size() == 1}">
                             <ui:repeat value="#{settingsWrapper.getConfiguredAboutUrls().entrySet().toArray()}" var="about">
                                 <h:outputLink value="#{about.key}" target="_blank" title="#{bundle['opensInNewTab']}">
@@ -160,7 +171,7 @@
                                 </ul>
                             </h:form>
                         </li>
-    
+
                         <ui:fragment rendered="#{!dataverseSession.user.authenticated}">
                             <li>
                                 <h:outputLink rendered="#{dataverseHeaderFragment.signupAllowed}"
@@ -174,7 +185,7 @@
                                 </h:outputLink>
                             </li>
                         </ui:fragment>
-    
+
                         <ui:fragment rendered="#{dataverseSession.user.authenticated}">
                             <li class="dropdown accountName">
                                 <a href="#" id="lnk_header_account_dropdown" class="dropdown-toggle" data-toggle="dropdown"
@@ -241,7 +252,7 @@
                 </nav>
                     <div id="accessibility-controls">
                         <div>
-                            <h:outputText value="#{bundle['header.accessibility.wcagText']}" />: 
+                            <h:outputText value="#{bundle['header.accessibility.wcagText']}" />:
                             <ul id="eighty-limit-mode-selector">
                                 <li>
                                     <button class="toggle" title="#{bundle['header.accessibility.eightyLimit.toggle']}"
@@ -255,9 +266,9 @@
                                 </li>
                             </ul>
                         </div>
-                        
+
                         <div>
-                            <h:outputText value="#{bundle['header.accessibility.font']}" />: 
+                            <h:outputText value="#{bundle['header.accessibility.font']}" />:
                             <ul id="font-size-mode-selector">
                                 <li>
                                     <button class="default" title="100%"
@@ -273,9 +284,9 @@
                                 </li>
                             </ul>
                         </div>
-                        
+
                         <div>
-                            <h:outputText value="#{bundle['header.accessibility.contrast']}" />: 
+                            <h:outputText value="#{bundle['header.accessibility.contrast']}" />:
                             <ul id="high-contrast-mode-selector">
                                 <li>
                                     <button class="default" title="#{bundle['header.accessibility.contrast.default']}"
@@ -287,7 +298,7 @@
                                 </li>
                             </ul>
                         </div>
-                        
+
                     </div>
 
                     <script type="text/javascript">
@@ -299,7 +310,7 @@
         </div>
 
     </div>
-    
+
     <div id="dataverse-header-block">
         <div class="alert alert-warning" jsf:rendered="#{systemConfig.isReadonlyMode()}">
             <p class="text-block text-center" style="margin: 0 auto;">

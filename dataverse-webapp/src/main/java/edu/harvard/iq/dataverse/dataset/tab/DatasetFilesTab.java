@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.guestbook.GuestbookResponseDialog;
 import edu.harvard.iq.dataverse.guestbook.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.license.TermsOfUseFormMapper;
+import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFileCategory;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFileTag;
@@ -114,7 +115,7 @@ public class DatasetFilesTab implements Serializable {
 
     private RequestedDownloadType requestedDownloadType;
     private GuestbookResponseDialog guestbookResponseDialog;
-
+    private ConfirmEmailServiceBean confirmEmailService;
 
     private Dataset dataset;
     private DatasetVersion workingVersion;
@@ -193,7 +194,8 @@ public class DatasetFilesTab implements Serializable {
                            GuestbookResponseDialog guestbookResponseDialog,
                            ImageThumbConverter imageThumbConverter,
                            FileMetadataService fileMetadataService,
-                           DatasetFilesTabFacade datasetFilesTabFacade) {
+                           DatasetFilesTabFacade datasetFilesTabFacade,
+                           ConfirmEmailServiceBean confirmEmailService) {
         this.fileDownloadHelper = fileDownloadHelper;
         this.datafileService = datafileService;
         this.permissionService = permissionService;
@@ -212,6 +214,7 @@ public class DatasetFilesTab implements Serializable {
         this.fileMetadataService = fileMetadataService;
         this.imageThumbConverter = imageThumbConverter;
         this.datasetFilesTabFacade = datasetFilesTabFacade;
+        this.confirmEmailService = confirmEmailService;
     }
 
     public void init(DatasetVersion workingVersion) {
@@ -371,7 +374,7 @@ public class DatasetFilesTab implements Serializable {
 
     public boolean isThumbnailAvailable(FileMetadata fileMetadata) {
 
-        // new and optimized logic: 
+        // new and optimized logic:
         // - check download permission here (should be cached - so it's free!)
         // - only then check if the thumbnail is available/exists.
         // then cache the results!
@@ -447,8 +450,8 @@ public class DatasetFilesTab implements Serializable {
     }
 
     /*
-       TODO/OPTIMIZATION: This is still costing us N SELECT FROM GuestbookResponse queries, 
-       where N is the number of files. This could of course be replaced by a query that'll 
+       TODO/OPTIMIZATION: This is still costing us N SELECT FROM GuestbookResponse queries,
+       where N is the number of files. This could of course be replaced by a query that'll
        look up all N at once... Not sure if it's worth it; especially now that N
        will always be 10, for the initial page load. -- L.A. 4.2.1
      */
@@ -472,7 +475,11 @@ public class DatasetFilesTab implements Serializable {
         return getCachedToolsForDataFile(fileId, ExternalTool.Type.EXPLORE);
     }
 
-    // Another convenience method - to cache Update Permission on the dataset: 
+    public boolean shouldAllowRestrictedFileRequest() {
+        return confirmEmailService.hasEffectivelyUnconfirmedMail(session.getUser());
+    }
+
+    // Another convenience method - to cache Update Permission on the dataset:
     public boolean canUpdateDataset() {
         return permissionsWrapper.canCurrentUserUpdateDataset(dataset);
     }
@@ -542,16 +549,16 @@ public class DatasetFilesTab implements Serializable {
             }
         }
 
-        // If some of the files were restricted and we had to drop them off the 
+        // If some of the files were restricted and we had to drop them off the
         // list, and NONE of the files are left on the downloadable list
-        // - we show them a "you're out of luck" popup: 
+        // - we show them a "you're out of luck" popup:
         if (selectedDownloadableFiles.isEmpty()) {
             PrimefacesUtil.showDialog(DOWNLOAD_INVALID_DIALOG);
             return;
         }
 
-        // If we have a bunch of files that we can download, AND there were no files 
-        // that we had to take off the list, because of permissions - we can 
+        // If we have a bunch of files that we can download, AND there were no files
+        // that we had to take off the list, because of permissions - we can
         // either send the user directly to the download API (if no guestbook/terms
         // popup is required), or send them to the download popup:
         if (selectedNonDownloadableFiles.isEmpty()) {
@@ -559,16 +566,16 @@ public class DatasetFilesTab implements Serializable {
             return;
         }
 
-        // ... and if some files were restricted, but some are downloadable, 
-        // we are showing them this "you are somewhat in luck" popup; that will 
+        // ... and if some files were restricted, but some are downloadable,
+        // we are showing them this "you are somewhat in luck" popup; that will
         // then direct them to the download, or popup, as needed:
         PrimefacesUtil.showDialog(DOWNLOAD_MIXED_DIALOG);
 
     }
 
     public void startMultipleFileDownload() {
-        // There's a chance that this is not really a batch download - i.e., 
-        // there may only be one file on the downloadable list. But the fileDownloadHelper 
+        // There's a chance that this is not really a batch download - i.e.,
+        // there may only be one file on the downloadable list. But the fileDownloadHelper
         // method below will check for that, and will redirect to the single download, if
         // that's the case. -- L.A.
         fileDownloadHelper.requestDownloadWithFiles(selectedDownloadableFiles, downloadOriginal);
@@ -583,10 +590,10 @@ public class DatasetFilesTab implements Serializable {
     }
 
     public String editFileMetadata() {
-        // If there are no files selected, return an empty string - which 
-        // means, do nothing, don't redirect anywhere, stay on this page. 
-        // The dialogue telling the user to select at least one file will 
-        // be shown to them by an onclick javascript method attached to the 
+        // If there are no files selected, return an empty string - which
+        // means, do nothing, don't redirect anywhere, stay on this page.
+        // The dialogue telling the user to select at least one file will
+        // be shown to them by an onclick javascript method attached to the
         // filemetadata edit button on the page.
         // -- L.A. 4.2.1
         if (selectedFileIds.isEmpty()) {
@@ -661,17 +668,17 @@ public class DatasetFilesTab implements Serializable {
     }
 
     // TODO: investigate why this method was needed in the first place?
-    // It appears that it was written under the assumption that downloads 
+    // It appears that it was written under the assumption that downloads
     // should not be allowed when a dataset is locked... (why?)
-    // There are calls to the method throghout the file-download-buttons fragment; 
-    // except the way it's done there, it's actually disregarded (??) - so the 
-    // download buttons ARE always enabled. The only place where this method is 
-    // honored is on the batch (mutliple file) download buttons in filesFragment.xhtml. 
-    // As I'm working on #4000, I've been asked to re-enable the batch download 
-    // buttons there as well, even when the dataset is locked. I'm doing that - but 
-    // I feel we should probably figure out why we went to the trouble of creating 
-    // this code in the first place... is there some reason we are forgetting now, 
-    // why we do actually want to disable downloads on locked datasets??? 
+    // There are calls to the method throghout the file-download-buttons fragment;
+    // except the way it's done there, it's actually disregarded (??) - so the
+    // download buttons ARE always enabled. The only place where this method is
+    // honored is on the batch (mutliple file) download buttons in filesFragment.xhtml.
+    // As I'm working on #4000, I've been asked to re-enable the batch download
+    // buttons there as well, even when the dataset is locked. I'm doing that - but
+    // I feel we should probably figure out why we went to the trouble of creating
+    // this code in the first place... is there some reason we are forgetting now,
+    // why we do actually want to disable downloads on locked datasets???
     // -- L.A. Aug. 2018
     public boolean isLockedFromDownload() {
         if (lockedFromDownloadVar == null) {
@@ -865,7 +872,7 @@ public class DatasetFilesTab implements Serializable {
     Remove unused file tags
     When updating datafile tags see if any custom tags are not in use.
     Remove them
-    
+
     */
     private void removeUnusedFileTagsFromDataset() {
         categoriesByName = new ArrayList<>(datasetFilesTabFacade.fetchCategoriesByName(workingVersion.getId()));
@@ -900,7 +907,7 @@ public class DatasetFilesTab implements Serializable {
             return "";
         }
 
-        // Use the Create or Update command to save the dataset: 
+        // Use the Create or Update command to save the dataset:
         UpdateDatasetVersionCommand cmd;
         Map<Long, String> deleteStorageLocations = null;
 
@@ -935,10 +942,10 @@ public class DatasetFilesTab implements Serializable {
             return returnToDraftVersion();
         }
 
-        // Have we just deleted some draft datafiles (successfully)? 
+        // Have we just deleted some draft datafiles (successfully)?
         // finalize the physical file deletes:
-        // (DataFileService will double-check that the datafiles no 
-        // longer exist in the database, before attempting to delete 
+        // (DataFileService will double-check that the datafiles no
+        // longer exist in the database, before attempting to delete
         // the physical files)
 
         if (deleteStorageLocations != null) {
