@@ -5498,4 +5498,13 @@ public class DatasetPage implements java.io.Serializable {
     public List<String> getVocabList(long id) {
         return getCVocConf().get(id).getJsonArray("vocabs").getValuesAs(JsonString::getString);
     }
+    
+    public List<String> getVocabScripts() {
+        Set<String> scripts = new HashSet<String>();
+        for(JsonObject jo: getCVocConf().values()) {
+            scripts.add(jo.getString("js-url"));
+        }
+        return Arrays.asList(scripts.toArray(new String[0]));
+    }
+    
 }

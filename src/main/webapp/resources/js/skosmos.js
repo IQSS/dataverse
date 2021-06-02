@@ -1,13 +1,13 @@
-var personSelector = '.person';
-var personInputSelector = "input[data-cvoc-protocol='orcid']";
+var skosmosSelector = '.skosmos';
+var skosmosInputSelector = "input[data-cvoc-protocol='notskosmos']";
 
 $(document).ready(function() {
-    expandPeople();
-    updatePeopleInputs();
+    expandSkosmos();
+    updateSkosmosInputs();
   });
 
-  function expandPeople() {
-    //Check each element with class 'person'
+  function expandSkosmos() {
+    //Check each element with class 'skosmos'
     $(personSelector).each(function() {
       var personElement = this;
       //If it hasn't already been processed
@@ -56,23 +56,29 @@ $(document).ready(function() {
     });
   }
 
-  function updatePeopleInputs() {
+  function updateSkosmosInputs() {
     var num=0;
     //For each input element within personInputSelector elements 
-    $(personInputSelector).each(function() {
-      var personInput = this;
-      if(!personInput.hasAttribute('data-person')) {
+    $(skosmosInputSelector).each(function() {
+      var skosmosInput = this;
+      if(!skosmosInput.hasAttribute('data-skosmos')) {
         //Random identifier
-    	  num=Math.random()*100000000;
+    	  num=Math.floor(Math.random()*100000000);
         
         //Hide the actual input and give it a data-person number so we can find it
-        $(personInput).hide();
-        $(personInput).attr('data-person', num);
+        $(skosmosInput).hide();
+        $(skosmosInput).attr('data-skosmos', num);
         //Todo: if not displayed, wait until it is to then create the select 2 with a non-zero width
-       
+        var cvocUrl = $(skosmosInput).attr('data-cvoc-service-url');
+        var lang = skosmosInput.hasAttribute("lang") ? $(skosmosInput).attr('lang') : "";
+        var langParam = skosmosInput.hasAttribute("lang") ? "&lang=" + $(skosmosInput).attr('lang') : "";
+        var vocabs = JSON.parse($(skosmosInput).attr('data-cvoc-vocabs'));
+        var termParentUri = $(skosmosInput).attr('data-cvoc-filter');
+        //ToDo - get vocab selection
+var vocab = Object.keys(vocabs)[0];
       //Add a select2 element to allow search and provide a list of choices
-      var selectId = "personAddSelect_" + num;
-      $(personInput).after(
+      var selectId = "skosmosAddSelect_" + num;
+      $(skosmosInput).after(
         '<select id=' + selectId + ' class="form-control add-resource select2" tabindex="-1" aria-hidden="true"  style="width: 300px">');
       $("#" + selectId).select2(
         {
@@ -84,68 +90,72 @@ $(document).ready(function() {
              if (item.loading) {
                return item.text;
              }
-             
+             var term = '';
+             if (typeof(query) !== 'undefined') {
+                 term = query.term;
+             }
              //markMatch bolds the search term if/where it appears in the result
              var $result = markMatch(item.text, term);
              return $result;
            },
            templateSelection : function(item) {
-             //For a selection, add HTML to make the ORCID a link
-             var pos=item.text.search(/\d{4}-\d{4}-\d{4}-\d{3}[\dX]/);
+             //For a selection, add HTML to make the term uri a link
+        	   if(item.text != item.id) {
+             var pos=item.text.search(/http[s]?:\/\//);
              if(pos>=0) {
-               var orcid=item.text.substr(pos,19);
-               return $('<span></span>').append(item.text.replace(orcid, "<a href='https://orcid.org/" + orcid + "'>" + orcid + "</a>"));
+               var termuri=item.text.substr(pos);
+               return $('<span></span>').append(item.text.replace(termuri, "<a href='" + termuri + "'>" + termuri + "</a>"));
              }
+           }
              return item.text;
            },
            language : {
              searching : function(params) {
                // Change this to be appropriate for your application
-               return 'Search by name, email, or ORCID…';
+               return 'Search by term or related term…';
              }
            },
-           placeholder : "Add a Person",
-           minimumInputLength: 3,
+           placeholder : "Add a Term",
+           minimumInputLength: 2,
            allowClear : true,
            ajax : {
-             //Use an ajax call to ORCID to retrieve matching results
-             url : function(params) {
-               var term = params.term;
-               if (!term) {
-                 term = "";
-               }
-               //Use expanded-search to get the names, email directly in the results
-               return "https://pub.orcid.org/v3.0/expanded-search";
-             },
-             data: function (params){
-               term = params.term;
-               if (!term) {
-                 term = "";
-               }
-               var query = {
-                 q: term,
-                 rows: 10
-               }
-               return query;
-             },
-             //request json (vs XML default)
-             headers: {'Accept' : 'application/json' },
+        	   url: cvocUrl + 'rest/v1/search?unique=true&vocab=' + vocab + termParentUri + langParam,
+               dataType: "json",
+               data:  function (params){
+            	   //Used in templateResult
+            	   term=params.term;
+                   return "&query=" + params.term + "*";
+                   } ,
+               
+               /*
+                *            var results = data.results;
+            var queries = [];
+            var array = [];
+            $.each(results, function(i, item) {
+                queries.push(item.prefLabel);
+                array.push({
+                    value: item[mapping.query],
+                    id: item[mapping.id]
+                });
+            });
+
+            response(array);
+            console.log(array);
+                */
              processResults : function(data, page) {
                return {
-                 results : data['expanded-result']
+                 results : data.results
                    //Sort to bring recently used ORCIDS to the top of the list
                    .sort((a, b) => (localStorage.getItem(b['orcid-id'])) ? 1 : -1)
                    .map(
                      function(x) {
                        return {
-                         text : x['given-names'] + " " + x['family-names']
-                                + ", "
-                                + x['orcid-id']
-                                + ((x.email.length > 0) ? ", " + x.email[0] : ""),
-                         id : x['orcid-id'],
+                         text : x.prefLabel + ((x.hasOwnProperty('altLabel') && x.altLabel.length >0) ? " (" + x.altLabel +  "), " : " ") 
+                                + x.uri ,
+                         id : x.uri,
                          //Since clicking in the selection re-opens the choice list, one has to use a right click/open in new tab/window to view the ORCID page
                          //Using title to provide that hint as a popup
-                         title : 'Open in new tab to view ORCID page'
+                         title : 'Open in new tab to view Term page'
                        }
                      })
                    };
@@ -153,23 +163,40 @@ $(document).ready(function() {
               }
       });
       //If the input has a value already, format it the same way as if it were a new selection
-      var id = $(personInput).val();
-      if(id.startsWith("https://orcid.org")) {
-        id=id.substring(18);
+      var id = $(skosmosInput).val();
+      if(id.startsWith("http")) {
         $.ajax ({
           type: "GET",
-          url: "https://pub.orcid.org/v3.0/" + id + "/person",
+          url: cvocUrl +  "rest/v1/data?uri=" + id ,
           dataType: 'json',
           headers: {'Accept': 'application/json'},
-          success: function (person, status){
-            var name = person.name['given-names'].value + " " + person.name['family-name'].value;
-                  var text = name + ", " + id;
-            if(person.emails.email.length >0) {
-              text = text + ", " + person.emails.email[0].email;
-            }
-            var newOption = new Option(text, id, true, true);
-                  newOption.title = 'Open in new tab to view ORCID page';
-            $('#' + selectId).append(newOption).trigger('change');
+          success: function (term, status){
+        	  var termName = "";
+        	  var uriArray = term.graph;
+        	  for (let i = 0; i < uriArray.length; i++) {
+        	  var def = uriArray[i];
+        		  if(def.uri==id) {
+        			  for(let j=0; j< def.prefLabel.length;j++) {
+                          var label = def.prefLabel[j];
+        			  if(label.lang == lang) {
+        				  termName = label.value;
+        				  break;
+        			  }
+        			  if(label.lang == "en") {
+        				  termName = label.value;
+        				  //Don't break so we continue to find one matching lang if it exists
+        			  }
+        		  }
+        	  }
+        	  }
+        	  var text = termName + ", " + id;
+        	  var newOption = new Option(text, id, true, true);
+        	  newOption.title = 'Open in new tab to view Term page';
+        	  $('#' + selectId).append(newOption).trigger('change');
+        	  
+        		  
+        	  //ToDo asssume vocab from variable
+        	  //can't get altLabel from this api call
           },
           failure: function (jqXHR, textStatus, errorThrown){
             if(jqXHR.status != 404) {
@@ -178,7 +205,7 @@ $(document).ready(function() {
           }
         });
       } else {
-        //If the initial value is not an ORCID (legacy, or if tags are enabled), just display it as is 
+        //If the initial value is not a managed term (legacy, or if tags are enabled), just display it as is 
         var newOption = new Option(id, id, true, true);
         $('#' + selectId).append(newOption).trigger('change');
       }
@@ -187,17 +214,13 @@ $(document).ready(function() {
       //When a selection is made, set the value of the hidden input field
       $('#' + selectId).on('select2:select', function (e) {
         var data = e.params.data;
-        //For ORCIDs, the id and text are different
-        if(data.id != data.text) {
-          $("input[data-person='" + num + "']").val("https://orcid.org/" + data.id);
-        } else {
-          //Tags are allowed, so just enter the text as is
-          $("input[data-person='" + num + "']").val(data.id);
-        }
+        //For terms, the id and text are different, but we just store the data.id in either case (controlled uri or plain text)
+        // if(data.id != data.text) {
+        $("input[data-skosmos='" + num + "']").val( data.id);
       });
       //When a selection is cleared, clear the hidden input
       $('#' + selectId).on('select2:clear', function (e) {
-        $("input[data-person='" + num + "']").attr('value','');
+        $("input[data-skosmos='" + num + "']").attr('value','');
       });
       }
     });

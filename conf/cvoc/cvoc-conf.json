@@ -1,40 +1,42 @@
 [
-{
-  "field-name":"cvocDemo",
-  "term-uri-field":"cvocDemoTermURI",
-  "minChars": 1,
+  {
+    "field-name":"cvocDemo",
+    "term-uri-field":"cvocDemoTermURI",
+    "trigger-class":"test",
+    "minChars": 1,
   "cvoc-url":"https://skosmos.dev.finto.fi/",
   "language":"en",
   "js-url":"/resources/js/cvoc-interface.js",
   "protocol": "skosmos",
-  "retrieval-uri":"'https://skosmos.dev.finto.fi/rest/v1/data?uri={0}'
-  "vocab-uri" : "http://skos.um.es/unescothes/CS000", 
+  "retrieval-uri":"https://skosmos.dev.finto.fi/rest/v1/data?uri={0}",
+  "vocab-uri" : "http://skos.um.es/unescothes/CS000",
   "term-parent-uri": "",
   "vocabs":["unesco","stw","agrovoc"],
-  "child-fields": ["cvocDemoVocabulary", "cvocDemoTerm", "cvocDemoVocabularyURI"]
+  "managedfields": {"vocabularyName":"cvocDemoVocabulary", "termName":"cvocDemoTerm", "vocabularyUri":"cvocDemoVocabularyURI"}
 },
 {
-  "field-name":"creator",
-  "term-uri-field":"creator",
-  "trigger-class":"person",
-  "language":"en",
-  "js-url":"/resources/js/people.js",
-  "protocol": "orcid",
-  "retrieval-uri":"https://pub.orcid.org/v3.0/{0}/person",
-  "prefix":"https://orcid.org",
-  "term-parent-uri": "",
-  "vocabs":["orcid"]
-},
+          "field-name":"creator",
+          "term-uri-field":"creator",
+          "trigger-class":"person",
+          "language":"en",
+          "js-url":"/resources/js/people.js",
+          "protocol": "orcid",
+          "retrieval-uri":"https://pub.orcid.org/v3.0/{0}/person",
+          "prefix":"https://orcid.org",
+          "vocabs":["orcid"],
+          "managedfields": {}
+        },
 {
-  "field-name":"skosterm",
-  "term-uri-field":"cvocDemoTermURI",
-  "trigger-class":"unesco, stw, agrovac",
-  "minChars": 1,
-  "cvoc-url":"https://skosmos.dev.finto.fi/",
-  "language":"en",
-  "js-url":"/resources/js/cvoc-interface2.js",
-  "protocol": "notskosmos",
-  "retrieval-uri":"https://skosmos.dev.finto.fi/rest/v1/data?uri={0}",
-  "term-parent-uri": ""
+        "field-name":"skosterm",
+        "term-uri-field":"skosterm",
+        "trigger-class":"unesco, stw, agrovac",
+        "minChars": 1,
+        "cvoc-url":"https://skosmos.dev.finto.fi/",
+        "language":"en",
+        "js-url":"/resources/js/skosmos.js",
+        "protocol": "notskosmos",
+        "retrieval-uri":"https://skosmos.dev.finto.fi/rest/v1/data?uri={0}",
+        "vocabs":{"unesco": "http://skos.um.es/unescothes/CS000"},
+        "managedfields": {}
 }
 ]

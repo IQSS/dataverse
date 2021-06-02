@@ -655,7 +655,7 @@ div.edit-field div.ui-message {margin:6px 0;}
 /* TRUNCATION */
 div.more-block {text-align:center; padding-top:250px; width:100%; position:absolute; bottom:0; background:linear-gradient(180deg,hsla(0,0%,100%,0),#fff 80%);}
 button.desc-more-link {margin:0; padding:0;}
-div.less-block {text-align:center;};
+div.less-block {text-align:center;}
 
 /* Primefaces vs Bootstrap selectOneMenu fix */
 div.ui-selectonemenu.form-control {padding:0px;}
@@ -998,6 +998,8 @@ progress::-webkit-progress-value {
   background-color:green;
 }
 
+/*External vocabulary support*/
+
 .select2-container .select2-selection--single {
         border:1px solid #cccccc;
         border-radius: 3px;
@@ -1020,3 +1022,21 @@ progress::-webkit-progress-value {
 }
 .select2-rendered__match {
         font-weight:600;
+
+ul .ui-autocomplete { list-style : none;
+    list-style-type: none;
+    padding: 0px;
+    margin: 0px;
+    max-height: 150px;
+    overflow-y: auto;
+    /* prevent horizontal scrollbar */
+    overflow-x: hidden;
+    /* add padding to account for vertical scrollbar */
+    padding-right: 20px;
+    z-index: 1000;
+}
+
+input[type='text'].ui-autocomplete-loading {
+    background: url('/resources/images/ajax-loading.gif') no-repeat right
+        center;
+}

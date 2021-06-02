@@ -299,7 +299,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         logger.info("Registering for field: " + dft.getName());
         if(dft.isPrimitive()) {
             for(DatasetFieldValue dfv: df.getDatasetFieldValues()) {
-                registerExternalTerm(dfv.getValue(), getCVocConf().get(dft.getId()).getString("retrievalUri"));
+                registerExternalTerm(dfv.getValue(), getCVocConf().get(dft.getId()).getString("retrieval-uri"));
             }
             } else {
                 if (df.getDatasetFieldType().isCompound()) {
