@@ -27,7 +27,7 @@ $(document).ready(function() {
           success: function (person, status){
             //If found, construct the HTML for display
             var name = person.name['family-name'].value + ", " + person.name['given-names'].value;
-            var html = "<a href='https://orcid.org/" + id + "' target=_blank>" + name + "</a>";
+            var html = "<a href='https://orcid.org/" + id + "' target='_blank' rel='noopener' >" + name + "</a>";
             personElement.innerHTML = html;
             //If email is public, show it using the jquery popover functionality
             if(person.emails.email.length >0) {
@@ -63,7 +63,7 @@ $(document).ready(function() {
       var personInput = this;
       if(!personInput.hasAttribute('data-person')) {
         //Random identifier
-    	  num=Math.random()*100000000;
+    	  num=Math.floor(Math.random()*100000000);
         
         //Hide the actual input and give it a data-person number so we can find it
         $(personInput).hide();
@@ -73,7 +73,7 @@ $(document).ready(function() {
       //Add a select2 element to allow search and provide a list of choices
       var selectId = "personAddSelect_" + num;
       $(personInput).after(
-        '<select id=' + selectId + ' class="form-control add-resource select2" tabindex="-1" aria-hidden="true"  style="width: 300px">');
+        '<select id=' + selectId + ' class="form-control add-resource select2" tabindex="-1" aria-hidden="true"  style="width: 400px">');
       $("#" + selectId).select2(
         {
            theme : "bootstrap",

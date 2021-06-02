@@ -1,4 +1,4 @@
-var skosmosSelector = '.skosmos';
+var skosmosSelector = "span[data-cvoc-protocol='notskosmos']";
 var skosmosInputSelector = "input[data-cvoc-protocol='notskosmos']";
 
 $(document).ready(function() {
@@ -8,50 +8,53 @@ $(document).ready(function() {
 
   function expandSkosmos() {
     //Check each element with class 'skosmos'
-    $(personSelector).each(function() {
-      var personElement = this;
+    $(skosmosSelector).each(function() {
+      var skosmosElement = this;
       //If it hasn't already been processed
-      if(!$(personElement).hasClass('expanded')) {
+      if(!$(skosmosElement).hasClass('expanded')) {
         //Mark it as processed
-        $(personElement).addClass('expanded');
-        var id = personElement.textContent;
-        if(id.startsWith("https://orcid.org/")) {
-          id = id.substring(18);
-        }
-        //Try it as an ORCID (could validate that it has the right form and even that it validates as an ORCID, or can just let the GET fail
-        $.ajax ({
-          type: "GET",
-          url: "https://pub.orcid.org/v3.0/" + id + "/person",
-          dataType: 'json',
-          headers: {'Accept': 'application/json'},
-          success: function (person, status){
-            //If found, construct the HTML for display
-            var name = person.name['family-name'].value + ", " + person.name['given-names'].value;
-            var html = "<a href='https://orcid.org/" + id + "' target=_blank>" + name + "</a>";
-            personElement.innerHTML = html;
-            //If email is public, show it using the jquery popover functionality
-            if(person.emails.email.length >0) {
-              $(personElement).popover({
-                content:person.emails.email[0].email,
-                placement:'top',
-                template: '<div class="popover" role="tooltip" style="max-width:600px;word-break:break-all"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'
-              });
-              personElement.onmouseenter = function(){$(this).popover('show');};
-              personElement.onmouseleave = function(){$(this).popover('hide');};
-            }
-            //Store the most recent 100 ORCIDs - could cache results, but currently using this just to prioritized recently used ORCIDs in search results
-            if(localStorage.length >100) {
-              localStorage.removeItem(localStorage.key(0));
-            }
-            localStorage.setItem(id,name);
-          },
-          failure: function (jqXHR, textStatus, errorThrown){
-          //Generic logging - don't need to do anything if 404 (leave display as is)
-            if(jqXHR.status != 404) {
-              console.error("The following error occurred: " + textStatus, errorThrown);
-            }
-          }
-        });
+        $(skosmosElement).addClass('expanded');
+        var cvocUrl = $(skosmosElement).attr('data-cvoc-service-url');
+        var lang = skosmosElement.hasAttribute("lang") ? $(skosmosElement).attr('lang') : "";
+        var id = skosmosElement.textContent;
+        //Try to retrieve info about the term
+            if(id.startsWith("http")) {
+                $.ajax ({
+                  type: "GET",
+                  url: cvocUrl +  "rest/v1/data?uri=" + id ,
+                  dataType: 'json',
+                  headers: {'Accept': 'application/json'},
+                  success: function (term, status){
+                	  var termName = "";
+                	  var uriArray = term.graph;
+                	  for (let i = 0; i < uriArray.length; i++) {
+                	  var def = uriArray[i];
+                		  if(def.uri==id) {
+                			  for(let j=0; j< def.prefLabel.length;j++) {
+                                  var label = def.prefLabel[j];
+                			  if(label.lang == lang) {
+                				  termName = label.value;
+                				  break;
+                			  }
+                			  if(label.lang == "en") {
+                				  termName = label.value;
+                				  //Don't break so we continue to find one matching lang if it exists
+                			  }
+                		  }
+                	  }
+                	  }
+                	  var html = "<a href='" + id + "'  target='_blank' rel='noopener' >" + termName + "</a>";
+                	  skosmosElement.innerHTML=html;
+                  },
+                  failure: function (jqXHR, textStatus, errorThrown){
+                    if(jqXHR.status != 404) {
+                      console.error("The following error occurred: " + textStatus, errorThrown);
+                    }
+                  }
+                });
+              } else {
+                //Don't change the display 
+              }
       }
     });
   }
@@ -79,7 +82,7 @@ var vocab = Object.keys(vocabs)[0];
       //Add a select2 element to allow search and provide a list of choices
       var selectId = "skosmosAddSelect_" + num;
       $(skosmosInput).after(
-        '<select id=' + selectId + ' class="form-control add-resource select2" tabindex="-1" aria-hidden="true"  style="width: 300px">');
+        '<select id=' + selectId + ' class="form-control add-resource select2" tabindex="-1" aria-hidden="true"  style="width: 400px">');
       $("#" + selectId).select2(
         {
            theme : "bootstrap",
@@ -104,7 +107,7 @@ var vocab = Object.keys(vocabs)[0];
              var pos=item.text.search(/http[s]?:\/\//);
              if(pos>=0) {
                var termuri=item.text.substr(pos);
-               return $('<span></span>').append(item.text.replace(termuri, "<a href='" + termuri + "'>" + termuri + "</a>"));
+               return $('<span></span>').append(item.text.replace(termuri, "<a href='" + termuri + "'  target='_blank' rel='noopener'>" + termuri + "</a>"));
              }
            }
              return item.text;
@@ -126,22 +129,6 @@ var vocab = Object.keys(vocabs)[0];
             	   term=params.term;
                    return "&query=" + params.term + "*";
                    } ,
-               
-               /*
-                *            var results = data.results;
-            var queries = [];
-            var array = [];
-            $.each(results, function(i, item) {
-                queries.push(item.prefLabel);
-                array.push({
-                    value: item[mapping.query],
-                    id: item[mapping.id]
-                });
-            });
-
-            response(array);
-            console.log(array);
-                */
              processResults : function(data, page) {
                return {
                  results : data.results
@@ -209,7 +196,7 @@ var vocab = Object.keys(vocabs)[0];
         var newOption = new Option(id, id, true, true);
         $('#' + selectId).append(newOption).trigger('change');
       }
-      //Cound start with the selection menu open
+      //Could start with the selection menu open
       //    $("#" + selectId).select2('open');
       //When a selection is made, set the value of the hidden input field
       $('#' + selectId).on('select2:select', function (e) {

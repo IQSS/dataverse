@@ -12,6 +12,7 @@
            <script defer="defer" src="#{vocabScriptUrl}?version=#{systemConfig.getVersion()}"/>
         </ui:repeat>
         </p:fragment>
+        <c:set var="cvocConf" value="#{DatasetPage.getCVocConf()}"/>
     <!-- View Mode -->
     <div class="panel-group" jsf:rendered="${empty editMode  or managePage}">
         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
@@ -61,10 +62,28 @@
                                         </th>
                                         <td>
                                             <!-- Primitive datasetFields -->
-                                            <ui:fragment rendered="#{dsf.datasetFieldType.primitive}">   
-                                                <h:outputText value="#{dsf.displayValue}" rendered="#{!dsf.datasetFieldType.allowMultiples}"
-                                                              escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
-                                                <ui:repeat value="#{dsf.values}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples}">
+                                            <ui:fragment rendered="#{dsf.datasetFieldType.primitive}">
+                                                <h:outputText value="#{dsf.displayValue}"
+                                                    rendered="#{!dsf.datasetFieldType.allowMultiples and cvocConf.containsKey(dsf.datasetFieldType.id)}"
+                                                    escape="#{dsf.datasetFieldType.isEscapeOutputText()}">
+                                                    <f:passThroughAttribute name="lang" value="#{dataverseSession.localeCode}" />
+                                                    <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('cvoc-url','')}" />
+                                                    <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('protocol','')}" />
+                                                    <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvocConf.get(dsf.datasetFieldType.id).get('managedfields').toString()}" />
+                                                </h:outputText>
+                                                <h:outputText value="#{dsf.displayValue}"
+                                                    rendered="#{!dsf.datasetFieldType.allowMultiples and !cvocConf.containsKey(dsf.datasetFieldType.id)}"
+                                                    escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
+                                                <ui:repeat value="#{dsf.values}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples and cvocConf.containsKey(dsf.datasetFieldType.id)}">
+                                                    <h:outputText value="#{loop.first?'':'; '}#{ value }"
+                                                                  escape="#{dsf.datasetFieldType.isEscapeOutputText()}">
+                                                        <f:passThroughAttribute name="lang" value="#{dataverseSession.localeCode}" />
+                                                        <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvoc.getString('cvoc-url','')}" />
+                                                        <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvoc.getString('protocol','')}" />
+                                                        <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvoc.get('managedfields').toString()}" />
+                                                    </h:outputText>
+                                                </ui:repeat>
+                                                <ui:repeat value="#{dsf.values}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples and !cvocConf.containsKey(dsf.datasetFieldType.id)}">
                                                     <h:outputText value="#{loop.first?'':'; '}#{ value }"
                                                                   escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
                                                 </ui:repeat>
@@ -77,7 +96,7 @@
                                                     </p>
                                                 </ui:fragment>
                                                 <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue">
-                                                    <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">                                           
+                                                    <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">
                                                         <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first}"/>
                                                         <h:outputText value="#{cvPart.value}"
                                                                       escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}"/>
@@ -97,7 +116,6 @@
     </div>
     <!-- Edit Mode -->
     <ui:fragment rendered="${(!empty editMode)}">
-        <c:set var="cvocConf" value="#{DatasetPage.getCVocConf()}"/>
         <p:fragment id="editMetadataFragement">
         <o:importFunctions type="java.util.Collections" />
         <div class="panel-group">
@@ -137,7 +155,6 @@
                                                                     <ui:param name="dsfv" value="#{dsfv}"/>
                                                                     <ui:param name="dsfvIndex" value="#{valCount.index}"/>
                                                                     <ui:param name="cvoc" value="#{cvocConf.containsKey(dsf.datasetFieldType.id)? cvocConf.get(dsf.datasetFieldType.id): null}"/>
-                                                                    <ui:param name="typeid" value="#{dsf.datasetFieldType.id}"/> 
                                                                 </ui:include>
                                                             </div>
                                                             <!-- Add / Remove buttons -->
@@ -227,7 +244,6 @@
                                                                     <ui:param name="dsfv" value="#{subdsf.singleValue}"/>
                                                                     <ui:param name="dsfvIndex" value="0"/>
                                                                     <ui:param name="cvoc" value="#{cvocConf.containsKey(dsf.datasetFieldType.id)? cvocConf.get(dsf.datasetFieldType.id): null}"/>
-                                                                    <ui:param name="typeid" value="#{dsf.datasetFieldType.parentDatasetFieldType.id}"/>
                                                                 </ui:include>
                                                             </ui:fragment>
                                                             <!-- MOVED SELECT ONE TO dataFieldForEdit -->
