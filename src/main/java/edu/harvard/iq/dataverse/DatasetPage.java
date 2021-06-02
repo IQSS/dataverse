@@ -5490,9 +5490,13 @@ public class DatasetPage implements java.io.Serializable {
         return dataFile.getDeleted();
     }
     
+    Map<Long, JsonObject> cachedCvocMap=null;
     public Map<Long, JsonObject> getCVocConf() {
-        logger.info("CVOC says: " + fieldService.getCVocConf().toString());
-        return fieldService.getCVocConf();
+        //Cache this in the view
+        if(cachedCvocMap==null) {
+        cachedCvocMap = fieldService.getCVocConf();
+        }
+        return cachedCvocMap;
     }
     
     public List<String> getVocabList(long id) {
