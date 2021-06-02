@@ -249,8 +249,6 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         
         try (JsonReader jsonReader = Json.createReader(new StringReader(settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf)))) {
         JsonArray cvocConfJsonArray = jsonReader.readArray();
-        logger.info("Size: " + cvocConfJsonArray.size());
-        logger.info("array is " + cvocConfJsonArray.toString());
             for (JsonObject jo : cvocConfJsonArray.getValuesAs(JsonObject.class)) {
                 DatasetFieldType dft = findByNameOpt(jo.getString("field-name"));
                 if(dft!=null) {
@@ -297,18 +295,19 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     public void registerExternalVocabValues(DatasetField df) {
         DatasetFieldType dft =df.getDatasetFieldType(); 
         logger.info("Registering for field: " + dft.getName());
+        JsonObject cvocEntry = getCVocConf().get(dft.getId());
         if(dft.isPrimitive()) {
             for(DatasetFieldValue dfv: df.getDatasetFieldValues()) {
-                registerExternalTerm(dfv.getValue(), getCVocConf().get(dft.getId()).getString("retrieval-uri"));
+                registerExternalTerm(dfv.getValue(), cvocEntry.getString("retrieval-uri"));
             }
             } else {
                 if (df.getDatasetFieldType().isCompound()) {
-                    DatasetFieldType termdft = findByNameOpt(getCVocConf().get(dft.getId()).getString("term-uri-field"));
+                    DatasetFieldType termdft = findByNameOpt(cvocEntry.getString("term-uri-field"));
                     for (DatasetFieldCompoundValue cv : df.getDatasetFieldCompoundValues()) {
                         for (DatasetField cdf : cv.getChildDatasetFields()) {
                             logger.info("Found term uri field type id: " + cdf.getDatasetFieldType().getId());
                             if(cdf.getDatasetFieldType().equals(termdft)) {
-                                registerExternalTerm(cdf.getValue(), getCVocConf().get(dft.getId()).getString("retrieval-uri"));
+                                registerExternalTerm(cdf.getValue(), cvocEntry.getString("retrieval-uri"));
                             }
                         }
                     }
