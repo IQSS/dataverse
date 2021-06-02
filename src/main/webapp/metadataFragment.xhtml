@@ -78,9 +78,9 @@
                                                     <h:outputText value="#{loop.first?'':'; '}#{ value }"
                                                                   escape="#{dsf.datasetFieldType.isEscapeOutputText()}">
                                                         <f:passThroughAttribute name="lang" value="#{dataverseSession.localeCode}" />
-                                                        <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvoc.getString('cvoc-url','')}" />
-                                                        <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvoc.getString('protocol','')}" />
-                                                        <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvoc.get('managedfields').toString()}" />
+                                                        <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('cvoc-url','')}" />
+                                                        <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('protocol','')}" />
+                                                        <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvocConf.get(dsf.datasetFieldType.id).get('managedfields').toString()}" />
                                                     </h:outputText>
                                                 </ui:repeat>
                                                 <ui:repeat value="#{dsf.values}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples and !cvocConf.containsKey(dsf.datasetFieldType.id)}">
