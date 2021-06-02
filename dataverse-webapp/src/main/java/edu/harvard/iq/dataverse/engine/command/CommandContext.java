@@ -22,8 +22,8 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.datafile.FileDownloadServiceBean;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnailService;
+import edu.harvard.iq.dataverse.dataset.DownloadDatasetLogDao;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
-import edu.harvard.iq.dataverse.dataverse.DataverseLinkingService;
 import edu.harvard.iq.dataverse.dataverse.template.TemplateDao;
 import edu.harvard.iq.dataverse.engine.DataverseEngine;
 import edu.harvard.iq.dataverse.globalid.DOIDataCiteServiceBean;
@@ -149,4 +149,6 @@ public interface CommandContext {
     DatasetThumbnailService datasetThumailService();
 
     CitationFactory citationFactory();
+
+    DownloadDatasetLogDao downloadDatasetDao();
 }

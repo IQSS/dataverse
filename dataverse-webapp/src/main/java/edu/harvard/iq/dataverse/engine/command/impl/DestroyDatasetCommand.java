@@ -100,6 +100,9 @@ public class DestroyDatasetCommand extends AbstractVoidCommand {
         }
         Dataverse toReIndex = managedDoomed.getOwner();
 
+        // DownloadDatasetLog entries
+        ctxt.downloadDatasetDao().deleteByDatasetId(managedDoomed.getId());
+
         // dataset
         ctxt.em().remove(managedDoomed);
 
