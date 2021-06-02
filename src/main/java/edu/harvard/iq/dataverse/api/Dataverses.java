@@ -851,9 +851,9 @@ public class Dataverses extends AbstractApiBean {
     @Produces({"application/download"})
     public Response getGuestbookResponsesByDataverse(@PathParam("identifier") String dvIdtf,
             @QueryParam("guestbookId") Long gbId) {
-        Dataverse dv = findDataverse(dvIdtf);
-
+        
         try {
+            Dataverse dv = findDataverseOrDie(dvIdtf);
             String filename = dv.getAlias() + "GBResponses.csv";
             String contentDispositionString = "attachment;filename=" + filename;
             File file = new File(filename);
@@ -872,6 +872,8 @@ public class Dataverses extends AbstractApiBean {
             return response.build();
         } catch (IOException io) {
             return error(Status.BAD_REQUEST, "Failed to produce response file. Exception: " + io.getMessage());
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
 
     }
