@@ -612,7 +612,9 @@ public class DatasetFilesTab implements Serializable {
                                           boolean removeUnusedTags) {
 
         if (bulkUpdateCheckVersion()) {
-            selectedFiles = fetchSelectedFilesForVersion(fetchEditDatasetVersion());
+            workingVersion = fetchEditDatasetVersion();
+            save(workingVersion, false);
+            selectedFiles = fetchSelectedFilesForVersion(workingVersion);
         }
 
         DatasetVersion updatedVersion = datasetFilesTabFacade.updateFileTagsAndCategories(workingVersion.getId(),
@@ -912,6 +914,10 @@ public class DatasetFilesTab implements Serializable {
     }
 
     private String save(DatasetVersion updatedVersion) {
+        return save(updatedVersion, true);
+    }
+
+    private String save(DatasetVersion updatedVersion, boolean printBannerMessage) {
 
         // Validate
         Set<ConstraintViolation> constraintViolations = updatedVersion.validate();
@@ -965,11 +971,13 @@ public class DatasetFilesTab implements Serializable {
             datafileService.finalizeFileDeletes(deleteStorageLocations);
         }
 
-        // must have been a bulk file update or delete:
-        if (bulkFileDeleteInProgress) {
-            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileDeleteSuccess"));
-        } else {
-            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileUpdateSuccess"));
+        if(printBannerMessage) {
+            // must have been a bulk file update or delete:
+            if (bulkFileDeleteInProgress) {
+                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileDeleteSuccess"));
+            } else {
+                JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.bulkFileUpdateSuccess"));
+            }
         }
         bulkFileDeleteInProgress = false;
 
