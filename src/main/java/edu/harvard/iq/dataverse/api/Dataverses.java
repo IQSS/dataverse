@@ -851,34 +851,29 @@ public class Dataverses extends AbstractApiBean {
     @Produces({"application/download"})
     public Response getGuestbookResponsesByDataverse(@PathParam("identifier") String dvIdtf,
             @QueryParam("guestbookId") Long gbId) {
-        Dataverse dv = findDataverse(dvIdtf);       
+        Dataverse dv = findDataverse(dvIdtf);
 
-        try  {
-                    
-        String filename = dv.getAlias() + "GBResponses.csv";
-        String contentDispositionString = "attachment;filename=" + filename;
-        File file = new File(filename);
-        System.out.print("filename: " + filename);
-        ResponseBuilder response = Response.ok((Object) file);
-        response.header("Content-Disposition", contentDispositionString);
+        try {
+            String filename = dv.getAlias() + "GBResponses.csv";
+            String contentDispositionString = "attachment;filename=" + filename;
+            File file = new File(filename);
+            ResponseBuilder response = Response.ok((Object) file);
+            response.header("Content-Disposition", contentDispositionString);
             FileOutputStream outputStream = new FileOutputStream(filename);
             Map<Integer, Object> customQandAs = guestbookResponseService.mapCustomQuestionAnswersAsStrings(dv.getId(), gbId);
 
-            List<Object[]> guestbookResults = guestbookResponseService.getGuestbookResults(dv.getId(), gbId);          
+            List<Object[]> guestbookResults = guestbookResponseService.getGuestbookResults(dv.getId(), gbId);
             outputStream.write("Guestbook, Dataset, Dataset PID, Date, Type, File Name, File Id, File PID, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
             for (Object[] result : guestbookResults) {
                 StringBuilder sb = guestbookResponseService.convertGuestbookResponsesToCSV(customQandAs, result);
                 outputStream.write(sb.toString().getBytes());
                 outputStream.flush();
             }
-
             return response.build();
         } catch (IOException io) {
-            return error(Status.BAD_REQUEST, "exception: " + io.getMessage());
-
+            return error(Status.BAD_REQUEST, "Failed to produce response file. Exception: " + io.getMessage());
         }
 
-      //  return error(Status.BAD_REQUEST, "filler");
     }
 
     @PUT
