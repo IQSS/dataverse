@@ -298,7 +298,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         JsonObject cvocEntry = getCVocConf().get(dft.getId());
         if(dft.isPrimitive()) {
             for(DatasetFieldValue dfv: df.getDatasetFieldValues()) {
-                registerExternalTerm(dfv.getValue(), cvocEntry.getString("retrieval-uri"));
+                registerExternalTerm(dfv.getValue(), cvocEntry.getString("retrieval-uri"), cvocEntry.getString("prefix", null));
             }
             } else {
                 if (df.getDatasetFieldType().isCompound()) {
@@ -307,7 +307,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                         for (DatasetField cdf : cv.getChildDatasetFields()) {
                             logger.info("Found term uri field type id: " + cdf.getDatasetFieldType().getId());
                             if(cdf.getDatasetFieldType().equals(termdft)) {
-                                registerExternalTerm(cdf.getValue(), cvocEntry.getString("retrieval-uri"));
+                                registerExternalTerm(cdf.getValue(), cvocEntry.getString("retrieval-uri"), cvocEntry.getString("prefix", null));
                             }
                         }
                     }
@@ -316,7 +316,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     }
     
     @Asynchronous
-    private void registerExternalTerm(String term, String retrievalUri) {
+    private void registerExternalTerm(String term, String retrievalUri, String prefix) {
         if(term.isBlank()) {
             logger.fine("Ingoring blank term");
             return;
@@ -332,7 +332,8 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 evv = new ExternalVocabularyValue(term, null);
             }
             if (evv.getValue() == null) {
-                retrievalUri = retrievalUri.replace("{0}", term);
+                String adjustedTerm = (prefix==null)? term: term.replace(prefix, "");
+                retrievalUri = retrievalUri.replace("{0}", adjustedTerm);
                 logger.info("Didn't find " + term + ", calling " + retrievalUri);
                 try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
                     HttpGet httpGet = new HttpGet(retrievalUri);
