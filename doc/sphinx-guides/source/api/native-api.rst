@@ -2091,7 +2091,7 @@ Note: The ``id`` returned in the json response is the id of the file metadata ve
 Adding File Metadata
 ~~~~~~~~~~~~~~~~~~~~
 
-This API call requires a ``jsonString`` expressing the metadata of multiple files.  It adds file metadata to the database table where the file already copied to the storage.
+This API call requires a ``jsonString`` expressing the metadata of multiple files. It adds file metadata to the database table where the file has already been copied to the storage.
 
 The jsonData object includes values for:
 
