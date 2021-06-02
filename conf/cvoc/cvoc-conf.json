@@ -22,7 +22,7 @@
           "js-url":"/resources/js/people.js",
           "protocol": "orcid",
           "retrieval-uri":"https://pub.orcid.org/v3.0/{0}/person",
-          "prefix":"https://orcid.org",
+          "prefix":"https://orcid.org/",
           "vocabs":["orcid"],
           "managedfields": {}
         },
