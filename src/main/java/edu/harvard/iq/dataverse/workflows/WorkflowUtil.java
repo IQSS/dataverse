@@ -19,7 +19,7 @@ import edu.harvard.iq.dataverse.workflow.step.Success;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepResult;
 
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
+import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 
 public class WorkflowUtil {
 
