@@ -854,6 +854,15 @@ public class Dataverses extends AbstractApiBean {
         
         try {
             Dataverse dv = findDataverseOrDie(dvIdtf);
+            User u = findUserOrDie();
+            DataverseRequest req = createDataverseRequest(u);
+            if (permissionSvc.request(req)
+                    .on(dv)
+                    .has(Permission.EditDataverse)) {
+            } else {
+                return error(Status.FORBIDDEN, "Not authorized");
+            }
+            
             String filename = dv.getAlias() + "GBResponses.csv";
             String contentDispositionString = "attachment;filename=" + filename;
             File file = new File(filename);
