@@ -3606,6 +3606,7 @@ public class DatasetPage implements java.io.Serializable {
         } else {
             License license = licenseServiceBean.getById(licenseId);
             terms.setLicense(license);
+            terms.clearCustomTermsVariables();
         }
     }
 

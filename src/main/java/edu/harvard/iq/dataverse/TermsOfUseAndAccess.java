@@ -278,6 +278,17 @@ public class TermsOfUseAndAccess implements Serializable {
         edu.harvard.iq.dataverse.License license = new edu.harvard.iq.dataverse.License("CC0", shortDescription, uri, iconUrl, true);
         return license;
     }
+
+    public void clearCustomTermsVariables(){
+        termsOfUse = null;
+        confidentialityDeclaration = null;
+        specialPermissions = null;
+        restrictions = null;
+        citationRequirements = null;
+        depositorRequirements = null;
+        conditions = null;
+        disclaimer = null;
+    }
     
     /**
      * @todo What does the GUI use for a default license? What does the "native"
