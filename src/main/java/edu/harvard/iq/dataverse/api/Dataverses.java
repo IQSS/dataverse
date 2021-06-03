@@ -456,10 +456,10 @@ public class Dataverses extends AbstractApiBean {
             (ds.getAuthority().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Authority))&& 
             ds.getProtocol().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol))&&
             ds.getIdentifier().startsWith(settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder)))) {
-            	throw new BadRequestException("Cannot recreate a dataset that has a PID that doesn't match the server's settings");
+                throw new BadRequestException("Cannot recreate a dataset that has a PID that doesn't match the server's settings");
             }
             if(!datasetSvc.isIdentifierLocallyUnique(ds)) {
-            	throw new BadRequestException("Cannot recreate a dataset whose PID is already in use");
+                throw new BadRequestException("Cannot recreate a dataset whose PID is already in use");
             }
 
             
@@ -470,7 +470,7 @@ public class Dataverses extends AbstractApiBean {
 
             DatasetVersion version = ds.getVersions().get(0);
             if (!version.isPublished()) {
-            	throw new BadRequestException("Cannot recreate a dataset that hasn't been published.");
+                throw new BadRequestException("Cannot recreate a dataset that hasn't been published.");
             }
             //While the datasetversion whose metadata we're importing has been published, we consider it in draft until the API caller adds files and then completes the migration
             version.setVersionState(DatasetVersion.VersionState.DRAFT);
