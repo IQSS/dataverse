@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.authorization.providers.builtin;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.mindrot.jbcrypt.BCrypt;
 //import org.primefaces.util.Base64;
 import java.util.Base64;
