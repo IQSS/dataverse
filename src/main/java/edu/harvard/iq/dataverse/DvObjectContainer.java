@@ -6,7 +6,7 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.util.Locale;
 
 import javax.persistence.MappedSuperclass;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * A {@link DvObject} that can contain other {@link DvObject}s.

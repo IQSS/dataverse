@@ -23,7 +23,7 @@ import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
 import edu.harvard.iq.dataverse.util.DateUtil;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.hibernate.validator.constraints.NotBlank;
 
 /**
