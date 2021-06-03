@@ -497,7 +497,7 @@ public class Datasets extends AbstractApiBean {
         
         String indexFileName = folderName.equals("") ? ".index.html"
                 : ".index-" + folderName.replace('/', '_') + ".html";
-        response.setHeader("Content-disposition", "attachment; filename=\"" + indexFileName + "\"");
+        response.setHeader("Content-disposition", "filename=\"" + indexFileName + "\"");
 
         
         return Response.ok()
