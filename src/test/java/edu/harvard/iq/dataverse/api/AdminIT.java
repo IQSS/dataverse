@@ -74,9 +74,7 @@ public class AdminIT {
 
         Response deleteSuperuser = UtilIT.deleteUser(superuserUsername);
         assertEquals(200, deleteSuperuser.getStatusCode());
-
     }
-
     
     @Test
     public void testFilterAuthenticatedUsersForbidden() throws Exception {

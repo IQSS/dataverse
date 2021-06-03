@@ -825,13 +825,19 @@ through the Dataverse application.
 
 For example, if you have a dataset version with 2 files, one with the folder named "subfolder":
 
+|image1|
+
 .. |image1| image:: ./img/dataset_page_files_view.png
 
 or, as viewed as a tree on the dataset page:
 
+|image2|
+
 .. |image2| image:: ./img/dataset_page_tree_view.png
 
 The output of the API for the top-level folder (``/api/datasets/{dataset}/dirindex/``) will be as follows:
+
+|image3|
 
 .. |image3| image:: ./img/index_view_top.png
 
@@ -850,6 +856,8 @@ with the underlying html source:
     </table></body></html>
 
 The ``/dirindex/?folder=subfolder`` link above will produce the following view:
+
+|image4|
 
 .. |image4| image:: ./img/index_view_subfolder.png
 
