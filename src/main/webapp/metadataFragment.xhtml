@@ -75,7 +75,8 @@
                                                     rendered="#{!dsf.datasetFieldType.allowMultiples and !cvocConf.containsKey(dsf.datasetFieldType.id)}"
                                                     escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
                                                 <ui:repeat value="#{dsf.values}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples and cvocConf.containsKey(dsf.datasetFieldType.id)}">
-                                                    <h:outputText value="#{loop.first?'':'; '}#{ value }"
+                                                    <h:outputText value="#{loop.first?'':'; '}"/>
+                                                    <h:outputText value="#{ value }"
                                                                   escape="#{dsf.datasetFieldType.isEscapeOutputText()}">
                                                         <f:passThroughAttribute name="lang" value="#{dataverseSession.localeCode}" />
                                                         <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('cvoc-url','')}" />
