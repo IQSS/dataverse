@@ -1011,7 +1011,8 @@ progress::-webkit-progress-value {
         display: inline!important;
 }
 .select2-container .select2-selection--single .select2-selection__rendered {
-        display:inline!important;
+        display:inline-block!important;
+        max-width:90%
 }
 .select2-selection__clear, .select2-selection__rendered {
         vertical-align: -webkit-baseline-middle;
@@ -1022,21 +1023,11 @@ progress::-webkit-progress-value {
 }
 .select2-rendered__match {
         font-weight:600;
-
-ul .ui-autocomplete { list-style : none;
-    list-style-type: none;
-    padding: 0px;
-    margin: 0px;
-    max-height: 150px;
-    overflow-y: auto;
-    /* prevent horizontal scrollbar */
-    overflow-x: hidden;
-    /* add padding to account for vertical scrollbar */
-    padding-right: 20px;
-    z-index: 1000;
 }
-
-input[type='text'].ui-autocomplete-loading {
-    background: url('/resources/images/ajax-loading.gif') no-repeat right
-        center;
+.cvoc-vocab {
+padding-left:0px;
+padding-right:0px;
+}
+.cvoc-term {
+padding-right:0px;
 }
