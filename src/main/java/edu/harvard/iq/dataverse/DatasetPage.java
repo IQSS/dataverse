@@ -349,6 +349,15 @@ public class DatasetPage implements java.io.Serializable {
         this.licenseId = licenseId;
     }
 
+    public License getSelectedLicenseById(){
+        try {
+            return licenseServiceBean.getById(licenseId);
+        } catch (FetchException e) {
+            logger.log(Level.SEVERE,"Exception: " + e.getMessage());
+        }
+        return null;
+    }
+
     // TODO: Consider renaming "configureTools" to "fileConfigureTools".
     List<ExternalTool> configureTools = new ArrayList<>();
     // TODO: Consider renaming "exploreTools" to "fileExploreTools".
