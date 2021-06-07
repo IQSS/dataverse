@@ -559,6 +559,10 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
 
+    public boolean isDoiReserved() {
+        return dataset.isIdentifierRegistered();
+    }
+
     public boolean isLockedBy(String reason) {
         return dataset.isLocked() && canUpdateDataset() && dataset.isLockedFor(reason);
     }

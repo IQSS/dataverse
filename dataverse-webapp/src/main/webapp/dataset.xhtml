@@ -122,6 +122,12 @@
                                 <h:outputText escape="false" value="#{bundle['dataset.privateurl.infoMessageReviewer.details']}"/>
                             </p>
                         </div>
+                        <div jsf:rendered="#{!DatasetPage.isDoiReserved()}" class="alert alert-info" role="alert" aria-atomic="true">
+                            <p class="text-block">
+                                <span class="glyphicon glyphicon-exclamation-sign"></span>&#160;
+                                <h:outputText escape="false" value="#{bundle['dataset.datacite.reservation']}"/>
+                            </p>
+                        </div>
                     </p:outputPanel>
                     <!-- END static Messages -->
                     <div id="topDatasetBlock">
