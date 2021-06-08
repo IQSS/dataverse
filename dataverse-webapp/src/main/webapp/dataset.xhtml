@@ -139,10 +139,10 @@
                                 <div id="metrics-label" class="col-xs-4 small text-center">
                                     <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}
                                 </div>
-                                <div id="metrics-content" class="col-xs-8 small text-center">
+                                <div jsf:id="metrics-content" id="metrics-content" class="col-xs-8 small text-center">
                                     <h:outputFormat styleClass="metric metrics-downloads"
                                                     value="{0} #{bundle['metrics.downloads']}">
-                                        <f:param value="#{guestbookResponseService.getCountGuestbookResponsesByDatasetId(DatasetPage.dataset.id)}"/>
+                                        <f:param value="#{DatasetPage.datasetDownloadCount}"/>
                                     </h:outputFormat>
                                     <span jsf:rendered="#{DatasetPage.datasetCitationsCount gt 0}"
                                           class="metric metrics-downloads">

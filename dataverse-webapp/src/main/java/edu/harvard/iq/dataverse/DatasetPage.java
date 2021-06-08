@@ -31,6 +31,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.error.DataverseError;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.ExporterType;
+import edu.harvard.iq.dataverse.guestbook.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.MapLayerMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseIcon;
@@ -129,6 +130,8 @@ public class DatasetPage implements java.io.Serializable {
     private DatasetPageFacade datasetPageFacade;
     @Inject
     private DatasetCitationsCountRepository datasetCitationsCountRepository;
+    @Inject
+    private GuestbookResponseServiceBean guestbookResponseService;
 
     private Dataset dataset = new Dataset();
 
@@ -153,6 +156,7 @@ public class DatasetPage implements java.io.Serializable {
     private String contributorMessageToCurator;
     private Integer fileSize;
     private int datasetCitationsCount;
+    private Long datasetDownloadCount;
 
     private List<DatasetFileTermDifferenceItem> fileTermDiffsWithLatestReleased;
 
@@ -387,6 +391,10 @@ public class DatasetPage implements java.io.Serializable {
         return datasetCitationsCount;
     }
 
+    public Long getDatasetDownloadCount() {
+        return datasetDownloadCount;
+    }
+
     /**
      * Create a hashmap consisting of { DataFile.id : MapLayerMetadata object}
      * <p>
@@ -515,6 +523,7 @@ public class DatasetPage implements java.io.Serializable {
             datasetCitationsCount = datasetCitationsCountRepository.findByDatasetId(dataset.getId())
                     .map(DatasetCitationsCount::getCitationsCount).orElse(0);
 
+            fetchMetricsDownloadCount();
 
             if (initFull) {
                 // init the list of FileMetadatas
@@ -547,6 +556,10 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         return null;
+    }
+
+    public void fetchMetricsDownloadCount() {
+        datasetDownloadCount = guestbookResponseService.getCountGuestbookResponsesByDatasetId(dataset.getId());
     }
 
     public boolean isViewedFromPrivateUrl() {

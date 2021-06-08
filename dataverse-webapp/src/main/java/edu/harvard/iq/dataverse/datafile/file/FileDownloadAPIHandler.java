@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.api.ZipperWrapper;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.common.NullSafeJsonBuilder;
-import edu.harvard.iq.dataverse.dashboard.DashboardUsersService;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIOConstants;
@@ -143,7 +142,7 @@ public class FileDownloadAPIHandler {
                                                             .getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n");
                     } else {
 
-                        if (gbrecs && file.isReleased()) {
+                        if (!gbrecs && file.isReleased()) {
                             GuestbookResponse gbr = guestbookResponseService.initAPIGuestbookResponse(file.getOwner(), file, session, apiTokenUser);
                             guestbookResponseService.save(gbr);
                         }

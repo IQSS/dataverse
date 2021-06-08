@@ -34,7 +34,6 @@ import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.persistence.dataset.TermsOfUseAndAccess;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
 
@@ -68,8 +67,6 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
-
-import static edu.harvard.iq.dataverse.dataaccess.S3AccessIO.S3_STORAGE_IDENTIFIER_PREFIX;
 
 
 /**
