@@ -218,11 +218,27 @@ public class Files extends AbstractApiBean {
         }
 
         // (3) Get the file name and content type
-        if(null == contentDispositionHeader) {
-             return error(BAD_REQUEST, "You must upload a file.");
+        String newFilename = null;
+        String newFileContentType = null;
+        String newStorageIdentifier = null;
+        if (null == contentDispositionHeader) {
+            if (optionalFileParams.hasStorageIdentifier()) {
+                newStorageIdentifier = optionalFileParams.getStorageIdentifier();
+                // ToDo - check that storageIdentifier is valid
+                if (optionalFileParams.hasFileName()) {
+                    newFilename = optionalFileParams.getFileName();
+                    if (optionalFileParams.hasMimetype()) {
+                        newFileContentType = optionalFileParams.getMimeType();
+                    }
+                }
+            } else {
+                return error(BAD_REQUEST,
+                        "You must upload a file or provide a storageidentifier, filename, and mimetype.");
+            }
+        } else {
+            newFilename = contentDispositionHeader.getFileName();
+            newFileContentType = formDataBodyPart.getMediaType().toString();
         }
-        String newFilename = contentDispositionHeader.getFileName();
-        String newFileContentType = formDataBodyPart.getMediaType().toString();
         
         // (4) Create the AddReplaceFileHelper object
         msg("REPLACE!");
@@ -254,14 +270,16 @@ public class Files extends AbstractApiBean {
             addFileHelper.runForceReplaceFile(fileToReplaceId,
                                     newFilename,
                                     newFileContentType,
+                                    newStorageIdentifier,
                                     testFileInputStream,
                                     optionalFileParams);
         }else{
             addFileHelper.runReplaceFile(fileToReplaceId,
                                     newFilename,
                                     newFileContentType,
+                                    newStorageIdentifier,
                                     testFileInputStream,
-                                    optionalFileParams);            
+                                    optionalFileParams);
         }    
             
         msg("we're back.....");

@@ -1,17 +1,36 @@
 package edu.harvard.iq.dataverse.util;
 
+import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+
 import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.Before;
 
+@ExtendWith(MockitoExtension.class)
+@TestMethodOrder(OrderAnnotation.class)
 public class MailUtilTest {
 
     UserNotification userNotification = new UserNotification();
 
+    @Mock
+    DataverseServiceBean dataverseSvc;
+    @Mock
+    SettingsServiceBean settingsSvc;
+    
     @Before
     public void setUp() {
         userNotification = new UserNotification();
+
     }
 
     @Test
@@ -29,7 +48,13 @@ public class MailUtilTest {
     }
 
     @Test
+    @Order(1)
     public void testSubjectCreateAccount() {
+        Mockito.when(settingsSvc.getValueForKey(SettingsServiceBean.Key.InstallationName)).thenReturn(null);
+        //And configure the mock DataverseService to pretend the root collection name is as shown
+        Mockito.when(dataverseSvc.getRootDataverseName()).thenReturn("LibraScholar");
+        BrandingUtil.injectServices(dataverseSvc, settingsSvc);
+
         userNotification.setType(UserNotification.Type.CREATEACC);
         assertEquals("LibraScholar: Your account has been created", MailUtil.getSubjectTextBasedOnNotification(userNotification, null));
     }

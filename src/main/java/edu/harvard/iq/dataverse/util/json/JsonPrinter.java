@@ -112,6 +112,8 @@ public class JsonPrinter {
             .add("lastName", authenticatedUser.getLastName())
             .add("email", authenticatedUser.getEmail())
             .add("superuser", authenticatedUser.isSuperuser())
+            .add("deactivated", authenticatedUser.isDeactivated())
+            .add("deactivatedTime", authenticatedUser.getDeactivatedTime())
             .add("affiliation", authenticatedUser.getAffiliation())
             .add("position", authenticatedUser.getPosition())
             .add("persistentUserId", authenticatedUser.getAuthenticatedUserLookup().getPersistentUserId())
@@ -324,7 +326,7 @@ public class JsonPrinter {
                 .add("persistentUrl", ds.getPersistentURL())
                 .add("protocol", ds.getProtocol())
                 .add("authority", ds.getAuthority())
-                .add("publisher", BrandingUtil.getRootDataverseCollectionName())
+                .add("publisher", BrandingUtil.getInstallationBrandName())
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
                 .add("storageIdentifier", ds.getStorageIdentifier());
     }
@@ -562,6 +564,8 @@ public class JsonPrinter {
                 .add("formatVersion", auxFile.getFormatVersion()) // "label" is the filename
                 .add("origin", auxFile.getOrigin()) 
                 .add("isPublic", auxFile.getIsPublic())
+                .add("type", auxFile.getType())
+                .add("contentType", auxFile.getContentType())
                 .add("fileSize", auxFile.getFileSize())
                 .add("checksum", auxFile.getChecksum())
                 .add("dataFile", JsonPrinter.json(auxFile.getDataFile()));

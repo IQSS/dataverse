@@ -10,6 +10,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -202,9 +205,13 @@ public class JsonResponseBuilder {
      * @param logger Provide a logger instance to write to
      * @param level Provide a level at which this should be logged
      * @param ex An optional exception to be included in the log message.
+     * @param includeStackTrace whether to also include the stack trace 
      * @return The unmodified builder.
      */
     public JsonResponseBuilder log(Logger logger, Level level, Optional<Throwable> ex) {
+        return log(logger, level, ex, false);
+    }
+    public JsonResponseBuilder log(Logger logger, Level level, Optional<Throwable> ex, boolean includeStackTrace) {
         if ( ! logger.isLoggable(level) || alreadyLogged )
             return this;
         
@@ -217,13 +224,16 @@ public class JsonResponseBuilder {
         if (ex.isPresent()) {
             metadata.append("|");
             logger.log(level, metadata.toString(), ex);
+            if(includeStackTrace) {
+                logger.log(level, ExceptionUtils.getStackTrace(ex.get()));
+            }
         } else {
             logger.log(level, metadata.toString());
         }
-        
         this.alreadyLogged = true;
         return this;
     }
+
     
     /**
      * Build a complete request URL for logging purposes.
@@ -266,4 +276,5 @@ public class JsonResponseBuilder {
             default: return Optional.empty();
         }
     }
+
 }
