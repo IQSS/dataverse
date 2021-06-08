@@ -220,7 +220,7 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
                                 .add("version", guestbookResponse.getDatasetVersion().getSemanticVersion()));
                         } catch (NullPointerException npe) {
                             //Legacy/bad db entries
-                            logger.warning("Dataset id:" + guestbookResponse.getDatasetVersion().getDataset().getId() + " does not have required info.");
+                            logger.warning("Guestbook id:" + guestbookResponse.getId() + " does not have required info.");
                         }
                     }
                     job.add("items", jab);
