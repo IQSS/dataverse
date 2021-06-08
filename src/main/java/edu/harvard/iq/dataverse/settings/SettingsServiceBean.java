@@ -437,9 +437,15 @@ public class SettingsServiceBean {
                 return null;
         }
     
-        public ConfigScope getScope() { return scope; }
-        public String getKey() { return key; }
-        public String getScopedKey() { return scope.getScopedKey(getKey()); }
+        public ConfigScope getScope() {
+            return scope;
+        }
+        public String getKey() {
+            return key;
+        }
+        public String getScopedKey() {
+            return scope.getScopedKey(getKey());
+        }
     
         @Override
         public String toString() {
@@ -460,7 +466,8 @@ public class SettingsServiceBean {
      */
     public String get( String name ) {
         // null safety and don't lookup empty or really short names
-        if (name == null || name.length() < 2) { return null; }
+        if (name == null || name.length() < 2)
+            return null;
         
         // try to lookup the key
         Key namedKey = Key.lookupKey(name);
@@ -489,7 +496,8 @@ public class SettingsServiceBean {
      */
     public String getValueForKey( Key key ) {
         // null safety
-        if (key == null) { return null; }
+        if (key == null)
+            return null;
         
         String value;
         // try to get from mpconfig

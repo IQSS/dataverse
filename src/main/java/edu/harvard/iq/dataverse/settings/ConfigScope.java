@@ -84,7 +84,9 @@ public enum ConfigScope {
      * @param key The key name to use
      * @return The scoped key
      */
-    public String getScopedKey(String key) { return toScope()+"."+key; }
+    public String getScopedKey(String key) {
+        return toScope()+"."+key;
+    }
     
     // GETTERS
     public String getPrefix() {
