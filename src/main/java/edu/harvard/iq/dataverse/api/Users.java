@@ -14,9 +14,14 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetUserTracesCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.MergeInAccountCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeAllRolesCommand;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.json.JsonObjectBuilder;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -214,7 +219,23 @@ public class Users extends AbstractApiBean {
     public Response getTraces(@PathParam("identifier") String identifier) {
         try {
             AuthenticatedUser userToQuery = authSvc.getAuthenticatedUser(identifier);
-            JsonObjectBuilder jsonObj = execCommand(new GetUserTracesCommand(createDataverseRequest(findUserOrDie()), userToQuery));
+            JsonObjectBuilder jsonObj = execCommand(new GetUserTracesCommand(createDataverseRequest(findUserOrDie()), userToQuery, null));
+            return ok(jsonObj);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    private List<String> elements = Arrays.asList("roleAssignments","dataversCreator", "dataversePublisher","datasetCreator", "datasetPublisher","dataFileCreator","dataFilePublisher","datasetVersionUsers","explicitGroups","guestbookEntries", "savedSearches");
+    @GET
+    @Path("{identifier}/traces/{element}")
+    public Response getTraces(@PathParam("identifier") String identifier, @PathParam("element") String element) {
+        try {
+            AuthenticatedUser userToQuery = authSvc.getAuthenticatedUser(identifier);
+            if(!elements.contains(element)) {
+                throw new BadRequestException("Not a valid element");
+            }
+            JsonObjectBuilder jsonObj = execCommand(new GetUserTracesCommand(createDataverseRequest(findUserOrDie()), userToQuery, null));
             return ok(jsonObj);
         } catch (WrappedResponse ex) {
             return ex.getResponse();
