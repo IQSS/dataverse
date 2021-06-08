@@ -596,8 +596,9 @@ In order to retrieve a file containing a list of Guestbook Responses in csv form
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
   export ID=root
+  export GUESTBOOK_ID=root
 
-  curl -O -J -H  X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ID/guestbookResponses?guestbookId=1
+  curl -O -J -H  X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ID/guestbookResponses?guestbookId=$GUESTBOOK_ID
 
 The fully expanded example above (without environment variables) looks like this:
 
