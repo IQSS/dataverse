@@ -12,7 +12,12 @@
   "vocab-uri" : "http://skos.um.es/unescothes/CS000",
   "term-parent-uri": "",
   "vocabs":["unesco","stw","agrovoc"],
-  "managedfields": {"vocabularyName":"cvocDemoVocabulary", "termName":"cvocDemoTerm", "vocabularyUri":"cvocDemoVocabularyURI"}
+  "managed-fields": {"vocabularyName":"cvocDemoVocabulary", "termName":"cvocDemoTerm", "vocabularyUri":"cvocDemoVocabularyURI"},
+  "retrieval-filtering": {
+          "termName": {"pattern": "{0}", "params":["/graph/uri=@id/prefLabel"]},
+          "vocabularyName": {"pattern": "{0}", "params":["/graph/type=skos:ConceptScheme/prefLabel"]},
+          "vocabularyUri": {"pattern": "{0}", "params":["/graph/type=skos:ConceptScheme/uri"]}
+  }
 },
 {
           "field-name":"creator",
@@ -24,7 +29,12 @@
           "retrieval-uri":"https://pub.orcid.org/v3.0/{0}/person",
           "prefix":"https://orcid.org/",
           "vocabs":["orcid"],
-          "managedfields": {}
+          "managed-fields": {"personName":"authorName", "scheme": "authorIdentifierScheme", "@id":"authorIdentifier"},
+          "retrieval-filtering": {
+            "personName": {"pattern": "{0}, {1}", "params":["/name/given-names/value","/name/family-name/value"]},
+            "@id": {"pattern": "{0}", "params":["@id"]},
+            "scheme":{"pattern":"ORCID"}
+          }
         },
 {
         "field-name":"skosterm",
@@ -37,6 +47,11 @@
         "protocol": "notskosmos",
         "retrieval-uri":"https://skosmos.dev.finto.fi/rest/v1/data?uri={0}",
         "vocabs":{"unesco": "http://skos.um.es/unescothes/CS000"},
-        "managedfields": {}
+        "managed-fields": {"vocabularyName":"cvocDemoVocabulary", "termName":"cvocDemoTerm", "vocabularyUri":"cvocDemoVocabularyURI"},
+        "retrieval-filtering": {
+          "termName": {"pattern": "{0}", "params":["/graph/uri=@id/prefLabel"]},
+          "vocabularyName": {"pattern": "{0}", "params":["/graph/type=skos:ConceptScheme/prefLabel"]},
+          "vocabularyUri": {"pattern": "{0}", "params":["/graph/type=skos:ConceptScheme/uri"]}
+        }
 }
 ]

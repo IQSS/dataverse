@@ -5,9 +5,13 @@ import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,8 +23,10 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonException;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.json.JsonString;
+import javax.json.JsonValue;
 import javax.json.stream.JsonParsingException;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -298,7 +304,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         JsonObject cvocEntry = getCVocConf().get(dft.getId());
         if(dft.isPrimitive()) {
             for(DatasetFieldValue dfv: df.getDatasetFieldValues()) {
-                registerExternalTerm(dfv.getValue(), cvocEntry.getString("retrieval-uri"), cvocEntry.getString("prefix", null));
+                registerExternalTerm(cvocEntry, dfv.getValue(), cvocEntry.getString("retrieval-uri"), cvocEntry.getString("prefix", null));
             }
             } else {
                 if (df.getDatasetFieldType().isCompound()) {
@@ -307,7 +313,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                         for (DatasetField cdf : cv.getChildDatasetFields()) {
                             logger.info("Found term uri field type id: " + cdf.getDatasetFieldType().getId());
                             if(cdf.getDatasetFieldType().equals(termdft)) {
-                                registerExternalTerm(cdf.getValue(), cvocEntry.getString("retrieval-uri"), cvocEntry.getString("prefix", null));
+                                registerExternalTerm(cvocEntry, cdf.getValue(), cvocEntry.getString("retrieval-uri"), cvocEntry.getString("prefix", null));
                             }
                         }
                     }
@@ -316,7 +322,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     }
     
     @Asynchronous
-    private void registerExternalTerm(String term, String retrievalUri, String prefix) {
+    private void registerExternalTerm(JsonObject cvocEntry, String term, String retrievalUri, String prefix) {
         if(term.isBlank()) {
             logger.fine("Ingoring blank term");
             return;
@@ -345,7 +351,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                     if (statusCode == 200) {
                         logger.fine("Returned data: " + data);
                         try (JsonReader jsonReader = Json.createReader(new StringReader(data))) {
-                            String dataObj =jsonReader.readObject().toString(); 
+                            String dataObj =filterResponse(cvocEntry, jsonReader.readObject(), term).toString(); 
                             evv.setValue(dataObj);
                             logger.fine("JsonObject: " + dataObj);
                             em.merge(evv);
@@ -367,6 +373,104 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             logger.fine("Term is not a URI: " + term);
         }
 
+    }
+
+    private JsonObject filterResponse(JsonObject cvocEntry, JsonObject readObject, String termUri) {
+
+        JsonObjectBuilder job = Json.createObjectBuilder();
+        JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
+        logger.info("RF: " + filtering.toString());
+        JsonObject managedFields = cvocEntry.getJsonObject("managed-fields");
+        logger.info("MF: " + managedFields.toString());
+        String fieldName = null; 
+        for (String filterKey : filtering.keySet()) {
+            try {
+            fieldName = managedFields.getString(filterKey);
+            logger.info("Looking for : " + fieldName + " as " + filterKey);
+            JsonObject filter = filtering.getJsonObject(filterKey);
+            logger.info("F: " + filter.toString());
+            JsonArray params = filter.getJsonArray("params");
+            if(params==null) {
+                params = Json.createArrayBuilder().build();
+            }
+            logger.info("Params: " + params.toString());
+            List<String> vals = new ArrayList<String>();
+            for (int i = 0; i < params.size(); i++) {
+                String param = params.getString(i);
+                if (param.startsWith("/")) {
+                    // Remove leading /
+                    param = param.substring(1);
+                    String[] pathParts = param.split("/");
+                    logger.info("PP: " + String.join(", ", pathParts));
+                    JsonValue curPath = readObject;
+                    for (int j = 0; j < pathParts.length - 1; j++) {
+                        if (pathParts[j].contains("=")) {
+                            JsonArray arr = ((JsonArray) curPath);
+                            for (int k = 0; k < arr.size(); k++) {
+                                String[] keyVal = pathParts[j].split("=");
+                                logger.info("Looking for object where " + keyVal[0] + " is " + keyVal[1]);
+                                JsonObject jo = arr.getJsonObject(k);
+                                String val = jo.getString(keyVal[0]);
+                                String expected = keyVal[1];
+                                if (expected.equals("@id")) {
+                                    expected = termUri;
+                                }
+                                if (val.equals(expected)) {
+                                    logger.info("Found: " + jo.toString());
+                                    curPath = jo;
+                                    break;
+                                }
+                            }
+                        } else {
+                            curPath = ((JsonObject) curPath).get(pathParts[j]);
+                            logger.info("Found next Path object " + curPath.toString());
+                        }
+                    }
+                    JsonValue jv = ((JsonObject) curPath).get(pathParts[pathParts.length - 1]);
+                    if (jv.getValueType().equals(JsonValue.ValueType.STRING)) {
+                        vals.add(i, ((JsonString) jv).getString());
+                    } else {
+                        vals.add(i, jv.toString());
+                    }
+                    logger.info("Added param value: " + i + ": " + vals.get(i));
+                } else {
+                    logger.info("Param is: " + param);
+                    //param is not a path - either a reference to the term URI
+                    if (param.equals("@id")) {
+                        logger.info("Adding id param: " + termUri);
+                        vals.add(i, termUri);
+                    } else {
+                        //or a hardcoded value
+                        logger.info("Adding hardcoded param: " + param);
+                        vals.add(i, param);
+                    }
+                }
+            }
+            //Shortcut: nominally using a pattern of {0} and a param that is @id or hardcoded value allows the same options as letting the pattern itself be @id or a hardcoded value
+            String pattern = filter.getString("pattern");
+            logger.info("Pattern: " + pattern);
+            if (pattern.equals("@id")) {
+                logger.info("Added #id pattern: " + fieldName + ": " + termUri);
+                job.add(fieldName, termUri);
+            } else if (pattern.contains("{")) {
+                String result = MessageFormat.format(pattern, vals.toArray());
+                logger.info("Result: " + result);
+                job.add(fieldName, result);
+                logger.info("Added : " + fieldName + ": " + result);
+            } else {
+                logger.info("Added hardcoded pattern: " + fieldName + ": " + pattern);
+                job.add(fieldName, pattern);
+            }
+        } catch (Exception e) {
+                logger.info("External Vocabulary: " + termUri + " - Failed to find value for " + fieldName + ": " + e.getMessage());
+            }
+        }
+        JsonObject filteredResponse = job.build();
+        if(filteredResponse.isEmpty()) {
+            return readObject;
+        } else {
+            return filteredResponse;
+        }
     }
     
     /*
