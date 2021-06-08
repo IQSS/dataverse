@@ -246,7 +246,7 @@ public class Users extends AbstractApiBean {
             if(!elements.contains(element)) {
                 throw new BadRequestException("Not a valid element");
             }
-            JsonObjectBuilder jsonObj = execCommand(new GetUserTracesCommand(createDataverseRequest(findUserOrDie()), userToQuery, null));
+            JsonObjectBuilder jsonObj = execCommand(new GetUserTracesCommand(createDataverseRequest(findUserOrDie()), userToQuery, element));
             
             List<Variant> vars = Variant
                     .mediaTypes(MediaType.valueOf(FileUtil.MIME_TYPE_CSV), MediaType.APPLICATION_JSON_TYPE)
@@ -263,7 +263,7 @@ public class Users extends AbstractApiBean {
             } catch(Exception e) {
                 return ok(jsonObj);
             }
-            return ok(FileUtil.jsonArrayOfObjectsToCSV(items, items.getJsonObject(0).keySet().toArray(new String[0])), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "filedownloads.csv");
+            return ok(FileUtil.jsonArrayOfObjectsToCSV(items, items.getJsonObject(0).keySet().toArray(new String[0])), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), element + ".csv");
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
