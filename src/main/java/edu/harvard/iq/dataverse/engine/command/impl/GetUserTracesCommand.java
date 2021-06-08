@@ -20,6 +20,8 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
+
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -28,6 +30,8 @@ import javax.json.JsonObjectBuilder;
 @RequiredPermissions({})
 public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
 
+    private static final Logger logger = Logger.getLogger(GetUserTracesCommand.class.getCanonicalName());
+    
     private DataverseRequest request;
     private AuthenticatedUser user;
     private String element;
@@ -205,6 +209,7 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
                 if (element != null) {
                     JsonArrayBuilder jab = Json.createArrayBuilder();
                     for (GuestbookResponse guestbookResponse : guestbookResponses) {
+                        try {
                         jab.add(Json.createObjectBuilder()
                                 .add("id", guestbookResponse.getId())
                                 .add("downloadType", guestbookResponse.getDownloadtype())
@@ -213,6 +218,10 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
                                 .add("guestbookName", guestbookResponse.getGuestbook().getName())
                                 .add("dataset", guestbookResponse.getDatasetVersion().getDataset().getGlobalId().asString())
                                 .add("version", guestbookResponse.getDatasetVersion().getSemanticVersion()));
+                        } catch (NullPointerException npe) {
+                            //Legacy/bad db entries
+                            logger.warning("Dataset id:" + guestbookResponse.getDatasetVersion().getDataset().getId() + " does not have required info.");
+                        }
                     }
                     job.add("items", jab);
                 }
