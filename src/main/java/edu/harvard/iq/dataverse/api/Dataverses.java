@@ -102,6 +102,7 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
@@ -121,6 +122,7 @@ import javax.xml.stream.XMLStreamException;
 public class Dataverses extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Dataverses.class.getCanonicalName());
+    private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
     @EJB
     ExplicitGroupServiceBean explicitGroupSvc;
@@ -863,7 +865,8 @@ public class Dataverses extends AbstractApiBean {
                 return error(Status.FORBIDDEN, "Not authorized");
             }
             
-            String filename = dv.getAlias() + "_GBResponses.csv";
+            String fileTimestamp = dateFormatter.format(new Date());
+            String filename = dv.getAlias() + "_GBResponses_" + fileTimestamp + ".csv";
             
             response.setHeader("Content-Disposition", "attachment; filename="
                 + filename);
