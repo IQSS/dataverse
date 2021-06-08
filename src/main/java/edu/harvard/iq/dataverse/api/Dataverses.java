@@ -100,15 +100,15 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
-import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.Context;
 import javax.xml.stream.XMLStreamException;
 
 /**
@@ -850,7 +850,7 @@ public class Dataverses extends AbstractApiBean {
     @Path("{identifier}/guestbookResponses/")
     @Produces({"application/download"})
     public Response getGuestbookResponsesByDataverse(@PathParam("identifier") String dvIdtf,
-            @QueryParam("guestbookId") Long gbId) {
+            @QueryParam("guestbookId") Long gbId, @Context HttpServletResponse response) {
         
         try {
             Dataverse dv = findDataverseOrDie(dvIdtf);
@@ -863,12 +863,12 @@ public class Dataverses extends AbstractApiBean {
                 return error(Status.FORBIDDEN, "Not authorized");
             }
             
-            String filename = dv.getAlias() + "GBResponses.csv";
-            String contentDispositionString = "attachment;filename=" + filename;
-            File file = new File(filename);
-            ResponseBuilder response = Response.ok((Object) file);
-            response.header("Content-Disposition", contentDispositionString);
-            FileOutputStream outputStream = new FileOutputStream(filename);
+            String filename = dv.getAlias() + "_GBResponses.csv";
+            
+            response.setHeader("Content-Disposition", "attachment; filename="
+                + filename);
+               ServletOutputStream outputStream = response.getOutputStream();
+
             Map<Integer, Object> customQandAs = guestbookResponseService.mapCustomQuestionAnswersAsStrings(dv.getId(), gbId);
 
             List<Object[]> guestbookResults = guestbookResponseService.getGuestbookResults(dv.getId(), gbId);
@@ -878,7 +878,7 @@ public class Dataverses extends AbstractApiBean {
                 outputStream.write(sb.toString().getBytes());
                 outputStream.flush();
             }
-            return response.build();
+            return Response.ok().build();
         } catch (IOException io) {
             return error(Status.BAD_REQUEST, "Failed to produce response file. Exception: " + io.getMessage());
         } catch (WrappedResponse wr) {
@@ -886,7 +886,7 @@ public class Dataverses extends AbstractApiBean {
         }
 
     }
-
+    
     @PUT
     @Path("{identifier}/groups/{aliasInOwner}")
     public Response updateGroup(ExplicitGroupDTO groupDto,
