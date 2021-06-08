@@ -1496,15 +1496,9 @@ public class IndexServiceBean {
         }        
         List<String> dataversePaths = getDataversePathsFromSegments(dataverseSegments);
         /*
-        First get all linking dataverses
-        Then get their respective paths
-        And finally add to the "normal" path
+        add linking paths
         */
-        List<Dataverse> linkingDataverses = findAllLinkingDataverses(dvo);
-        List<String> linkingDataversePaths = findLinkingDataversePaths(linkingDataverses);
-        for (String dvPath : linkingDataversePaths) {
-            dataversePaths.add(dvPath);
-        }
+        dataversePaths.addAll(findLinkingDataversePaths(findAllLinkingDataverses(dvo)));
         return dataversePaths;
     }
 
