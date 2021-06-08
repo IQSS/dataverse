@@ -400,7 +400,18 @@ public class SettingsServiceBean {
         /**
          * Sort Date Facets Chronologically instead or presenting them in order of # of hits as other facets are. Default is true
          */
-        ChronologicalDateFacets(ConfigScope.UI, "date-facets-chronological")
+        ChronologicalDateFacets(ConfigScope.UI, "date-facets-chronological"),
+        
+        /**
+         * Used where BrandingUtil.getInstallationBrandName is called, overides the default use of the root Dataverse collection name
+         */
+        InstallationName(ConfigScope.UI_BRANDING, "installation-name"),
+        /**
+         * In metadata exports that set a 'distributor' this flag determines whether the
+         * Installation Brand Name is always included (default/false) or is not included
+         * when the Distributor field (citation metadatablock) is set (true)
+         */
+        ExportInstallationAsDistributorOnlyWhenNotSet(ConfigScope.EXPORT, "metadata-distributor-from-citation-block")
         ;
         
         private final ConfigScope scope;

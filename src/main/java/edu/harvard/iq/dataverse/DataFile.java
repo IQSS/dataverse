@@ -243,13 +243,13 @@ public class DataFile extends DvObject implements Comparable {
     */
    
     @Transient
-    private boolean deleted;
+    private Boolean deleted;
 
-    public boolean isDeleted() {
+    public Boolean getDeleted() {
         return deleted;
     }
 
-    public void setDeleted(boolean deleted) {
+    public void setDeleted(Boolean deleted) {
         this.deleted = deleted;
     }
     
@@ -762,12 +762,6 @@ public class DataFile extends DvObject implements Comparable {
     }
     
     public boolean isHarvested() {
-        
-        // (storageIdentifier is not nullable - so no need to check for null
-        // pointers below):
-        if (this.getStorageIdentifier().startsWith("http://") || this.getStorageIdentifier().startsWith("https://")) {
-            return true;
-        }
         
         Dataset ownerDataset = this.getOwner();
         if (ownerDataset != null) {

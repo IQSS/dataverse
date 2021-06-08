@@ -51,6 +51,7 @@ public enum ConfigScope {
     UI_DATASET(UI, "dataset"),
     UI_FOOTER(UI, "footer"),
     UI_HEADER(UI, "header"),
+    UI_BRANDING(UI, "branding"),
     
     UPLOAD_LIMITS(UPLOAD, "limits")
     ;

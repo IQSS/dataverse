@@ -22,7 +22,7 @@ You should be conscious of the following when running multiple app servers.
 Detecting Which App Server a User Is On
 +++++++++++++++++++++++++++++++++++++++
 
-If you have successfully installed multiple app servers behind a load balancer you might like to know which server a user has landed on. A straightforward solution is to place a file called ``host.txt`` in a directory that is served up by Apache such as ``/var/www/html`` and then configure Apache not to proxy requests to ``/host.txt`` to the app server. Here are some example commands on RHEL/CentOS 7 that accomplish this::
+If you have successfully installed multiple app servers behind a load balancer you might like to know which server a user has landed on. A straightforward solution is to place a file called ``host.txt`` in a directory that is served up by Apache such as ``/var/www/html`` and then configure Apache not to proxy requests to ``/host.txt`` to the app server. Here are some example commands on RHEL/derivatives that accomplish this::
 
         [root@server1 ~]# vim /etc/httpd/conf.d/ssl.conf
         [root@server1 ~]# grep host.txt /etc/httpd/conf.d/ssl.conf
