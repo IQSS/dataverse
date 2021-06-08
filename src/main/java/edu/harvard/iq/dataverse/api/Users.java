@@ -259,7 +259,7 @@ public class Users extends AbstractApiBean {
             }
             JsonArray items=null;
             try {
-                items = jsonObj.build().getJsonObject(element).getJsonArray("items");
+                items = jsonObj.build().getJsonObject("traces").getJsonObject(element).getJsonArray("items");
             } catch(Exception e) {
                 return ok(jsonObj);
             }
