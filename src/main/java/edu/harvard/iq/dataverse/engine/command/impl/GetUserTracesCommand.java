@@ -214,6 +214,7 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
                                 .add("dataset", guestbookResponse.getDatasetVersion().getDataset().getGlobalId().asString())
                                 .add("version", guestbookResponse.getDatasetVersion().getSemanticVersion()));
                     }
+                    job.add("items", jab);
                 }
                 job.add("count", guestbookResponses.size());
                 // job.add("items", jab);
