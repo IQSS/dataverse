@@ -210,14 +210,17 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
                     JsonArrayBuilder jab = Json.createArrayBuilder();
                     for (GuestbookResponse guestbookResponse : guestbookResponses) {
                         try {
-                        jab.add(Json.createObjectBuilder()
-                                .add("id", guestbookResponse.getId())
-                                .add("downloadType", guestbookResponse.getDownloadtype())
-                                .add("filename", guestbookResponse.getDataFile().getCurrentName())
-                                .add("date", guestbookResponse.getResponseDate())
-                                .add("guestbookName", guestbookResponse.getGuestbook().getName())
-                                .add("dataset", guestbookResponse.getDatasetVersion().getDataset().getGlobalId().asString())
-                                .add("version", guestbookResponse.getDatasetVersion().getSemanticVersion()));
+                            JsonObjectBuilder gbe = Json.createObjectBuilder()
+                                    .add("id", guestbookResponse.getId())
+                                    .add("downloadType", guestbookResponse.getDownloadtype())
+                                    .add("filename", guestbookResponse.getDataFile().getCurrentName())
+                                    .add("date", guestbookResponse.getResponseDate())
+                                    .add("guestbookName", guestbookResponse.getGuestbook().getName());
+                            if (guestbookResponse.getDatasetVersion().getDataset().getGlobalId() != null) {
+                                gbe.add("dataset", guestbookResponse.getDatasetVersion().getDataset().getGlobalId().asString());
+                            }
+                            gbe.add("version", guestbookResponse.getDatasetVersion().getSemanticVersion());
+                            jab.add(gbe);
                         } catch (NullPointerException npe) {
                             //Legacy/bad db entries
                             logger.warning("Guestbook id:" + guestbookResponse.getId() + " does not have required info.");
