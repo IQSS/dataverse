@@ -216,10 +216,12 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
                                     .add("filename", guestbookResponse.getDataFile().getCurrentName())
                                     .add("date", guestbookResponse.getResponseDate())
                                     .add("guestbookName", guestbookResponse.getGuestbook().getName());
-                            if (guestbookResponse.getDatasetVersion().getDataset().getGlobalId() != null) {
-                                gbe.add("dataset", guestbookResponse.getDatasetVersion().getDataset().getGlobalId().asString());
+                            if(guestbookResponse.getDataset().getGlobalId()!=null) {
+                                gbe.add("dataset", guestbookResponse.getDataset().getGlobalId().asString());
                             }
-                            gbe.add("version", guestbookResponse.getDatasetVersion().getSemanticVersion());
+                            if (guestbookResponse.getDatasetVersion() != null) {
+                                gbe.add("version", guestbookResponse.getDatasetVersion().getSemanticVersion());
+                            }
                             jab.add(gbe);
                         } catch (NullPointerException npe) {
                             //Legacy/bad db entries
