@@ -4,12 +4,11 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFieldTypeInputLevel;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse.DataverseType;
+import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFieldTypeInputLevel;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 
 import java.util.ArrayList;
@@ -80,6 +79,9 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
         }
 
         ctxt.index().indexDataverse(result);
+
+        List<Dataverse> dvChildrenToUpdate = ctxt.dataverses().findByOwnerId(result.getId());
+        dvChildrenToUpdate.forEach(dvForUpdate -> ctxt.index().indexDataverse(dvForUpdate));
 
         //When these values are changed we need to reindex all children datasets
         //This check is not recursive as all the values just report the immediate parent
