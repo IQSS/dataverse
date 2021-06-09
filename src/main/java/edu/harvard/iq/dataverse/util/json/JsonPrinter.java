@@ -900,19 +900,6 @@ public class JsonPrinter {
         return sr.getJsonLinkset();
     }
 
-    private static String getRootDataverseNameforCitation(Dataset dataset) {
-        Dataverse root = dataset.getOwner();
-        while (root.getOwner() != null) {
-            root = root.getOwner();
-        }
-        String rootDataverseName = root.getName();
-        if (!StringUtil.isEmpty(rootDataverseName)) {
-            return rootDataverseName;
-        } else {
-            return "";
-        }
-    }
-
     /**
      * Get signposting from Dataset
      * @param ds the designated Dataset
