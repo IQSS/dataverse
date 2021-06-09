@@ -142,12 +142,12 @@ public class SignpostingResources {
         }
         valueList.add(type);
 
-        // TODO: support only CC0 now, should add flexible license support when flex-terms is ready
+        // TODO: support only CC0 now, should add flexible license support when flex-terms or multi-license is ready
         TermsOfUseAndAccess.License license = workingDatasetVersion.getTermsOfUseAndAccess().getLicense();
         String licenseString = "";
-        if (license == TermsOfUseAndAccess.License.CC0 || license == TermsOfUseAndAccess.License.NONE) {
+        if (license == null || license == TermsOfUseAndAccess.License.CC0 || license == TermsOfUseAndAccess.License.NONE) {
             // On the current Dataverse, only None and CC0. In the signposting protocol: cardinality is 1
-            licenseString = "<https://creativecommons.org/publicdomain/zero/1.0/>;rel=\"license\"";
+            licenseString = licJsonObj.getString(TermsOfUseAndAccess.License.CC0.name()) + ";rel=\"license\"";
             valueList.add(licenseString);
         } else {
             valueList.add(license.toString());

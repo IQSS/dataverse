@@ -396,7 +396,20 @@ public class JsonPrinter {
 
         return bld;
     }
-    
+
+    private static String getRootDataverseNameforCitation(Dataset dataset) {
+        Dataverse root = dataset.getOwner();
+        while (root.getOwner() != null) {
+            root = root.getOwner();
+        }
+        String rootDataverseName = root.getName();
+        if (!StringUtil.isEmpty(rootDataverseName)) {
+            return rootDataverseName;
+        } else {
+            return "";
+        }
+    }
+
     private static String getLicenseInfo(DatasetVersion dsv) {
         if (dsv.getTermsOfUseAndAccess().getLicense() != null && dsv.getTermsOfUseAndAccess().getLicense().equals(TermsOfUseAndAccess.License.CC0)) {
             return "CC0 Waiver";
@@ -913,7 +926,7 @@ public class JsonPrinter {
                 .add("author", ds.getPersistentURL())
                 .add("protocol", ds.getProtocol())
                 .add("authority", ds.getAuthority())
-                .add("publisher", getRootDataverseNameforCitation(ds))
+                .add("publisher", BrandingUtil.getInstallationBrandName())
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
                 .add("storageIdentifier", ds.getStorageIdentifier());
     }

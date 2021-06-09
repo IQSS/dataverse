@@ -925,7 +925,7 @@ public class Admin extends AbstractApiBean {
 			return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
 		}
 	}
-        
+
     @DELETE
     @Path("roles/{id}")
     public Response deleteRole(@PathParam("id") String id) {
