@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.api.RequestBodyException;
 import edu.harvard.iq.dataverse.api.UpdateException;
 import java.net.URI;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -21,7 +22,8 @@ import javax.persistence.PersistenceException;
 @Stateless
 @Named
 public class LicenseServiceBean {
-    
+    private static final Logger logger = Logger.getLogger(LicenseServiceBean.class.getName());
+
     @PersistenceContext
     EntityManager em;
 
@@ -59,6 +61,7 @@ public class LicenseServiceBean {
     public License getCC0() {
         List<License> licenses = em.createNamedQuery("License.findDefault", License.class)
                 .getResultList();
+        // TODO: Move this to flyway script
         if (licenses.isEmpty()) {
             String shortDescription = "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.";
             URI uri = URI.create("https://creativecommons.org/publicdomain/zero/1.0/");
@@ -75,14 +78,11 @@ public class LicenseServiceBean {
         if (license.getId() != null) {
             throw new RequestBodyException("There shouldn't be an ID in the request body");
         }
-        List<License> licenses = em.createNamedQuery("License.findByNameOrUri", License.class)
-            .setParameter("name", license.getName() )
-            .setParameter("uri", license.getUri().toASCIIString() )
-            .getResultList();
-        if (!licenses.isEmpty()) {
-            throw new ConflictException("A license with the same URI or name is already present.");
+        try {
+            em.persist(license);
+        } catch (Exception e) {
+            logger.warning(e.getMessage());
         }
-        em.persist(license);
         return license;
     }
 
@@ -106,26 +106,6 @@ public class LicenseServiceBean {
         }
     }
 
-    public void setByName(String nameArg, String name, String shortDescription, URI uri, URI iconUrl, boolean active) throws UpdateException {
-        List<License> licenses = em.createNamedQuery("License.findByName", License.class)
-                .setParameter("name", nameArg )
-                .getResultList();
-
-        if(licenses.size() > 0) {
-            License license = licenses.get(0);
-            license.setName(name);
-            license.setShortDescription(shortDescription);
-            license.setUri(uri);
-            license.setIconUrl(iconUrl);
-            license.setActive(active);        
-            em.merge(license);
-            actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Admin, "set")
-                .setInfo(name + ": " + shortDescription + ": " + uri + ": " + iconUrl + ": " + active));
-        } else {
-            throw new UpdateException("There is no existing License with that name. To add a license use POST.");
-        }
-    }
-
     public int deleteById(long id) throws PersistenceException {
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Admin, "delete")
                             .setInfo(Long.toString(id)));
@@ -133,13 +113,4 @@ public class LicenseServiceBean {
                 .setParameter("id", id)
                 .executeUpdate();
     }
-
-    public int deleteByName(String name) throws PersistenceException {
-        actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Admin, "delete")
-                            .setInfo(name));
-        return em.createNamedQuery("License.deleteByName")
-                .setParameter("name", name)
-                .executeUpdate();
-    }
-
 }
