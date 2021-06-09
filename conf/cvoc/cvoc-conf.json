@@ -31,7 +31,7 @@
           "vocabs":["orcid"],
           "managed-fields": {"personName":"authorName", "scheme": "authorIdentifierScheme", "@id":"authorIdentifier"},
           "retrieval-filtering": {
-            "personName": {"pattern": "{0}, {1}", "params":["/name/given-names/value","/name/family-name/value"]},
+            "personName": {"pattern": "{0}, {1}", "params":["/name/family-name/value","/name/given-names/value"]},
             "@id": {"pattern": "{0}", "params":["@id"]},
             "scheme":{"pattern":"ORCID"}
           }
