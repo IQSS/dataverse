@@ -52,6 +52,7 @@
         },
         "managed-fields": {"vocabularyName":"cvocDemoVocabulary", "termName":"cvocDemoTerm", "vocabularyUri":"cvocDemoVocabularyURI"},
         "retrieval-filtering": {
+          "@id": {"pattern": "{0}", "params":["@id"]},
           "termName": {"pattern": "{0}", "params":["/graph/uri=@id/prefLabel"]},
           "vocabularyName": {"pattern": "{0}", "params":["/graph/type=skos:ConceptScheme/prefLabel"]},
           "vocabularyUri": {"pattern": "{0}", "params":["/graph/type=skos:ConceptScheme/uri"]}
