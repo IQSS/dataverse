@@ -8,11 +8,10 @@ import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ejb.Asynchronous;
@@ -27,7 +26,6 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.json.JsonString;
 import javax.json.JsonValue;
-import javax.json.stream.JsonParsingException;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
@@ -321,6 +319,47 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             }
     }
     
+    // This method assumes externalvocabularyvalue entries have been filtered and
+    // contain a single JsonObject whose values are either Strings or an array of
+    // objects with "lang" and "value" keys. The string, or the "value"s for each
+    // language are added to the set.
+    // Any parsing error results in no entries (there can be unfiltered entries with
+    // unknown structure - getting some strings from such an entry could give fairly
+    // random info that would be bad to addd for searches, etc.)
+    public Set<String> getStringsFor(String termUri) {
+        Set<String> strings = new HashSet<String>();
+        try {
+            ExternalVocabularyValue evv = em
+                    .createQuery("select object(o) from ExternalVocabularyValue as o where o.uri=:uri",
+                            ExternalVocabularyValue.class)
+                    .setParameter("uri", termUri).getSingleResult();
+            String valString = evv.getValue();
+            try (JsonReader jr = Json.createReader(new StringReader(valString))) {
+                JsonObject jo = jr.readObject();
+                for (String key : jo.keySet()) {
+                    JsonValue jv = jo.get(key);
+                    if (jv.getValueType().equals(JsonValue.ValueType.STRING)) {
+                        strings.add(jo.getString(key));
+                    } else {
+                        if (jv.getValueType().equals(JsonValue.ValueType.ARRAY)) {
+                            JsonArray jarr = jv.asJsonArray();
+                            for (int i = 0; i < jarr.size(); i++) {
+                                strings.add(jarr.getJsonObject(i).getString("value"));
+                            }
+                        }
+                    }
+                }
+
+            }
+        } catch (NoResultException nre) {
+            return null;
+        } catch (Exception e) {
+            logger.warning("Problem parsing external vocab value for uri: " + termUri + " : " + e.getMessage());
+            strings = null;
+        }
+        return strings;
+    }
+    
     @Asynchronous
     private void registerExternalTerm(JsonObject cvocEntry, String term, String retrievalUri, String prefix) {
         if(term.isBlank()) {
@@ -450,19 +489,19 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             String pattern = filter.getString("pattern");
             logger.info("Pattern: " + pattern);
             if (pattern.equals("@id")) {
-                logger.info("Added #id pattern: " + fieldName + ": " + termUri);
-                job.add(fieldName, termUri);
+                logger.info("Added #id pattern: " + filterKey + ": " + termUri);
+                job.add(filterKey, termUri);
             } else if (pattern.contains("{")) {
                 String result = MessageFormat.format(pattern, vals.toArray());
                 logger.info("Result: " + result);
-                job.add(fieldName, result);
-                logger.info("Added : " + fieldName + ": " + result);
+                job.add(filterKey, result);
+                logger.info("Added : " + filterKey + ": " + result);
             } else {
-                logger.info("Added hardcoded pattern: " + fieldName + ": " + pattern);
-                job.add(fieldName, pattern);
+                logger.info("Added hardcoded pattern: " + filterKey + ": " + pattern);
+                job.add(filterKey, pattern);
             }
         } catch (Exception e) {
-                logger.info("External Vocabulary: " + termUri + " - Failed to find value for " + fieldName + ": " + e.getMessage());
+                logger.info("External Vocabulary: " + termUri + " - Failed to find value for " + filterKey + ": " + e.getMessage());
             }
         }
         JsonObject filteredResponse = job.build();
