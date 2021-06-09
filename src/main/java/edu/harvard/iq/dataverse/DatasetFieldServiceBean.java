@@ -352,10 +352,11 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
 
             }
         } catch (NoResultException nre) {
-            return null;
+            logger.warning("No external vocab value for uri: " + termUri);
+            return new HashSet<String>();
         } catch (Exception e) {
             logger.warning("Problem parsing external vocab value for uri: " + termUri + " : " + e.getMessage());
-            strings = null;
+            strings = new HashSet<String>();
         }
         return strings;
     }
