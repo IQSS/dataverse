@@ -78,11 +78,14 @@ public class LicenseServiceBean {
         if (license.getId() != null) {
             throw new RequestBodyException("There shouldn't be an ID in the request body");
         }
-        try {
-            em.persist(license);
-        } catch (Exception e) {
-            logger.warning(e.getMessage());
+        List<License> licenses = em.createNamedQuery("License.findByNameOrUri", License.class)
+            .setParameter("name", license.getName() )
+            .setParameter("uri", license.getUri().toASCIIString() )
+            .getResultList();
+        if (!licenses.isEmpty()) {
+            throw new ConflictException("A license with the same URI or name is already present.");
         }
+        em.persist(license);
         return license;
     }
 
