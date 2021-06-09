@@ -339,11 +339,13 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 for (String key : jo.keySet()) {
                     JsonValue jv = jo.get(key);
                     if (jv.getValueType().equals(JsonValue.ValueType.STRING)) {
+                        logger.info("adding " + jo.getString(key) + " for " + termUri);
                         strings.add(jo.getString(key));
                     } else {
                         if (jv.getValueType().equals(JsonValue.ValueType.ARRAY)) {
                             JsonArray jarr = jv.asJsonArray();
                             for (int i = 0; i < jarr.size(); i++) {
+                                logger.info("adding " + jarr.getJsonObject(i).getString("value") + " for " + termUri);
                                 strings.add(jarr.getJsonObject(i).getString("value"));
                             }
                         }
@@ -358,10 +360,11 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             logger.warning("Problem parsing external vocab value for uri: " + termUri + " : " + e.getMessage());
             strings = new HashSet<String>();
         }
+        logger.info("Returning " + String.join(",", strings) + " for " + termUri);
         return strings;
     }
     
-    @Asynchronous
+
     private void registerExternalTerm(JsonObject cvocEntry, String term, String retrievalUri, String prefix) {
         if(term.isBlank()) {
             logger.fine("Ingoring blank term");
