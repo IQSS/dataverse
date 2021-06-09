@@ -328,14 +328,10 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     // random info that would be bad to addd for searches, etc.)
     public Set<String> getStringsFor(String termUri) {
         Set<String> strings = new HashSet<String>();
-        try {
-            ExternalVocabularyValue evv = em
-                    .createQuery("select object(o) from ExternalVocabularyValue as o where o.uri=:uri",
-                            ExternalVocabularyValue.class)
-                    .setParameter("uri", termUri).getSingleResult();
-            String valString = evv.getValue();
-            try (JsonReader jr = Json.createReader(new StringReader(valString))) {
-                JsonObject jo = jr.readObject();
+        JsonObject jo = getExternalVocabularyValue(termUri);
+
+        if (jo != null) {
+            try {
                 for (String key : jo.keySet()) {
                     JsonValue jv = jo.get(key);
                     if (jv.getValueType().equals(JsonValue.ValueType.STRING)) {
@@ -351,19 +347,33 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                         }
                     }
                 }
-
+            } catch (Exception e) {
+                logger.warning(
+                        "Problem interpreting external vocab value for uri: " + termUri + " : " + e.getMessage());
+                return new HashSet<String>();
             }
-        } catch (NoResultException nre) {
-            logger.warning("No external vocab value for uri: " + termUri);
-            return new HashSet<String>();
-        } catch (Exception e) {
-            logger.warning("Problem parsing external vocab value for uri: " + termUri + " : " + e.getMessage());
-            strings = new HashSet<String>();
         }
         logger.info("Returning " + String.join(",", strings) + " for " + termUri);
         return strings;
+    }    
+
+    public JsonObject getExternalVocabularyValue(String termUri) {
+        try {
+            ExternalVocabularyValue evv = em
+                    .createQuery("select object(o) from ExternalVocabularyValue as o where o.uri=:uri",
+                            ExternalVocabularyValue.class)
+                    .setParameter("uri", termUri).getSingleResult();
+            String valString = evv.getValue();
+            try (JsonReader jr = Json.createReader(new StringReader(valString))) {
+                return jr.readObject();
+            } catch (Exception e) {
+                logger.warning("Problem parsing external vocab value for uri: " + termUri + " : " + e.getMessage());
+            }
+        } catch (NoResultException nre) {
+            logger.warning("No external vocab value for uri: " + termUri);
+        }
+        return null;
     }
-    
 
     private void registerExternalTerm(JsonObject cvocEntry, String term, String retrievalUri, String prefix) {
         if(term.isBlank()) {
