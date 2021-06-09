@@ -437,7 +437,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 params = Json.createArrayBuilder().build();
             }
             logger.info("Params: " + params.toString());
-            List<String> vals = new ArrayList<String>();
+            List<Object> vals = new ArrayList<Object>();
             for (int i = 0; i < params.size(); i++) {
                 String param = params.getString(i);
                 if (param.startsWith("/")) {
@@ -472,8 +472,8 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                     JsonValue jv = ((JsonObject) curPath).get(pathParts[pathParts.length - 1]);
                     if (jv.getValueType().equals(JsonValue.ValueType.STRING)) {
                         vals.add(i, ((JsonString) jv).getString());
-                    } else {
-                        vals.add(i, jv.toString());
+                    } else if (jv.getValueType().equals(JsonValue.ValueType.ARRAY)) {
+                        vals.add(i, jv);
                     }
                     logger.info("Added param value: " + i + ": " + vals.get(i));
                 } else {
@@ -496,10 +496,18 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 logger.info("Added #id pattern: " + filterKey + ": " + termUri);
                 job.add(filterKey, termUri);
             } else if (pattern.contains("{")) {
-                String result = MessageFormat.format(pattern, vals.toArray());
-                logger.info("Result: " + result);
-                job.add(filterKey, result);
-                logger.info("Added : " + filterKey + ": " + result);
+                if (pattern.equals("{0}")) {
+                    if (vals.get(0) instanceof JsonArray) {
+                        job.add(filterKey, (JsonArray) vals.get(0));
+                    } else {
+                        job.add(filterKey, (String) vals.get(0));
+                    }
+                } else {
+                    String result = MessageFormat.format(pattern, vals.toArray());
+                    logger.info("Result: " + result);
+                    job.add(filterKey, result);
+                    logger.info("Added : " + filterKey + ": " + result);
+                }
             } else {
                 logger.info("Added hardcoded pattern: " + filterKey + ": " + pattern);
                 job.add(filterKey, pattern);
