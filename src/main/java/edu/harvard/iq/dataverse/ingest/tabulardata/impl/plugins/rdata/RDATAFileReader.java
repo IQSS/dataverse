@@ -52,8 +52,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 
-import org.apache.commons.lang.RandomStringUtils;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.ArrayUtils;
 /**
  * Dataverse 4.0 implementation of <code>TabularDataFileReader</code> for the 
  * RData Binary Format.

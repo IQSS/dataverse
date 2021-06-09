@@ -21,6 +21,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractCreateDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -44,7 +45,7 @@ import javax.ejb.EJBException;
 import javax.json.JsonObjectBuilder;
 import javax.validation.ConstraintViolation;
 import javax.ws.rs.core.Response;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.io.IOUtils;
 import org.ocpsoft.common.util.Strings;
 
@@ -365,12 +366,14 @@ public class AddReplaceFileHelper{
      * @param dataset
      * @param newFileName
      * @param newFileContentType
+     * @param newStorageIdentifier2 
      * @param newFileInputStream
      * @return 
      */
     public boolean runForceReplaceFile(Long oldFileId,
                         String newFileName, 
                         String newFileContentType, 
+                        String newStorageIdentifier,
                         InputStream newFileInputStream,
                         OptionalFileParams optionalFileParams){
         
@@ -392,13 +395,14 @@ public class AddReplaceFileHelper{
         }
 
         
-        return this.runAddReplaceFile(fileToReplace.getOwner(), newFileName, newFileContentType, newFileInputStream, optionalFileParams);
+        return this.runAddReplaceFile(fileToReplace.getOwner(), newFileName, newFileContentType, newStorageIdentifier, newFileInputStream, optionalFileParams);
     }
     
 
 	public boolean runReplaceFile(Long oldFileId,
                             String newFileName, 
                             String newFileContentType, 
+                            String newStorageIdentifier, 
                             InputStream newFileInputStream,
                             OptionalFileParams optionalFileParams){
     
@@ -418,7 +422,7 @@ public class AddReplaceFileHelper{
         if (!this.step_005_loadFileToReplaceById(oldFileId)){
             return false;
         }
-        return this.runAddReplaceFile(fileToReplace.getOwner(), newFileName, newFileContentType, newFileInputStream, optionalFileParams);
+        return this.runAddReplaceFile(fileToReplace.getOwner(), newFileName, newFileContentType, newStorageIdentifier, newFileInputStream, optionalFileParams);
     }
     
     
@@ -442,10 +446,6 @@ public class AddReplaceFileHelper{
      * 
      * @return 
      */
-    private boolean runAddReplaceFile(Dataset owner, String newFileName, String newFileContentType,
-			InputStream newFileInputStream, OptionalFileParams optionalFileParams) {
-		return runAddReplaceFile(owner,newFileName, newFileContentType, null, newFileInputStream, optionalFileParams);
-	}
     
     private boolean runAddReplaceFile(Dataset owner,  
             String newFileName, String newFileContentType, 
@@ -503,6 +503,18 @@ public class AddReplaceFileHelper{
         //
         if (!this.step_005_loadFileToReplaceById(oldFileId)){
             return false;
+        }
+        //Update params to match existing file (except checksum, which should match the new file)
+        if(fileToReplace != null) {
+            String checksum = optionalFileParams.getCheckSum();
+            ChecksumType checkSumType = optionalFileParams.getCheckSumType();
+            try {
+                optionalFileParams = new OptionalFileParams(fileToReplace);
+                optionalFileParams.setCheckSum(checksum, checkSumType);
+            } catch (DataFileTagException e) {
+                // Shouldn't happen since fileToReplace should have valid tags
+                e.printStackTrace();
+            }
         }
 
         return this.runAddReplacePhase1(fileToReplace.getOwner(), 
@@ -574,6 +586,26 @@ public class AddReplaceFileHelper{
             return false;            
         }
         
+        // if the fileToReplace hasn't been released,
+        if (fileToReplace != null && !fileToReplace.isReleased()) {
+            DataFile df = finalFileList.get(0); // step_055 uses a loop and assumes only one file
+            // set the replacement file's previous and root datafileIds to match (unless
+            // they are the defaults)
+            if (fileToReplace.getPreviousDataFileId() != null) {
+                df.setPreviousDataFileId(fileToReplace.getPreviousDataFileId());
+                df.setRootDataFileId(fileToReplace.getRootDataFileId());
+            }
+            // Reuse any file PID during a replace operation (if File PIDs are in use)
+            if (systemConfig.isFilePIDsEnabled()) {
+                df.setGlobalId(fileToReplace.getGlobalId());
+                df.setGlobalIdCreateTime(fileToReplace.getGlobalIdCreateTime());
+                // Should be true or fileToReplace wouldn't have an identifier (since it's not
+                // yet released in this if statement)
+                df.setIdentifierRegistered(fileToReplace.isIdentifierRegistered());
+                fileToReplace.setGlobalId(null);
+            }
+        }
+
         return true;
     }
     
@@ -1061,16 +1093,6 @@ public class AddReplaceFileHelper{
         if (!step_015_auto_check_permissions(existingFile.getOwner())){
             return false;
         };
-
-        
-        
-        // Is the file published?
-        //
-        if (!existingFile.isReleased()){
-            addError(getBundleErr("unpublished_file_cannot_be_replaced"));
-            return false;            
-        }
-        
         // Is the file in the latest dataset version?
         //
         if (!step_007_auto_isReplacementInLatestVersion(existingFile)){
@@ -1296,9 +1318,11 @@ public class AddReplaceFileHelper{
             
             // Has the content type of the file changed?
             //
-            if (!finalFileList.get(0).getContentType().equalsIgnoreCase(fileToReplace.getContentType())){
-            
-                List<String> errParams = Arrays.asList(fileToReplace.getFriendlyType(),
+            String fileType = fileToReplace.getOriginalFileFormat() != null ? fileToReplace.getOriginalFileFormat() : fileToReplace.getContentType();
+            if (!finalFileList.get(0).getContentType().equalsIgnoreCase(fileType)) {
+                String friendlyType = fileToReplace.getOriginalFormatLabel() != null ? fileToReplace.getOriginalFormatLabel() : fileToReplace.getFriendlyType();
+                
+                List<String> errParams = Arrays.asList(friendlyType,
                                                 finalFileList.get(0).getFriendlyType());
                 
                 String contentTypeErr = BundleUtil.getStringFromBundle("file.addreplace.error.replace.new_file_has_different_content_type", 
@@ -1532,7 +1556,22 @@ public class AddReplaceFileHelper{
         }
 
         Command<Dataset> update_cmd;
-        update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest, clone);
+        String deleteStorageLocation = null;
+        long deleteFileId=-1;
+        if(isFileReplaceOperation()) {
+            List<FileMetadata> filesToDelete = new ArrayList<FileMetadata>();
+            filesToDelete.add(fileToReplace.getFileMetadata());
+            
+            if(!fileToReplace.isReleased()) {
+                //If file is only in draft version, also need to delete the physical file
+            deleteStorageLocation = fileService.getPhysicalFileToDelete(fileToReplace);
+            deleteFileId=fileToReplace.getId();
+            }
+            //Adding the file to the delete list for the command will delete this filemetadata and, if the file hasn't been released, the datafile itself. 
+            update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest, filesToDelete, clone);
+        } else {
+          update_cmd = new UpdateDatasetVersionCommand(dataset, dvRequest, clone);
+        }
         ((UpdateDatasetVersionCommand) update_cmd).setValidateLenient(true);  
         
         try {            
@@ -1554,89 +1593,23 @@ public class AddReplaceFileHelper{
             this.addErrorSevere("add.add_file_error (see logs)");
             logger.severe(ex.getMessage());
             return false;
-        } 
-        return true;
-    }
-
-    
-    /**
-     * Go through the working DatasetVersion and remove the
-     * FileMetadata of the file to replace
-     * 
-     * @return 
-     */
-    private boolean step_085_auto_remove_filemetadata_to_replace_from_working_version(){
-
-        msgt("step_085_auto_remove_filemetadata_to_replace_from_working_version 1");
-
-        if (!isFileReplaceOperation()){
-            // Shouldn't happen!
-            this.addErrorSevere(getBundleErr("only_replace_operation") + " (step_085_auto_remove_filemetadata_to_replace_from_working_version");
-            return false;
         }
-        msg("step_085_auto_remove_filemetadata_to_replace_from_working_version 2");
-
-        if (this.hasError()){
-            return false;
-        }
-
-        
-        msgt("File to replace getId: " + fileToReplace.getId());
-        
-        Iterator<FileMetadata> fmIt = workingVersion.getFileMetadatas().iterator();
-        msgt("Clear file to replace");
-        int cnt = 0;
-        while (fmIt.hasNext()) {
-            cnt++;
-
-            FileMetadata fm = fmIt.next();
-            msg(cnt + ") next file: " + fm);
-            msg("   getDataFile().getId(): " + fm.getDataFile().getId());
-            if (fm.getDataFile().getId() != null) {
-                if (Objects.equals(fm.getDataFile().getId(), fileToReplace.getId())) {
-                    msg("Let's remove it!");
-
-                    // If this is a tabular data file with a UNF, we'll need 
-                    // to recalculate the version UNF, once the file is removed: 
-                    
-                    boolean recalculateUNF = !StringUtils.isEmpty(fm.getDataFile().getUnf());
-
-                    if (workingVersion.getId() != null) {
-                        // If this is an existing draft (i.e., this draft version 
-                        // is already saved in the dataset, we'll also need to remove this filemetadata 
-                        // explicitly:
-                        msg(" this is an existing draft version...");
-                        fileService.removeFileMetadata(fm);
-
-                        // remove the filemetadata from the list of filemetadatas
-                        // attached to the datafile object as well, for a good 
-                        // measure: 
-                        fileToReplace.getFileMetadatas().remove(fm);
-                        // (and yes, we can do .remove(fm) safely - if this released
-                        // file is part of an existing draft, we know that the 
-                        // filemetadata object also exists in the database, and thus
-                        // has the id, and can be identified unambiguously. 
-                    }
-
-                    // and remove it from the list of filemetadatas attached
-                    // to the version object, via the iterator:
-                    fmIt.remove();
-
-                    if (recalculateUNF) {
-                        msg("recalculating the UNF");
-                        ingestService.recalculateDatasetVersionUNF(workingVersion);
-                        msg("UNF recalculated: "+workingVersion.getUNF());
-                    }
-                    
-                    return true;
+        //Sanity check
+        if(isFileReplaceOperation()) {
+            if (deleteStorageLocation != null) {
+                // Finalize the delete of the physical file 
+                // (File service will double-check that the datafile no 
+                // longer exists in the database, before proceeding to 
+                // delete the physical file)
+                try {
+                    fileService.finalizeFileDelete(deleteFileId, deleteStorageLocation);
+                } catch (IOException ioex) {
+                    logger.warning("Failed to delete the physical file associated with the deleted datafile id="
+                            + deleteFileId + ", storage location: " + deleteStorageLocation);
                 }
             }
         }
-        
-        msg("No matches found!");
-        addErrorSevere(getBundleErr("failed_to_remove_old_file_from_dataset"));
-        runMajorCleanup();
-        return false;
+        return true;
     }
     
 
@@ -1712,13 +1685,6 @@ public class AddReplaceFileHelper{
         }
 
         // -----------------------------------------------------------
-        // Remove the "fileToReplace" from the current working version
-        // -----------------------------------------------------------
-        if (!step_085_auto_remove_filemetadata_to_replace_from_working_version()){
-            return false;
-        }
-        
-        // -----------------------------------------------------------
         // Set the "root file ids" and "previous file ids"
         // THIS IS A KEY STEP - SPLIT IT OUT
         //  (1) Old file: Set the Root File Id on the original file  
@@ -1727,26 +1693,27 @@ public class AddReplaceFileHelper{
         // -----------------------------------------------------------
  
         
-        /*
-            Check the root file id on fileToReplace, updating it if necessary
-        */
-        if (fileToReplace.getRootDataFileId().equals(DataFile.ROOT_DATAFILE_ID_DEFAULT)){
+        if (fileToReplace.isReleased()) {
+            /*
+             * Check the root file id on fileToReplace, updating it if necessary
+             */
+            if (fileToReplace.getRootDataFileId().equals(DataFile.ROOT_DATAFILE_ID_DEFAULT)) {
 
-            fileToReplace.setRootDataFileId(fileToReplace.getId());
-            fileToReplace = fileService.save(fileToReplace);
-        }
-        
-        /*
-            Go through the final file list, settting the rootFileId and previousFileId
-        */
-        for (DataFile df : finalFileList){            
-            df.setPreviousDataFileId(fileToReplace.getId());
-            
-            df.setRootDataFileId(fileToReplace.getRootDataFileId());
-            
-        }
+                fileToReplace.setRootDataFileId(fileToReplace.getId());
+                fileToReplace = fileService.save(fileToReplace);
+            }
 
-        // Call the update dataset command
+            /*
+             * Go through the final file list, settting the rootFileId and previousFileId
+             */
+            for (DataFile df : finalFileList) {
+                df.setPreviousDataFileId(fileToReplace.getId());
+
+                df.setRootDataFileId(fileToReplace.getRootDataFileId());
+
+            }
+        }
+        // Call the update dataset command which will delete the replaced filemetadata and file in needed (if file is not released)
         //
         return step_070_run_update_dataset_command();
         

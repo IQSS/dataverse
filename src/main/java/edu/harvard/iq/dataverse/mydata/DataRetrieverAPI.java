@@ -39,7 +39,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *

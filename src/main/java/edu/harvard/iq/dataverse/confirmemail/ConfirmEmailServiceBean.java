@@ -121,20 +121,14 @@ public class ConfirmEmailServiceBean {
 
         try {
             String toAddress = aUser.getEmail();
-            try {
-                Dataverse rootDataverse = dataverseService.findRootDataverse();
-                if (rootDataverse != null) {
-                    String rootDataverseName = rootDataverse.getName();
-                    // FIXME: consider refactoring this into MailServiceBean.sendNotificationEmail. CONFIRMEMAIL may be the only type where we don't want an in-app notification.
-                    UserNotification userNotification = new UserNotification();
-                    userNotification.setType(UserNotification.Type.CONFIRMEMAIL);
-                    String subject = MailUtil.getSubjectTextBasedOnNotification(userNotification, rootDataverseName, null);
-                    logger.fine("sending email to " + toAddress + " with this subject: " + subject);
-                    mailService.sendSystemEmail(toAddress, subject, messageBody);
-                }
-            } catch (Exception e) {
-                logger.info("The root dataverse is not present. Don't send a notification to dataverseAdmin.");
-            }
+
+            // FIXME: consider refactoring this into MailServiceBean.sendNotificationEmail.
+            // CONFIRMEMAIL may be the only type where we don't want an in-app notification.
+            UserNotification userNotification = new UserNotification();
+            userNotification.setType(UserNotification.Type.CONFIRMEMAIL);
+            String subject = MailUtil.getSubjectTextBasedOnNotification(userNotification, null);
+            logger.fine("sending email to " + toAddress + " with this subject: " + subject);
+            mailService.sendSystemEmail(toAddress, subject, messageBody);
         } catch (Exception ex) {
             /**
              * @todo get more specific about the exception that's thrown when
@@ -169,6 +163,10 @@ public class ConfirmEmailServiceBean {
                 long nowInMilliseconds = new Date().getTime();
                 Timestamp emailConfirmed = new Timestamp(nowInMilliseconds);
                 AuthenticatedUser authenticatedUser = confirmEmailData.getAuthenticatedUser();
+                if (authenticatedUser.isDeactivated()) {
+                    logger.fine("User is deactivated.");
+                    return null;
+                }
                 authenticatedUser.setEmailConfirmed(emailConfirmed);
                 em.remove(confirmEmailData);
                 return goodTokenCanProceed;

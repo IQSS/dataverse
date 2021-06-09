@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
+import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -62,6 +63,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -69,13 +71,15 @@ import javax.json.JsonReader;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
-import static org.apache.commons.lang.StringUtils.isNumeric;
+import static org.apache.commons.lang3.StringUtils.isNumeric;
 
 /**
  * Base class for API beans
@@ -86,6 +90,7 @@ public abstract class AbstractApiBean {
     private static final Logger logger = Logger.getLogger(AbstractApiBean.class.getName());
     private static final String DATAVERSE_KEY_HEADER_NAME = "X-Dataverse-key";
     private static final String PERSISTENT_ID_KEY=":persistentId";
+    private static final String ALIAS_KEY=":alias";
     public static final String STATUS_ERROR = "ERROR";
     public static final String STATUS_OK = "OK";
     public static final String STATUS_WF_IN_PROGRESS = "WORKFLOW_IN_PROGRESS";
@@ -382,6 +387,7 @@ public abstract class AbstractApiBean {
 
     private AuthenticatedUser findAuthenticatedUserOrDie( String key, String wfid ) throws WrappedResponse {
         if (key != null) {
+            // No check for deactivated user because it's done in authSvc.lookupUser.
             AuthenticatedUser authUser = authSvc.lookupUser(key);
 
             if (authUser != null) {
@@ -479,6 +485,37 @@ public abstract class AbstractApiBean {
             } catch (NumberFormatException nfe) {
                 throw new WrappedResponse(
                         badRequest(BundleUtil.getStringFromBundle("find.datafile.error.datafile.not.found.bad.id", Collections.singletonList(id))));
+            }
+        }
+    }
+       
+    protected DataverseRole findRoleOrDie(String id) throws WrappedResponse {
+        DataverseRole role;
+        if (id.equals(ALIAS_KEY)) {
+            String alias = getRequestParameter(ALIAS_KEY.substring(1));
+            try {
+                return em.createNamedQuery("DataverseRole.findDataverseRoleByAlias", DataverseRole.class)
+                        .setParameter("alias", alias)
+                        .getSingleResult();
+
+            //Should not be a multiple result exception due to table constraint
+            } catch (NoResultException nre) {
+                throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataverse.role.error.role.not.found.alias", Collections.singletonList(alias))));
+            }
+
+        } else {
+
+            try {
+                role = rolesSvc.find(Long.parseLong(id));
+                if (role == null) {
+                    throw new WrappedResponse(notFound(BundleUtil.getStringFromBundle("find.dataverse.role.error.role.not.found.id", Collections.singletonList(id))));
+                } else {
+                    return role;
+                }
+
+            } catch (NumberFormatException nfe) {
+                throw new WrappedResponse(
+                        badRequest(BundleUtil.getStringFromBundle("find.dataverse.role.error.role.not.found.bad.id", Collections.singletonList(id))));
             }
         }
     }
@@ -671,7 +708,15 @@ public abstract class AbstractApiBean {
     protected Response ok( JsonArrayBuilder bld ) {
         return Response.ok(Json.createObjectBuilder()
             .add("status", STATUS_OK)
-            .add("data", bld).build()).build();
+            .add("data", bld).build())
+            .type(MediaType.APPLICATION_JSON).build();
+    }
+    
+    protected Response ok( JsonArray ja ) {
+        return Response.ok(Json.createObjectBuilder()
+            .add("status", STATUS_OK)
+            .add("data", ja).build())
+            .type(MediaType.APPLICATION_JSON).build();
     }
 
     protected Response ok( JsonObjectBuilder bld ) {
@@ -680,6 +725,14 @@ public abstract class AbstractApiBean {
             .add("data", bld).build() )
             .type(MediaType.APPLICATION_JSON)
             .build();
+    }
+    
+    protected Response ok( JsonObject jo ) {
+        return Response.ok( Json.createObjectBuilder()
+                .add("status", STATUS_OK)
+                .add("data", jo).build() )
+                .type(MediaType.APPLICATION_JSON)
+                .build();    
     }
 
     protected Response ok( String msg ) {
@@ -708,10 +761,15 @@ public abstract class AbstractApiBean {
     /**
      * @param data Payload to return.
      * @param mediaType Non-JSON media type.
+     * @param downloadFilename - add Content-Disposition header to suggest filename if not null
      * @return Non-JSON response, such as a shell script.
      */
-    protected Response ok(String data, MediaType mediaType) {
-        return Response.ok().entity(data).type(mediaType).build();
+    protected Response ok(String data, MediaType mediaType, String downloadFilename) {
+        ResponseBuilder res =Response.ok().entity(data).type(mediaType);
+        if(downloadFilename != null) {
+            res = res.header("Content-Disposition", "attachment; filename=" + downloadFilename);
+        }
+        return res.build();
     }
 
     protected Response created( String uri, JsonObjectBuilder bld ) {

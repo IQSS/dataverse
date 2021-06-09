@@ -87,7 +87,7 @@ Basic access URI:
 
   Example: Getting the file whose DOI is *10.5072/FK2/J8SJZB* ::
 
-    GET http://$SERVER/api/access/datafile/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
+    GET http://$SERVER/api/access/datafile/:persistentId?persistentId=doi:10.5072/FK2/J8SJZB
 
 
 Parameters:
@@ -284,7 +284,7 @@ especially with data files with large numbers of variables. See
 Preprocessed Data
 -----------------
 
-``/api/access/datafile/$id/metadata/preprocessed``
+``/api/access/datafile/$id?format=prep``
 
 This method provides the "preprocessed data" - a summary record that describes the values of the data vectors in the tabular file, in JSON. These metadata values are used by TwoRavens, an external tool that integrates with a Dataverse installation. Please note that this format might change in the future.
 
