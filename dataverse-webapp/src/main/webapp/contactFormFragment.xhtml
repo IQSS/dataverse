@@ -1,11 +1,9 @@
 <ui:composition xmlns:h="http://java.sun.com/jsf/html"
-    xmlns:f="http://java.sun.com/jsf/core"
-    xmlns:ui="http://java.sun.com/jsf/facelets"
-    xmlns:c="http://java.sun.com/jsp/jstl/core"
-    xmlns:p="http://primefaces.org/ui"
-    xmlns:o="http://omnifaces.org/ui"
-    xmlns:jsf="http://xmlns.jcp.org/jsf"
-    xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:o="http://omnifaces.org/ui"
+                xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
     
     <!-- Command that will fill and display contact dialog with initial values for contacting with main support team  -->
     <o:form useRequestURI="true">
@@ -61,6 +59,7 @@
                                          size="30"
                                          value="#{sendFeedbackDialog.userEmail}"
                                          validator="#{sendFeedbackDialog.validateUserEmail}"
+                                         requiredMessage="#{bundle['contact.sender.required']}"
                                          required="true"
                             />
                             <p:message for="senderEmail" styleClass="bg-danger text-danger" display="text"/>
