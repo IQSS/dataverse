@@ -81,7 +81,7 @@ public class DatasetFieldWalker {
     public void walk(DatasetField fld, SettingsServiceBean settingsService) {
         l.startField(fld);
         DatasetFieldType datasetFieldType = fld.getDatasetFieldType();
-        if(cvocMap.containsKey(datasetFieldType.getId())) {
+        if(datasetFieldType.isPrimitive() && cvocMap.containsKey(datasetFieldType.getId())) {
             for ( DatasetFieldValue evv : sort(fld.getDatasetFieldValues(), DatasetFieldValue.DisplayOrder) ) {
                 if (settingsService != null && settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false) && DatasetFieldType.FieldType.EMAIL.equals(evv.getDatasetField().getDatasetFieldType().getFieldType())) {
                     continue;

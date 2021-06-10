@@ -437,93 +437,98 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         logger.info("MF: " + managedFields.toString());
         String fieldName = null; 
         for (String filterKey : filtering.keySet()) {
-            try {
-            fieldName = managedFields.getString(filterKey);
-            logger.info("Looking for : " + fieldName + " as " + filterKey);
-            JsonObject filter = filtering.getJsonObject(filterKey);
-            logger.info("F: " + filter.toString());
-            JsonArray params = filter.getJsonArray("params");
-            if(params==null) {
-                params = Json.createArrayBuilder().build();
-            }
-            logger.info("Params: " + params.toString());
-            List<Object> vals = new ArrayList<Object>();
-            for (int i = 0; i < params.size(); i++) {
-                String param = params.getString(i);
-                if (param.startsWith("/")) {
-                    // Remove leading /
-                    param = param.substring(1);
-                    String[] pathParts = param.split("/");
-                    logger.info("PP: " + String.join(", ", pathParts));
-                    JsonValue curPath = readObject;
-                    for (int j = 0; j < pathParts.length - 1; j++) {
-                        if (pathParts[j].contains("=")) {
-                            JsonArray arr = ((JsonArray) curPath);
-                            for (int k = 0; k < arr.size(); k++) {
-                                String[] keyVal = pathParts[j].split("=");
-                                logger.info("Looking for object where " + keyVal[0] + " is " + keyVal[1]);
-                                JsonObject jo = arr.getJsonObject(k);
-                                String val = jo.getString(keyVal[0]);
-                                String expected = keyVal[1];
-                                if (expected.equals("@id")) {
-                                    expected = termUri;
-                                }
-                                if (val.equals(expected)) {
-                                    logger.info("Found: " + jo.toString());
-                                    curPath = jo;
-                                    break;
+            if (!filterKey.equals("@context")) {
+                try {
+                    fieldName = managedFields.getString(filterKey);
+                    logger.info("Looking for : " + fieldName + " as " + filterKey);
+                    JsonObject filter = filtering.getJsonObject(filterKey);
+                    logger.info("F: " + filter.toString());
+                    JsonArray params = filter.getJsonArray("params");
+                    if (params == null) {
+                        params = Json.createArrayBuilder().build();
+                    }
+                    logger.info("Params: " + params.toString());
+                    List<Object> vals = new ArrayList<Object>();
+                    for (int i = 0; i < params.size(); i++) {
+                        String param = params.getString(i);
+                        if (param.startsWith("/")) {
+                            // Remove leading /
+                            param = param.substring(1);
+                            String[] pathParts = param.split("/");
+                            logger.info("PP: " + String.join(", ", pathParts));
+                            JsonValue curPath = readObject;
+                            for (int j = 0; j < pathParts.length - 1; j++) {
+                                if (pathParts[j].contains("=")) {
+                                    JsonArray arr = ((JsonArray) curPath);
+                                    for (int k = 0; k < arr.size(); k++) {
+                                        String[] keyVal = pathParts[j].split("=");
+                                        logger.info("Looking for object where " + keyVal[0] + " is " + keyVal[1]);
+                                        JsonObject jo = arr.getJsonObject(k);
+                                        String val = jo.getString(keyVal[0]);
+                                        String expected = keyVal[1];
+                                        if (expected.equals("@id")) {
+                                            expected = termUri;
+                                        }
+                                        if (val.equals(expected)) {
+                                            logger.info("Found: " + jo.toString());
+                                            curPath = jo;
+                                            break;
+                                        }
+                                    }
+                                } else {
+                                    curPath = ((JsonObject) curPath).get(pathParts[j]);
+                                    logger.info("Found next Path object " + curPath.toString());
                                 }
                             }
+                            JsonValue jv = ((JsonObject) curPath).get(pathParts[pathParts.length - 1]);
+                            if (jv.getValueType().equals(JsonValue.ValueType.STRING)) {
+                                vals.add(i, ((JsonString) jv).getString());
+                            } else if (jv.getValueType().equals(JsonValue.ValueType.ARRAY)) {
+                                vals.add(i, jv);
+                            }
+                            logger.info("Added param value: " + i + ": " + vals.get(i));
                         } else {
-                            curPath = ((JsonObject) curPath).get(pathParts[j]);
-                            logger.info("Found next Path object " + curPath.toString());
+                            logger.info("Param is: " + param);
+                            // param is not a path - either a reference to the term URI
+                            if (param.equals("@id")) {
+                                logger.info("Adding id param: " + termUri);
+                                vals.add(i, termUri);
+                            } else {
+                                // or a hardcoded value
+                                logger.info("Adding hardcoded param: " + param);
+                                vals.add(i, param);
+                            }
                         }
                     }
-                    JsonValue jv = ((JsonObject) curPath).get(pathParts[pathParts.length - 1]);
-                    if (jv.getValueType().equals(JsonValue.ValueType.STRING)) {
-                        vals.add(i, ((JsonString) jv).getString());
-                    } else if (jv.getValueType().equals(JsonValue.ValueType.ARRAY)) {
-                        vals.add(i, jv);
-                    }
-                    logger.info("Added param value: " + i + ": " + vals.get(i));
-                } else {
-                    logger.info("Param is: " + param);
-                    //param is not a path - either a reference to the term URI
-                    if (param.equals("@id")) {
-                        logger.info("Adding id param: " + termUri);
-                        vals.add(i, termUri);
+                    // Shortcut: nominally using a pattern of {0} and a param that is @id or
+                    // hardcoded value allows the same options as letting the pattern itself be @id
+                    // or a hardcoded value
+                    String pattern = filter.getString("pattern");
+                    logger.info("Pattern: " + pattern);
+                    if (pattern.equals("@id")) {
+                        logger.info("Added #id pattern: " + filterKey + ": " + termUri);
+                        job.add(filterKey, termUri);
+                    } else if (pattern.contains("{")) {
+                        if (pattern.equals("{0}")) {
+                            if (vals.get(0) instanceof JsonArray) {
+                                job.add(filterKey, (JsonArray) vals.get(0));
+                            } else {
+                                job.add(filterKey, (String) vals.get(0));
+                            }
+                        } else {
+                            String result = MessageFormat.format(pattern, vals.toArray());
+                            logger.info("Result: " + result);
+                            job.add(filterKey, result);
+                            logger.info("Added : " + filterKey + ": " + result);
+                        }
                     } else {
-                        //or a hardcoded value
-                        logger.info("Adding hardcoded param: " + param);
-                        vals.add(i, param);
+                        logger.info("Added hardcoded pattern: " + filterKey + ": " + pattern);
+                        job.add(filterKey, pattern);
                     }
+                } catch (Exception e) {
+                    logger.info("External Vocabulary: " + termUri + " - Failed to find value for " + filterKey + ": "
+                            + e.getMessage());
                 }
-            }
-            //Shortcut: nominally using a pattern of {0} and a param that is @id or hardcoded value allows the same options as letting the pattern itself be @id or a hardcoded value
-            String pattern = filter.getString("pattern");
-            logger.info("Pattern: " + pattern);
-            if (pattern.equals("@id")) {
-                logger.info("Added #id pattern: " + filterKey + ": " + termUri);
-                job.add(filterKey, termUri);
-            } else if (pattern.contains("{")) {
-                if (pattern.equals("{0}")) {
-                    if (vals.get(0) instanceof JsonArray) {
-                        job.add(filterKey, (JsonArray) vals.get(0));
-                    } else {
-                        job.add(filterKey, (String) vals.get(0));
-                    }
-                } else {
-                    String result = MessageFormat.format(pattern, vals.toArray());
-                    logger.info("Result: " + result);
-                    job.add(filterKey, result);
-                    logger.info("Added : " + filterKey + ": " + result);
-                }
-            } else {
-                logger.info("Added hardcoded pattern: " + filterKey + ": " + pattern);
-                job.add(filterKey, pattern);
-            }
-        } catch (Exception e) {
-                logger.info("External Vocabulary: " + termUri + " - Failed to find value for " + filterKey + ": " + e.getMessage());
             }
         }
         JsonObject filteredResponse = job.build();

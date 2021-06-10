@@ -31,9 +31,14 @@
           "vocabs":["orcid"],
           "managed-fields": {"personName":"authorName", "scheme": "authorIdentifierScheme", "@id":"authorIdentifier"},
           "retrieval-filtering": {
+            "@context": {
+              "personName": "https://schema.org/name",
+                  "scheme":"http://purl.org/spar/datacite/AgentIdentifierScheme"
+            },
             "personName": {"pattern": "{0}, {1}", "params":["/name/family-name/value","/name/given-names/value"]},
             "@id": {"pattern": "{0}", "params":["@id"]},
-            "scheme":{"pattern":"ORCID"}
+            "scheme":{"pattern":"ORCID"},
+            "@type":"https://schema.org/Person"
           }
         },
 {
@@ -52,10 +57,17 @@
         },
         "managed-fields": {"vocabularyName":"cvocDemoVocabulary", "termName":"cvocDemoTerm", "vocabularyUri":"cvocDemoVocabularyURI"},
         "retrieval-filtering": {
+          "@context": {
+            "termName": "https://schema.org/name",
+            "vocabularyName": "https://dataverse.org/schema/vocabularyName",
+            "vocabularyUri": "https://dataverse.org/schema/vocabularyUri",
+            "lang": "@language",
+            "value": "@value"
+          },
           "@id": {"pattern": "{0}", "params":["@id"]},
           "termName": {"pattern": "{0}", "params":["/graph/uri=@id/prefLabel"]},
           "vocabularyName": {"pattern": "{0}", "params":["/graph/type=skos:ConceptScheme/prefLabel"]},
           "vocabularyUri": {"pattern": "{0}", "params":["/graph/type=skos:ConceptScheme/uri"]}
-        }
+       }
 }
 ]
