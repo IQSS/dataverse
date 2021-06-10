@@ -65,7 +65,7 @@ public class BannerTab implements Serializable {
         
     }
     
-    public void deactivateTextMessage(long textMessageId) {
+    public void deactivateBanner(long textMessageId) {
         bannerDAO.deactivate(textMessageId);
         JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataversemessages.banners.deactivate.success"));
     }
