@@ -128,12 +128,12 @@ public class DatasetReportService {
     }
 
     private void processFile(FileMetadata fileMetadata, CSVPrinter csvPrinter, Record datasetVersionRecord) throws IOException {
-        DataFile dataFile = fileMetadata.getDataFile();
-        Record fileRecord = createFileRecord(datasetVersionRecord, dataFile);
+        Record fileRecord = createFileRecord(datasetVersionRecord, fileMetadata);
         csvPrinter.printRecord(fileRecord.getValues());
     }
 
-    private Record createFileRecord(Record datasetVersionRecord, DataFile dataFile) {
+    private Record createFileRecord(Record datasetVersionRecord, FileMetadata fileMetadata) {
+        DataFile dataFile = fileMetadata.getDataFile();
         Record fileRecord = new Record(datasetVersionRecord);
         fileRecord.setFileName(dataFile.getDisplayName());
         fileRecord.setFileId(dataFile.getId());
@@ -142,10 +142,10 @@ public class DatasetReportService {
         fileRecord.setSize(dataFile.getFilesize());
         Long uncompressedSize = dataFile.getUncompressedSize();
         fileRecord.setSizeDecompressed(uncompressedSize != 0L ? uncompressedSize : null);
-        String tags = dataFile.getTags().stream()
-                .map(DataFileTag::getTypeLabel)
-                .collect(Collectors.joining(" "));
+
+        String tags = getTags(fileMetadata, dataFile);
         fileRecord.setTags(tags);
+
         fileRecord.setDatafilePublicationDate(dataFile.getPublicationDateFormattedYYYYMMDD());
         String license = Optional.ofNullable(dataFile.getFileMetadata())
                 .map(FileMetadata::getTermsOfUse)
@@ -156,6 +156,21 @@ public class DatasetReportService {
         fileRecord.setNumberOfDownloads(guestbookResponseService.getCountGuestbookResponsesByDataFileId(dataFile.getId()));
         fileRecord.setFileDataverseHierarchy(dvObjectService.getDataverseHierarchyFor(dataFile));
         return fileRecord;
+    }
+
+    private String getTags(FileMetadata fileMetadata, DataFile dataFile) {
+        String tagsDelimiter = "; ";
+        String tags = dataFile.getTags().stream()
+                .map(DataFileTag::getTypeLabel)
+                .collect(Collectors.joining(tagsDelimiter));
+
+        String categories = String.join(tagsDelimiter, fileMetadata.getCategoriesByName());
+        if(!tags.isEmpty() && !categories.isEmpty()) {
+            tags += tagsDelimiter + categories;
+        } else if(!categories.isEmpty()) {
+            tags = categories;
+        }
+        return tags;
     }
 
     /**
