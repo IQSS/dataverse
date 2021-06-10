@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.persistence.cache.DOIDataCiteRegisterCache;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetAuthor;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFundingReference;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -133,6 +134,7 @@ public class DOIDataCiteRegisterService {
         metadataTemplate.setIdentifier(identifier.substring(identifier.indexOf(':') + 1));
         metadataTemplate.setCreators(Util.getListFromStr(metadata.get("datacite.creator")));
         metadataTemplate.setAuthors(dataset.getLatestVersion().getDatasetAuthors());
+        metadataTemplate.setFundingReferences(dataset.getLatestVersion().getFundingReferences());
         if (dvObject.isInstanceofDataset()) {
             String description = dataset.getLatestVersion().getDescriptionPlainText();
             metadataTemplate.setDescription(StringEscapeUtils.unescapeHtml(description));
@@ -362,6 +364,7 @@ class DataCiteMetadataTemplate {
     private String description;
     private List<String[]> contacts;
     private List<String[]> producers;
+    private List<DatasetFundingReference> fundingReferences;
 
     public List<String[]> getProducers() {
         return producers;
@@ -393,6 +396,14 @@ class DataCiteMetadataTemplate {
 
     public void setAuthors(List<DatasetAuthor> authors) {
         this.authors = authors;
+    }
+
+    public List<DatasetFundingReference> getFundingReferences() {
+        return fundingReferences;
+    }
+
+    public void setFundingReferences(List<DatasetFundingReference> fundingReferences) {
+        this.fundingReferences = fundingReferences;
     }
 
     public DataCiteMetadataTemplate() {
@@ -475,9 +486,17 @@ class DataCiteMetadataTemplate {
                 }
             }
             if (author.getAffiliation() != null && !author.getAffiliation().getFieldValue().isEmpty()) {
-                creatorsElement.append("<affiliation>")
-                               .append(author.getAffiliation().getFieldValue().get())
-                               .append("</affiliation>");
+                if(author.getAffiliationIdentifier() != null && !author.getAffiliationIdentifier().getFieldValue().isEmpty()) {
+                    creatorsElement.append("<affiliation affiliationIdentifier=\"")
+                            .append(author.getAffiliationIdentifier().getFieldValue().get())
+                            .append("\" affiliationIdentifierScheme=\"ROR\">")
+                            .append(author.getAffiliation().getFieldValue().get())
+                            .append("</affiliation>");
+                } else {
+                    creatorsElement.append("<affiliation>")
+                            .append(author.getAffiliation().getFieldValue().get())
+                            .append("</affiliation>");
+                }
             }
             creatorsElement.append("</creator>");
         }
@@ -514,7 +533,60 @@ class DataCiteMetadataTemplate {
         xmlMetadata = xmlMetadata.replace("${relatedIdentifiers}", relIdentifiers);
 
         xmlMetadata = xmlMetadata.replace("{$contributors}", contributorsElement.toString());
+
+        StringBuilder fundingElement = new StringBuilder(0);
+        if (shouldGenerateFundingReferences()) {
+            fundingElement.append(generateFundingReferences());
+        }
+        xmlMetadata = xmlMetadata.replace("${fundingReferences}", fundingElement.toString());
+
         return xmlMetadata;
+    }
+
+    private boolean shouldGenerateFundingReferences() {
+        return (fundingReferences != null && !fundingReferences.isEmpty() && hasFundingReferenceWithAgency());
+    }
+
+    private boolean hasFundingReferenceWithAgency() {
+        return fundingReferences.stream().anyMatch(ref -> ref.getAgency() != null && !ref.getAgency().getValue().isEmpty());
+    }
+
+    private String generateFundingReferences() {
+        StringBuilder fundingsElement = new StringBuilder();
+        fundingsElement.append("<fundingReferences>");
+        for(DatasetFundingReference funding : fundingReferences) {
+            if(funding.getAgency() == null || funding.getAgency().getValue().isEmpty()) {
+                continue;
+            }
+
+            fundingsElement
+                    .append("<fundingReference>")
+                    .append("<funderName>")
+                    .append(funding.getAgency().getValue())
+                    .append("</funderName>");
+
+            if(funding.getAgencyIdentifier() != null && !funding.getAgencyIdentifier().isEmpty()) {
+                fundingsElement
+                        .append("<funderIdentifier funderIdentifierType=\"ROR\">")
+                        .append(funding.getAgencyIdentifier().getValue())
+                        .append("</funderIdentifier>");
+            }
+            if(funding.getProgramIdentifier() != null && !funding.getProgramIdentifier().isEmpty()) {
+                fundingsElement
+                        .append("<awardNumber>")
+                        .append(funding.getProgramIdentifier().getValue())
+                        .append("</awardNumber>");
+            }
+            if(funding.getProgramName() != null && !funding.getProgramName().isEmpty()) {
+                fundingsElement
+                        .append("<awardTitle>")
+                        .append(funding.getProgramName().getValue())
+                        .append("</awardTitle>");
+            }
+            fundingsElement.append("</fundingReference>");
+        }
+        fundingsElement.append("</fundingReferences>");
+        return fundingsElement.toString();
     }
 
     private String generateRelatedIdentifiers(DvObject dvObject) {

@@ -408,9 +408,20 @@ public class ExportServiceTest {
 
         DatasetFieldType authorNameFieldType = MocksFactory.makeDatasetFieldType("authorName", FieldType.TEXT, false, citationMetadataBlock);
         DatasetFieldType authorAffiliationFieldType = MocksFactory.makeDatasetFieldType("authorAffiliation", FieldType.TEXT, false, citationMetadataBlock);
+        DatasetFieldType authorAffiliationIdentifierFieldType = MocksFactory.makeDatasetFieldType("authorAffiliationIdentifier", FieldType.TEXT, false, citationMetadataBlock);
+
         DatasetFieldType authorFieldType = MocksFactory.makeComplexDatasetFieldType("author", true, citationMetadataBlock,
-                                                                                    authorNameFieldType, authorAffiliationFieldType);
+                                                                                    authorNameFieldType, authorAffiliationFieldType, authorAffiliationIdentifierFieldType);
         authorFieldType.setDisplayOnCreate(true);
+
+        DatasetFieldType grantNumberAgencyFieldType = MocksFactory.makeDatasetFieldType("grantNumberAgency", FieldType.TEXT, false, citationMetadataBlock);
+        DatasetFieldType grantNumberAgencyIdentifierFieldType = MocksFactory.makeDatasetFieldType("grantNumberAgencyIdentifier", FieldType.TEXT, false, citationMetadataBlock);
+        DatasetFieldType grantNumberProgramFieldType = MocksFactory.makeDatasetFieldType("grantNumberProgram", FieldType.TEXT, false, citationMetadataBlock);
+        DatasetFieldType grantNumberValueFieldType = MocksFactory.makeDatasetFieldType("grantNumberValue", FieldType.TEXT, false, citationMetadataBlock);
+
+        DatasetFieldType grantNumberFieldType = MocksFactory.makeComplexDatasetFieldType("grantNumber", true, citationMetadataBlock,
+                grantNumberAgencyFieldType, grantNumberAgencyIdentifierFieldType, grantNumberProgramFieldType, grantNumberValueFieldType);
+        grantNumberFieldType.setDisplayOnCreate(true);
 
         DatasetFieldType datasetContactNameFieldType = MocksFactory.makeDatasetFieldType("datasetContactName", FieldType.TEXT, false, citationMetadataBlock);
         DatasetFieldType datasetContactAffiliationFieldType = MocksFactory.makeDatasetFieldType("datasetContactAffiliation", FieldType.TEXT, false, citationMetadataBlock);
@@ -439,6 +450,12 @@ public class ExportServiceTest {
         when(datasetFieldService.findByNameOpt(eq("author"))).thenReturn(authorFieldType);
         when(datasetFieldService.findByNameOpt(eq("authorName"))).thenReturn(authorNameFieldType);
         when(datasetFieldService.findByNameOpt(eq("authorAffiliation"))).thenReturn(authorAffiliationFieldType);
+        when(datasetFieldService.findByNameOpt(eq("authorAffiliationIdentifier"))).thenReturn(authorAffiliationIdentifierFieldType);
+        when(datasetFieldService.findByNameOpt(eq("grantNumber"))).thenReturn(grantNumberFieldType);
+        when(datasetFieldService.findByNameOpt(eq("grantNumberAgency"))).thenReturn(grantNumberAgencyFieldType);
+        when(datasetFieldService.findByNameOpt(eq("grantNumberAgencyIdentifier"))).thenReturn(grantNumberAgencyIdentifierFieldType);
+        when(datasetFieldService.findByNameOpt(eq("grantNumberProgram"))).thenReturn(grantNumberProgramFieldType);
+        when(datasetFieldService.findByNameOpt(eq("grantNumberValue"))).thenReturn(grantNumberValueFieldType);
         when(datasetFieldService.findByNameOpt(eq("datasetContact"))).thenReturn(datasetContactFieldType);
         when(datasetFieldService.findByNameOpt(eq("datasetContactName"))).thenReturn(datasetContactNameFieldType);
         when(datasetFieldService.findByNameOpt(eq("datasetContactAffiliation"))).thenReturn(datasetContactAffiliationFieldType);

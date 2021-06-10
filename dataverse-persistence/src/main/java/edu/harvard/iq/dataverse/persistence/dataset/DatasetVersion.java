@@ -806,8 +806,11 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
                     if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliation)) {
                         datasetAuthor.setAffiliation(subField);
                     }
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorAffiliationIdentifier)) {
+                        datasetAuthor.setAffiliationIdentifier(subField);
+                    }
                     if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdType)) {
-                        datasetAuthor.setIdType(subField.getDisplayValue());
+                        datasetAuthor.setIdType(subField.getControlledVocabularyValues().get(0).getStrValue());
                     }
                     if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdValue)) {
                         datasetAuthor.setIdValue(subField.getDisplayValue());
@@ -856,6 +859,37 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
                 }
             }
         }
+        return retList;
+    }
+
+    public List<DatasetFundingReference> getFundingReferences() {
+        List<DatasetFundingReference> retList = new ArrayList<>();
+        for (DatasetField dsf : this.getDatasetFields()) {
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.grantNumber)) {
+                DatasetFundingReference fundingReference = new DatasetFundingReference(dsf.getDisplayOrder());
+                for (DatasetField subField : dsf.getDatasetFieldsChildren()) {
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.grantNumberAgency)) {
+                        fundingReference.setAgency(subField);
+                    }
+                    // fallback for missing grantNumberAgency
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.grantNumberAgencyShortName) &&
+                            fundingReference.getAgency() == null) {
+                        fundingReference.setAgency(subField);
+                    }
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.grantNumberAgencyIdentifier)) {
+                        fundingReference.setAgencyIdentifier(subField);
+                    }
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.grantNumberProgram)) {
+                        fundingReference.setProgramName(subField);
+                    }
+                    if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.grantNumberValue)) {
+                        fundingReference.setProgramIdentifier(subField);
+                    }
+                }
+                retList.add(fundingReference);
+            }
+        }
+        retList.sort(DatasetFundingReference.DisplayOrder);
         return retList;
     }
 

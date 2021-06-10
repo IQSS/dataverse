@@ -74,6 +74,45 @@
                 "multiple": false,
                 "typeClass": "primitive",
                 "value": "Dataverse.org"
+              },
+              "authorAffiliationIdentifier": {
+                "typeName": "authorAffiliationIdentifier",
+                "multiple": false,
+                "typeClass": "primitive",
+                "value": "https://ror.org/024yc3q36"
+              }
+            }
+          ]
+        },
+        {
+          "typeName": "grantNumber",
+          "multiple": true,
+          "typeClass": "compound",
+          "value": [
+            {
+              "grantNumberAgency": {
+                "typeName": "grantNumberAgency",
+                "multiple": false,
+                "typeClass": "primitive",
+                "value": "Grant Agency"
+              },
+              "grantNumberAgencyIdentifier": {
+                "typeName": "grantNumberAgencyIdentifier",
+                "multiple": false,
+                "typeClass": "primitive",
+                "value": "https://ror.org/00e0c0q64"
+              },
+              "grantNumberValue": {
+                "typeName": "grantNumberValue",
+                "multiple": false,
+                "typeClass": "primitive",
+                "value": "grant-123"
+              },
+              "grantNumberProgram": {
+                "typeName": "grantNumberProgram",
+                "multiple": false,
+                "typeClass": "primitive",
+                "value": "Grant Program"
               }
             }
           ]

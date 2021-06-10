@@ -53,6 +53,7 @@ public class DatasetFieldConstant implements java.io.Serializable {
     public final static String datasetId = "datasetId";
     public final static String authorName = "authorName";
     public final static String authorAffiliation = "authorAffiliation";
+    public final static String authorAffiliationIdentifier = "authorAffiliationIdentifier";
     public final static String authorIdType = "authorIdentifierScheme";
     public final static String authorIdValue = "authorIdentifier";
     public final static String otherIdValue = "otherIdValue";
@@ -70,6 +71,7 @@ public class DatasetFieldConstant implements java.io.Serializable {
     public final static String fundingAgency = "fundingAgency";
     public final static String grantNumberValue = "grantNumberValue";
     public final static String grantNumberAgency = "grantNumberAgency";
+    public final static String grantNumberAgencyIdentifier = "grantNumberAgencyIdentifier";
     public final static String grantNumberAgencyShortName = "grantNumberAgencyShortName";
     public final static String grantNumberProgram = "grantNumberProgram";
     public final static String distributorName = "distributorName";
@@ -210,6 +212,10 @@ public class DatasetFieldConstant implements java.io.Serializable {
 
     public String getAuthorAffiliation() {
         return authorAffiliation;
+    }
+
+    public static String getAuthorAffiliationIdentifier() {
+        return authorAffiliationIdentifier;
     }
 
     public static String getAuthorIdType() {

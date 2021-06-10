@@ -73,6 +73,16 @@ public class DatasetAuthor {
         this.affiliation = affiliation;
     }
 
+    private DatasetField affiliationIdentifier;
+
+    public DatasetField getAffiliationIdentifier() {
+        return affiliationIdentifier;
+    }
+
+    public void setAffiliationIdentifier(DatasetField affiliationIdentifier) {
+        this.affiliationIdentifier = affiliationIdentifier;
+    }
+
     private String idType;
 
     public String getIdType() {
