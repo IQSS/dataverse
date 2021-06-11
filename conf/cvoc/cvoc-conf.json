@@ -1,9 +1,7 @@
 [{
         "field-name": "cvocDemo",
         "term-uri-field": "cvocDemoTermURI",
-        "minChars": 2,
         "cvoc-url": "https://skosmos.dev.finto.fi/",
-        "language": "en",
         "js-url": "/resources/js/skosmos.js",
         "protocol": "skosmos",
         "retrieval-uri": "https://skosmos.dev.finto.fi/rest/v1/data?uri={0}",
@@ -45,13 +43,10 @@
     {
         "field-name": "creator",
         "term-uri-field": "creator",
-        "trigger-class": "person",
-        "language": "en",
         "js-url": "/resources/js/people.js",
         "protocol": "orcid",
         "retrieval-uri": "https://pub.orcid.org/v3.0/{0}/person",
         "prefix": "https://orcid.org/",
-        "vocabs": ["orcid"],
         "managed-fields": {},
         "retrieval-filtering": {
             "@context": {
@@ -75,9 +70,7 @@
     {
         "field-name": "skosterm",
         "term-uri-field": "skosterm",
-        "minChars": 3,
         "cvoc-url": "https://skosmos.dev.finto.fi/",
-        "language": "en",
         "js-url": "/resources/js/skosmos.js",
         "protocol": "skosmos",
         "retrieval-uri": "https://skosmos.dev.finto.fi/rest/v1/data?uri={0}",
