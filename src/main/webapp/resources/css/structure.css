@@ -387,6 +387,7 @@ div.btn-group ul.dropdown-menu li.disabled span.ui-commandlink.ui-state-disabled
 div.field-add-delete a.btn {margin:0 1em 0 0;}
 div.field-add-delete a.btn:last-child {margin-right:0;}
 div.field-add-delete a.btn.compound-field-btn {margin-top:1.8em;}
+div[data-cvoc-parentfield] ~ div.field-add-delete a.btn.compound-field-btn {margin-top:0px;}
 div.field-add-delete a.btn.nolabel-field-btn {margin-top:0;}
 
 /* Featured Dataverses*/
