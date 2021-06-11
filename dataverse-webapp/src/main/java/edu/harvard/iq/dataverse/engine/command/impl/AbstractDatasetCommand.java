@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandExecutionException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.globalid.DOIDataCiteServiceBean;
 import edu.harvard.iq.dataverse.globalid.FakePidProviderServiceBean;
 import edu.harvard.iq.dataverse.globalid.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
@@ -16,6 +17,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersionUser;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import io.vavr.control.Try;
 
 import javax.validation.ConstraintViolation;
 import java.sql.Timestamp;
@@ -60,14 +62,16 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
 
     /**
      * Creates/updates the {@link DatasetVersionUser} for our {@link #dataset}. After
-     * calling this method, there is a {@link DatasetUser} object connecting
+     * calling this method, there is a {@link DatasetVersionUser} object connecting
      * {@link #dataset} and the {@link AuthenticatedUser} who issued this
      * command, with the {@code lastUpdate} field containing {@link #timestamp}.
      *
      * @param ctxt The command context in which this command runs.
      */
     protected void updateDatasetUser(CommandContext ctxt) {
-        DatasetVersionUser datasetDataverseUser = ctxt.datasets().getDatasetVersionUser(getDataset().getLatestVersion(), getUser());
+        DatasetVersionUser datasetDataverseUser = ctxt
+                .datasets()
+                .getDatasetVersionUser(getDataset().getLatestVersion(), getUser());
 
         if (datasetDataverseUser != null) {
             // Update existing dataset-user
@@ -98,20 +102,20 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      * @throws CommandException if and only if {@code lenient=false}, and field
      *                          validation failed.
      */
-    protected void validateOrDie(DatasetVersion dsv, Boolean lenient)  {
+    protected void validateOrDie(DatasetVersion dsv, Boolean lenient) {
         Set<ConstraintViolation> constraintViolations = dsv.validate();
         if (!constraintViolations.isEmpty()) {
             if (lenient) {
                 // populate invalid fields with N/A
                 constraintViolations.stream()
-                        .map(cv -> ((DatasetField) cv.getRootBean()))
-                        .forEach(f -> f.setFieldValue(DatasetField.NA_VALUE));
+                                    .map(cv -> ((DatasetField) cv.getRootBean()))
+                                    .forEach(f -> f.setFieldValue(DatasetField.NA_VALUE));
 
             } else {
                 // explode with a helpful message
                 String validationMessage = constraintViolations.stream()
-                        .map(cv -> cv.getMessage() + " (Invalid value:" + cv.getInvalidValue() + ")")
-                        .collect(joining(", ", "Validation Failed: ", "."));
+                                                               .map(cv -> cv.getMessage() + " (Invalid value:" + cv.getInvalidValue() + ")")
+                                                               .collect(joining(", ", "Validation Failed: ", "."));
 
                 throw new IllegalCommandException(validationMessage, this);
             }
@@ -125,9 +129,9 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      */
     protected void tidyUpFields(DatasetVersion dsv) {
         removeBlankDatasetFields(dsv.getDatasetFields());
-        
+
         updateDisplayOrder(dsv.getDatasetFields());
-        
+
         dsv.getDatasetFields().forEach(field -> field.trimTrailingSpaces());
     }
 
@@ -148,7 +152,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      * @param ctxt
      * @
      */
-    protected void registerExternalIdentifier(Dataset theDataset, CommandContext ctxt)  {
+    protected void registerExternalIdentifier(Dataset theDataset, CommandContext ctxt) {
         if (!theDataset.isIdentifierRegistered()) {
             GlobalIdServiceBean globalIdServiceBean = GlobalIdServiceBean.getBean(theDataset.getProtocol(), ctxt);
             if (globalIdServiceBean != null) {
@@ -167,7 +171,7 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
                         int attempts = 0;
 
                         while (globalIdServiceBean.alreadyExists(theDataset) && attempts < FOOLPROOF_RETRIAL_ATTEMPTS_LIMIT) {
-                            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, globalIdServiceBean));
+                            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset));
                             logger.log(Level.INFO, "Attempting to register external identifier for dataset {0} (trying: {1}).",
                                        new Object[]{theDataset.getId(), theDataset.getIdentifier()});
                             attempts++;
@@ -175,16 +179,18 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
 
                         if (globalIdServiceBean.alreadyExists(theDataset)) {
                             throw new CommandExecutionException("This dataset may not be published because its identifier is already in use by another dataset; "
-                                                                        + "gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset.getIdentifier(), this);
+                                                                        + "gave up after " + attempts + " attempts. Current (last requested) identifier: " + theDataset
+                                    .getIdentifier(), this);
                         }
                     }
-                    // Invariant: Dataset identifier does not exist in the remote registry
-                    globalIdServiceBean.createIdentifier(theDataset);
-                    theDataset.setGlobalIdCreateTime(getTimestamp());
-                    theDataset.setIdentifierRegistered(true);
+
+                    handlePidReservation(theDataset, globalIdServiceBean);
+
 
                 } catch (Throwable e) {
-                    throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", globalIdServiceBean.getProviderInformation().toArray()), this);
+                    throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", globalIdServiceBean
+                            .getProviderInformation()
+                            .toArray()), this);
                 }
             } else {
                 throw new IllegalCommandException("This dataset may not be published because its id registry service is not supported.", this);
@@ -212,31 +218,47 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
     protected Timestamp getTimestamp() {
         return timestamp;
     }
-    
+
     private void updateDisplayOrder(List<DatasetField> fields) {
         DatasetFieldUtil.groupByType(fields).forEach(fieldsByType -> {
-            
+
             List<DatasetField> singleTypeFields = fieldsByType.getDatasetFields();
-            
-            for (int i=0; i<singleTypeFields.size(); ++i) {
+
+            for (int i = 0; i < singleTypeFields.size(); ++i) {
                 singleTypeFields.get(i).setDisplayOrder(i);
-                
+
                 updateDisplayOrder(singleTypeFields.get(i).getDatasetFieldsChildren());
             }
         });
-        
+
     }
-    
+
     private void removeBlankDatasetFields(List<DatasetField> fields) {
         Iterator<DatasetField> dsfIt = fields.iterator();
         while (dsfIt.hasNext()) {
             DatasetField field = dsfIt.next();
-            
+
             removeBlankDatasetFields(field.getDatasetFieldsChildren());
-            
+
             if (field.isEmpty()) {
                 dsfIt.remove();
             }
+        }
+    }
+
+    private void handlePidReservation(Dataset theDataset, GlobalIdServiceBean globalIdServiceBean) throws Throwable {
+
+        if (globalIdServiceBean instanceof DOIDataCiteServiceBean) {
+            Try.of(() -> ((DOIDataCiteServiceBean) globalIdServiceBean).createIdentifierInNewTx(theDataset))
+               .onFailure(throwable -> logger.log(Level.WARNING, "Identifier has failed to be registered"))
+               .onSuccess(s -> {
+                   theDataset.setGlobalIdCreateTime(getTimestamp());
+                   theDataset.setIdentifierRegistered(true);
+               });
+        } else {
+            globalIdServiceBean.createIdentifier(theDataset);
+            theDataset.setGlobalIdCreateTime(getTimestamp());
+            theDataset.setIdentifierRegistered(true);
         }
     }
 }

@@ -32,4 +32,6 @@ public interface JpaOperations<ID, T extends JpaEntity<ID>> {
     default void delete(T entity) {
         deleteById(entity.getId());
     }
+
+    T refresh(T entity);
 }

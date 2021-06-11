@@ -14,7 +14,6 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import java.io.IOException;
 import java.util.Objects;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.util.StringUtil.isEmpty;
@@ -71,7 +70,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         Dataset theDataset = getDataset();
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
         if (isEmpty(theDataset.getIdentifier())) {
-            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
+            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset));
         }
 
         DatasetVersion dsv = getVersionToPersist(theDataset);
@@ -103,7 +102,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
             }
         }
         if (theDataset.getIdentifier() == null) {
-            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset, idServiceBean));
+            theDataset.setIdentifier(ctxt.datasets().generateDatasetIdentifier(theDataset));
         }
 
         // Attempt the registration if importing dataset through the API, or the app (but not harvest)

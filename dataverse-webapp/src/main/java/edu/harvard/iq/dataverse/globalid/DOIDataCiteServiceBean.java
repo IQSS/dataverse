@@ -5,6 +5,8 @@ import edu.harvard.iq.dataverse.persistence.GlobalId;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -58,6 +60,10 @@ public class DOIDataCiteServiceBean extends AbstractGlobalIdServiceBean {
         return alreadyExists;
     }
 
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public String createIdentifierInNewTx(DvObject dvObject) throws Exception {
+        return this.createIdentifier(dvObject);
+    }
 
     @Override
     public String createIdentifier(DvObject dvObject) throws Exception {

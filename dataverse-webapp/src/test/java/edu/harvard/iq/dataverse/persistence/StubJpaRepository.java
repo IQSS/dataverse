@@ -69,6 +69,11 @@ public class StubJpaRepository<T extends JpaEntity<Long>> implements JpaOperatio
     }
 
     @Override
+    public T refresh(T entity) {
+        return storage.get(entity.getId());
+    }
+
+    @Override
     public void deleteById(Long id) {
         storage.remove(id);
     }

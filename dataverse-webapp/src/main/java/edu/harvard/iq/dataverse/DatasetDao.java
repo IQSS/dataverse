@@ -146,22 +146,22 @@ public class DatasetDao implements java.io.Serializable {
         }
     }
 
-    public String generateDatasetIdentifier(Dataset dataset, GlobalIdServiceBean idServiceBean) {
+    public String generateDatasetIdentifier(Dataset dataset) {
         String identifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle);
         String shoulder = settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder);
 
         switch (identifierType) {
             case "randomString":
-                return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
+                return generateIdentifierAsRandomString(dataset, shoulder);
             case "sequentialNumber":
-                return generateIdentifierAsSequentialNumber(dataset, idServiceBean, shoulder);
+                return generateIdentifierAsSequentialNumber(dataset, shoulder);
             default:
                 /* Should we throw an exception instead?? -- L.A. 4.6.2 */
-                return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
+                return generateIdentifierAsRandomString(dataset, shoulder);
         }
     }
 
-    private String generateIdentifierAsRandomString(Dataset dataset, GlobalIdServiceBean idServiceBean, String shoulder) {
+    private String generateIdentifierAsRandomString(Dataset dataset, String shoulder) {
         String identifier = null;
         do {
             identifier = shoulder + RandomStringUtils.randomAlphanumeric(6).toUpperCase();
@@ -170,7 +170,7 @@ public class DatasetDao implements java.io.Serializable {
         return identifier;
     }
 
-    private String generateIdentifierAsSequentialNumber(Dataset dataset, GlobalIdServiceBean idServiceBean, String shoulder) {
+    private String generateIdentifierAsSequentialNumber(Dataset dataset, String shoulder) {
 
         String identifier;
         do {

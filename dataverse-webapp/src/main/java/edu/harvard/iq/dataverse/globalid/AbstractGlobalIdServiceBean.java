@@ -131,7 +131,7 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
         String authority = dvObject.getAuthority() == null ? settingsService.getValueForKey(SettingsServiceBean.Key.Authority) : dvObject.getAuthority();
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, commandEngine.getContext());
         if (dvObject.isInstanceofDataset()) {
-            dvObject.setIdentifier(datasetDao.generateDatasetIdentifier((Dataset) dvObject, idServiceBean));
+            dvObject.setIdentifier(datasetDao.generateDatasetIdentifier((Dataset) dvObject));
         } else {
             dvObject.setIdentifier(datafileService.generateDataFileIdentifier((DataFile) dvObject, idServiceBean));
         }

@@ -1,17 +1,17 @@
 package edu.harvard.iq.dataverse.persistence.dataset;
 
+import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
 import org.junit.Test;
 
 import javax.inject.Inject;
-
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.hamcrest.Matchers.*;
 
 public class DatasetRepositoryIT extends PersistenceArquillianDeployment {
 
@@ -76,5 +76,15 @@ public class DatasetRepositoryIT extends PersistenceArquillianDeployment {
         // then
         assertNotNull(datasetIds);
         assertEquals(0, datasetIds.size());
+    }
+
+    @Test
+    public void findByNonRegisteredIdentifier() {
+        // when
+        List<Dataset> datasetsFound = datasetRepository.findByNonRegisteredIdentifier();
+        // then
+        org.assertj.core.api.Assertions.assertThat(datasetsFound).size().isEqualTo(4);
+        org.assertj.core.api.Assertions.assertThat(datasetsFound).extracting(DvObject::getId)
+                .containsOnly(52L, 56L, 57L, 66L);
     }
 }

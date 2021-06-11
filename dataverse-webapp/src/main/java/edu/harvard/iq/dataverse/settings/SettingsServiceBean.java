@@ -186,6 +186,10 @@ public class SettingsServiceBean {
          */
         DoiProvider,
         /**
+         * Period in ms after which the service will try to reserve yet unreserved DOI's
+         */
+        DoiBackgroundReservationInterval,
+        /**
          * Shoulder for global id - used to create a common prefix on identifiers
          */
         Shoulder,

@@ -108,6 +108,12 @@ public abstract class JpaRepository<ID, T extends JpaEntity<ID>> implements JpaO
         em.remove(entity);
     }
 
+    @Override
+    public T refresh(T entity) {
+        em.refresh(entity);
+        return entity;
+    }
+
     public void mergeAndDelete(T entity) {
         entity = em.merge(entity);
         delete(entity);

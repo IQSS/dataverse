@@ -54,7 +54,7 @@ public class RegisterDvObjectCommand extends AbstractVoidCommand {
             //if so, leave.
             if (target.getIdentifier() == null || target.getIdentifier().isEmpty()) {
                 if (target.isInstanceofDataset()) {
-                    target.setIdentifier(ctxt.datasets().generateDatasetIdentifier((Dataset) target, idServiceBean));
+                    target.setIdentifier(ctxt.datasets().generateDatasetIdentifier((Dataset) target));
 
                 } else {
                     target.setIdentifier(ctxt.files().generateDataFileIdentifier((DataFile) target, idServiceBean));
