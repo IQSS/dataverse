@@ -68,7 +68,7 @@ function updatePeopleInputs() {
         var personInput = this;
         if (!personInput.hasAttribute('data-person')) {
             //Random identifier
-            let num = Math.floor(Math.random() * 100000000);
+            let num = Math.floor(Math.random() * 100000000000);
 
             //Hide the actual input and give it a data-person number so we can find it
             $(personInput).hide();
@@ -128,6 +128,7 @@ function updatePeopleInputs() {
                         }
                         var query = {
                             q: term,
+                            //Currently we just get the top 10 hits. We could get, for example, the top 50, sort as below to put recently used orcids at the top, and then limit to 10
                             rows: 10
                         }
                         return query;
