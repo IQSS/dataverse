@@ -3,11 +3,21 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 # http://www.apache.org/licenses/LICENSE-2.0
-
+#
+################################################################################################################
+#
 # THIS FILE IS TO BE USED WITH MAVEN DOCKER BUILD:
-# mvn -Pcontainer clean package docker:build
-
-# Using same base image as Solr (https://hub.docker.com/_/solr), reducing pulls
+# mvn -Pct clean package docker:build
+#
+################################################################################################################
+#
+# Some commands used are inspired by https://github.com/payara/Payara/tree/master/appserver/extras/docker-images.
+# Most parts origin from older versions of https://github.com/gdcc/dataverse-kubernetes.
+#
+# We are not using upstream Payara images because:
+#  - Using same base image as Solr (https://hub.docker.com/_/solr) is reducing pulls
+#  - Their image is less optimised for production usage by design choices
+#
 FROM openjdk:11-jre
 LABEL maintainer="FDM FZJ <forschungsdaten@fz-juelich.de>"
 # Default payara ports to expose

@@ -1,5 +1,5 @@
 #!/bin/bash
-################################################################################
+##########################################################################################################
 #
 # A script to append deploy commands to the post boot command file at
 # $PAYARA_HOME/scripts/post-boot-commands.asadmin file. All applications in the
@@ -22,7 +22,14 @@
 #
 # Note that many parameters to the deploy command can be safely used only when
 # a single application exists in the $DEPLOY_DIR directory.
-################################################################################
+#
+##########################################################################################################
+#
+#  This script is a fork of https://github.com/payara/Payara/blob/master/appserver/extras/docker-images/
+#  server-full/src/main/docker/bin/init_1_generate_deploy_commands.sh and licensed under CDDL 1.1
+#  by the Payara Foundation.
+#
+##########################################################################################################
 
 # Check required variables are set
 if [ -z $DEPLOY_DIR ]; then echo "Variable DEPLOY_DIR is not set."; exit 1; fi

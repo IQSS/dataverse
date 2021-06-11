@@ -24,6 +24,12 @@
 # This script executes the asadmin tool which is expected at ~/appserver/bin/asadmin.
 #
 ##########################################################################################################
+#
+#  This script is a fork of https://github.com/payara/Payara/blob/master/appserver/
+#  extras/docker-images/server-full/src/main/docker/bin/startInForeground.sh and licensed under CDDL 1.1
+#  by the Payara Foundation.
+#
+##########################################################################################################
 
 # Check required variables are set
 if [ -z $ADMIN_USER ]; then echo "Variable ADMIN_USER is not set."; exit 1; fi
