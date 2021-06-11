@@ -23,7 +23,7 @@
         </p:inputText>
         <p:watermark for="inputText" value="#{dsfv.datasetField.datasetFieldType.localeWatermark}"></p:watermark>
     </ui:fragment>
-    <ui:fragment rendered="#{cvoc!=null}">
+    <ui:fragment rendered="#{cvoc!=null and cvoc.getString('term-uri-field').equals(dsfv.datasetField.datasetFieldType.name)}">
         <p:inputText value="#{dsfv.valueForEdit}" id="cvocInputText" pt:aria-required="#{dsf.required}"
                  styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
                  rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary
@@ -38,10 +38,22 @@
             <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvoc.getString('protocol','')}"/>
             <f:passThroughAttribute name="data-cvoc-filter" value="#{cvoc.getString('term-parent-uri','')}"/>
             <f:passThroughAttribute name="data-cvoc-vocabs" value="#{cvoc.get('vocabs').toString()}"/>
-            <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvoc.get('managedfields').toString()}"/>
+            <f:passThroughAttribute name="data-cvoc-parent" value="#{cvoc.getString('field-name','')}"/>
+            <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvoc.get('managed-fields').toString()}"/>
         </p:inputText>
-        <p:watermark for="cvocInputText" value="#{dsfv.datasetField.datasetFieldType.localeWatermark}"></p:watermark>
-    
+    </ui:fragment>
+        <ui:fragment rendered="#{cvoc!=null and !cvoc.getString('term-uri-field').equals(dsfv.datasetField.datasetFieldType.name)}">
+        <p:inputText value="#{dsfv.valueForEdit}" id="cvocInputText2" pt:aria-required="#{dsf.required}"
+                 styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
+                 rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary
+                             and (dsfv.datasetField.datasetFieldType.fieldType == 'TEXT'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'INT'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'FLOAT'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'URL'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'DATE'
+                             or dsfv.datasetField.datasetFieldType.fieldType == 'EMAIL')}">
+            <f:passThroughAttribute name="data-cvoc-managed-field" value="#{dsfv.datasetField.datasetFieldType.name}"/>
+        </p:inputText>
     </ui:fragment>
     
     <p:inputTextarea value="#{dsfv.valueForEdit}" id="description" pt:aria-required="#{dsf.required}"

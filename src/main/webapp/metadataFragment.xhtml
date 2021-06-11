@@ -98,9 +98,18 @@
                                                 </ui:fragment>
                                                 <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue">
                                                     <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">
-                                                        <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first}"/>
+                                                        <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first and !cvocConf.containsKey(dsf.datasetFieldType.id)}"/>
                                                         <h:outputText value="#{cvPart.value}"
-                                                                      escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}"/>
+                                                                      escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}" 
+                                                                      rendered="${!cvocConf.containsKey(dsf.datasetFieldType.id)}"/>
+                                                        <h:outputText value="#{cvPart.key.value}"
+                                                                      escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}" 
+                                                                      rendered="${cvocConf.containsKey(dsf.datasetFieldType.id) and cvPart.key.datasetFieldType.name.equals(cvocConf.get(dsf.datasetFieldType.id).getString('term-uri-field'))}">
+                                                                      <f:passThroughAttribute name="lang" value="#{dataverseSession.localeCode}" />
+                                                                      <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('cvoc-url','')}" />
+                                                                      <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('protocol','')}" />
+                                                                      <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvocConf.get(dsf.datasetFieldType.id).get('managedfields').toString()}" />
+                                                        </h:outputText>
                                                     </ui:repeat>
                                                     <br/>
                                                 </ui:repeat>
@@ -222,9 +231,9 @@
                                                 <p class="help-block">
                                                     <h:outputText value="#{bundle.conditionalRequiredMsg}"/>
                                                 </p>
-                                            </ui:fragment>                                            
+                                            </ui:fragment>
                                             <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue" varStatus="valCount">
-                                                <div class="form-group form-col-container col-sm-9 edit-compound-field">
+                                                <div class="form-group form-col-container col-sm-9 edit-compound-field"  data-cvoc-parentfield="#{cvocConf.containsKey(dsf.datasetFieldType.id)?cvocConf.get(dsf.datasetFieldType.id).getString('field-name'):''}">
                                                     <!-- Sub Fields -->
                                                     <ui:repeat value="#{compoundValue.childDatasetFields}" var="subdsf">
                                                         <div class="form-col-container #{subdsf.datasetFieldType.fieldType == 'TEXTBOX' ? 'col-sm-12' : 'col-sm-6'}">
