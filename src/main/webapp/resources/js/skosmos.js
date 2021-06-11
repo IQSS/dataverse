@@ -135,7 +135,7 @@ function updateSkosmosInputs() {
             // Add a select2 element to allow search and provide a list of choices
             if ($(anchorSib).parent().find('.cvoc-vocab').length != 0) {
                 $(anchorSib).parent().find('.cvoc-vocab').after($('<div/>').addClass('cvoc-term col-sm-9').append($('<label/>').text('Term')).append(
-                    '<select id=' + selectId + ' class="form-control add-resource select2" tabindex="-1" aria-hidden="true" style="width: 400px">'));
+                    '<select id=' + selectId + ' class="form-control add-resource select2" tabindex="-1" aria-hidden="true">'));
                 $('#' + selectId).attr('data-cvoc-cur-vocab', vocab);
                 if (Object.keys(vocabs).length == 1 || $(skosmosInput).val().startsWith("http")) {
                     $(anchorSib).parent().find('.cvoc-term > label').hide();
@@ -143,7 +143,7 @@ function updateSkosmosInputs() {
                 }
             } else {
                 $(anchorSib).after(
-                    '<select id=' + selectId + ' class="form-control add-resource select2" tabindex="-1" aria-hidden="true"  style="width: 400px">');
+                    '<select id=' + selectId + ' class="form-control add-resource select2" tabindex="-1" aria-hidden="true">');
             }
             $("#" + selectId).select2({
                 theme: "bootstrap",

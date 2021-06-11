@@ -63,7 +63,7 @@
                                         <td>
                                             <!-- Primitive datasetFields -->
                                             <ui:fragment rendered="#{dsf.datasetFieldType.primitive}">
-                                                <h:outputText value="#{dsf.displayValue}"
+                                                <h:outputText value="#{dsf.value}"
                                                     rendered="#{!dsf.datasetFieldType.allowMultiples and cvocConf.containsKey(dsf.datasetFieldType.id)}"
                                                     escape="#{dsf.datasetFieldType.isEscapeOutputText()}">
                                                     <f:passThroughAttribute name="lang" value="#{dataverseSession.localeCode}" />
@@ -74,7 +74,7 @@
                                                 <h:outputText value="#{dsf.displayValue}"
                                                     rendered="#{!dsf.datasetFieldType.allowMultiples and !cvocConf.containsKey(dsf.datasetFieldType.id)}"
                                                     escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
-                                                <ui:repeat value="#{dsf.values}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples and cvocConf.containsKey(dsf.datasetFieldType.id)}">
+                                                <ui:repeat value="#{dsf.getValues_nondisplay()}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples and cvocConf.containsKey(dsf.datasetFieldType.id)}">
                                                     <h:outputText value="#{loop.first?'':'; '}"/>
                                                     <h:outputText value="#{ value }"
                                                                   escape="#{dsf.datasetFieldType.isEscapeOutputText()}">
@@ -134,9 +134,9 @@
                                                                  or metadataBlockVal.key.isHasRequired())
                                                                  or (!datasetPage)}">
                     <div data-toggle="collapse" data-target="#panelCollapse#{block.index}" class="panel-heading text-info">
-                        #{metadataBlockVal.key.localeDisplayName} <span class="glyphicon #{block.first || editMode == 'CREATE'  ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down'}"/>
+                        #{metadataBlockVal.key.localeDisplayName} <span class="glyphicon #{block.first || editMode == 'CREATE' || !cvocConf.isEmpty() ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down'}"/>
                     </div>
-                    <div id="panelCollapse#{block.index}" class="collapse #{block.first || editMode == 'CREATE' ? 'in' : ''}">
+                    <div id="panelCollapse#{block.index}" class="collapse #{block.first || editMode == 'CREATE' ? || !cvocConf.isEmpty() 'in' : ''}">
                         <div class="panel-body">
                             <ui:repeat value="#{metadataBlockVal.value}" var="dsf">
                                 <div class="form-group" role="group" aria-labelledby="metadata_#{dsf.datasetFieldType.name}"
@@ -311,4 +311,17 @@
         </div>
         </p:fragment>
     </ui:fragment>
+ <script>
+    //<![CDATA[
+    $(document).ready(function() {
+      //The select2 widget used in external vocab scripts has trouble determining the width of an input field if it is initially hidden
+      //Starting with the metadatablocks displayed and collapsing them here is a work-around to fix that.
+      if(#{!cvocConf.isEmpty()}) {
+        for(let i=1;i< #{fn:length(metadataBlocks)};i++) {
+          $('#panelCollapse'+i).collapse('hide');
+        }
+      }
+    });
+    //]]>
+    </script>
 </ui:composition>
