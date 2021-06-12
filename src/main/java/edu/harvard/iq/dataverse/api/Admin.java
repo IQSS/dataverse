@@ -1997,8 +1997,8 @@ public class Admin extends AbstractApiBean {
     }
 
     @POST
-	@Consumes("application/json")
-	@Path("/licenses")
+    @Consumes("application/json")
+    @Path("/licenses")
     public Response addLicense(License license) {
         try {
             licenseService.save(license);
@@ -2011,8 +2011,8 @@ public class Admin extends AbstractApiBean {
     }
 
     @PUT
-	@Consumes("application/json")
-	@Path("/licenses/{id}")
+    @Consumes("application/json")
+    @Path("/licenses/{id}")
     public Response putLicenseById(@PathParam("id") long id, License license) {
         try {
             licenseService.setById(id, license.getName(), license.getUri(), license.getIconUrl(), license.isActive());
