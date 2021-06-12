@@ -1997,7 +1997,6 @@ public class Admin extends AbstractApiBean {
     }
 
     @POST
-    @Consumes("application/json")
     @Path("/licenses")
     public Response addLicense(License license) {
         try {
@@ -2011,7 +2010,6 @@ public class Admin extends AbstractApiBean {
     }
 
     @PUT
-    @Consumes("application/json")
     @Path("/licenses/{id}")
     public Response putLicenseById(@PathParam("id") long id, License license) {
         try {

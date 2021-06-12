@@ -3509,13 +3509,19 @@ View the list of standard license terms that can be selected for a dataset::
 
     curl http://$SERVER/api/admin/licenses
 
-View the details of the standard license with ``id`` 1::
+View the details of the standard license with the database ID specified in ``$ID``::
 
-    curl http://$SERVER/api/admin/licenses/1
+    export ID=1
+    curl http://$SERVER/api/admin/licenses/$ID
 
 Add a new license by posting a JSON file adapted from this example :download:`add-license.json <../_static/api/add-license.json>`. The ``name`` and ``uri`` of the new license must be unique. ::
 
     curl -X POST -H 'Content-Type: application/json' --data-binary @add-license.json http://$SERVER/api/admin/licenses
 
+Overwrite the license with the database specified in ``$ID``::
 
+    curl -X PUT -H 'Content-Type: application/json' --data-binary @edit-license.json http://$SERVER/api/admin/licenses/$ID
 
+Delete the license with with the database specified in ``$ID``::
+
+    curl -X DELETE http://$SERVER/api/admin/licenses/$ID
