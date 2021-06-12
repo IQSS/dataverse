@@ -3507,6 +3507,15 @@ Manage Available Standard License Terms
 
 View the list of standard license terms that can be selected for a dataset::
 
-    GET http://$SERVER/api/admin/licenses
+    curl http://$SERVER/api/admin/licenses
 
-Add
+View the details of the standard license with ``id`` 1::
+
+    curl http://$SERVER/api/admin/licenses/1
+
+Add a new license by posting a JSON file adapted from this example :download:`add-license.json <../_static/api/add-license.json>`. The ``name`` and ``uri`` of the new license must be unique. ::
+
+    curl -X POST -H 'Content-Type: application/json' --data-binary @add-license.json http://$SERVER/api/admin/licenses
+
+
+

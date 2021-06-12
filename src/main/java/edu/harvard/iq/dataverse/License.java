@@ -90,14 +90,6 @@ public class License {
         this.name = name;
     }
 
-    public String getShortDescription() {
-        return shortDescription;
-    }
-
-    public void setShortDescription(String shortDescription) {
-        this.shortDescription = shortDescription;
-    }
-
     public URI getUri() {
         try {
             return new URI(uri);

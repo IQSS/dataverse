@@ -49,6 +49,7 @@ import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -1996,7 +1997,8 @@ public class Admin extends AbstractApiBean {
     }
 
     @POST
-    @Path("/licenses")
+	@Consumes("application/json")
+	@Path("/licenses")
     public Response addLicense(License license) {
         try {
             licenseService.save(license);
@@ -2009,10 +2011,11 @@ public class Admin extends AbstractApiBean {
     }
 
     @PUT
-    @Path("/licenses/{id}")
+	@Consumes("application/json")
+	@Path("/licenses/{id}")
     public Response putLicenseById(@PathParam("id") long id, License license) {
         try {
-            licenseService.setById(id, license.getName(), license.getShortDescription(), license.getUri(), license.getIconUrl(), license.isActive());
+            licenseService.setById(id, license.getName(), license.getUri(), license.getIconUrl(), license.isActive());
         } catch (UpdateException e) {
             return error(Response.Status.BAD_REQUEST, e.getMessage());
         }
