@@ -25,8 +25,6 @@ import javax.persistence.UniqueConstraint;
             query="SELECT l FROM License l WHERE l.active='true'"),
     @NamedQuery( name="License.findById",
             query = "SELECT l FROM License l WHERE l.id=:id"),
-    @NamedQuery( name="License.findByName",
-            query = "SELECT l FROM License l WHERE l.name=:name"),
     @NamedQuery( name="License.findDefault",
             query = "SELECT l FROM License l WHERE l.name='CC0'"),
     @NamedQuery( name="License.findByNameOrUri",
@@ -47,13 +45,13 @@ public class License {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(columnDefinition="TEXT", nullable = false)
+    @Column(columnDefinition="TEXT", nullable = false, unique = true)
     private String name;
 
     @Column(columnDefinition="TEXT")
     private String shortDescription;
 
-    @Column(columnDefinition="TEXT", nullable = false)
+    @Column(columnDefinition="TEXT", nullable = false, unique = true)
     private String uri;
 
     @Column(columnDefinition="TEXT")
@@ -90,14 +88,6 @@ public class License {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getShortDescription() {
-        return shortDescription;
-    }
-
-    public void setShortDescription(String shortDescription) {
-        this.shortDescription = shortDescription;
     }
 
     public URI getUri() {

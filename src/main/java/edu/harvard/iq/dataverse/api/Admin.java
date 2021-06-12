@@ -49,6 +49,7 @@ import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -1977,34 +1978,23 @@ public class Admin extends AbstractApiBean {
     @GET
     @Path("/licenses")
     public Response getLicenses() {
-    	JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-		for(License license : licenseService.listAll()) {
-			arrayBuilder.add(JsonPrinter.json(license));
-		}
+        JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+        for(License license : licenseService.listAll()) {
+            arrayBuilder.add(JsonPrinter.json(license));
+        }
         return ok(arrayBuilder);
     }
 
     @GET
-    @Path("/licenses/id/{id}")
+    @Path("/licenses/{id}")
     public Response getLicenseById(@PathParam("id") long id) {
-		try {
-			License license = licenseService.getById(id);
-        	return ok(json(license));
-		} catch (FetchException e) {
-			return error(Response.Status.NOT_FOUND, e.getMessage());
-		}
-	}
-
-    @GET
-    @Path("/licenses/name/{name}")
-    public Response getLicenseByName(@PathParam("name") String name) {
-		try {
-			License license = licenseService.getByName(name);
-        	return ok(json(license));
-		} catch (FetchException e) {
-			return error(Response.Status.NOT_FOUND, e.getMessage());
-		}
-	}
+        try {
+            License license = licenseService.getById(id);
+            return ok(json(license));
+        } catch (FetchException e) {
+            return error(Response.Status.NOT_FOUND, e.getMessage());
+        }
+    }
 
     @POST
     @Path("/licenses")
@@ -2013,36 +2003,25 @@ public class Admin extends AbstractApiBean {
             licenseService.save(license);
             return created("/api/admin/licenses", Json.createObjectBuilder().add("message", "License created"));
         } catch (RequestBodyException e) {
-			return error(Response.Status.BAD_REQUEST, e.getMessage());
-		} catch(ConflictException e) {
+            return error(Response.Status.BAD_REQUEST, e.getMessage());
+        } catch(ConflictException e) {
             return error(Response.Status.CONFLICT, e.getMessage());
         }
-	}
-
-    @PUT
-    @Path("/licenses/id/{id}")
-    public Response putLicenseById(@PathParam("id") long id, License license) {
-		try {
-			licenseService.setById(id, license.getName(), license.getShortDescription(), license.getUri(), license.getIconUrl(), license.isActive());
-		} catch (UpdateException e) {
-			return error(Response.Status.BAD_REQUEST, e.getMessage());
-		}
-		return ok("License with ID " + id + " was replaced.");
     }
 
     @PUT
-    @Path("/licenses/name/{name}")
-    public Response putLicenseByName(@PathParam("name") String nameArg, License license) {
-		try {
-			licenseService.setByName(nameArg, license.getName(), license.getShortDescription(), license.getUri(), license.getIconUrl(), license.isActive());
-		} catch (UpdateException e) {
-			return error(Response.Status.BAD_REQUEST, e.getMessage());
-		}
-		return ok("License with name " + nameArg + " was replaced.");
+    @Path("/licenses/{id}")
+    public Response putLicenseById(@PathParam("id") long id, License license) {
+        try {
+            licenseService.setById(id, license.getName(), license.getUri(), license.getIconUrl(), license.isActive());
+        } catch (UpdateException e) {
+            return error(Response.Status.BAD_REQUEST, e.getMessage());
+        }
+        return ok("License with ID " + id + " was replaced.");
     }
 
     @DELETE
-    @Path("/licenses/id/{id}")
+    @Path("/licenses/{id}")
     public Response deleteLicenseById(@PathParam("id") long id) {
         int result = licenseService.deleteById(id);
         if (result == 1) {
@@ -2050,15 +2029,4 @@ public class Admin extends AbstractApiBean {
         }
         return error(Response.Status.NOT_FOUND, "A license with ID " + id + " doesn't exist.");
     }
-
-    @DELETE
-    @Path("/licenses/name/{name}")
-    public Response deleteLicenseByName(@PathParam("name") String name) {
-        int result = licenseService.deleteByName(name);
-        if (result == 1) {
-            return ok("OK. License with name " + name + " was deleted.");
-        }
-        return error(Response.Status.NOT_FOUND, "A license with name " + name + " doesn't exist.");
-    }
-    
 }
