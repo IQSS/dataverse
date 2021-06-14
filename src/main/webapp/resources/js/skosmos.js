@@ -224,7 +224,7 @@ function updateSkosmosInputs() {
                 language: {
                     searching: function(params) {
                         // Change this to be appropriate for your application
-                        return 'Search by term or related term…';
+                        return 'Search by preferred or alternate label…';
                     }
                 },
                 placeholder: "Add a Term",
