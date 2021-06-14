@@ -2,9 +2,11 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetRelPublication;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.util.DateUtil;
@@ -12,6 +14,7 @@ import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -19,6 +22,9 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+
+import org.apache.commons.collections4.CollectionUtils;
+
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
 public class SolrSearchResult {
@@ -401,6 +407,10 @@ public class SolrSearchResult {
     }
 
     public JsonObject toJsonObject(boolean showRelevance, boolean showEntityIds, boolean showApiUrls) {
+        return toJsonObject(showRelevance, showEntityIds, showApiUrls, null);
+    }
+    
+    public JsonObject toJsonObject(boolean showRelevance, boolean showEntityIds, boolean showApiUrls, List<String> metadataFields) {
         return json(showRelevance, showEntityIds, showApiUrls).build();
     }
 
@@ -442,8 +452,13 @@ public class SolrSearchResult {
         
         return myDataJson;
     } //getJsonForMydata
-
+    
     public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls) {
+		return json(showRelevance, showEntityIds, showApiUrls, null);
+	}
+
+	public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls,
+			List<String> metadataFields) {
 
         if (this.type == null) {
             return jsonObjectBuilder();
@@ -647,6 +662,21 @@ public class SolrSearchResult {
                     }
                     nullSafeJsonBuilder.add("dataSources", dataSources);
                 }
+                
+                if (CollectionUtils.isNotEmpty(metadataFields)) {
+					// create metadata fields map names
+					Map<String, List<String>> metadataFieldMapNames = computeRequestedMetadataFieldMapNames(
+							metadataFields);
+
+					// add metadatafields objet to wrap all requeested fields
+					NullSafeJsonBuilder metadataFieldBuilder = jsonObjectBuilder();
+
+					Map<MetadataBlock, List<DatasetField>> groupedFields = DatasetField
+							.groupByBlock(dv.getFlatDatasetFields());
+					json(metadataFieldMapNames, groupedFields, metadataFieldBuilder);
+
+					nullSafeJsonBuilder.add("metadataBlocks", metadataFieldBuilder);
+				}
             }
         }
 
@@ -673,6 +703,54 @@ public class SolrSearchResult {
         }
         return nullSafeJsonBuilder;
     }
+	
+	private void json(Map<String, List<String>> metadataFieldMapNames,
+			Map<MetadataBlock, List<DatasetField>> groupedFields, NullSafeJsonBuilder metadataFieldBuilder) {
+		for (Map.Entry<String, List<String>> metadataFieldNamesEntry : metadataFieldMapNames.entrySet()) {
+			String metadataBlockName = metadataFieldNamesEntry.getKey();
+			List<String> metadataBlockFieldNames = metadataFieldNamesEntry.getValue();
+			for (MetadataBlock metadataBlock : groupedFields.keySet()) {
+				if (metadataBlockName.equals(metadataBlock.getName())) {
+					// create metadataBlock object
+					NullSafeJsonBuilder metadataBlockBuilder = jsonObjectBuilder();
+					metadataBlockBuilder.add("displayName", metadataBlock.getDisplayName());
+					JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
+
+					List<DatasetField> datasetFields = groupedFields.get(metadataBlock);
+					for (DatasetField datasetField : datasetFields) {
+						if (metadataBlockFieldNames.contains("*")
+								|| metadataBlockFieldNames.contains(datasetField.getDatasetFieldType().getName())) {
+							if (datasetField.getDatasetFieldType().isCompound()) {
+								fieldsArray.add(JsonPrinter.json(datasetField));
+							} else if (!datasetField.getDatasetFieldType().isHasParent()) {
+								fieldsArray.add(JsonPrinter.json(datasetField));
+							}
+						}
+					}
+					// with a fields to hold all requested properties
+					metadataBlockBuilder.add("fields", fieldsArray);
+
+					metadataFieldBuilder.add(metadataBlock.getName(), metadataBlockBuilder);
+				}
+			}
+		}
+	}
+	
+	private Map<String, List<String>> computeRequestedMetadataFieldMapNames(List<String> metadataFields) {
+		Map<String, List<String>> metadataFieldMapNames = new HashMap<>();
+		for (String metadataField : metadataFields) {
+			String parts[] = metadataField.split(":");
+			if (parts.length == 2) {
+				List<String> metadataFieldNames = metadataFieldMapNames.get(parts[0]);
+				if (metadataFieldNames == null) {
+					metadataFieldNames = new ArrayList<>();
+					metadataFieldMapNames.put(parts[0], metadataFieldNames);
+				}
+				metadataFieldNames.add(parts[1]);
+			}
+		}
+		return metadataFieldMapNames;
+	}
 
     private String getDateTimePublished() {
         String datePublished = null;
