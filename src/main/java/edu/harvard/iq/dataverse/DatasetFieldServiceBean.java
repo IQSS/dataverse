@@ -435,12 +435,9 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         logger.info("RF: " + filtering.toString());
         JsonObject managedFields = cvocEntry.getJsonObject("managed-fields");
         logger.info("MF: " + managedFields.toString());
-        String fieldName = null; 
         for (String filterKey : filtering.keySet()) {
             if (!filterKey.equals("@context")) {
                 try {
-                    fieldName = managedFields.getString(filterKey);
-                    logger.info("Looking for : " + fieldName + " as " + filterKey);
                     JsonObject filter = filtering.getJsonObject(filterKey);
                     logger.info("F: " + filter.toString());
                     JsonArray params = filter.getJsonArray("params");
