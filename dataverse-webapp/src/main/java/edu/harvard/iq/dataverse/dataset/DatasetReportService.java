@@ -100,7 +100,8 @@ public class DatasetReportService {
         GlobalId pid = dataset.getGlobalId();
         datasetRecord.setDatasetPID(pid != null ? pid.asString() : StringUtils.EMPTY);
         datasetRecord.setUnderEmbargo(dataset.hasActiveEmbargo());
-        datasetRecord.setEmbargoDate(dataset.getEmbargoDate().getOrNull());
+        datasetRecord.setEmbargoDate(getFormattedEmbargoDate(dataset));
+
         return datasetRecord;
     }
 
@@ -183,6 +184,12 @@ public class DatasetReportService {
         return tags;
     }
 
+    private String getFormattedEmbargoDate(Dataset dataset) {
+        return dataset.getEmbargoDate()
+                .map(embargoDate -> dateFormatter.format(embargoDate))
+                .getOrElse(StringUtils.EMPTY);
+    }
+
     /**
      * This enum establishes the columns of CSV report and their order
      */
@@ -207,7 +214,7 @@ public class DatasetReportService {
         DATASET_VERSION_PUBLICATION_DATE("Dataset version publication date"),
         DATASET_VERSION_STATE("Dataset version state"),
         LAST_MODIFICATION_DATE("Last modification date"),
-        DEACCESSION_DATA("Deaccession data"),
+        DEACCESSION_REASON("Deaccession reason"),
         UNDER_EMBARGO("Under embargo"),
         EMBARGO_DATE("Embargo date");
 
@@ -303,7 +310,7 @@ public class DatasetReportService {
             data.put(FileDataField.UNDER_EMBARGO, underEmbargo);
         }
 
-        public void setEmbargoDate(Date embargoDate) {
+        public void setEmbargoDate(String embargoDate) {
             data.put(FileDataField.EMBARGO_DATE, embargoDate);
         }
 
@@ -311,7 +318,7 @@ public class DatasetReportService {
             data.put(FileDataField.LAST_MODIFICATION_DATE, lastModificationDate);
         }
         public void setDeaccessionData(String deaccessionData) {
-            data.put(FileDataField.DEACCESSION_DATA, deaccessionData);
+            data.put(FileDataField.DEACCESSION_REASON, deaccessionData);
         }
 
         public void setDepositDate(String depositDate) {
