@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFileTag;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
-import edu.harvard.iq.dataverse.persistence.datafile.license.License;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
@@ -111,7 +110,12 @@ public class DatasetReportService {
         datasetVersionRecord.setDatasetTitle(getDatasetTitleInVersion(datasetVersion));
 
         for (FileMetadata fileMetadata : allFilesMetadataSorted) {
+            String licenseOrTerms = Optional.ofNullable(fileMetadata)
+                    .map(FileMetadata::getTermsOfUse)
+                    .map(this::getLicenseOrTermsOfUser).orElse(StringUtils.EMPTY);
+            datasetVersionRecord.setLicenseOrTerms(licenseOrTerms);
             datasetVersionRecord.setFileName(fileMetadata.getLabel());
+          
             processFile(fileMetadata, csvPrinter, datasetVersionRecord);
         }
     }
@@ -153,15 +157,15 @@ public class DatasetReportService {
         fileRecord.setTags(tags);
 
         fileRecord.setDatafilePublicationDate(dataFile.getPublicationDateFormattedYYYYMMDD());
-        String license = Optional.ofNullable(dataFile.getFileMetadata())
-                .map(FileMetadata::getTermsOfUse)
-                .map(FileTermsOfUse::getLicense)
-                .map(License::getName).orElse(StringUtils.EMPTY);
-        fileRecord.setLicense(license);
         fileRecord.setContentType(dataFile.getContentType());
         fileRecord.setNumberOfDownloads(guestbookResponseService.getCountGuestbookResponsesByDataFileId(dataFile.getId()));
         fileRecord.setFileDataverseHierarchy(dvObjectService.getDataverseHierarchyFor(dataFile));
         return fileRecord;
+    }
+
+    private String getLicenseOrTermsOfUser(FileTermsOfUse termsOfUse) {
+        return termsOfUse.getTermsOfUseType().equals(FileTermsOfUse.TermsOfUseType.LICENSE_BASED) ?
+                termsOfUse.getLicense().getName() : termsOfUse.getTermsOfUseType().toString();
     }
 
     private String getTags(FileMetadata fileMetadata, DataFile dataFile) {
@@ -190,7 +194,7 @@ public class DatasetReportService {
         CHECKSUM_TYPE("Checksum type"),
         DEPOSIT_DATE("Deposit date"),
         DATAFILE_PUBLICATION_DATE("Datafile publication date"),
-        LICENSE("License"),
+        LICENSE_OR_TERMS("License or Terms"),
         TAGS("Tags"),
         NUMBER_OF_DOWNLOADS("Number of downloads"),
         SIZE("Size (bytes)"),
@@ -334,8 +338,8 @@ public class DatasetReportService {
             data.put(FileDataField.DATASET_VERSION_PUBLICATION_DATE, publicationDate);
         }
 
-        public void setLicense(String license) {
-            data.put(FileDataField.LICENSE, license);
+        public void setLicenseOrTerms(String licenseOrTerms) {
+            data.put(FileDataField.LICENSE_OR_TERMS, licenseOrTerms);
         }
 
         public void setContentType(String contentType) {
