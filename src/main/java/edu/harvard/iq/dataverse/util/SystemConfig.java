@@ -43,9 +43,6 @@ public class SystemConfig {
 
     @EJB
     DataverseServiceBean dataverseService;
-
-    @EJB
-    AuthenticationServiceBean authenticationService;
     
    public static final String DATAVERSE_PATH = "/dataverse/";
 
