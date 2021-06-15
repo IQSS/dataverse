@@ -1,16 +1,17 @@
+###############################################################################
+#
+#   THIS IS AN OLD TRAVIS-CI.ORG JOB FILE
+#   To be used with Github Actions, it would be necessary to refactor it.
+#   Keeping it as the future example it has been before.
+#   See also #5846
+#
+###############################################################################
+
 services:
   - docker
 
 jobs:
   include:
-    # Execute java unit- and integration tests
-    - stage: test
-      language: java
-      jdk:
-        - oraclejdk8
-      script: mvn -DcompilerArgument=-Xlint:unchecked test -P all-unit-tests
-      after_success: mvn jacoco:report coveralls:report
-
     # Execute Cypress for UI testing
     # see https://docs.cypress.io/guides/guides/continuous-integration.html
     - stage: test
