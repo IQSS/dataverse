@@ -186,7 +186,7 @@ public class NewBannerPage implements Serializable {
     }
 
     private String redirectToTextMessages() {
-        return "/dataverse-textMessages.xhtml?dataverseId=" + dataverseId + "&faces-redirect=true";
+        return "/dataverse-textMessages.xhtml?dataverseId=" + dataverseId + "&activeTab=banners&faces-redirect=true";
     }
 
     public PermissionsWrapper getPermissionsWrapper() {

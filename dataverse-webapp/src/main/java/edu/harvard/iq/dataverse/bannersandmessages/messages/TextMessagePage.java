@@ -17,7 +17,6 @@ import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.io.Serializable;
 
 @ViewScoped
@@ -25,6 +24,8 @@ import java.io.Serializable;
 public class TextMessagePage implements Serializable {
 
     private long dataverseId;
+    private String activeTab;
+    private int activeIndex;
     private Dataverse dataverse;
     private DataverseTextMessageDto textMessageToDelete;
 
@@ -43,6 +44,12 @@ public class TextMessagePage implements Serializable {
     public String init() {
         lazydataverseTextMessages.setDataverseId(dataverseId);
         dataverse = dataverseDao.find(dataverseId);
+
+        if(StringUtils.isNotBlank(activeTab) && activeTab.equals("banners")) {
+            activeIndex = 1;
+        } else if(StringUtils.isBlank(activeTab) || activeTab.equals("messages")) {
+            activeIndex = 0;
+        }
 
         if (!permissionsWrapper.canEditDataverseTextMessagesAndBanners(dataverseId)) {
             return permissionsWrapper.notAuthorized();
@@ -68,9 +75,9 @@ public class TextMessagePage implements Serializable {
         
         TabView tabView = Components.findComponentsInChildren(Components.getCurrentForm(), TabView.class).get(0);
         Tab textMessagesTab = Components.findComponentsInChildren(tabView, Tab.class).get(0);
-        
+
         DataList dataListComponent = Components.findComponentsInChildren(textMessagesTab, DataList.class).get(0);
-        if (dataListComponent.getFirst() >= allMessagesCount) {
+        if (dataListComponent.getFirst() >= allMessagesCount && dataListComponent.getFirst() >= dataListComponent.getRows()) {
             dataListComponent.setFirst(dataListComponent.getFirst() - dataListComponent.getRows());
         }
         lazydataverseTextMessages.setRowCount(allMessagesCount.intValue());
@@ -84,6 +91,14 @@ public class TextMessagePage implements Serializable {
     
     public long getDataverseId() {
         return dataverseId;
+    }
+
+    public String getActiveTab() {
+        return activeTab;
+    }
+
+    public int getActiveIndex() {
+        return activeIndex;
     }
 
     public Dataverse getDataverse() {
@@ -104,6 +119,14 @@ public class TextMessagePage implements Serializable {
 
     public void setDataverseId(long dataverseId) {
         this.dataverseId = dataverseId;
+    }
+
+    public void setActiveIndex(int activeIndex) {
+        this.activeIndex = activeIndex;
+    }
+
+    public void setActiveTab(String activeTab) {
+        this.activeTab = activeTab;
     }
 
     public void setLazydataverseTextMessages(LazyDataverseTextMessage lazydataverseTextMessages) {

@@ -51,18 +51,18 @@ public class BannerTab implements Serializable {
     public void deleteBanner() {
         bannerDAO.delete(bannerToDelete.getId());
         JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataversemessages.banners.delete.success"));
-        
+
         Long allBannersCount = bannerDAO.countBannersForDataverse(dataverseId);
-        
+
         TabView tabView = Components.findComponentsInChildren(Components.getCurrentForm(), TabView.class).get(0);
         Tab bannersTab = Components.findComponentsInChildren(tabView, Tab.class).get(1);
-        
+
         DataList dataListComponent = Components.findComponentsInChildren(bannersTab, DataList.class).get(0);
-        if (dataListComponent.getFirst() >= allBannersCount) {
+        if (dataListComponent.getFirst() >= allBannersCount && dataListComponent.getFirst() >= dataListComponent.getRows()) {
             dataListComponent.setFirst(dataListComponent.getFirst() - dataListComponent.getRows());
         }
         lazyBannerHistory.setRowCount(allBannersCount.intValue());
-        
+
     }
     
     public void deactivateBanner(long textMessageId) {
