@@ -500,6 +500,7 @@
                             <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                             <ui:param name="lockedFromDownload" value="#{DatasetPage.lockedFromDownload}"/>
                             <ui:param name="exploreTools" value="#{DatasetPage.getExploreToolsForDataFile(fileMetadata.dataFile.id)}"/>
+                            <ui:param name="anonymized" value="#{DatasetPage.anonymizedAccess}"/>
                         </ui:include>
                         <!-- END: Explore/Download/Request Button Block -->
 
