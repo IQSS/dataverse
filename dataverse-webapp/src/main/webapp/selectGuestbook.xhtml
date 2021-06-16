@@ -62,8 +62,6 @@
                                     <div class="col-sm-9">
                                         <!-- Preview Guestbook from selectGuestbook page -->
                                         <ui:fragment rendered="true">
-                                            <p class="help-block">#{bundle['file.dataFilesTab.terms.list.guestbook.select.tip']}</p>
-
                                             <ui:fragment rendered="#{empty selectGuestbookPage.availableGuestbooks}">
                                                 <p class="help-block">
                                                     <h:outputFormat value="#{bundle['file.dataFilesTab.terms.list.guestbook.noAvailable.tip']}">
