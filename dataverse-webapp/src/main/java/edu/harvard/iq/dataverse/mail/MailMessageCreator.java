@@ -259,6 +259,13 @@ public class MailMessageCreator {
                 }
 
                 return messageText;
+            case REVOKEROLE:
+                messageText += MessageFormat.format(BundleUtil.getStringFromBundleWithLocale("notification.email.revokeRole",
+                        notificationsEmailLanguage),
+                        objectType,
+                        dataset.getDisplayName(),
+                        getDatasetLink(dataset));
+                return messageText;
             case GRANTFILEACCESS:
                 pattern = BundleUtil.getStringFromBundleWithLocale("notification.email.grantFileAccess",
                         notificationsEmailLanguage);
