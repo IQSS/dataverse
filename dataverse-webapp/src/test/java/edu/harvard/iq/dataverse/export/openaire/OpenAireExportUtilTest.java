@@ -801,7 +801,7 @@ public class OpenAireExportUtilTest {
         Assert.assertEquals("<descriptions>"
                                     + "<description descriptionType=\"Abstract\">DescriptionText 1"
                                     + "</description>"
-                                    + "<description descriptionType=\"Abstract\">DescriptionText2"
+                                    + "<description descriptionType=\"Abstract\">Description 2  text  with html"
                                     + "</description>"
                                     + "<description descriptionType=\"Methods\">SoftwareName1, SoftwareVersion1"
                                     + "</description>"

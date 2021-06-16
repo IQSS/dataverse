@@ -8,9 +8,11 @@ import edu.harvard.iq.dataverse.api.dto.FieldDTO;
 import edu.harvard.iq.dataverse.api.dto.FileDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.common.MarkupChecker;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.json.JsonObject;
@@ -1298,7 +1300,8 @@ public class OpenAireExportUtil {
                             for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.descriptionText.equals(next.getTypeName())) {
-                                    descriptionOfAbstract = next.getSinglePrimitive();
+                                    descriptionOfAbstract = MarkupChecker.stripAllTags(next.getSinglePrimitive());
+                                    descriptionOfAbstract = StringEscapeUtils.unescapeHtml(descriptionOfAbstract);
                                 }
                             }
 

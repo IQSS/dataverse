@@ -236,7 +236,7 @@
                   "typeName": "dsDescriptionValue",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "DescriptionText2"
+                  "value": "<p>Description 2 <p> text <p> with html</p>"
                 },
                 "dsDescriptionDate": {
                   "typeName": "dsDescriptionDate",
