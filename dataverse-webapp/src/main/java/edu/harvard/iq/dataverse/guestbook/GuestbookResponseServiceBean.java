@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.persistence.guestbook.CustomQuestionValue;
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
 import edu.harvard.iq.dataverse.persistence.guestbook.GuestbookResponse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.User;
 
 import javax.ejb.Stateless;
@@ -655,7 +656,11 @@ public class GuestbookResponseServiceBean {
     public GuestbookResponse initAPIGuestbookResponse(Dataset dataset, DataFile dataFile, DataverseSession session, User user) {
         GuestbookResponse guestbookResponse = new GuestbookResponse();
         Guestbook datasetGuestbook = dataset.getGuestbook();
-        User userForGuestbook = user != null ? user : session.getUser();
+        User userForGuestbook = user;
+
+        if (GuestUser.get().equals(userForGuestbook)) {
+            userForGuestbook = session.getUser();
+        }
 
         if (datasetGuestbook == null) {
             guestbookResponse.setGuestbook(findDefaultGuestbook());

@@ -483,20 +483,18 @@ public class Datasets extends AbstractApiBean {
     @Produces({"application/zip"})
     @ApiWriteOperation
     public Response getVersionFiles(@PathParam("id") String datasetId, @PathParam("versionId") String versionId, @QueryParam("gbrecs") boolean gbrecs,
-                                    @Context HttpHeaders headers, @Context HttpServletResponse response, @Context UriInfo uriInfo) {
+                                    @Context HttpServletResponse response, @Context UriInfo uriInfo) {
 
         User apiTokenUser = Try.of(this::findUserOrDie)
                                .onFailure(throwable -> logger.log(Level.FINE, "Failed finding user for apiToken: ", throwable))
                                .get();
-
-        String requestApiKey = getRequestApiKey();
 
         boolean originalFormatRequested = isOriginalFormatRequested(uriInfo.getQueryParameters());
 
         response.setHeader("Content-disposition", "attachment; filename=\"dataverse_files.zip\"");
         response.setHeader("Content-Type", "application/zip; name=\"dataverse_files.zip\"");
 
-        StreamingOutput fileStream = fileDownloadAPIHandler.downloadFiles(apiTokenUser, requestApiKey, versionId,
+        StreamingOutput fileStream = fileDownloadAPIHandler.downloadFiles(apiTokenUser, versionId,
                                                                           originalFormatRequested, gbrecs);
 
         return Response.ok(fileStream).build();

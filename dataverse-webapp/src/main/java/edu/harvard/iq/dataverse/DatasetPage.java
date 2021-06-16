@@ -235,7 +235,7 @@ public class DatasetPage implements java.io.Serializable {
             return thisLatestReleasedVersion;
         }
 
-        if (!workingVersion.isPublished()) {
+        if (!workingVersion.isReleased()) {
             thisLatestReleasedVersion = false;
             return false;
         }

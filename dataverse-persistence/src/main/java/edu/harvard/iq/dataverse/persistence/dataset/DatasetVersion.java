@@ -486,10 +486,6 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
         return VersionState.RELEASED.equals(versionState);
     }
 
-    public boolean isPublished() {
-        return isReleased();
-    }
-
     public boolean isDraft() {
         return VersionState.DRAFT.equals(versionState);
     }

@@ -6,6 +6,8 @@ import edu.harvard.iq.dataverse.persistence.user.User;
 
 import javax.servlet.http.HttpServletRequest;
 
+import java.util.Objects;
+
 /**
  * A request in the dataverse context. Similar to an HTTP request (and indeed
  * wraps one) but has more data that's specific to the Dataverse application.
@@ -16,6 +18,8 @@ public class DataverseRequest {
 
     private final User user;
     private final IpAddress sourceAddress;
+
+    // -------------------- CONSTRUCTORS --------------------
 
     public DataverseRequest(User aUser, HttpServletRequest aHttpServletRequest) {
         this.user = aUser;
@@ -38,6 +42,8 @@ public class DataverseRequest {
         sourceAddress = aSourceAddress;
     }
 
+    // -------------------- GETTERS --------------------
+
     public User getUser() {
         return user;
     }
@@ -49,10 +55,7 @@ public class DataverseRequest {
         return sourceAddress;
     }
 
-    @Override
-    public String toString() {
-        return "[DataverseRequest user:" + getUser() + "@" + getSourceAddress() + "]";
-    }
+    // -------------------- LOGIC --------------------
 
     /**
      * Get an AuthenticatedUser or return null
@@ -67,6 +70,33 @@ public class DataverseRequest {
             return (AuthenticatedUser) authUser;
         }
         return null;
+    }
+
+    // -------------------- hashCode & equals --------------------
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(sourceAddress, user.getIdentifier());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        DataverseRequest other = (DataverseRequest) obj;
+        return Objects.equals(sourceAddress, other.sourceAddress)
+                && Objects.equals(user.getIdentifier(), other.user.getIdentifier());
+    }
+
+    // -------------------- toString --------------------
+
+    @Override
+    public String toString() {
+        return "[DataverseRequest user:" + getUser() + "@" + getSourceAddress() + "]";
     }
 
 }

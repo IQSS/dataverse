@@ -34,7 +34,7 @@ public class JsonLdBuilder {
      */
     public static String buildJsonLd(DatasetVersion datasetVersion,  String dataverseSiteUrl, String hideSchemaDotOrgDownloadUrls) {
         // We show published datasets only for "datePublished" field below.
-        if (!datasetVersion.isPublished()) {
+        if (!datasetVersion.isReleased()) {
             return "";
         }
         
