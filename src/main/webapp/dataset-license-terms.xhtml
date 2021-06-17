@@ -52,13 +52,13 @@
                                <ui:fragment rendered="#{!empty termsOfUseAndAccess.license and empty DatasetPage.licenseId and empty editMode}">
                                        <p>
                                            <img src="#{termsOfUseAndAccess.license.iconUrl}" alt="#{bundle['file.icon.alttxt']}" width="15%" height="15%"/>
-                                           <a href="#{termsOfUseAndAccess.license.uri}">#{termsOfUseAndAccess.license.name}</a>
+                                           <a href="#{termsOfUseAndAccess.license.uri}" target="_blank">#{termsOfUseAndAccess.license.name}</a>
                                        </p>
                                </ui:fragment>
                                <ui:fragment rendered="#{!empty DatasetPage.licenseId}">
                                    <p >
                                        <img src="#{DatasetPage.getSelectedLicenseById().iconUrl}" alt="#{bundle['file.icon.alttxt']}" width="15%" height="15%"/>
-                                       <a href="#{DatasetPage.getSelectedLicenseById().uri}">#{DatasetPage.getSelectedLicenseById().name}</a>
+                                       <a href="#{DatasetPage.getSelectedLicenseById().uri}" target="_blank">#{DatasetPage.getSelectedLicenseById().name}</a>
                                    </p>
                                </ui:fragment>
                            </div>
