@@ -370,7 +370,16 @@ public abstract class AbstractApiBean {
             return GuestUser.get();
         }
         PrivateUrlUser privateUrlUser = privateUrlSvc.getPrivateUrlUserFromToken(requestApiKey);
+        // For privateUrlUsers restricted to anonymized access, all api calls are off-limits except for those used in the UI
+        // to download the file or image thumbs
         if (privateUrlUser != null) {
+            if (privateUrlUser.hasAnonymizedAccess()) {
+                String pathInfo = httpRequest.getPathInfo();
+                if (!(pathInfo.startsWith("/access/datafile/") && !pathInfo.substring(17).contains("/"))) {
+                    logger.info("Anonymized access request for " + pathInfo);
+                    return GuestUser.get();
+                }
+            }
             return privateUrlUser;
         }
         return findAuthenticatedUserOrDie(requestApiKey, requestWFKey);
