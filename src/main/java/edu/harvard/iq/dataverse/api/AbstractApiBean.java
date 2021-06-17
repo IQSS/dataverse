@@ -369,7 +369,7 @@ public abstract class AbstractApiBean {
                 String pathInfo = httpRequest.getPathInfo();
                 if (!(pathInfo.startsWith("/access/datafile/") && !pathInfo.substring(17).contains("/"))) {
                     logger.info("Anonymized access request for " + pathInfo);
-                    return GuestUser.get();
+                    throw new WrappedResponse(error(Status.UNAUTHORIZED, "API Access not allowed with this Key"));
                 }
             }
             return privateUrlUser;
