@@ -2061,7 +2061,9 @@ public class DatasetPage implements java.io.Serializable {
         licenseSelectItems = licenseServiceBean.listAllActive().stream()
                                                              .map(license -> new SelectItem(license.getId().toString(), license.getName()))
                                                              .collect(Collectors.toList());
-        
+        if (systemConfig.isAllowCustomTerms()) {
+            licenseSelectItems.add(new SelectItem(null, BundleUtil.getStringFromBundle("license.custom")));
+        }
         
         return null;
     }

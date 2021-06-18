@@ -78,7 +78,7 @@ public class SystemConfig {
 
     /**
      * A JVM option to override the number of minutes for which a password reset
-     * token is valid ({@link #minutesUntilPasswordResetTokenExpires}).
+     * token is valid ({@link #getMinutesUntilPasswordResetTokenExpires}).
      */
     private static final String PASSWORD_RESET_TIMEOUT_IN_MINUTES = "dataverse.auth.password-reset-timeout-in-minutes";
 
@@ -1033,7 +1033,12 @@ public class SystemConfig {
         }
         return retVal;
     }
-    
+
+    public boolean isAllowCustomTerms() {
+        boolean safeDefaultIfKeyNotFound = true;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.AllowCustomTerms, safeDefaultIfKeyNotFound);
+    }
+
     public boolean isFilePIDsEnabled() {
         boolean safeDefaultIfKeyNotFound = true;
         return settingsService.isTrueForKey(SettingsServiceBean.Key.FilePIDsEnabled, safeDefaultIfKeyNotFound);
