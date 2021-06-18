@@ -235,7 +235,7 @@ public class Users extends AbstractApiBean {
         }
     }
 
-    private List<String> elements = Arrays.asList("roleAssignments","dataversCreator", "dataversePublisher","datasetCreator", "datasetPublisher","dataFileCreator","dataFilePublisher","datasetVersionUsers","explicitGroups","guestbookEntries", "savedSearches");
+    private List<String> elements = Arrays.asList("roleAssignments","dataverseCreator", "dataversePublisher","datasetCreator", "datasetPublisher","dataFileCreator","dataFilePublisher","datasetVersionUsers","explicitGroups","guestbookEntries", "savedSearches");
     
     @GET
     @Path("{identifier}/traces/{element}")
