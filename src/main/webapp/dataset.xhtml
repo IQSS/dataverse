@@ -773,7 +773,7 @@
                         </ui:fragment>
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
                                    rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE')}">
-                            <p:ajax event="tabChange" listener="#{DatasetPage.tabChanged}" oncomplete="bind_bsui_components();expandPeople();" update="@this" />
+                            <p:ajax event="tabChange" listener="#{DatasetPage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
                             <p:tab id="dataFilesTab" title="#{bundle.files}" 
                                    rendered="#{(!DatasetPage.workingVersion.deaccessioned 
                                                or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset())) 
