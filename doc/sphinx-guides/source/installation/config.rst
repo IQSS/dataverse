@@ -2236,3 +2236,8 @@ By default, the name of the root Dataverse collection is used as the 'brandname'
 ++++++++++++++++++++++++++++++++++++++++++++++
 
 In the DDI metadata exports, the default behavior is to always add the repository (using its brandname - the root collection name or the value of :ref:`:InstallationName <:InstallationName>`) to the stdyDscr/distStmt/distrbtr element. If this setting is true, this will only be done when a Distributor is not already defined in the Dataset metadata. (Note that, since metadata export files are cached, they will have to be reexported (see :doc:`/admin/metadataexport`) before they incorporate a change in this setting.) 
+
+:AllowCustomTerms
++++++++++++++++++
+
+By default, custom terms of data use and access can be specified after selecting "Custom Terms" from the License/DUA dropdown on the Terms tab. When ``:AllowCustomTerms`` is  set to ``false`` the "Custom Terms" item is not made available to the depositor.
