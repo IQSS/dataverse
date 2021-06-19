@@ -6,15 +6,16 @@ import edu.harvard.iq.dataverse.api.ConflictException;
 import edu.harvard.iq.dataverse.api.FetchException;
 import edu.harvard.iq.dataverse.api.RequestBodyException;
 import edu.harvard.iq.dataverse.api.UpdateException;
-import java.net.URI;
-import java.util.List;
-import java.util.logging.Logger;
+
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
+import java.net.URI;
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * @author Jing Ma
@@ -78,14 +79,18 @@ public class LicenseServiceBean {
         if (license.getId() != null) {
             throw new RequestBodyException("There shouldn't be an ID in the request body");
         }
-        List<License> licenses = em.createNamedQuery("License.findByNameOrUri", License.class)
-            .setParameter("name", license.getName() )
-            .setParameter("uri", license.getUri().toASCIIString() )
-            .getResultList();
-        if (!licenses.isEmpty()) {
-            throw new ConflictException("A license with the same URI or name is already present.");
+        try {
+            em.persist(license);
+            em.flush();
         }
-        em.persist(license);
+        catch (PersistenceException p) {
+            if (p.getMessage().contains("duplicate key")) {
+                throw new ConflictException("A license with the same URI or name is already present.");
+            }
+            else {
+                throw p;
+            }
+        }
         return license;
     }
 
