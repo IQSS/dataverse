@@ -40,6 +40,7 @@ import javax.persistence.UniqueConstraint;
       @UniqueConstraint(columnNames = "uri")}
 )
 public class License {
+     public static String CC0 = "http://creativecommons.org/publicdomain/zero/1.0";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

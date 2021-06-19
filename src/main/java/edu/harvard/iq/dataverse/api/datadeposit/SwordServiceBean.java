@@ -155,7 +155,7 @@ public class SwordServiceBean {
                 // leave the license alone but set terms of use
                 setTermsOfUse(datasetVersionToMutate, dcterms, existingLicense.getName());
             } else {
-                License defaultLicense = licenseServiceBean.getCC0();
+                License defaultLicense = licenseServiceBean.getDefault();
                 List<String> listOfRights = dcterms.get("rights");
                 if (listOfRights != null) {
                     int numRightsProvided = listOfRights.size();

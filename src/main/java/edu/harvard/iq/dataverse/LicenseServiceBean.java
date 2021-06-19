@@ -59,18 +59,9 @@ public class LicenseServiceBean {
         return licenses.get(0);
     }
 
-    public License getCC0() {
+    public License getDefault() {
         List<License> licenses = em.createNamedQuery("License.findDefault", License.class)
                 .getResultList();
-        // TODO: Move this to flyway script
-        if (licenses.isEmpty()) {
-            URI uri = URI.create("https://creativecommons.org/publicdomain/zero/1.0/");
-            URI iconUrl = URI.create("https://www.researchgate.net/profile/Donat-Agosti/publication/51971424/figure/fig2/AS:203212943564807@1425461149299/Logo-of-the-CC-Zero-or-CC0-Public-Domain-Dedication-License-No-Rights-Reserved-CC.png");
-            License license = new License("CC0", uri, iconUrl, true);
-            em.persist(license);
-            em.flush();
-            return license;
-        }
         return licenses.get(0);
     }
 
