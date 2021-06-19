@@ -155,7 +155,7 @@ public class SwordServiceBean {
                 // leave the license alone but set terms of use
                 setTermsOfUse(datasetVersionToMutate, dcterms, existingLicense.getName());
             } else {
-                License defaultLicense = licenseServiceBean.getCC0();
+                License defaultLicense = licenseServiceBean.getDefault();
                 List<String> listOfRights = dcterms.get("rights");
                 if (listOfRights != null) {
                     int numRightsProvided = listOfRights.size();
@@ -180,7 +180,7 @@ public class SwordServiceBean {
             throw new SwordError("License provided was blank.");
         }
         try {
-            License licenseToSet = new License(licenseProvided, "", new URI("https://creativecommons.org/publicdomain/zero/1.0/"), new URI(""), true);
+            License licenseToSet = new License(licenseProvided, new URI("https://creativecommons.org/publicdomain/zero/1.0/"), new URI(""), true);
             terms.setLicense(licenseToSet);
             setTermsOfUse(datasetVersionToMutate, dcterms, licenseToSet.toString());
         } catch (URISyntaxException e) {
