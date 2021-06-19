@@ -64,10 +64,9 @@ public class LicenseServiceBean {
                 .getResultList();
         // TODO: Move this to flyway script
         if (licenses.isEmpty()) {
-            String shortDescription = "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.";
             URI uri = URI.create("https://creativecommons.org/publicdomain/zero/1.0/");
             URI iconUrl = URI.create("https://www.researchgate.net/profile/Donat-Agosti/publication/51971424/figure/fig2/AS:203212943564807@1425461149299/Logo-of-the-CC-Zero-or-CC0-Public-Domain-Dedication-License-No-Rights-Reserved-CC.png");
-            License license = new License("CC0", shortDescription, uri, iconUrl, true);
+            License license = new License("CC0", uri, iconUrl, true);
             em.persist(license);
             em.flush();
             return license;
