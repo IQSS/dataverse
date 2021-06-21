@@ -493,7 +493,6 @@ public class DdiExportUtil {
                         writeMultipleElement(xmlw, "universe", fieldDTO);
                     }
                     if (DatasetFieldConstant.unitOfAnalysis.equals(fieldDTO.getTypeName())) {
-                        writeMultipleElement(xmlw, "anlyUnit", fieldDTO);
                         writeI18NElementList(xmlw, "anlyUnit", fieldDTO.getMultipleVocab(), "unitOfAnalysis", fieldDTO.getTypeClass(), "socialscience", lang);
                     }
                 }              
