@@ -649,7 +649,11 @@ public class Dataset extends DvObjectContainer {
     }
 
     public String getCitation(boolean isOnlineVersion, DatasetVersion version) {
-        return version.getCitation(isOnlineVersion);
+        return getCitation(isOnlineVersion, version, false);
+    }
+    
+    public String getCitation(boolean isOnlineVersion, DatasetVersion version, boolean anonymized) {
+        return version.getCitation(isOnlineVersion, anonymized);
     }
 
     public String getPublicationDateFormattedYYYYMMDD() {

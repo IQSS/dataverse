@@ -185,10 +185,17 @@ public class DataCitation {
     }
 
     public String toString(boolean html) {
-        // first add comma separated parts        
+        return toString(html, false);
+    }
+    public String toString(boolean html, boolean anonymized) {
+        // first add comma separated parts
         String separator = ", ";
         List<String> citationList = new ArrayList<>();
-        citationList.add(formatString(getAuthorsString(), html));
+        if(anonymized) {
+            citationList.add("Author name(s) withheld");
+        } else {
+            citationList.add(formatString(getAuthorsString(), html));
+        }
         citationList.add(year);
         if ((fileTitle != null) && isDirect()) {
             citationList.add(formatString(fileTitle, html, "\""));
