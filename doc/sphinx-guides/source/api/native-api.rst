@@ -598,13 +598,13 @@ In order to retrieve a file containing a list of Guestbook Responses in csv form
   export ID=root
   export GUESTBOOK_ID=1
 
-  curl -O -J -H  X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ID/guestbookResponses?guestbookId=$GUESTBOOK_ID
+  curl -O -J -f -H  X-Dataverse-key:$API_TOKEN $SERVER_URL/api/dataverses/$ID/guestbookResponses?guestbookId=$GUESTBOOK_ID
 
 The fully expanded example above (without environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -O -J -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx - https://demo.dataverse.org/api/dataverses/root/guestbookResponses?guestbookId=1
+  curl -O -J -f -H X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx https://demo.dataverse.org/api/dataverses/root/guestbookResponses?guestbookId=1
 
 Datasets
 --------
