@@ -1,8 +1,6 @@
 package edu.harvard.iq.dataverse.export.ddi;
 
 import com.google.gson.Gson;
-
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
@@ -243,14 +241,14 @@ public class DdiExportUtil {
         // Study Info
         xmlw.writeStartElement("stdyInfo");
         
-        writeSubjectElement(xmlw, version, datasetDto.getMetadataLanguage()); //Subject and Keywords
+        writeSubjectElement(xmlw, version); //Subject and Keywords
         writeAbstractElement(xmlw, version, datasetDto.getMetadataLanguage()); // Description
         writeSummaryDescriptionElement(xmlw, version);
         writeFullElement(xmlw, "notes", dto2Primitive(version, DatasetFieldConstant.notesText));
         ////////
         xmlw.writeEndElement(); // stdyInfo
 
-        writeMethodElement(xmlw, version, datasetDto.getMetadataLanguage());
+        writeMethodElement(xmlw, version);
         writeDataAccess(xmlw , version);
         writeOtherStudyMaterial(xmlw , version);
 
@@ -518,14 +516,14 @@ public class DdiExportUtil {
 
     }
     
-    private static void writeMethodElement(XMLStreamWriter xmlw , DatasetVersionDTO version, String lang) throws XMLStreamException{
+    private static void writeMethodElement(XMLStreamWriter xmlw , DatasetVersionDTO version) throws XMLStreamException{
         xmlw.writeStartElement("method");
         xmlw.writeStartElement("dataColl");
         writeFullElement(xmlw, "timeMeth", dto2Primitive(version, DatasetFieldConstant.timeMethod)); 
         writeFullElement(xmlw, "dataCollector", dto2Primitive(version, DatasetFieldConstant.dataCollector));         
         writeFullElement(xmlw, "collectorTraining", dto2Primitive(version, DatasetFieldConstant.collectorTraining));   
         writeFullElement(xmlw, "frequenc", dto2Primitive(version, DatasetFieldConstant.frequencyOfDataCollection));      
-        writeI18NElement(xmlw, "sampProc", version, DatasetFieldConstant.samplingProcedure, lang);
+        writeFullElement(xmlw, "sampProc", dto2Primitive(version, DatasetFieldConstant.samplingProcedure));
 
         writeTargetSampleElement(xmlw, version);
 
@@ -558,7 +556,7 @@ public class DdiExportUtil {
         xmlw.writeEndElement();//method
     }
     
-    private static void writeSubjectElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String lang) throws XMLStreamException{ 
+    private static void writeSubjectElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException{ 
         
         //Key Words and Topic Classification
         
@@ -569,7 +567,11 @@ public class DdiExportUtil {
             if ("citation".equals(key)) {
                 for (FieldDTO fieldDTO : value.getFields()) {
                     if (DatasetFieldConstant.subject.equals(fieldDTO.getTypeName())){
-                        writeI18NElementList(xmlw, "keyword", fieldDTO.getMultipleVocab(), "subject", "controlledVocabulary", "citation", lang);
+                        for ( String subject : fieldDTO.getMultipleVocab()){
+                            xmlw.writeStartElement("keyword");
+                            xmlw.writeCharacters(subject);
+                            xmlw.writeEndElement(); //Keyword
+                        }
                     }
                     
                     if (DatasetFieldConstant.keyword.equals(fieldDTO.getTypeName())) {
@@ -1312,26 +1314,6 @@ public class DdiExportUtil {
         return null;
     }
     
-    private static String dto2Primitive(DatasetVersionDTO datasetVersionDTO, String datasetFieldTypeName, Locale locale) {
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
-            MetadataBlockDTO value = entry.getValue();
-            for (FieldDTO fieldDTO : value.getFields()) {
-                if (datasetFieldTypeName.equals(fieldDTO.getTypeName())) {
-                    String rawVal = fieldDTO.getSinglePrimitive();
-                    if (fieldDTO.getTypeClass().equals("controlledVocabulary")) {
-                        String localeVal = ControlledVocabularyValue.getLocaleStrValue(rawVal, datasetFieldTypeName, value.getName(),
-                                locale, false);
-                        if (localeVal != null) {
-                            rawVal = localeVal;
-                        }
-                    }
-                    return rawVal;
-                }
-            }
-        }
-        return null;
-    }
-    
     private static List<String> dto2PrimitiveList(DatasetVersionDTO datasetVersionDTO, String datasetFieldTypeName) {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             MetadataBlockDTO value = entry.getValue();
@@ -1351,59 +1333,6 @@ public class DdiExportUtil {
                 xmlw.writeStartElement(name);
                 xmlw.writeCharacters(value);
                 xmlw.writeEndElement(); // labl
-            }
-        }
-    }
-    
-    private static void writeI18NElementList(XMLStreamWriter xmlw, String name, List<String> values,
-            String fieldTypeName, String fieldTypeClass, String metadataBlockName, String lang)
-            throws XMLStreamException {
-
-        if (values != null && !values.isEmpty()) {
-            Locale defaultLocale = Locale.getDefault();
-            for (String value : values) {
-                if (fieldTypeClass.equals("controlledVocabulary")) {
-                    String localeVal = ControlledVocabularyValue.getLocaleStrValue(value, fieldTypeName, metadataBlockName, defaultLocale, false);
-                    if (localeVal != null) {
-                        
-                        value = localeVal;
-                        writeFullElement(xmlw, name, value, defaultLocale.getLanguage());
-                    } else {
-                        writeFullElement(xmlw, name, value);
-                    }
-                } else {
-                    writeFullElement(xmlw, name, value);
-                }
-            }
-            if (lang != null && !defaultLocale.getLanguage().equals(lang)) {
-                // Get values in dataset metadata language
-                // Loop before testing fieldTypeClass to be ready for external CVV
-                for (String value : values) {
-                    if (fieldTypeClass.equals("controlledVocabulary")) {
-                        String localeVal = ControlledVocabularyValue.getLocaleStrValue(value, fieldTypeName, metadataBlockName, new Locale(lang), false);
-                        if (localeVal != null) {
-                            writeFullElement(xmlw, name, localeVal, lang);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    private static void writeI18NElement(XMLStreamWriter xmlw, String name, DatasetVersionDTO version, String fieldTypeName,
-            String lang)  throws XMLStreamException {
-        String val = dto2Primitive(version, fieldTypeName);
-        Locale defaultLocale = Locale.getDefault();
-        String localeVal = dto2Primitive(version, fieldTypeName, defaultLocale);
-        if (localeVal == null) {
-            writeFullElement(xmlw, name, val);
-        } else {
-            writeFullElement(xmlw, name, localeVal, defaultLocale.getLanguage());
-        }
-        if (lang != null && !defaultLocale.getLanguage().equals(lang)) {
-            localeVal = dto2Primitive(version, fieldTypeName, new Locale(lang));
-            if (localeVal != null) {
-                writeFullElement(xmlw, name, localeVal, lang);
             }
         }
     }
