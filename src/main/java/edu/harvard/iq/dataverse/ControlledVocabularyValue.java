@@ -114,13 +114,11 @@ public class ControlledVocabularyValue implements Serializable  {
         this.controlledVocabAlternates = controlledVocabAlternates;
     }
 
-    public String getLocaleStrValue()
-    {
+    public String getLocaleStrValue() {
         return getLocaleStrValue(strValue, this.datasetFieldType.getName(),getDatasetFieldType().getMetadataBlock().getName(),null, true);
     }
     
-    public String getLocaleStrValue(String language)
-    {
+    public String getLocaleStrValue(String language) {
         return getLocaleStrValue(strValue, this.datasetFieldType.getName(),getDatasetFieldType().getMetadataBlock().getName(),language == null ? null : new Locale(language), true);
     }
     
