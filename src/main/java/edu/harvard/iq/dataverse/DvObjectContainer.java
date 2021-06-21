@@ -1,8 +1,6 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
-import edu.harvard.iq.dataverse.util.BundleUtil;
-
 import java.util.Locale;
 
 import javax.persistence.MappedSuperclass;

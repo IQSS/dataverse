@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -242,7 +241,7 @@ public class DatasetField implements Serializable {
             return datasetFieldValues.get(0).getValue();
         } else if (controlledVocabularyValues != null && !controlledVocabularyValues.isEmpty()) {
             if (controlledVocabularyValues.get(0) != null){
-                return controlledVocabularyValues.get(0).getLocaleStrValue();
+                return controlledVocabularyValues.get(0).getStrValue();                
             }
         }
         return null;
