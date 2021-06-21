@@ -103,11 +103,17 @@ public class LicenseServiceBean {
         }
     }
 
-    public int deleteById(long id) throws PersistenceException {
+    public int deleteById(long id) throws ConflictException {
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Admin, "delete")
                             .setInfo(Long.toString(id)));
-        return em.createNamedQuery("License.deleteById")
-                .setParameter("id", id)
-                .executeUpdate();
+        try {
+            return em.createNamedQuery("License.deleteById").setParameter("id", id).executeUpdate();
+        } catch (PersistenceException p) {
+            if (p.getMessage().contains("violates foreign key constraint")) {
+                throw new ConflictException("License with id " + id + " is referenced and cannot be deleted.");
+            } else {
+                throw p;
+            }
+        }
     }
 }

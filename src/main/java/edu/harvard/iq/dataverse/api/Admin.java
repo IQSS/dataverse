@@ -49,6 +49,7 @@ import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
+import javax.persistence.PersistenceException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -2023,10 +2024,14 @@ public class Admin extends AbstractApiBean {
     @DELETE
     @Path("/licenses/{id}")
     public Response deleteLicenseById(@PathParam("id") long id) {
-        int result = licenseService.deleteById(id);
-        if (result == 1) {
-            return ok("OK. License with ID " + id + " was deleted.");
+        try {
+            int result = licenseService.deleteById(id);
+            if (result == 1) {
+                return ok("OK. License with ID " + id + " was deleted.");
+            }
+            return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
+        } catch(ConflictException e) {
+            return error(Response.Status.CONFLICT, e.getMessage());
         }
-        return error(Response.Status.NOT_FOUND, "A license with ID " + id + " doesn't exist.");
     }
 }
