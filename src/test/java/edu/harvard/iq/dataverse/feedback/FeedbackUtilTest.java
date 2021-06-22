@@ -69,6 +69,7 @@ public class FeedbackUtilTest {
         systemAddress = new InternetAddress(systemEmail, supportTeamName);
 
         datasetFieldTypeSvc = new MockDatasetFieldSvc();
+        datasetFieldTypeSvc.setMetadataBlock("citation");
         DatasetFieldType titleType = datasetFieldTypeSvc.add(new DatasetFieldType("title", DatasetFieldType.FieldType.TEXTBOX, false));
         DatasetFieldType authorType = datasetFieldTypeSvc.add(new DatasetFieldType("author", DatasetFieldType.FieldType.TEXT, true));
         Set<DatasetFieldType> authorChildTypes = new HashSet<>();

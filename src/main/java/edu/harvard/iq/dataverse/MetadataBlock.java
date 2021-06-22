@@ -1,8 +1,10 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.io.Serializable;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Objects;
@@ -48,6 +50,15 @@ public class MetadataBlock implements Serializable {
 
     @Column( name = "namespaceuri", columnDefinition = "TEXT")
     private String namespaceUri;
+    
+    
+    public MetadataBlock() {
+    }
+    
+    //For use in tests
+    public MetadataBlock(String name) {
+        this.name = name;
+    }
     
     public Long getId() {
         return id;

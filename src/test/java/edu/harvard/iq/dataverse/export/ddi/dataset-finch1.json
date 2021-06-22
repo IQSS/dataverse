@@ -17,6 +17,7 @@
     "metadataBlocks": {
       "citation": {
         "displayName": "Citation Metadata",
+        "name":"citation",
         "fields": [
           {
             "typeName": "title",
@@ -307,6 +308,7 @@
             },
             "geospatial": {
                 "displayName": "Geospatial",
+                "name":"geospatial",
                 "fields": [
                     {
                         "typeName": "geographicCoverage",

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<codeBook xmlns="ddi:codebook:2_5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="ddi:codebook:2_5 https://ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd" version="2.5">
+<codeBook xmlns="ddi:codebook:2_5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="ddi:codebook:2_5 https://ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd" version="2.5" xml:lang="en">
   <docDscr>
     <citation>
       <titlStmt>
-        <titl>Replication Data for: Title</titl>
+        <titl  xml:lang="en">Replication Data for: Title</titl>
         <IDNo agency="DOI">doi:10.5072/FK2/WKUKGV</IDNo>
       </titlStmt>
       <distStmt>
@@ -19,7 +19,7 @@
   <stdyDscr>
     <citation>
       <titlStmt>
-        <titl>Replication Data for: Title</titl>
+        <titl xml:lang="en">Replication Data for: Title</titl>
         <subTitl>Subtitle</subTitl>
         <altTitl>Alternative Title</altTitl>
         <IDNo agency="DOI">doi:10.5072/FK2/WKUKGV</IDNo>
@@ -44,8 +44,8 @@
       </prodStmt>
       <distStmt>
         <distrbtr source="archive">Root</distrbtr>
-        <distrbtr affiliation="DistributorAffiliation1" abbr="DistributorAbbreviation1" URI="http://DistributorURL1.org" role="http://DistributorLogoURL1.org">LastDistributor1, FirstDistributor1</distrbtr>
-        <distrbtr affiliation="DistributorAffiliation2" abbr="DistributorAbbreviation2" URI="http://DistributorURL2.org" role="http://DistributorLogoURL2.org">LastDistributor2, FirstDistributor2</distrbtr>
+        <distrbtr xml:lang="en" affiliation="DistributorAffiliation1" abbr="DistributorAbbreviation1" URI="http://DistributorURL1.org" role="http://DistributorLogoURL1.org">LastDistributor1, FirstDistributor1</distrbtr>
+        <distrbtr xml:lang="en" affiliation="DistributorAffiliation2" abbr="DistributorAbbreviation2" URI="http://DistributorURL2.org" role="http://DistributorLogoURL2.org">LastDistributor2, FirstDistributor2</distrbtr>
         <contact affiliation="ContactAffiliation1" email="ContactEmail1@mailinator.com">LastContact1, FirstContact1</contact>
         <contact affiliation="ContactAffiliation2" email="ContactEmail2@mailinator.com">LastContact2, FirstContact2</contact>
         <distDate>1004-01-01</distDate>
@@ -59,15 +59,15 @@
     </citation>
     <stdyInfo>
       <subject>
-        <keyword>Agricultural Sciences</keyword>
-        <keyword>Business and Management</keyword>
-        <keyword>Engineering</keyword>
-        <keyword>Law</keyword>
+        <keyword xml:lang="en">Agricultural Sciences</keyword>
+        <keyword xml:lang="en">Business and Management</keyword>
+        <keyword xml:lang="en">Engineering</keyword>
+        <keyword xml:lang="en">Law</keyword>
         <keyword vocab="KeywordVocabulary1" vocabURI="http://KeywordVocabularyURL1.org">KeywordTerm1</keyword>
         <keyword vocab="KeywordVocabulary2" vocabURI="http://KeywordVocabularyURL2.org">KeywordTerm2</keyword>
       </subject>
-      <abstract date="1000-01-01">DescriptionText 1</abstract>
-      <abstract date="1000-02-02">DescriptionText2</abstract>
+      <abstract date="1000-01-01" xml:lang="en">DescriptionText 1</abstract>
+      <abstract date="1000-02-02" xml:lang="en">DescriptionText2</abstract>
       <sumDscr>
         <timePrd cycle="P1" event="start" date="1005-01-01">1005-01-01</timePrd>
         <timePrd cycle="P1" event="end" date="1005-01-02">1005-01-02</timePrd>
@@ -110,11 +110,11 @@
     </stdyInfo>
     <method>
       <dataColl>
-        <timeMeth>TimeMethod</timeMeth>
+        <timeMeth xml:lang="en">TimeMethod</timeMeth>
         <dataCollector>LastDataCollector1, FirstDataCollector1</dataCollector>
         <collectorTraining>CollectorTraining</collectorTraining>
         <frequenc>Frequency</frequenc>
-        <sampProc>SamplingProcedure</sampProc>
+        <sampProc xml:lang="en">SamplingProcedure</sampProc>
         <targetSampleSize>
           <sampleSizeFormula>TargetSampleSizeFormula</sampleSizeFormula>
           <sampleSize>100</sampleSize>
@@ -127,8 +127,8 @@
           <srcChar>CharacteristicOfSourcesNoted</srcChar>
           <srcDocu>DocumentationAndAccessToSources</srcDocu>
         </sources>
-        <collMode>CollectionMode</collMode>
-        <resInstru>TypeOfResearchInstrument</resInstru>
+        <collMode xml:lang="en">CollectionMode</collMode>
+        <resInstru xml:lang="en">TypeOfResearchInstrument</resInstru>
         <collSitu>CharacteristicsOfDataCollectionSituation</collSitu>
         <actMin>ActionsToMinimizeLosses</actMin>
         <conOps>ControlOperations</conOps>
