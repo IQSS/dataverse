@@ -525,7 +525,7 @@ public class MailServiceBean implements java.io.Serializable {
             case STATUSUPDATED:
                 version =  (DatasetVersion) targetObject;
                 pattern = BundleUtil.getStringFromBundle("notification.email.status.change");
-                String[] paramArrayStatus = {version.getDataset().getDisplayName(), version.getExternalStatusLabel()};
+                String[] paramArrayStatus = {version.getDataset().getDisplayName(), (version.getExternalStatusLabel()==null) ? "<none>" : version.getExternalStatusLabel()};
                 messageText += MessageFormat.format(pattern, paramArrayStatus);
                 return messageText;
             case CREATEACC:
