@@ -114,29 +114,19 @@ public class ControlledVocabularyValue implements Serializable  {
         this.controlledVocabAlternates = controlledVocabAlternates;
     }
 
-    public String getLocaleStrValue() {
-        return getLocaleStrValue(strValue, this.datasetFieldType.getName(),getDatasetFieldType().getMetadataBlock().getName(),null, true);
-    }
-    
-    public String getLocaleStrValue(String language) {
-        return getLocaleStrValue(strValue, this.datasetFieldType.getName(),getDatasetFieldType().getMetadataBlock().getName(),language == null ? null : new Locale(language), true);
-    }
-    
-    public static String getLocaleStrValue(String strValue, String fieldTypeName, String metadataBlockName, Locale locale, boolean sendDefault)
+    public String getLocaleStrValue()
     {
         String key = strValue.toLowerCase().replace(" " , "_");
         key = StringUtils.stripAccents(key);
         try {
-            logger.fine("Looking for : " + "controlledvocabulary." + fieldTypeName + "." + key + " in " + metadataBlockName + " : " + locale.getLanguage());
-            String val = BundleUtil.getStringFromPropertyFile("controlledvocabulary." + fieldTypeName + "." + key, metadataBlockName, locale); 
-            logger.fine("Found : " + val);
-            if(!val.isBlank()) {
-            return val;
-            } else {
-                return sendDefault ? strValue : null;
+            String val = BundleUtil.getStringFromPropertyFile("controlledvocabulary." + this.datasetFieldType.getName() + "." + key, getDatasetFieldType().getMetadataBlock().getName()); 
+            if( val == null) {
+                //Default to raw value 
+                val=strValue; 
             }
+            return val;
         } catch (MissingResourceException | NullPointerException e) {
-            return sendDefault ? strValue : null;
+            return strValue;
         }
     }
 
