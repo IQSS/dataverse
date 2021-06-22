@@ -71,7 +71,7 @@ public  class MetadataBlockDTO {
 
         @Override
         public String toString() {
-            return "MetadataBlockDTO{" + "displayName=" + displayName + ", fields=" + fields + '}';
+            return "MetadataBlockDTO{" + "displayName=" + displayName + ", name=" + name + ", fields=" + fields + '}';
         }
 
         public String getName() {
