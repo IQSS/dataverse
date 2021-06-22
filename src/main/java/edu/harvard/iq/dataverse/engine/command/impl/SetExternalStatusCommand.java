@@ -43,13 +43,17 @@ public class SetExternalStatusCommand extends AbstractDatasetCommand<Dataset> {
         if (getDataset().getLatestVersion().isReleased()) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure.isReleased"), this);
         }
-        Pattern pattern = Pattern.compile("(^[\\w ]+$)");
-        Matcher matcher = pattern.matcher(label);
-        if(!matcher.matches()) {
-            logger.info("Label rejected: " + label);
-            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure"), this);
+        if (label == null) {
+            getDataset().getLatestVersion().setExternalStatusLabel(label);
+        } else {
+            Pattern pattern = Pattern.compile("(^[\\w ]+$)");
+            Matcher matcher = pattern.matcher(label);
+            if (!matcher.matches()) {
+                logger.info("Label rejected: " + label);
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure"), this);
+            }
+            getDataset().getLatestVersion().setExternalStatusLabel(label);
         }
-        getDataset().getLatestVersion().setExternalStatusLabel(label);
         Dataset updatedDataset = save(ctxt);
         
         return updatedDataset;
@@ -69,7 +73,7 @@ public class SetExternalStatusCommand extends AbstractDatasetCommand<Dataset> {
         
         List<AuthenticatedUser> authUsers = ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, savedDataset);
         for (AuthenticatedUser au : authUsers) {
-            ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.SUBMITTEDDS, savedDataset.getLatestVersion().getId(), "", requestor, false);
+            ctxt.notifications().sendNotification(au, new Timestamp(new Date().getTime()), UserNotification.Type.STATUSUPDATED, savedDataset.getLatestVersion().getId(), "", requestor, false);
         }
         
         //  TODO: What should we do with the indexing result? Print it to the log?
