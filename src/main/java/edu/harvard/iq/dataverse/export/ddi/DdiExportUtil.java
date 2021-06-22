@@ -126,9 +126,10 @@ public class DdiExportUtil {
         xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
         xmlw.writeAttribute("xsi:schemaLocation", DDIExporter.DEFAULT_XML_NAMESPACE + " " + DDIExporter.DEFAULT_XML_SCHEMALOCATION);
         writeAttribute(xmlw, "version", DDIExporter.DEFAULT_XML_VERSION);
-        if(datasetDto.getMetadataLanguage()!=null) {
-            writeAttribute(xmlw, "xml:lang", datasetDto.getMetadataLanguage());
+        if(datasetDto.getMetadataLanguage()==null) {
+            datasetDto.setMetadataLanguage(Locale.getDefault().getLanguage());
         }
+        writeAttribute(xmlw, "xml:lang", datasetDto.getMetadataLanguage());
         createStdyDscr(xmlw, datasetDto);
         createOtherMats(xmlw, datasetDto.getDatasetVersion().getFiles());
         xmlw.writeEndElement(); // codeBook
@@ -148,9 +149,10 @@ public class DdiExportUtil {
         xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
         xmlw.writeAttribute("xsi:schemaLocation", DDIExporter.DEFAULT_XML_NAMESPACE + " " + DDIExporter.DEFAULT_XML_SCHEMALOCATION);
         writeAttribute(xmlw, "version", DDIExporter.DEFAULT_XML_VERSION);
-        if(datasetDto.getMetadataLanguage()!=null) {
-            writeAttribute(xmlw, "xml:lang", datasetDto.getMetadataLanguage());
+        if(datasetDto.getMetadataLanguage()==null) {
+            datasetDto.setMetadataLanguage(Locale.getDefault().getLanguage());
         }
+        writeAttribute(xmlw, "xml:lang", datasetDto.getMetadataLanguage());
         createStdyDscr(xmlw, datasetDto);
         createFileDscr(xmlw, version);
         createDataDscr(xmlw, version);
