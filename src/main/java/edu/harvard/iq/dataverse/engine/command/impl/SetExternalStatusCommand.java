@@ -41,13 +41,13 @@ public class SetExternalStatusCommand extends AbstractDatasetCommand<Dataset> {
     public Dataset execute(CommandContext ctxt) throws CommandException {
 
         if (getDataset().getLatestVersion().isReleased()) {
-            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.submit.failure.isReleased"), this);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure.isReleased"), this);
         }
-        Pattern pattern = Pattern.compile("(/^[\\w ]+$)/");
+        Pattern pattern = Pattern.compile("(^[\\w ]+$)");
         Matcher matcher = pattern.matcher(label);
         if(!matcher.matches()) {
             logger.info("Label rejected: " + label);
-            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.submit.failure"), this);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure"), this);
         }
         getDataset().getLatestVersion().setExternalStatusLabel(label);
         Dataset updatedDataset = save(ctxt);
