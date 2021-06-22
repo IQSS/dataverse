@@ -86,6 +86,7 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
@@ -1767,11 +1768,14 @@ public class Datasets extends AbstractApiBean {
     @PUT
     @Path("{id}/setExternalStatus")
     public Response setExternalStatus(@PathParam("id") String idSupplied, @QueryParam("label") String label) {
+        logger.info("Label is " + label);
         try {
             execCommand(new SetExternalStatusCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), label));
             return ok("External Status updated");
         } catch (WrappedResponse wr) {
-            return wr.getResponse();
+            //Just change to Bad Request and send
+            //ToDo - check in api call
+            return Response.fromResponse(wr.getResponse()).status(Response.Status.BAD_REQUEST).build();
         }
     }
     

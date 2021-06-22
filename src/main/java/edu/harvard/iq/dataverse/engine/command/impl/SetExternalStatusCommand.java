@@ -19,6 +19,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,6 +28,8 @@ import org.apache.solr.client.solrj.SolrServerException;
 @RequiredPermissions(Permission.EditDataset)
 public class SetExternalStatusCommand extends AbstractDatasetCommand<Dataset> {
 
+    private static final Logger logger = Logger.getLogger(SetExternalStatusCommand.class.getName());
+    
     String label;
     
     public SetExternalStatusCommand(DataverseRequest aRequest, Dataset dataset, String label) {
@@ -40,9 +43,10 @@ public class SetExternalStatusCommand extends AbstractDatasetCommand<Dataset> {
         if (getDataset().getLatestVersion().isReleased()) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.submit.failure.isReleased"), this);
         }
-        Pattern pattern = Pattern.compile("/[\\w ]+/g");
+        Pattern pattern = Pattern.compile("(/^[\\w ]+$/");
         Matcher matcher = pattern.matcher(label);
         if(!matcher.matches()) {
+            logger.info("Label rejected: " + label);
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.submit.failure"), this);
         }
         getDataset().getLatestVersion().setExternalStatusLabel(label);
