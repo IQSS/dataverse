@@ -1572,6 +1572,20 @@ public class Datasets extends AbstractApiBean {
         }
     }
     
+    @DELETE
+    @Path("{id}/setExternalStatus")
+    public Response deleteExternalStatus(@PathParam("id") String idSupplied) {
+
+        try {
+            execCommand(new SetExternalStatusCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), null));
+            return ok("External Status deleted");
+        } catch (WrappedResponse wr) {
+            //Just change to Bad Request and send
+            //ToDo - check in api call
+            return Response.fromResponse(wr.getResponse()).status(Response.Status.BAD_REQUEST).build();
+        }
+    }
+    
 @GET
 @Path("{id}/uploadsid")
 @Deprecated
