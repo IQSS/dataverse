@@ -171,6 +171,8 @@ public class DatasetVersion implements Serializable {
     @OneToMany(mappedBy = "datasetVersion", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<WorkflowComment> workflowComments;
 
+    @Column(nullable=true)
+    private String externalStatusLabel;
     
     public Long getId() {
         return this.id;
@@ -1985,6 +1987,14 @@ public class DatasetVersion implements Serializable {
 
     public String getLocaleLastUpdateTime() {
         return DateUtil.formatDate(new Timestamp(lastUpdateTime.getTime()));
+    }
+
+    public String getExternalStatusLabel() {
+        return externalStatusLabel;
+    }
+
+    public void setExternalStatusLabel(String externalStatusLabel) {
+        this.externalStatusLabel = externalStatusLabel;
     }
 
 }

@@ -69,6 +69,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.RemoveLockCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SetDatasetCitationDateCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.SetExternalStatusCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLCommand;
@@ -1763,6 +1764,17 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
+    @PUT
+    @Path("{id}/setExternalStatus")
+    public Response setExternalStatus(@PathParam("id") String idSupplied, @QueryParam("label") String label) {
+        try {
+            execCommand(new SetExternalStatusCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), label));
+            return ok("External Status updated");
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+    
 @GET
 @Path("{id}/uploadsid")
 @Deprecated

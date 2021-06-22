@@ -512,6 +512,12 @@ public class MailServiceBean implements java.io.Serializable {
                 String[] paramArrayWorkflowFailure = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()), comment};
                 messageText += MessageFormat.format(pattern, paramArrayWorkflowFailure);
                 return messageText;
+            case STATUSUPDATED:
+                version =  (DatasetVersion) targetObject;
+                pattern = BundleUtil.getStringFromBundle("notification.email.status");
+                String[] paramArrayStatus = {version.getDataset().getDisplayName(), version.getExternalStatusLabel()};
+                messageText += MessageFormat.format(pattern, paramArrayStatus);
+                return messageText;
             case CREATEACC:
                 InternetAddress systemAddress = getSystemAddress();
                 // QDR
@@ -613,6 +619,7 @@ public class MailServiceBean implements java.io.Serializable {
             case RETURNEDDS:
             case WORKFLOW_SUCCESS:
             case WORKFLOW_FAILURE:
+            case STATUSUPDATED:
                 return versionService.find(userNotification.getObjectId());
             case CREATEACC:
                 return userNotification.getUser();
