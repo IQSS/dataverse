@@ -51,15 +51,6 @@ public class MetadataBlock implements Serializable {
     @Column( name = "namespaceuri", columnDefinition = "TEXT")
     private String namespaceUri;
     
-    
-    public MetadataBlock() {
-    }
-    
-    //For use in tests
-    public MetadataBlock(String name) {
-        this.name = name;
-    }
-    
     public Long getId() {
         return id;
     }
