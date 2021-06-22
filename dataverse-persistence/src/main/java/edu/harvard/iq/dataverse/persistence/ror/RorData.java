@@ -12,7 +12,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -52,7 +51,7 @@ public class RorData implements JpaEntity<Long>, Serializable {
     public RorData() { }
 
     public RorData(String rorId, String name, String countryName, String countryCode,
-                   Set<String> nameAliases, Set<String> acronyms, List<RorLabel> labels) {
+                   Set<String> nameAliases, Set<String> acronyms, Set<RorLabel> labels) {
         this.rorId = rorId;
         this.name = name;
         this.countryName = countryName;
@@ -92,7 +91,16 @@ public class RorData implements JpaEntity<Long>, Serializable {
         return acronyms;
     }
 
+    public Set<RorLabel> getLabels() {
+        return labels;
+    }
+
     // -------------------- SETTERS --------------------
+
+    public RorData setId(Long id) {
+        this.id = id;
+        return this;
+    }
 
     public void setRorId(String rorId) {
         this.rorId = rorId;

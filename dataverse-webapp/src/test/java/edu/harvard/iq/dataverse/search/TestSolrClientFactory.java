@@ -10,7 +10,6 @@ import org.testcontainers.images.builder.ImageFromDockerfile;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.Specializes;
-
 import java.io.IOException;
 import java.util.logging.Logger;
 
@@ -36,12 +35,13 @@ public class TestSolrClientFactory extends SolrClientFactory {
                     .withFileFromClasspath("Dockerfile", "/docker/test_solr/Dockerfile")
                     .withFileFromClasspath("schema.xml", "/docker/test_solr/schema.xml")
                     .withFileFromClasspath("solrconfig.xml", "/docker/test_solr/solrconfig.xml")
+                    .withFileFromClasspath("ror/schema.xml", "/docker/test_solr/ror/schema.xml")
+                    .withFileFromClasspath("ror/solrconfig.xml", "/docker/test_solr/ror/solrconfig.xml")
                 )
                 .withLogConsumer(new Slf4jLogConsumer(SOLR_CONTAINER_LOGGER))
-                .withCommand("solr-precreate collection1 /opt/solr/server/solr/configsets/dataverse_config")
                 .withExposedPorts(8983)
                 .waitingFor(Wait.forHttp("/solr/collection1/select"));
-        
+
         SOLR_CONTAINER.start();
     }
     
@@ -53,6 +53,16 @@ public class TestSolrClientFactory extends SolrClientFactory {
         String urlString = "http://localhost:" + SOLR_CONTAINER.getMappedPort(8983) + "/solr/collection1";
         LOGGER.fine("Creating test SolrClient at url: " + urlString);
         
+        return new HttpSolrClient.Builder(urlString).build();
+    }
+
+    @Produces
+    @Specializes
+    @RorSolrClient
+    public SolrClient produceRorSolrClient() {
+        String urlString = "http://localhost:" + SOLR_CONTAINER.getMappedPort(8983) + "/solr/rorSuggestions";
+        LOGGER.fine("Creating test SolrClient at url: " + urlString);
+
         return new HttpSolrClient.Builder(urlString).build();
     }
     

@@ -60,6 +60,13 @@ public class SolrQuerySanitizerTest {
         assertEquals(input, querySanitizer.sanitizeQuery(input));
     }
 
+    @ParameterizedTest
+    @MethodSource("provideRorQueryThatShouldChange")
+    public void sanitizeRorQuery(String input, String expected) {
+        // when & then
+        assertEquals(expected, querySanitizer.sanitizeRorQuery(input));
+    }
+
     @Test
     public void testSanitizeQuery() {
         assertEquals("", querySanitizer.sanitizeQuery(null));
@@ -107,6 +114,27 @@ public class SolrQuerySanitizerTest {
                 Arguments.of("abc&title:value", "abc&dsf_txt_title:value"),
                 Arguments.of("abc&title:value", "abc&dsf_txt_title:value"),
                 Arguments.of("title:value AND year:value", "dsf_txt_title:value AND dsf_int_year:value")
+                );
+    }
+
+    private static Stream<Arguments> provideRorQueryThatShouldChange() {
+        return Stream.of(
+                Arguments.of("title:value", "title\\:value"),
+                Arguments.of("+title:value", "\\+title\\:value"),
+                Arguments.of("+ title:value", "\\+ title\\:value"),
+                Arguments.of("-title:value", "\\-title\\:value"),
+                Arguments.of("!title:value", "\\!title\\:value"),
+                Arguments.of("(title:value)", "\\(title\\:value\\)"),
+                Arguments.of("(abc)title:value", "\\(abc\\)title\\:value"),
+                Arguments.of("abc&title:value", "abc\\&title\\:value"),
+                Arguments.of("title:value   abc", "title\\:value   abc"),
+                Arguments.of("abc   title:value", "abc   title\\:value"),
+                Arguments.of(" \\\" title:value", " \\\\\\\" title\\:value"), // escaped quotation
+                Arguments.of(" \\\\\\\" title:value", " \\\\\\\\\\\\\\\" title\\:value"), // escaped \ char and quotation
+                Arguments.of("abc&title:value", "abc\\&title\\:value"),
+                Arguments.of("abc&title:value", "abc\\&title\\:value"),
+                Arguments.of("title:value AND year:value", "title\\:value AND year\\:value"),
+                Arguments.of("\"title:value AND year:value\"", "\\\"title\\:value AND year\\:value\\\"")
                 );
     }
 }

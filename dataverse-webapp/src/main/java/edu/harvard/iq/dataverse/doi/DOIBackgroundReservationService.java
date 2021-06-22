@@ -31,7 +31,7 @@ import java.util.logging.Logger;
 @Startup
 @Singleton
 @DependsOn("StartupFlywayMigrator")
-class DOIBackgroundReservationService {
+public class DOIBackgroundReservationService {
 
     private static final Logger logger = Logger.getLogger(DOIBackgroundReservationService.class.getCanonicalName());
 

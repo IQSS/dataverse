@@ -43,6 +43,23 @@ public class SolrQuerySanitizer {
         return query;
     }
 
+    public String sanitizeRorQuery(String query) {
+        StringBuilder transformedQuery = new StringBuilder();
+
+        for (int i=0; i<query.length(); ++i) {
+            char currentChar = query.charAt(i);
+
+            if (SOLR_SPECIAL_CHARACTERS.contains(currentChar)) {
+                transformedQuery.append("\\")
+                                .append(currentChar);
+            } else {
+                transformedQuery.append(currentChar);
+            }
+        }
+
+        return transformedQuery.toString();
+    }
+
     // -------------------- PRIVATE --------------------
 
     private Map<String, String> buildFieldNamesMapping(Collection<DatasetFieldType> datasetFields) {

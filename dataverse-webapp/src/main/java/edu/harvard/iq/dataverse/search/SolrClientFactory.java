@@ -5,11 +5,9 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 
-import javax.ejb.EJB;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
-
 import java.io.IOException;
 import java.util.logging.Logger;
 
@@ -33,6 +31,15 @@ public class SolrClientFactory {
         String urlString = "http://" + settingsService.getValueForKey(Key.SolrHostColonPort) + "/solr/collection1";
         LOGGER.fine("Creating SolrClient at url: " + urlString);
         
+        return new HttpSolrClient.Builder(urlString).build();
+    }
+
+    @Produces
+    @RorSolrClient
+    public SolrClient produceRorSolrClient() {
+        String urlString = "http://" + settingsService.getValueForKey(Key.SolrHostColonPort) + "/solr/rorSuggestions";
+        LOGGER.fine("Creating SolrClient at url: " + urlString);
+
         return new HttpSolrClient.Builder(urlString).build();
     }
     
