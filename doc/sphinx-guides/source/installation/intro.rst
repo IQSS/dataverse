@@ -36,7 +36,7 @@ Getting Help
 To get help installing or configuring a Dataverse installation, please try one or more of:
 
 - posting to the `dataverse-community <https://groups.google.com/forum/#!forum/dataverse-community>`_ Google Group.
-- asking at http://chat.dataverse.org (#dataverse on the freenode IRC network)
+- asking at http://chat.dataverse.org
 - emailing support@dataverse.org to open a private ticket at https://help.hmdc.harvard.edu
 
 Improving this Guide
