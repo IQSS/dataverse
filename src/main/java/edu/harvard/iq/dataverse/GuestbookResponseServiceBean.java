@@ -149,7 +149,7 @@ public class GuestbookResponseServiceBean {
             queryString+= (" and r.guestbook_id = " + guestbookId.toString());
         }
         
-        queryString += ";";
+        queryString += " ORDER by r.id DESC;";
         logger.fine("stream responses query: " + queryString);
         
         return  em.createNativeQuery(queryString).getResultList();
