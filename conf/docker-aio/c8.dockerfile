@@ -1,4 +1,4 @@
-FROM centos:8
+FROM rockylinux/rockylinux:latest
 # OS dependencies
 # IQSS now recommends Postgres 13.
 RUN dnf -qy module disable postgresql
