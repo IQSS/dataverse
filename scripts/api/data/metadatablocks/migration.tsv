@@ -1,0 +1,5 @@
+#metadataBlock	name	dataverseAlias	displayName	blockURI											
+	migration		Migrated Metadata	https://dataverse.org/schema/migration/											
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	metadatablock_id	termURI
+	metadataOnOrig	Metadata on the original source of migrated datasets.			textbox	1		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		migration	https://dataverse.org/schema/core#metadataOnOrig
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder											

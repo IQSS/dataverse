@@ -79,7 +79,6 @@
 	originOfSources	Origin of Sources	For historical materials, information about the origin of the sources and the rules followed in establishing the sources should be specified.		textbox	75		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	characteristicOfSources	Characteristic of Sources Noted	Assessment of characteristics and source material.		textbox	76		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	accessToSources	Documentation and Access to Sources	Level of documentation of the original sources.		textbox	77		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
-	metadataOnOrig	Metadata on the original source of migrated datasets.			textbox	78		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder											
 	subject	Agricultural Sciences	D01	0											
 	subject	Arts and Humanities	D0	1											
