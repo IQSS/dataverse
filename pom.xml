@@ -31,7 +31,7 @@
         <aws.version>1.11.762</aws.version>
         <commons.logging.version>1.2</commons.logging.version>
         <commons.lang3.version>3.12.0</commons.lang3.version>
-        <httpcomponents.client.version>4.5.5</httpcomponents.client.version>
+        <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
         <junit.version>4.13.1</junit.version>
         <junit.jupiter.version>5.7.0</junit.jupiter.version>
         <junit.vintage.version>${junit.jupiter.version}</junit.vintage.version>
