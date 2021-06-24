@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
 import com.lyncode.xoai.model.oaipmh.Header;
@@ -17,6 +16,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import org.apache.poi.util.ReplacingInputStream;
 
 /**
  *
@@ -85,7 +85,11 @@ public class Xrecord extends Record {
                 if (dataset != null && formatName != null) {
                     InputStream inputStream = null;
                     try {
-                        inputStream = ExportService.getInstance().getExport(dataset, formatName);
+                        inputStream = new ReplacingInputStream(
+                            ExportService.getInstance().getExport(dataset, formatName),
+                            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
+                            ""
+                        );
                     } catch (ExportException ex) {
                         inputStream = null;
                     }
@@ -101,7 +105,6 @@ public class Xrecord extends Record {
             }
         }
         outputStream.flush();
-
     }
     
     private String itemHeaderToString(Header header) {
