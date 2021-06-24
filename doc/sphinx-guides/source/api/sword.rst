@@ -57,9 +57,9 @@ Differences in Dataverse Software 4 from DVN 3.x lead to a few minor backward in
 
 - Newly required fields when creating/editing datasets for compliance with the `Joint Declaration for Data Citation principles <http://thedata.org/blog/joint-declaration-data-citation-principles-and-dataverse>`_.
 
-  - dcterms:creator (maps to authorName)
+  - ``dcterms:creator`` (maps to authorName)
 
-  - dcterms:description
+  - ``dcterms:description``
 
 - Deaccessioning is no longer supported. An alternative will be developed at https://github.com/IQSS/dataverse/issues/778
 
@@ -76,11 +76,11 @@ New features as of v1.1
 
 - Datasets versions will only be increased to the next minor version (i.e. 1.1) rather than a major version (2.0) if possible. This depends on the nature of the change. Adding or removing a file, for example, requires a major version bump.
 
-- "Author Affiliation" can now be populated with an XML attribute. For example: <dcterms:creator affiliation="Coffee Bean State University">Stumptown, Jane</dcterms:creator>
+- "Author Affiliation" can now be populated with an XML attribute. For example: ``<dcterms:creator affiliation="Coffee Bean State University">Stumptown, Jane</dcterms:creator>``
 
-- "Contributor" can now be populated and the "Type" (Editor, Funder, Researcher, etc.) can be specified with an XML attribute. For example: <dcterms:contributor type="Funder">CaffeineForAll</dcterms:contributor>
+- "Contributor" can now be populated and the "Type" (Editor, Funder, Researcher, etc.) can be specified with an XML attribute. For example: ``<dcterms:contributor type="Funder">CaffeineForAll</dcterms:contributor>``
 
-- "License" can now be set with dcterms:license and the possible values are "CC0" and "NONE". "License" interacts with "Terms of Use" (dcterms:rights) in that if you include dcterms:rights in the XML, the license will be set to "NONE". If you don't include dcterms:rights, the license will default to "CC0". It is invalid to specify "CC0" as a license and also include dcterms:rights; an error will be returned. For backwards compatibility, dcterms:rights is allowed to be blank (i.e. <dcterms:rights></dcterms:rights>) but blank values will not be persisted to the database and the license will be set to "NONE".
+- "License" can now be set with ``dcterms:license`` and the possible values are "CC0" and "NONE". "License" interacts with "Terms of Use" (``dcterms:rights``) in that if you include ``dcterms:rights`` in the XML, the license will be set to "NONE". If you don't include ``dcterms:rights``, the license will default to "CC0". It is invalid to specify "CC0" as a license and also include ``dcterms:rights``; an error will be returned. For backwards compatibility, ``dcterms:rights`` is allowed to be blank (i.e. ``<dcterms:rights></dcterms:rights>``) but blank values will not be persisted to the database and the license will be set to "NONE".
 
 - "Contact E-mail" is automatically populated from dataset owner's email.
 
@@ -114,6 +114,7 @@ To create a dataset, you must have the "Dataset Creator" role (the ``AddDataset`
 Example Atom entry (XML)
 
 .. literalinclude:: sword-atom-entry.xml
+    :language: xml
 
 Dublin Core Terms (DC Terms) Qualified Mapping - Dataverse Project DB Element Crosswalk
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
