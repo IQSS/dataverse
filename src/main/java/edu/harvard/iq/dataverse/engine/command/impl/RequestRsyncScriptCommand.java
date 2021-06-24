@@ -51,7 +51,7 @@ public class RequestRsyncScriptCommand extends AbstractCommand<ScriptRequestResp
         }
         String dcmBaseUrl = ctxt.settings().getValueForKey(DataCaptureModuleUrl);
         if (dcmBaseUrl == null) {
-            throw new RuntimeException(DataCaptureModuleUrl + " is null!");
+            throw new CommandException("DataCaptureModuleUrl is null!", this);
         }
         User user = request.getUser();
         if (!(user instanceof AuthenticatedUser)) {
