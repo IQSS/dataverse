@@ -109,15 +109,12 @@ public class CreatePrivateUrlCommandTest {
     @Test
     public void testAlreadyExists() {
         dataset.setId(privateUrlAlreadyExists);
-        String expected = "Private URL already exists for data project id " + privateUrlAlreadyExists + ".";
-        String actual = null;
         PrivateUrl privateUrl = null;
         try {
             privateUrl = testEngine.submit(new CreatePrivateUrlCommand(null, dataset, false));
+            assertTrue(false);
         } catch (CommandException ex) {
-            actual = ex.getMessage();
         }
-        assertEquals(expected, actual);
         assertNull(privateUrl);
     }
 
