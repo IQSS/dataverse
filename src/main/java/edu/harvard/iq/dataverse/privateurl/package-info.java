@@ -6,6 +6,13 @@
  * all files (regardless of if the files are restricted or not) of a draft
  * version of a dataset.
  * <p>
+ * As of this note, a second option - to create a Private URL that provides an
+ * anonymized view of the dataset has been added. This option works the same as
+ * the original except that it hides author names in the citation block, hides
+ * the values for an admin specified list of metadata fields, disables citation
+ * downloads, and disables API access (except for file and file thumbnail
+ * downloads which are used by the UI).
+ * <p>
  * The primary use case for a Private URL is for journal editors to send a link
  * to reviewers of a dataset before publication. In most cases, these journal
  * editors do not permit depositors to publish on their own, which is to say
@@ -26,12 +33,20 @@
  * assign roles to them directly, rather than using a Private URL which requires
  * no username or password.
  * <p>
+ * As of this note, a second option aimed specifically at the review use case -
+ * to create a Private URL that provides an anonymized view of the dataset - has
+ * been added. This option works the same as the original except that it hides
+ * author names in the citation block, hides the values for an admin specified
+ * list of metadata fields, disables citation downloads, and disables API access
+ * (except for file and file thumbnail downloads which are used by the UI).
+ * <p>
  * The token associated with the Private URL role assignment that can be used
- * either in the GUI or via the API to elevate privileges beyond what a "Guest"
- * can see. The ability to use a Private URL token via API was added mostly to
- * facilitate automated testing of the feature but the far more common case is
- * expected to be use of the Private URL token in a link that is clicked to open
- * a browser, similar to links shared via Dropbox, Google, etc.
+ * either in the GUI or, for the non-anonymized-access option, via the API to
+ * elevate privileges beyond what a "Guest" can see. The ability to use a
+ * Private URL token via API was added mostly to facilitate automated testing of
+ * the feature but the far more common case is expected to be use of the Private
+ * URL token in a link that is clicked to open a browser, similar to links
+ * shared via Dropbox, Google, etc.
  * <p>
  * When reviewers click a Private URL their browser sessions are set to the
  * "{@link edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser}" that
@@ -65,16 +80,24 @@
  * using the "PrivateUrlUser" that has the "Member" role only on the dataset in
  * question. This means that read-only operations such as downloads of the
  * dataset's files are permitted. The Search API does not respect the Private
- * URL token but you can download unpublished metadata using the Native API and
- * download files using the Access API.
+ * URL token but you can download files using the Access API, and, with the
+ * non-anonymized-access option, download unpublished metadata using the Native
+ * API.
  * <p>
  * A Private URL cannot be created for a published version of a dataset. In the
  * GUI, you will be reminded of this fact with a popup. The API will explain
  * this as well.
  * <p>
- * If a draft dataset containing a Private URL is published, the Private URL is
- * deleted. This means that reviewers who click the link after publication will
- * see a 404.
+ * An anonymized-access Private URL can't be created if any published dataset
+ * version exists. The primary reason for this is that, since datasets have
+ * DOIs, the full metadata about published versions is available directly from
+ * the DOI provider. (While the metadata for that version could be somewhat
+ * different, in practice it would probably provide a means of identifying
+ * some/all of the authors).
+ * <p>
+ * If a draft dataset containing a Private URL is
+ * published, the Private URL is deleted. This means that reviewers who click
+ * the link after publication will see a 404.
  * <p>
  * If a post-publication draft containing a Private URL is deleted, the Private
  * URL is deleted. This is to ensure that if a new draft is created in the
@@ -106,8 +129,8 @@
  * <li>{@link edu.harvard.iq.dataverse.engine.command.impl.CreatePrivateUrlCommand}</li>
  * <li>{@link edu.harvard.iq.dataverse.engine.command.impl.DeletePrivateUrlCommand}</li>
  * </ul>
- * See also the Private URL To Unpublished Dataset BRD at
- * <a href="https://docs.google.com/document/d/1FT47QkZKcmjSgRnePaJO2g1nzcotLyN3Yb2ORvBr6cs/edit?usp=sharing">
+ * See also the Private URL To Unpublished Dataset BRD at <a href=
+ * "https://docs.google.com/document/d/1FT47QkZKcmjSgRnePaJO2g1nzcotLyN3Yb2ORvBr6cs/edit?usp=sharing">
  * https://docs.google.com/document/d/1FT47QkZKcmjSgRnePaJO2g1nzcotLyN3Yb2ORvBr6cs/edit?usp=sharing</a>
  */
 package edu.harvard.iq.dataverse.privateurl;
