@@ -34,11 +34,15 @@ HTTP Basic Authentication commonly makes use of both a username and a password b
 
 Clients such as ``curl`` expect both a username and a password separated by a colon. With ``curl``, the way to indicate that the password should be blank or empty is to include the colon at the end of the username (the API token) like this:
 
-``curl -u 54b143b5-d001-4254-afc0-a1c0f6a5b5a7:``
+.. code-block:: bash
+
+  curl -u 54b143b5-d001-4254-afc0-a1c0f6a5b5a7:
 
 All the curl examples below take this form but instead of showing an API token like above, a Bash environment variable called ``$API_TOKEN`` is shown instead like this:
 
-``curl -u $API_TOKEN:``
+.. code-block:: bash
+
+  curl -u $API_TOKEN:
 
 .. _RFC 7617: https://tools.ietf.org/html/rfc7617
 
