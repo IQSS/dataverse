@@ -128,6 +128,18 @@ public class GuestbookResponseServiceBean {
         // of queries now) -- L.A. 
         
         Map<Integer, Object> customQandAs = mapCustomQuestionAnswersAsStrings(dataverseId, guestbookId);
+                
+        List<Object[]> guestbookResults = getGuestbookResults( dataverseId,  guestbookId );
+        // the CSV header:
+        out.write("Guestbook, Dataset, Dataset PID, Date, Type, File Name, File Id, File PID, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
+        for (Object[] result : guestbookResults) {
+            StringBuilder sb = convertGuestbookResponsesToCSV(customQandAs, result);
+            out.write(sb.toString().getBytes());
+            out.flush();
+        }
+    }
+    
+    public List<Object[]> getGuestbookResults(Long dataverseId, Long guestbookId ){
         
         String queryString = BASE_QUERY_STRING_FOR_DOWNLOAD_AS_CSV
                 + " and  o.owner_id = " 
@@ -137,15 +149,15 @@ public class GuestbookResponseServiceBean {
             queryString+= (" and r.guestbook_id = " + guestbookId.toString());
         }
         
-        queryString += ";";
+        queryString += " ORDER by r.id DESC;";
         logger.fine("stream responses query: " + queryString);
         
-        List<Object[]> guestbookResults = em.createNativeQuery(queryString).getResultList();
-
-        // the CSV header:
-        out.write("Guestbook, Dataset, Dataset PID, Date, Type, File Name, File Id, File PID, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
+        return  em.createNativeQuery(queryString).getResultList();
         
-        for (Object[] result : guestbookResults) {
+    }
+    
+    public StringBuilder convertGuestbookResponsesToCSV ( Map<Integer, Object> customQandAs, Object[] result) throws IOException {
+
             Integer guestbookResponseId = (Integer)result[0];
             
             StringBuilder sb = new StringBuilder();
@@ -208,35 +220,16 @@ public class GuestbookResponseServiceBean {
             
             // Finally, custom questions and answers, if present:
             
-            // (the old implementation, below, would run one extra query FOR EVERY SINGLE
-            // guestbookresponse entry! -- instead, we are now pre-caching all the 
-            // available custom question responses, with a single native query at 
-            // the top of this method. -- L.A.)
-            
-            /*String cqString = "select q.questionstring, r.response  from customquestionresponse r, customquestion q where q.id = r.customquestion_id and r.guestbookResponse_id = " + result[0];
-            List<Object[]> customResponses = em.createNativeQuery(cqString).getResultList();
-            if (customResponses != null) {
-                for (Object[] response : customResponses) {
-                    sb.append(SEPARATOR);
-                    sb.append(response[0]);
-                    sb.append(SEPARATOR);
-                    sb.append(response[1] == null ? "" : response[1]);
-                }
-            }*/
             
             if (customQandAs.containsKey(guestbookResponseId)) {
                 sb.append(customQandAs.get(guestbookResponseId)); 
             } 
 
             sb.append(NEWLINE);
-
-            // Finally, write the line out: 
-            // (i.e., we are writing one guestbook response at a time, thus allowing the 
-            // whole thing to stream in real time -- L.A.)
-            out.write(sb.toString().getBytes());
-            out.flush();
-        }
+        return sb;
+        
     }
+    
     
     private String formatPersistentIdentifier(String protocol, String authority, String identifier) {
         // Note that the persistent id may be unavailable for this dvObject:
@@ -349,7 +342,7 @@ public class GuestbookResponseServiceBean {
         return selectCustomQuestionAnswers(dataverseId, guestbookId, false, firstResponse, lastResponse);
     }
     
-    private Map<Integer, Object> mapCustomQuestionAnswersAsStrings(Long dataverseId, Long guestbookId) {
+    public Map<Integer, Object> mapCustomQuestionAnswersAsStrings(Long dataverseId, Long guestbookId) {
         return selectCustomQuestionAnswers(dataverseId, guestbookId, true, null, null);
     }
     
@@ -581,7 +574,7 @@ public class GuestbookResponseServiceBean {
         return guestbook;
 
     }
-
+    
     public String getUserName(User user) {
         if (user.isAuthenticated()) {
             AuthenticatedUser authUser = (AuthenticatedUser) user;
@@ -821,9 +814,6 @@ public class GuestbookResponseServiceBean {
             guestbookResponse.setGuestbook(datasetGuestbook);            
         }
 
-       if(dataset.getLatestVersion() != null && dataset.getLatestVersion().isDraft()){
-            guestbookResponse.setWriteResponse(false);
-        }
         if (dataFile != null){
             guestbookResponse.setDataFile(dataFile);
         }        
@@ -894,7 +884,7 @@ public class GuestbookResponseServiceBean {
         em.persist(guestbookResponse);
     }
     
-    
+        
     public Long getCountGuestbookResponsesByDataFileId(Long dataFileId) {
         // datafile id is null, will return 0
         Query query = em.createNativeQuery("select count(o.id) from GuestbookResponse  o  where o.datafile_id  = " + dataFileId);

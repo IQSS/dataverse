@@ -36,8 +36,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -193,7 +193,7 @@ public class RolePermissionFragment implements java.io.Serializable {
             commandEngine.submit(new AssignRoleCommand(ra, r, dvObject, dvRequestService.getDataverseRequest(), privateUrlToken));
             JH.addMessage(FacesMessage.SEVERITY_INFO,
                 BundleUtil.getStringFromBundle("permission.roleAssignedToOn" ,
-                        Arrays.asList( r.getName() , ra.getDisplayInfo().getTitle() , StringEscapeUtils.escapeHtml(dvObject.getDisplayName()) )) );
+                        Arrays.asList( r.getName() , ra.getDisplayInfo().getTitle() , StringEscapeUtils.escapeHtml4(dvObject.getDisplayName()) )) );
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("permission.cannotAssignRole" , Arrays.asList( ex.getMessage())));
         }
