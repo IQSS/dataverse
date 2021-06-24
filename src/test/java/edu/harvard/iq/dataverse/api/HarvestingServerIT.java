@@ -18,6 +18,7 @@ import org.junit.Ignore;
 import static com.jayway.restassured.RestAssured.given;
 import java.util.List;
 import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -162,6 +163,20 @@ public class HarvestingServerIT {
         assertEquals(1, ret.size());
         // And the record should be the dataset we have just created:
         assertEquals(datasetPersistentId, listIdentifiersResponse.getBody().xmlPath().getString("OAI-PMH.ListIdentifiers.header.identifier"));
+
+        Response listRecordsResponse = UtilIT.getOaiListRecords(setName, "oai_dc");
+        assertEquals(OK.getStatusCode(), listRecordsResponse.getStatusCode());
+        List listRecords = listRecordsResponse.getBody().xmlPath().getList("OAI-PMH.ListRecords.record");
+
+        assertNotNull(listRecords);
+        assertEquals(1, listRecords.size());
+        assertEquals(datasetPersistentId, listRecordsResponse.getBody().xmlPath().getString("OAI-PMH.ListRecords.record[0].header.identifier"));
+
+        // assert that Datacite format does not contain the XML prolog
+        Response listRecordsResponseDatacite = UtilIT.getOaiListRecords(setName, "Datacite");
+        assertEquals(OK.getStatusCode(), listRecordsResponseDatacite.getStatusCode());
+        String body = listRecordsResponseDatacite.getBody().asString();
+        assertFalse(body.contains("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
 
         // And now run GetRecord on the OAI record for the dataset:
         Response getRecordResponse = UtilIT.getOaiRecord(datasetPersistentId, "oai_dc");

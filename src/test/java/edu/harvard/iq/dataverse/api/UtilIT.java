@@ -2359,7 +2359,12 @@ public class UtilIT {
         String apiPath = String.format("/oai?verb=ListIdentifiers&set=%s&metadataPrefix=%s", setName, metadataFormat);
         return given().get(apiPath);
     }
-    
+
+    static Response getOaiListRecords(String setName, String metadataFormat) {
+        String apiPath = String.format("/oai?verb=ListRecords&set=%s&metadataPrefix=%s", setName, metadataFormat);
+        return given().get(apiPath);
+    }
+
     static Response changeAuthenticatedUserIdentifier(String oldIdentifier, String newIdentifier, String apiToken) {
         Response response;
         String path = String.format("/api/users/%s/changeIdentifier/%s", oldIdentifier, newIdentifier );
