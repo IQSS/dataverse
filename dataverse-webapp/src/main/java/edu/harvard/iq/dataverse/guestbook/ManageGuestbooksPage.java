@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.guestbook;
 
 import edu.harvard.iq.dataverse.DataverseDao;
+import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
@@ -36,6 +37,7 @@ public class ManageGuestbooksPage implements java.io.Serializable {
     private GuestbookServiceBean guestbookService;
     private PermissionsWrapper permissionsWrapper;
     private ManageGuestbooksService manageGuestbooksService;
+    private DataverseSession dataverseSession;
 
     private List<Guestbook> guestbooks;
     private Dataverse dataverse;
@@ -53,12 +55,14 @@ public class ManageGuestbooksPage implements java.io.Serializable {
     public ManageGuestbooksPage(DataverseDao dvService, GuestbookResponseServiceBean guestbookResponseService,
                                 GuestbookServiceBean guestbookService,
                                 PermissionsWrapper permissionsWrapper,
-                                ManageGuestbooksService manageGuestbooksService) {
+                                ManageGuestbooksService manageGuestbooksService,
+                                DataverseSession dataverseSession) {
         this.dvService = dvService;
         this.guestbookResponseService = guestbookResponseService;
         this.guestbookService = guestbookService;
         this.permissionsWrapper = permissionsWrapper;
         this.manageGuestbooksService = manageGuestbooksService;
+        this.dataverseSession = dataverseSession;
     }
 
     // -------------------- GETTERS --------------------
@@ -106,7 +110,9 @@ public class ManageGuestbooksPage implements java.io.Serializable {
         }
 
         Long totalResponses = guestbookResponseService.findCountAll(dataverseId);
-        if (totalResponses.intValue() > 0) {
+
+        dataverseSession.getUser().isSuperuser();
+        if (totalResponses.intValue() > 0 && dataverseSession.getUser().isSuperuser()) {
             displayDownloadAll = true;
         }
 
