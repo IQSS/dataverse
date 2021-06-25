@@ -22,7 +22,7 @@ while (<>)
 	    $query = "";
 	}
     }
-    elsif (/^.*[A-Z][A-Z][A-Z] >\s*DETAIL:  parameters: (.*)$/i)
+    elsif (/^.*[A-Z][A-Z][A-Z]\s.*DETAIL:  parameters: (.*)$/i)
     {
 #	print STDERR "detail line encountered.\n";
 	unless ($query)
