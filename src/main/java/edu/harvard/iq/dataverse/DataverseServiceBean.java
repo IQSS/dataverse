@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.io.IOException;
@@ -172,6 +173,14 @@ public class DataverseServiceBean implements java.io.Serializable {
         
     }
 
+    public List<Dataverse> findByCreatorId(Long creatorId) {
+        return em.createNamedQuery("Dataverse.findByCreatorId").setParameter("creatorId", creatorId).getResultList();
+    }
+
+    public List<Dataverse> findByReleaseUserId(Long releaseUserId) {
+        return em.createNamedQuery("Dataverse.findByReleaseUserId").setParameter("releaseUserId", releaseUserId).getResultList();
+    }
+
     public List<Dataverse> findByOwnerId(Long ownerId) {
         return em.createNamedQuery("Dataverse.findByOwnerId").setParameter("ownerId", ownerId).getResultList();
     }
@@ -193,6 +202,15 @@ public class DataverseServiceBean implements java.io.Serializable {
      */
     public Dataverse findRootDataverse() {
         return em.createNamedQuery("Dataverse.findRoot", Dataverse.class).getSingleResult();
+    }
+    
+    
+    //Similarly - if the above throws that exception, do we need to catch it here?
+    //ToDo - consider caching?
+    public String getRootDataverseName() {
+        Dataverse root = findRootDataverse();
+        String rootDataverseName=root.getName();
+        return StringUtil.isEmpty(rootDataverseName) ? "" : rootDataverseName; 
     }
     
     public List<Dataverse> findAllPublishedByOwnerId(Long ownerId) {

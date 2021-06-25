@@ -52,9 +52,6 @@ cd scripts/api
 ./setup-all.sh --insecure -p=admin1 | tee /tmp/setup-all.sh.out
 cd ../..
 
-echo "Loading SQL reference data..."
-psql -U $DB_USER $DB_NAME -f scripts/database/reference_data.sql
-
 echo "Creating SQL sequence..."
 psql -U $DB_USER $DB_NAME -f doc/sphinx-guides/source/_static/util/createsequence.sql
 

@@ -129,7 +129,7 @@ Populate Views and Downloads Nightly
 
 Running ``main.py`` to create the SUSHI JSON file and the subsequent calling of the Dataverse Software API to process it should be added as a cron job.
 
-The Dataverse Software provides example scripts that run the steps to process new accesses and uploads and update your Dataverse installation's database (`counter_daily.sh</_static/util/counter_daily.sh>`) and to retrieve citations for all Datasets from DataCite (`counter_weekly.sh</_static/util/counter_weekly.sh>`). These scripts should be configured for your environment and can be run manually or as cron jobs.
+The Dataverse Software provides example scripts that run the steps to process new accesses and uploads and update your Dataverse installation's database :download:`counter_daily.sh <../_static/util/counter_daily.sh>` and to retrieve citations for all Datasets from DataCite :download:`counter_weekly.sh <../_static/util/counter_weekly.sh>`. These scripts should be configured for your environment and can be run manually or as cron jobs.
 
 Sending Usage Metrics to the DataCite Hub
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

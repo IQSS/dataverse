@@ -95,6 +95,7 @@ import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
+import edu.harvard.iq.dataverse.metrics.MetricsUtil;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
@@ -267,7 +268,7 @@ public class Datasets extends AbstractApiBean {
                 return error(Response.Status.NOT_FOUND, "A dataset with the persistentId " + persistentId + " could not be found.");
             }
             
-            ExportService instance = ExportService.getInstance(settingsSvc);
+            ExportService instance = ExportService.getInstance();
             
             InputStream is = instance.getExport(dataset, exporter);
            
@@ -496,7 +497,7 @@ public class Datasets extends AbstractApiBean {
         
         String indexFileName = folderName.equals("") ? ".index.html"
                 : ".index-" + folderName.replace('/', '_') + ".html";
-        response.setHeader("Content-disposition", "attachment; filename=\"" + indexFileName + "\"");
+        response.setHeader("Content-disposition", "filename=\"" + indexFileName + "\"");
 
         
         return Response.ok()
@@ -807,11 +808,16 @@ public class Datasets extends AbstractApiBean {
     
     @PUT
     @Path("{id}/editMetadata")
-    public Response editVersionMetadata(String jsonBody, @PathParam("id") String id, @QueryParam("replace") Boolean replace) throws WrappedResponse{
+    public Response editVersionMetadata(String jsonBody, @PathParam("id") String id, @QueryParam("replace") Boolean replace) {
 
         Boolean replaceData = replace != null;
-
-        DataverseRequest req = createDataverseRequest(findUserOrDie());
+        DataverseRequest req = null;
+        try {
+         req = createDataverseRequest(findUserOrDie());
+        } catch (WrappedResponse ex) {
+            logger.log(Level.SEVERE, "Edit metdata error: " + ex.getMessage(), ex);
+            return ex.getResponse();
+        }
 
         return processDatasetUpdate(jsonBody, id, req, replaceData);
     }
@@ -1375,7 +1381,7 @@ public class Datasets extends AbstractApiBean {
                 logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
                 return error(Response.Status.FORBIDDEN, "Failed to lock the dataset (dataset id="+dataset.getId()+")");
             }
-            return ok(scriptRequestResponse.getScript(), MediaType.valueOf(MediaType.TEXT_PLAIN));
+            return ok(scriptRequestResponse.getScript(), MediaType.valueOf(MediaType.TEXT_PLAIN), null);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         } catch (EJBException ex) {
@@ -1834,6 +1840,9 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         } catch (DataFileTagException ex) {
             return error( Response.Status.BAD_REQUEST, ex.getMessage());            
         }
+        catch (ClassCastException | com.google.gson.JsonParseException ex) {
+            return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("file.addreplace.error.parsing"));
+        }
         
         // -------------------------------------
         // (3) Get the file name and content type
@@ -2184,7 +2193,13 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             if (yyyymm != null) {
                 // We add "-01" because we store "2018-05-01" rather than "2018-05" in the "monthyear" column.
                 // Dates come to us as "2018-05-01" in the SUSHI JSON ("begin-date") and we decided to store them as-is.
-                monthYear = yyyymm + "-01";
+                monthYear = MetricsUtil.sanitizeYearMonthUserInput(yyyymm) + "-01";
+            }
+            if (country != null) {
+                country = country.toLowerCase();
+                if (!MakeDataCountUtil.isValidCountryCode(country)) {
+                    return error(Response.Status.BAD_REQUEST, "Country must be one of the ISO 1366 Country Codes");
+                }
             }
             DatasetMetrics datasetMetrics = datasetMetricsSvc.getDatasetMetricsByDatasetForDisplay(dataset, monthYear, country);
             if (datasetMetrics == null) {
@@ -2265,6 +2280,9 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             return ok(jsonObjectBuilder);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
+        } catch (Exception e) {
+            //bad date - caught in sanitize call
+            return error(BAD_REQUEST, e.getMessage());
         }
     }
     

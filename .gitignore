@@ -46,6 +46,10 @@ conf/docker-aio/dv/deps/
 conf/docker-aio/dv/install/dvinstall.zip
 # or copy of test data
 conf/docker-aio/testdata/
+
+# docker-aio creates maven/ which reports 86 new files. ignore this wd.
+maven/
+
 scripts/installer/default.config
 *.pem
 

@@ -44,6 +44,16 @@ Change User Identifier
 
 See :ref:`change-identifier-label`
 
+Delete a User
+-------------
+
+See :ref:`delete-a-user`
+
+Deactivate a User
+-----------------
+
+See :ref:`deactivate-a-user`
+
 Confirm Email
 -------------
 

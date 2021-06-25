@@ -13,7 +13,17 @@
     restrictFileAction - name of the method on the above bean to call for restrict (method must take a boolean)    
     deleteFileAction - name of method on the above bean to delete files
     -->            
-    </ui:remove>    
+    </ui:remove>
+    
+    <p:dialog id="fileAlreadyDeletedPrevious" styleClass="smallPopUp"
+              header="#{bundle['file.alreadyDeleted.warning.header']}" widgetVar="fileAlreadyDeletedPrevious" modal="true">
+        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['file.alreadyDeleted.previous.warningMessage']}</p>
+        <div class="button-block">
+            <button class="btn btn-default" onclick="PF('fileAlreadyDeletedPrevious').hide();" type="button">
+                #{bundle.close}
+            </button>
+        </div>
+    </p:dialog>     
 
     <p:dialog id="accessPopup" styleClass="smallPopUp" header="#{bundle['dataset.access.accessHeader']}" widgetVar="accessPopup" modal="true">
         <p:focus context="accessPopup"/>
@@ -71,8 +81,8 @@
     <p:dialog id="configureToolPopup" styleClass="smallPopUp" header="#{configureFragmentBean.configurePopupToolHandler.externalTool.getDisplayNameLang()}" widgetVar="configureToolPopup" modal="true">
         <ui:include src="file-configure-popup-fragment.xhtml" />
     </p:dialog>
-
-   
+    
+  
 
     <!-- Simple Popup For Select Files-->
     <p:dialog id="selectFiles" styleClass="smallPopUp"
@@ -83,6 +93,6 @@
                 #{bundle.close}
             </button>
         </div>
-    </p:dialog>       
-
+    </p:dialog>     
+        
 </ui:composition>

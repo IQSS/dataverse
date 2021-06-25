@@ -22,7 +22,6 @@
     dataserVersion - the datasetversion object to associate with this view
     fileMetadata - for single file, the fileMetadata object of that file
     fileMetadataForAction - used by DatasetPage popups to identify single file (also clears for selected file)
-    isDraftReplacementFile - for single file, if the file is a draft and already replacing a past file 
     configureTools - for single file, list of configureTools for the file
     bean - the named value of the backing bean for the below method(s), also used by isFilePg param
     unrestrictFileAction - name of the method on the above bean to call for unrestrict (method must take a boolean)    
@@ -38,7 +37,7 @@
     <li>
         <p:commandLink onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
                     return false;"                        
-                       oncomplete="if(#{fileMetadata!=null}) window.location.assign('/editdatafiles.xhtml?selectedFileIds=#{fileMetadata.dataFile.id}&#38;datasetId=#{fileMetadata.datasetVersion.dataset.id}#{isFilePg?'&#38;mode=SINGLE':''}&#38;version=#{fileMetadata.datasetVersion.version}')"
+                       oncomplete="if(#{fileMetadata!=null}) window.location.assign('/editdatafiles.xhtml?selectedFileIds=#{fileMetadata.dataFile.id}&#38;datasetId=#{fileMetadata.datasetVersion.dataset.id}#{isFilePg?'&#38;referrer=FILE':''}&#38;version=#{fileMetadata.datasetVersion.version}')"
                        action="#{bean[editFileAction]()}">
             <h:outputText value="#{bundle['file.metadata']}"/>
         </p:commandLink>
@@ -71,22 +70,13 @@
         </ui:fragment>   
     </ui:fragment>
 
-    <!-- TO-DO #7342 - ADD REPLACE FOR SINGLE FILE-->      
-    <ui:fragment rendered="#{isFilePg}">
-        <ui:fragment rendered="#{fileMetadata.dataFile.released and !isDraftReplacementFile}">                                        
-            <li><!-- start: replace file link -->
-                <h:outputLink value="/editdatafiles.xhtml?mode=SINGLE_REPLACE&#38;datasetId=#{fileMetadata.datasetVersion.dataset.id}&#38;fid=#{fileMetadata.dataFile.id}&#38;version=#{fileMetadata.datasetVersion.version}">
-                    <h:outputText value="#{bundle['file.replace']}"/>
-                </h:outputLink>
-                <!-- end replace file link --></li>
-        </ui:fragment>
-        <ui:fragment rendered="#{((fileMetadata.dataFile.released and draftReplacementFile) or (!fileMetadata.dataFile.released and fileMetadata.datasetVersion.dataset.released)) }">                                        
-            <li><!-- start: already replaced replace file link -->
-                <p:commandLink title="#{bundle['file.delete']}" onclick="PF('fileAlreadyReplacedDraft').show();">
-                    <h:outputText value="#{bundle['file.replace']}"/>
-                </p:commandLink>
-                <!-- end replace file link --></li>
-        </ui:fragment>
+    <!-- Replace is only available for single file actions-->
+    <ui:fragment rendered="#{fileMetadata!=null}">                                   
+        <li>
+            <h:outputLink value="/editdatafiles.xhtml?mode=REPLACE#{isFilePg?'&#38;referrer=FILE':''}&#38;datasetId=#{fileMetadata.datasetVersion.dataset.id}&#38;fid=#{fileMetadata.dataFile.id}&#38;version=#{fileMetadata.datasetVersion.version}">
+                <h:outputText value="#{bundle['file.replace']}"/>
+            </h:outputLink>
+        </li>
     </ui:fragment>
 
     <!-- TO-DO #3488 - ADD FILE TAGS FOR FILE PG AND SINGLE FILE-->    

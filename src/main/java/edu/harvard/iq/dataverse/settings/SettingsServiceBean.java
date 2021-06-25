@@ -422,7 +422,18 @@ public class SettingsServiceBean {
         /**
          * Sort Date Facets Chronologically instead or presenting them in order of # of hits as other facets are. Default is true
          */
-        ChronologicalDateFacets
+        ChronologicalDateFacets,
+        
+        /**
+         * Used where BrandingUtil.getInstallationBrandName is called, overides the default use of the root Dataverse collection name
+         */
+        InstallationName,
+        /**
+         * In metadata exports that set a 'distributor' this flag determines whether the
+         * Installation Brand Name is always included (default/false) or is not included
+         * when the Distributor field (citation metadatablock) is set (true)
+         */
+        ExportInstallationAsDistributorOnlyWhenNotSet
         ;
 
         @Override

@@ -33,7 +33,7 @@ Please be warned:
 
 - This process may still require some system administration skills. 
 - The guide below is very Linux-specific. This process has been tested
-  on RedHat/CentOS servers only. In some ways it *may* actually be
+  on RedHat/derivative servers only. In some ways it *may* actually be
   easier to get it all installed on MacOS X (because
   MacOS X versions of third party R packages are available
   pre-compiled), or even on Windows. But it hasn't been attempted, and
@@ -137,7 +137,7 @@ change it to
 b. R:
 -----
 
-The simplest way to install R on RHEL/CentOS systems is with yum, using the EPEL repository::
+The simplest way to install R on RHEL/derivative systems is with yum, using the EPEL repository::
 
        yum install epel-release
        yum install R-core R-core-devel
@@ -169,7 +169,7 @@ Wipe clean any R packages that were left behind::
 c. rApache: 
 -----------
 
-We maintain the following rpms of rApache, built for the following version of RedHat/CentOS distribution:
+We maintain the following rpms of rApache, built for the following version of RedHat/derivative distribution:
 
 For RHEL/CentOS 6 and R 3.4, download :download:`rapache-1.2.6-rpm0.x86_64.rpm <../_static/installation/files/home/rpmbuild/rpmbuild/RPMS/x86_64/rapache-1.2.6-rpm0.x86_64.rpm>` and install it with::
 

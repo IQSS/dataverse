@@ -160,7 +160,51 @@ function sharrre(){
         }
     });
 }
-    
+
+/*
+ * Truncate dataset description content
+ */
+function contentTruncate(truncSelector, truncMoreBtn, truncMoreTip, truncLessBtn, truncLessTip){
+    // SELECTOR ID FROM PARAMETERS
+    $('#' + truncSelector + ' td > div:first-child').each(function () {
+        
+        // add responsive img class to limit width to that of container
+        $(this).find('img').attr('class', 'img-responsive');
+        
+        // find container height
+        var containerHeight = $(this).outerHeight();
+        
+        if (containerHeight > 250) {
+            // ADD A MAX-HEIGHT TO CONTAINER
+            $(this).css({'max-height':'250px','overflow-y':'hidden','position':'relative'});
+
+            // BTN LABEL TEXT, ARIA ATTR'S, FROM BUNDLE VIA PARAMETERS
+            var readMoreBtn = '<button class="btn btn-link desc-more-link" type="button" data-toggle="tooltip" data-original-title="' + truncMoreTip + '" aria-expanded="false" aria-controls="#' + truncSelector + '">' + truncMoreBtn + '</button>';
+            var moreBlock = '<div class="more-block">' + readMoreBtn + '</div>';
+            var readLessBtn = '<button class="btn btn-link desc-less-link" type="button" data-toggle="tooltip" data-original-title="' + truncLessTip + '" aria-expanded="true" aria-controls="#' + truncSelector + '">' + truncLessBtn + '</button>';
+            var lessBlock = '<div class="less-block">' + readLessBtn + '</div>';
+
+            // add "Read full desc [+]" btn, background fade
+            $(this).append(moreBlock);
+
+            // show full description in summary block on "Read full desc [+]" btn click
+            $(document).on('click', 'button.desc-more-link', function() {
+                $(this).tooltip('hide').parent('div').parent('div').css({'max-height':'none','overflow-y':'visible','position':'relative'});
+                $(this).parent('div.more-block').replaceWith(lessBlock);
+                $('.less-block button').tooltip();
+            });
+            
+            // trucnate description in summary block on "Collapse desc [-]" btn click
+            $(document).on('click', 'button.desc-less-link', function() {
+                $(this).tooltip('hide').parent('div').parent('div').css({'max-height':'250px','overflow-y':'hidden','position':'relative'});
+                $(this).parent('div.less-block').replaceWith(moreBlock);
+                $('html, body').animate({scrollTop: $('#' + truncSelector).offset().top - 60}, 500);
+                $('.more-block button').tooltip();
+            });
+        }
+    });
+}
+
 /*
  * Truncate file checksums
  */

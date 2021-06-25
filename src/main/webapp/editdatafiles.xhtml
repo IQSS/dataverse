@@ -15,7 +15,7 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{datasetPage || EditDatafilesPage.showFileUploadFragment() ? (EditDatafilesPage.mode == 'SINGLE_REPLACE' ? bundle['file.replaceFile'] : bundle['file.uploadFiles']) : bundle['file.editFiles']} - #{EditDatafilesPage.workingVersion.title}"/>
+            <ui:param name="pageTitle" value="#{datasetPage || EditDatafilesPage.showFileUploadFragment() ? (EditDatafilesPage.mode == 'REPLACE' ? bundle['file.replaceFile'] : bundle['file.uploadFiles']) : bundle['file.editFiles']} - #{EditDatafilesPage.workingVersion.title}"/>
             <ui:param name="dataverse" value="#{EditDatafilesPage.dataset.owner}"/>
             <ui:param name="dataset" value="#{EditDatafilesPage.dataset}"/>
             <ui:param name="version" value="#{EditDatafilesPage.workingVersion}"/>
@@ -25,14 +25,15 @@
                 <f:metadata>
                     <f:viewParam name="datasetId" value="#{EditDatafilesPage.dataset.id}"/>
                     <o:viewParam name="mode" value="#{EditDatafilesPage.mode}"/>
+                    <o:viewParam name="referrer" value="#{EditDatafilesPage.referrer}" default="DATASET"/>
                     <f:viewParam name="selectedFileIds" value="#{EditDatafilesPage.selectedFileIds}"/>
                     <f:viewParam name="versionString" value="#{EditDatafilesPage.versionString}"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{EditDatafilesPage.init}" />
-                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(EditDatafilesPage.dataset, (datasetPage || EditDatafilesPage.showFileUploadFragment() ? (EditDatafilesPage.mode == 'SINGLE_REPLACE' ? bundle['file.replaceFile'] : bundle['file.uploadFiles']) : bundle['file.editFiles']))}"
-                                  if="#{!(param.mode == 'SINGLE' || param.mode == 'SINGLE_REPLACE')}" />
-                    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbsForFileMetadata(EditDatafilesPage.singleFile, (EditDatafilesPage.mode == 'SINGLE_REPLACE' ? bundle['file.replaceFile'] : bundle['file.editFiles']))}"
-                                  if="#{(param.mode == 'SINGLE' || param.mode == 'SINGLE_REPLACE')  }" />
+                    <o:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(EditDatafilesPage.dataset, (datasetPage || EditDatafilesPage.showFileUploadFragment() ? (EditDatafilesPage.mode == 'REPLACE' ? bundle['file.replaceFile'] : bundle['file.uploadFiles']) : bundle['file.editFiles']))}"
+                                  if="#{EditDatafilesPage.referrer == 'DATASET'}" />
+                    <o:viewAction action="#{dataverseHeaderFragment.initBreadcrumbsForFileMetadata(EditDatafilesPage.singleFile, (EditDatafilesPage.mode == 'REPLACE' ? bundle['file.replaceFile'] : bundle['file.editFiles']))}"
+                                  if="#{EditDatafilesPage.referrer == 'FILE'}" />
                 </f:metadata>
                 <h:form id="datasetForm">
                     <!-- BEGIN: file replace original -->
@@ -53,9 +54,8 @@
                     </div>
                     <!-- END: file replace original -->
 
-                    <ui:fragment id="uploadFilesOnCreateTab" rendered="#{EditDatafilesPage.mode == 'SINGLE' or                          
-                            EditDatafilesPage.mode == 'SINGLE_REPLACE' or EditDatafilesPage.mode == 'EDIT'
-                            or EditDatafilesPage.mode == 'UPLOAD'}">
+                    <ui:fragment id="uploadFilesOnCreateTab" rendered="#{EditDatafilesPage.mode == 'UPLOAD' or                    
+                            EditDatafilesPage.mode == 'REPLACE' or EditDatafilesPage.mode == 'EDIT'}">
                         <div id="contentTabs">
                             <ui:include src="editFilesFragment.xhtml">
                                 <ui:param name="editDatafilesPage" value="true"/>

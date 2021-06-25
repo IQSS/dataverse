@@ -34,4 +34,5 @@ Developer Guide
    selinux
    big-data-support
    aux-file-support
+   s3-direct-upload-api
    workflows

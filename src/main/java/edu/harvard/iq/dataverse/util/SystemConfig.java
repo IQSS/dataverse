@@ -254,16 +254,18 @@ public class SystemConfig {
         int defaultValue = 10080; //one week in minutes
         SettingsServiceBean.Key key = SettingsServiceBean.Key.MetricsCacheTimeoutMinutes;
         String metricsCacheTimeString = settingsService.getValueForKey(key);
-        int returnInt = 0;
-        try {
-            returnInt = Integer.parseInt(metricsCacheTimeString);
-            if (returnInt >= 0) {
-                return returnInt;
-            } else {
-                logger.info("Returning " + defaultValue + " for " + key + " because value must be greater than zero, not \"" + metricsCacheTimeString + "\".");
+        if (metricsCacheTimeString != null) {
+            int returnInt = 0;
+            try {
+                returnInt = Integer.parseInt(metricsCacheTimeString);
+                if (returnInt >= 0) {
+                    return returnInt;
+                } else {
+                    logger.info("Returning " + defaultValue + " for " + key + " because value must be greater than zero, not \"" + metricsCacheTimeString + "\".");
+                }
+            } catch (NumberFormatException ex) {
+                logger.info("Returning " + defaultValue + " for " + key + " because value must be an integer greater than zero, not \"" + metricsCacheTimeString + "\".");
             }
-        } catch (NumberFormatException ex) {
-            logger.info("Returning " + defaultValue + " for " + key + " because value must be an integer greater than zero, not \"" + metricsCacheTimeString + "\".");
         }
         return defaultValue;
     }
@@ -650,7 +652,7 @@ public class SystemConfig {
     }
 
     public String getNameOfInstallation() {
-        return dataverseService.findRootDataverse().getName();
+        return dataverseService.getRootDataverseName();
     }
 
     public AbstractOAuth2AuthenticationProvider.DevOAuthAccountType getDevOAuthAccountType() {

@@ -135,38 +135,33 @@ different people. For our purposes, an integration test can have two flavors:
 Running the Full API Test Suite Using EC2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To run the API test suite in an EC2 instance you should first follow the steps in the :doc:`deployment` section to get set up for AWS in general and EC2 in particular.
+**Prerequisite:** To run the API test suite in an EC2 instance you should first follow the steps in the :doc:`deployment` section to get set up with the AWS binary to launch EC2 instances. If you're here because you just want to spin up a branch, you'll still want to follow the AWS deployment setup steps, but may find the `ec2-create README.md <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/blob/master/ec2/README.md>`_ Quick Start section helpful.
 
-You may always retrieve a current copy of the ec2-create-instance.sh script and accompanying group_var.yml file from the `dataverse-ansible repo <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/>`_:
+You may always retrieve a current copy of the ec2-create-instance.sh script and accompanying group_var.yml file from the `dataverse-ansible repo <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/>`_. Since we want to run the test suite, let's grab the group_vars used by Jenkins:
 
 - `ec2-create-instance.sh <https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/ec2/ec2-create-instance.sh>`_
-- `main.yml <https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/defaults/main.yml>`_
+- `jenkins.yml <https://raw.githubusercontent.com/GlobalDataverseCommunityConsortium/dataverse-ansible/master/tests/group_vars/jenkins.yml>`_
 
-Edit ``main.yml`` to set the desired GitHub repo, branch, and to ensure that the API test suite is enabled:
+Edit ``jenkins.yml`` to set the desired GitHub repo and branch, and to adjust any other options to meet your needs:
 
 - ``dataverse_repo: https://github.com/IQSS/dataverse.git``
 - ``dataverse_branch: develop``
 - ``dataverse.api.test_suite: true``
+- ``dataverse.unittests.enabled: true``
 - ``dataverse.sampledata.enabled: true``
 
-If you wish, you may pass the local path of a logging directory, which will tell ec2-create-instance.sh to `grab various logs <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/blob/master/ec2/ec2-create-instance.sh#L185>`_ for your review.
+If you wish, you may pass the script a ``-l`` flag with a local relative path in which the script will `copy various logs <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/blob/master/ec2/ec2-create-instance.sh#L185>`_ at the end of the test suite for your review.
 
 Finally, run the script:
 
 .. code-block:: bash
 
-  $ ./ec2-create-instance.sh -g main.yml -l log_dir
-
-Near the beginning and at the end of the ec2-create-instance.sh output you will see instructions for connecting to the instance via SSH. If you are actively working on a branch and want to refresh the warfile after each commit, you may wish to call a `redeploy.sh <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible/blob/master/templates/redeploy.sh.j2>`_ script placed by the Ansible role, which will do a "git pull" against your branch, build the warfile, deploy the warfile, then restart the app server. By default this script is written to /tmp/dataverse/redeploy.sh. You may invoke the script by appending it to the SSH command in ec2-create's output:
-
-.. code-block:: bash
-
-  $ ssh -i your_pem.pem user@ec2-host.aws.com /tmp/dataverse/redeploy.sh
+  $ ./ec2-create-instance.sh -g jenkins.yml -l log_dir
 
 Running the full API test suite using Docker
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To run the full suite of integration tests on your laptop, we recommend using the "all in one" Docker configuration described in ``conf/docker-aio/readme.txt`` in the root of the repo.
+To run the full suite of integration tests on your laptop, we recommend using the "all in one" Docker configuration described in ``conf/docker-aio/readme.md`` in the root of the repo.
 
 Alternatively, you can run tests against the app server running on your laptop by following the "getting set up" steps below.
 
@@ -251,7 +246,7 @@ Once installed, you may run commands with ``mvn [options] [<goal(s)>] [<phase(s)
 
   ``mvn test -Dtest=FileMetadataIT -Ddataverse.test.baseurl='http://localhost:8080'``
 
-To see the full list of tests used by the Docker option mentioned above, see :download:`run-test-suite.sh <../../../../conf/docker-aio/run-test-suite.sh>`.
+If you are adding a new test class, be sure to add it to :download:`tests/integration-tests.txt <../../../../tests/integration-tests.txt>` so that our automated testing knows about it.
 
 
 Writing and Using a Testcontainers Test
@@ -442,13 +437,6 @@ How to Run the Phoenix Tests
 - Take a quick look at http://phoenix.dataverse.org to make sure the server is up and running Dataverse. If it's down, fix it.
 - Log into Jenkins and click "Build Now" at https://build.hmdc.harvard.edu:8443/job/phoenix.dataverse.org-build-develop/
 - Wait for all three chained Jenkins jobs to complete and note if they passed or failed. If you see a failure, open a GitHub issue or at least get the attention of some developers.
-
-List of Tests Run Against the Phoenix Server
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-We haven't thought much about a good way to publicly list the "IT" classes that are executed against the phoenix server. (Currently your best bet is to look at the ``Executing Maven`` line at the top of the "Full Log" of "Console Output" of ``phoenix.dataverse.org-apitest-develop`` Jenkins job mentioned above.) We endeavor to keep the list of tests in the "all-in-one" Docker environment described above in sync with the list of tests configured in Jenkins. That is to say, refer to :download:`run-test-suite.sh <../../../../conf/docker-aio/run-test-suite.sh>` mentioned in ``conf/docker-aio/readme.txt`` for the current list of IT tests that are expected to pass. Here's a dump of that file:
-
-.. literalinclude:: ../../../../conf/docker-aio/run-test-suite.sh
 
 Accessibility Testing
 ---------------------

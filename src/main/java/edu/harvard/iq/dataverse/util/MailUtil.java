@@ -29,8 +29,8 @@ public class MailUtil {
         return null;
     }
 
-    public static String getSubjectTextBasedOnNotification(UserNotification userNotification, String rootDataverseName, Object objectOfNotification) {
-        List<String> rootDvNameAsList = Arrays.asList(BrandingUtil.getInstallationBrandName(rootDataverseName));
+    public static String getSubjectTextBasedOnNotification(UserNotification userNotification, Object objectOfNotification) {
+        List<String> rootDvNameAsList = Arrays.asList(BrandingUtil.getInstallationBrandName());
         switch (userNotification.getType()) {
             case ASSIGNROLE:
                 return BundleUtil.getStringFromBundle("notification.email.assign.role.subject", rootDvNameAsList);
@@ -54,6 +54,10 @@ public class MailUtil {
                 return BundleUtil.getStringFromBundle("notification.email.publishFailure.dataset.subject", rootDvNameAsList);
             case RETURNEDDS:
                 return BundleUtil.getStringFromBundle("notification.email.returned.dataset.subject", rootDvNameAsList);
+            case WORKFLOW_SUCCESS:
+                return BundleUtil.getStringFromBundle("notification.email.workflow.success.subject", rootDvNameAsList);
+            case WORKFLOW_FAILURE:
+                return BundleUtil.getStringFromBundle("notification.email.workflow.failure.subject", rootDvNameAsList);
             case CREATEACC:
                 return BundleUtil.getStringFromBundle("notification.email.create.account.subject", rootDvNameAsList);
             case CHECKSUMFAIL:

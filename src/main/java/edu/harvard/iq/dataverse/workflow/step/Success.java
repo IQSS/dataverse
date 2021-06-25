@@ -4,34 +4,37 @@ package edu.harvard.iq.dataverse.workflow.step;
  * Result returned when step execution succeeds.
  */
 public class Success implements WorkflowStepResult {
-    
+
     private final String reason;
     private final String message;
-    
-    public Success( String reason ) {
+
+    public Success(String reason) {
         this(reason, null);
     }
-    
+
     /**
      * Constructs a new success message.
-     * @param reason Technical reason (for logs etc.).
-     * @param message Human readable reason.
+     * 
+     * @param reason  Technical comment (for logs etc.).
+     * @param message Human readable comment.
      */
     public Success(String reason, String message) {
         this.reason = reason;
         this.message = message;
     }
-    
+
     /**
-     * Holds the technical reason for the success, useful for debugging the problem.
-     * @return the technical reason for the problem.
+     * Holds a technical comment about the success.
+     * 
+     * @return the technical comment about the processing.
      */
     public String getReason() {
         return reason;
     }
 
     /**
-     * Holds the user-friendly message explaining the failure.
+     * Holds the user-friendly message describing what was successfully done.
+     * 
      * @return user-friendly message for the success.
      */
     public String getMessage() {
@@ -42,6 +45,5 @@ public class Success implements WorkflowStepResult {
     public String toString() {
         return "WorkflowStepResult.Success{" + "reason=" + reason + ", message=" + message + '}';
     }
-    
-    
+
 }

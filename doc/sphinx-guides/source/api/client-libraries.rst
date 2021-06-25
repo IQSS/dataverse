@@ -37,3 +37,10 @@ Java
 https://github.com/IQSS/dataverse-client-java is the official Java library for Dataverse Software APIs.
 
 `Richard Adams <http://www.researchspace.com/electronic-lab-notebook/about_us_team.html>`_ from `ResearchSpace <http://www.researchspace.com>`_ created and maintains this library.
+
+Ruby
+----
+
+https://github.com/libis/dataverse_api is a Ruby gem for Dataverse Software APIs. It is registered as a library on Rubygems (https://rubygems.org/search?query=dataverse).
+
+The gem is created and maintained by the LIBIS team (https://www.libis.be) at the University of Leuven (https://www.kuleuven.be).

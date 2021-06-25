@@ -13,11 +13,11 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import org.apache.commons.httpclient.HttpException;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.logging.Logger;
-
-import javax.xml.ws.http.HTTPException;
 
 /**
  * No required permissions because we check for superuser status.
@@ -51,8 +51,8 @@ public class DeletePidCommand extends AbstractVoidCommand {
             dataset.setGlobalIdCreateTime(null);
             dataset.setIdentifierRegistered(false);
             ctxt.datasets().merge(dataset);
-        } catch (HTTPException hex) {
-        	String message = BundleUtil.getStringFromBundle("pids.deletePid.failureExpected", Arrays.asList(dataset.getGlobalId().asString(), Integer.toString(hex.getStatusCode())));
+        } catch (HttpException hex) {
+        	String message = BundleUtil.getStringFromBundle("pids.deletePid.failureExpected", Arrays.asList(dataset.getGlobalId().asString(), Integer.toString(hex.getReasonCode())));
             logger.info(message);
             throw new IllegalCommandException(message, this);
         } catch (Exception ex) {

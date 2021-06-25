@@ -42,7 +42,7 @@ import javax.persistence.UniqueConstraint;
 	@NamedQuery( name  = "RoleAssignment.listByDefinitionPointId",
 				 query = "SELECT r FROM RoleAssignment r WHERE r.definitionPoint.id=:definitionPointId" ),
 	@NamedQuery( name  = "RoleAssignment.listByRoleId",
-				 query = "SELECT r FROM RoleAssignment r WHERE r.role=:roleId" ),
+				 query = "SELECT r FROM RoleAssignment r WHERE r.role.id=:roleId" ),
 	@NamedQuery( name  = "RoleAssignment.listByPrivateUrlToken",
 				 query = "SELECT r FROM RoleAssignment r WHERE r.privateUrlToken=:privateUrlToken" ),
 	@NamedQuery( name  = "RoleAssignment.deleteByAssigneeIdentifier_RoleIdDefinition_PointId",

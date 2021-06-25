@@ -27,7 +27,7 @@ import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * The place to obtain {@link RoleAssignee}s, based on their identifiers.
@@ -376,7 +376,9 @@ public class RoleAssigneeServiceBean {
                 .getResultList().stream()
                 .filter(ra -> roleAssignSelectedRoleAssignees == null || !roleAssignSelectedRoleAssignees.contains(ra))
                 .forEach((ra) -> {
-                    roleAssigneeList.add(ra);
+                    if (!ra.isDeactivated()) {
+                        roleAssigneeList.add(ra);
+                    }
                 });
 
         // now we add groups to the list, both global and explicit

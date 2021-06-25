@@ -3,8 +3,10 @@ package edu.harvard.iq.dataverse.authorization.providers.builtin;
 import edu.harvard.iq.dataverse.ValidateEmail;
 import edu.harvard.iq.dataverse.ValidateUserName;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
+import edu.harvard.iq.dataverse.passwordreset.PasswordResetData;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import java.io.Serializable;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -13,6 +15,7 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.Size;
@@ -47,6 +50,10 @@ public class BuiltinUser implements Serializable {
     private String userName;
     
     private int passwordEncryptionVersion; 
+
+    @OneToOne(mappedBy = "builtinUser", cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
+    private PasswordResetData passwordResetData;
+
     private String encryptedPassword;
 
     /**

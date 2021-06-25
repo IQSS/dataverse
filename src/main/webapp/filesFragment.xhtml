@@ -331,6 +331,15 @@
                     </p>
                 </div>
             </div>
+            <div class="row" jsf:rendered="#{(DatasetPage.sizeOfSelectedMaxNumeric gt settingsWrapper.zipDownloadLimit)
+                                             and DatasetPage.selectedFiles.size() > 1}">
+                <div class="col-xs-12 bg-warning text-left" style="font-weight:normal;padding-top:.5em;">
+                    <h:outputFormat value="#{bundle['file.zip.download.exceeds.limit']}">
+                        <f:param value="#{DatasetPage.sizeOfSelectedMaxAsString}"/>
+                        <f:param value="#{DatasetPage.zipDownloadLimitAsString}"/>
+                    </h:outputFormat>
+                </div>
+            </div>
         </f:facet>
 
         <p:column selectionMode="multiple" class="text-center" ariaHeaderText="#{bundle['file.select.tooltip']}"/>
@@ -395,19 +404,12 @@
                      jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) 
                                      and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable
                                      and !DatasetPage.isHasTabular()}">
-                    <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                    <p:commandLink 
                                    styleClass="btn btn-default btn-download"
                                    disabled="#{false and DatasetPage.lockedFromDownload}"
-                                   update="@form" oncomplete="bind_bsui_components();"
-                                   actionListener="#{DatasetPage.validateFilesForDownload(false, false)}">
-                        <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
-                    </p:commandLink>
-                    <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                    <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
-                                   styleClass="btn btn-default btn-download"
-                                   disabled="#{false and DatasetPage.lockedFromDownload}"
-                                   action="#{DatasetPage.validateFilesForDownload(true, false)}"
-                                   update="@form" oncomplete="bind_bsui_components();">
+                                   onclick="if (!testFilesSelected()) return false;" 
+                                   action="#{DatasetPage.startDownloadSelectedOriginal()}"
+                                   update="@form" oncomplete="bind_bsui_components();showPopup();">
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                     </p:commandLink>
                 </div>
@@ -420,32 +422,20 @@
                     </button>
                     <ul jsf:id="downloadDropdownOptions" class="dropdown-menu multi-level pull-right text-left" role="menu">
                         <li >
-                            <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                            <p:commandLink
                                            disabled="#{false and DatasetPage.lockedFromDownload}"
-                                           update="@form" oncomplete="bind_bsui_components();"
-                                           actionListener="#{DatasetPage.validateFilesForDownload(false, true)}">
-                                #{bundle.downloadOriginal}
-                            </p:commandLink>
-                            <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                            <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
-                                           disabled="#{false and DatasetPage.lockedFromDownload}"
-                                           action="#{DatasetPage.validateFilesForDownload(true, true)}"
-                                           update="@form" oncomplete="bind_bsui_components();">
+                                           update="@form" oncomplete="bind_bsui_components();showPopup();"
+                                           onclick="if (!testFilesSelected()) return false;" 
+                                           actionListener="#{DatasetPage.startDownloadSelectedOriginal()}">
                                 #{bundle.downloadOriginal}
                             </p:commandLink>
                         </li>
-                        <li> <!--jsf:rendered="# {DatasetPage.isTabularDataSelected()}"-->
-                            <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
+                        <li> 
+                            <p:commandLink
                                            disabled="#{false and DatasetPage.lockedFromDownload}"
-                                           update="@form" oncomplete="bind_bsui_components();"
-                                           actionListener="#{DatasetPage.validateFilesForDownload(false, false)}">
-                                #{bundle.downloadArchival}
-                            </p:commandLink>
-                            <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                            <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
-                                           disabled="#{false and DatasetPage.lockedFromDownload}"
-                                           action="#{DatasetPage.validateFilesForDownload(true, false)}"
-                                           update="@form" oncomplete="bind_bsui_components();">
+                                           update="@form" oncomplete="bind_bsui_components();showPopup();"
+                                           onclick="if (!testFilesSelected()) return false;" 
+                                           actionListener="#{DatasetPage.startDownloadSelectedArchival()}">
                                 #{bundle.downloadArchival}
                             </p:commandLink>
                         </li>
@@ -530,7 +520,18 @@
                 <!-- File Options -->
                 <div class="btn-group" jsf:rendered="#{!widgetWrapper.widgetView 
                                                         and DatasetPage.sessionUserAuthenticated 
-                                                        and DatasetPage.canUpdateDataset()}">
+                                                        and DatasetPage.canUpdateDataset()
+                                                        and DatasetPage.isFileDeleted(fileMetadata.dataFile)}">
+                    <a type="button" class="btn-file-options btn btn-link bootstrap-button-tooltip dropdown-toggle #{DatasetPage.lockedFromEdits ? 'disabled' : ''}" 
+                       disabled="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}"
+                       title="#{bundle['file.optionsBtn']}" onclick="PF('fileAlreadyDeletedPrevious').show()">                        
+                        <span class="glyphicon glyphicon-option-vertical"/><span class="sr-only">#{bundle['file.optionsBtn']}</span>
+                    </a>                    
+                </div>                
+                <div class="btn-group" jsf:rendered="#{!widgetWrapper.widgetView 
+                                                        and DatasetPage.sessionUserAuthenticated 
+                                                        and DatasetPage.canUpdateDataset()
+                                                        and !DatasetPage.isFileDeleted(fileMetadata.dataFile)}">
                     <!-- Kebab / Edit / File Options Dropdown -->
                     <a type="button" class="btn-file-options btn btn-link bootstrap-button-tooltip dropdown-toggle #{DatasetPage.lockedFromEdits ? 'disabled' : ''}" 
                        disabled="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}"
