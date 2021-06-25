@@ -666,7 +666,7 @@ public class Datasets extends AbstractApiBean {
   
     @GET
     @Path("{id}/versions/{versionId}/metadata")
-    @Produces("application/json-ld")
+    @Produces("application/ld+json, application/json-ld")
     public Response getVersionJsonLDMetadata(@PathParam("id") String id, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         try {
             DataverseRequest req = createDataverseRequest(findUserOrDie());
@@ -687,14 +687,14 @@ public class Datasets extends AbstractApiBean {
 
     @GET
     @Path("{id}/metadata")
-    @Produces("application/json-ld")
+    @Produces("application/ld+json, application/json-ld")
     public Response getVersionJsonLDMetadata(@PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
         return getVersionJsonLDMetadata(id, ":draft", uriInfo, headers);
     }
             
     @PUT
     @Path("{id}/metadata")
-    @Consumes("application/json-ld")
+    @Consumes("application/ld+json, application/json-ld")
     public Response updateVersionMetadata(String jsonLDBody, @PathParam("id") String id, @DefaultValue("false") @QueryParam("replace") boolean replaceTerms) {
 
         try {
@@ -724,16 +724,14 @@ public class Datasets extends AbstractApiBean {
     
     @PUT
     @Path("{id}/metadata/delete")
-    @Consumes("application/json-ld")
+    @Consumes("application/ld+json, application/json-ld")
     public Response deleteMetadata(String jsonLDBody, @PathParam("id") String id) {
-        logger.info("In delteMetadata");
         try {
             Dataset ds = findDatasetOrDie(id);
             DataverseRequest req = createDataverseRequest(findUserOrDie());
             DatasetVersion dsv = ds.getEditVersion();
             boolean updateDraft = ds.getLatestVersion().isDraft();
             dsv = JSONLDUtil.deleteDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc);
-            logger.info("Updating ver");
             DatasetVersion managedVersion;
             if (updateDraft) {
                 Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
@@ -1206,7 +1204,7 @@ public class Datasets extends AbstractApiBean {
     
     @POST
     @Path("{id}/actions/:releasemigrated")
-    @Consumes("application/json-ld")
+    @Consumes("application/ld+json, application/json-ld")
     public Response publishMigratedDataset(String jsonldBody, @PathParam("id") String id) {
         try {
             AuthenticatedUser user = findAuthenticatedUserOrDie();

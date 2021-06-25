@@ -258,7 +258,7 @@ public class Dataverses extends AbstractApiBean {
     
     @POST
     @Path("{identifier}/datasets")
-    @Consumes("application/json-ld")
+    @Consumes("application/ld+json, application/json-ld")
     public Response createDatasetFromJsonLd(String jsonLDBody, @PathParam("identifier") String parentIdtf) {
         try {
             User u = findUserOrDie();
@@ -438,7 +438,7 @@ public class Dataverses extends AbstractApiBean {
     
     @POST
     @Path("{identifier}/datasets/:startmigration")
-    @Consumes("application/json-ld")
+    @Consumes("application/ld+json, application/json-ld")
     public Response recreateDataset(String jsonLDBody, @PathParam("identifier") String parentIdtf) {
         try {
             User u = findUserOrDie();
