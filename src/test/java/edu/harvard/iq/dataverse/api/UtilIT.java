@@ -31,6 +31,7 @@ import org.apache.commons.io.IOUtils;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.cxf.headers.Header;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -397,7 +398,7 @@ public class UtilIT {
         return createDatasetResponse;
     }
 
-    private static String getDatasetJson(String pathToJsonFile) {
+    static String getDatasetJson(String pathToJsonFile) {
         File datasetVersionJson = new File(pathToJsonFile);
         try {
             String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
@@ -1504,7 +1505,7 @@ public class UtilIT {
                 .get("/api/datasets/" + datasetId);
         return response;
     }
-
+    
     static Response privateUrlGet(Integer datasetId, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
@@ -2628,5 +2629,38 @@ public class UtilIT {
         return "0";
     }
     
+    static Response getDatasetJsonLDMetadata(Integer datasetId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .accept("application/ld+json")
+                .get("/api/datasets/" + datasetId + "/metadata");
+        return response;
+    }
     
+    static Response updateDatasetJsonLDMetadata(Integer datasetId, String apiToken, String jsonLDBody, boolean replace) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/ld+json")
+                .body(jsonLDBody)
+                .put("/api/datasets/" + datasetId + "/metadata?replace=" + replace);
+        return response;
+    }
+    
+    static Response deleteDatasetJsonLDMetadata(Integer datasetId, String apiToken, String jsonLDBody) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/ld+json")
+                .body(jsonLDBody)
+                .put("/api/datasets/" + datasetId + "/metadata/delete");
+        return response;
+    }
+
+    public static Response recreateDatasetJsonLD(Integer datasetId, String apiToken, String dataverseAlias, String jsonLDBody) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/ld+json")
+                .body(jsonLDBody)
+                .post("https://demo.dataverse.org/api/dataverses/" + dataverseAlias +"/datasets");
+        return response;
+    }
 }
