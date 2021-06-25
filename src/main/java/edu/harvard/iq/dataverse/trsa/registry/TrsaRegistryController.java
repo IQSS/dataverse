@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse.trsa.registry;
 
+import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.PermissionsWrapper;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.trsa.Trsa;
 import edu.harvard.iq.dataverse.trsa.registry.util.JsfUtil;
 import edu.harvard.iq.dataverse.trsa.registry.util.JsfUtil.PersistAction;
@@ -17,9 +20,11 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
 
 @Named("trsaRegistryController")
-@SessionScoped
+@ViewScoped
 public class TrsaRegistryController implements Serializable {
 
     @EJB
@@ -27,8 +32,31 @@ public class TrsaRegistryController implements Serializable {
     private List<Trsa> items = null;
     private Trsa selected;
 
+
+    @Inject
+    DataverseSession session;
+
+    @Inject
+    PermissionsWrapper permissionsWrapper;
+
+    private AuthenticatedUser authUser = null;
+
     public TrsaRegistryController() {
     }
+
+    public String init() {
+        if ((session.getUser() != null) && (session.getUser().isAuthenticated()) && (session.getUser().isSuperuser())) {
+            authUser = (AuthenticatedUser) session.getUser();
+
+        } else {
+            return permissionsWrapper.notAuthorized();
+            // redirect to login OR give some type ‘you must be logged in message'
+
+        }
+        //
+        return null;
+    }
+
 
     public Trsa getSelected() {
         return selected;
@@ -154,8 +182,8 @@ public class TrsaRegistryController implements Serializable {
                 Trsa o = (Trsa) object;
                 return getStringKey(o.getId());
             } else {
-                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, 
-                    "object {0} is of type {1}; expected type: {2}", 
+                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE,
+                    "object {0} is of type {1}; expected type: {2}",
                     new Object[]{object, object.getClass().getName(), Trsa.class.getName()});
                 return null;
             }

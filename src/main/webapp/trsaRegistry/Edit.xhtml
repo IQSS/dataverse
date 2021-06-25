@@ -6,6 +6,26 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:p="http://primefaces.org/ui">
 
+    
+    
+    
+<h:head>
+</h:head>
+
+<h:body>
+<!--    <f:loadBundle basename="propertyFiles.Bundle" var="bundle_trsa_registry"/>-->
+<f:metadata>
+    <f:viewParam name="dataverseId" value="#{dataverseServiceBean.findRootDataverse().id}"/>
+    <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
+    <f:viewAction action="#{trsaRegistryController.init}"/>
+    <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(dataverseServiceBean.findRootDataverse())}"/>
+    <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb('/dashboard.xhtml?dataverseId='.concat(dataverse.id), bundle['dashboard.title'])}"/> 
+    <f:viewAction action="#{dataverseHeaderFragment.addBreadcrumb(bundle['dashboard.card.trsaregistry.manage'])}"/>
+</f:metadata>
+    
+    
+    
+    
     <ui:composition>
 
         <p:dialog id="TrsaRegistryEditDlg" widgetVar="TrsaRegistryEditDialog" modal="true" resizable="false" appendTo="@(body)" header="#{bundle_trsa_registry.EditTrsaRegistryTitle}">
@@ -77,4 +97,5 @@
         </p:dialog>
 
     </ui:composition>
+</h:body>
 </html>
