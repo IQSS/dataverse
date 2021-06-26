@@ -98,7 +98,7 @@ function updateSkosmosInputs() {
             //Retrieve useful values from the attributes
             let cvocUrl = $(skosmosInput).attr('data-cvoc-service-url');
             let lang = skosmosInput.hasAttribute("lang") ? $(skosmosInput).attr('lang') : "";
-            let langParam = skosmosInput.hasAttribute("lang") ? "&lang=" + $(skosmosInput).attr('lang') : "";
+            let langParam = "";// skosmosInput.hasAttribute("lang") ? "&lang=" + $(skosmosInput).attr('lang') : "";
             let vocabs = JSON.parse($(skosmosInput).attr('data-cvoc-vocabs'));
             let managedFields = JSON.parse($(skosmosInput).attr('data-cvoc-managedfields'));
             let parentField = $(skosmosInput).attr('data-cvoc-parent');
@@ -235,7 +235,7 @@ function updateSkosmosInputs() {
                     //Call the specified skosmos service to get matching terms
                     //Add the current vocab, any subvocabulary(termParentUri) filter, and desired language
                     url: function() {
-                        return cvocUrl + 'rest/v1/search?unique=true&vocab=' + $('#' + selectId).attr('data-cvoc-cur-vocab') + termParentUri + langParam;
+                        return cvocUrl + 'rest/v1/search?unique=true&vocab=' + $('#' + selectId).attr('data-cvoc-cur-vocab') + '&parent=' + termParentUri + langParam;
                     },
                     dataType: "json",
                     data: function(params) {
