@@ -433,8 +433,8 @@ public class SettingsServiceBean {
          * Installation Brand Name is always included (default/false) or is not included
          * when the Distributor field (citation metadatablock) is set (true)
          */
-        ExportInstallationAsDistributorOnlyWhenNotSet
-        ;
+        ExportInstallationAsDistributorOnlyWhenNotSet,
+        MaxEmbargoDurationInMonths;
 
         @Override
         public String toString() {
