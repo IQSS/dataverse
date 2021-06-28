@@ -1,9 +1,5 @@
 package edu.harvard.iq.dataverse;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -14,6 +10,10 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Jing Ma
@@ -26,13 +26,18 @@ import javax.persistence.UniqueConstraint;
     @NamedQuery( name="License.findById",
             query = "SELECT l FROM License l WHERE l.id=:id"),
     @NamedQuery( name="License.findDefault",
-            query = "SELECT l FROM License l WHERE l.name='CC0'"),
+            query = "SELECT l FROM License l WHERE l.isDefault='true' "),
     @NamedQuery( name="License.findByNameOrUri",
             query = "SELECT l FROM License l WHERE l.name=:name OR l.uri=:uri"),
     @NamedQuery( name="License.deleteById",
-                query="DELETE FROM License l WHERE l.id=:id"),
+            query = "DELETE FROM License l WHERE l.id=:id"),
     @NamedQuery( name="License.deleteByName",
-                query="DELETE FROM License l WHERE l.name=:name")
+            query = "DELETE FROM License l WHERE l.name=:name"),
+    @NamedQuery( name="License.setDefault",
+            query = "UPDATE License l SET l.isDefault='true' WHERE l.id=:id"),
+    @NamedQuery( name="License.clearDefault",
+                query = "UPDATE License l SET l.isDefault='false'"),
+
 })
 @Entity
 @Table(uniqueConstraints = {
@@ -57,6 +62,9 @@ public class License {
 
     @Column(nullable = false)
     private boolean active;
+
+    @Column(nullable = false)
+    private boolean isDefault;
     
     @OneToMany(mappedBy="license")
     private List<TermsOfUseAndAccess> termsOfUseAndAccess;
@@ -69,6 +77,7 @@ public class License {
         this.uri = uri.toASCIIString();
         this.iconUrl = iconUrl.toASCIIString();
         this.active = active;
+        isDefault = false;
     }
 
     public Long getId() {
@@ -119,6 +128,14 @@ public class License {
         this.active = active;
     }
 
+    public boolean isDefault() {
+        return isDefault;
+    }
+
+    public void setDefault(boolean isDefault) {
+        this.isDefault = isDefault;
+    }
+
     public List<TermsOfUseAndAccess> getTermsOfUseAndAccess() {
         return termsOfUseAndAccess;
     }
@@ -148,6 +165,7 @@ public class License {
                 ", uri=" + uri +
                 ", iconUrl=" + iconUrl +
                 ", active=" + active +
+                ", isDefault=" + isDefault +
                 '}';
     }
     

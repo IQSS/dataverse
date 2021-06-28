@@ -11,7 +11,7 @@ BEGIN
   END;
 
   BEGIN
-      INSERT INTO license (uri, name, active, iconurl) VALUES ('http://creativecommons.org/publicdomain/zero/1.0', 'CC0', true, '/resources/images/cc0.png');
+      INSERT INTO license (uri, name, active, isDefault, iconurl) VALUES ('http://creativecommons.org/publicdomain/zero/1.0', 'CC0', true, true, '/resources/images/cc0.png');
   EXCEPTION
     WHEN duplicate_object THEN RAISE NOTICE 'CC0 has already been added to the license table';
   END;
