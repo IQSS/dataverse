@@ -13,9 +13,11 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -25,7 +27,7 @@ import java.util.regex.Pattern;
 
 import org.apache.solr.client.solrj.SolrServerException;
 
-@RequiredPermissions(Permission.EditDataset)
+@RequiredPermissions(Permission.PublishDataset)
 public class SetExternalStatusCommand extends AbstractDatasetCommand<Dataset> {
 
     private static final Logger logger = Logger.getLogger(SetExternalStatusCommand.class.getName());
@@ -46,13 +48,19 @@ public class SetExternalStatusCommand extends AbstractDatasetCommand<Dataset> {
         if (label == null) {
             getDataset().getLatestVersion().setExternalStatusLabel(label);
         } else {
-            Pattern pattern = Pattern.compile("(^[\\w ]+$)");
-            Matcher matcher = pattern.matcher(label);
-            if (!matcher.matches()) {
-                logger.info("Label rejected: " + label);
-                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure"), this);
+            String allowedLabels = ctxt.settings().getValueForKey(SettingsServiceBean.Key.AllowedCurationLabels, "");
+            if (Arrays.asList(allowedLabels.split("\\s*,\\s*")).contains(label)) {
+                Pattern pattern = Pattern.compile("(^[\\w ]+$)");
+                Matcher matcher = pattern.matcher(label);
+                if (!matcher.matches()) {
+                    logger.info("Label rejected: " + label);
+                    throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure.badformat"), this);
+                }
+                getDataset().getLatestVersion().setExternalStatusLabel(label);
+            } else {
+                logger.info("Label not found: " + label);
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure.notallowed"), this);
             }
-            getDataset().getLatestVersion().setExternalStatusLabel(label);
         }
         Dataset updatedDataset = save(ctxt);
         

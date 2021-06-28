@@ -433,7 +433,11 @@ public class SettingsServiceBean {
          * Installation Brand Name is always included (default/false) or is not included
          * when the Distributor field (citation metadatablock) is set (true)
          */
-        ExportInstallationAsDistributorOnlyWhenNotSet
+        ExportInstallationAsDistributorOnlyWhenNotSet,
+        /**
+         * A comma separated list of the allowed labels. These should correspond to the states in an organizations curation process. 
+         */
+        AllowedCurationLabels
         ;
 
         @Override
