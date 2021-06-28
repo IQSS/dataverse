@@ -438,16 +438,6 @@ public class DatasetPage implements java.io.Serializable {
     private String fileSortField;
     private String fileSortOrder;
 
-    private LazyFileMetadataDataModel lazyModel;
-
-    public LazyFileMetadataDataModel getLazyModel() {
-        return lazyModel;
-    }
-
-    public void setLazyModel(LazyFileMetadataDataModel lazyModel) {
-        this.lazyModel = lazyModel;
-    }
-
     public List<Entry<String,String>> getCartList() {
         if (session.getUser() instanceof AuthenticatedUser) {
             return ((AuthenticatedUser) session.getUser()).getCart().getContents();
