@@ -463,7 +463,12 @@ public class SettingsServiceBean {
          * datasetContact, and contributor, but additional fields such as depositor, grantNumber, and
          * publication might also need to be included.
          */
-        AnonymizedFieldTypeNames
+        AnonymizedFieldTypeNames,
+        
+        /**
+         * A comma separated list of the allowed labels. These should correspond to the states in an organizations curation process. 
+         */
+        AllowedCurationLabels
         ;
 
         @Override
