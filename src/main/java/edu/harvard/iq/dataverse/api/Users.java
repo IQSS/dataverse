@@ -13,16 +13,30 @@ import edu.harvard.iq.dataverse.engine.command.impl.ChangeUserIdentifierCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetUserTracesCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.MergeInAccountCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeAllRolesCommand;
+import edu.harvard.iq.dataverse.metrics.MetricsUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
+
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
+import javax.json.JsonArray;
 import javax.json.JsonObjectBuilder;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Variant;
 
 /**
  *
@@ -214,8 +228,42 @@ public class Users extends AbstractApiBean {
     public Response getTraces(@PathParam("identifier") String identifier) {
         try {
             AuthenticatedUser userToQuery = authSvc.getAuthenticatedUser(identifier);
-            JsonObjectBuilder jsonObj = execCommand(new GetUserTracesCommand(createDataverseRequest(findUserOrDie()), userToQuery));
+            JsonObjectBuilder jsonObj = execCommand(new GetUserTracesCommand(createDataverseRequest(findUserOrDie()), userToQuery, null));
             return ok(jsonObj);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
+    private List<String> elements = Arrays.asList("roleAssignments","dataverseCreator", "dataversePublisher","datasetCreator", "datasetPublisher","dataFileCreator","dataFilePublisher","datasetVersionUsers","explicitGroups","guestbookEntries", "savedSearches");
+    
+    @GET
+    @Path("{identifier}/traces/{element}")
+    @Produces("text/csv, application/json")
+    public Response getTraces(@Context Request req, @PathParam("identifier") String identifier, @PathParam("element") String element) {
+        try {
+            AuthenticatedUser userToQuery = authSvc.getAuthenticatedUser(identifier);
+            if(!elements.contains(element)) {
+                throw new BadRequestException("Not a valid element");
+            }
+            JsonObjectBuilder jsonObj = execCommand(new GetUserTracesCommand(createDataverseRequest(findUserOrDie()), userToQuery, element));
+            
+            List<Variant> vars = Variant
+                    .mediaTypes(MediaType.valueOf(FileUtil.MIME_TYPE_CSV), MediaType.APPLICATION_JSON_TYPE)
+                    .add()
+                    .build();
+            MediaType requestedType = req.selectVariant(vars).getMediaType();
+            if ((requestedType != null) && (requestedType.equals(MediaType.APPLICATION_JSON_TYPE))) {
+                return ok(jsonObj);
+            
+            }
+            JsonArray items=null;
+            try {
+                items = jsonObj.build().getJsonObject("traces").getJsonObject(element).getJsonArray("items");
+            } catch(Exception e) {
+                return ok(jsonObj);
+            }
+            return ok(FileUtil.jsonArrayOfObjectsToCSV(items, items.getJsonObject(0).keySet().toArray(new String[0])), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), element + ".csv");
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
