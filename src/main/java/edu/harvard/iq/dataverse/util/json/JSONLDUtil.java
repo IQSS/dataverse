@@ -5,11 +5,9 @@ import java.io.StringWriter;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,10 +47,8 @@ import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess.License;
-import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
 import edu.harvard.iq.dataverse.util.bagit.OREMap;
-import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 
 public class JSONLDUtil {
 
@@ -720,37 +716,37 @@ public class JSONLDUtil {
         case "http://schema.org/license":
             return !terms.getLicense().equals(TermsOfUseAndAccess.License.NONE);
         case "https://dataverse.org/schema/core#termsOfUse":
-            return StringUtils.isBlank(terms.getTermsOfUse());
+            return !StringUtils.isBlank(terms.getTermsOfUse());
         case "https://dataverse.org/schema/core#confidentialityDeclaration":
-            return StringUtils.isBlank(terms.getConfidentialityDeclaration());
+            return !StringUtils.isBlank(terms.getConfidentialityDeclaration());
         case "https://dataverse.org/schema/core#specialPermissions":
-            return StringUtils.isBlank(terms.getSpecialPermissions());
+            return !StringUtils.isBlank(terms.getSpecialPermissions());
         case "https://dataverse.org/schema/core#restrictions":
-            return StringUtils.isBlank(terms.getRestrictions());
+            return !StringUtils.isBlank(terms.getRestrictions());
         case "https://dataverse.org/schema/core#citationRequirements":
-            return StringUtils.isBlank(terms.getCitationRequirements());
+            return !StringUtils.isBlank(terms.getCitationRequirements());
         case "https://dataverse.org/schema/core#depositorRequirements":
-            return StringUtils.isBlank(terms.getDepositorRequirements());
+            return !StringUtils.isBlank(terms.getDepositorRequirements());
         case "https://dataverse.org/schema/core#conditions":
-            return StringUtils.isBlank(terms.getConditions());
+            return !StringUtils.isBlank(terms.getConditions());
         case "https://dataverse.org/schema/core#disclaimer":
-            return StringUtils.isBlank(terms.getDisclaimer());
+            return !StringUtils.isBlank(terms.getDisclaimer());
         case "https://dataverse.org/schema/core#termsOfAccess":
-            return StringUtils.isBlank(terms.getTermsOfAccess());
+            return !StringUtils.isBlank(terms.getTermsOfAccess());
         case "https://dataverse.org/schema/core#fileRequestAccess":
             return !terms.isFileAccessRequest();
         case "https://dataverse.org/schema/core#dataAccessPlace":
-            return StringUtils.isBlank(terms.getDataAccessPlace());
+            return !StringUtils.isBlank(terms.getDataAccessPlace());
         case "https://dataverse.org/schema/core#originalArchive":
-            return StringUtils.isBlank(terms.getOriginalArchive());
+            return !StringUtils.isBlank(terms.getOriginalArchive());
         case "https://dataverse.org/schema/core#availabilityStatus":
-            return StringUtils.isBlank(terms.getAvailabilityStatus());
+            return !StringUtils.isBlank(terms.getAvailabilityStatus());
         case "https://dataverse.org/schema/core#contactForAccess":
-            return StringUtils.isBlank(terms.getContactForAccess());
+            return !StringUtils.isBlank(terms.getContactForAccess());
         case "https://dataverse.org/schema/core#sizeOfCollection":
-            return StringUtils.isBlank(terms.getSizeOfCollection());
+            return !StringUtils.isBlank(terms.getSizeOfCollection());
         case "https://dataverse.org/schema/core#studyCompletion":
-            return StringUtils.isBlank(terms.getStudyCompletion());
+            return !StringUtils.isBlank(terms.getStudyCompletion());
         default:
             logger.warning("isSet called for " + semterm);
             return false;
