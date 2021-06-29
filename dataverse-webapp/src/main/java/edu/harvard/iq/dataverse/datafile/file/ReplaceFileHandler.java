@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.datafile.DataFileCreator;
 import edu.harvard.iq.dataverse.datafile.file.exception.FileReplaceException;
 import edu.harvard.iq.dataverse.datasetutility.VirusFoundException;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -32,6 +33,7 @@ public class ReplaceFileHandler implements Serializable {
 
     private IngestServiceBean ingestService;
     private DataFileServiceBean datafileService;
+    private DataFileCreator dataFileCreator;
     private EjbDataverseEngine commandEngine;
     private DataverseRequestServiceBean dvRequestService;
 
@@ -41,9 +43,11 @@ public class ReplaceFileHandler implements Serializable {
 
     @Inject
     public ReplaceFileHandler(IngestServiceBean ingestService, DataFileServiceBean datafileService,
+                              DataFileCreator dataFileCreator,
                               EjbDataverseEngine commandEngine, DataverseRequestServiceBean dvRequestService) {
         this.ingestService = ingestService;
         this.datafileService = datafileService;
+        this.dataFileCreator = dataFileCreator;
         this.commandEngine = commandEngine;
         this.dvRequestService = dvRequestService;
     }
@@ -167,7 +171,7 @@ public class ReplaceFileHandler implements Serializable {
      * there is no method for creating single file.
      */
     private DataFile createDataFile(Dataset dataset, InputStream newFileContent, String newFileName, String newFileContentType, DatasetVersion datasetDraft) {
-        List<DataFile> dataFile = Try.of(() -> datafileService.createDataFiles(datasetDraft,
+        List<DataFile> dataFile = Try.of(() -> dataFileCreator.createDataFiles(datasetDraft,
                                                                                newFileContent,
                                                                                newFileName,
                                                                                newFileContentType))

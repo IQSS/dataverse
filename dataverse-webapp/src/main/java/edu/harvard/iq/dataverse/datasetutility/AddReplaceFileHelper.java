@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.datafile.DataFileCreator;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
@@ -96,6 +97,7 @@ public class AddReplaceFileHelper {
     // -----------------------------------
     private IngestServiceBean ingestService;
     private DataFileServiceBean fileService;
+    private DataFileCreator dataFileCreator;
     private PermissionServiceBean permissionService;
     private JsonPrinter jsonPrinter;
     private EjbDataverseEngine commandEngine;
@@ -146,6 +148,7 @@ public class AddReplaceFileHelper {
     public AddReplaceFileHelper(DataverseRequest dvRequest,
                                 IngestServiceBean ingestService,
                                 DataFileServiceBean fileService,
+                                DataFileCreator dataFileCreator,
                                 PermissionServiceBean permissionService,
                                 JsonPrinter jsonPrinter,
                                 EjbDataverseEngine commandEngine,
@@ -162,6 +165,7 @@ public class AddReplaceFileHelper {
         // ---------------------------------
         this.ingestService = requireNonNull(ingestService, "ingestService cannot be null");
         this.fileService = requireNonNull(fileService, "fileService cannot be null");
+        this.dataFileCreator = requireNonNull(dataFileCreator, "dataFileCreator cannot be null");
         this.permissionService = requireNonNull(permissionService, "permissionService cannot be null");
         this.jsonPrinter = requireNonNull(jsonPrinter);
         this.commandEngine = requireNonNull(commandEngine, "commandEngine cannot be null");
@@ -731,7 +735,7 @@ public class AddReplaceFileHelper {
         workingVersion = dataset.getEditVersion();
         clone = workingVersion.cloneDatasetVersion();
         try {
-            initialFileList = fileService.createDataFiles(workingVersion,
+            initialFileList = dataFileCreator.createDataFiles(workingVersion,
                                                           this.newFileInputStream,
                                                           this.newFileName,
                                                           this.newFileContentType);

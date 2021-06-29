@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.datafile.DataFileCreator;
 import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.datasetutility.VirusFoundException;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -54,6 +55,8 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     DatasetDao datasetDao;
     @EJB
     DataFileServiceBean dataFileService;
+    @Inject
+    private DataFileCreator dataFileCreator;
     @EJB
     IngestServiceBean ingestService;
     @EJB
@@ -306,7 +309,7 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
             List<DataFile> dataFiles;
             try {
                 try {
-                    dataFiles = dataFileService.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe);
+                    dataFiles = dataFileCreator.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe);
                 } catch (EJBException | FileExceedsMaxSizeException ex) {
                     Throwable cause = ex.getCause();
                     if (cause != null) {

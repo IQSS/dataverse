@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.datafile.DataFileCreator;
 import edu.harvard.iq.dataverse.datasetutility.AddReplaceFileHelper;
 import edu.harvard.iq.dataverse.datasetutility.DataFileTagException;
 import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
@@ -52,6 +53,8 @@ public class Files extends AbstractApiBean {
     IngestServiceBean ingestService;
     @EJB
     EjbDataverseEngine commandEngine;
+    @Inject
+    private DataFileCreator dataFileCreator;
     @EJB
     SystemConfig systemConfig;
     @Inject
@@ -159,6 +162,7 @@ public class Files extends AbstractApiBean {
         AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
                                                                       ingestService,
                                                                       fileService,
+                                                                      dataFileCreator,
                                                                       permissionSvc,
                                                                       jsonPrinter,
                                                                       commandEngine, this.optionalFileParams);

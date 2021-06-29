@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleUtil;
 import edu.harvard.iq.dataverse.datacapturemodule.ScriptRequestResponse;
+import edu.harvard.iq.dataverse.datafile.DataFileCreator;
 import edu.harvard.iq.dataverse.datafile.FileService;
 import edu.harvard.iq.dataverse.datafile.file.FileDownloadAPIHandler;
 import edu.harvard.iq.dataverse.dataset.DatasetService;
@@ -203,6 +204,9 @@ public class Datasets extends AbstractApiBean {
     @Inject
     private FileService fileServiceBean;
 
+    @Inject
+    private DataFileCreator dataFileCreator;
+    
     @Inject
     private DatasetThumbnailService datasetThumbnailService;
 
@@ -1707,6 +1711,7 @@ public class Datasets extends AbstractApiBean {
         AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(dvRequest2,
                                                                       ingestService,
                                                                       fileService,
+                                                                      dataFileCreator,
                                                                       permissionSvc,
                                                                       jsonPrinter,
                                                                       commandEngine, optionalFileParamsSvc);

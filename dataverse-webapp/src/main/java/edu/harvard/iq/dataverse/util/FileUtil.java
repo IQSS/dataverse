@@ -22,6 +22,7 @@ package edu.harvard.iq.dataverse.util;
 
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.files.mime.ApplicationMimeType;
 import edu.harvard.iq.dataverse.common.files.mime.ImageMimeType;
@@ -64,6 +65,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
@@ -185,7 +187,6 @@ public class FileUtil implements java.io.Serializable {
         String fileType = null;
         String fileExtension = getFileExtension(fileName);
 
-
         // step 1:
         // Apply our custom methods to try and recognize data files that can be
         // converted to tabular data, or can be parsed for extra metadata
@@ -214,6 +215,7 @@ public class FileUtil implements java.io.Serializable {
                 }
         }
 
+
         // step 3: check the mime type of this file with Jhove
         if (fileType == null) {
             JhoveFileType jw = new JhoveFileType();
@@ -222,6 +224,7 @@ public class FileUtil implements java.io.Serializable {
                 fileType = mimeType;
             }
         }
+
 
         // step 4:
         // Additional processing; if we haven't gotten much useful information
@@ -244,6 +247,7 @@ public class FileUtil implements java.io.Serializable {
         } else {
             logger.fine("fileExtension is null");
         }
+
 
         // step 5:
         // if this is a compressed file - zip or gzip - we'll check the
@@ -279,12 +283,13 @@ public class FileUtil implements java.io.Serializable {
             // Check for shapefile extensions as described here: http://en.wikipedia.org/wiki/Shapefile
             //logger.info("Checking for shapefile");
 
-            ShapefileHandler shp_handler = new ShapefileHandler(new FileInputStream(f));
+            ShapefileHandler shp_handler = new ShapefileHandler(f);
             if (shp_handler.containsShapefile()) {
                 //  logger.info("------- shapefile FOUND ----------");
                 fileType = ShapefileHandler.SHAPEFILE_FILE_TYPE; //"application/zipped-shapefile";
             }
         }
+
 
         logger.fine("returning fileType " + fileType);
         return fileType;

@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.datafile.DataFileCreator;
 import edu.harvard.iq.dataverse.datafile.file.ReplaceFileHandler;
 import edu.harvard.iq.dataverse.datafile.file.exception.FileReplaceException;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -37,7 +39,7 @@ import static org.mockito.Mockito.when;
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class ReplaceFileHandlerTest {
 
-
+    @InjectMocks
     private ReplaceFileHandler replaceFileHandler;
 
     @Mock
@@ -45,6 +47,9 @@ public class ReplaceFileHandlerTest {
 
     @Mock
     private DataFileServiceBean dataFileServiceBean;
+
+    @Mock
+    private DataFileCreator dataFileCreator;
 
     @Mock
     private EjbDataverseEngine ejbDataverseEngine;
@@ -58,8 +63,6 @@ public class ReplaceFileHandlerTest {
         when(dataverseRequestServiceBean.getDataverseRequest()).thenReturn(new DataverseRequest(new AuthenticatedUser(), new IPv4Address(111)));
         when(ingestService.saveAndAddFilesToDataset(any(DatasetVersion.class), any()))
                 .thenReturn(Lists.newArrayList(new DataFile()));
-
-        replaceFileHandler = new ReplaceFileHandler(ingestService, dataFileServiceBean, ejbDataverseEngine, dataverseRequestServiceBean);
         
         when(ejbDataverseEngine.submit(any(UpdateDatasetVersionCommand.class))).then(new Answer<Dataset>() {
 
@@ -92,7 +95,7 @@ public class ReplaceFileHandlerTest {
         Dataset dataset = new Dataset();
         String fileName = "testFile.png";
         String fileContentType = "image/png";
-        when(dataFileServiceBean.createDataFiles(any(), any(), any(), any())).thenThrow(VirusFoundException.class);
+        when(dataFileCreator.createDataFiles(any(), any(), any(), any())).thenThrow(VirusFoundException.class);
 
         //then
         FileReplaceException thrown;
