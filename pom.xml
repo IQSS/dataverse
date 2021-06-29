@@ -302,7 +302,7 @@
         <dependency>
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
-            <version>8.0</version>
+            <version>10.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.primefaces.themes</groupId>
@@ -783,7 +783,7 @@
             <plugin>
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
-                <version>4.0.0</version>
+                <version>4.3.0</version>
                 <dependencies>
                     <dependency>
                         <groupId>javax.xml.bind</groupId>
