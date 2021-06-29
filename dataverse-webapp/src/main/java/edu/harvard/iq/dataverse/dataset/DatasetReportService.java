@@ -20,6 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -64,6 +66,7 @@ public class DatasetReportService {
     // -------------------- LOGIC --------------------
 
     @SuperuserRequired
+    @TransactionAttribute(TransactionAttributeType.NEVER)
     public void createReport(OutputStream outputStream) {
         try (Writer writer = new OutputStreamWriter(outputStream);
              BufferedWriter streamWriter = new BufferedWriter(writer);
