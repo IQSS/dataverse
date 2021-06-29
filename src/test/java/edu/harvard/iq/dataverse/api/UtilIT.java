@@ -2654,12 +2654,12 @@ public class UtilIT {
         return response;
     }
 
-    public static Response recreateDatasetJsonLD(Integer datasetId, String apiToken, String dataverseAlias, String jsonLDBody) {
+    public static Response recreateDatasetJsonLD(String apiToken, String dataverseAlias, String jsonLDBody) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .contentType("application/ld+json")
+                .contentType("application/ld+json; charset=utf-8")
                 .body(jsonLDBody.getBytes(StandardCharsets.UTF_8))
-                .post("https://demo.dataverse.org/api/dataverses/" + dataverseAlias +"/datasets");
+                .post("/api/dataverses/" + dataverseAlias +"/datasets");
         return response;
     }
 }

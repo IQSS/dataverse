@@ -33,9 +33,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import com.jayway.restassured.parsing.Parser;
 import static com.jayway.restassured.path.json.JsonPath.with;
 import com.jayway.restassured.path.xml.XmlPath;
-import edu.harvard.iq.dataverse.Dataset;
 import static edu.harvard.iq.dataverse.api.UtilIT.equalToCI;
-import static edu.harvard.iq.dataverse.authorization.AuthenticationResponse.Status.ERROR;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -44,7 +42,6 @@ import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -52,29 +49,15 @@ import java.util.HashMap;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObjectBuilder;
-import javax.json.JsonWriter;
-import javax.json.JsonWriterFactory;
-import javax.json.stream.JsonGenerator;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-import javax.persistence.PersistenceContext;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.junit.Assert.assertEquals;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import org.junit.Before;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
 public class DatasetsIT {
@@ -2186,41 +2169,33 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
-        //Create a dataset using native api
+        // Create a dataset using native api
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
-        //Get the metadata with the semantic api
+        // Get the metadata with the semantic api
         Response response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
         response.then().assertThat().statusCode(OK.getStatusCode());
-        //Compare the metadata with an expected value - the metadatablock entries should be the same but there will be additional fields with values related to the dataset's creation (e.g. new id)
+        // Compare the metadata with an expected value - the metadatablock entries
+        // should be the same but there will be additional fields with values related to
+        // the dataset's creation (e.g. new id)
         String jsonLDString = getData(response.getBody().asString());
-        JsonObject jo=null;
+        JsonObject jo = null;
         try {
             jo = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
         } catch (NoSuchMethodError e) {
             logger.info(ExceptionUtils.getStackTrace(e));
         }
-        String jsonLD = jo.toString();
+        
 
         String expectedJsonLD = UtilIT.getDatasetJson("scripts/search/tests/data/dataset-finch1.jsonld");
         jo = Json.createObjectBuilder(jo).remove("@id").remove("http://schema.org/dateModified").build();
-        try (StringWriter sw = new StringWriter()) {
-            Map<String, Object> map = new HashMap<>();
-            map.put(JsonGenerator.PRETTY_PRINTING, true);
-            JsonWriterFactory writerFactory = Json.createWriterFactory(map);
-            JsonWriter jsonWriter = writerFactory.createWriter(sw);
-            jsonWriter.writeObject(jo);
-            jsonWriter.close();
-            jsonLD=sw.toString();
-        }catch(Exception e) {
-            e.printStackTrace();
-        }
+        String jsonLD = jo.toString();
 
-        //ToDo: Are the static pars as expected
+        // ToDo: Are the static pars as expected
         JSONAssert.assertEquals(expectedJsonLD, jsonLD, false);
-        //Now change the title
+        // Now change the title
         response = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken,
                 "{\"Title\": \"New Title\", \"@context\":{\"Title\": \"http://purl.org/dc/terms/title\"}}", true);
         response.then().assertThat().statusCode(OK.getStatusCode());
@@ -2228,13 +2203,14 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
         response.then().assertThat().statusCode(OK.getStatusCode());
 
-        //Check that the semantic api returns the new title
+        // Check that the semantic api returns the new title
         jsonLDString = getData(response.getBody().asString());
         JsonObject jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
         assertEquals("New Title", jsonLDObject.getString("http://purl.org/dc/terms/title"));
 
-        //Add an additional description (which is multi-valued and compound)
-        //Also add new terms of use (single value so would fail with replace false if a value existed)
+        // Add an additional description (which is multi-valued and compound)
+        // Also add new terms of use (single value so would fail with replace false if a
+        // value existed)
         String newDescription = "{\"citation:Description\": {\"dsDescription:Text\": \"New description\", \"https://dataverse.org/schema/core#termsOfUse\": \"New terms\"} \"@context\":{\"citation\": \"https://dataverse.org/schema/citation/\",\"dsDescription\": \"https://dataverse.org/schema/citation/dsDescription#\"}}";
         response = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken, newDescription, false);
         response.then().assertThat().statusCode(OK.getStatusCode());
@@ -2242,20 +2218,20 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
         response.then().assertThat().statusCode(OK.getStatusCode());
 
-        //Look for a second description
+        // Look for a second description
         jsonLDString = getData(response.getBody().asString());
         jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
         assertEquals("New description",
                 ((JsonObject) jsonLDObject.getJsonArray("https://dataverse.org/schema/citation/Description").get(1))
                         .getString("https://dataverse.org/schema/citation/dsDescription#Text"));
 
-        //Can't add terms of use with replace=false and a value already set (single valued field)
+        // Can't add terms of use with replace=false and a value already set (single
+        // valued field)
         String badTerms = "{\"https://dataverse.org/schema/core#termsOfUse\": \"Bad terms\"}}";
         response = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken, badTerms, false);
         response.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
 
-
-        //Delete the terms of use
+        // Delete the terms of use
         response = UtilIT.deleteDatasetJsonLDMetadata(datasetId, apiToken,
                 "{\"https://dataverse.org/schema/core#termsOfUse\": \"New terms\"}");
         response.then().assertThat().statusCode(OK.getStatusCode());
@@ -2263,12 +2239,12 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
         response.then().assertThat().statusCode(OK.getStatusCode());
 
-        //Verify that they're gone
+        // Verify that they're gone
         jsonLDString = getData(response.getBody().asString());
         jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
         assertTrue(!jsonLDObject.containsKey("https://dataverse.org/schema/core#termsOfUse"));
 
-        //Cleanup - delete dataset, dataverse, user...
+        // Cleanup - delete dataset, dataverse, user...
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
@@ -2282,7 +2258,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals(200, deleteUserResponse.getStatusCode());
 
     }
-    
+
     @Test
     public void testReCreateDataset() {
 
@@ -2297,38 +2273,47 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
-        //Create a dataset using native API
+        // Create a dataset using native API
         Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
         createDatasetResponse.prettyPrint();
         Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
 
-        //Get the semantic metadata
+        // Get the semantic metadata
         Response response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
         response.then().assertThat().statusCode(OK.getStatusCode());
 
-        String expectedJsonLD = JsonPath.from(response.getBody().asString()).getString("data");
+        String expectedString = JsonPath.from(response.getBody().asString()).getString("data");
 
-        //Delete the dataset via native API
+        // Delete the dataset via native API
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
 
-        //Now use the migrate API to recreate the dataset
-        response = UtilIT.recreateDatasetJsonLD(datasetId, apiToken, dataverseAlias, expectedJsonLD);
+        // Now use the migrate API to recreate the dataset
+        // Now use the migrate API to recreate the dataset
+        response = UtilIT.recreateDatasetJsonLD(apiToken, dataverseAlias, expectedString);
+        String body = response.getBody().asString();
         response.then().assertThat().statusCode(CREATED.getStatusCode());
-        //Id will change but everything else should be as before (DOI and create date)
-        datasetId = JsonPath.from(response.getBody().asString()).getInt("data/id");
 
+        try (StringReader rdr = new StringReader(body)) {
+            datasetId = Json.createReader(rdr).readObject().getJsonObject("data").getInt("id");
+        }
+        // Get the jsonLD metadata for what we recreated
         response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
         response.then().assertThat().statusCode(OK.getStatusCode());
-        String jsonLDString = JsonPath.from(response.getBody().asString()).getString("data");
+
+        String jsonLDString = getData(response.getBody().asString());
         JsonObject jsonLD = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
-        
 
-        //ToDo: Assert that the semantic api response is the same except for the id
-        assertEquals(expectedJsonLD, jsonLD.toString());
+        JsonObject expectedJsonLD = JSONLDUtil.decontextualizeJsonLD(expectedString);
+        expectedJsonLD = Json.createObjectBuilder(expectedJsonLD).remove("@id").remove("http://schema.org/dateModified")
+                .build();
+        // ToDo: Assert that the semantic api response is the same (everything in the
+        // expected version is in the new one - deleting the @id and dateModified means
+        // those won't be compared (with last param = false)
+        JSONAssert.assertEquals(expectedJsonLD.toString(), jsonLD.toString(), false);
 
-        //Cleanup by deleting things
+        // Now cleanup
         deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
         assertEquals(200, deleteDatasetResponse.getStatusCode());
@@ -2341,7 +2326,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
     }
-    
+
     private String getData(String body) {
         try (StringReader rdr = new StringReader(body)) {
             return Json.createReader(rdr).readObject().getJsonObject("data").toString();
