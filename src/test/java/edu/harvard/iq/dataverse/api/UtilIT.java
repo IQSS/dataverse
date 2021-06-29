@@ -11,6 +11,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.logging.Level;
@@ -31,7 +32,6 @@ import org.apache.commons.io.IOUtils;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.cxf.headers.Header;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -39,7 +39,6 @@ import static com.jayway.restassured.path.xml.XmlPath.from;
 import static com.jayway.restassured.RestAssured.given;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.StringReader;
-import javax.json.JsonArray;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -2641,7 +2640,7 @@ public class UtilIT {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType("application/ld+json")
-                .body(jsonLDBody)
+                .body(jsonLDBody.getBytes(StandardCharsets.UTF_8))
                 .put("/api/datasets/" + datasetId + "/metadata?replace=" + replace);
         return response;
     }
@@ -2650,7 +2649,7 @@ public class UtilIT {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType("application/ld+json")
-                .body(jsonLDBody)
+                .body(jsonLDBody.getBytes(StandardCharsets.UTF_8))
                 .put("/api/datasets/" + datasetId + "/metadata/delete");
         return response;
     }
@@ -2659,7 +2658,7 @@ public class UtilIT {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .contentType("application/ld+json")
-                .body(jsonLDBody)
+                .body(jsonLDBody.getBytes(StandardCharsets.UTF_8))
                 .post("https://demo.dataverse.org/api/dataverses/" + dataverseAlias +"/datasets");
         return response;
     }
