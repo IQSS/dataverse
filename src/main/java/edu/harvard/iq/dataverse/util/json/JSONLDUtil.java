@@ -25,6 +25,7 @@ import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.JsonWriter;
 import javax.json.JsonWriterFactory;
+import javax.json.JsonValue.ValueType;
 import javax.json.stream.JsonGenerator;
 import javax.ws.rs.BadRequestException;
 
@@ -132,6 +133,9 @@ public class JSONLDUtil {
     public static DatasetVersion updateDatasetVersionMDFromJsonLD(DatasetVersion dsv, JsonObject jsonld,
             MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc, boolean append, boolean migrating) {
 
+        //Assume draft to start
+        dsv.setVersionState(VersionState.DRAFT);
+        
         populateFieldTypeMap(metadataBlockSvc);
 
         // get existing ones?
@@ -337,6 +341,7 @@ public class JSONLDUtil {
                     }
                 } else {
                     // Internal/non-metadatablock terms
+                    boolean found=false;
                     if (key.equals(JsonLDTerm.schemaOrg("license").getUrl())) {
                         if(jsonld.getString(key).equals(TermsOfUseAndAccess.CC0_URI)) {
                             setSemTerm(terms, key, TermsOfUseAndAccess.License.NONE);
@@ -344,11 +349,13 @@ public class JSONLDUtil {
                             throw new BadRequestException(
                                     "Term: " + key + " with value: " + jsonld.getString(key) + " not found.");
                         }
+                        found=true;
                     } else if (datasetTerms.contains(key)) {
                         if(!deleteIfSemTermMatches(terms, key, jsonld.get(key))) {
                             throw new BadRequestException(
                                     "Term: " + key + " with value: " + jsonld.getString(key) + " not found.");
                         }
+                        found=true;
                     } else if (key.equals(JsonLDTerm.fileTermsOfAccess.getUrl())) {
                         JsonObject fAccessObject = jsonld.getJsonObject(JsonLDTerm.fileTermsOfAccess.getUrl());
                         for (String fileKey : fAccessObject.keySet()) {
@@ -357,9 +364,10 @@ public class JSONLDUtil {
                                     throw new BadRequestException(
                                             "Term: " + key + " with value: " + jsonld.getString(key) + " not found.");
                                 }
+                                found=true;
                             }
                         }
-                    } else {
+                    } else if(!found) {
                         throw new BadRequestException(
                                 "Term: " + key + " not found.");
                                     }
@@ -820,58 +828,62 @@ public class JSONLDUtil {
 
     private static boolean deleteIfSemTermMatches(TermsOfUseAndAccess terms, String semterm, JsonValue jsonValue) {
         boolean foundTerm=false;
+        String val = null;
+        if(jsonValue.getValueType().equals(ValueType.STRING)) {
+            val = ((JsonString)jsonValue).getString();
+        }
         switch (semterm) {
         
         case "https://dataverse.org/schema/core#termsOfUse":
-            if(terms.getTermsOfUse().equals(jsonValue.toString())) {
-                terms.setTermsOfAccess(null);
+            if(terms.getTermsOfUse().equals(val)) {
+                terms.setTermsOfUse(null);
                 foundTerm=true;
             }
             break;
         case "https://dataverse.org/schema/core#confidentialityDeclaration":
-            if(terms.getConfidentialityDeclaration().equals(jsonValue.toString())) {
+            if(terms.getConfidentialityDeclaration().equals(val)) {
                 terms.setConfidentialityDeclaration(null);
                 foundTerm=true;
             }
             break;
         case "https://dataverse.org/schema/core#specialPermissions":
-            if(terms.getSpecialPermissions().equals(jsonValue.toString())) {
+            if(terms.getSpecialPermissions().equals(val)) {
                 terms.setSpecialPermissions(null);
                 foundTerm=true;
             }
             break;
         case "https://dataverse.org/schema/core#restrictions":
-            if(terms.getRestrictions().equals(jsonValue.toString())) {
+            if(terms.getRestrictions().equals(val)) {
                 terms.setRestrictions(null);
                 foundTerm=true;
             }
             break;
         case "https://dataverse.org/schema/core#citationRequirements":
-            if(terms.getCitationRequirements().equals(jsonValue.toString())) {
+            if(terms.getCitationRequirements().equals(val)) {
                 terms.setCitationRequirements(null);
                 foundTerm=true;
             }
             break;
         case "https://dataverse.org/schema/core#depositorRequirements":
-            if(terms.getDepositorRequirements().equals(jsonValue.toString())) {
+            if(terms.getDepositorRequirements().equals(val)) {
                 terms.setDepositorRequirements(null);
                 foundTerm=true;
             }
             break;
         case "https://dataverse.org/schema/core#conditions":
-            if(terms.getConditions().equals(jsonValue.toString())) {
+            if(terms.getConditions().equals(val)) {
                 terms.setConditions(null);
                 foundTerm=true;
             }
             break;
         case "https://dataverse.org/schema/core#disclaimer":
-            if(terms.getDisclaimer().equals(jsonValue.toString())) {
+            if(terms.getDisclaimer().equals(val)) {
                 terms.setDisclaimer(null);
                 foundTerm=true;
             }
             break;
         case "https://dataverse.org/schema/core#termsOfAccess":
-            if(terms.getTermsOfAccess().equals(jsonValue.toString())) {
+            if(terms.getTermsOfAccess().equals(val)) {
                 terms.setTermsOfAccess(null);
                 foundTerm=true;
             }
@@ -883,37 +895,37 @@ public class JSONLDUtil {
             }
             break;
         case "https://dataverse.org/schema/core#dataAccessPlace":
-            if(terms.getDataAccessPlace().equals(jsonValue.toString())) {
+            if(terms.getDataAccessPlace().equals(val)) {
                 terms.setDataAccessPlace(null);
                 foundTerm=true;
             }
             break;
         case "https://dataverse.org/schema/core#originalArchive":
-            if(terms.getOriginalArchive().equals(jsonValue.toString())) {
+            if(terms.getOriginalArchive().equals(val)) {
                 terms.setOriginalArchive(null);
                 foundTerm=true;
             }
             break;
         case "https://dataverse.org/schema/core#availabilityStatus":
-            if(terms.getAvailabilityStatus().equals(jsonValue.toString())) {
+            if(terms.getAvailabilityStatus().equals(val)) {
                 terms.setAvailabilityStatus(null);
                 foundTerm=true;
             }
             break;
         case "https://dataverse.org/schema/core#contactForAccess":
-            if(terms.getContactForAccess().equals(jsonValue.toString())) {
+            if(terms.getContactForAccess().equals(val)) {
                 terms.setContactForAccess(null);
                 foundTerm=true;
             }
             break;
         case "https://dataverse.org/schema/core#sizeOfCollection":
-            if(terms.getSizeOfCollection().equals(jsonValue.toString())) {
+            if(terms.getSizeOfCollection().equals(val)) {
                 terms.setSizeOfCollection(null);
                 foundTerm=true;
             }
             break;
         case "https://dataverse.org/schema/core#studyCompletion":
-            if(terms.getStudyCompletion().equals(jsonValue.toString())) {
+            if(terms.getStudyCompletion().equals(val)) {
                 terms.setStudyCompletion(null);
                 foundTerm=true;
             }
