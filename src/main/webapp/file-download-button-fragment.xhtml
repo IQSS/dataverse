@@ -197,7 +197,7 @@
     </ui:fragment>
     
     <!-- CITATION FILES DOWNLOAD OPTIONS -->
-    <li class="dropdown-submenu pull-left">
+    <li class="dropdown-submenu pull-left" jsf:rendered="#{!anonymized}">
         <a tabindex="-1" href="javascript:void(0);">#{bundle['file.downloadBtn.format.citation']}</a>
         <ul class="dropdown-menu">
             <li>
