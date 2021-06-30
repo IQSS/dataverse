@@ -1045,8 +1045,8 @@ public class SystemConfig {
     
     }
     
-    public string getHandleAuthHandle() {
-        string HandleAuthHandle = settingsService.getValueForKey(SettingsServiceBean.Key.HandleAuthHandle, null);
+    public String getHandleAuthHandle() {
+        String HandleAuthHandle = settingsService.getValueForKey(SettingsServiceBean.Key.HandleAuthHandle, null);
         return HandleAuthHandle;
     }
 
