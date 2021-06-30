@@ -411,7 +411,7 @@ public class SolrSearchResult {
     }
     
     public JsonObject toJsonObject(boolean showRelevance, boolean showEntityIds, boolean showApiUrls, List<String> metadataFields) {
-        return json(showRelevance, showEntityIds, showApiUrls).build();
+        return json(showRelevance, showEntityIds, showApiUrls, metadataFields).build();
     }
 
     /**
