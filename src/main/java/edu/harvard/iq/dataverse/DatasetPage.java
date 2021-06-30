@@ -1852,7 +1852,6 @@ public class DatasetPage implements java.io.Serializable {
             }
 
             // init the citation
-            // TODO: Need to do this after privateUrl is initialized?
             displayCitation = dataset.getCitation(true, workingVersion, isAnonymizedAccess());
             logger.fine("Citation: " + displayCitation);
 
