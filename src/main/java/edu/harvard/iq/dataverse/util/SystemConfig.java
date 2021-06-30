@@ -1046,8 +1046,8 @@ public class SystemConfig {
     }
     
     public String getHandleAuthHandle() {
-        String HandleAuthHandle = settingsService.getValueForKey(SettingsServiceBean.Key.HandleAuthHandle, null);
-        return HandleAuthHandle;
+        String handleAuthHandle = settingsService.getValueForKey(SettingsServiceBean.Key.HandleAuthHandle, null);
+        return handleAuthHandle;
     }
 
     public String getMDCLogPath() {
