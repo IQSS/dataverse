@@ -17,7 +17,7 @@
     <citation>
       <titlStmt>
         <titl>Darwin's Finches</titl>
-        <IDNo agency="DOI">doi:10.5072/FK2/PCA2E3</IDNo>
+        <IDNo agency="DOI">https://doi.org/10.5072/FK2/PCA2E3</IDNo>
       </titlStmt>
       <rspStmt>
         <AuthEnty affiliation="Birds Inc.">Finch, Fiona</AuthEnty>
@@ -30,6 +30,7 @@
         <contact affiliation="Finch Academy" email="finch@mailinator.com">Jimmy Finch</contact>
         <depositr>Added, Depositor</depositr>
       </distStmt>
+      <holdings URI="https://doi.org/10.5072/FK2/PCA2E3"></holdings>
     </citation>
     <stdyInfo>
       <subject>
