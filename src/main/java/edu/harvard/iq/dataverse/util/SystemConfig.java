@@ -1099,10 +1099,6 @@ public class SystemConfig {
     
     private String getDefaultMetadataLanguageLabel(DvObjectContainer target) {
         String mlLabel = Locale.getDefault().getDisplayLanguage();
-/*        Locale l = Locale.getDefault();
-        if(mlLabel==null) mlLabel = l.getDisplayLanguage();
-        if(mlLabel==null) mlLabel = l.getLanguage();
-*/
         Dataverse parent = target.getOwner();
         boolean fromAncestor=false;
         if(parent != null) {
