@@ -385,91 +385,91 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
 
                 } 
 
-                InputStream instream = storageIO.getInputStream();
-                if (instream != null) {
-                    // headers:
+                try (InputStream instream = storageIO.getInputStream()) {
+                    if (instream != null) {
+                        // headers:
 
-                    String fileName = storageIO.getFileName();
-                    String mimeType = storageIO.getMimeType();
+                        String fileName = storageIO.getFileName();
+                        String mimeType = storageIO.getMimeType();
 
-                    // Provide both the "Content-disposition" and "Content-Type" headers,
-                    // to satisfy the widest selection of browsers out there. 
-                    // Encode the filename as UTF-8, then deal with spaces. "encode" changes
-                    // a space to + so we change it back to a space (%20).
-                    String finalFileName = URLEncoder.encode(fileName, "UTF-8").replaceAll("\\+", "%20");
-                    httpHeaders.add("Content-disposition", "attachment; filename=\"" + finalFileName + "\"");
-                    httpHeaders.add("Content-Type", mimeType + "; name=\"" + finalFileName + "\"");
+                        // Provide both the "Content-disposition" and "Content-Type" headers,
+                        // to satisfy the widest selection of browsers out there. 
+                        // Encode the filename as UTF-8, then deal with spaces. "encode" changes
+                        // a space to + so we change it back to a space (%20).
+                        String finalFileName = URLEncoder.encode(fileName, "UTF-8").replaceAll("\\+", "%20");
+                        httpHeaders.add("Content-disposition", "attachment; filename=\"" + finalFileName + "\"");
+                        httpHeaders.add("Content-Type", mimeType + "; name=\"" + finalFileName + "\"");
 
-                    long contentSize;
-                    boolean useChunkedTransfer = false;
-                    //if ((contentSize = getFileSize(di, storageIO.getVarHeader())) > 0) {
-                    if ((contentSize = getContentSize(storageIO)) > 0) {
-                        logger.fine("Content size (retrieved from the AccessObject): " + contentSize);
-                        httpHeaders.add("Content-Length", contentSize);
-                    } else {
-                        //httpHeaders.add("Transfer-encoding", "chunked");
-                        //useChunkedTransfer = true;
-                    }
+                        long contentSize;
+                        boolean useChunkedTransfer = false;
+                        //if ((contentSize = getFileSize(di, storageIO.getVarHeader())) > 0) {
+                        if ((contentSize = getContentSize(storageIO)) > 0) {
+                            logger.fine("Content size (retrieved from the AccessObject): " + contentSize);
+                            httpHeaders.add("Content-Length", contentSize);
+                        } else {
+                            //httpHeaders.add("Transfer-encoding", "chunked");
+                            //useChunkedTransfer = true;
+                        }
 
-                    // (the httpHeaders map must be modified *before* writing any
-                    // data in the output stream!)
-                    int bufsize;
-                    byte[] bffr = new byte[4 * 8192];
-                    byte[] chunkClose = "\r\n".getBytes();
+                        // (the httpHeaders map must be modified *before* writing any
+                        // data in the output stream!)
+                        int bufsize;
+                        byte[] bffr = new byte[4 * 8192];
+                        byte[] chunkClose = "\r\n".getBytes();
 
-                    // before writing out any bytes from the input stream, flush
-                    // any extra content, such as the variable header for the 
-                    // subsettable files: 
-                    if (storageIO.getVarHeader() != null) {
-                        if (storageIO.getVarHeader().getBytes().length > 0) {
+                        // before writing out any bytes from the input stream, flush
+                        // any extra content, such as the variable header for the 
+                        // subsettable files: 
+                        if (storageIO.getVarHeader() != null) {
+                            if (storageIO.getVarHeader().getBytes().length > 0) {
+                                if (useChunkedTransfer) {
+                                    String chunkSizeLine = String.format("%x\r\n", storageIO.getVarHeader().getBytes().length);
+                                    outstream.write(chunkSizeLine.getBytes());
+                                }
+                                outstream.write(storageIO.getVarHeader().getBytes());
+                                if (useChunkedTransfer) {
+                                    outstream.write(chunkClose);
+                                }
+                            }
+                        }
+
+                        while ((bufsize = instream.read(bffr)) != -1) {
                             if (useChunkedTransfer) {
-                                String chunkSizeLine = String.format("%x\r\n", storageIO.getVarHeader().getBytes().length);
+                                String chunkSizeLine = String.format("%x\r\n", bufsize);
                                 outstream.write(chunkSizeLine.getBytes());
                             }
-                            outstream.write(storageIO.getVarHeader().getBytes());
+                            outstream.write(bffr, 0, bufsize);
                             if (useChunkedTransfer) {
                                 outstream.write(chunkClose);
                             }
                         }
-                    }
 
-                    while ((bufsize = instream.read(bffr)) != -1) {
                         if (useChunkedTransfer) {
-                            String chunkSizeLine = String.format("%x\r\n", bufsize);
-                            outstream.write(chunkSizeLine.getBytes());
+                            String chunkClosing = "0\r\n\r\n";
+                            outstream.write(chunkClosing.getBytes());
                         }
-                        outstream.write(bffr, 0, bufsize);
-                        if (useChunkedTransfer) {
-                            outstream.write(chunkClose);
+
+                        logger.fine("di conversion param: " + di.getConversionParam() + ", value: " + di.getConversionParamValue());
+
+                        // Downloads of thumbnail images (scaled down, low-res versions of graphic image files) and 
+                        // "preprocessed metadata" records for tabular data files are NOT considered "real" downloads, 
+                        // so these should not produce guestbook entries: 
+                        if (di.getGbr() != null && !(isThumbnailDownload(di) || isPreprocessedMetadataDownload(di))) {
+                            try {
+                                logger.fine("writing guestbook response.");
+                                Command<?> cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
+                                di.getCommand().submit(cmd);
+                                MakeDataCountEntry entry = new MakeDataCountEntry(di.getRequestUriInfo(), di.getRequestHttpHeaders(), di.getDataverseRequestService(), di.getGbr().getDataFile());
+                                mdcLogService.logEntry(entry);
+                            } catch (CommandException e) {
+                            }
+                        } else {
+                            logger.fine("not writing guestbook response");
                         }
+
+                        outstream.close();
+                        return;
                     }
-
-                    if (useChunkedTransfer) {
-                        String chunkClosing = "0\r\n\r\n";
-                        outstream.write(chunkClosing.getBytes());
-                    }
-
-                    logger.fine("di conversion param: " + di.getConversionParam() + ", value: " + di.getConversionParamValue());
-
-                    // Downloads of thumbnail images (scaled down, low-res versions of graphic image files) and 
-                    // "preprocessed metadata" records for tabular data files are NOT considered "real" downloads, 
-                    // so these should not produce guestbook entries: 
-                    if (di.getGbr() != null && !(isThumbnailDownload(di) || isPreprocessedMetadataDownload(di))) {
-                        try {
-                            logger.fine("writing guestbook response.");
-                            Command<?> cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
-                            di.getCommand().submit(cmd);
-                            MakeDataCountEntry entry = new MakeDataCountEntry(di.getRequestUriInfo(), di.getRequestHttpHeaders(), di.getDataverseRequestService(), di.getGbr().getDataFile());
-                            mdcLogService.logEntry(entry);
-                        } catch (CommandException e) {
-                        }
-                    } else {
-                        logger.fine("not writing guestbook response");
-                    }
-
-                    instream.close();
-                    outstream.close();
-                    return;
                 }
             }
         }

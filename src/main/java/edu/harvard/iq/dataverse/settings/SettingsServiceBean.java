@@ -434,6 +434,14 @@ public class SettingsServiceBean {
          * when the Distributor field (citation metadatablock) is set (true)
          */
         ExportInstallationAsDistributorOnlyWhenNotSet,
+        /**
+         * A comma-separated list of field type names that should be 'withheld' when
+         * dataset access occurs via a Private Url with Anonymized Access (e.g. to
+         * support anonymized review). A suggested minimum includes author,
+         * datasetContact, and contributor, but additional fields such as depositor, grantNumber, and
+         * publication might also need to be included.
+         */
+        AnonymizedFieldTypeNames,
 
         /*
          * Include "Custom Terms" as an item in the license drop-down or not.

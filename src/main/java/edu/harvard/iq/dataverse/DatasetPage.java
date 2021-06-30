@@ -462,16 +462,6 @@ public class DatasetPage implements java.io.Serializable {
     private String fileSortField;
     private String fileSortOrder;
 
-    private LazyFileMetadataDataModel lazyModel;
-
-    public LazyFileMetadataDataModel getLazyModel() {
-        return lazyModel;
-    }
-
-    public void setLazyModel(LazyFileMetadataDataModel lazyModel) {
-        this.lazyModel = lazyModel;
-    }
-
     public List<Entry<String,String>> getCartList() {
         if (session.getUser() instanceof AuthenticatedUser) {
             return ((AuthenticatedUser) session.getUser()).getCart().getContents();
@@ -1633,7 +1623,7 @@ public class DatasetPage implements java.io.Serializable {
             //then create new working version from the selected template
             workingVersion.updateDefaultValuesFromTemplate(selectedTemplate, licenseServiceBean.getDefault());
             updateDatasetFieldInputLevels();
-        } else { 
+        } else {
             workingVersion.initDefaultValues(licenseServiceBean.getDefault());
             updateDatasetFieldInputLevels();
         }
@@ -1893,9 +1883,6 @@ public class DatasetPage implements java.io.Serializable {
                 JsfHelper.addWarningMessage(retrieveDatasetVersionResponse.getDifferentVersionMessage());//BundleUtil.getStringFromBundle("dataset.message.metadataSuccess"));
             }
 
-            // init the citation
-            displayCitation = dataset.getCitation(true, workingVersion);
-
             if(workingVersion.isPublished()) {
                 MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, workingVersion);
                 mdcLogService.logEntry(entry);
@@ -2020,13 +2007,20 @@ public class DatasetPage implements java.io.Serializable {
         } catch (CommandException ex) {
             // No big deal. The user simply doesn't have access to create or delete a Private URL.
         }
+        logger.fine("PrivateUser: " + (session.getUser() instanceof PrivateUrlUser));
         if (session.getUser() instanceof PrivateUrlUser) {
             PrivateUrlUser privateUrlUser = (PrivateUrlUser) session.getUser();
+            logger.fine("Anon: " + privateUrlUser.hasAnonymizedAccess());
             if (dataset != null && dataset.getId().equals(privateUrlUser.getDatasetId())) {
                 JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.privateurl.header"),
                         BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageReviewer"));
             }
         }
+
+        // init the citation
+        //Need to do this after privateUrl is initialized (
+        displayCitation = dataset.getCitation(true, workingVersion, isAnonymizedAccess());
+        logger.fine("Citation: " + displayCitation);
 
         displayLockInfo(dataset);
 
@@ -2064,7 +2058,7 @@ public class DatasetPage implements java.io.Serializable {
         if (systemConfig.isAllowCustomTerms()) {
             licenseSelectItems.add(new SelectItem(null, BundleUtil.getStringFromBundle("license.custom")));
         }
-        
+
         return null;
     }
 
@@ -5124,23 +5118,16 @@ public class DatasetPage implements java.io.Serializable {
 
     //
 
-    /*
-        public void setSelectedGroup(ExplicitGroup selectedGroup) {
-        setShowDeletePopup(true);
-        this.selectedGroup = selectedGroup;
-    }
-    */
-
-    public void createPrivateUrl() {
+    public void createPrivateUrl(boolean anonymizedAccess) {
         try {
-            PrivateUrl createdPrivateUrl = commandEngine.submit(new CreatePrivateUrlCommand(dvRequestService.getDataverseRequest(), dataset));
+            PrivateUrl createdPrivateUrl = commandEngine.submit(new CreatePrivateUrlCommand(dvRequestService.getDataverseRequest(), dataset, anonymizedAccess));
             privateUrl = createdPrivateUrl;
             JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.privateurl.header"),
                     BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageAuthor", Arrays.asList(getPrivateUrlLink(privateUrl))));
             privateUrlWasJustCreated = true;
         } catch (CommandException ex) {
             String msg = BundleUtil.getStringFromBundle("dataset.privateurl.noPermToCreate", PrivateUrlUtil.getRequiredPermissions(ex));
-            logger.info("Unable to create a Private URL for dataset id " + dataset.getId() + ". Message to user: " + msg + " Exception: " + ex);
+            logger.warning("Unable to create a Private URL for dataset id " + dataset.getId() + ". Message to user: " + msg + " Exception: " + ex);
             JH.addErrorMessage(msg);
         }
     }
@@ -5163,6 +5150,29 @@ public class DatasetPage implements java.io.Serializable {
         return privateUrl.getLink();
     }
 
+    public boolean isAnonymizedAccess() {
+        if (session.getUser() instanceof PrivateUrlUser) {
+            return ((PrivateUrlUser)session.getUser()).hasAnonymizedAccess();
+        } else {
+            return false;
+        }
+    }
+
+    public boolean isAnonymizedPrivateUrl() {
+        if(privateUrl != null) {
+            return privateUrl.isAnonymizedAccess();
+        } else {
+            return false;
+        }
+    }
+
+    public boolean isAnonymizedAccessEnabled() {
+        if (settingsWrapper.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames) != null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     // todo: we should be able to remove - this is passed in the html pages to other fragments, but they could just access this service bean directly.
     public FileDownloadServiceBean getFileDownloadService() {
