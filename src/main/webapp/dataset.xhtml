@@ -1374,6 +1374,31 @@
                                     PF('blockDatasetForm').hide();" actionListener="#{DatasetPage.clearFileMetadataSelectedForTagsPopup()}"/>
                         </div>
                     </p:dialog>
+                    <p:dialog id="fileEmbargoPopup" styleClass="smallPopUp" header="#{bundle['file.editEmbargo']}" widgetVar="fileEmbargoPopup" modal="true">
+                        <p:focus for="fileEmbargoMenuDS"/>
+                        <p class="help-block">#{bundle['file.editEmbargoDialog.tip']}</p>
+                        <div class="form-horizontal" jsf:rendered="#{!(empty DatasetPage.selectedFiles)}">
+                            <div class="p-field p-col-12 p-md-4">
+                                <p:outputLabel for="minmax" value="Min-Max"/>
+                                <p:datePicker id="minmax" value="#{calendarView.date11}" mindate="#{calendarView.minDate}"
+                                    maxdate="#{calendarView.maxDate}" readonlyInput="true"/>
+                            </div>
+                            <div class="col-sm-12">
+                                <p class="help-block">#{bundle['file.editEmbargoDialog.reason.tip']}</p>
+                                <p:inputText id="fileEmbargoAddReason" styleClass="form-control"
+                                    type="text" value="#{DatasetPage.newCategoryName}"
+                                    placeholder="#{bundle['file.editEmbargoDialog.newReason']}"
+                                    onkeypress="if (event.keyCode == 13) {
+                                        return false;
+                                    }"/>
+                            </div>
+                        </div>
+                        <div class="button-block">
+                            <p:commandButton styleClass="btn btn-default" id="fileEmbargoPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('fileEmbargoPopup').hide()" update=":datasetForm:tabView:filesTable, :datasetForm" action="#{DatasetPage.saveEmbargo()}"/>
+                            <p:commandButton styleClass="btn btn-link" id="fileEmbargoPopupCancelButton" value="#{bundle.cancel}" onclick="PF('fileEmbargoPopup').hide();
+                                    PF('blockDatasetForm').hide();" actionListener="#{DatasetPage.clearFileMetadataSelectedForEmbargoPopup()}"/>
+                        </div>
+                    </p:dialog>
                     <!-- Request Access Sign Up/Log In Button -->
                     <p:dialog id="accessSignUpLogIn" header="#{bundle['file.requestAccess']}" widgetVar="accessSignUpLogIn_popup" modal="true">
                         <p class="help-block">
