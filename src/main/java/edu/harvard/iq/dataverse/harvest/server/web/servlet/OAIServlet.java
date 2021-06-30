@@ -46,13 +46,9 @@ import java.io.ByteArrayOutputStream;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.logging.Logger;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.GZIPOutputStream;
 import javax.ejb.EJB;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.ServletConfig;
