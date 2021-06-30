@@ -130,6 +130,7 @@
                                         <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
                                             <ui:include src="dataset-citation.xhtml">
                                                 <ui:param name="datasetPage" value="true"/>
+                                                <ui:param name="anonymized" value="DatasetPage.anonymizedAccess"/>
                                             </ui:include>
                                         </ui:fragment>
                                         <!-- END: CITATION BLOCK -->
@@ -548,9 +549,12 @@
                                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).description}"></span>
                                                         </th>
-                                                        <td>
+                                                        <td jsf:rendered="#{!DatasetPage.anonymizedAccess or !settingsWrapper.shouldBeAnonymized(dsf)}">
                                                             <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetVersionUI.relPublicationCitation)}" escape="false"/>
                                                             <a href="#{DatasetPage.datasetVersionUI.relPublicationUrl}" title="#{DatasetPage.datasetVersionUI.relPublicationUrl}" target="_blank" rel="noopener">#{DatasetPage.datasetVersionUI.relPublicationId}</a>
+                                                        </td>
+                                                        <td jsf:rendered="#{DatasetPage.anonymizedAccess and settingsWrapper.shouldBeAnonymized(dsf)}">
+                                                            <h:outputText value="#{bundle['dataset.anonymized.withheld']}"/>
                                                         </td>
                                                     </tr>
                                                     <tr id="#{dsf.datasetFieldType.name}" jsf:rendered="#{dsf.datasetFieldType.name!='publication' and dsf.datasetFieldType.name!='keyword'}">
@@ -559,7 +563,7 @@
                                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                                         </th>
-                                                        <td>
+                                                        <td jsf:rendered="#{!DatasetPage.anonymizedAccess or !settingsWrapper.shouldBeAnonymized(dsf)}">
                                                             <!-- Primitive datasetFields -->
                                                             <ui:fragment rendered="#{dsf.datasetFieldType.primitive}">
                                                                 <h:outputText value="#{dsf.displayValue}" rendered="#{!dsf.datasetFieldType.allowMultiples}"
@@ -586,6 +590,9 @@
                                                                     </div>
                                                                 </ui:repeat>
                                                             </ui:fragment>
+                                                        </td>
+                                                        <td jsf:rendered="#{DatasetPage.anonymizedAccess and settingsWrapper.shouldBeAnonymized(dsf)}">
+                                                            <h:outputText value="#{bundle['dataset.anonymized.withheld']}"/>
                                                         </td>
                                                     </tr>
                                                 </ui:repeat>
@@ -797,7 +804,8 @@
                                     </p:commandLink>
                                     <div class="btn-group" jsf:rendered="#{DatasetPage.dataset.released 
                                                                            and (!DatasetPage.dataset.deaccessioned
-                                                                           or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))}">
+                                                                           or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))
+                                                                           and !DatasetPage.anonymizedAccess}">
                                         <button class="btn btn-default btn-export dropdown-toggle" type="button" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-export"/> #{bundle['dataset.exportBtn']} <span class="caret"></span>
                                         </button>
@@ -819,6 +827,7 @@
                                     <ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDate != null ? DatasetPage.dataset.publicationDateFormattedYYYYMMDD : ''}"/>
                                     <ui:param name="globalId" value="#{DatasetPage.dataset.globalIdString}"/>
                                     <ui:param name="altPID" value="#{DatasetPage.dataset.alternativePersistentIdentifier}"/>
+                                    <ui:param name="anonymized" value="#{DatasetPage.anonymizedAccess}"/>
                                 </ui:include>
                             </p:tab>
                             <!-- 4.2.1: see comment above -->
@@ -832,7 +841,9 @@
                             </p:tab>
                             <!-- 4.2.1: see above -->
                             <p:tab id="versionsTab" title="#{bundle['file.dataFilesTab.versions']}" rendered="#{empty DatasetPage.editMode}">
-                                <ui:include src="dataset-versions.xhtml"></ui:include>
+                                <ui:include src="dataset-versions.xhtml">
+                                    <ui:param name="anonymized" value="#{DatasetPage.anonymizedAccess}"/>
+                                </ui:include>
                             </p:tab>
                         </p:tabView>
                     </div>
@@ -989,7 +1000,8 @@
                                         } else {
                                             selectText(this);
                                         }">
-                                    <p class="text-success highlightBold" jsf:rendered="#{DatasetPage.privateUrlWasJustCreated}"><span class="glyphicon glyphicon glyphicon-ok"/> #{bundle['dataset.privateurl.createdSuccess']}</p>
+                                    <p class="highlight" jsf:rendered="#{DatasetPage.anonymizedPrivateUrl}">#{bundle['dataset.privateurl.anonymized']}</p>
+                                    <p class="highlight" jsf:rendered="#{!DatasetPage.anonymizedPrivateUrl}">#{bundle['dataset.privateurl.full']}</p>
                                     <ui:param name="privateUrlLink" value="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" />
                                     <p class="no-margin-bottom">
                                         <span>#{privateUrlLink}</span>
@@ -997,7 +1009,8 @@
                                 </div>
                             </div>
                             <div class="button-block">
-                                <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.createPrivateUrl']}" action="#{DatasetPage.createPrivateUrl()}" update="privateUrlPanel,:messagePanel" rendered="#{empty(DatasetPage.privateUrl)}"/>
+                                <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.createPrivateUrl']}" action="#{DatasetPage.createPrivateUrl(false)}" update="privateUrlPanel,:messagePanel" rendered="#{empty(DatasetPage.privateUrl)}"/>
+                                <p:commandButton styleClass="btn btn-default disabledTitle" value="#{bundle['dataset.privateurl.createPrivateUrl.anonymized']}" action="#{DatasetPage.createPrivateUrl(true)}" update="privateUrlPanel,:messagePanel" rendered="#{DatasetPage.anonymizedAccessEnabled and empty(DatasetPage.privateUrl)}" disabled="#{DatasetPage.dataset.released}" title="#{DatasetPage.dataset.released ? bundle['dataset.privateurl.createPrivateUrl.anonymized.unavailable']:'' }"/>
                                 <button class="btn btn-default btn-copy" data-clipboard-text="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" jsf:rendered="#{!empty(DatasetPage.privateUrl)}" type="button">
                                     #{bundle['copyClipboard']}
                                 </button>

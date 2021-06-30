@@ -26,12 +26,12 @@
         <skipUnitTests>false</skipUnitTests>
     
         <jakartaee-api.version>8.0.0</jakartaee-api.version>
-        <payara.version>5.2020.6</payara.version>
+        <payara.version>5.2021.4</payara.version>
         <postgresql.version>42.2.19</postgresql.version>
         <aws.version>1.11.762</aws.version>
         <commons.logging.version>1.2</commons.logging.version>
         <commons.lang3.version>3.12.0</commons.lang3.version>
-        <httpcomponents.client.version>4.5.5</httpcomponents.client.version>
+        <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
         <junit.version>4.13.1</junit.version>
         <junit.jupiter.version>5.7.0</junit.jupiter.version>
         <junit.vintage.version>${junit.jupiter.version}</junit.vintage.version>
@@ -59,6 +59,18 @@
     <!--Maven checks for dependencies from these repos in the order shown in the pom.xml
         This isn't well documented and seems to change between maven versions -MAD 4.9.4 -->
     <repositories>
+        <repository>
+            <id>payara-nexus-artifacts</id>
+            <name>Payara Nexus Artifacts</name>
+            <url>https://nexus.payara.fish/repository/payara-artifacts</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <!-- This repository is about to being phased out. See https://github.com/payara/Payara_PatchedProjects/issues/366 -->
         <repository>
             <id>payara-patched-externals</id>
             <name>Payara Patched Externals</name>
@@ -783,7 +795,7 @@
             <plugin>
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
-                <version>4.0.0</version>
+                <version>4.3.0</version>
                 <dependencies>
                     <dependency>
                         <groupId>javax.xml.bind</groupId>
