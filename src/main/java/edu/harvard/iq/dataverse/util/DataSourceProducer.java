@@ -16,9 +16,12 @@ import javax.sql.DataSource;
         // HINT: PGSimpleDataSource would work too, but as we use a connection pool, go with a javax.sql.ConnectionPoolDataSource
         // HINT: PGXADataSource is unnecessary (no distributed transactions used) and breaks ingest.
         className = "org.postgresql.ds.PGConnectionPoolDataSource",
-        user = "${MPCONFIG=dataverse.db.user}",
+        
+        // BEWARE: as this resource is created before defaults are read from META-INF/microprofile-config.properties,
+        // defaults must be provided in this Payara-proprietary manner.
+        user = "${MPCONFIG=dataverse.db.user:dataverse}",
         password = "${MPCONFIG=dataverse.db.password}",
-        url = "jdbc:postgresql://${MPCONFIG=dataverse.db.host}:${MPCONFIG=dataverse.db.port}/${MPCONFIG=dataverse.db.name}",
+        url = "jdbc:postgresql://${MPCONFIG=dataverse.db.host:localhost}:${MPCONFIG=dataverse.db.port:5432}/${MPCONFIG=dataverse.db.name:dataverse}",
         // If we ever need to change these pool settings, we need to remove this class and create the resource
         // from web.xml. We can use MicroProfile Config in there for these values, impossible to do in the annotation.
         //
