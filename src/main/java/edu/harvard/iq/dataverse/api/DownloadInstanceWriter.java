@@ -208,7 +208,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         }
                         if (redirect_uri != null) {
                             // increment the download count, if necessary:
-                            if (di.getGbr() != null) {
+                            if (di.getGbr() != null && !(isThumbnailDownload(di) || isPreprocessedMetadataDownload(di))) {
                                 try {
                                     logger.fine("writing guestbook response, for an S3 download redirect.");
                                     Command<?> cmd = new CreateGuestbookResponseCommand(di.getDataverseRequestService().getDataverseRequest(), di.getGbr(), di.getGbr().getDataFile().getOwner());
