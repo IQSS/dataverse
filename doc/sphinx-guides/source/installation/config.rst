@@ -301,8 +301,13 @@ Advanced Database Settings
 The following options are useful in many scenarios. You might be interested in debug output during development or
 monitoring performance in production.
 
-You can find more details within the
-`Payara docs on Advanced Connection Pool Configuration <https://docs.payara.fish/community/docs/documentation/payara-server/jdbc/advanced-connection-pool-properties.html>`_.
+You can find more details within the Payara docs:
+
+- `User Guide: Connection Pool Configuration <https://docs.payara.fish/community/docs/documentation/user-guides/connection-pools/connection-pools.html>`_
+- `Tech Doc: Advanced Connection Pool Configuration <https://docs.payara.fish/community/docs/documentation/payara-server/jdbc/advanced-connection-pool-properties.html>`_.
+
+Connection Validation
+^^^^^^^^^^^^^^^^^^^^^
 
 .. list-table::
    :widths: 15 60 25
@@ -328,55 +333,51 @@ You can find more details within the
    * - dataverse.db.validate-atmost-once-period-in-seconds
      - Specifies the time interval in seconds between successive requests to validate a connection at most once.
      - ``0`` (disabled)
+
+Connection & Statement Leaks
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. list-table::
+   :widths: 15 60 25
+   :header-rows: 1
+   :align: left
+
+   * - MPCONFIG Key
+     - Description
+     - Default
    * - dataverse.db.connection-leak-timeout-in-seconds
      - Specify timeout when connections count as "leaked".
      - ``0`` (disabled)
    * - dataverse.db.connection-leak-reclaim
      - If enabled, leaked connection will be reclaimed by the pool after connection leak timeout occurs.
      - ``false``
-   * - dataverse.db.connection-creation-retry-attempts
-     - Number of attempts to create a new connection.
-     - ``0`` (no retries)
-   * - dataverse.db.connection-creation-retry-interval-in-seconds
-     - Time interval between retries while attempting to create a connection. Effective when "Creation Retry Attempts" is ``> 0``.
-     - ``10``
-   * - dataverse.db.statement-timeout-in-seconds
-     - Timeout property of a connection to enable termination of abnormally long running queries.
-     - ``-1`` (disabled)
-   * - dataverse.db.lazy-connection-enlistment
-     - Enlist a resource to the transaction only when it is actually used in a method
-     - ``false``
-   * - dataverse.db.lazy-connection-association
-     - Connections are lazily associated when an operation is performed on them
-     - ``false``
-   * - dataverse.db.pooling
-     - When set to false, disables connection pooling for the pool
-     - ``true`` (enabled)
-   * - dataverse.db.statement-cache-size
-     - Caching is enabled when set to a positive non-zero value (for example, 10)
-     - ``0``
-   * - dataverse.db.match-connections
-     - Turns connection matching for the pool on or off
-     - ``true``
-   * - dataverse.db.max-connection-usage-count
-     - Connections will be reused by the pool for the specified number of times, after which they will be closed.
-     - ``0`` (disabled)
    * - dataverse.db.statement-leak-timeout-in-seconds
      - Specifiy timeout when statements should be considered to be "leaked"
      - ``0`` (disabled)
    * - dataverse.db.statement-leak-reclaim
      - If enabled, leaked statement will be reclaimed by the pool after statement leak timeout occurs
      - ``false``
-   * - dataverse.db.statement-cache-type
-     -
-     -
+
+Logging & Slow Performance
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. list-table::
+   :widths: 15 60 25
+   :header-rows: 1
+   :align: left
+
+   * - MPCONFIG Key
+     - Description
+     - Default
+   * - dataverse.db.statement-timeout-in-seconds
+     - Timeout property of a connection to enable termination of abnormally long running queries.
+     - ``-1`` (disabled)
    * - dataverse.db.slow-query-threshold-in-seconds
      - SQL queries that exceed this time in seconds will be logged.
      - ``-1`` (disabled)
    * - dataverse.db.log-jdbc-calls
      - When set to true, all JDBC calls will be logged allowing tracing of all JDBC interactions including SQL
      - ``false``
-
 
 
 
