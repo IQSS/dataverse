@@ -238,6 +238,148 @@ As for the "Remote only" authentication mode, it means that:
 - ``:DefaultAuthProvider`` has been set to use the desired authentication provider
 - The "builtin" authentication provider has been disabled (:ref:`api-toggle-auth-provider`). Note that disabling the "builtin" authentication provider means that the API endpoint for converting an account from a remote auth provider will not work. Converting directly from one remote authentication provider to another (i.e. from GitHub to Google) is not supported. Conversion from remote is always to "builtin". Then the user initiates a conversion from "builtin" to remote. Note that longer term, the plan is to permit multiple login options to the same Dataverse installation account per https://github.com/IQSS/dataverse/issues/3487 (so all this talk of conversion will be moot) but for now users can only use a single login option, as explained in the :doc:`/user/account` section of the User Guide. In short, "remote only" might work for you if you only plan to use a single remote authentication provider such that no conversion between remote authentication providers will be necessary.
 
+
+
+Database Persistence
+--------------------
+
+The Dataverse software uses a PostgreSQL server and a Solr Search Index to store objects users create.
+You can configure basic and advanced settings of the PostgreSQL database connection with the help of
+MicroProfile Config API.
+
+Basic Database Settings
++++++++++++++++++++++++
+
+1. Any of these settings can be set via system properties (see :ref:`jvm-options`), environment variables or other
+   MicroProfile Config mechanisms supported by the appserver.
+   `See Payara docs for supported sources <https://docs.payara.fish/community/docs/documentation/microprofile/config/README.html#config-sources>`_.
+2. Remember to protect your secrets. For passwords, use an environment variable (bare minimum), a password alias named the same
+   as the key (OK) or use the "dir config source" of Payara (best).
+
+   Alias creation example:
+
+   .. code-block:: shell
+
+      echo "AS_ADMIN_ALIASPASSWORD=changeme" > /tmp/p.txt
+      asadmin create-password-alias --passwordfile /tmp/p.txt dataverse.db.password
+      rm /tmp/p.txt
+
+3. Environment variables follow the key, replacing any dot, colon, dash, etc into an underscore "_" and all uppercase
+   letters. Example: ``dataverse.db.host`` -> ``DATAVERSE_DB_HOST``
+
+.. list-table::
+   :widths: 15 60 25
+   :header-rows: 1
+   :align: left
+
+   * - MPCONFIG Key
+     - Description
+     - Default
+   * - dataverse.db.host
+     - The PostgreSQL server to connect to.
+     - ``localhost``
+   * - dataverse.db.port
+     - The PostgreSQL server port to connect to.
+     - ``5432``
+   * - dataverse.db.user
+     - The PostgreSQL user name to connect with.
+     - | ``dataverse``
+       | (installer sets to ``dvnapp``)
+   * - dataverse.db.password
+     - The PostgreSQL users password to connect with.
+
+       **Please note the safety advisory above.**
+     - *No default*
+   * - dataverse.db.name
+     - The PostgreSQL database name to use for the Dataverse installation.
+     - | ``dataverse``
+       | (installer sets to ``dvndb``)
+
+Advanced Database Settings
+++++++++++++++++++++++++++
+
+The following options are useful in many scenarios. You might be interested in debug output during development or
+monitoring performance in production.
+
+You can find more details within the
+`Payara docs on Advanced Connection Pool Configuration <https://docs.payara.fish/community/docs/documentation/payara-server/jdbc/advanced-connection-pool-properties.html>`_.
+
+.. list-table::
+   :widths: 15 60 25
+   :header-rows: 1
+   :align: left
+
+   * - MPCONFIG Key
+     - Description
+     - Default
+   * - dataverse.db.is-connection-validation-required
+     - ``true``: Validate connections, allow server to reconnect in case of failure
+     - false
+   * - dataverse.db.connection-validation-method
+     - | The method of connection validation:
+       | ``table|autocommit|meta-data|custom-validation``
+     - *No default*
+   * - dataverse.db.validation-table-name
+     - The name of the table used for validation if the validation method is set to ``table``
+     - *No default*
+   * - dataverse.db.validation-classname
+     - The name of the custom class used for validation if the ``validation-method`` is set to ``custom-validation``
+     - *No default*
+   * - dataverse.db.validate-atmost-once-period-in-seconds
+     - Specifies the time interval in seconds between successive requests to validate a connection at most once.
+     - ``0`` (disabled)
+   * - dataverse.db.connection-leak-timeout-in-seconds
+     - Specify timeout when connections count as "leaked".
+     - ``0`` (disabled)
+   * - dataverse.db.connection-leak-reclaim
+     - If enabled, leaked connection will be reclaimed by the pool after connection leak timeout occurs.
+     - ``false``
+   * - dataverse.db.connection-creation-retry-attempts
+     - Number of attempts to create a new connection.
+     - ``0`` (no retries)
+   * - dataverse.db.connection-creation-retry-interval-in-seconds
+     - Time interval between retries while attempting to create a connection. Effective when "Creation Retry Attempts" is ``> 0``.
+     - ``10``
+   * - dataverse.db.statement-timeout-in-seconds
+     - Timeout property of a connection to enable termination of abnormally long running queries.
+     - ``-1`` (disabled)
+   * - dataverse.db.lazy-connection-enlistment
+     - Enlist a resource to the transaction only when it is actually used in a method
+     - ``false``
+   * - dataverse.db.lazy-connection-association
+     - Connections are lazily associated when an operation is performed on them
+     - ``false``
+   * - dataverse.db.pooling
+     - When set to false, disables connection pooling for the pool
+     - ``true`` (enabled)
+   * - dataverse.db.statement-cache-size
+     - Caching is enabled when set to a positive non-zero value (for example, 10)
+     - ``0``
+   * - dataverse.db.match-connections
+     - Turns connection matching for the pool on or off
+     - ``true``
+   * - dataverse.db.max-connection-usage-count
+     - Connections will be reused by the pool for the specified number of times, after which they will be closed.
+     - ``0`` (disabled)
+   * - dataverse.db.statement-leak-timeout-in-seconds
+     - Specifiy timeout when statements should be considered to be "leaked"
+     - ``0`` (disabled)
+   * - dataverse.db.statement-leak-reclaim
+     - If enabled, leaked statement will be reclaimed by the pool after statement leak timeout occurs
+     - ``false``
+   * - dataverse.db.statement-cache-type
+     -
+     -
+   * - dataverse.db.slow-query-threshold-in-seconds
+     - SQL queries that exceed this time in seconds will be logged.
+     - ``-1`` (disabled)
+   * - dataverse.db.log-jdbc-calls
+     - When set to true, all JDBC calls will be logged allowing tracing of all JDBC interactions including SQL
+     - ``false``
+
+
+
+
 File Storage: Using a Local Filesystem and/or Swift and/or object stores
 ------------------------------------------------------------------------
 
@@ -1372,57 +1514,6 @@ dataverse.auth.password-reset-timeout-in-minutes
 ++++++++++++++++++++++++++++++++++++++++++++++++
 
 Users have 60 minutes to change their passwords by default. You can adjust this value here.
-
-dataverse.db.name
-+++++++++++++++++
-
-The PostgreSQL database name to use for the Dataverse installation.
-
-Defaults to ``dataverse`` (but the installer sets it to ``dvndb``).
-
-Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_DB_NAME``.
-
-dataverse.db.user
-+++++++++++++++++
-
-The PostgreSQL user name to connect with.
-
-Defaults to ``dataverse`` (but the installer sets it to ``dvnapp``).
-
-Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_DB_USER``.
-
-dataverse.db.password
-+++++++++++++++++++++
-
-The PostgreSQL users password to connect with.
-
-Preferrably use a JVM alias, as passwords in environment variables aren't safe.
-
-.. code-block:: shell
-
-  echo "AS_ADMIN_ALIASPASSWORD=change-me-super-secret" > /tmp/password.txt
-  asadmin create-password-alias --passwordfile /tmp/password.txt dataverse.db.password
-  rm /tmp/password.txt
-
-Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_DB_PASSWORD``.
-
-dataverse.db.host
-+++++++++++++++++
-
-The PostgreSQL server to connect to.
-
-Defaults to ``localhost``.
-
-Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_DB_HOST``.
-
-dataverse.db.port
-+++++++++++++++++
-
-The PostgreSQL server port to connect to.
-
-Defaults to ``5432``, the default PostgreSQL port.
-
-Can also be set via *MicroProfile Config API* sources, e.g. the environment variable ``DATAVERSE_DB_PORT``.
 
 dataverse.rserve.host
 +++++++++++++++++++++
