@@ -1340,7 +1340,11 @@ public class DatasetVersion implements Serializable {
     }
 
     public String getCitation(boolean html) {
-        return new DataCitation(this).toString(html);
+        return getCitation(html, false);
+    }
+    
+    public String getCitation(boolean html, boolean anonymized) {
+        return new DataCitation(this).toString(html, anonymized);
     }
     
     public Date getCitationDate() {
