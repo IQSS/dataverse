@@ -363,7 +363,7 @@ public class JsonParser {
     private edu.harvard.iq.dataverse.License parseLicense(String inString) {
         try {
             if (inString != null) {
-                return new edu.harvard.iq.dataverse.License(inString, new URI("https://creativecommons.org/publicdomain/zero/1.0/"), new URI(""), true);
+                return new edu.harvard.iq.dataverse.License(inString, "", new URI("https://creativecommons.org/publicdomain/zero/1.0/"), new URI(""), true);
             }
             return null;
         } catch (URISyntaxException e) {

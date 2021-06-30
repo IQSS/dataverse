@@ -54,6 +54,9 @@ public class License {
     @Column(columnDefinition="TEXT", nullable = false, unique = true)
     private String name;
 
+    @Column(columnDefinition="TEXT")
+    private String shortDescription;
+
     @Column(columnDefinition="TEXT", nullable = false, unique = true)
     private String uri;
 
@@ -72,8 +75,9 @@ public class License {
     public License() {
     }
 
-    public License(String name, URI uri, URI iconUrl, boolean active) {
+    public License(String name, String shortDescription, URI uri, URI iconUrl, boolean active) {
         this.name = name;
+        this.shortDescription = shortDescription;
         this.uri = uri.toASCIIString();
         this.iconUrl = iconUrl.toASCIIString();
         this.active = active;
@@ -116,6 +120,14 @@ public class License {
         }
     }
 
+    public String getShortDescription() {
+        return shortDescription;
+    }
+
+    public void setShortDescription(String shortDescription) {
+        this.shortDescription = shortDescription;
+    }
+
     public void setIconUrl(URI iconUrl) {
         this.iconUrl = iconUrl.toASCIIString();
     }
@@ -149,12 +161,12 @@ public class License {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         License license = (License) o;
-        return active == license.active && id.equals(license.id) && name.equals(license.name) && uri.equals(license.uri) && iconUrl.equals(license.iconUrl);
+        return active == license.active && id.equals(license.id) && name.equals(license.name) && shortDescription.equals(license.shortDescription) && uri.equals(license.uri) && iconUrl.equals(license.iconUrl);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, uri, iconUrl, active);
+        return Objects.hash(id, name, shortDescription, uri, iconUrl, active);
     }
 
     @Override
@@ -162,6 +174,7 @@ public class License {
         return "License{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
+                ", shortDescription='" + shortDescription + '\'' +
                 ", uri=" + uri +
                 ", iconUrl=" + iconUrl +
                 ", active=" + active +

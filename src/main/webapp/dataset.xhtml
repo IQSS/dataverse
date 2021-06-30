@@ -1642,6 +1642,16 @@
                                     </ui:fragment>
                                 </div>
                             </div>
+                            <ui:fragment rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.license}">
+                                <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.license.shortDescription}">
+                                    <label for="metadata_Terms" class="col-sm-3 control-label">
+                                        #{bundle['dataset.publish.terms.description']}
+                                    </label>
+                                    <div class="col-sm-9">
+                                        <h:outputText value="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.shortDescription}"/>
+                                    </div>
+                                </div>
+                            </ui:fragment>
                             <ui:fragment rendered="#{empty DatasetPage.workingVersion.termsOfUseAndAccess.license}">
                                 <div class="form-group" jsf:rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.termsOfUse}">
                                     <label for="metadata_TermsUse" class="col-sm-3 control-label">
