@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.search.ror;
 
 import org.apache.solr.client.solrj.beans.Field;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,11 +24,11 @@ public class RorDto {
     @Field
     private String website;
     @Field("nameAlias")
-    private List<String> nameAliases;
+    private List<String> nameAliases = new ArrayList<>();
     @Field("acronym")
-    private List<String> acronyms;
+    private List<String> acronyms = new ArrayList<>();
     @Field("label")
-    private List<String> labels;
+    private List<String> labels = new ArrayList<>();
 
     public RorDto() {
     }

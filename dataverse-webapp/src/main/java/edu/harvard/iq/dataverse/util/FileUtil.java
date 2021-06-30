@@ -767,6 +767,10 @@ public class FileUtil implements java.io.Serializable {
     }
 
     public static File inputStreamToFile(InputStream inputStream) throws IOException {
+        return inputStreamToFile(inputStream, 1024);
+    }
+
+    public static File inputStreamToFile(InputStream inputStream, int bufferSize) throws IOException {
         if (inputStream == null) {
             logger.info("In inputStreamToFile but inputStream was null! Returning null rather than a File.");
             return null;
@@ -774,7 +778,7 @@ public class FileUtil implements java.io.Serializable {
         File file = File.createTempFile(UUID.randomUUID().toString(), UUID.randomUUID().toString());
         try (OutputStream outputStream = new FileOutputStream(file)) {
             int read = 0;
-            byte[] bytes = new byte[1024];
+            byte[] bytes = new byte[bufferSize];
             while ((read = inputStream.read(bytes)) != -1) {
                 outputStream.write(bytes, 0, read);
             }

@@ -306,6 +306,13 @@ VALUES (3, 'Turkish Agency', 'TUR', 'EURO', 'Turkish Agency', 'EN');
 INSERT INTO grantsuggestion (id, grantagency, grantagencyacronym, fundingprogram, suggestionname, suggestionnamelocale)
 VALUES (4, 'Turkish Agency', 'TUR', 'EURO', 'Turecka Agencja', 'PL');
 
+-------------------- ROR ---------------------
+
+INSERT INTO rordata(id) values (100);
+INSERT INTO rordata_acronym(rordata_id, acronym) values (100, '');
+INSERT INTO rordata_label(rordata_id, code, label) values (100, '', '');
+INSERT INTO rordata_namealias(rordata_id, namealias) values (100, '');
+
 -------------------- Fix sequences --------------------
 
 SELECT setval('authenticateduser_id_seq', COALESCE((SELECT MAX(id)+1 FROM authenticateduser), 1), false);
@@ -333,3 +340,4 @@ SELECT setval('customquestion_id_seq', COALESCE((SELECT MAX(id)+1 FROM customque
 SELECT setval('customquestionvalue_id_seq', COALESCE((SELECT MAX(id)+1 FROM customquestionvalue), 1), false);
 SELECT setval('ingestreport_id_seq', COALESCE((SELECT MAX(id)+1 FROM ingestreport), 1), false);
 SELECT setval('roleassignment_id_seq', COALESCE((SELECT MAX(id)+1 FROM roleassignment), 1), false);
+SELECT setval('rordata_id_seq', COALESCE((SELECT MAX(id)+1 FROM rordata), 1), false);
