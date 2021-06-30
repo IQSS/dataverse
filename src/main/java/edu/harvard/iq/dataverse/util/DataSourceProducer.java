@@ -33,18 +33,37 @@ import javax.sql.DataSource;
         maxPoolSize = 100,
         // "The number of seconds that a physical connection should remain unused in the pool before the connection is closed for a connection pool. "
         // Payara DataSourceDefinitionDeployer default value = 300 (seconds)
-        maxIdleTime = 300)
-// It's possible to add additional properties like this...
-//
-//properties = {
-//    "fish.payara.log-jdbc-calls=true"
-//})
-//
-// ... but at this time we don't think we need any. The full list
-// of properties can be found at https://docs.payara.fish/community/docs/5.2021.4/documentation/payara-server/jdbc/advanced-connection-pool-properties.html#full-list-of-properties
-//
-// All these properties cannot be configured via MPCONFIG as Payara doesn't support this (yet). To be enhanced.
-// See also https://github.com/payara/Payara/issues/5024
+        maxIdleTime = 300,
+
+        // Set more options via MPCONFIG, including defaults where applicable.
+        // TODO: Future versions of Payara (the one following 5.2021.4) will support setting
+        //       integer properties like pool size, idle times, etc in a Payara-propietary way.
+        //       See https://github.com/payara/Payara/pull/5272
+        properties = {
+            // The following options are documented here:
+            // https://docs.payara.fish/community/docs/documentation/payara-server/jdbc/advanced-connection-pool-properties.html
+            "fish.payara.is-connection-validation-required=${MPCONFIG=dataverse.db.is-connection-validation-required:false}",
+            "fish.payara.connection-validation-method=${MPCONFIG=dataverse.db.connection-validation-method}",
+            "fish.payara.validation-table-name=${MPCONFIG=dataverse.db.validation-table-name}",
+            "fish.payara.validation-classname=${MPCONFIG=dataverse.db.validation-classname}",
+            "fish.payara.validate-atmost-once-period-in-seconds=${MPCONFIG=dataverse.db.validate-atmost-once-period-in-seconds:0}",
+            "fish.payara.connection-leak-timeout-in-seconds=${MPCONFIG=dataverse.db.connection-leak-timeout-in-seconds:0}",
+            "fish.payara.connection-leak-reclaim=${MPCONFIG=dataverse.db.connection-leak-reclaim:false}",
+            "fish.payara.connection-creation-retry-attempts=${MPCONFIG=dataverse.db.connection-creation-retry-attempts:0}",
+            "fish.payara.connection-creation-retry-interval-in-seconds=${MPCONFIG=dataverse.db.connection-creation-retry-interval-in-seconds:10}",
+            "fish.payara.statement-timeout-in-seconds=${MPCONFIG=dataverse.db.statement-timeout-in-seconds:-1}",
+            "fish.payara.lazy-connection-enlistment=${MPCONFIG=dataverse.db.lazy-connection-enlistment:false}",
+            "fish.payara.lazy-connection-association=${MPCONFIG=dataverse.db.lazy-connection-association:false}",
+            "fish.payara.pooling=${MPCONFIG=dataverse.db.pooling:true}",
+            "fish.payara.statement-cache-size=${MPCONFIG=dataverse.db.statement-cache-size:0}",
+            "fish.payara.match-connections=${MPCONFIG=dataverse.db.match-connections:true}",
+            "fish.payara.max-connection-usage-count=${MPCONFIG=dataverse.db.max-connection-usage-count:0}",
+            "fish.payara.statement-leak-timeout-in-seconds=${MPCONFIG=dataverse.db.statement-leak-timeout-in-seconds:0}",
+            "fish.payara.statement-leak-reclaim=${MPCONFIG=dataverse.db.statement-leak-reclaim:false}",
+            "fish.payara.statement-cache-type=${MPCONFIG=dataverse.db.statement-cache-type}",
+            "fish.payara.slow-query-threshold-in-seconds=${MPCONFIG=dataverse.db.slow-query-threshold-in-seconds:-1}",
+            "fish.payara.log-jdbc-calls=${MPCONFIG=dataverse.db.log-jdbc-calls:false}"
+        })
 public class DataSourceProducer {
 
     @Resource(lookup = "java:app/jdbc/dataverse")
