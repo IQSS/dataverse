@@ -63,6 +63,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -5485,4 +5487,67 @@ public class DatasetPage implements java.io.Serializable {
 
         return dataFile.getDeleted();
     }
+    
+    public Embargo getSelectionEmbargo() {
+        return selectionEmbargo;
+    }
+
+    public void setSelectionEmbargo(Embargo selectionEmbargo) {
+        this.selectionEmbargo = selectionEmbargo;
+    }
+
+    private Embargo selectionEmbargo = new Embargo();
+    
+    public Date today() {
+        return Date.from(Instant.now());
+    }
+    
+    public Date getMaxDate() {
+        String months = settingsWrapper.getValueForKey(SettingsServiceBean.Key.MaxEmbargoDurationInMonths);
+        Long maxMonths = null;
+        if (months != null) {
+            try {
+                maxMonths = Long.parseLong(months);
+            } catch (NumberFormatException nfe) {
+                logger.warning("Cant interpret :MaxEmbargoDurationInMonths as a long");
+            }
+        }
+
+        if (maxMonths != null) {
+            if (maxMonths == -1) {
+                maxMonths = Long.MAX_VALUE;
+                return Date.from((LocalDate.now().plusMonths(maxMonths)).atStartOfDay()
+                        .atZone(java.time.ZoneId.systemDefault()).toInstant());
+            }
+        }
+        return null;
+    }
+    
+    public String saveEmbargo() {
+        if (workingVersion.isReleased()) {
+            refreshSelectedFiles(selectedFiles);
+        }
+        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+            if (selectedFiles != null && selectedFiles.size() > 0) {
+                for (FileMetadata fm : selectedFiles) {
+                    if (fm.getDataFile().equals(fmd.getDataFile())) {
+                        fmd.getDataFile().setEmbargo(selectionEmbargo);
+                    }
+                }
+            }
+        }
+        // success message:
+        String successMessage = BundleUtil.getStringFromBundle("file.assignedEmbargo.success");
+        logger.fine(successMessage);
+        successMessage = successMessage.replace("{0}", "Selected Files");
+        JsfHelper.addFlashMessage(successMessage);
+        selectionEmbargo = new Embargo();
+
+        save();
+        return returnToDraftVersion();
+    }
+    public void clearFileMetadataSelectedForEmbargoPopup() {
+        //TBD
+    }
+    
 }

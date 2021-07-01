@@ -1379,14 +1379,14 @@
                         <p class="help-block">#{bundle['file.editEmbargoDialog.tip']}</p>
                         <div class="form-horizontal" jsf:rendered="#{!(empty DatasetPage.selectedFiles)}">
                             <div class="p-field p-col-12 p-md-4">
-                                <p:outputLabel for="minmax" value="Min-Max"/>
-                                <p:datePicker id="minmax" value="#{calendarView.date11}" mindate="#{calendarView.minDate}"
-                                    maxdate="#{calendarView.maxDate}" readonlyInput="true"/>
+                                <p:outputLabel for="fileEmbargoMenuDS" value="#{bundle['file.editEmbargoDialog.newDate']}"/>
+                                <p:datePicker id="fileEmbargoMenuDS" value="#{DatasetPage.selectionEmbargo.dateAvailable}" mindate="#{DatasetPage.today()}"
+                                    maxdate="#{DatasetPage.maxDate}"/>
                             </div>
                             <div class="col-sm-12">
                                 <p class="help-block">#{bundle['file.editEmbargoDialog.reason.tip']}</p>
                                 <p:inputText id="fileEmbargoAddReason" styleClass="form-control"
-                                    type="text" value="#{DatasetPage.newCategoryName}"
+                                    type="text" value="#{DatasetPage.selectionEmbargo.reason}"
                                     placeholder="#{bundle['file.editEmbargoDialog.newReason']}"
                                     onkeypress="if (event.keyCode == 13) {
                                         return false;
