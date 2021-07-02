@@ -2,7 +2,7 @@ Dataset Semantic Metadata API
 =============================
 
 The OAI_ORE metadata export format represents Dataset metadata using json-ld (see the :doc:`/admin/metadataexport` section). As part of an RDA-supported effort to allow import of Datasets exported as Bags with an included OAI_ORE metadata file, 
-an experimental API has been created that provides a json-ld alternative the the v1.0 API calls to get/set/delete Dataset metadata in the :doc:`/api/native-api`.
+an experimental API has been created that provides a json-ld alternative to the v1.0 API calls to get/set/delete Dataset metadata in the :doc:`/api/native-api`.
 
 You may prefer to work with this API if you are building a tool to import from a Bag/OAI-ORE source or already work with json-ld representations of metadata, or if you prefer the flatter json-ld representation to Dataverse software's json representation (which includes structure related to the metadata blocks involved and the type/multiplicity of the metadata fields.) 
 You may not want to use this API if you need stability and backward compatibility (the 'experimental' designation for this API implies that community feedback is desired and that, in future Dataverse software versions, the API may be modified based on that feedback).
@@ -89,3 +89,15 @@ With curl, this is done by adding the following header:
 .. code-block:: bash
 
   -H 'Content-Type: application/ld+json' 
+  
+  .. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export DATAVERSE_ID=root
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK27U7YBV
+
+  curl -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/ld+json' -X POST $SERVER_URL/api/dataverses/$DATAVERSE_ID/datasets --upload-file dataset-create.jsonld
+
+An example jsonld file is available at :download:`dataset-create.jsonld <../_static/api/dataset-create.jsonld>` 
+  

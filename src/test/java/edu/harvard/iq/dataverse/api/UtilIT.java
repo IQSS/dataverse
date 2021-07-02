@@ -1504,7 +1504,7 @@ public class UtilIT {
                 .get("/api/datasets/" + datasetId);
         return response;
     }
-    
+
     static Response privateUrlGet(Integer datasetId, String apiToken) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)

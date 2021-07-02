@@ -2156,7 +2156,6 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", equalTo("You do not have permission to download this file."));
     }
-    
 
     @Test
     public void testSemanticMetadataAPIs() {
