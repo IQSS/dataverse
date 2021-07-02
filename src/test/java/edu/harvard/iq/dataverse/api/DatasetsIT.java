@@ -2210,7 +2210,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         // Add an additional description (which is multi-valued and compound)
         // Also add new terms of use (single value so would fail with replace false if a
         // value existed)
-        String newDescription = "{\"citation:Description\": {\"dsDescription:Text\": \"New description\", \"https://dataverse.org/schema/core#termsOfUse\": \"New terms\"} \"@context\":{\"citation\": \"https://dataverse.org/schema/citation/\",\"dsDescription\": \"https://dataverse.org/schema/citation/dsDescription#\"}}";
+        String newDescription = "{\"citation:Description\": {\"dsDescription:Text\": \"New description\"}, \"https://dataverse.org/schema/core#termsOfUse\": \"New terms\", \"@context\":{\"citation\": \"https://dataverse.org/schema/citation/\",\"dsDescription\": \"https://dataverse.org/schema/citation/dsDescription#\"}}";
         response = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken, newDescription, false);
         response.then().assertThat().statusCode(OK.getStatusCode());
 
