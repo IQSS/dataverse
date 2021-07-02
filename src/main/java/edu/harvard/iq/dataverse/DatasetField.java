@@ -241,7 +241,7 @@ public class DatasetField implements Serializable {
             return datasetFieldValues.get(0).getValue();
         } else if (controlledVocabularyValues != null && !controlledVocabularyValues.isEmpty()) {
             if (controlledVocabularyValues.get(0) != null){
-                return controlledVocabularyValues.get(0).getStrValue();                
+                return controlledVocabularyValues.get(0).getLocaleStrValue();                
             }
         }
         return null;

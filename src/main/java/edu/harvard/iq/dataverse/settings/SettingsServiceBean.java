@@ -434,7 +434,14 @@ public class SettingsServiceBean {
          * when the Distributor field (citation metadatablock) is set (true)
          */
         ExportInstallationAsDistributorOnlyWhenNotSet,
-
+        /**
+         * A comma-separated list of field type names that should be 'withheld' when
+         * dataset access occurs via a Private Url with Anonymized Access (e.g. to
+         * support anonymized review). A suggested minimum includes author,
+         * datasetContact, and contributor, but additional fields such as depositor, grantNumber, and
+         * publication might also need to be included.
+         */
+        AnonymizedFieldTypeNames,
         /**
          * A Json object containing key/values corresponding the the allowed languages
          * for entering metadata with the key being the human-readable string and the
@@ -443,7 +450,8 @@ public class SettingsServiceBean {
          * metadata exports.) These values are selectable at the Dataverse level and
          * apply to Dataset metadata.
          */
-        MetadataLanguages;
+        MetadataLanguages
+        ;
 
         @Override
         public String toString() {
