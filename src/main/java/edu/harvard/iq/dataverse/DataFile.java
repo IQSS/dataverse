@@ -213,7 +213,7 @@ public class DataFile extends DvObject implements Comparable {
 
     @ManyToOne
     @JoinColumn(name="embargo_id")
-    private edu.harvard.iq.dataverse.Embargo embargo;
+    private Embargo embargo;
 
     public Embargo getEmbargo() {
         return embargo;

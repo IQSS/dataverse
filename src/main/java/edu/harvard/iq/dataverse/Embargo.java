@@ -2,7 +2,8 @@ package edu.harvard.iq.dataverse;
 
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
@@ -28,18 +29,18 @@ public class Embargo {
     private Long id;
 
     @Column(nullable = false)
-    private LocalDateTime dateAvailable;
+    private LocalDate dateAvailable;
 
     @Column(columnDefinition="TEXT")
     private String reason;
 
-    @OneToMany(mappedBy="embargo", cascade={ CascadeType.REMOVE, CascadeType.PERSIST}, orphanRemoval=true)
+    @OneToMany(mappedBy="embargo", cascade={ CascadeType.REMOVE, CascadeType.PERSIST})
     private List<DataFile> dataFiles;
 
     public Embargo(){
     }
 
-    public Embargo(LocalDateTime dateAvailable, String reason) {
+    public Embargo(LocalDate dateAvailable, String reason) {
         this.dateAvailable = dateAvailable;
         this.reason = reason;
     }
@@ -52,11 +53,11 @@ public class Embargo {
         this.id = id;
     }
 
-    public LocalDateTime getDateAvailable() {
+    public LocalDate getDateAvailable() {
         return dateAvailable;
     }
 
-    public void setDateAvailable(LocalDateTime dateAvailable) {
+    public void setDateAvailable(LocalDate dateAvailable) {
         this.dateAvailable = dateAvailable;
     }
 

@@ -1000,3 +1000,13 @@ progress::-webkit-progress-bar {
 progress::-webkit-progress-value {
   background-color:green;
 }
+/*EMBARGO*/
+.ui-datepicker {
+  z-index: 100001!important;
+}
+.embargo {
+  color: green;
+  margin-left:10px;
+}
+}
+

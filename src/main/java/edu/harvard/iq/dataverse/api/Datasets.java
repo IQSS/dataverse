@@ -90,7 +90,7 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -1138,11 +1138,11 @@ public class Datasets extends AbstractApiBean {
         Embargo embargo = new Embargo();
         embargo.setReason(json.getString("reason"));
 
-        LocalDateTime currentDateTime = LocalDateTime.now();
-        LocalDateTime dateAvailable = LocalDateTime.parse(json.getString("dateAvailable"));
+        LocalDate currentDateTime = LocalDate.now();
+        LocalDate dateAvailable = LocalDate.parse(json.getString("dateAvailable"));
 
         // check :MaxEmbargoDurationInMonths if -1
-        LocalDateTime maxEmbargoDateTime = maxEmbargoDurationInMonths != -1 ? LocalDateTime.now().plusMonths(maxEmbargoDurationInMonths) : null;
+        LocalDate maxEmbargoDateTime = maxEmbargoDurationInMonths != -1 ? LocalDate.now().plusMonths(maxEmbargoDurationInMonths) : null;
         // dateAvailable is not in the past
         if (dateAvailable.isAfter(currentDateTime)){
             embargo.setDateAvailable(dateAvailable);

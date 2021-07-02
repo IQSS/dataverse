@@ -1380,7 +1380,7 @@
                         <div class="form-horizontal" jsf:rendered="#{!(empty DatasetPage.selectedFiles)}">
                             <div class="p-field p-col-12 p-md-4">
                                 <p:outputLabel for="fileEmbargoMenuDS" value="#{bundle['file.editEmbargoDialog.newDate']}"/>
-                                <p:datePicker id="fileEmbargoMenuDS" value="#{DatasetPage.selectionEmbargo.dateAvailable}" mindate="#{DatasetPage.today()}"
+                                <p:datePicker id="fileEmbargoMenuDS" class="embargodatepicker" value="#{DatasetPage.selectionEmbargo.dateAvailable}" mindate="#{DatasetPage.today()}"
                                     maxdate="#{DatasetPage.maxDate}"/>
                             </div>
                             <div class="col-sm-12">

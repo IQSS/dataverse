@@ -235,6 +235,7 @@ public class DatasetPage implements java.io.Serializable {
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
     @Inject DataverseHeaderFragment dataverseHeaderFragment;
+    @Inject EmbargoServiceBean embargoService;
 
     private Dataset dataset = new Dataset();
 
@@ -5498,11 +5499,12 @@ public class DatasetPage implements java.io.Serializable {
 
     private Embargo selectionEmbargo = new Embargo();
     
-    public Date today() {
-        return Date.from(Instant.now());
+    public LocalDate today() {
+        return LocalDate.now();
+        //return Date.from(Instant.now());
     }
     
-    public Date getMaxDate() {
+    public LocalDate getMaxDate() {
         String months = settingsWrapper.getValueForKey(SettingsServiceBean.Key.MaxEmbargoDurationInMonths);
         Long maxMonths = null;
         if (months != null) {
@@ -5515,12 +5517,19 @@ public class DatasetPage implements java.io.Serializable {
 
         if (maxMonths != null) {
             if (maxMonths == -1) {
-                maxMonths = Long.MAX_VALUE;
-                return Date.from((LocalDate.now().plusMonths(maxMonths)).atStartOfDay()
-                        .atZone(java.time.ZoneId.systemDefault()).toInstant());
+                maxMonths = 120000l; //Arbitrary cutoff at 10K years - needs to keep maxDate < year 999999999
             }
+            return LocalDate.now().plusMonths(maxMonths);
+            // return Date.from((LocalDate.now().plusMonths(maxMonths)).atStartOfDay()
+            // .atZone(java.time.ZoneId.systemDefault()).toInstant());
+
         }
         return null;
+    }
+
+    public boolean isEmbargoAllowed() {
+        //Need a valid :MaxEmbargoDurationInMonths setting to allow embargoes
+        return getMaxDate()!=null;
     }
     
     public String saveEmbargo() {
@@ -5531,7 +5540,15 @@ public class DatasetPage implements java.io.Serializable {
             if (selectedFiles != null && selectedFiles.size() > 0) {
                 for (FileMetadata fm : selectedFiles) {
                     if (fm.getDataFile().equals(fmd.getDataFile())) {
+                        Embargo emb=fmd.getDataFile().getEmbargo();
+                        logger.info("Before: " +emb.getDataFiles().size());
+                        emb.getDataFiles().remove(fmd.getDataFile());
                         fmd.getDataFile().setEmbargo(selectionEmbargo);
+                        if(emb.getDataFiles().isEmpty()) {
+                            //Need to do this after save() below and to track all embargoes that go to zero references during this update????
+                            //embargoService.deleteById(emb.getId());
+                        }
+                        logger.info("After: " +emb.getDataFiles().size());
                     }
                 }
             }

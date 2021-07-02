@@ -9,7 +9,7 @@ import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -145,7 +145,7 @@ public class JsonPrinterTest {
         dataFile.setDataTable(dt);
         dataFile.getDataTable().setOriginalFileName("50by1000.dta");
         Embargo emb = new Embargo();
-        emb.setDateAvailable(LocalDateTime.parse("2021-12-03T10:15:30"));
+        emb.setDateAvailable(LocalDate.parse("2021-12-03"));
         emb.setReason("Some reason");
         dataFile.setEmbargo(emb);
         fmd.setDatasetVersion(dsVersion);
@@ -167,7 +167,7 @@ public class JsonPrinterTest {
         assertEquals(-1, jsonObject.getJsonObject("dataFile").getInt("rootDataFileId"));
         assertEquals("50by1000.dta", jsonObject.getJsonObject("dataFile").getString("originalFileName"));
         assertEquals("Survey", jsonObject.getJsonObject("dataFile").getJsonArray("tabularTags").getString(0));
-        assertEquals("2021-12-03T10:15:30", jsonObject.getJsonObject("dataFile").getJsonObject("embargo").getString("dateAvailable"));
+        assertEquals("2021-12-03", jsonObject.getJsonObject("dataFile").getJsonObject("embargo").getString("dateAvailable"));
         assertEquals("Some reason", jsonObject.getJsonObject("dataFile").getJsonObject("embargo").getString("reason"));
     }
 
