@@ -97,7 +97,7 @@ With curl, this is done by adding the following header:
   export DATAVERSE_ID=root
   export PERSISTENT_IDENTIFIER=doi:10.5072/FK27U7YBV
 
-  curl -H X-Dataverse-key:$API_TOKEN -X POST $SERVER_URL/api/dataverses/$DATAVERSE_ID/datasets --upload-file dataset-create.jsonld
+  curl -H X-Dataverse-key:$API_TOKEN -H 'Content-Type: application/ld+json' -X POST $SERVER_URL/api/dataverses/$DATAVERSE_ID/datasets --upload-file dataset-create.jsonld
 
 An example jsonld file is available at :download:`dataset-create.jsonld <../_static/api/dataset-create.jsonld>` 
   
