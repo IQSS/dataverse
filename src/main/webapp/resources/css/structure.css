@@ -1008,5 +1008,8 @@ progress::-webkit-progress-value {
   color: green;
   margin-left:10px;
 }
+.embargodatepicker {
+	margin-left:10px;
+}
 }
 

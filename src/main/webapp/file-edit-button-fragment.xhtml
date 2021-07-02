@@ -92,7 +92,7 @@
         </li>  
     </ui:fragment> 
     
-    <ui:fragment rendered="#{fileMetadata==null and bean.embargoAllowed}">
+    <ui:fragment rendered="#{fileMetadata==null and bean.embargoAllowed and bean.validEmbargoSelection}">
         <li>
             <p:commandLink      update="@([id$=fileEmbargoPopup])" 
                                 onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
