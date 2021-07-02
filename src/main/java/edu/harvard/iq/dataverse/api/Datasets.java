@@ -714,14 +714,12 @@ public class Datasets extends AbstractApiBean {
     @Path("{id}/metadata/delete")
     @Consumes("application/ld+json, application/json-ld")
     public Response deleteMetadata(String jsonLDBody, @PathParam("id") String id) {
-        logger.info("In delteMetadata");
         try {
             Dataset ds = findDatasetOrDie(id);
             DataverseRequest req = createDataverseRequest(findUserOrDie());
             DatasetVersion dsv = ds.getEditVersion();
             boolean updateDraft = ds.getLatestVersion().isDraft();
             dsv = JSONLDUtil.deleteDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc);
-            logger.info("Updating ver");
             DatasetVersion managedVersion;
             if (updateDraft) {
                 Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
