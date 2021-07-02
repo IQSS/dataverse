@@ -2,12 +2,16 @@
 "citation:Depositor": "Admin, Dataverse",
 "Title": "Test Dataset",
 "Subject": "Computer and Information Science",
+"Creator": {
+  "author:Name": "Admin, Dataverse",
+  "author:Affiliation": "GDCC"
+},
 "Deposit Date": "2020-10-08",
 "citation:Distributor": {
-"distributor:Name": "Demo Dataverse Repository",
-"distributor:Affiliation": "Dataverse Community",
-"distributor:Abbreviation": "GDCC",
-"distributor:URL": "https://dataverse.org/global-dataverse-community-consortium"
+  "distributor:Name": "Demo Dataverse Repository",
+  "distributor:Affiliation": "Dataverse Community",
+  "distributor:Abbreviation": "GDCC",
+  "distributor:URL": "https://dataverse.org/global-dataverse-community-consortium"
 },
 "citation:Contact": {
 "datasetContact:Name": "Admin, Dataverse",
@@ -15,7 +19,7 @@
 "datasetContact:E-mail": "admin@demo.dataverse.org"
 },
 "citation:Description": {
-"dsDescription:Text": "A short description"
+  "dsDescription:Text": "A short description"
 },
 "@id": "doi:10.33564/FK27U7YBV",
 "schema:version": "1.0",
@@ -24,19 +28,15 @@
 "dvcore:fileRequestAccess": false
 },
 "@context": {
-"Creator": "http://purl.org/dc/terms/creator",
-"Deposit Date": "http://purl.org/dc/terms/dateSubmitted",
-"Identifier Scheme": "http://purl.org/spar/datacite/AgentIdentifierScheme",
-"Subject": "http://purl.org/dc/terms/subject",
-"Title": "http://purl.org/dc/terms/title",
-"author": "https://dataverse.org/schema/citation/author#",
-"citation": "https://dataverse.org/schema/citation/",
-"datasetContact": "https://dataverse.org/schema/citation/datasetContact#",
-"dcterms": "http://purl.org/dc/terms/",
-"distributor": "https://dataverse.org/schema/citation/distributor#",
-"dsDescription": "https://dataverse.org/schema/citation/dsDescription#",
-"dvcore": "https://dataverse.org/schema/core#",
-"keyword": "https://dataverse.org/schema/citation/keyword#",
-"ore": "http://www.openarchives.org/ore/terms/",
-"schema": "http://schema.org/"
+  "Creator": "http://purl.org/dc/terms/creator",
+  "Deposit Date": "http://purl.org/dc/terms/dateSubmitted",
+  "Subject": "http://purl.org/dc/terms/subject",
+  "Title": "http://purl.org/dc/terms/title",
+  "author": "https://dataverse.org/schema/citation/author#",
+  "citation": "https://dataverse.org/schema/citation/",
+  "datasetContact": "https://dataverse.org/schema/citation/datasetContact#",
+  "distributor": "https://dataverse.org/schema/citation/distributor#",
+  "dsDescription": "https://dataverse.org/schema/citation/dsDescription#",
+  "dvcore": "https://dataverse.org/schema/core#",
+  "schema": "http://schema.org/"
 }}
