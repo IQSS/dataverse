@@ -3234,8 +3234,28 @@ public class DatasetPage implements java.io.Serializable {
             filesToDelete = this.getSelectedFiles();
         }
 
+        List<Embargo> orphanedEmbargoes = new ArrayList<Embargo>();
+        if (selectedFiles != null && selectedFiles.size() > 0) {
+            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
+                for (FileMetadata fm : selectedFiles) {
+                    if (fm.getDataFile().equals(fmd.getDataFile())) {
+                        Embargo emb=fmd.getDataFile().getEmbargo();
+                        emb.getDataFiles().remove(fmd.getDataFile());
+                        if(emb.getDataFiles().isEmpty()) {
+                            orphanedEmbargoes.add(emb);
+                        }
+                    }
+                }
+            }
+        }
+
         deleteFiles(filesToDelete);
-        return save();
+        String retVal = save();
+        for(Embargo emb: orphanedEmbargoes) {
+            embargoService.deleteById(emb.getId());
+        }
+        return retVal;
+
     }
 
     private void deleteFiles(List<FileMetadata> filesToDelete) {
@@ -5517,12 +5537,9 @@ public class DatasetPage implements java.io.Serializable {
 
         if (maxMonths != null) {
             if (maxMonths == -1) {
-                maxMonths = 120000l; //Arbitrary cutoff at 10K years - needs to keep maxDate < year 999999999
+                maxMonths = 12000l; //Arbitrary cutoff at 1000 years - needs to keep maxDate < year 999999999 and somehwere 1K> x >10K years the datepicker widget stops showing a popup calendar
             }
             return LocalDate.now().plusMonths(maxMonths);
-            // return Date.from((LocalDate.now().plusMonths(maxMonths)).atStartOfDay()
-            // .atZone(java.time.ZoneId.systemDefault()).toInstant());
-
         }
         return null;
     }
@@ -5532,23 +5549,44 @@ public class DatasetPage implements java.io.Serializable {
         return getMaxDate()!=null;
     }
     
+    public boolean isValidEmbargoSelection() {
+        for(FileMetadata fmd: selectedFiles) {
+            if(!fmd.getDataFile().isReleased()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public boolean isEmbargoForWholeSelection() {
+        if(isSuperUser()) {
+            return true;
+        } 
+        for(FileMetadata fmd: selectedFiles) {
+            if(fmd.getDataFile().isReleased()) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
     public String saveEmbargo() {
         if (workingVersion.isReleased()) {
             refreshSelectedFiles(selectedFiles);
         }
-        for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-            if (selectedFiles != null && selectedFiles.size() > 0) {
+        List<Embargo> orphanedEmbargoes = new ArrayList<Embargo>();
+        if (selectedFiles != null && selectedFiles.size() > 0) {
+            for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
                 for (FileMetadata fm : selectedFiles) {
                     if (fm.getDataFile().equals(fmd.getDataFile())) {
                         Embargo emb=fmd.getDataFile().getEmbargo();
-                        logger.info("Before: " +emb.getDataFiles().size());
+                        logger.fine("Before: " +emb.getDataFiles().size());
                         emb.getDataFiles().remove(fmd.getDataFile());
                         fmd.getDataFile().setEmbargo(selectionEmbargo);
                         if(emb.getDataFiles().isEmpty()) {
-                            //Need to do this after save() below and to track all embargoes that go to zero references during this update????
-                            //embargoService.deleteById(emb.getId());
+                            orphanedEmbargoes.add(emb);
                         }
-                        logger.info("After: " +emb.getDataFiles().size());
+                        logger.fine("After: " +emb.getDataFiles().size());
                     }
                 }
             }
@@ -5561,6 +5599,9 @@ public class DatasetPage implements java.io.Serializable {
         selectionEmbargo = new Embargo();
 
         save();
+        for(Embargo emb: orphanedEmbargoes) {
+            embargoService.deleteById(emb.getId());
+        }
         return returnToDraftVersion();
     }
     public void clearFileMetadataSelectedForEmbargoPopup() {
