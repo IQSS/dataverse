@@ -3239,10 +3239,12 @@ public class DatasetPage implements java.io.Serializable {
             for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
                 for (FileMetadata fm : selectedFiles) {
                     if (fm.getDataFile().equals(fmd.getDataFile())) {
-                        Embargo emb=fmd.getDataFile().getEmbargo();
-                        emb.getDataFiles().remove(fmd.getDataFile());
-                        if(emb.getDataFiles().isEmpty()) {
-                            orphanedEmbargoes.add(emb);
+                        Embargo emb = fmd.getDataFile().getEmbargo();
+                        if (emb != null) {
+                            emb.getDataFiles().remove(fmd.getDataFile());
+                            if (emb.getDataFiles().isEmpty()) {
+                                orphanedEmbargoes.add(emb);
+                            }
                         }
                     }
                 }
@@ -5579,14 +5581,16 @@ public class DatasetPage implements java.io.Serializable {
             for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
                 for (FileMetadata fm : selectedFiles) {
                     if (fm.getDataFile().equals(fmd.getDataFile())) {
-                        Embargo emb=fmd.getDataFile().getEmbargo();
-                        logger.fine("Before: " +emb.getDataFiles().size());
-                        emb.getDataFiles().remove(fmd.getDataFile());
-                        fmd.getDataFile().setEmbargo(selectionEmbargo);
-                        if(emb.getDataFiles().isEmpty()) {
-                            orphanedEmbargoes.add(emb);
+                        Embargo emb = fmd.getDataFile().getEmbargo();
+                        if (emb != null) {
+                            logger.fine("Before: " + emb.getDataFiles().size());
+                            emb.getDataFiles().remove(fmd.getDataFile());
+                            fmd.getDataFile().setEmbargo(selectionEmbargo);
+                            if (emb.getDataFiles().isEmpty()) {
+                                orphanedEmbargoes.add(emb);
+                            }
+                            logger.fine("After: " + emb.getDataFiles().size());
                         }
-                        logger.fine("After: " +emb.getDataFiles().size());
                     }
                 }
             }
