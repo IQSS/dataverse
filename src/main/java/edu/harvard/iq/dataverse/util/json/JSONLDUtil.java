@@ -148,11 +148,7 @@ public class JSONLDUtil {
             }
             fieldByTypeMap.put(dsf.getDatasetFieldType(), dsf);
         }
-<<<<<<< HEAD
-        
-=======
 
->>>>>>> refs/heads/IQSS/6497-semantic_api
         TermsOfUseAndAccess terms = (dsv.getTermsOfUseAndAccess()!=null) ? dsv.getTermsOfUseAndAccess().copyTermsOfUseAndAccess() : new TermsOfUseAndAccess();
 
         for (String key : jsonld.keySet()) {
@@ -182,11 +178,7 @@ public class JSONLDUtil {
                     addField(dsf, valArray, dsft, datasetFieldSvc, append);
 
                 } else {
-<<<<<<< HEAD
                     //When migrating, the publication date and version number can be set
-=======
-
->>>>>>> refs/heads/IQSS/6497-semantic_api
                     if (key.equals(JsonLDTerm.schemaOrg("datePublished").getUrl())&& migrating && !append) {
                         dsv.setVersionState(VersionState.RELEASED);
                     } else if (key.equals(JsonLDTerm.schemaOrg("version").getUrl())&& migrating && !append) {
