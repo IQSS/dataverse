@@ -145,13 +145,20 @@ public class SignpostingResources {
         // TODO: support only CC0 now, should add flexible license support when flex-terms or multi-license is ready
         TermsOfUseAndAccess.License license = workingDatasetVersion.getTermsOfUseAndAccess().getLicense();
         String licenseString = "";
-        if (license == null || license == TermsOfUseAndAccess.License.CC0 || license == TermsOfUseAndAccess.License.NONE) {
+        if (license == null || license == TermsOfUseAndAccess.License.CC0) {
             // On the current Dataverse, only None and CC0. In the signposting protocol: cardinality is 1
             licenseString = licJsonObj.getString(TermsOfUseAndAccess.License.CC0.name()) + ";rel=\"license\"";
             valueList.add(licenseString);
-        } else {
-            valueList.add(license.toString());
         }
+        /*
+        else {
+            TODO: when multilicense is merged, should get license link from multilicense
+             Thus the checking thus would not be necessary?
+             Currently, when the License is None, which means bring-your-own-license,
+             Mostly, we will not have a valid URI in the License, so we skip it here despite that signposting requires 1
+             valid URI.
+        }
+        */
 
         String linkset = "<" + systemConfig.getDataverseSiteUrl() + "/api/datasets/:persistentId/versions/"
                 + workingDatasetVersion.getVersionNumber() + "." + workingDatasetVersion.getMinorVersionNumber()
@@ -224,11 +231,18 @@ public class SignpostingResources {
 
         TermsOfUseAndAccess.License license = workingDatasetVersion.getTermsOfUseAndAccess().getLicense();
         String licenseString = "";
-        if (license == TermsOfUseAndAccess.License.CC0 || license == TermsOfUseAndAccess.License.NONE) {
+        if (license == null || license == TermsOfUseAndAccess.License.CC0) {
             licenseString = licJsonObj.getString(TermsOfUseAndAccess.License.CC0.name());
-        } else {
-            licenseString = license.toString();
         }
+        /*
+        else {
+            TODO: when multilicense is merged, should get license link from multilicense
+             Thus the checking would not be necessary?
+             Currently, when the License is None, which means bring-your-own-license,
+             Mostly, we will not have a valid URI in the License, so we skip it here despite that signposting requires 1
+             valid URI.
+        }
+        */
 
         JsonArrayBuilder mediaTypes = Json.createArrayBuilder();
         mediaTypes.add(
@@ -252,15 +266,24 @@ public class SignpostingResources {
                 )
         );
         JsonArrayBuilder linksetJsonObj = Json.createArrayBuilder();
-        JsonObjectBuilder mandatory = jsonObjectBuilder()
-                .add("anchor", landingPage)
-                .add("cite-as", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", ds.getPersistentURL())))
-                .add("type", Json.createArrayBuilder()
-                        .add(jsonObjectBuilder().add("href", "https://schema.org/AboutPage"))
-                        .add(jsonObjectBuilder().add("href", defaultFileTypeValue))
-                        );
 
-//        if (useDefaultFileType) mandatory.add("type", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", defaultFileTypeValue)));
+        JsonObjectBuilder mandatory;
+        if (useDefaultFileType) {
+            mandatory = jsonObjectBuilder()
+                    .add("anchor", landingPage)
+                    .add("cite-as", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", ds.getPersistentURL())))
+                    .add("type", Json.createArrayBuilder()
+                            .add(jsonObjectBuilder().add("href", "https://schema.org/AboutPage"))
+                            .add(jsonObjectBuilder().add("href", defaultFileTypeValue))
+                    );
+        } else {
+            mandatory = jsonObjectBuilder()
+                    .add("anchor", landingPage)
+                    .add("cite-as", Json.createArrayBuilder().add(jsonObjectBuilder().add("href", ds.getPersistentURL())))
+                    .add("type", Json.createArrayBuilder()
+                            .add(jsonObjectBuilder().add("href", "https://schema.org/AboutPage"))
+                    );
+        }
 
         if (authors != null) {
             mandatory.add("author", authors);
