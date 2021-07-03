@@ -31,6 +31,22 @@
         </ui:define>
 
         <ui:define name="body">
+            
+                <style type="text/css">
+                    
+.text-word-wrap {
+    white-space: normal;
+    word-wrap: break-word;
+    word-break: break-all;
+}
+.ui-datatable thead th {
+   white-space: normal;
+    word-wrap: break-word;
+    word-break: break-word;
+   
+}
+                    
+                </style>
             <p:growl id="growl" life="3000" />
             <h:form id="TrsaRegistryListForm">
                 <p:panel header="#{bundle_trsa_registry.ListTrsaRegistryTitle}">
@@ -49,7 +65,8 @@
                                 <h:outputText value="#{bundle_trsa_registry.ListTrsaRegistryTitle_id}"/>
                             </f:facet>
                             <h:outputText value="#{item.id}"/>
-                        </p:column>                        <p:column>
+                        </p:column>
+                        <p:column>
                             <f:facet name="header">
                                 <h:outputText value="#{bundle_trsa_registry.ListTrsaRegistryTitle_installation}"/>
                             </f:facet>
@@ -59,31 +76,36 @@
                             <f:facet name="header">
                                 <h:outputText value="#{bundle_trsa_registry.ListTrsaRegistryTitle_email}"/>
                             </f:facet>
-                            <h:outputText value="#{item.email}"/>
+                            <h:outputText value="#{item.email}" 
+                                          styleClass="text-word-wrap" />
                         </p:column>
                         <p:column>
                             <f:facet name="header">
                                 <h:outputText value="#{bundle_trsa_registry.ListTrsaRegistryTitle_datastoragelocation}"/>
                             </f:facet>
-                            <h:outputText value="#{item.datafileserverurl}"/>
+                            <h:outputText value="#{item.datafileserverurl}" 
+                                          styleClass="text-word-wrap" />
                         </p:column>
                         <p:column>
                             <f:facet name="header">
                                 <h:outputText value="#{bundle_trsa_registry.ListTrsaRegistryTitle_dataaccessinfo}"/>
                             </f:facet>
-                            <h:outputText value="#{item.dataaccessinfo}"/>
+                            <h:outputText value="#{item.dataaccessinfo}"
+                                          styleClass="text-word-wrap" />
                         </p:column>
                         <p:column>
                             <f:facet name="header">
                                 <h:outputText value="#{bundle_trsa_registry.ListTrsaRegistryTitle_notaryserviceurl}"/>
                             </f:facet>
-                            <h:outputText value="#{item.notaryserviceurl}"/>
+                            <h:outputText value="#{item.notaryserviceurl}"
+                                          styleClass="text-word-wrap" />
                         </p:column>
                         <p:column>
                             <f:facet name="header">
                                 <h:outputText value="#{bundle_trsa_registry.ListTrsaRegistryTitle_safeserviceurl}"/>
                             </f:facet>
-                            <h:outputText value="#{item.trsaurl}"/>
+                            <h:outputText value="#{item.trsaurl}"
+                                          styleClass="text-word-wrap" />
                         </p:column>
                         <p:column>
                             <f:facet name="header">
