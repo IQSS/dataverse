@@ -5,7 +5,6 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
-                xmlns:c="http://java.sun.com/jsp/jstl/core"
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs"
 >
@@ -239,9 +238,11 @@
                                     <li role="none" class="divider" jsf:rendered="#{dataverseSession.user.superuser}"></li>
                                     <li role="none" class="logout">
                                         <o:form useRequestURI="true" pt:role="none">
+                                            <f:ajax>
                                             <h:commandLink action="#{dataverseHeaderFragment.logout}" id="lnk_header_logout" role="menuitem">
                                                 <h:outputText value="#{bundle['header.logOut']}" />
                                             </h:commandLink>
+                                            </f:ajax>
                                         </o:form>
                                     </li>
                                 </ul>
