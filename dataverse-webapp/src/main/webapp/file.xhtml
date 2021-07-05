@@ -371,6 +371,8 @@
                                         </div>
                                         <div jsf:rendered="#{FilePage.fileMetadata.termsOfUse.termsOfUseType == termsOfUseTypeEnum.ALL_RIGHTS_RESERVED}">
                                             #{bundle['file.termsOfAccess']}: #{bundle['file.allRightsReserved']}
+                                            <p:graphicImage value="#{FilePage.getOtherTermsIconContent(termsOfUseTypeEnum.ALL_RIGHTS_RESERVED)}" stream="false"
+                                                            width="31" height="31"/>
                                         </div>
                                         <div jsf:rendered="#{FilePage.fileMetadata.termsOfUse.termsOfUseType == termsOfUseTypeEnum.RESTRICTED}">
                                             #{bundle['file.termsOfAccess']}: #{bundle['file.termsOfAccess.restricted']} -
@@ -378,6 +380,8 @@
                                                 rendered="#{FilePage.fileMetadata.termsOfUse.restrictType != restrictTypeEnum.CUSTOM}" />
                                             <h:outputText value="#{FilePage.fileMetadata.termsOfUse.restrictCustomText}"
                                                 rendered="#{FilePage.fileMetadata.termsOfUse.restrictType == restrictTypeEnum.CUSTOM}" />
+                                            <p:graphicImage value="#{FilePage.getOtherTermsIconContent(termsOfUseTypeEnum.RESTRICTED)}" stream="false"
+                                                            width="31" height="31"/>
                                         </div>
                                     </div>
                                 </div>

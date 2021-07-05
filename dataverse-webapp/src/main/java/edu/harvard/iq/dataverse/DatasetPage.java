@@ -49,6 +49,7 @@ import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.control.Either;
@@ -1145,6 +1146,24 @@ public class DatasetPage implements java.io.Serializable {
 
     public Optional<FileTermsOfUse> getTermsOfUseOfFirstFile() {
         return datasetPageFacade.getTermsOfUseOfFirstFile(workingVersion.getId());
+    }
+
+    public StreamedContent getOtherTermsIcon(FileTermsOfUse.TermsOfUseType termsOfUseType) {
+        if(termsOfUseType.equals(FileTermsOfUse.TermsOfUseType.RESTRICTED)) {
+            return DefaultStreamedContent.builder()
+                    .stream(() -> new ByteArrayInputStream(FileUtil.getFileFromResources(
+                            "/images/restrictedaccess.png")))
+                    .build();
+        }
+
+        if(termsOfUseType.equals(FileTermsOfUse.TermsOfUseType.ALL_RIGHTS_RESERVED)) {
+            return DefaultStreamedContent.builder()
+                    .stream(() -> new ByteArrayInputStream(FileUtil.getFileFromResources(
+                            "/images/allrightsreserved.png")))
+                    .build();
+        }
+
+        return null;
     }
 
     public void setReturnToAuthorReason(String returnToAuthorReason) {

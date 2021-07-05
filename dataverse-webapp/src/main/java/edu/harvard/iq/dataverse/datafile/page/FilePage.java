@@ -525,6 +525,24 @@ public class FilePage implements java.io.Serializable {
                            .build());
     }
 
+    public StreamedContent getOtherTermsIconContent(FileTermsOfUse.TermsOfUseType termsOfUseType) {
+        if(termsOfUseType.equals(FileTermsOfUse.TermsOfUseType.RESTRICTED)) {
+            return DefaultStreamedContent.builder()
+                    .stream(() -> new ByteArrayInputStream(FileUtil.getFileFromResources(
+                            "/images/restrictedaccess.png")))
+                    .build();
+        }
+
+        if(termsOfUseType.equals(FileTermsOfUse.TermsOfUseType.ALL_RIGHTS_RESERVED)) {
+            return DefaultStreamedContent.builder()
+                    .stream(() -> new ByteArrayInputStream(FileUtil.getFileFromResources(
+                            "/images/allrightsreserved.png")))
+                    .build();
+        }
+
+        return null;
+    }
+
     private String returnToDatasetOnly(Dataset draftDataset) {
 
         return "/dataset.xhtml?persistentId=" + draftDataset.getGlobalIdString() + "&version=DRAFT" + "&faces-redirect=true";
