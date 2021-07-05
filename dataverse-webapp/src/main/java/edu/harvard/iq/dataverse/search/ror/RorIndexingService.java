@@ -10,10 +10,13 @@ import org.apache.solr.client.solrj.response.UpdateResponse;
 import javax.ejb.Asynchronous;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Service dedicate for indexing ROR data.
@@ -31,8 +34,26 @@ public class RorIndexingService {
     private RorConverter rorConverter;
 
     @Asynchronous
-    public Future<UpdateResponse> indexRorRecordAsync(RorData rorData) {
-        return CompletableFuture.supplyAsync(() -> indexRorRecord(rorConverter.toSolrDto(rorData)));
+    public Future<UpdateResponse> indexRorRecordsAsync(Collection<RorData> rorData) {
+
+        List<RorDto> convertedData = rorData.stream()
+                                            .map(ror -> rorConverter.toSolrDto(ror))
+                                            .collect(Collectors.toList());
+
+        String firstTenFailedRorIds = rorData.stream()
+                                     .map(RorData::getRorId)
+                                     .limit(10)
+                                     .collect(Collectors.joining(","));
+
+        CompletableFuture<UpdateResponse> updateResult = CompletableFuture.supplyAsync(() -> {
+            Try.of(() -> solrServer.addBeans(convertedData))
+               .onFailure(throwable -> logger.log(Level.WARNING, "Unable to add ror records with ror ids: " + firstTenFailedRorIds +
+                       "; With record count of " + convertedData.size(), throwable));
+
+            return Try.of(() -> solrServer.commit())
+                      .getOrElseThrow(throwable -> new IllegalStateException("Unable to commit ror data to solr.", throwable));
+        });
+        return updateResult;
     }
 
     public UpdateResponse indexRorRecord(RorDto rorData) {

@@ -62,7 +62,6 @@ public class RorDataApi extends AbstractApiBean{
             return wrappedResponse.getResponse();
         }
 
-
         File file;
         RorDataService.UpdateResult result;
         try {
@@ -78,7 +77,7 @@ public class RorDataApi extends AbstractApiBean{
             close(inputStream);
         }
 
-        result.getSavedRorData().forEach(rorData -> rorIndexingService.indexRorRecordAsync(rorData));
+        rorIndexingService.indexRorRecordsAsync(result.getSavedRorData());
         return Response.ok(new RorDataResponse(result.getTotal(), result.getStats())).build();
     }
 
