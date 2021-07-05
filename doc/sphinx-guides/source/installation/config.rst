@@ -1202,6 +1202,15 @@ You can set the value of "#THIS PAGE#" to the URL of your Dataverse homepage, or
 
 ``ShibPassiveLoginEnabled=true``
 
+ShibAttributeCharacterSetConversionEnabled
++++++++++++++++++++++++++++++++++++++++++++
+
+It seems that the Glassfish application server will interpret all Shibboleth attributes that come through AJP as ISO-8859-1, even if they where originally UTF-8.
+To circumvent that, we re-encode all received Shibboleth attributes manually as UTF-8 by default. 
+In the case you get garbled characters in Shibboleth-supplied fields (e.g. given name, surname, affiliation), you can disable this behaviour by setting ``ShibAttributeCharacterSetConversionEnabled`` to false:
+
+``ShibAttributeCharacterSetConversionEnabled=false``
+
 .. _:PublicInstall:
 
 PublicInstall

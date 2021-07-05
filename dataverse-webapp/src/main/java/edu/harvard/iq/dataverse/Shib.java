@@ -18,6 +18,8 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -38,6 +40,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -69,6 +72,8 @@ public class Shib implements java.io.Serializable {
     private SettingsWrapper settingsWrapper;
     @Inject
     private SystemConfig systemConfig;
+    @Inject
+    private SettingsServiceBean settingsService;
 
     @Inject
     private ConsentService consentService;
@@ -410,6 +415,9 @@ public class Shib implements java.io.Serializable {
         Object attribute = request.getAttribute(key);
         if (attribute != null) {
             String attributeValue = attribute.toString();
+            if(settingsService.isTrueForKey(Key.ShibAttributeCharacterSetConversionEnabled)) {
+                attributeValue = new String(attributeValue.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+            }
             String trimmedValue = attributeValue.trim();
             if (!trimmedValue.isEmpty()) {
                 logger.debug("The SAML assertion for \"" + key + "\" (optional) was \"" + attributeValue + "\" and was trimmed to \"" + trimmedValue + "\".");
@@ -446,6 +454,9 @@ public class Shib implements java.io.Serializable {
         String attributeValue = attribute.toString();
         if (attributeValue.isEmpty()) {
             throw new Exception(key + " was empty");
+        }
+        if(settingsService.isTrueForKey(Key.ShibAttributeCharacterSetConversionEnabled)) {
+            attributeValue = new String(attributeValue.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
         }
         String trimmedValue = attributeValue.trim();
         logger.debug("The SAML assertion for \"" + key + "\" (required) was \"" + attributeValue + "\" and was trimmed to \"" + trimmedValue + "\".");

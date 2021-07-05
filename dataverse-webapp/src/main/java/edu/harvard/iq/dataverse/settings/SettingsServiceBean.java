@@ -288,6 +288,10 @@ public class SettingsServiceBean {
          */
         ShibPassiveLoginEnabled,
         /**
+         * Convert Shibboleth AJP attributes from ISO-8859-1 to UTF-8
+         */
+        ShibAttributeCharacterSetConversionEnabled,
+        /**
          * Whether Export should exclude FieldType.EMAIL
          */
         ExcludeEmailFromExport,
