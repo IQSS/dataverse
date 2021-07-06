@@ -69,13 +69,41 @@ else
 
     cat /tmp/harvestedidentifiers.tmp | sed 's:\\:\\\\:g' | while read howmany dataset storageidentifier
     do
-	PG_QUERY_SI=`printf "${PG_QUERY_FIX_1}" $dataset "$storageidentifier"`
+	# Harvard prod. db had a few harvested storage identifiers consisting of a single space (" "),
+	# which would confuse the shell. Extremely unlikely to be found in any other installation.
+	if [[ "x${storageidentifier}" = "x" ]]
+	then
+		storageidentifier=" "
+	fi
 
+	PG_QUERY_SI=`printf "${PG_QUERY_FIX_1}" $dataset "$storageidentifier"`
 	${PSQL_EXEC} -h ${pg_host} -U ${pg_user} -d ${pg_db} -tA -F ' ' -c "${PG_QUERY_SI}"
     done 
 
     echo "... done."
-    echo 
+    echo
+
+    echo -n "Let's confirm that all these dupes have been fixed... "
+    ${PSQL_EXEC} -h ${pg_host} -U ${pg_user} -d ${pg_db} -tA -F ' ' -c "${PG_QUERY_1}" |
+	uniq -c | 
+	awk '{if ($1 > 1) print $0}' | sort -u > /tmp/harvestedidentifiers.tmp
+
+    NUM_CONFIRMED=`cat /tmp/harvestedidentifiers.tmp | wc -l`
+
+    if [ $NUM_CONFIRMED == 0 ]
+    then
+	echo "Looks good."
+	echo 
+    else
+	echo "Oops!"
+	echo "Unfortunately, the script failed to fix some of the harvested duplicates."
+	echo "Please send the contents of the file /tmp/harvestedidentifiers.tmp"
+	echo "to Dataverse support at support@dataverse.org."
+	echo "Apologies for the extra trouble..."
+	echo
+	exit 1
+    fi    
+
 fi
 
 
