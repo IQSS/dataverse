@@ -195,6 +195,14 @@
         <ui:fragment rendered="#{datasetVersionsTab.versionsDifferenceForDialog.isNotEmpty()}">
             <div id="version-title"
                  class="margin-bottom-half">#{datasetVersionsTab.versionsDifferenceForDialog.newVersion.title}</div>
+
+            <div id="files-section-hidden-msg" jsf:rendered="#{datasetVersionsTab.isUserUnderEmbargo()}"
+                 class="margin-bottom margin-top">
+                <h:outputFormat value="#{bundle['file.viewDiffDialog.fileAndTerms.embargoed']}">
+                    <f:param value="#{datasetVersionsTab.getEmbargoDateForDisplay()}"/>
+                </h:outputFormat>
+            </div>
+
             <div id="version-details-block" class=" clearfix margin-bottom-half">
                 <div class="pull-left">
                     &#160;
@@ -415,16 +423,24 @@
                     </p:column>
                 </p:dataTable>
             </div>
-
         </ui:fragment>
+
         <ui:fragment rendered="#{datasetVersionsTab.versionsDifferenceForDialog.isEmpty()}">
-            <p class="help-block">
+            <p class="help-block" jsf:rendered="#{!datasetVersionsTab.isUserUnderEmbargo()}">
                 <h:outputFormat value="#{bundle['file.viewDiffDialog.dialog.noDiff']}">
                     <f:param value="#{datasetVersionsTab.versionsDifferenceForDialog.originalVersion.semanticVersion}"/>
                     <f:param value="#{datasetVersionsTab.versionsDifferenceForDialog.newVersion.semanticVersion}"/>
                 </h:outputFormat>
             </p>
+
+            <div id="empty-files-section-hidden-msg" jsf:rendered="#{datasetVersionsTab.isUserUnderEmbargo()}"
+                 class="margin-bottom margin-top">
+                <h:outputFormat value="#{bundle['file.viewDiffDialog.fileAndTerms.embargoed']}">
+                    <f:param value="#{datasetVersionsTab.getEmbargoDateForDisplay()}"/>
+                </h:outputFormat>
+            </div>
         </ui:fragment>
+
         <div class="button-block margin-bottom">
             <p:commandButton value="#{bundle.done}" onclick="PF('detailsBlocks').hide();" type="button"/>
         </div>

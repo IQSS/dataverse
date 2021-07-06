@@ -53,107 +53,20 @@ public final class DatasetVersionDifference {
     // -------------------- CONSTRUCTORS --------------------
 
     public DatasetVersionDifference(DatasetVersion newVersion, DatasetVersion originalVersion) {
+        this(newVersion, originalVersion, true);
+    }
+
+    public DatasetVersionDifference(DatasetVersion newVersion, DatasetVersion originalVersion, boolean includeFileDifferences) {
         this.originalVersion = originalVersion;
         this.newVersion = newVersion;
-        //Compare Data
 
         // metadata field difference
-        sortDatasetFields(newVersion.getDatasetFields());
-        sortDatasetFields(originalVersion.getDatasetFields());
-
-        Set<DatasetFieldType> originalDatasetFieldTypes = extractDatasetFieldTypes(originalVersion);
-        Set<DatasetFieldType> newDatasetFieldTypes = extractDatasetFieldTypes(newVersion);
-
-        for (DatasetFieldType inBothVersionsFieldType : SetUtils.intersection(originalDatasetFieldTypes,
-                                                                              newDatasetFieldTypes)) {
-            List<DatasetField> originalDatasetFields = extractFieldsWithType(originalVersion.getDatasetFields(),
-                                                                             inBothVersionsFieldType);
-            List<DatasetField> newDatasetFields = extractFieldsWithType(newVersion.getDatasetFields(),
-                                                                        inBothVersionsFieldType);
-
-            updateSameFieldTypesSummary(originalDatasetFields, newDatasetFields);
-        }
-
-        for (DatasetFieldType removedFieldType : SetUtils.difference(originalDatasetFieldTypes, newDatasetFieldTypes)) {
-            List<DatasetField> originalDatasetField = extractFieldsWithType(originalVersion.getDatasetFields(),
-                                                                            removedFieldType);
-            if (originalDatasetField.stream().anyMatch(dsf -> !dsf.isEmpty())) {
-
-                int valuesCount = originalDatasetField.stream()
-                        .mapToInt(this::extractFieldValuesCount)
-                        .sum();
-
-                updateBlockSummary(originalDatasetField.get(0).getDatasetFieldType().getMetadataBlock(),
-                                   0,
-                                   valuesCount,
-                                   0);
-
-                addToSummary(originalDatasetField, Lists.newArrayList(),
-                             originalDatasetField.get(0).getDatasetFieldType());
-            }
-        }
-
-        for (DatasetFieldType addedFieldType : SetUtils.difference(newDatasetFieldTypes, originalDatasetFieldTypes)) {
-            List<DatasetField> newDatasetField = extractFieldsWithType(newVersion.getDatasetFields(), addedFieldType);
-            if (newDatasetField.stream().anyMatch(dsf -> !dsf.isEmpty())) {
-
-                int valuesCount = newDatasetField.stream()
-                        .mapToInt(this::extractFieldValuesCount)
-                        .sum();
-
-                updateBlockSummary(newDatasetField.get(0).getDatasetFieldType().getMetadataBlock(), valuesCount, 0, 0);
-                addToSummary(Lists.newArrayList(), newDatasetField,
-                             newDatasetField.get(0).getDatasetFieldType());
-            }
-        }
-
-        //Sort within blocks by datasetfieldtype dispaly order then....
-        //sort via metadatablock order - citation first...
-        for (List<DatasetFieldDiff> blockList : detailDataByBlock) {
-            Collections.sort(blockList,
-                             Comparator.comparing(x -> x.getFieldType().getDisplayOrder()));
-        }
-        Collections.sort(detailDataByBlock,
-                         Comparator.comparing(x -> x.get(0).getFieldType().getMetadataBlock().getId()));
-
+        calculateMetadataFieldDifferences(newVersion, originalVersion);
 
         // files difference
-
-        for (FileMetadata fmdo : originalVersion.getFileMetadatas()) {
-            boolean deleted = true;
-            for (FileMetadata fmdn : newVersion.getFileMetadatas()) {
-                if (fmdo.getDataFile().equals(fmdn.getDataFile())) {
-                    deleted = false;
-                    if (!areFilesMetadataEqual(fmdo, fmdn)) {
-                        changedFileMetadata.add(new FileMetadataDiff(fmdo, fmdn));
-                    }
-                    if (!areFileTermsEqual(fmdo.getTermsOfUse(), fmdn.getTermsOfUse())) {
-                        changedFileTerms.add(new TermsOfUseDiff(fmdo.getTermsOfUse(), fmdn.getTermsOfUse(), fmdo.getDataFile()));
-                    }
-
-                    break;
-                }
-            }
-            if (deleted) {
-                removedFiles.add(fmdo);
-            }
+        if(includeFileDifferences) {
+            calculateFileDifferences(newVersion, originalVersion);
         }
-        for (FileMetadata fmdn : newVersion.getFileMetadatas()) {
-            boolean added = true;
-            for (FileMetadata fmdo : originalVersion.getFileMetadatas()) {
-                if (fmdo.getDataFile().equals(fmdn.getDataFile())) {
-                    added = false;
-                    break;
-                }
-            }
-            if (added) {
-                addedFiles.add(fmdn);
-            }
-        }
-        findReplacedFilesAmongAddedAndRemoved();
-        initDatasetFilesDifferencesList();
-
-        fileNote = buildFileNote();
     }
 
     private void sortDatasetFields(List<DatasetField> fields) {
@@ -378,6 +291,104 @@ public final class DatasetVersionDifference {
     }
 
     // -------------------- PRIVATE --------------------
+
+    private void calculateMetadataFieldDifferences(DatasetVersion newVersion, DatasetVersion originalVersion) {
+        sortDatasetFields(newVersion.getDatasetFields());
+        sortDatasetFields(originalVersion.getDatasetFields());
+
+        Set<DatasetFieldType> originalDatasetFieldTypes = extractDatasetFieldTypes(originalVersion);
+        Set<DatasetFieldType> newDatasetFieldTypes = extractDatasetFieldTypes(newVersion);
+
+        for (DatasetFieldType inBothVersionsFieldType : SetUtils.intersection(originalDatasetFieldTypes,
+                newDatasetFieldTypes)) {
+            List<DatasetField> originalDatasetFields = extractFieldsWithType(originalVersion.getDatasetFields(),
+                    inBothVersionsFieldType);
+            List<DatasetField> newDatasetFields = extractFieldsWithType(newVersion.getDatasetFields(),
+                    inBothVersionsFieldType);
+
+            updateSameFieldTypesSummary(originalDatasetFields, newDatasetFields);
+        }
+
+        for (DatasetFieldType removedFieldType : SetUtils.difference(originalDatasetFieldTypes, newDatasetFieldTypes)) {
+            List<DatasetField> originalDatasetField = extractFieldsWithType(originalVersion.getDatasetFields(),
+                    removedFieldType);
+            if (originalDatasetField.stream().anyMatch(dsf -> !dsf.isEmpty())) {
+
+                int valuesCount = originalDatasetField.stream()
+                        .mapToInt(this::extractFieldValuesCount)
+                        .sum();
+
+                updateBlockSummary(originalDatasetField.get(0).getDatasetFieldType().getMetadataBlock(),
+                        0,
+                        valuesCount,
+                        0);
+
+                addToSummary(originalDatasetField, Lists.newArrayList(),
+                        originalDatasetField.get(0).getDatasetFieldType());
+            }
+        }
+
+        for (DatasetFieldType addedFieldType : SetUtils.difference(newDatasetFieldTypes, originalDatasetFieldTypes)) {
+            List<DatasetField> newDatasetField = extractFieldsWithType(newVersion.getDatasetFields(), addedFieldType);
+            if (newDatasetField.stream().anyMatch(dsf -> !dsf.isEmpty())) {
+
+                int valuesCount = newDatasetField.stream()
+                        .mapToInt(this::extractFieldValuesCount)
+                        .sum();
+
+                updateBlockSummary(newDatasetField.get(0).getDatasetFieldType().getMetadataBlock(), valuesCount, 0, 0);
+                addToSummary(Lists.newArrayList(), newDatasetField,
+                        newDatasetField.get(0).getDatasetFieldType());
+            }
+        }
+
+        //Sort within blocks by datasetfieldtype dispaly order then....
+        //sort via metadatablock order - citation first...
+        for (List<DatasetFieldDiff> blockList : detailDataByBlock) {
+            Collections.sort(blockList,
+                    Comparator.comparing(x -> x.getFieldType().getDisplayOrder()));
+        }
+        Collections.sort(detailDataByBlock,
+                Comparator.comparing(x -> x.get(0).getFieldType().getMetadataBlock().getId()));
+    }
+
+    private void calculateFileDifferences(DatasetVersion newVersion, DatasetVersion originalVersion) {
+        for (FileMetadata fmdo : originalVersion.getFileMetadatas()) {
+            boolean deleted = true;
+            for (FileMetadata fmdn : newVersion.getFileMetadatas()) {
+                if (fmdo.getDataFile().equals(fmdn.getDataFile())) {
+                    deleted = false;
+                    if (!areFilesMetadataEqual(fmdo, fmdn)) {
+                        changedFileMetadata.add(new FileMetadataDiff(fmdo, fmdn));
+                    }
+                    if (!areFileTermsEqual(fmdo.getTermsOfUse(), fmdn.getTermsOfUse())) {
+                        changedFileTerms.add(new TermsOfUseDiff(fmdo.getTermsOfUse(), fmdn.getTermsOfUse(), fmdo.getDataFile()));
+                    }
+
+                    break;
+                }
+            }
+            if (deleted) {
+                removedFiles.add(fmdo);
+            }
+        }
+        for (FileMetadata fmdn : newVersion.getFileMetadatas()) {
+            boolean added = true;
+            for (FileMetadata fmdo : originalVersion.getFileMetadatas()) {
+                if (fmdo.getDataFile().equals(fmdn.getDataFile())) {
+                    added = false;
+                    break;
+                }
+            }
+            if (added) {
+                addedFiles.add(fmdn);
+            }
+        }
+        findReplacedFilesAmongAddedAndRemoved();
+        initDatasetFilesDifferencesList();
+
+        fileNote = buildFileNote();
+    }
 
     private Set<DatasetFieldType> extractDatasetFieldTypes(DatasetVersion datasetVersion) {
         Set<DatasetFieldType> datasetFieldTypes = new HashSet<>();

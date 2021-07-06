@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean
 import edu.harvard.iq.dataverse.dataset.difference.DatasetVersionDifference;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.primefaces.PrimeFaces;
 
 import javax.ejb.EJB;
@@ -14,6 +15,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +28,9 @@ public class DatasetVersionsTab implements Serializable {
     
     @Inject
     private PermissionsWrapper permissionsWrapper;
+
+    @Inject
+    private SettingsServiceBean settingsService;
 
     private Dataset dataset;
     private List<DatasetVersion> datasetVersions = new ArrayList<>();
@@ -108,12 +113,21 @@ public class DatasetVersionsTab implements Serializable {
                 oldVersion = selectedVersions.get(0).getVersion();
                 newVersion = selectedVersions.get(1).getVersion();
             }
-            updateVersionDiffForDialog(new DatasetVersionDifference(newVersion, oldVersion));
+            updateVersionDiffForDialog(new DatasetVersionDifference(newVersion, oldVersion, !isUserUnderEmbargo()));
         }
     }
     
     public void updateVersionDiffForDialog(DatasetVersionDifference difference) {
         versionsDifferenceForDialog = difference;
+    }
+
+    public boolean isUserUnderEmbargo() {
+        return dataset.hasActiveEmbargo() && !permissionsWrapper.canViewUnpublishedDataset(dataset);
+    }
+
+    public String getEmbargoDateForDisplay() {
+        SimpleDateFormat format = new SimpleDateFormat(settingsService.getValueForKey(SettingsServiceBean.Key.DefaultDateFormat));
+        return format.format(dataset.getEmbargoDate().getOrNull());
     }
     
     // -------------------- PRIVATE --------------------
@@ -157,7 +171,7 @@ public class DatasetVersionsTab implements Serializable {
         if (previousVersion == null) {
             return null;
         }
-        return new DatasetVersionDifference(datasetVersions.get(datasetVersionIndex), previousVersion);
+        return new DatasetVersionDifference(datasetVersions.get(datasetVersionIndex), previousVersion, !isUserUnderEmbargo());
     }
     
     private DatasetVersion retrieveNextComparableVersion(int datasetVersionIndex) {

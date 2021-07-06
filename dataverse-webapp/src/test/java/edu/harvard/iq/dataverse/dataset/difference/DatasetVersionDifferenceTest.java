@@ -309,6 +309,43 @@ public class DatasetVersionDifferenceTest {
     }
 
     @Test
+    public void create_WITH_REPLACED_FILE_filesDiffNotIncluded() throws IOException, JsonParseException {
+
+        // given
+
+        DataFile dataFileToReplace = MocksFactory.makeDataFile();
+        dataFileToReplace.getFileMetadatas().clear();
+        DataFile dataFileReplacement = MocksFactory.makeDataFile();
+        dataFileReplacement.setPreviousDataFileId(dataFileToReplace.getId());
+        dataFileReplacement.getFileMetadatas().clear();
+
+        DatasetVersion v1 = parseDatasetVersionFromClasspath("/json/complete-dataset-version.json");
+        v1.setDataset(dataset);
+
+        FileMetadata v1FileMetadata = buildFileMetadata(12L, "toreplace.txt", 2, dataFileToReplace);
+
+        v1.addFileMetadata(v1FileMetadata);
+
+
+        DatasetVersion v2 = parseDatasetVersionFromClasspath("/json/complete-dataset-version.json");
+        v2.setDataset(dataset);
+
+        FileMetadata v2FileMetadata = buildFileMetadata(23L, "replacementFile.txt", 3, dataFileReplacement);
+
+        v2.addFileMetadata(v2FileMetadata);
+
+
+        // when
+
+        DatasetVersionDifference diff = new DatasetVersionDifference(v2, v1, false);
+
+
+        // then
+        assertEquals(0, diff.getDatasetFilesReplacementList().size());
+        assertTrue(diff.isEmpty());
+    }
+
+    @Test
     public void create_WITH_REMOVED_FILE() throws IOException, JsonParseException {
 
         // given
@@ -366,6 +403,41 @@ public class DatasetVersionDifferenceTest {
         assertThat(diff.getDatasetFilesReplacementList(), is(empty()));
         assertSame(v1, diff.getOriginalVersion());
         assertSame(v2, diff.getNewVersion());
+    }
+
+    @Test
+    public void create_WITH_REMOVED_FILE_filesDiffNotIncluded() throws IOException, JsonParseException {
+
+        // given
+
+        DataFile dataFile1 = MocksFactory.makeDataFile();
+        dataFile1.getFileMetadatas().clear();
+        DataFile dataFile2 = MocksFactory.makeDataFile();
+        dataFile2.getFileMetadatas().clear();
+
+        DatasetVersion v1 = parseDatasetVersionFromClasspath("/json/complete-dataset-version.json");
+        v1.setDataset(dataset);
+
+        FileMetadata v1FileMetadata1 = buildFileMetadata(10L, "firstFile.txt", 0, dataFile1);
+        FileMetadata v1FileMetadata2 = buildFileMetadata(11L, "secondFile.txt", 1, dataFile2);
+
+        v1.addFileMetadata(v1FileMetadata1);
+        v1.addFileMetadata(v1FileMetadata2);
+
+
+        DatasetVersion v2 = parseDatasetVersionFromClasspath("/json/complete-dataset-version.json");
+        v2.setDataset(dataset);
+
+
+        // when
+
+        DatasetVersionDifference diff = new DatasetVersionDifference(v2, v1, false);
+
+
+        // then
+        assertEquals(0, diff.getDatasetFilesDiffList().size());
+        assertEquals(0, diff.getRemovedFiles().size());
+        assertTrue(diff.isEmpty());
     }
 
     @Test
@@ -429,6 +501,41 @@ public class DatasetVersionDifferenceTest {
     }
 
     @Test
+    public void create_WITH_ADDED_FILE_filesDiffNotIncluded() throws IOException, JsonParseException {
+
+        // given
+
+        DataFile dataFile1 = MocksFactory.makeDataFile();
+        dataFile1.getFileMetadatas().clear();
+        DataFile dataFile2 = MocksFactory.makeDataFile();
+        dataFile2.getFileMetadatas().clear();
+
+        DatasetVersion v1 = parseDatasetVersionFromClasspath("/json/complete-dataset-version.json");
+        v1.setDataset(dataset);
+
+
+        DatasetVersion v2 = parseDatasetVersionFromClasspath("/json/complete-dataset-version.json");
+        v2.setDataset(dataset);
+
+        FileMetadata v2FileMetadata1 = buildFileMetadata(10L, "firstFile.txt", 0, dataFile1);
+        FileMetadata v2FileMetadata2 = buildFileMetadata(11L, "secondFile.txt", 1, dataFile2);
+
+        v2.addFileMetadata(v2FileMetadata1);
+        v2.addFileMetadata(v2FileMetadata2);
+
+
+        // when
+
+        DatasetVersionDifference diff = new DatasetVersionDifference(v2, v1, false);
+
+
+        // then
+        assertEquals(0, diff.getDatasetFilesDiffList().size());
+        assertEquals(0, diff.getAddedFiles().size());
+        assertTrue(diff.isEmpty());
+    }
+
+    @Test
     public void create__WITH_CHANGED_FILE_METADATA() throws IOException, JsonParseException {
 
         // given
@@ -487,6 +594,47 @@ public class DatasetVersionDifferenceTest {
         assertThat(diff.getDatasetFilesReplacementList(), is(empty()));
         assertSame(v1, diff.getOriginalVersion());
         assertSame(v2, diff.getNewVersion());
+    }
+
+    @Test
+    public void create__WITH_CHANGED_FILE_METADATA_filesDiffNotIncluded() throws IOException, JsonParseException {
+
+        // given
+
+        DataFile dataFile1 = MocksFactory.makeDataFile();
+        dataFile1.getFileMetadatas().clear();
+        DataFile dataFile2 = MocksFactory.makeDataFile();
+        dataFile2.getFileMetadatas().clear();
+
+        DatasetVersion v1 = parseDatasetVersionFromClasspath("/json/complete-dataset-version.json");
+        v1.setDataset(dataset);
+
+        FileMetadata v1FileMetadata1 = buildFileMetadata(10L, "firstFile.txt", 0, dataFile1);
+        FileMetadata v1FileMetadata2 = buildFileMetadata(11L, "secondFile.txt", 1, dataFile2);
+
+        v1.addFileMetadata(v1FileMetadata1);
+        v1.addFileMetadata(v1FileMetadata2);
+
+
+        DatasetVersion v2 = parseDatasetVersionFromClasspath("/json/complete-dataset-version.json");
+        v2.setDataset(dataset);
+
+        FileMetadata v2FileMetadata1 = buildFileMetadata(10L, "firstFile.txt", 0, dataFile1);
+        FileMetadata v2FileMetadata2 = buildFileMetadata(11L, "secondFile (changed).txt", 1, dataFile2);
+
+        v2.addFileMetadata(v2FileMetadata1);
+        v2.addFileMetadata(v2FileMetadata2);
+
+
+        // when
+
+        DatasetVersionDifference diff = new DatasetVersionDifference(v2, v1, false);
+
+
+        // then
+        assertEquals(0, diff.getDatasetFilesDiffList().size());
+        assertEquals(0, diff.getChangedFileMetadata().size());
+        assertTrue(diff.isEmpty());
     }
 
     @Test
@@ -555,6 +703,52 @@ public class DatasetVersionDifferenceTest {
         assertThat(diff.getDatasetFilesReplacementList(), is(empty()));
         assertSame(v1, diff.getOriginalVersion());
         assertSame(v2, diff.getNewVersion());
+    }
+
+    @Test
+    public void create__WITH_CHANGED_FILE_TERMS_filesDiffNotIncluded() throws IOException, JsonParseException {
+
+        // given
+
+        DataFile dataFile1 = MocksFactory.makeDataFile();
+        dataFile1.getFileMetadatas().clear();
+        DataFile dataFile2 = MocksFactory.makeDataFile();
+        dataFile2.getFileMetadatas().clear();
+
+        DatasetVersion v1 = parseDatasetVersionFromClasspath("/json/complete-dataset-version.json");
+        v1.setDataset(dataset);
+
+        FileMetadata v1FileMetadata1 = buildFileMetadata(10L, "firstFile.txt", 0, dataFile1);
+        FileTermsOfUse v1File1Terms = buildLicenseTermsOfUse(80L, "CCO0", "Public Domain", v1FileMetadata1);
+        FileMetadata v1FileMetadata2 = buildFileMetadata(11L, "secondFile.txt", 1, dataFile2);
+        FileTermsOfUse v1File2Terms = buildLicenseTermsOfUse(81L, "Apache 2.0", "Apache License", v1FileMetadata2);
+
+        v1.addFileMetadata(v1FileMetadata1);
+        v1.addFileMetadata(v1FileMetadata2);
+
+
+        DatasetVersion v2 = parseDatasetVersionFromClasspath("/json/complete-dataset-version.json");
+        v2.setDataset(dataset);
+
+        FileMetadata v2FileMetadata1 = buildFileMetadata(10L, "firstFile.txt", 0, dataFile1);
+        FileTermsOfUse v2File1Terms = buildLicenseTermsOfUse(81L, "Apache 2.0", "Apache License", v2FileMetadata1);
+        FileMetadata v2FileMetadata2 = buildFileMetadata(11L, "secondFile.txt", 1, dataFile2);
+        FileTermsOfUse v2File2Terms = buildRestrictedTermsOfUse(RestrictType.NOT_FOR_REDISTRIBUTION, v2FileMetadata2);
+
+        v2.addFileMetadata(v2FileMetadata1);
+        v2.addFileMetadata(v2FileMetadata2);
+
+
+        // when
+
+        DatasetVersionDifference diff = new DatasetVersionDifference(v2, v1, false);
+
+
+        // then
+
+        List<DatasetFileTermDifferenceItem> termsDiffs = diff.getDatasetFileTermsDiffList();
+        assertEquals(0, termsDiffs.size());
+        assertTrue(diff.isEmpty());
     }
 
     @Test
