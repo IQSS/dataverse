@@ -217,7 +217,7 @@
             <div class="thumbnail-block text-center">
                 <!-- Thumbnail Preview -->
                 <span class="file-thumbnail-preview-img" jsf:rendered="#{!empty fileMetadata.dataFile.id and datasetFilesTab.isThumbnailAvailable(fileMetadata)}"
-                      data-toggle="tooltip" data-placement="top"  data-html="true" data-original-title="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
+                      data-container="body" data-toggle="popover" data-placement="top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34; #{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;">
 
                     <img src="#{datasetFilesTab.getDataFileThumbnailAsBase64(fileMetadata)}"/>
                 </span>
