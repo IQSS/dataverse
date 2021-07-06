@@ -1628,7 +1628,7 @@ public class Access extends AbstractApiBean {
     }
     
 
-    
+    //ToDo - central place to enforce Embargo?
     private boolean isAccessAuthorized(DataFile df, String apiToken) {
     // First, check if the file belongs to a released Dataset version: 
         

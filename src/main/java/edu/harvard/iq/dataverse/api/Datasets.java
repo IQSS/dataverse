@@ -1175,13 +1175,18 @@ public class Datasets extends AbstractApiBean {
 
         //check if files belong to dataset
         if (datasetFiles.containsAll(filesToEmbargo)){
+          //Todo - does this set the embargo before sending a FORBIDDEN Error?
             Long embargoId = embargoService.save(embargo);
             JsonArrayBuilder restrictedFiles = Json.createArrayBuilder();
             for (DataFile datafile : filesToEmbargo){
                 // superuser can overrule an existing embargo, even on released files
+                //Todo - this just avoids changing an embargo but also won't allow changing the embargo for a file in draft
                 if (datafile.getEmbargo() != null && !authenticatedUser.isSuperuser()){
                     restrictedFiles.add(datafile.getId());
                 } else {
+                    
+                    //Todo - does this set the embargo for some files before sending a FORBIDDEN Error?
+                    //Todo - why not use embargo from above vs doing a find here, e.g. why not return the embargo itself above?
                     datafile.setEmbargo(embargoService.findByEmbargoId(embargoId));
                     fileService.save(datafile);
                 }
@@ -1224,11 +1229,14 @@ public class Datasets extends AbstractApiBean {
 
         // client is superadmin or (client has EditDataset permission on these files and files are unreleased)
         // check if files are unreleased(DRAFT?)
+        //ToDo - here and below - check the release status of files and not the dataset state (draft dataset version still can have released files)
         if ((!authenticatedUser.isSuperuser() && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, Objects.requireNonNull(dataset).getOwner()).has(Permission.EditDataset)) {
             return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser or user does not have EditDataset permissions");
         }
 
         // check if embargoes are allowed(:MaxEmbargoDurationInMonths), gets the :MaxEmbargoDurationInMonths setting variable, if 0 or not set(null) return 400
+        //Todo - is 400 right for embargoes not enabled
+        //Todo - handle getting Long for duration in one place (settings getLong method? or is that only in wrapper (view scoped)?
         int maxEmbargoDurationInMonths = 0;
         try {
             maxEmbargoDurationInMonths  = Integer.parseInt(settingsService.get(SettingsServiceBean.Key.MaxEmbargoDurationInMonths.toString()));
@@ -1268,6 +1276,7 @@ public class Datasets extends AbstractApiBean {
                 if (!authenticatedUser.isSuperuser() && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT)){
                     restrictedFiles.add(datafile.getId());
                 } else {
+                    //Todo - as above - should we refuse to unset the embargo on some files in a FORBIDDEN case or do we refuse to act if there are any 'bad' files 
                     datafile.setEmbargo(null);
                     fileService.save(datafile);
                 }

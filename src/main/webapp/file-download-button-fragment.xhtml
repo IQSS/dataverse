@@ -16,11 +16,13 @@
     <li><span class="dropdown-item-text">
             <span class="#{!fileMetadata.restricted ?
                            'glyphicon glyphicon-globe text-success' : (!fileDownloadHelper.canDownloadFile(fileMetadata) ? 'glyphicon glyphicon-lock text-danger' : 'icon-unlock text-success')}"/>
+            
+            <!-- TODO - add Embargo state -->
             <h:outputText 
                 value=" #{!fileMetadata.restricted ? 'Public' : (!fileDownloadHelper.canDownloadFile(fileMetadata) ? bundle['restricted'] : bundle['restrictedaccess'])}"
                 styleClass="#{!fileMetadata.restricted ? 'text-success' : (!fileDownloadHelper.canDownloadFile(fileMetadata) ? 'text-danger' : 'text-success')}"/>
         </span></li>
-
+<!-- TODO - adjust canDownloadFile method to account for embargo? (and only restricting for released files)  -->
     <ui:fragment rendered="#{!fileMetadata.datasetVersion.deaccessioned and !fileDownloadHelper.canDownloadFile(fileMetadata)
                              and fileMetadata.dataFile.owner.fileAccessRequest}">
         <p:outputPanel id="requestPanel" styleClass="iq-dropdown-list-item #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? 'disabled' : ''}"
@@ -47,6 +49,7 @@
     </ui:fragment>
     <!-- END: Request Access Options -->
     
+    <!-- TODO - adjust canDownloadFile method to account for embargo? (and only restricting for released files)  -->
     <!-- CAN DOWNLOAD ACCESS Options -->
     <ui:fragment rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata)}">
         <!-- Download Options -->
@@ -221,6 +224,7 @@
     <li role="presentation" class="clearfix"></li>
     <!-- END: CITATION FILES DOWNLOAD OPTIONS -->
     
+    <!-- TODO - how to restrict for embargo and still allow aux file download when you otherwise can't download the restricted file  -->
     <!-- AUX FILES DOWNLOAD OPTIONS -->
     <ui:fragment rendered="#{not empty auxiliaryFileServiceBean.findAuxiliaryFiles(fileMetadata.dataFile)}">
         <!-- Download Auxiliary Files -->

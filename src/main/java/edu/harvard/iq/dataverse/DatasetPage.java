@@ -3234,11 +3234,13 @@ public class DatasetPage implements java.io.Serializable {
             filesToDelete = this.getSelectedFiles();
         }
 
+        //Remove embargoes that are no longer referenced
+        //Identify which ones are involved here
         List<Embargo> orphanedEmbargoes = new ArrayList<Embargo>();
         if (selectedFiles != null && selectedFiles.size() > 0) {
             for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
                 for (FileMetadata fm : selectedFiles) {
-                    if (fm.getDataFile().equals(fmd.getDataFile())) {
+                    if (fm.getDataFile().equals(fmd.getDataFile()) && !fmd.getDataFile().isReleased()) {
                         Embargo emb = fmd.getDataFile().getEmbargo();
                         if (emb != null) {
                             emb.getDataFiles().remove(fmd.getDataFile());
@@ -3253,6 +3255,7 @@ public class DatasetPage implements java.io.Serializable {
 
         deleteFiles(filesToDelete);
         String retVal = save();
+        //And delete them only after the dataset is updated
         for(Embargo emb: orphanedEmbargoes) {
             embargoService.deleteById(emb.getId());
         }
@@ -5576,21 +5579,25 @@ public class DatasetPage implements java.io.Serializable {
         if (workingVersion.isReleased()) {
             refreshSelectedFiles(selectedFiles);
         }
+        //Todo - add validation and.or separate delete from save of a new embargo
+        if(selectionEmbargo.getDateAvailable()==null && selectionEmbargo.getReason()==null) {
+            selectionEmbargo=null;
+        }
         List<Embargo> orphanedEmbargoes = new ArrayList<Embargo>();
         if (selectedFiles != null && selectedFiles.size() > 0) {
             for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
                 for (FileMetadata fm : selectedFiles) {
-                    if (fm.getDataFile().equals(fmd.getDataFile())) {
+                    if (fm.getDataFile().equals(fmd.getDataFile()) && (isSuperUser()||!fmd.getDataFile().isReleased())) {
                         Embargo emb = fmd.getDataFile().getEmbargo();
                         if (emb != null) {
                             logger.fine("Before: " + emb.getDataFiles().size());
                             emb.getDataFiles().remove(fmd.getDataFile());
-                            fmd.getDataFile().setEmbargo(selectionEmbargo);
                             if (emb.getDataFiles().isEmpty()) {
                                 orphanedEmbargoes.add(emb);
                             }
                             logger.fine("After: " + emb.getDataFiles().size());
                         }
+                        fmd.getDataFile().setEmbargo(selectionEmbargo);
                     }
                 }
             }
