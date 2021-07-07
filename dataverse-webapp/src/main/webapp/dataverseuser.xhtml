@@ -181,7 +181,7 @@
                                                         <o:param rendered="#{not empty DataverseUserPage.getAdditionalMessage(item)}">
                                                             #{bundle['notification.wasSubmittedForReview.contributorMessage.prefix']
                                                                 .concat(" ")
-                                                                .concat(DataverseUserPage.getAdditionalMessage(item))}
+                                                                .concat(DataverseUserPage.getLimitedAdditionalMessage(item))}
                                                         </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
@@ -195,7 +195,7 @@
                                                             <a href="/dataverse/#{item.theObject.getDataset().getOwner().getAlias()}" title="#{item.theObject.getDataset().getOwner().getDisplayName()}">#{item.theObject.getDataset().getOwner().getDisplayName()}</a>
                                                         </o:param>
                                                         <o:param>
-                                                            #{DataverseUserPage.getAdditionalMessage(item)}
+                                                            #{DataverseUserPage.getLimitedAdditionalMessage(item)}
                                                         </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>

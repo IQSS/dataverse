@@ -100,6 +100,8 @@ public class DataverseUserPage implements java.io.Serializable {
         CREATE, EDIT, CHANGE_PASSWORD
     }
 
+    private final int ADDITIONAL_MESSAGE_MAX_LENGTH = 512;
+
     @Inject
     DataverseSession session;
     @EJB
@@ -779,6 +781,17 @@ public class DataverseUserPage implements java.io.Serializable {
         return notification.getAdditionalMessage();
     }
 
+    public String getLimitedAdditionalMessage(UserNotification notification) {
+        String message = getAdditionalMessage(notification);
+
+        if(message.length() <= ADDITIONAL_MESSAGE_MAX_LENGTH) {
+            return message;
+        }
+
+        return BundleUtil.getStringFromBundle("notification.limitedAdditionalMessage",
+                truncateToFullWord(message.substring(0, ADDITIONAL_MESSAGE_MAX_LENGTH)));
+    }
+
     public String getPasswordRequirements() {
         return passwordValidatorService.getGoodPasswordDescription(passwordErrors);
     }
@@ -837,6 +850,15 @@ public class DataverseUserPage implements java.io.Serializable {
 
     private String getLocalizedDisplayNameForLanguage(Locale language) {
         return language.getDisplayName(session.getLocale());
+    }
+
+    private String truncateToFullWord(String input) {
+        String wordSeparator = " ";
+        boolean inputIsOnlyOneWord = !StringUtils.contains(input, wordSeparator);
+        if (inputIsOnlyOneWord) {
+            return input.substring(0, 100); // probably not a valid text, shorten it further
+        }
+        return StringUtils.substringBeforeLast(input, wordSeparator);
     }
 
     /**
