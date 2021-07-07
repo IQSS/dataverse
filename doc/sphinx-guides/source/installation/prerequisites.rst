@@ -362,7 +362,7 @@ The Dataverse Software uses `Rserve <https://rforge.net/Rserve/>`_ to communicat
 to R. Rserve is installed as a library package, as described in the
 step above. It runs as a daemon process on the server, accepting
 network connections on a dedicated port. This requires some extra
-configuration and we provide a script, rserve-setup.sh, for setting it up.
+configuration and we provide a script for setting it up.
 
 You'll want to obtain local copies of the Rserve setup files found in
 https://github.com/IQSS/dataverse/tree/develop/scripts/r/rserve
