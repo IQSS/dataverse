@@ -38,8 +38,7 @@ public class CitationDataExtractor {
 
         data.setDirect(false)
                 .setPersistentId(extractPID(datasetVersion, datasetVersion.getDataset(), false)) // Global Id: always part of citation for local datasets & some harvested
-                .setPidOfDataset(extractDatasetPID(datasetVersion))
-                .setUNF(datasetVersion.getUNF());
+                .setPidOfDataset(extractDatasetPID(datasetVersion));
 
         return data;
     }
@@ -56,9 +55,6 @@ public class CitationDataExtractor {
                 .setPersistentId(extractPID(dsv, df, direct)) // Global Id of datafile (if published & isDirect==true) or dataset as appropriate
                 .setPidOfDataset(extractDatasetPID(dsv))
                 .setPidOfFile(extractFilePID(dsv, df, direct));
-        if (df.isTabularData() && df.getUnf() != null && !df.getUnf().isEmpty()) {
-            data.setUNF(df.getUnf());
-        }
         return data;
     }
 

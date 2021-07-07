@@ -29,7 +29,6 @@ public class CitationData {
     private GlobalId pidOfDataset;
     private GlobalId pidOfFile;
     private String version;
-    private String UNF = null;
     private String publisher;
     private List<String> funders = new ArrayList<>();
     private String seriesTitle;
@@ -110,10 +109,6 @@ public class CitationData {
 
     public String getVersion() {
         return version;
-    }
-
-    public String getUNF() {
-        return UNF;
     }
 
     public String getPublisher() {
@@ -237,11 +232,6 @@ public class CitationData {
 
     public CitationData setVersion(String version) {
         this.version = version;
-        return this;
-    }
-
-    public CitationData setUNF(String UNF) {
-        this.UNF = UNF;
         return this;
     }
 

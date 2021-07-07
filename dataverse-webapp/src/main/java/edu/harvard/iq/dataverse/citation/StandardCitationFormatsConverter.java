@@ -55,7 +55,6 @@ public class StandardCitationFormatsConverter extends AbstractCitationFormatsCon
         if (!data.isDirect()) {
             citation.add("; ").value(data.getFileTitle()).endPart(" [fileName]");
         }
-        citation.add(", ").rawValue(data.getUNF()).endPart(" [fileUNF]");
         return citation.toString();
     }
 
@@ -80,9 +79,6 @@ public class StandardCitationFormatsConverter extends AbstractCitationFormatsCon
                             .replaceFirst("\"", "``")
                             .replaceFirst("\"", "''"),
                     s -> bibtex.mapValue(s, "\"{", "}\","));
-        }
-        if (data.getUNF() != null) {
-            bibtex.line("UNF", data.getUNF());
         }
         bibtex.line("year", data.getYear());
 
@@ -136,9 +132,6 @@ public class StandardCitationFormatsConverter extends AbstractCitationFormatsCon
         if (data.getFileTitle() != null) {
             if (!data.isDirect()) {
                 ris.line("C1", data.getFileTitle());
-            }
-            if (data.getUNF() != null) {
-                ris.line("C2", data.getUNF());
             }
         }
         ris.line("ER", ""); // closing element
@@ -236,9 +229,6 @@ public class StandardCitationFormatsConverter extends AbstractCitationFormatsCon
         // the UNF signature, that we put into the custom1 and custom2 fields respectively:
         if (data.getFileTitle() != null) {
             xml.addTagWithValue("custom1", data.getFileTitle());
-            if (data.getUNF() != null) {
-                xml.addTagWithValue("custom2", data.getUNF());
-            }
         }
         if (data.getPersistentId() != null) {
             GlobalId pid = data.getPersistentId();

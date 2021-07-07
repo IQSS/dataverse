@@ -32,7 +32,6 @@ class CitationDataExtractorTest {
         assertThat(citationData.getPersistentId().asString()).isEqualTo("doi:10.5072/FK2/LK0D1H");
         assertThat(citationData.getPublisher()).isEqualTo("LibraScholar");
         assertThat(citationData.getTitle()).isEqualTo("Dataset Title");
-        assertThat(citationData.getUNF()).isNull();
         assertThat(citationData.getVersion()).isEqualTo("V1");
         assertThat(citationData.getYear()).isEqualTo("1955");
     }
@@ -52,7 +51,6 @@ class CitationDataExtractorTest {
         assertThat(citationData.getPersistentId().asString()).isEqualTo("doi:10.5072/FK2/LK0D1H");
         assertThat(citationData.getPublisher()).isNull();
         assertThat(citationData.getTitle()).isEqualTo("Dataset Title");
-        assertThat(citationData.getUNF()).isNull();
         assertThat(citationData.getVersion()).isNull();
         assertThat(citationData.getYear()).isEqualTo("2020");
     }
@@ -71,7 +69,6 @@ class CitationDataExtractorTest {
         assertThat(citationData.getPersistentId().asString()).isEqualTo("doi:10.5072/FK2/LK0D1H");
         assertThat(citationData.getPublisher()).isNull();
         assertThat(citationData.getTitle()).isEqualTo("Dataset Title");
-        assertThat(citationData.getUNF()).isNull();
         assertThat(citationData.getVersion()).isNull();
         assertThat(citationData.getYear()).isEqualTo(String.valueOf(Year.now().getValue()));
     }
