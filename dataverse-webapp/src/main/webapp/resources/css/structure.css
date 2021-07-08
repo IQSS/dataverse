@@ -537,6 +537,54 @@ table[id$='resultsTable'] td > div > div.file-tags-block {
 /* -------- TABLES -------- */
 div.headerless-table .ui-datatable-tablewrapper table > thead {display:none;}
 
+/* -------- Quill TextEditor -------- */
+.ql-editor p {
+    margin: 0 0 10px;
+    padding: 0;
+}
+
+.ql-snow .ql-editor blockquote {
+    padding: 10px 20px;
+    margin: 0 0 20px;
+    font-size: 17.5px;
+    border-left: 5px solid #eee;
+}
+
+.ql-editor sup {
+    position: relative;
+    font-size: 75%;
+    line-height: 0;
+    vertical-align: baseline;
+}
+
+.ql-editor sub {
+    bottom: -.25em;
+    position: relative;
+    font-size: 75%;
+    line-height: 0;
+    vertical-align: baseline;
+}
+
+.ql-editor sup {
+    top: -.5em;
+    position: relative;
+    font-size: 75%;
+    line-height: 0;
+    vertical-align: baseline;
+}
+
+.ql-snow .ql-editor code {
+    padding: 2px 4px;
+    font-size: 90%;
+    color: #c7254e;
+    background-color: #f9f2f4;
+    border-radius: 4px;
+}
+
+.ql-snow .ql-editor h1, .ql-snow .ql-editor h2 {
+    margin: 20px 0 10px;
+}
+
 /* -------- POPUP -------- */
 div.ui-dialog.smallPopUp {max-width:600px;}
 div.ui-dialog.largePopUp {min-width:60%; max-width:80%; max-height:80%; overflow-y:scroll;}
