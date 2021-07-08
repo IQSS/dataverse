@@ -160,6 +160,9 @@ public class DatasetVersion implements Serializable {
 
     @Transient
     private String contributorNames;
+
+    @Transient
+    private final String dataverseSiteUrl = SystemConfig.getDataverseSiteUrlStatic();
     
     @Transient 
     private String jsonLd;
@@ -198,7 +201,11 @@ public class DatasetVersion implements Serializable {
 
     public void setVersion(Long version) {
     }
-    
+
+    public String getDataverseSiteUrl() {
+        return dataverseSiteUrl;
+    }
+
     public List<FileMetadata> getFileMetadatas() {
         return fileMetadatas;
     }
