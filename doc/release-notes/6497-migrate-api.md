@@ -10,7 +10,7 @@ This development was supported by the [Research Data Alliance](https://rd-allian
 
 Update Solr Schema
 
-- copy schema_dv_mdb_fields.xml and schema_dv_mdb_copies.xml to solr server, for example into /usr/local/solr/solr-7.7.2/server/solr/collection1/conf/ directory
+- copy schema_dv_mdb_fields.xml and schema_dv_mdb_copies.xml to solr server, for example into /usr/local/solr/solr-8.8.1/server/solr/collection1/conf/ directory
 
 - Restart Solr, or tell Solr to reload its configuration:
 
