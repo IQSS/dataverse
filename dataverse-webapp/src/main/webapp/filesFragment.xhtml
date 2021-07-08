@@ -438,10 +438,6 @@
             </p:column>
         </p:dataTable>
 
-        <a id="currentDownloadRequestLink" href="#" target="_blank" rel="noopener noreferrer" download="" style="display: none;">
-          download requested files
-        </a>
-
         <p:remoteCommand name="refreshTagsCommand"
                          onstart="#{FileTagModal.initForMultipleFiles(datasetFilesTab.retrieveSelectedFiles(), datasetFilesTab.dataset)}"
                          update="@form"
