@@ -14,7 +14,7 @@ This API consists of 2 calls: one to create an initial Dataset version, and one 
 These calls can be used in concert with other API calls to add files, update metadata for additional versions, etc.   
 
 
-Start migrating a Dataset into a Dataverse Collection
+Start Migrating a Dataset into a Dataverse Collection
 -----------------------------------------------------
 
 .. note:: This action requires a Dataverse installation account with super-user permissions.
