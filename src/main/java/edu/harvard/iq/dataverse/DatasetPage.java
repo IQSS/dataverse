@@ -5515,7 +5515,7 @@ public class DatasetPage implements java.io.Serializable {
         // If the fields list of supported langauges contains the current locale (e.g.
         // the lang of the UI, or the current metadata input/display lang (tbd)), use
         // that. Otherwise, return the first in the list
-        String[] langStrings = languages.split("/[,\s]+/");
+        String[] langStrings = languages.split("\\s*,\\s*");
         if (langStrings.length > 0) {
             if (Arrays.asList(langStrings).contains(session.getLocaleCode())) {
                 return session.getLocaleCode();
@@ -5523,7 +5523,7 @@ public class DatasetPage implements java.io.Serializable {
                 return langStrings[0];
             }
         }
-        return "";
+        return null;
     }
     
 }
