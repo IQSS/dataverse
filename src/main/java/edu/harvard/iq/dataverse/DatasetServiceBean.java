@@ -732,21 +732,30 @@ public class DatasetServiceBean implements java.io.Serializable {
     //depends on dataset state and user privleges
     public String getReminderString(Dataset dataset, boolean canPublishDataset) {
 
+        String reminderString;
+
         if(!dataset.isReleased() ){
             //messages for draft state.
             if (canPublishDataset){
-                return BundleUtil.getStringFromBundle("dataset.message.publish.remind.draft");
+                reminderString = BundleUtil.getStringFromBundle("dataset.message.publish.remind.draft");
             } else {
-                return BundleUtil.getStringFromBundle("dataset.message.submit.remind.draft");
+                reminderString = BundleUtil.getStringFromBundle("dataset.message.submit.remind.draft");
             }            
         } else{
             //messages for new version - post-publish
             if (canPublishDataset){
-                return BundleUtil.getStringFromBundle("dataset.message.publish.remind.version");
+                reminderString = BundleUtil.getStringFromBundle("dataset.message.publish.remind.version");
             } else {
-                return BundleUtil.getStringFromBundle("dataset.message.submit.remind.version");
+                reminderString = BundleUtil.getStringFromBundle("dataset.message.submit.remind.version");
             }           
         }             
+
+        if (reminderString != null) {
+            return reminderString;
+        } else {
+            logger.warning("Unable to get reminder string from bundle. Returning empty string.");
+            return "";
+        }
     }
     
     public void updateLastExportTimeStamp(Long datasetId) {
