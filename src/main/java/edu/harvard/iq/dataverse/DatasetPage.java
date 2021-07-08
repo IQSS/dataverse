@@ -247,6 +247,7 @@ public class DatasetPage implements java.io.Serializable {
     private Long ownerId;
     private Long versionId;
     private int selectedTabIndex;
+    private String selectTab = "";
     private List<DataFile> newFiles = new ArrayList<>();
     private List<DataFile> uploadedFiles = new ArrayList<>();
     private MutableBoolean uploadInProgress = new MutableBoolean(false);
@@ -1548,6 +1549,14 @@ public class DatasetPage implements java.io.Serializable {
         return selectedTabIndex;
     }
 
+    public String getSelectTab() {
+        return selectTab;
+    }
+
+    public void setSelectTab(String selectTab) {
+        this.selectTab = selectTab;
+    }
+
     public void setSelectedTabIndex(int selectedTabIndex) {
         this.selectedTabIndex = selectedTabIndex;
     }
@@ -1615,6 +1624,8 @@ public class DatasetPage implements java.io.Serializable {
     public void setSelectedTemplate(Template selectedTemplate) {
         this.selectedTemplate = selectedTemplate;
     }
+
+
 
     public void updateSelectedTemplate(ValueChangeEvent event) {
 
@@ -1840,6 +1851,20 @@ public class DatasetPage implements java.io.Serializable {
                 return permissionsWrapper.notFound();
             }
 
+            switch (selectTab){
+                case "dataFilesTab":
+                    selectedTabIndex = 0;
+                    break;
+                case "metadataMapTab":
+                    selectedTabIndex = 1;
+                    break;
+                case "termsTab":
+                    selectedTabIndex = 2;
+                    break;
+                case "versionsTab":
+                    selectedTabIndex = 3;
+                    break;
+            }
 
             //this.dataset = this.workingVersion.getDataset();
 
@@ -2724,6 +2749,8 @@ public class DatasetPage implements java.io.Serializable {
             dataset = datasetService.find(dataset.getId());
             retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(dataset.getVersions(), version);
         }
+
+
 
         if (retrieveDatasetVersionResponse == null) {
             // TODO:

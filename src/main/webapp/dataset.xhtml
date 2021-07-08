@@ -93,6 +93,7 @@
                     <f:viewParam name="fileTypeGroupFacet" value="#{DatasetPage.fileTypeFacet}"/>
                     <f:viewParam name="fileAccess" value="#{DatasetPage.fileAccessFacet}"/>
                     <f:viewParam name="fileTag" value="#{DatasetPage.fileTagsFacet}"/>
+                    <o:viewParam name="selectTab" value="#{DatasetPage.selectTab}" default="dataFilesTab"/>
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{DatasetPage.init}" rendered="true"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DatasetPage.dataset)}"/>

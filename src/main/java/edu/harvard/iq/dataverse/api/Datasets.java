@@ -79,7 +79,6 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -112,22 +111,17 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.net.URI;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -162,7 +156,7 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import com.amazonaws.services.s3.model.PartETag;
-import edu.harvard.iq.dataverse.FileMetadata;
+
 import java.util.Map.Entry;
 
 @Path("datasets")
@@ -1151,6 +1145,24 @@ public class Datasets extends AbstractApiBean {
             return ex.getResponse();
         }
     }
+
+    @GET
+    @Path("{id}/versions/{versionId}/customlicense")
+    public Response getCustomTermsTab(@PathParam("id") String id, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers){
+        User user = session.getUser();
+        String persistentId;
+        try {
+            if (getDatasetVersionOrDie(createDataverseRequest(user), versionId, findDatasetOrDie(id), uriInfo, headers).getTermsOfUseAndAccess().getLicense() != null){
+                return error(Status.NOT_FOUND, "This Dataset has no custom license");
+            }
+            persistentId = getRequestParameter(":persistentId".substring(1));
+            if (versionId.equals(":draft")) versionId = "DRAFT";
+        } catch (WrappedResponse wrappedResponse) {
+           return wrappedResponse.getResponse();
+        }
+        return Response.temporaryRedirect(URI.create(systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + persistentId + "&version=" + versionId + "&selectTab=termsTab")).build();
+    }
+
     
     @GET
     @Path("{id}/links")
