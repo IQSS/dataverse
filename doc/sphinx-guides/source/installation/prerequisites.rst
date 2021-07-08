@@ -365,7 +365,7 @@ network connections on a dedicated port. This requires some extra
 configuration and we provide a script for setting it up.
 
 You'll want to obtain local copies of the Rserve setup files found in
-:fixedwidthplain:`scripts/r/rserve/<../../../../scripts/r/rserve/>`
+https://github.com/IQSS/dataverse/tree/master/scripts/r/rserve
 either by cloning a local copy of the IQSS repository:
 :fixedwidthplain:`git clone -b master https://github.com/IQSS/dataverse.git`
 or by downloading the files individually.
