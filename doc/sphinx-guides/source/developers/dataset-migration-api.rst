@@ -36,7 +36,7 @@ An example jsonld file is available at :download:`dataset-migrate.jsonld <../_st
 Publish a Migrated Dataset
 --------------------------
 
-The call above creates a Dataset. Once it is created, other APIs can be used to add files, add additional metadata, etc. When a version is complete, the following call can be used to publish it with its original publication date
+The call above creates a Dataset. Once it is created, other APIs can be used to add files, add additional metadata, etc. When a version is complete, the following call can be used to publish it with its original publication date.
 
 .. note:: This action requires a Dataverse installation account with super-user permissions.
 
