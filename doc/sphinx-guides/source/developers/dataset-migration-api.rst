@@ -17,7 +17,7 @@ These calls can be used in concert with other API calls to add files, update met
 Start Migrating a Dataset into a Dataverse Collection
 -----------------------------------------------------
 
-.. note:: This action requires a Dataverse installation account with super-user permissions.
+.. note:: This action requires a Dataverse installation account with superuser permissions.
 
 To import a dataset with an existing persistent identifier (PID), the provided json-ld metadata should include it.
 
