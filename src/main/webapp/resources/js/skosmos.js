@@ -68,6 +68,10 @@ function expandSkosmos() {
                                 }
                             }
                         }
+                        if(termName.length==0) {
+                            //Not even a default available
+                            lang.length==0 ? termName = '(name not available)' : termName = '(name not available in ' + lang + ')';
+                        }
                         //Now construct the desired HTML display element and add it in place of the original text
                         var html;
                         if($(displayElement).parent().is("a")) {
