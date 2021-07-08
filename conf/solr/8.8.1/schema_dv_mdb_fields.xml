@@ -82,7 +82,6 @@
     <field name="keywordVocabularyURI" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="kindOfData" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="language" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="metadataOnOrig" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="northLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="notesText" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="originOfSources" type="text_en" multiValued="false" stored="true" indexed="true"/>

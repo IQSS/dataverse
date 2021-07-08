@@ -226,46 +226,6 @@ public class JSONLDUtil {
                                 }
                             }
                         }
-                    } else {
-                        //Metadata block metadata fields
-                        if (dsftMap.containsKey(JsonLDTerm.metadataOnOrig.getUrl())) {
-                            DatasetFieldType dsft = dsftMap.get(JsonLDTerm.metadataOnOrig.getUrl());
-
-                            DatasetField dsf = null;
-                            if (fieldByTypeMap.containsKey(dsft)) {
-                                dsf = fieldByTypeMap.get(dsft);
-                                // If there's an existing field, we use it with append and remove it for !append
-                                // (except if multiple, which is not the default)
-                                if (!append && !dsft.isAllowMultiples()) {
-                                    dsfl.remove(dsf);
-                                }
-                            }
-                            if (dsf == null) {
-                                dsf = new DatasetField();
-                                dsfl.add(dsf);
-                                dsf.setDatasetFieldType(dsft);
-                            }
-
-                            List<DatasetFieldValue> vals = dsf.getDatasetFieldValues();
-
-                            JsonObject currentValue = null;
-                            DatasetFieldValue datasetFieldValue = null;
-                            if (vals.isEmpty()) {
-                                datasetFieldValue = new DatasetFieldValue();
-                                vals.add(datasetFieldValue);
-                                datasetFieldValue.setDatasetField(dsf);
-                                dsf.setDatasetFieldValues(vals);
-
-                                currentValue = Json.createObjectBuilder().build();
-                            } else {
-                                datasetFieldValue = vals.get(0);
-                                JsonObject currentVal = decontextualizeJsonLD(datasetFieldValue.getValueForEdit());
-
-                            }
-                            currentValue.put(key, jsonld.get(key));
-                            JsonObject newValue = recontextualizeJsonLD(currentValue, metadataBlockSvc);
-                            datasetFieldValue.setValue(prettyPrint(newValue));
-                        }
                     }
                     dsv.setTermsOfUseAndAccess(terms);
                     // ToDo: support Dataverse location metadata? e.g. move to new dataverse?
