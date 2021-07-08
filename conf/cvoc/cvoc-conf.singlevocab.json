@@ -6,6 +6,7 @@
         "protocol": "skosmos",
         "retrieval-uri": "https://skosmos.dev.finto.fi/rest/v1/data?uri={0}",
         "term-parent-uri": "",
+        "languages":"en, fr, es, ru",
         "vocabs": {
             "unesco": "http://skos.um.es/unescothes/CS000"
         },
@@ -48,6 +49,7 @@
         "retrieval-uri": "https://pub.orcid.org/v3.0/{0}/person",
         "prefix": "https://orcid.org/",
         "managed-fields": {},
+        "languages":"",
         "retrieval-filtering": {
             "@context": {
                 "personName": "https://schema.org/name",
@@ -74,8 +76,8 @@
         "js-url": "/resources/js/skosmos.js",
         "protocol": "skosmos",
         "retrieval-uri": "https://skosmos.dev.finto.fi/rest/v1/data?uri={0}",
-        "vocabs":{"unesco": "http://skos.um.es/unescothes/CS000"
-        },
+        "vocabs":{"unesco": "http://skos.um.es/unescothes/CS000"},
+        "languages":"en, fr, es, ru",
         "managed-fields": {},
         "retrieval-filtering": {
             "@context": {
