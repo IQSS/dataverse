@@ -45,8 +45,6 @@ public class JsonLDTerm {
     public static JsonLDTerm totalSize = JsonLDTerm.DVCore("totalSize");
     public static JsonLDTerm fileCount = JsonLDTerm.DVCore("fileCount");
     public static JsonLDTerm maxFileSize = JsonLDTerm.DVCore("maxFileSize");
-    
-    public static JsonLDTerm metadataOnOrig = JsonLDTerm.DVCore("metadataOnOrig");
 
     public JsonLDTerm(JsonLDNamespace namespace, String term) {
         this.namespace = namespace;
