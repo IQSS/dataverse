@@ -37,7 +37,7 @@ function expandSkosmos() {
                         //Upon success, parse the returned information to find any/all info required to generate a dsiplay element
                         var termName = "";
                         var uriArray = term.graph;
-                        //FOr skosmos, the 'graph' element contains an array of objects. The one with a uri matching the id describes the term itself (versus braoader/narrower ones, etc.)
+                        //For skosmos, the 'graph' element contains an array of objects. The one with a uri matching the id describes the term itself (versus braoader/narrower ones, etc.)
                         for (let i = 0; i < uriArray.length; i++) {
                             var def = uriArray[i];
                             if (def.uri == id) {
@@ -69,7 +69,12 @@ function expandSkosmos() {
                             }
                         }
                         //Now construct the desired HTML display element and add it in place of the original text
-                        var html = "<a href='" + id + "'  target='_blank' rel='noopener' >" + termName + "</a>";
+                        var html;
+                        if($(displayElement).parent().is("a")) {
+                            html = termName;
+                        } else {
+                            html = "<a href='" + id + "'  target='_blank' rel='noopener' >" + termName + "</a>";
+                        }
                         displayElement.innerHTML = html;
                     },
                     failure: function(jqXHR, textStatus, errorThrown) {
