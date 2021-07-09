@@ -1,102 +1,105 @@
 #metadataBlock	name	dataverseAlias	displayName	blockURI														
 	citation		Citation Metadata	https://dataverse.org/schema/citation/														
 #datasetField	name	title	description	watermark	fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	displayoncreate	required	parent	inputRendererType	inputRendererOptions	metadatablock_id	termURI
-	title	Title	Full title by which the Dataset is known.	Enter title...	text	0		TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		TEXT	{"buttonActionHandler":"AddReplicationTextActionHandler","buttonActionTextKey":"dataset.AddReplication","actionForOperations":["CREATE_DATASET"]}	citation	http://purl.org/dc/terms/title
+	title	Title	Full title by which the Dataset is known.	Enter title...	text	0		TRUE	FALSE	FALSE	FALSE	TRUE	TRUE		TEXT	"{""buttonActionHandler"":""AddReplicationTextActionHandler"",""buttonActionTextKey"":""dataset.AddReplication"",""actionForOperations"":[""CREATE_DATASET""]}"	citation	http://purl.org/dc/terms/title
 	subtitle	Subtitle	A secondary title used to amplify or state certain limitations on the main title.		text	1		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	citation	
 	alternativeTitle	Alternative Title	A title by which the work is commonly referred, or an abbreviation of the title.		text	2		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	citation	http://purl.org/dc/terms/alternative
-	alternativeURL	Alternative URL	A URL where the dataset can be viewed, such as a personal or project website.	http://... or https://...	url	3	<a href="#VALUE" target="_blank">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	citation	https://schema.org/distribution
-	otherId	Other ID	Another unique identifier that identifies this Dataset (e.g., producer's or another repository's number).		none	4	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		TEXT	{}	citation	
-	otherIdAgency	Agency	Name of agency which generated this identifier.		text	5	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	TEXT	{}	citation	
-	otherIdValue	Identifier	Other identifier that corresponds to this Dataset.		text	6	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	TEXT	{}	citation	
-	author	Author	The person(s), corporate body(ies), or agency(ies) responsible for creating the work.		none	7		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		TEXT	{}	citation	http://purl.org/dc/terms/creator
-	authorName	Name	The author's Family Name, Given Name or the name of the organization responsible for this Dataset. 	FamilyName, GivenName or Organization	text	8	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	TRUE	author	TEXT	{}	citation	
-	authorIdentifierScheme	Identifier Scheme	Name of the identifier scheme (ORCID, ISNI).		text	9	– #VALUE:	FALSE	TRUE	FALSE	FALSE	TRUE	FALSE	author	VOCABULARY_SELECT	{}	citation	http://purl.org/spar/datacite/AgentIdentifierScheme
-	authorIdentifier	Identifier	Uniquely identifies an individual author or organization, according to various schemes.		text	10	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	author	TEXT	{}	citation	http://purl.org/spar/datacite/AgentIdentifier
-	authorAffiliation	Affiliation	The organization with which the author is affiliated.		text	11	– #VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	author	TEXT	{}	citation	
-	authorAffiliationIdentifier	Affiliation ROR	ROR identifier of the organization the author is affiliated to. Please provide the identifier only if in the "Affiliation" field contains exactly one institution. The identifier should be provided in its URL form, for instance "https://ror.org/039bjqg32" for University of Warsaw.	https://ror.org/...	text	12	– ROR: <a href="#VALUE" target="_blank">#VALUE</a>	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	author	TEXT	{}	citation
-	datasetContact	Contact	The contact(s) for this Dataset.		none	13		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		TEXT	{}	citation	
-	datasetContactName	Name	The contact's Family Name, Given Name or the name of the organization.	FamilyName, GivenName or Organization	text	14	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	TEXT	{}	citation	
-	datasetContactAffiliation	Affiliation	The organization with which the contact is affiliated.		text	15	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	TEXT	{}	citation	
-	datasetContactEmail	E-mail	The e-mail address(es) of the contact(s) for the Dataset. This will not be displayed.		email	16	#EMAIL	FALSE	FALSE	FALSE	FALSE	TRUE	TRUE	datasetContact	TEXT	{}	citation	
-	dsDescription	Description	Description of the purpose, nature, and scope of the dataset and the study.		none	17		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		TEXT	{}	citation	
-	dsDescriptionValue	Text	A summary describing the purpose, nature, and scope of the dataset and the study.		textbox	18	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE	dsDescription	HTML_MARKUP	{}	citation	
-	dsDescriptionDate	Date	In cases where a Dataset contains more than one description (for example, one might be supplied by the data producer and another prepared by the data repository where the data are deposited), the date attribute is used to distinguish between the two descriptions. Expected date formats are YYYY, YYYY-MM or YYYY-MM-DD.	YYYY, YYYY-MM or YYYY-MM-DD	date	19	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	dsDescription	TEXT	{}	citation	
-	subject	Subject	Domain-specific Subject Categories that are topically relevant to the Dataset.		text	20		TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		VOCABULARY_SELECT	{"sortByLocalisedStringsOrder" : "true"}	citation	http://purl.org/dc/terms/subject
-	keyword	Keyword	Key terms that describe important aspects of the Dataset.		none	21		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		TEXT	{}	citation	
-	keywordValue	Term	Key terms that describe important aspects of the Dataset. Can be used for building keyword indexes and for classification and retrieval purposes. A controlled vocabulary can be employed. The vocab attribute is provided for specification of the controlled vocabulary in use, such as LCSH, MeSH, or others. The vocabURI attribute specifies the location for the full controlled vocabulary.		text	22	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	keyword	TEXT	{}	citation	
-	keywordVocabulary	Vocabulary	For the specification of the keyword controlled vocabulary in use, such as LCSH, MeSH, or others.		text	23	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	TEXT	{}	citation	
-	keywordVocabularyURI	Vocabulary URL	Keyword vocabulary URL points to the web presence that describes the keyword vocabulary, if appropriate.	http://... or https://...	url	24	<a href="#VALUE" target="_blank">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	TEXT	{}	citation	
-	topicClassification	Topic Classification	The classification field indicates the broad important topic(s) and subjects that the data cover. Library of Congress subject terms may be used here.		none	25		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		TEXT	{}	citation	
-	topicClassValue	Term	Topic or Subject term that is relevant to this Dataset.		text	26	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	topicClassification	TEXT	{}	citation	
-	topicClassVocab	Vocabulary	Provided for specification of the controlled vocabulary in use, e.g., LCSH, MeSH, etc.		text	27	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	TEXT	{}	citation	
-	topicClassVocabURI	Vocabulary URL	Specifies the URL location for the full controlled vocabulary.	http://... or https://...	url	28	<a href="#VALUE" target="_blank">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	TEXT	{}	citation	
-	publication	Related Publication	Publications related to this Dataset.		none	29		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		TEXT	{}	citation	http://purl.org/dc/terms/relation
-	publicationCitation	Citation	The full bibliographic citation for this related publication.		textbox	30	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	TEXTBOX	{}	citation	http://purl.org/dc/terms/bibliographicCitation
-	publicationRelationType	Relation Type	The type of relation between the deposited dataset and the related publication. 		text	31	(#VALUE.)	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	VOCABULARY_SELECT	{}	citation	
-	publicationIDType	ID Type	The type of digital identifier used for this publication (e.g., Digital Object Identifier (DOI)).		text	32	#VALUE:	TRUE	TRUE	FALSE	FALSE	TRUE	FALSE	publication	VOCABULARY_SELECT	{}	citation	http://purl.org/spar/datacite/ResourceIdentifierScheme
-	publicationIDNumber	ID Number	The identifier for the selected ID type.		text	33	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	TEXT	{}	citation	http://purl.org/spar/datacite/ResourceIdentifier
-	publicationURL	URL	Link to the publication web page (e.g., journal article page, archive record page, or other).	http://... or https://...	url	34	<a href="#VALUE" target="_blank">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	TEXT	{}	citation	https://schema.org/distribution
-	notesText	Notes	Additional important information about the Dataset.		textbox	35		FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		TEXTBOX	{}	citation	
-	language	Language	Language of the Dataset		text	36		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		VOCABULARY_SELECT	{"sortByLocalisedStringsOrder" : "true"}	citation	http://purl.org/dc/terms/language
-	languageOfMetadata	Language of Metadata	Language of metadata describing this dataset. 		text	37		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		VOCABULARY_SELECT	{"sortByLocalisedStringsOrder" : "true"}	citation	http://purl.org/dc/terms/language
-	languageOfData	Language of Data Files	Language of data files within this dataset. 		text	38		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		VOCABULARY_SELECT	{"sortByLocalisedStringsOrder" : "true"}	citation	http://purl.org/dc/terms/language
-	languageOfDocumentation	Language of Documentation	Language in which the documentation is written. 		text	39		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		VOCABULARY_SELECT	{"sortByLocalisedStringsOrder" : "true"}	citation	http://purl.org/dc/terms/language
-	producer	Producer	Person or organization with the financial or administrative responsibility over this Dataset		none	40		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		TEXT	{}	citation	
-	producerName	Name	Producer name.	FamilyName, GivenName or Organization	text	41	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	producer	TEXT	{}	citation	
-	producerAffiliation	Affiliation	The organization with which the producer is affiliated.		text	42	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	TEXT	{}	citation	
-	producerAbbreviation	Abbreviation	The abbreviation by which the producer is commonly known. (ex. IQSS, ICPSR)		text	43	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	TEXT	{}	citation	
-	producerURL	URL	Producer URL points to the producer's web presence, if appropriate.	http://... or https://...	url	44	<a href="#VALUE" target="_blank">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	TEXT	{}	citation	
-	producerLogoURL	Logo URL	URL for the producer's logo, which points to this producer's web-accessible logo image.	http://... or https://...	url	45	<img src="#VALUE" alt="#NAME" class="metadata-logo"/><br/>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	TEXT	{}	citation	
-	productionDate	Production Date	Date when the data collection or other materials were produced (not distributed, published or archived). Expected date formats are YYYY, YYYY-MM or YYYY-MM-DD.	YYYY, YYYY-MM or YYYY-MM-DD	date	46		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		TEXT	{}	citation	
-	productionPlace	Production Place	The location where the data collection and any other related materials were produced.		text	47		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	citation	
-	contributor	Contributor	The organization or person responsible for either collecting, managing, or otherwise contributing in some form to the development of the resource.		none	48	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		TEXT	{}	citation	http://purl.org/dc/terms/contributor
-	contributorType	Type	The type of contributor of the resource.		text	49	#VALUE	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	contributor	VOCABULARY_SELECT	{"sortByLocalisedStringsOrder" : "true"}	citation	
-	contributorName	Name	The Family Name, Given Name or organization name of the contributor.	FamilyName, GivenName or Organization	text	50	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	contributor	TEXT	{}	citation	
-	grantNumber	Grant Information	Information regarding grant/funding. 		none	51		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		TEXT	{}	citation	https://schema.org/sponsor
-	grantNumberAgency	Grant Agency	Full name of the grant agency. For instance: European Commission, National Science Centre (Poland), National Centre for Research and Development (Poland), Wellcome Trust. 		text	52	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	grantNumber	SUGGESTION_TEXT	{suggestionFilteredBy:[], suggestionSourceClass:"GrantSuggestionHandler", suggestionSourceField:"grantNumberAgency"}	citation	
-	grantNumberAgencyShortName	Grant Agency Short Name	Short name of the grant agency, usually the acronym of its official full name. For instance: EC for European Commission, WT for Wellcome Trust, NCN for National Science Centre (Poland), NCBR for National Centre for Research and Development (Poland). 		text	53	(#VALUE)	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	grantNumber	SUGGESTION_TEXT	{suggestionFilteredBy:["grantNumberAgency"], suggestionSourceClass:"GrantSuggestionHandler", suggestionSourceField:"grantNumberAgencyShortName"}	citation	
-	grantNumberAgencyIdentifier	Grant Agency ROR	ROR identifier of the grant agency. Please provide the identifier only if the "Grant Agency" field contains exactly one institution. The identifier should be provided in its URL form, for instance "https://ror.org/019w4f821" for European Union or "https://ror.org/03ha2q922" for National Science Centre (Poland).	https://ror.org/...	text	54	– ROR: <a href="#VALUE" target="_blank">#VALUE</a>	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	grantNumber	TEXT	{}	citation
-	grantNumberProgram	Grant Program 	Funding program name. For instance: FP7, H2020, Sonata.		text	55	– #VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	grantNumber	SUGGESTION_TEXT	{suggestionFilteredBy:["grantNumberAgency"], suggestionSourceClass:"GrantSuggestionHandler", suggestionSourceField:"grantNumberProgram"}	citation	
-	grantNumberValue	Grant Number	Unique identifier in the scope of the grant agency, usually a grant or agreement number of the project.		text	56	– #VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	grantNumber	TEXT	{}	citation	
-	distributor	Distributor	The organization designated by the author or producer to generate copies of the particular work including any necessary editions or revisions.		none	57		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		TEXT	{}	citation	
-	distributorName	Name	Distributor name.	FamilyName, GivenName or Organization	text	58	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	distributor	TEXT	{}	citation	
-	distributorAffiliation	Affiliation	The organization with which the distributor contact is affiliated.		text	59	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	TEXT	{}	citation	
-	distributorAbbreviation	Abbreviation	The abbreviation by which this distributor is commonly known (e.g., IQSS, ICPSR).		text	60	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	TEXT	{}	citation	
-	distributorURL	URL	Distributor URL points to the distributor's web presence, if appropriate.	http://... or https://...	url	61	<a href="#VALUE" target="_blank">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	TEXT	{}	citation	
-	distributorLogoURL	Logo URL	URL of the distributor's logo, which points to this distributor's web-accessible logo image.	http://... or https://...	url	62	<img src="#VALUE" alt="#NAME" class="metadata-logo"/><br/>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	TEXT	{}	citation	
-	distributionDate	Distribution Date	Date that the work was made available for distribution/presentation. Expected date formats are YYYY, YYYY-MM or YYYY-MM-DD.	YYYY, YYYY-MM or YYYY-MM-DD	date	63		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		TEXT	{}	citation	
-	depositor	Depositor	The person (Family Name, Given Name) or the name of the organization that deposited this Dataset to the repository.		text	64		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	citation	
-	dateOfDeposit	Deposit Date	Date that the Dataset was deposited into the repository. Expected date formats are YYYY, YYYY-MM or YYYY-MM-DD.	YYYY, YYYY-MM or YYYY-MM-DD.	date	65		FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		TEXT	{}	citation	http://purl.org/dc/terms/dateSubmitted
-	timePeriodCovered	Time Period Covered	Time period to which the data refer. This item reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected. Also known as span.		none	66	;	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		TEXT	{}	citation	https://schema.org/temporalCoverage
-	timePeriodCoveredStart	Start	Start date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected. Expected date formats are YYYY, YYYY-MM or YYYY-MM-DD.	YYYY, YYYY-MM or YYYY-MM-DD	date	67	#NAME: #VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	TEXT	{}	citation	
-	timePeriodCoveredEnd	End	End date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected. Expected date formats are YYYY, YYYY-MM or YYYY-MM-DD.	YYYY, YYYY-MM or YYYY-MM-DD	date	68	#NAME: #VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	TEXT	{}	citation	
-	dateOfCollection	Date of Collection	Contains the date(s) when the data were collected.		none	69	;	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		TEXT	{}	citation	
-	dateOfCollectionStart	Start	Date when the data collection started. Expected date formats are YYYY, YYYY-MM or YYYY-MM-DD.	YYYY, YYYY-MM or YYYY-MM-DD	date	70	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dateOfCollection	TEXT	{}	citation	
-	dateOfCollectionEnd	End	Date when the data collection ended. Expected date formats are YYYY, YYYY-MM or YYYY-MM-DD.	YYYY, YYYY-MM or YYYY-MM-DD	date	71	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dateOfCollection	TEXT	{}	citation	
-	kindOfData	Kind of Data	General type of the data in the dataset.		text	72		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		VOCABULARY_SELECT	{}	citation	
-	series	Series	Information about the Dataset series.		none	73	:	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	citation	
-	seriesName	Name	Name of the dataset series to which the Dataset belongs.		text	74	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	series	TEXT	{}	citation	
-	seriesInformation	Information	History of the series and summary of those features that apply to the series as a whole.		textbox	75	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	series	TEXT	{}	citation	
-	software	Software	Information about the software used to generate the Dataset.		none	76	,	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		TEXT	{}	citation	https://www.w3.org/TR/prov-o/#wasGeneratedBy
-	softwareName	Name	Name of software used to generate the Dataset.		text	77	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	software	TEXT	{}	citation	
-	softwareVersion	Version	Version of the software used to generate the Dataset.		text	78	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	software	TEXT	{}	citation	
-	relatedDataset	Related Dataset	Any Datasets that are related to the deposited dataset, such as previous research on this subject.		none	79		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		TEXT	{}	citation	http://purl.org/dc/terms/relation
-	relatedDatasetCitation	Citation	The full bibliographic citation for this related dataset. 		textbox	80	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	relatedDataset	TEXTBOX	{}	citation	http://purl.org/dc/terms/bibliographicCitation
-	relatedDatasetRelationType	Relation Type	The type of relation between the deposited and the related dataset.		text	81	(#VALUE.)	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	relatedDataset	VOCABULARY_SELECT	{}	citation	
-	relatedDatasetIDType	ID Type	The type of digital identifier of the related dataset (e.g., Digital Object Identifier (DOI)).		text	82	#VALUE:	TRUE	TRUE	FALSE	FALSE	TRUE	FALSE	relatedDataset	VOCABULARY_SELECT	{}	citation	http://purl.org/spar/datacite/ResourceIdentifierScheme
-	relatedDatasetIDNumber	ID Number	The identifier for the selected ID type.		text	83	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	relatedDataset	TEXT	{}	citation	http://purl.org/spar/datacite/ResourceIdentifier
-	relatedDatasetURL	URL	Link to the web page where the related dataset is available. 	http://... or https://...	url	84	<a href="#VALUE" target="_blank">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	relatedDataset	TEXT	{}	citation	
-	relatedMaterial	Related Material	Any material related to the deposited dataset.		none	85		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		TEXT	{}	citation	http://purl.org/dc/terms/relation
-	relatedMaterialCitation	Citation	The full bibliographic citation for this related material. 		textbox	86	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	relatedMaterial	TEXTBOX	{}	citation	http://purl.org/dc/terms/bibliographicCitation
-	relatedMaterialRelationType	Relation Type	The type of relation between the deposited dataset and the related material. 		text	87	(#VALUE.)	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	relatedMaterial	VOCABULARY_SELECT	{}	citation	
-	relatedMaterialIDType	ID Type	The type of digital identifier of the related material (e.g., Digital Object Identifier (DOI)).		text	88	#VALUE:	TRUE	TRUE	FALSE	FALSE	FALSE	FALSE	relatedMaterial	VOCABULARY_SELECT	{}	citation	http://purl.org/spar/datacite/ResourceIdentifierScheme
-	relatedMaterialIDNumber	ID Number	The identifier for the selected ID type.		text	89	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	relatedMaterial	TEXT	{}	citation	http://purl.org/spar/datacite/ResourceIdentifier
-	relatedMaterialURL	URL	Link to the web page where the related material is available. 	http://... or https://...	url	90	<a href="#VALUE" target="_blank">#VALUE</a>	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	relatedMaterial	TEXT	{}	citation	
-	otherReferences	Other References	Any references that would serve as background or supporting material to this Dataset.		text	91		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		TEXT	{}	citation	http://purl.org/dc/terms/references
-	dataSources	Data Sources	List of books, articles, serials, or machine-readable data files that served as the sources of the data collection.		textbox	92		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		TEXTBOX	{}	citation	https://www.w3.org/TR/prov-o/#wasDerivedFrom
-	originOfSources	Origin of Sources	For historical materials, information about the origin of the sources and the rules followed in establishing the sources should be specified.		textbox	93		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	citation	
-	characteristicOfSources	Characteristic of Sources Noted	Assessment of characteristics and source material.		textbox	94		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	citation	
-	accessToSources	Documentation and Access to Sources	Level of documentation of the original sources.		textbox	95		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	citation	
+	titleTranslation	Title Translation	Dataset title translated into another language.		none	3		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		TEXT	{}	citation	
+	titleTranslationText	Text	Text of the title translation.		text	4		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	titleTranslation	TEXT	{}	citation	
+	titleTranslationLanguage	Language	Language of the title translation. 		text	5	(#VALUE)	TRUE	TRUE	FALSE	FALSE	TRUE	FALSE	titleTranslation	VOCABULARY_SELECT	"{""sortByLocalisedStringsOrder"" : ""true""}"	citation	
+	alternativeURL	Alternative URL	A URL where the dataset can be viewed, such as a personal or project website.	http://... or https://...	url	6	"<a href=""#VALUE"" target=""_blank"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	citation	https://schema.org/distribution
+	otherId	Other ID	Another unique identifier that identifies this Dataset (e.g., producer's or another repository's number).		none	7	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		TEXT	{}	citation	
+	otherIdAgency	Agency	Name of agency which generated this identifier.		text	8	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	TEXT	{}	citation	
+	otherIdValue	Identifier	Other identifier that corresponds to this Dataset.		text	9	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	otherId	TEXT	{}	citation	
+	author	Author	The person(s), corporate body(ies), or agency(ies) responsible for creating the work.		none	10		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		TEXT	{}	citation	http://purl.org/dc/terms/creator
+	authorName	Name	The author's Family Name, Given Name or the name of the organization responsible for this Dataset. 	FamilyName, GivenName or Organization	text	11	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	TRUE	author	TEXT	{}	citation	
+	authorIdentifierScheme	Identifier Scheme	Name of the identifier scheme (ORCID, ISNI).		text	12	– #VALUE:	FALSE	TRUE	FALSE	FALSE	TRUE	FALSE	author	VOCABULARY_SELECT	{}	citation	http://purl.org/spar/datacite/AgentIdentifierScheme
+	authorIdentifier	Identifier	Uniquely identifies an individual author or organization, according to various schemes.		text	13	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	author	TEXT	{}	citation	http://purl.org/spar/datacite/AgentIdentifier
+	authorAffiliation	Affiliation	The organization with which the author is affiliated.		text	14	– #VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	author	TEXT	{}	citation	
+	authorAffiliationIdentifier	Affiliation ROR	"ROR identifier of the organization the author is affiliated to. Please provide the identifier only if in the ""Affiliation"" field contains exactly one institution. The identifier should be provided in its URL form, for instance ""https://ror.org/039bjqg32"" for University of Warsaw."	https://ror.org/...	text	15	"– ROR: <a href=""#VALUE"" target=""_blank"">#VALUE</a>"	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	author	TEXT	{}	citation	
+	datasetContact	Contact	The contact(s) for this Dataset.		none	16		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		TEXT	{}	citation	
+	datasetContactName	Name	The contact's Family Name, Given Name or the name of the organization.	FamilyName, GivenName or Organization	text	17	#VALUE	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	TEXT	{}	citation	
+	datasetContactAffiliation	Affiliation	The organization with which the contact is affiliated.		text	18	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	datasetContact	TEXT	{}	citation	
+	datasetContactEmail	E-mail	The e-mail address(es) of the contact(s) for the Dataset. This will not be displayed.		email	19	#EMAIL	FALSE	FALSE	FALSE	FALSE	TRUE	TRUE	datasetContact	TEXT	{}	citation	
+	dsDescription	Description	Description of the purpose, nature, and scope of the dataset and the study.		none	20		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		TEXT	{}	citation	
+	dsDescriptionValue	Text	A summary describing the purpose, nature, and scope of the dataset and the study.		textbox	21	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE	dsDescription	HTML_MARKUP	{}	citation	
+	dsDescriptionDate	Date	In cases where a Dataset contains more than one description (for example, one might be supplied by the data producer and another prepared by the data repository where the data are deposited), the date attribute is used to distinguish between the two descriptions. Expected date formats are YYYY, YYYY-MM or YYYY-MM-DD.	YYYY, YYYY-MM or YYYY-MM-DD	date	22	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	dsDescription	TEXT	{}	citation	
+	subject	Subject	Domain-specific Subject Categories that are topically relevant to the Dataset.		text	23		TRUE	TRUE	TRUE	TRUE	TRUE	TRUE		VOCABULARY_SELECT	"{""sortByLocalisedStringsOrder"" : ""true""}"	citation	http://purl.org/dc/terms/subject
+	keyword	Keyword	Key terms that describe important aspects of the Dataset.		none	24		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		TEXT	{}	citation	
+	keywordValue	Term	Key terms that describe important aspects of the Dataset. Can be used for building keyword indexes and for classification and retrieval purposes. A controlled vocabulary can be employed. The vocab attribute is provided for specification of the controlled vocabulary in use, such as LCSH, MeSH, or others. The vocabURI attribute specifies the location for the full controlled vocabulary.		text	25	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	keyword	TEXT	{}	citation	
+	keywordVocabulary	Vocabulary	For the specification of the keyword controlled vocabulary in use, such as LCSH, MeSH, or others.		text	26	(#VALUE)	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	TEXT	{}	citation	
+	keywordVocabularyURI	Vocabulary URL	Keyword vocabulary URL points to the web presence that describes the keyword vocabulary, if appropriate.	http://... or https://...	url	27	"<a href=""#VALUE"" target=""_blank"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	keyword	TEXT	{}	citation	
+	topicClassification	Topic Classification	The classification field indicates the broad important topic(s) and subjects that the data cover. Library of Congress subject terms may be used here.		none	28		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		TEXT	{}	citation	
+	topicClassValue	Term	Topic or Subject term that is relevant to this Dataset.		text	29	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	topicClassification	TEXT	{}	citation	
+	topicClassVocab	Vocabulary	Provided for specification of the controlled vocabulary in use, e.g., LCSH, MeSH, etc.		text	30	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	TEXT	{}	citation	
+	topicClassVocabURI	Vocabulary URL	Specifies the URL location for the full controlled vocabulary.	http://... or https://...	url	31	"<a href=""#VALUE"" target=""_blank"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	topicClassification	TEXT	{}	citation	
+	publication	Related Publication	Publications related to this Dataset.		none	32		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		TEXT	{}	citation	http://purl.org/dc/terms/relation
+	publicationCitation	Citation	The full bibliographic citation for this related publication.		textbox	33	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	TEXTBOX	{}	citation	http://purl.org/dc/terms/bibliographicCitation
+	publicationRelationType	Relation Type	The type of relation between the deposited dataset and the related publication. 		text	34	(#VALUE.)	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	VOCABULARY_SELECT	{}	citation	
+	publicationIDType	ID Type	The type of digital identifier used for this publication (e.g., Digital Object Identifier (DOI)).		text	35	#VALUE:	TRUE	TRUE	FALSE	FALSE	TRUE	FALSE	publication	VOCABULARY_SELECT	{}	citation	http://purl.org/spar/datacite/ResourceIdentifierScheme
+	publicationIDNumber	ID Number	The identifier for the selected ID type.		text	36	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	TEXT	{}	citation	http://purl.org/spar/datacite/ResourceIdentifier
+	publicationURL	URL	Link to the publication web page (e.g., journal article page, archive record page, or other).	http://... or https://...	url	37	"<a href=""#VALUE"" target=""_blank"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	publication	TEXT	{}	citation	https://schema.org/distribution
+	notesText	Notes	Additional important information about the Dataset.		textbox	38		FALSE	FALSE	FALSE	FALSE	TRUE	FALSE		TEXTBOX	{}	citation	
+	language	Language	Language of the Dataset		text	39		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		VOCABULARY_SELECT	"{""sortByLocalisedStringsOrder"" : ""true""}"	citation	http://purl.org/dc/terms/language
+	languageOfMetadata	Language of Metadata	Language of metadata describing this dataset. 		text	40		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		VOCABULARY_SELECT	"{""sortByLocalisedStringsOrder"" : ""true""}"	citation	http://purl.org/dc/terms/language
+	languageOfData	Language of Data Files	Language of data files within this dataset. 		text	41		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		VOCABULARY_SELECT	"{""sortByLocalisedStringsOrder"" : ""true""}"	citation	http://purl.org/dc/terms/language
+	languageOfDocumentation	Language of Documentation	Language in which the documentation is written. 		text	42		TRUE	TRUE	TRUE	TRUE	TRUE	FALSE		VOCABULARY_SELECT	"{""sortByLocalisedStringsOrder"" : ""true""}"	citation	http://purl.org/dc/terms/language
+	producer	Producer	Person or organization with the financial or administrative responsibility over this Dataset		none	43		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		TEXT	{}	citation	
+	producerName	Name	Producer name.	FamilyName, GivenName or Organization	text	44	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	producer	TEXT	{}	citation	
+	producerAffiliation	Affiliation	The organization with which the producer is affiliated.		text	45	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	TEXT	{}	citation	
+	producerAbbreviation	Abbreviation	The abbreviation by which the producer is commonly known. (ex. IQSS, ICPSR)		text	46	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	TEXT	{}	citation	
+	producerURL	URL	Producer URL points to the producer's web presence, if appropriate.	http://... or https://...	url	47	"<a href=""#VALUE"" target=""_blank"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	TEXT	{}	citation	
+	producerLogoURL	Logo URL	URL for the producer's logo, which points to this producer's web-accessible logo image.	http://... or https://...	url	48	"<img src=""#VALUE"" alt=""#NAME"" class=""metadata-logo""/><br/>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	producer	TEXT	{}	citation	
+	productionDate	Production Date	Date when the data collection or other materials were produced (not distributed, published or archived). Expected date formats are YYYY, YYYY-MM or YYYY-MM-DD.	YYYY, YYYY-MM or YYYY-MM-DD	date	49		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		TEXT	{}	citation	
+	productionPlace	Production Place	The location where the data collection and any other related materials were produced.		text	50		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	citation	
+	contributor	Contributor	The organization or person responsible for either collecting, managing, or otherwise contributing in some form to the development of the resource.		none	51	:	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		TEXT	{}	citation	http://purl.org/dc/terms/contributor
+	contributorType	Type	The type of contributor of the resource.		text	52	#VALUE	TRUE	TRUE	FALSE	TRUE	FALSE	FALSE	contributor	VOCABULARY_SELECT	"{""sortByLocalisedStringsOrder"" : ""true""}"	citation	
+	contributorName	Name	The Family Name, Given Name or organization name of the contributor.	FamilyName, GivenName or Organization	text	53	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	contributor	TEXT	{}	citation	
+	grantNumber	Grant Information	Information regarding grant/funding. 		none	54		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		TEXT	{}	citation	https://schema.org/sponsor
+	grantNumberAgency	Grant Agency	Full name of the grant agency. For instance: European Commission, National Science Centre (Poland), National Centre for Research and Development (Poland), Wellcome Trust. 		text	55	#VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	grantNumber	SUGGESTION_TEXT	"{suggestionFilteredBy:[], suggestionSourceClass:""GrantSuggestionHandler"", suggestionSourceField:""grantNumberAgency""}"	citation	
+	grantNumberAgencyShortName	Grant Agency Short Name	Short name of the grant agency, usually the acronym of its official full name. For instance: EC for European Commission, WT for Wellcome Trust, NCN for National Science Centre (Poland), NCBR for National Centre for Research and Development (Poland). 		text	56	(#VALUE)	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	grantNumber	SUGGESTION_TEXT	"{suggestionFilteredBy:[""grantNumberAgency""], suggestionSourceClass:""GrantSuggestionHandler"", suggestionSourceField:""grantNumberAgencyShortName""}"	citation	
+	grantNumberAgencyIdentifier	Grant Agency ROR	"ROR identifier of the grant agency. Please provide the identifier only if the ""Grant Agency"" field contains exactly one institution. The identifier should be provided in its URL form, for instance ""https://ror.org/019w4f821"" for European Union or ""https://ror.org/03ha2q922"" for National Science Centre (Poland)."	https://ror.org/...	text	57	"– ROR: <a href=""#VALUE"" target=""_blank"">#VALUE</a>"	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	grantNumber	TEXT	{}	citation	
+	grantNumberProgram	Grant Program 	Funding program name. For instance: FP7, H2020, Sonata.		text	58	– #VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	grantNumber	SUGGESTION_TEXT	"{suggestionFilteredBy:[""grantNumberAgency""], suggestionSourceClass:""GrantSuggestionHandler"", suggestionSourceField:""grantNumberProgram""}"	citation	
+	grantNumberValue	Grant Number	Unique identifier in the scope of the grant agency, usually a grant or agreement number of the project.		text	59	– #VALUE	TRUE	FALSE	FALSE	TRUE	TRUE	FALSE	grantNumber	TEXT	{}	citation	
+	distributor	Distributor	The organization designated by the author or producer to generate copies of the particular work including any necessary editions or revisions.		none	60		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		TEXT	{}	citation	
+	distributorName	Name	Distributor name.	FamilyName, GivenName or Organization	text	61	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	distributor	TEXT	{}	citation	
+	distributorAffiliation	Affiliation	The organization with which the distributor contact is affiliated.		text	62	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	TEXT	{}	citation	
+	distributorAbbreviation	Abbreviation	The abbreviation by which this distributor is commonly known (e.g., IQSS, ICPSR).		text	63	(#VALUE)	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	TEXT	{}	citation	
+	distributorURL	URL	Distributor URL points to the distributor's web presence, if appropriate.	http://... or https://...	url	64	"<a href=""#VALUE"" target=""_blank"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	TEXT	{}	citation	
+	distributorLogoURL	Logo URL	URL of the distributor's logo, which points to this distributor's web-accessible logo image.	http://... or https://...	url	65	"<img src=""#VALUE"" alt=""#NAME"" class=""metadata-logo""/><br/>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	distributor	TEXT	{}	citation	
+	distributionDate	Distribution Date	Date that the work was made available for distribution/presentation. Expected date formats are YYYY, YYYY-MM or YYYY-MM-DD.	YYYY, YYYY-MM or YYYY-MM-DD	date	66		TRUE	FALSE	FALSE	TRUE	FALSE	FALSE		TEXT	{}	citation	
+	depositor	Depositor	The person (Family Name, Given Name) or the name of the organization that deposited this Dataset to the repository.		text	67		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	citation	
+	dateOfDeposit	Deposit Date	Date that the Dataset was deposited into the repository. Expected date formats are YYYY, YYYY-MM or YYYY-MM-DD.	YYYY, YYYY-MM or YYYY-MM-DD.	date	68		FALSE	FALSE	FALSE	TRUE	FALSE	FALSE		TEXT	{}	citation	http://purl.org/dc/terms/dateSubmitted
+	timePeriodCovered	Time Period Covered	Time period to which the data refer. This item reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected. Also known as span.		none	69	;	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		TEXT	{}	citation	https://schema.org/temporalCoverage
+	timePeriodCoveredStart	Start	Start date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected. Expected date formats are YYYY, YYYY-MM or YYYY-MM-DD.	YYYY, YYYY-MM or YYYY-MM-DD	date	70	#NAME: #VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	TEXT	{}	citation	
+	timePeriodCoveredEnd	End	End date which reflects the time period covered by the data, not the dates of coding or making documents machine-readable or the dates the data were collected. Expected date formats are YYYY, YYYY-MM or YYYY-MM-DD.	YYYY, YYYY-MM or YYYY-MM-DD	date	71	#NAME: #VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	timePeriodCovered	TEXT	{}	citation	
+	dateOfCollection	Date of Collection	Contains the date(s) when the data were collected.		none	72	;	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		TEXT	{}	citation	
+	dateOfCollectionStart	Start	Date when the data collection started. Expected date formats are YYYY, YYYY-MM or YYYY-MM-DD.	YYYY, YYYY-MM or YYYY-MM-DD	date	73	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dateOfCollection	TEXT	{}	citation	
+	dateOfCollectionEnd	End	Date when the data collection ended. Expected date formats are YYYY, YYYY-MM or YYYY-MM-DD.	YYYY, YYYY-MM or YYYY-MM-DD	date	74	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	dateOfCollection	TEXT	{}	citation	
+	kindOfData	Kind of Data	General type of the data in the dataset.		text	75		TRUE	TRUE	TRUE	TRUE	FALSE	FALSE		VOCABULARY_SELECT	{}	citation	
+	series	Series	Information about the Dataset series.		none	76	:	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXT	{}	citation	
+	seriesName	Name	Name of the dataset series to which the Dataset belongs.		text	77	#VALUE	TRUE	FALSE	FALSE	TRUE	FALSE	FALSE	series	TEXT	{}	citation	
+	seriesInformation	Information	History of the series and summary of those features that apply to the series as a whole.		textbox	78	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	series	TEXT	{}	citation	
+	software	Software	Information about the software used to generate the Dataset.		none	79	,	FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		TEXT	{}	citation	https://www.w3.org/TR/prov-o/#wasGeneratedBy
+	softwareName	Name	Name of software used to generate the Dataset.		text	80	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	software	TEXT	{}	citation	
+	softwareVersion	Version	Version of the software used to generate the Dataset.		text	81	#NAME: #VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	software	TEXT	{}	citation	
+	relatedDataset	Related Dataset	Any Datasets that are related to the deposited dataset, such as previous research on this subject.		none	82		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		TEXT	{}	citation	http://purl.org/dc/terms/relation
+	relatedDatasetCitation	Citation	The full bibliographic citation for this related dataset. 		textbox	83	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	relatedDataset	TEXTBOX	{}	citation	http://purl.org/dc/terms/bibliographicCitation
+	relatedDatasetRelationType	Relation Type	The type of relation between the deposited and the related dataset.		text	84	(#VALUE.)	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	relatedDataset	VOCABULARY_SELECT	{}	citation	
+	relatedDatasetIDType	ID Type	The type of digital identifier of the related dataset (e.g., Digital Object Identifier (DOI)).		text	85	#VALUE:	TRUE	TRUE	FALSE	FALSE	TRUE	FALSE	relatedDataset	VOCABULARY_SELECT	{}	citation	http://purl.org/spar/datacite/ResourceIdentifierScheme
+	relatedDatasetIDNumber	ID Number	The identifier for the selected ID type.		text	86	#VALUE	TRUE	FALSE	FALSE	FALSE	TRUE	FALSE	relatedDataset	TEXT	{}	citation	http://purl.org/spar/datacite/ResourceIdentifier
+	relatedDatasetURL	URL	Link to the web page where the related dataset is available. 	http://... or https://...	url	87	"<a href=""#VALUE"" target=""_blank"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	TRUE	FALSE	relatedDataset	TEXT	{}	citation	
+	relatedMaterial	Related Material	Any material related to the deposited dataset.		none	88		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		TEXT	{}	citation	http://purl.org/dc/terms/relation
+	relatedMaterialCitation	Citation	The full bibliographic citation for this related material. 		textbox	89	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	relatedMaterial	TEXTBOX	{}	citation	http://purl.org/dc/terms/bibliographicCitation
+	relatedMaterialRelationType	Relation Type	The type of relation between the deposited dataset and the related material. 		text	90	(#VALUE.)	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	relatedMaterial	VOCABULARY_SELECT	{}	citation	
+	relatedMaterialIDType	ID Type	The type of digital identifier of the related material (e.g., Digital Object Identifier (DOI)).		text	91	#VALUE:	TRUE	TRUE	FALSE	FALSE	FALSE	FALSE	relatedMaterial	VOCABULARY_SELECT	{}	citation	http://purl.org/spar/datacite/ResourceIdentifierScheme
+	relatedMaterialIDNumber	ID Number	The identifier for the selected ID type.		text	92	#VALUE	TRUE	FALSE	FALSE	FALSE	FALSE	FALSE	relatedMaterial	TEXT	{}	citation	http://purl.org/spar/datacite/ResourceIdentifier
+	relatedMaterialURL	URL	Link to the web page where the related material is available. 	http://... or https://...	url	93	"<a href=""#VALUE"" target=""_blank"">#VALUE</a>"	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	relatedMaterial	TEXT	{}	citation	
+	otherReferences	Other References	Any references that would serve as background or supporting material to this Dataset.		text	94		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		TEXT	{}	citation	http://purl.org/dc/terms/references
+	dataSources	Data Sources	List of books, articles, serials, or machine-readable data files that served as the sources of the data collection.		textbox	95		FALSE	FALSE	TRUE	FALSE	FALSE	FALSE		TEXTBOX	{}	citation	https://www.w3.org/TR/prov-o/#wasDerivedFrom
+	originOfSources	Origin of Sources	For historical materials, information about the origin of the sources and the rules followed in establishing the sources should be specified.		textbox	96		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	citation	
+	characteristicOfSources	Characteristic of Sources Noted	Assessment of characteristics and source material.		textbox	97		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	citation	
+	accessToSources	Documentation and Access to Sources	Level of documentation of the original sources.		textbox	98		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		TEXTBOX	{}	citation	
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder														
 	subject	Agricultural Sciences	D01	0														
 	subject	Arts and Humanities	D0	1														
@@ -980,3 +983,189 @@
 	relatedMaterialRelationType	IsIdenticalTo		13														
 	relatedMaterialRelationType	IsDerivedFrom		14														
 	relatedMaterialRelationType	IsSourceOf		15														
+	titleTranslationLanguage	Polish		0														
+	titleTranslationLanguage	English		1														
+	titleTranslationLanguage	Abkhaz		2														
+	titleTranslationLanguage	Afar		3														
+	titleTranslationLanguage	Afrikaans		4														
+	titleTranslationLanguage	Akan		5														
+	titleTranslationLanguage	Albanian		6														
+	titleTranslationLanguage	Amharic		7														
+	titleTranslationLanguage	Arabic		8														
+	titleTranslationLanguage	Aragonese		9														
+	titleTranslationLanguage	Armenian		10														
+	titleTranslationLanguage	Assamese		11														
+	titleTranslationLanguage	Avaric		12														
+	titleTranslationLanguage	Avestan		13														
+	titleTranslationLanguage	Aymara		14														
+	titleTranslationLanguage	Azerbaijani		15														
+	titleTranslationLanguage	Bambara		16														
+	titleTranslationLanguage	Bashkir		17														
+	titleTranslationLanguage	Basque		18														
+	titleTranslationLanguage	Belarusian		19														
+	titleTranslationLanguage	Bengali, Bangla		20														
+	titleTranslationLanguage	Bihari		21														
+	titleTranslationLanguage	Bislama		22														
+	titleTranslationLanguage	Bosnian		23														
+	titleTranslationLanguage	Breton		24														
+	titleTranslationLanguage	Bulgarian		25														
+	titleTranslationLanguage	Burmese		26														
+	titleTranslationLanguage	Catalan,Valencian		27														
+	titleTranslationLanguage	Chamorro		28														
+	titleTranslationLanguage	Chechen		29														
+	titleTranslationLanguage	Chichewa, Chewa, Nyanja		30														
+	titleTranslationLanguage	Chinese		31														
+	titleTranslationLanguage	Chuvash		32														
+	titleTranslationLanguage	Cornish		33														
+	titleTranslationLanguage	Corsican		34														
+	titleTranslationLanguage	Cree		35														
+	titleTranslationLanguage	Croatian		36														
+	titleTranslationLanguage	Czech		37														
+	titleTranslationLanguage	Danish		38														
+	titleTranslationLanguage	Divehi, Dhivehi, Maldivian		39														
+	titleTranslationLanguage	Dutch		40														
+	titleTranslationLanguage	Dzongkha		41														
+	titleTranslationLanguage	Esperanto		42														
+	titleTranslationLanguage	Estonian		43														
+	titleTranslationLanguage	Ewe		44														
+	titleTranslationLanguage	Faroese		45														
+	titleTranslationLanguage	Fijian		46														
+	titleTranslationLanguage	Finnish		47														
+	titleTranslationLanguage	French		48														
+	titleTranslationLanguage	Fula, Fulah, Pulaar, Pular		49														
+	titleTranslationLanguage	Galician		50														
+	titleTranslationLanguage	Georgian		51														
+	titleTranslationLanguage	German		52														
+	titleTranslationLanguage	Greek (modern)		53														
+	titleTranslationLanguage	Guaraní		54														
+	titleTranslationLanguage	Gujarati		55														
+	titleTranslationLanguage	Haitian, Haitian Creole		56														
+	titleTranslationLanguage	Hausa		57														
+	titleTranslationLanguage	Hebrew (modern)		58														
+	titleTranslationLanguage	Herero		59														
+	titleTranslationLanguage	Hindi		60														
+	titleTranslationLanguage	Hiri Motu		61														
+	titleTranslationLanguage	Hungarian		62														
+	titleTranslationLanguage	Interlingua		63														
+	titleTranslationLanguage	Indonesian		64														
+	titleTranslationLanguage	Interlingue		65														
+	titleTranslationLanguage	Irish		66														
+	titleTranslationLanguage	Igbo		67														
+	titleTranslationLanguage	Inupiaq		68														
+	titleTranslationLanguage	Ido		69														
+	titleTranslationLanguage	Icelandic		70														
+	titleTranslationLanguage	Italian		71														
+	titleTranslationLanguage	Inuktitut		72														
+	titleTranslationLanguage	Japanese		73														
+	titleTranslationLanguage	Javanese		74														
+	titleTranslationLanguage	Kalaallisut, Greenlandic		75														
+	titleTranslationLanguage	Kannada		76														
+	titleTranslationLanguage	Kanuri		77														
+	titleTranslationLanguage	Kashmiri		78														
+	titleTranslationLanguage	Kazakh		79														
+	titleTranslationLanguage	Khmer		80														
+	titleTranslationLanguage	Kikuyu, Gikuyu		81														
+	titleTranslationLanguage	Kinyarwanda		82														
+	titleTranslationLanguage	Kyrgyz		83														
+	titleTranslationLanguage	Komi		84														
+	titleTranslationLanguage	Kongo		85														
+	titleTranslationLanguage	Korean		86														
+	titleTranslationLanguage	Kurdish		87														
+	titleTranslationLanguage	Kwanyama, Kuanyama		88														
+	titleTranslationLanguage	Latin		89														
+	titleTranslationLanguage	Luxembourgish, Letzeburgesch		90														
+	titleTranslationLanguage	Ganda		91														
+	titleTranslationLanguage	Limburgish, Limburgan, Limburger		92														
+	titleTranslationLanguage	Lingala		93														
+	titleTranslationLanguage	Lao		94														
+	titleTranslationLanguage	Lithuanian		95														
+	titleTranslationLanguage	Luba-Katanga		96														
+	titleTranslationLanguage	Latvian		97														
+	titleTranslationLanguage	Manx		98														
+	titleTranslationLanguage	Macedonian		99														
+	titleTranslationLanguage	Malagasy		100														
+	titleTranslationLanguage	Malay		101														
+	titleTranslationLanguage	Malayalam		102														
+	titleTranslationLanguage	Maltese		103														
+	titleTranslationLanguage	Māori		104														
+	titleTranslationLanguage	Marathi (Marāṭhī)		105														
+	titleTranslationLanguage	Marshallese		106														
+	titleTranslationLanguage	Mixtepec Mixtec		107														
+	titleTranslationLanguage	Mongolian		108														
+	titleTranslationLanguage	Nauru		109														
+	titleTranslationLanguage	Navajo, Navaho		110														
+	titleTranslationLanguage	Northern Ndebele		111														
+	titleTranslationLanguage	Nepali		112														
+	titleTranslationLanguage	Ndonga		113														
+	titleTranslationLanguage	Norwegian Bokmål		114														
+	titleTranslationLanguage	Norwegian Nynorsk		115														
+	titleTranslationLanguage	Norwegian		116														
+	titleTranslationLanguage	Nuosu		117														
+	titleTranslationLanguage	Southern Ndebele		118														
+	titleTranslationLanguage	Occitan		119														
+	titleTranslationLanguage	Ojibwe, Ojibwa		120														
+	titleTranslationLanguage	Old Church Slavonic,Church Slavonic,Old Bulgarian		121														
+	titleTranslationLanguage	Oromo		122														
+	titleTranslationLanguage	Oriya		123														
+	titleTranslationLanguage	Ossetian, Ossetic		124														
+	titleTranslationLanguage	Panjabi, Punjabi		125														
+	titleTranslationLanguage	Pāli		126														
+	titleTranslationLanguage	Persian (Farsi)		127														
+	titleTranslationLanguage	Pashto, Pushto		128														
+	titleTranslationLanguage	Portuguese		129														
+	titleTranslationLanguage	Quechua		130														
+	titleTranslationLanguage	Romansh		131														
+	titleTranslationLanguage	Kirundi		132														
+	titleTranslationLanguage	Romanian		133														
+	titleTranslationLanguage	Russian		134														
+	titleTranslationLanguage	Sanskrit (Saṁskṛta)		135														
+	titleTranslationLanguage	Sardinian		136														
+	titleTranslationLanguage	Sindhi		137														
+	titleTranslationLanguage	Northern Sami		138														
+	titleTranslationLanguage	Samoan		139														
+	titleTranslationLanguage	Sango		140														
+	titleTranslationLanguage	Serbian		141														
+	titleTranslationLanguage	Scottish Gaelic, Gaelic		142														
+	titleTranslationLanguage	Shona		143														
+	titleTranslationLanguage	Sinhala, Sinhalese		144														
+	titleTranslationLanguage	Slovak		145														
+	titleTranslationLanguage	Slovene		146														
+	titleTranslationLanguage	Somali		147														
+	titleTranslationLanguage	Southern Sotho		148														
+	titleTranslationLanguage	Spanish, Castilian		149														
+	titleTranslationLanguage	Sundanese		150														
+	titleTranslationLanguage	Swahili		151														
+	titleTranslationLanguage	Swati		152														
+	titleTranslationLanguage	Swedish		153														
+	titleTranslationLanguage	Tamil		154														
+	titleTranslationLanguage	Telugu		155														
+	titleTranslationLanguage	Tajik		156														
+	titleTranslationLanguage	Thai		157														
+	titleTranslationLanguage	Tigrinya		158														
+	titleTranslationLanguage	Tibetan Standard, Tibetan, Central		159														
+	titleTranslationLanguage	Turkmen		160														
+	titleTranslationLanguage	Tagalog		161														
+	titleTranslationLanguage	Tswana		162														
+	titleTranslationLanguage	Tonga (Tonga Islands)		163														
+	titleTranslationLanguage	Turkish		164														
+	titleTranslationLanguage	Tsonga		165														
+	titleTranslationLanguage	Tatar		166														
+	titleTranslationLanguage	Twi		167														
+	titleTranslationLanguage	Tahitian		168														
+	titleTranslationLanguage	Uyghur, Uighur		169														
+	titleTranslationLanguage	Ukrainian		170														
+	titleTranslationLanguage	Urdu		171														
+	titleTranslationLanguage	Uzbek		172														
+	titleTranslationLanguage	Venda		173														
+	titleTranslationLanguage	Vietnamese		174														
+	titleTranslationLanguage	Volapük		175														
+	titleTranslationLanguage	Walloon		176														
+	titleTranslationLanguage	Welsh		177														
+	titleTranslationLanguage	Wolof		178														
+	titleTranslationLanguage	Western Frisian		179														
+	titleTranslationLanguage	Xhosa		180														
+	titleTranslationLanguage	Yiddish		181														
+	titleTranslationLanguage	Yoruba		182														
+	titleTranslationLanguage	Zhuang, Chuang		183														
+	titleTranslationLanguage	Zulu		184														
+	titleTranslationLanguage	Not applicable		185														
