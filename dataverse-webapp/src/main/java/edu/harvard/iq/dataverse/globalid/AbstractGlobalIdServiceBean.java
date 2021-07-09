@@ -272,8 +272,8 @@ public abstract class AbstractGlobalIdServiceBean implements GlobalIdServiceBean
                         creatorsElement.append("<nameIdentifier schemeURI=\"http://id.loc.gov/authorities/names/\" nameIdentifierScheme=\"LCNA\">" + author.getIdValue() + "</nameIdentifier>");
                     }
                 }
-                if (author.getAffiliation() != null && !author.getAffiliation().getDisplayValue().isEmpty()) {
-                    creatorsElement.append("<affiliation>" + author.getAffiliation().getDisplayValue() + "</affiliation>");
+                if (author.getAffiliation() != null && !author.getAffiliation().getValue().isEmpty()) {
+                    creatorsElement.append("<affiliation>" + author.getAffiliation().getValue() + "</affiliation>");
                 }
                 creatorsElement.append("</creator>");
             }
