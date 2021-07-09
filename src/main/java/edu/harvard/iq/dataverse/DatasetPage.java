@@ -5504,6 +5504,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public List<String> getVocabScripts() {
+        //ToDo - only return scripts that are needed (those fields are set on display pages, those blocks/fields are allowed in the Dataverse collection for create/edit)?
         Set<String> scripts = new HashSet<String>();
         for(JsonObject jo: getCVocConf().values()) {
             scripts.add(jo.getString("js-url"));
