@@ -1549,10 +1549,11 @@ By default this setting is absent and the Dataverse Software assumes it to be fa
 :HandleAuthHandle
 +++++++++++++++++++++++++
 
-Specific for Handle PIDs. Set this setting to <prefix/suffix> to be used on a global handle service when the public key is NOT stored in the default handle.
-By default this setting is absent and the Dataverse Software assumes it to be not set.
+Specific for Handle PIDs. Set this setting to <prefix>/<suffix> to be used on a global handle service when the public key is NOT stored in the default handle.
+By default this setting is absent and the Dataverse Software assumes it to be not set. If the public key for instance is stored in handle: 21.T12996/USER01.
+For this handle the prefix is '21.T12996' and the suffix is 'USER01'. The command to execute is then:
 
-``curl -X PUT -d '<prefix/<suffix>' http://localhost:8080/api/admin/settings/:HandleAuthHandle``
+``curl -X PUT -d '21.T12996/USER01' http://localhost:8080/api/admin/settings/:HandleAuthHandle``
 
 .. _:FileValidationOnPublishEnabled:
 
