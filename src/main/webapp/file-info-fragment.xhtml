@@ -28,7 +28,6 @@
     <p:outputPanel id="fileInfoInclude-filesTable" styleClass="media">
         <div class="media-left col-file-thumb" style="padding-top:4px;">
             <div class="media-object thumbnail-block text-center">
-            <!-- TODO - adjust canDownloadFile method to account for embargo? (and only restricting for released files)  -->
                 <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(fileMetadata.dataFile)} file-thumbnail-icon text-muted" jsf:rendered="#{!fileDownloadHelper.canDownloadFile(fileMetadata) or !dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)}"/>
                 <span class="file-thumbnail-preview-img" jsf:rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata) and dataFileServiceBean.isThumbnailAvailable(fileMetadata.dataFile)}"
                       data-toggle="popover" data-placement="auto top" data-trigger="hover" data-html="true" data-content="&lt;img src=&#34;/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=400&#34; alt=&#34;#{bundle['file.preview']} #{fileMetadata.label}&#34; /&gt;"

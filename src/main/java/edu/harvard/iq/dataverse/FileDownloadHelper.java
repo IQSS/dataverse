@@ -224,6 +224,17 @@ public class FileDownloadHelper implements java.io.Serializable {
            }
        }
 
+       if (datafileService.isActivelyEmbargoed(fileMetadata)) {
+           if (this.doesSessionUserHavePermission(Permission.EditDataset, fileMetadata)) {
+               // Yes, save answer and return true
+               this.fileDownloadPermissionMap.put(fid, true);
+               return true;
+           } else {
+               this.fileDownloadPermissionMap.put(fid, false);
+               return false;
+           }
+       }
+       
         if (!isRestrictedFile){
             // Yes, save answer and return true
             this.fileDownloadPermissionMap.put(fid, true);
@@ -239,6 +250,10 @@ public class FileDownloadHelper implements java.io.Serializable {
 
         this.fileDownloadPermissionMap.put(fid, false);
         return false;
+    }
+
+    public boolean isRestrictedOrEmbargoed(FileMetadata fileMetadata) {
+        return fileMetadata.isRestricted() || datafileService.isActivelyEmbargoed(fileMetadata);
     }
 
      /**
