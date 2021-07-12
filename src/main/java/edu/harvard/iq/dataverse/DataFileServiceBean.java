@@ -14,7 +14,6 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -1644,20 +1643,5 @@ public class DataFileServiceBean implements java.io.Serializable {
         } catch (Exception ex) {
             return false;
         }
-    }
-
-    public boolean isActivelyEmbargoed(FileMetadata fileMetadata) {
-        return isActivelyEmbargoed(fileMetadata.getDataFile());
-    }
-    
-    public boolean isActivelyEmbargoed(DataFile df) {
-        Embargo e = df.getEmbargo();
-        if (e != null) {
-            LocalDate endDate = e.getDateAvailable();
-            if (endDate.isAfter(LocalDate.now())) {
-                return true;
-            }
-        }
-        return false;
     }
 }

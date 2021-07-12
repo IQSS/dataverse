@@ -1636,7 +1636,7 @@ public class Access extends AbstractApiBean {
         
         //True if there's an embargo that hasn't yet expired
         //In this state, we block access as though the file is restricted (even if it is not restricted)
-        boolean embargoed = dataFileService.isActivelyEmbargoed(df);
+        boolean embargoed = FileUtil.isActivelyEmbargoed(df);
         
         
         /*

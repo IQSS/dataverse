@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -70,6 +71,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ArrayList;
@@ -2089,5 +2091,20 @@ public class FileUtil implements java.io.Serializable  {
             csvSB.append("\n").append(String.join(",", values));
         });
         return csvSB.toString();
+    }
+
+    public static boolean isActivelyEmbargoed(DataFile df) {
+        Embargo e = df.getEmbargo();
+        if (e != null) {
+            LocalDate endDate = e.getDateAvailable();
+            if (endDate.isAfter(LocalDate.now())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isActivelyEmbargoed(FileMetadata fileMetadata) {
+        return isActivelyEmbargoed(fileMetadata.getDataFile());
     }
 }
