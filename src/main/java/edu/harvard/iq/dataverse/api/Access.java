@@ -1634,6 +1634,10 @@ public class Access extends AbstractApiBean {
         
         boolean published = false; 
         
+        //True if there's an embargo that hasn't yet expired
+        //In this state, we block access as though the file is restricted (even if it is not restricted)
+        boolean embargoed = dataFileService.isActivelyEmbargoed(df);
+        
         
         /*
         SEK 7/26/2018 for 3661 relying on the version state of the dataset versions
@@ -1696,7 +1700,7 @@ public class Access extends AbstractApiBean {
             }
         }
         
-        if (!restricted) {
+        if (!restricted && !embargoed) {
             // And if they are not published, they can still be downloaded, if the user
             // has the permission to view unpublished versions! (this case will 
             // be handled below)
@@ -1761,7 +1765,7 @@ public class Access extends AbstractApiBean {
         // an unpublished version:         
         // (if (published) was already addressed above)
         
-        if (!restricted) {
+        if (!restricted && !embargoed) {
             // If the file is not published, they can still download the file, if the user
             // has the permission to view unpublished versions:
             
@@ -1778,7 +1782,7 @@ public class Access extends AbstractApiBean {
             if (apiTokenUser != null) {
                 // used in an API context
                 if (permissionService.requestOn( createDataverseRequest(apiTokenUser), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
-                    logger.log(Level.FINE, "Session-based auth: user {0} has access rights on the non-restricted, unpublished datafile.", apiTokenUser.getIdentifier());
+                    logger.log(Level.FINE, "Token-based auth: user {0} has access rights on the non-restricted, unpublished datafile.", apiTokenUser.getIdentifier());
                     return true;
                 }
             }
@@ -1791,7 +1795,7 @@ public class Access extends AbstractApiBean {
                     
         } else {
             
-            // OK, this is a restricted file. 
+            // OK, this is a restricted and/or embargoed file. 
             
             boolean hasAccessToRestrictedBySession = false; 
             boolean hasAccessToRestrictedByToken = false; 
@@ -1860,9 +1864,12 @@ public class Access extends AbstractApiBean {
                 return false;
             } 
             
+            
+            //Doesn't this ~duplicate logic above - if so, if there's a way to get here, I think it still works for embargoed files (you only get access if you have download permissions, and, if not published, also view unpublished)
             if (permissionService.requestOn(createDataverseRequest(user), df).has(Permission.DownloadFile)) {
                 if (published) {
                     logger.log(Level.FINE, "API token-based auth: User {0} has rights to access the datafile.", user.getIdentifier());
+                    //Same case as line 1809 (and part of 1708 though when published you don't need the DownloadFile permission)
                     return true; 
                 } else {
                     // if the file is NOT published, we will let them download the 
@@ -1870,6 +1877,7 @@ public class Access extends AbstractApiBean {
                     // unpublished versions:
                     if (permissionService.requestOn(createDataverseRequest(user), df.getOwner()).has(Permission.ViewUnpublishedDataset)) {
                         logger.log(Level.FINE, "API token-based auth: User {0} has rights to access the (unpublished) datafile.", user.getIdentifier());
+                        //Same case as line 1843?
                         return true;
                     } else {
                         logger.log(Level.FINE, "API token-based auth: User {0} is not authorized to access the (unpublished) datafile.", user.getIdentifier());

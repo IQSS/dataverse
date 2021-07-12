@@ -1647,7 +1647,11 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
 
     public boolean isActivelyEmbargoed(FileMetadata fileMetadata) {
-        Embargo e = fileMetadata.getDataFile().getEmbargo();
+        return isActivelyEmbargoed(fileMetadata.getDataFile());
+    }
+    
+    public boolean isActivelyEmbargoed(DataFile df) {
+        Embargo e = df.getEmbargo();
         if (e != null) {
             LocalDate endDate = e.getDateAvailable();
             if (endDate.isAfter(LocalDate.now())) {

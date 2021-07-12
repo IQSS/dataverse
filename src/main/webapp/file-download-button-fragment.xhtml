@@ -43,15 +43,13 @@
         </li>
     </ui:fragment>
     <ui:fragment rendered="#{!fileMetadata.datasetVersion.deaccessioned and !fileDownloadHelper.canDownloadFile(fileMetadata)
-                             and !fileMetadata.dataFile.owner.fileAccessRequest}">
+                             and !fileMetadata.dataFile.owner.fileAccessRequest and !dataFileServiceBean.isActivelyEmbargoed(fileMetadata)}">
         <li><span class="dropdown-item-text">#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.notRequest']}</span></li>
     </ui:fragment>
-    <!--  ToDo Add an embargo specific message when actively embargoed (and turn the above message off
     <ui:fragment rendered="#{!fileMetadata.datasetVersion.deaccessioned and !fileDownloadHelper.canDownloadFile(fileMetadata)
-                             and !fileMetadata.dataFile.owner.fileAccessRequest}">
-        <li><span class="dropdown-item-text">#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.notRequest']}</span></li>
+                             and dataFileServiceBean.isActivelyEmbargoed(fileMetadata)}">
+        <li><span class="dropdown-item-text">#{bundle['file.dataFilesTab.terms.list.termsOfAccess.embargoed']}</span></li>
     </ui:fragment>
-     -->
     <!-- END: Request Access Options -->
     
     <!-- CAN DOWNLOAD ACCESS Options -->
@@ -228,7 +226,7 @@
     <li role="presentation" class="clearfix"></li>
     <!-- END: CITATION FILES DOWNLOAD OPTIONS -->
     
-    <!-- TODO - how to restrict for embargo and still allow aux file download when you otherwise can't download the restricted file  -->
+    <!-- TODO - looks like this shows Aux files regardless of whether you can download them but the redirect to the API will check permissions downloads related to unreleased files and non-public aux files on files that are restricted/embargoed. Should the menu indicate the restrictions?  -->
     <!-- AUX FILES DOWNLOAD OPTIONS -->
     <ui:fragment rendered="#{not empty auxiliaryFileServiceBean.findAuxiliaryFiles(fileMetadata.dataFile)}">
         <!-- Download Auxiliary Files -->
