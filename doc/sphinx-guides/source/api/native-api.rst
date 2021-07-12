@@ -2135,8 +2135,13 @@ The jsonData object includes values for:
   * "md5Hash" - String with MD5 hash value, or
   * "checksum" - Json Object with "@type" field specifying the algorithm used and "@value" field with the value from that algorithm, both Strings
 
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
 
 A curl example using an ``PERSISTENT_ID``
+
+* ``SERVER_URL`` - e.g. https://demo.dataverse.org
+* ``API_TOKEN`` - API endpoints require an API token that can be passed as the X-Dataverse-key HTTP header.  For more details, see the :doc:`auth` section.
+* ``PERSISTENT_IDENTIFIER`` - Example: ``doi:10.5072/FK2/7U7YBV``
 
 .. code-block:: bash
 
