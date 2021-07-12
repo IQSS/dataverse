@@ -473,7 +473,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     
 
     public String init() {
-        System.out.print("edit data files page init...");
         // default mode should be EDIT
         if (mode == null) {
             mode = FileEditMode.EDIT;
@@ -599,12 +598,9 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
 
         if (mode == FileEditMode.UPLOAD) {
-            System.out.print("file edit mode " + mode);
-            if (settingsWrapper.getUploadMethodsCount() == 1){
-                System.out.print("settingsWrapper.getUploadMethodsCount() == 1 " );
+            if (settingsWrapper.getUploadMethodsCount() == 1){               
                 JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.uploadFiles.label"), BundleUtil.getStringFromBundle("dataset.message.uploadFilesSingle.message", Arrays.asList(systemConfig.getGuidesBaseUrl(), systemConfig.getGuidesVersion())));
             } else if (settingsWrapper.getUploadMethodsCount() > 1) {
-                System.out.print("settingsWrapper.getUploadMethodsCount() > 1 " );
                 JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.uploadFiles.label"), BundleUtil.getStringFromBundle("dataset.message.uploadFilesMultiple.message", Arrays.asList(systemConfig.getGuidesBaseUrl(), systemConfig.getGuidesVersion())));
             }
             
@@ -1296,7 +1292,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     
     public boolean showFileUploadComponent(){
         if (mode == FileEditMode.UPLOAD || mode == FileEditMode.CREATE) {
-            System.out.print("showfileuploadfragement == true");
            return true;
         }
         
@@ -1517,7 +1512,6 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     private  void setUpRsync() {
-        System.out.print("setUpRsync called...");
         logger.fine("setUpRsync called...");
         if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsWrapper.getValueForKey(SettingsServiceBean.Key.UploadMethods))
                 && dataset.getFiles().isEmpty()) { //only check for rsync if no files exist
@@ -1534,23 +1528,21 @@ public class EditDatafilesPage implements java.io.Serializable {
             } catch (EJBException ex) {
                 logger.warning("Problem getting rsync script (EJBException): " + EjbUtil.ejbExceptionToString(ex));
                 FacesContext.getCurrentInstance().addMessage(uploadComponentId,
-					new FacesMessage(FacesMessage.SEVERITY_ERROR,
-							"Problem getting rsync script (EJBException): " + EjbUtil.ejbExceptionToString(ex),
-							"Problem getting rsync script (EJBException):"));
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Problem getting rsync script (EJBException): " + EjbUtil.ejbExceptionToString(ex),
+                                "Problem getting rsync script (EJBException):"));
             } catch (RuntimeException ex) {
-                        System.out.print("RuntimeException...");
                 logger.warning("Problem getting rsync script (RuntimeException): " + ex.getLocalizedMessage());
-                                FacesContext.getCurrentInstance().addMessage(uploadComponentId,
-					new FacesMessage(FacesMessage.SEVERITY_ERROR,
-							"Problem getting rsync script (RuntimeException): " +ex.getMessage(),
-							"Problem getting rsync script (RuntimeException):"));
+                FacesContext.getCurrentInstance().addMessage(uploadComponentId,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Problem getting rsync script (RuntimeException): " + ex.getMessage(),
+                                "Problem getting rsync script (RuntimeException):"));
             } catch (CommandException cex) {
-                 System.out.print("commandException...");
                 logger.warning("Problem getting rsync script (Command Exception): " + cex.getLocalizedMessage());
-                                                FacesContext.getCurrentInstance().addMessage(uploadComponentId,
-					new FacesMessage(FacesMessage.SEVERITY_ERROR,
-							"Problem getting rsync script (Command Exception): " +cex.getMessage(),
-							"Problem getting rsync script (Command Exception):"));
+                FacesContext.getCurrentInstance().addMessage(uploadComponentId,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Problem getting rsync script (Command Exception): " + cex.getMessage(),
+                                "Problem getting rsync script (Command Exception):"));
             }
         }
     }
@@ -2009,7 +2001,6 @@ public class EditDatafilesPage implements java.io.Serializable {
      * @param event
      */
     public void handleExternalUpload() {
-        System.out.print("in handle external upload...");
     	Map<String,String> paramMap = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
     	
     	this.uploadComponentId = paramMap.get("uploadComponentId");
@@ -2056,9 +2047,13 @@ public class EditDatafilesPage implements java.io.Serializable {
     			// -----------------------------------------------------------
     			// Is this a FileReplaceOperation?  If so, then diverge!
     			// -----------------------------------------------------------
-    			if (this.isFileReplaceOperation()){
+    			if (this.isFileReplaceOperation()){                           
     				this.handleReplaceFileUpload(storageLocation, fileName, contentType, checksumValue, checksumType);
-    				this.setFileMetadataSelectedForTagsPopup(fileReplacePageHelper.getNewFileMetadatasBeforeSave().get(0));
+    				if (!saveEnabled){
+                                    uploadWarningMessage = fileReplacePageHelper.getErrorMessages();
+                                    return;
+                                }
+                                this.setFileMetadataSelectedForTagsPopup(fileReplacePageHelper.getNewFileMetadatasBeforeSave().get(0));
     				return;
     			}
     			// -----------------------------------------------------------
@@ -2988,11 +2983,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     	// ToDo - rsync was written before multiple store support and currently is hardcoded to use the "s3" store. 
     	// When those restrictions are lifted/rsync can be configured per store, the test in the 
         // Dataset Util method should be updated
-        System.out.print(" IN rsyncUploadSupported() ");
-         System.out.print("settingsWrapper.isRsyncUpload() " + settingsWrapper.isRsyncUpload());
-          System.out.print("DatasetUtil.isAppropriateStorageDriver(dataset) " + DatasetUtil.isAppropriateStorageDriver(dataset));
           if(settingsWrapper.isRsyncUpload() && !DatasetUtil.isAppropriateStorageDriver(dataset) ){
-              System.out.print("setuprsync failed message adding...");
               //dataset.file.upload.setUp.rsync.failed.detail
                 FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.upload.setUp.rsync.failed"), BundleUtil.getStringFromBundle("dataset.file.upload.setUp.rsync.failed.detail"));
                 FacesContext.getCurrentInstance().addMessage(null, message);
