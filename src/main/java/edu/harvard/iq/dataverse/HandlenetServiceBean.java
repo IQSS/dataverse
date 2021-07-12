@@ -314,7 +314,9 @@ public class HandlenetServiceBean extends AbstractGlobalIdServiceBean {
     
     private String getAuthenticationHandle(String handlePrefix) {
         logger.log(Level.FINE,"getAuthenticationHandle");
-        if (systemConfig.isIndependentHandleService()) {
+        if (systemConfig.getHandleAuthHandle()!=null) {
+            return systemConfig.getHandleAuthHandle();
+        } else if (systemConfig.isIndependentHandleService()) {
             return handlePrefix + "/ADMIN";
         } else {
             return "0.NA/" + handlePrefix;
