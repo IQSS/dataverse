@@ -19,8 +19,6 @@
 
 package edu.harvard.iq.dataverse.batch.jobs.importer.filesystem;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetLock;
@@ -55,6 +53,8 @@ import javax.ejb.EJB;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.json.bind.JsonbBuilder;
+import javax.json.bind.JsonbException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.IOUtils;
@@ -312,7 +312,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
                 jobExecutionEntity.setExitStatus("COMPLETED");
                 jobExecutionEntity.setStatus(BatchStatus.COMPLETED);
                 jobExecutionEntity.setEndTime(date);
-                jobJson = new ObjectMapper().writeValueAsString(jobExecutionEntity);
+                jobJson = JsonbBuilder.create().toJson(jobExecutionEntity);
 
                 String logDir = System.getProperty("com.sun.aas.instanceRoot") + SEP + "logs" + SEP + "batch-jobs" + SEP;
                 
@@ -339,7 +339,7 @@ public class FileRecordJobListener implements ItemReadListener, StepListener, Jo
                 getJobLogger().log(Level.SEVERE, "Job execution is null");
             }
 
-        } catch (NoSuchJobExecutionException | JobSecurityException | JsonProcessingException e) {
+        } catch (NoSuchJobExecutionException | JobSecurityException | JsonbException e) {
             getJobLogger().log(Level.SEVERE, "Creating job json: " + e.getMessage());
         }
     }

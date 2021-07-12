@@ -1,19 +1,23 @@
 
 package edu.harvard.iq.dataverse.api.dto;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import edu.harvard.iq.dataverse.util.json.JsonUtil;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonString;
+import javax.json.JsonValue;
+import javax.json.stream.JsonParser;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 /**
  *
  * @author ellenk
@@ -35,7 +39,7 @@ public class FieldDTO {
         primitive.setMultiplePrimitive(values);
         return primitive;
     }
- public static FieldDTO createMultipleVocabFieldDTO(String typeName, List<String> values) {
+    public static FieldDTO createMultipleVocabFieldDTO(String typeName, List<String> values) {
         FieldDTO primitive = new FieldDTO();
         primitive.typeName=typeName;
         primitive.setMultipleVocab(values);
@@ -48,7 +52,6 @@ public class FieldDTO {
         return field;
         
     }
-   
     public static FieldDTO createCompoundFieldDTO(String typeName, FieldDTO... value) {
         FieldDTO field = new FieldDTO();
         field.typeName=typeName;
@@ -56,7 +59,6 @@ public class FieldDTO {
         return field;
         
     }
-    
      
     /**
      * Creates a FieldDTO that contains a size=1 list of compound values 
@@ -80,13 +82,16 @@ public class FieldDTO {
     String typeName;
     Boolean multiple;
     String typeClass;
-        // The contents of value depend on the field attributes
-    // if single/primitive, value is a String
-    // if multiple, value is a JSonArray
-    //      multiple/primitive: each JSonArray element will contain String
-    //      multiple/compound: each JSonArray element will contain Set of FieldDTOs
-    // 
-    JsonElement value;
+    
+    /**
+     * The contents of {@link #value} depend on the field attributes:
+     * - default init with JSON null
+     * - if single/primitive, value is a String
+     * - if multiple, value is a JsonArray
+     *     - multiple/primitive: each JsonArray element will contain String
+     *     - multiple/compound: each JsonArray element will contain Set of FieldDTOs
+    */
+    JsonValue value = JsonValue.NULL;
 
     public String getTypeName() {
         return typeName;
@@ -113,69 +118,46 @@ public class FieldDTO {
     }
 
     public String getSinglePrimitive() {
-        
-        return value==null? "": value.getAsString();
+        return JsonUtil.getPrimitiveAsString(value);
     }
     
     String getSingleVocab() {
-        return value==null? "": value.getAsString();
+        return getSinglePrimitive();
+    }
+    
+    Set<FieldDTO> getSingleCompound(JsonValue value) {
+        return value.asJsonObject()
+               .entrySet()
+               .stream()
+               .map(entry -> JsonUtil.fromJson(entry.getValue(), FieldDTO.class))
+               .collect(Collectors.toSet());
     }
     
     public Set<FieldDTO> getSingleCompound() {
-        Gson gson = new Gson();
-        JsonObject elem = (JsonObject) value;
-        Set<FieldDTO> elemFields = new HashSet<FieldDTO>();
-
-        Set<Map.Entry<String, JsonElement>> set = elem.entrySet();
-
-        Iterator<Map.Entry<String, JsonElement>> setIter = set.iterator();
-        while (setIter.hasNext()) {
-            Map.Entry<String, JsonElement> entry = setIter.next();
-            FieldDTO field = gson.fromJson(entry.getValue(), FieldDTO.class);
-            elemFields.add(field);
-        }
-        return elemFields;
+        return getSingleCompound(this.value);
     }
 
     public List<String> getMultiplePrimitive() {
-        List<String> values = new ArrayList<>();
-        Iterator<JsonElement> iter = value.getAsJsonArray().iterator();
-        while (iter.hasNext()) {
-            values.add(iter.next().getAsString());
-        }
-        return values;
+        return this.value
+                   .asJsonArray()
+                   .getValuesAs(JsonString.class)
+                   .stream()
+                   .map(JsonString::getString)
+                   .collect(Collectors.toList());
     }
 
     public List<String> getMultipleVocab() {
-        List<String> values = new ArrayList<>();
-        Iterator<JsonElement> iter = value.getAsJsonArray().iterator();
-        while (iter.hasNext()) {
-            values.add(iter.next().getAsString());
-        }
-        return values;
+        return this.getMultiplePrimitive();
     }
 
     public ArrayList<HashSet<FieldDTO>> getMultipleCompound() {
-        Gson gson = new Gson();
-        ArrayList<HashSet<FieldDTO>> fields = new ArrayList<HashSet<FieldDTO>>();
-        JsonArray array = value.getAsJsonArray();
-
-        Iterator<JsonElement> iter = array.iterator();
-        while (iter.hasNext()) {
-            JsonObject elem = (JsonObject) iter.next();
-            HashSet<FieldDTO> elemFields = new HashSet<FieldDTO>();
-            fields.add(elemFields);
-            Set<Map.Entry<String, JsonElement>> set = elem.entrySet();
-
-            Iterator<Map.Entry<String, JsonElement>> setIter = set.iterator();
-            while (setIter.hasNext()) {
-                Map.Entry<String, JsonElement> entry = setIter.next();
-                FieldDTO field = gson.fromJson(entry.getValue(), FieldDTO.class);
-                elemFields.add(field);
-            }
-        }
-
-        return fields;
+        return new ArrayList<>(
+            this.value
+                .asJsonArray()
+                .stream()
+                .map(element -> new HashSet<>(this.getSingleCompound(element)))
+                .collect(Collectors.toList())
+        );
     }
 
     public void setSinglePrimitive(String value) {
