@@ -14,10 +14,10 @@ This API consists of 2 calls: one to create an initial Dataset version, and one 
 These calls can be used in concert with other API calls to add files, update metadata for additional versions, etc.   
 
 
-Start migrating a Dataset into a Dataverse Collection
+Start Migrating a Dataset into a Dataverse Collection
 -----------------------------------------------------
 
-.. note:: This action requires a Dataverse installation account with super-user permissions.
+.. note:: This action requires a Dataverse installation account with superuser permissions.
 
 To import a dataset with an existing persistent identifier (PID), the provided json-ld metadata should include it.
 
@@ -36,9 +36,9 @@ An example jsonld file is available at :download:`dataset-migrate.jsonld <../_st
 Publish a Migrated Dataset
 --------------------------
 
-The call above creates a Dataset. Once it is created, other APIs can be used to add files, add additional metadata, etc. When a version is complete, the following call can be used to publish it with its original publication date
+The call above creates a Dataset. Once it is created, other APIs can be used to add files, add additional metadata, etc. When a version is complete, the following call can be used to publish it with its original publication date.
 
-.. note:: This action requires a Dataverse installation account with super-user permissions.
+.. note:: This action requires a Dataverse installation account with superuser permissions.
 
 .. code-block:: bash
 
