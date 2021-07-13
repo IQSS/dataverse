@@ -63,6 +63,8 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
+
+import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import java.io.StringReader;
@@ -229,6 +231,7 @@ public class Dataverses extends AbstractApiBean {
 
     @POST
     @Path("{identifier}/datasets")
+    @Consumes("application/json")
     public Response createDataset(String jsonBody, @PathParam("identifier") String parentIdtf) {
         try {
             User u = findUserOrDie();
@@ -245,6 +248,45 @@ public class Dataverses extends AbstractApiBean {
             }
 
             // clean possible version metadata
+            DatasetVersion version = ds.getVersions().get(0);
+            version.setMinorVersionNumber(null);
+            version.setVersionNumber(null);
+            version.setVersionState(DatasetVersion.VersionState.DRAFT);
+
+            ds.setAuthority(null);
+            ds.setIdentifier(null);
+            ds.setProtocol(null);
+            ds.setGlobalIdCreateTime(null);
+
+            Dataset managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u)));
+            return created("/datasets/" + managedDs.getId(),
+                    Json.createObjectBuilder()
+                            .add("id", managedDs.getId())
+                            .add("persistentId", managedDs.getGlobalIdString())
+            );
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    
+    @POST
+    @Path("{identifier}/datasets")
+    @Consumes("application/ld+json, application/json-ld")
+    public Response createDatasetFromJsonLd(String jsonLDBody, @PathParam("identifier") String parentIdtf) {
+        try {
+            User u = findUserOrDie();
+            Dataverse owner = findDataverseOrDie(parentIdtf);
+            Dataset ds = new Dataset();
+
+            ds.setOwner(owner);
+            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, false); 
+            
+            ds.setOwner(owner);
+            
+            
+
+            // clean possible dataset/version metadata
             DatasetVersion version = ds.getVersions().get(0);
             version.setMinorVersionNumber(null);
             version.setVersionNumber(null);
