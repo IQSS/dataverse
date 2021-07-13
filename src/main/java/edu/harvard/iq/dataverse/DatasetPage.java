@@ -151,7 +151,7 @@ import org.primefaces.model.TreeNode;
 @Named("DatasetPage")
 public class DatasetPage implements java.io.Serializable {
 
-    private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
+    static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
 
     public enum EditMode {
 
@@ -234,8 +234,10 @@ public class DatasetPage implements java.io.Serializable {
     ProvPopupFragmentBean provPopupFragmentBean;
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
-    @Inject DataverseHeaderFragment dataverseHeaderFragment;
-    @Inject EmbargoServiceBean embargoService;
+    @Inject 
+    DataverseHeaderFragment dataverseHeaderFragment;
+    @Inject 
+    EmbargoServiceBean embargoService;
 
     private Dataset dataset = new Dataset();
 
@@ -5524,36 +5526,6 @@ public class DatasetPage implements java.io.Serializable {
 
     private Embargo selectionEmbargo = new Embargo();
     
-    public LocalDate today() {
-        return LocalDate.now();
-        //return Date.from(Instant.now());
-    }
-    
-    public LocalDate getMaxDate() {
-        String months = settingsWrapper.getValueForKey(SettingsServiceBean.Key.MaxEmbargoDurationInMonths);
-        Long maxMonths = null;
-        if (months != null) {
-            try {
-                maxMonths = Long.parseLong(months);
-            } catch (NumberFormatException nfe) {
-                logger.warning("Cant interpret :MaxEmbargoDurationInMonths as a long");
-            }
-        }
-
-        if (maxMonths != null) {
-            if (maxMonths == -1) {
-                maxMonths = 12000l; //Arbitrary cutoff at 1000 years - needs to keep maxDate < year 999999999 and somehwere 1K> x >10K years the datepicker widget stops showing a popup calendar
-            }
-            return LocalDate.now().plusMonths(maxMonths);
-        }
-        return null;
-    }
-
-    public boolean isEmbargoAllowed() {
-        //Need a valid :MaxEmbargoDurationInMonths setting to allow embargoes
-        return getMaxDate()!=null;
-    }
-    
     public boolean isValidEmbargoSelection() {
         for(FileMetadata fmd: selectedFiles) {
             if(!fmd.getDataFile().isReleased()) {
@@ -5564,11 +5536,8 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean isEmbargoForWholeSelection() {
-        if(isSuperUser()) {
-            return true;
-        } 
-        for(FileMetadata fmd: selectedFiles) {
-            if(fmd.getDataFile().isReleased()) {
+        for (FileMetadata fmd : selectedFiles) {
+            if (fmd.getDataFile().isReleased()) {
                 return false;
             }
         }
@@ -5615,6 +5584,7 @@ public class DatasetPage implements java.io.Serializable {
         }
         return returnToDraftVersion();
     }
+
     public void clearFileMetadataSelectedForEmbargoPopup() {
         //TBD
     }

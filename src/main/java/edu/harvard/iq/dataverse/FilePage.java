@@ -124,6 +124,8 @@ public class FilePage implements java.io.Serializable {
     FileDownloadHelper fileDownloadHelper;
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
+    @Inject
+    EmbargoServiceBean embargoService;
 
     private static final Logger logger = Logger.getLogger(FilePage.class.getCanonicalName());
 
@@ -979,5 +981,54 @@ public class FilePage implements java.io.Serializable {
         return false;
     }
     
-    //Todo - add Embargo methods
+    public boolean isValidEmbargoSelection() {
+        if (!fileMetadata.getDataFile().isReleased()) {
+            return true;
+        }
+        return false;
+    }
+    
+    public boolean isEmbargoForWholeSelection() {
+        return isValidEmbargoSelection();
+    }
+    
+    public Embargo getSelectionEmbargo() {
+        return selectionEmbargo;
+    }
+
+    public void setSelectionEmbargo(Embargo selectionEmbargo) {
+        this.selectionEmbargo = selectionEmbargo;
+    }
+
+    private Embargo selectionEmbargo = new Embargo();
+    
+    public String saveEmbargo() {
+        // Todo - add validation and.or separate delete from save of a new embargo
+        if (selectionEmbargo.getDateAvailable() == null && selectionEmbargo.getReason() == null) {
+            selectionEmbargo = null;
+        }
+        if (!fileMetadata.getDataFile().isReleased()) {
+            Embargo emb = fileMetadata.getDataFile().getEmbargo();
+            if (emb != null) {
+                logger.fine("Before: " + emb.getDataFiles().size());
+                emb.getDataFiles().remove(fileMetadata.getDataFile());
+                if (emb.getDataFiles().isEmpty()) {
+                    embargoService.deleteById(emb.getId());
+                }
+                logger.fine("After: " + emb.getDataFiles().size());
+            }
+            fileMetadata.getDataFile().setEmbargo(selectionEmbargo);
+        }
+
+        // success message:
+        String successMessage = BundleUtil.getStringFromBundle("file.assignedEmbargo.success");
+        logger.fine(successMessage);
+        successMessage = successMessage.replace("{0}", "Selected Files");
+        JsfHelper.addFlashMessage(successMessage);
+        selectionEmbargo = new Embargo();
+
+        save();
+
+        return returnToDraftVersion();
+    }
 }

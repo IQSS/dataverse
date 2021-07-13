@@ -13,12 +13,15 @@ import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
+
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
@@ -35,6 +38,8 @@ import org.json.JSONObject;
 @Named
 public class SettingsWrapper implements java.io.Serializable {
 
+    static final Logger logger = Logger.getLogger(SettingsWrapper.class.getCanonicalName());
+    
     @EJB
     SettingsServiceBean settingService;
 
@@ -290,6 +295,29 @@ public class SettingsWrapper implements java.io.Serializable {
             anonymizedFieldTypes.addAll(Arrays.asList(names.split(",\\s")));
         }
         return anonymizedFieldTypes.contains(df.getDatasetFieldType().getName());
+    }
+    public LocalDate getMaxEmbargoDate() {
+        String months = getValueForKey(SettingsServiceBean.Key.MaxEmbargoDurationInMonths);
+        Long maxMonths = null;
+        if (months != null) {
+            try {
+                maxMonths = Long.parseLong(months);
+            } catch (NumberFormatException nfe) {
+                logger.warning("Cant interpret :MaxEmbargoDurationInMonths as a long");
+            }
+        }
+    
+        if (maxMonths != null) {
+            if (maxMonths == -1) {
+                maxMonths = 12000l; //Arbitrary cutoff at 1000 years - needs to keep maxDate < year 999999999 and somehwere 1K> x >10K years the datepicker widget stops showing a popup calendar
+            }
+            return LocalDate.now().plusMonths(maxMonths);
+        }
+        return null;
+    }
+    public boolean isEmbargoAllowed() {
+        //Need a valid :MaxEmbargoDurationInMonths setting to allow embargoes
+        return getMaxEmbargoDate()!=null;
     }
 
 }
