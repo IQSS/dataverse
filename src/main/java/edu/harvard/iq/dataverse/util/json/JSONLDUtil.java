@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.util.json;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -15,6 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.json.Json;
@@ -78,15 +80,15 @@ public class JSONLDUtil {
         DatasetVersion dsv = new DatasetVersion();
 
         JsonObject jsonld = decontextualizeJsonLD(jsonLDBody);
-        if(migrating) {
-        Optional<GlobalId> maybePid = GlobalId.parse(jsonld.getString("@id"));
-          if (maybePid.isPresent()) {
-            ds.setGlobalId(maybePid.get());
-          } else {
-            // unparsable PID passed. Terminate.
-            throw new BadRequestException("Cannot parse the @id '" + jsonld.getString("@id")
-                    + "'. Make sure it is in valid form - see Dataverse Native API documentation.");
-          }
+        if (migrating) {
+            Optional<GlobalId> maybePid = GlobalId.parse(jsonld.getString("@id"));
+            if (maybePid.isPresent()) {
+                ds.setGlobalId(maybePid.get());
+            } else {
+                // unparsable PID passed. Terminate.
+                throw new BadRequestException("Cannot parse the @id '" + jsonld.getString("@id")
+                        + "'. Make sure it is in valid form - see Dataverse Native API documentation.");
+            }
         }
 
         dsv = updateDatasetVersionMDFromJsonLD(dsv, jsonld, metadataBlockSvc, datasetFieldSvc, append, migrating);
