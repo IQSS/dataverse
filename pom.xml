@@ -581,7 +581,7 @@
         <dependency>
             <groupId>org.duracloud</groupId>
             <artifactId>common</artifactId>
-            <version>4.4.6</version>
+            <version>7.0.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -596,7 +596,7 @@
         <dependency>
             <groupId>org.duracloud</groupId>
             <artifactId>storeclient</artifactId>
-            <version>4.4.6</version>
+            <version>7.0.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -621,7 +621,7 @@
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-parsers</artifactId>
-            <version>1.24.1</version>
+            <version>1.27</version>
         </dependency>
         <!-- Named Entity Recognition -->
         <dependency>
@@ -637,7 +637,7 @@
         <dependency>
           <groupId>com.google.cloud</groupId>
           <artifactId>google-cloud-storage</artifactId>
-          <version>1.97.0</version>
+          <version>1.117.1</version>
         </dependency>
         
         
