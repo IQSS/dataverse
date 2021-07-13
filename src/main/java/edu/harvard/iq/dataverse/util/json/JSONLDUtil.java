@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.util.json;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -15,6 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.json.Json;
@@ -107,7 +109,15 @@ public class JSONLDUtil {
             ds.setModificationTime(Timestamp.valueOf(dateTime));
         }
         try {
-            logger.fine("Output dsv: " + new OREMap(dsv, false).getOREMap().toString());
+            if (logger.isLoggable(Level.FINE)) {
+                if (ds.getModificationTime() == null) {
+                    // Create (migrating==false case - modification time will be set in the create
+                    // call, but we need a non-null value to reuse the OREMap method for logging
+                    // here
+                    ds.setModificationTime(Timestamp.from(Instant.now()));
+                }
+                logger.fine("Output dsv: " + new OREMap(dsv, false).getOREMap().toString());
+            }
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
