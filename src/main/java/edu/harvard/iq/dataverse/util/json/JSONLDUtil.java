@@ -88,8 +88,10 @@ public class JSONLDUtil {
         if (maybePid.isPresent()) {
             ds.setGlobalId(maybePid.get());
         } else {
-            // unparsable PID passed. Terminate.
-            throw new BadRequestException("Cannot parse the @id. Make sure it is in valid form - see Dataverse Native API documentation.");
+            if(migrating) {
+              // unparsable PID passed. Terminate.
+              throw new BadRequestException("Cannot parse the @id. Make sure it is in valid form - see Dataverse Native API documentation.");
+            }
         }
 
         dsv = updateDatasetVersionMDFromJsonLD(dsv, jsonld, metadataBlockSvc, datasetFieldSvc, append, migrating);
