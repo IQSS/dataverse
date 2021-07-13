@@ -78,7 +78,13 @@ public class JSONLDUtil {
         DatasetVersion dsv = new DatasetVersion();
 
         JsonObject jsonld = decontextualizeJsonLD(jsonLDBody);
-        Optional<GlobalId> maybePid = GlobalId.parse(jsonld.getString("@id"));
+        String id = null;
+        try {
+            id=jsonld.getString("@id");
+        } catch (NullPointerException npe) {
+            //Do nothing - a null value and other invalid values will be caught in parsing
+        }
+        Optional<GlobalId> maybePid = GlobalId.parse(id);
         if (maybePid.isPresent()) {
             ds.setGlobalId(maybePid.get());
         } else {
