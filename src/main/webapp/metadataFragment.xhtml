@@ -70,22 +70,15 @@
                                                     </p>
                                                 </ui:fragment>
                                                 <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="compoundValue">
-                                                    <c:set var="isOrcid" value="0" scope="request" />
                                                     <ui:repeat value="#{compoundValue.displayValueMap.entrySet().toArray()}" var="cvPart" varStatus="partStatus">
-                                                        <ui:fragment rendered="#{dsf.datasetFieldType.name == 'author'
-                                                                                 and cvPart.key.datasetFieldType.name == 'authorIdentifierScheme'
-                                                                                 and cvPart.value.contains('ORCID')}">
-                                                            <c:set var="isOrcid" value="1" scope="request" />
-                                                        </ui:fragment>
-
                                                         <h:outputText value="#{dsf.datasetFieldType.displayFormat} " rendered="${!partStatus.first}"/>
-                                                        <ui:fragment rendered="#{dsf.datasetFieldType.name == 'author' and cvPart.key.datasetFieldType.name == 'authorIdentifier' and isOrcid == 1}">
-                                                            <h:outputLink value="https://orcid.org/#{cvPart.value}" target="_blank">
+                                                        <ui:fragment rendered="#{compoundValue.isLink(cvPart.key)}">
+                                                            <h:outputLink value="#{compoundValue.getLink()}" target="_blank">
                                                                 <h:outputText value="#{cvPart.value}"
                                                                               escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}"/>
                                                             </h:outputLink>
                                                         </ui:fragment>
-                                                        <ui:fragment rendered="#{not (dsf.datasetFieldType.name == 'author' and cvPart.key.datasetFieldType.name == 'authorIdentifier' and isOrcid == 1)}">
+                                                        <ui:fragment rendered="#{not compoundValue.isLink(cvPart.key)}">
                                                             <h:outputText value="#{cvPart.value}"
                                                                           escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}"/>
                                                         </ui:fragment>
