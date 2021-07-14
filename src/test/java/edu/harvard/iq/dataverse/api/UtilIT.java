@@ -11,6 +11,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.logging.Level;
@@ -38,7 +39,6 @@ import static com.jayway.restassured.path.xml.XmlPath.from;
 import static com.jayway.restassured.RestAssured.given;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.StringReader;
-import javax.json.JsonArray;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -397,7 +397,7 @@ public class UtilIT {
         return createDatasetResponse;
     }
 
-    private static String getDatasetJson(String pathToJsonFile) {
+    static String getDatasetJson(String pathToJsonFile) {
         File datasetVersionJson = new File(pathToJsonFile);
         try {
             String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
@@ -2633,5 +2633,29 @@ public class UtilIT {
         return "0";
     }
     
+    static Response getDatasetJsonLDMetadata(Integer datasetId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .accept("application/ld+json")
+                .get("/api/datasets/" + datasetId + "/metadata");
+        return response;
+    }
     
+    static Response updateDatasetJsonLDMetadata(Integer datasetId, String apiToken, String jsonLDBody, boolean replace) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/ld+json")
+                .body(jsonLDBody.getBytes(StandardCharsets.UTF_8))
+                .put("/api/datasets/" + datasetId + "/metadata?replace=" + replace);
+        return response;
+    }
+    
+    static Response deleteDatasetJsonLDMetadata(Integer datasetId, String apiToken, String jsonLDBody) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/ld+json")
+                .body(jsonLDBody.getBytes(StandardCharsets.UTF_8))
+                .put("/api/datasets/" + datasetId + "/metadata/delete");
+        return response;
+    }
 }

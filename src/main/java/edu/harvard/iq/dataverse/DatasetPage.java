@@ -1856,6 +1856,10 @@ public class DatasetPage implements java.io.Serializable {
                 JsfHelper.addWarningMessage(retrieveDatasetVersionResponse.getDifferentVersionMessage());//BundleUtil.getStringFromBundle("dataset.message.metadataSuccess"));
             }
 
+            // init the citation
+            displayCitation = dataset.getCitation(true, workingVersion, isAnonymizedAccess());
+            logger.fine("Citation: " + displayCitation);
+
             if(workingVersion.isPublished()) {
                 MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, workingVersion);
                 mdcLogService.logEntry(entry);
@@ -1989,11 +1993,6 @@ public class DatasetPage implements java.io.Serializable {
                         BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageReviewer"));
             }
         }
-
-        // init the citation
-        //Need to do this after privateUrl is initialized (
-        displayCitation = dataset.getCitation(true, workingVersion, isAnonymizedAccess());
-        logger.fine("Citation: " + displayCitation);
 
         displayLockInfo(dataset);
 
