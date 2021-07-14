@@ -71,21 +71,26 @@ public class DatasetFieldCompoundValue implements Serializable {
     @OrderBy("datasetFieldType ASC")
     private List<DatasetField> childDatasetFields = new ArrayList<>();
 
-    private static final Map<String, Pair<String, String>> linkComponents = Map.of("author", new ImmutablePair<>("authorIdentifierScheme", "authorIdentifier"));
-    @Transient
-    private Map<DatasetField, Boolean> linkMap = new LinkedHashMap<>();
-    @Transient
-    private String linkType = null;
-    @Transient
-    private String linkValue = null;
-    @Transient
-    private Map<String, String> linkTemplates = Map.of(
+    // configurations for link creation
+    private static final Map<String, Pair<String, String>> linkComponents = Map.of(
+      "author", new ImmutablePair<>("authorIdentifierScheme", "authorIdentifier")
+    );
+    private static final Map<String, String> linkSchemeTemplates = Map.of(
       "ORCID", "https://orcid.org/%s",
       "ISNI", "https://isni.org/isni/%s",
+      "LCNA", "http://id.loc.gov/authorities/names/%s",
       "VIAF", "http://viaf.org/viaf/%s/",
+      "GND", "https://d-nb.info/gnd/%s",
+      // DAI
       "ResearcherID", "https://publons.com/researcher/%s/",
       "ScopusID", "https://www.scopus.com/authid/detail.uri?authorId=%s"
     );
+    @Transient
+    private Map<DatasetField, Boolean> linkMap = new LinkedHashMap<>();
+    @Transient
+    private String linkScheme = null;
+    @Transient
+    private String linkValue = null;
 
     public Long getId() {
         return id;
@@ -159,7 +164,7 @@ public class DatasetFieldCompoundValue implements Serializable {
         linkMap = new LinkedHashMap<>();
         boolean fixTrailingComma = false;
         Pair<String, String> linkComponents = getLinkComponents();
-        linkType = null;
+        linkScheme = null;
         linkValue = null;
         for (DatasetField childDatasetField : childDatasetFields) {
             fixTrailingComma = false;
@@ -167,10 +172,10 @@ public class DatasetFieldCompoundValue implements Serializable {
             if (!StringUtils.isBlank(childDatasetField.getValue()) && !DatasetField.NA_VALUE.equals(childDatasetField.getValue())) {
                 if (linkComponents != null) {
                     if (fieldNameEquals(childDatasetField, linkComponents.getKey())) {
-                        linkType = childDatasetField.getValue();
+                        linkScheme = childDatasetField.getValue();
                     } else if (fieldNameEquals(childDatasetField, linkComponents.getValue())) {
                         linkValue = childDatasetField.getValue();
-                        if (StringUtils.isNotBlank(linkType) && StringUtils.isNotBlank(linkValue))
+                        if (StringUtils.isNotBlank(linkScheme) && StringUtils.isNotBlank(linkValue))
                             linkMap.put(childDatasetField, true);
                     }
                 }
@@ -207,8 +212,8 @@ public class DatasetFieldCompoundValue implements Serializable {
     }
 
     public String getLink() {
-        if (linkTemplates.containsKey(linkType))
-            return String.format(linkTemplates.get(linkType), linkValue);
+        if (linkSchemeTemplates.containsKey(linkScheme))
+            return String.format(linkSchemeTemplates.get(linkScheme), linkValue);
         return null;
     }
 
