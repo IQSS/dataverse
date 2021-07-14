@@ -32,6 +32,7 @@
         <commons.logging.version>1.2</commons.logging.version>
         <commons.lang3.version>3.12.0</commons.lang3.version>
         <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
+        <google.cloud.version>0.157.0</google.cloud.version>
         <junit.version>4.13.1</junit.version>
         <junit.jupiter.version>5.7.0</junit.jupiter.version>
         <junit.vintage.version>${junit.jupiter.version}</junit.vintage.version>
@@ -146,7 +147,7 @@
             <dependency>
               <groupId>com.google.cloud</groupId>
               <artifactId>google-cloud-bom</artifactId>
-              <version>0.115.0-alpha</version>
+              <version>${google.cloud.version}</version>
               <type>pom</type>
               <scope>import</scope>
             </dependency>
@@ -634,7 +635,6 @@
         <dependency>
           <groupId>com.google.cloud</groupId>
           <artifactId>google-cloud-storage</artifactId>
-          <version>1.97.0</version>
         </dependency>
         
         
