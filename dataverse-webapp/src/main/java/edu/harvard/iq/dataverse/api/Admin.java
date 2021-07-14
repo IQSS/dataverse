@@ -390,7 +390,7 @@ public class Admin extends AbstractApiBean {
         UserListMaker userListMaker = new UserListMaker(userService);
 
         String sortKey = null;
-        UserListResult userListResult = userListMaker.runUserSearch(searchTerm, itemsPerPage, selectedPage, sortKey);
+        UserListResult userListResult = userListMaker.runUserSearch(searchTerm, itemsPerPage, selectedPage, sortKey, true);
 
         return ok(userListResult.toJSON());
     }
