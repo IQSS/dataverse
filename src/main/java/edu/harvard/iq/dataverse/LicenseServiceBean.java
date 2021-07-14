@@ -89,7 +89,7 @@ public class LicenseServiceBean {
         return license;
     }
 
-    public void setById(long id, String name, URI uri, URI iconUrl, boolean active) throws UpdateException {
+    public void setById(long id, String name, String shortDescription, URI uri, URI iconUrl, boolean active) throws UpdateException {
         List<License> licenses = em.createNamedQuery("License.findById", License.class)
                 .setParameter("id", id )
                 .getResultList();
@@ -97,6 +97,7 @@ public class LicenseServiceBean {
         if(licenses.size() > 0) {
             License license = licenses.get(0);
             license.setName(name);
+            license.setShortDescription(shortDescription);
             license.setUri(uri);
             license.setIconUrl(iconUrl);
             license.setActive(active);        

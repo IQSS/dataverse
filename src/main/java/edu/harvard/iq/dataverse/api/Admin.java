@@ -2025,7 +2025,7 @@ public class Admin extends AbstractApiBean {
     @Path("/licenses/{id}")
     public Response putLicenseById(@PathParam("id") long id, License license) {
         try {
-            licenseService.setById(id, license.getName(), license.getUri(), license.getIconUrl(), license.isActive());
+            licenseService.setById(id, license.getName(), license.getShortDescription(), license.getUri(), license.getIconUrl(), license.isActive());
         } catch (UpdateException e) {
             return error(Response.Status.BAD_REQUEST, e.getMessage());
         }

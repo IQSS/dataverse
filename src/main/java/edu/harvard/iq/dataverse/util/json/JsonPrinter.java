@@ -783,6 +783,7 @@ public class JsonPrinter {
         return jsonObjectBuilder()
             .add("id", license.getId())
             .add("name", license.getName())
+            .add("shortDescription", license.getShortDescription())
             .add("uri", license.getUri().toString())
             .add("iconUrl", license.getIconUrl().toString())
             .add("active", license.isActive());
