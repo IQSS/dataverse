@@ -17,6 +17,7 @@ A fairly basic example:
         "retrieval-uri": "https://pub.orcid.org/v3.0/{0}/person",
         "prefix": "https://orcid.org/",
         "managed-fields": {},
+        "languages":"",
         "retrieval-filtering": {
             "@context": {
                 "personName": "https://schema.org/name",
@@ -48,6 +49,10 @@ These four fields are enough to configure a script to manage the input and displ
 
 This field is currently required to be non-null but otherwise doesn't affect this example
 
+* languages - the list of languages the service supports, with the first being the default (e.g. if the language being used in the Dataverse UI is not supported by the service)
+
+This field is currently required to be non-null but otherwise doesn't affect this example
+
 * retrieval-uri - When a controlled term uri is stored in Dataverse, Dataverse will call this URL to cache a copy of information about this term uri/PID. Currently, Dataverse does a GET requesting application/json from this URL. It first substitutes the term uri/PID for the parameter {0}
 * prefix - Specific to ORCID; the PID is of the form `https://orcid.org/<16 character id>` while the retrieval-uri requires just the 16 character id. Dataverse will first strip the specified prefix from the term URI/PID before substituting in the retrieval-uri
 * retrieval-filtering - Dataverse uses the cached results to index additional metadata (such as the name of the person in this ORCID example) along with the PID itself and can add these values to exports (currently the json and OAI-ORE exports). Since the services often send significantly more information than Dataverse requires, this filtering object allows selection/formatting of a subset of the response for storage. In the ORCID case, the filtering shown here stores the person's name (lastname, firstname), the PID itself, the fact that the PID scheme is ORCID, and the fact that the type of the identified object is a person. The filtering syntax supports substituting parameters found at specific json paths within the response into a new json object that is stored. (@id is a special token specifying the term URI/PID itself, and patterns such as "ORCID" represent hardcoded text).
@@ -66,6 +71,7 @@ Here's the equivalent configuration for a skosmos service where the field has be
         "js-url": "/resources/js/skosmos.js",
         "protocol": "skosmos",
         "retrieval-uri": "https://skosmos.dev.finto.fi/rest/v1/data?uri={0}",
+        "languages":"en, fr, es, ru",
         "vocabs":{
             "unesco": "http://skos.um.es/unescothes/CS000",
             "agrovoc" : "http://aims.fao.org/vest-registry/kos/agrovoc"
@@ -100,6 +106,8 @@ Here's the equivalent configuration for a skosmos service where the field has be
     
 The one addition from the orcid case:
 * vocabs contains a list of vocabular names/URIs. The skosmos.js Javascript will display both a vocabular selector and a term selector when there is more than one vocabulary listed
+
+Also note that the languages field now contains values: the unesco and agrovac vocabularies are both available in these languages (agrovac is available in several more)
 
 For skosmos, the retrieval-filtering defines four elements to cache for a given term - the termName, the URI itself (as '@id'), the vocabularyName, and vocabularyUri. As skosmos is internationalized, the termName and vocabularyName returned in this case are actually an array of objects with lang/value entries specifying, for example, the termName in multiple languages. In this case, Dataverse will index the term name in all of those languages. Also note that the specified call in retrieval-uri doesn't return a vocabularyName for some skosmos vocabularies and this element may be missing from the cache. 
 

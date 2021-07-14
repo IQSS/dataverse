@@ -66,7 +66,7 @@
                                                 <h:outputText value="#{dsf.value}"
                                                     rendered="#{!dsf.datasetFieldType.allowMultiples and cvocConf.containsKey(dsf.datasetFieldType.id)}"
                                                     escape="#{dsf.datasetFieldType.isEscapeOutputText()}">
-                                                    <f:passThroughAttribute name="lang" value="#{dataverseSession.localeCode}" />
+                                                    <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(dsf.datasetFieldType.id).getString('languages'))}" />
                                                     <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('cvoc-url','')}" />
                                                     <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('protocol','')}" />
                                                     <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvocConf.get(dsf.datasetFieldType.id).get('managedfields').toString()}" />
@@ -78,7 +78,7 @@
                                                     <h:outputText value="#{loop.first?'':'; '}"/>
                                                     <h:outputText value="#{ value }"
                                                                   escape="#{dsf.datasetFieldType.isEscapeOutputText()}">
-                                                        <f:passThroughAttribute name="lang" value="#{dataverseSession.localeCode}" />
+                                                        <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(dsf.datasetFieldType.id).getString('languages'))}" />
                                                         <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('cvoc-url','')}" />
                                                         <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('protocol','')}" />
                                                         <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvocConf.get(dsf.datasetFieldType.id).get('managedfields').toString()}" />
@@ -105,7 +105,7 @@
                                                         <h:outputText value="#{cvPart.key.value}"
                                                                       escape="#{cvPart.key.datasetFieldType.isEscapeOutputText()}" 
                                                                       rendered="${cvocConf.containsKey(dsf.datasetFieldType.id) and cvPart.key.datasetFieldType.name.equals(cvocConf.get(dsf.datasetFieldType.id).getString('term-uri-field'))}">
-                                                                      <f:passThroughAttribute name="lang" value="#{dataverseSession.localeCode}" />
+                                                                      <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(dsf.datasetFieldType.id).getString('languages'))}" />
                                                                       <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('cvoc-url','')}" />
                                                                       <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(dsf.datasetFieldType.id).getString('protocol','')}" />
                                                                       <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvocConf.get(dsf.datasetFieldType.id).get('managedfields').toString()}" />
@@ -187,7 +187,7 @@
                                                             </div>
                                                         </div>
                                                     </ui:repeat>
-                                                    <ui:fragment rendered="#{dsf.datasetFieldType.controlledVocabulary}">                                                    
+                                                    <ui:fragment rendered="#{dsf.datasetFieldType.controlledVocabulary}">
                                                         <div class="form-group dataset-field-values">
                                                             <div class="form-col-container col-sm-9 edit-field">
                                                                 <p:selectOneMenu value="#{dsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;" styleClass="form-control primitive"

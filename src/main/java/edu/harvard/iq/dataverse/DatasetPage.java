@@ -5504,11 +5504,27 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public List<String> getVocabScripts() {
+        //ToDo - only return scripts that are needed (those fields are set on display pages, those blocks/fields are allowed in the Dataverse collection for create/edit)?
         Set<String> scripts = new HashSet<String>();
         for(JsonObject jo: getCVocConf().values()) {
             scripts.add(jo.getString("js-url"));
         }
         return Arrays.asList(scripts.toArray(new String[0]));
+    }
+
+    public String getFieldLanguage(String languages) {
+        // If the fields list of supported langauges contains the current locale (e.g.
+        // the lang of the UI, or the current metadata input/display lang (tbd)), use
+        // that. Otherwise, return the first in the list
+        String[] langStrings = languages.split("\\s*,\\s*");
+        if (langStrings.length > 0) {
+            if (Arrays.asList(langStrings).contains(session.getLocaleCode())) {
+                return session.getLocaleCode();
+            } else {
+                return langStrings[0];
+            }
+        }
+        return null;
     }
     
 }

@@ -7,7 +7,7 @@ $(document).ready(function() {
 });
 
 function expandPeople() {
-    //Check each element with class 'person'
+    //Check each selected element
     $(personSelector).each(function() {
         var personElement = this;
         //If it hasn't already been processed
