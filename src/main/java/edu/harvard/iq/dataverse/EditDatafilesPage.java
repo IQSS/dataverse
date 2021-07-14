@@ -2047,9 +2047,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     			// -----------------------------------------------------------
     			// Is this a FileReplaceOperation?  If so, then diverge!
     			// -----------------------------------------------------------
-    			if (this.isFileReplaceOperation()){                           
+    			if (this.isFileReplaceOperation()){
     				this.handleReplaceFileUpload(storageLocation, fileName, contentType, checksumValue, checksumType);
-    				if (!saveEnabled){
+                                if (!saveEnabled){
                                     uploadWarningMessage = fileReplacePageHelper.getErrorMessages();
                                     return;
                                 }
