@@ -868,14 +868,15 @@
                     <!-- END: Create/Save Dataset Button Panel BTM editMode -->
                     <p:blockUI block="datasetForm" widgetVar="blockDatasetForm"/>
                     <!-- POPUPS -->
-                    <ui:fragment rendered="#{empty DatasetPage.editMode}">                    
+                    <ui:fragment rendered="#{empty DatasetPage.editMode}">
                         <ui:include src="file-edit-popup-fragment.xhtml">
                               <ui:param name="datasetVersion" value="#{DatasetPage.workingVersion}"/>   
-                              <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>                        
+                              <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
                               <ui:param name="bean" value="#{DatasetPage}"/>                        
                               <ui:param name="restrictFileAction" value="restrictFiles"/>
                               <ui:param name="deleteFileAction" value="deleteFiles"/> 
-                        </ui:include>                  
+                              <ui:param name="updateElements" value=":datasetForm:tabView:filesTable, :datasetForm"/>
+                        </ui:include>
                     </ui:fragment>
                     <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true" rendered="#{!DatasetPage.workingVersion.deaccessioned}">
                         <p class="help-block">#{bundle['dataset.share.datasetShare.tip']}</p>

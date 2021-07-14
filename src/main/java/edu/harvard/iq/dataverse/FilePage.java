@@ -1007,19 +1007,23 @@ public class FilePage implements java.io.Serializable {
         if (selectionEmbargo.getDateAvailable() == null && selectionEmbargo.getReason() == null) {
             selectionEmbargo = null;
         }
-        if (!fileMetadata.getDataFile().isReleased()) {
-            Embargo emb = fileMetadata.getDataFile().getEmbargo();
+        Embargo emb = null;
+        // Note: this.fileMetadata.getDataFile() is not the same object as this.file.
+        // (Not sure there's a good reason for this other than that's the way it is.)
+        // So changes to this.fileMetadata.getDataFile() will not be saved with
+        // editDataset = this.file.getOwner() set as it is below.
+        if (!file.isReleased()) {
+            emb = file.getEmbargo();
             if (emb != null) {
                 logger.fine("Before: " + emb.getDataFiles().size());
                 emb.getDataFiles().remove(fileMetadata.getDataFile());
-                if (emb.getDataFiles().isEmpty()) {
-                    embargoService.deleteById(emb.getId());
-                }
                 logger.fine("After: " + emb.getDataFiles().size());
             }
-            fileMetadata.getDataFile().setEmbargo(selectionEmbargo);
+            file.setEmbargo(selectionEmbargo);
+            if (!emb.getDataFiles().isEmpty()) {
+                emb = null;
+            }
         }
-
         // success message:
         String successMessage = BundleUtil.getStringFromBundle("file.assignedEmbargo.success");
         logger.fine(successMessage);
@@ -1027,8 +1031,14 @@ public class FilePage implements java.io.Serializable {
         JsfHelper.addFlashMessage(successMessage);
         selectionEmbargo = new Embargo();
 
+        //Caller has to set editDataset before calling save()
+        editDataset = this.file.getOwner();
+        
         save();
-
+        init();
+        if(emb!=null) {
+            embargoService.deleteById(emb.getId());
+        }
         return returnToDraftVersion();
     }
 }

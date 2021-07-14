@@ -5531,6 +5531,9 @@ public class DatasetPage implements java.io.Serializable {
                 return true;
             }
         }
+        if(fileMetadataForAction!=null && !fileMetadataForAction.getDataFile().isReleased()) {
+            return true;
+        }
         return false;
     }
     

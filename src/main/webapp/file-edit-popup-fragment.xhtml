@@ -88,7 +88,7 @@
             </div>
         </div>
         <div class="button-block">
-            <p:commandButton rendered="#{bean.validEmbargoSelection}" styleClass="btn btn-default" id="fileEmbargoPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('fileEmbargoPopup').hide()" update=":datasetForm:tabView:filesTable, :datasetForm" action="#{bean.saveEmbargo()}"/>
+            <p:commandButton rendered="#{bean.validEmbargoSelection}" styleClass="btn btn-default" id="fileEmbargoPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('fileEmbargoPopup').hide()" update="#{updateElements}" action="#{bean.saveEmbargo()}"/>
             <p:commandButton styleClass="btn btn-link" id="fileEmbargoPopupCancelButton" value="#{bundle.cancel}" onclick="PF('fileEmbargoPopup').hide();
                     PF('blockDatasetForm').hide();" actionListener="#{bean.clearFileMetadataSelectedForEmbargoPopup()}"/>
         </div>

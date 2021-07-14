@@ -1587,6 +1587,9 @@ public class FileUtil implements java.io.Serializable  {
         if (fileMetadata.isRestricted()) {
             return false;
         }
+        if (isActivelyEmbargoed(fileMetadata)) {
+            return false;
+        }
         return true;
     }
 

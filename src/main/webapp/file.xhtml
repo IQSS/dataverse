@@ -514,8 +514,18 @@
                                                         <th scope="row">
                                                             #{bundle['file.metadataTab.fileMetadata.publicationDate.label']}
                                                         </th>
-                                                        <td>#{FilePage.file.publicationDateFormattedYYYYMMDD}</td>
+                                                        <td>#{FilePage.file.publicationDateFormattedYYYYMMDD}
+                                                            <h:outputText class="embargo" value="#{bundle['embargoed.until']} #{FilePage.file.embargo.dateAvailable} (#{FilePage.file.embargo.reason})" rendered="#{!(empty FilePage.fileMetadata.dataFile.embargo)}"/>
+                                                        </td>
                                                     </tr>
+                                                    <tr id="fileEmbargoBlock" jsf:rendered="#{!FilePage.file.released and !(empty FilePage.fileMetadata.dataFile.embargo)}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.plannedEmbargo.label']}
+                                                        </th>
+                                                        <td  class="embargo">#{bundle['embargoed.until']} #{FilePage.file.embargo.dateAvailable} (#{FilePage.file.embargo.reason})
+                                                        </td>
+                                                    </tr>
+                                                    
                                                     <tr id="fileSizeBlock" jsf:rendered="#{!(empty FilePage.file.friendlySize)}">
                                                         <th scope="row">
                                                             #{bundle['file.metadataTab.fileMetadata.size.label']}
@@ -578,6 +588,8 @@
                         <ui:param name="bean" value="#{FilePage}"/>
                         <ui:param name="restrictFileAction" value="restrictFile"/>
                         <ui:param name="deleteFileAction" value="deleteFile"/>
+                        <ui:param name="updateElements" value=":fileForm, :messagePanel"/>
+                        
                     </ui:include> 
                     <p:dialog id="shareDialog" header="#{bundle['file.share.title']}" widgetVar="shareDialog" modal="true" rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                         <p class="help-block">#{bundle['file.share.tip']}</p>
