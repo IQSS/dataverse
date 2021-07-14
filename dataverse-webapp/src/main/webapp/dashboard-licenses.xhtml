@@ -57,7 +57,7 @@
                                                 rendered="#{license.icon.content.contentLength>0}" width="81"
                                                 height="31"/>
                             </p:column>
-                            <p:column headerText="#{bundle['dashboard.license.activeByDefault']}"
+                            <p:column headerText="#{bundle['dashboard.license.active']}"
                                       style="width: 12%; text-align: center; vertical-align: middle">
                                 <p:selectBooleanCheckbox value="#{license.active}">
                                     <p:ajax update="@this"
@@ -94,7 +94,7 @@
                     </p:tab>
 
                     <p:tab title="#{bundle['dashboard.otherTermsOfUse.header']}">
-                        <p:dataTable var="otherTos" class="table-othertos" value="#{OtherTermsOfUseTab.otherTermsOfUseDto}">
+                        <p:dataTable var="otherTos" class="table-othertos no-min-width" value="#{OtherTermsOfUseTab.otherTermsOfUseDto}">
                             <p:column headerText="#{bundle['dashboard.license.universalLicenseName']}"
                                       style="width: 30%">
                                 <h:outputText value="#{otherTos.universalDisplayName}"/>
@@ -104,7 +104,7 @@
                                 <p:graphicImage value="#{otherTos.badge}" stream="false"
                                                 width="64" height="64"/>
                             </p:column>
-                            <p:column headerText="#{bundle['dashboard.license.activeByDefault']}"
+                            <p:column headerText="#{bundle['dashboard.license.active']}"
                                       style="width: 10%; text-align: center; vertical-align: middle">
                                 <p:selectBooleanCheckbox value="#{otherTos.active}">
                                     <p:ajax update="@this"
