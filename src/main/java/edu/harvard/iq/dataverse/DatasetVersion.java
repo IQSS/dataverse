@@ -163,7 +163,7 @@ public class DatasetVersion implements Serializable {
 
     @Transient
     private final String dataverseSiteUrl = SystemConfig.getDataverseSiteUrlStatic();
-    
+
     @Transient 
     private String jsonLd;
 
@@ -1868,9 +1868,10 @@ public class DatasetVersion implements Serializable {
         TermsOfUseAndAccess terms = this.getTermsOfUseAndAccess();
         if (terms != null) {
             JsonObjectBuilder license = Json.createObjectBuilder().add("@type", "Dataset");
-            
-            if (terms.getLicense() != null && TermsOfUseAndAccess.defaultLicense.equals(terms.getLicense().getName())) {
-                license.add("text", "CC0").add("url", "https://creativecommons.org/publicdomain/zero/1.0/");
+
+// TODO: FIX FOR MULTI-LICENSE (CHECK IF THIS SOLUTION IS OK)
+            if (terms.getLicense() != null) {
+                license.add("text", terms.getLicense().getName()).add("url", terms.getLicense().getUri().toString());
             } else {
                 String termsOfUse = terms.getTermsOfUse();
                 // Terms of use can be null if you create the dataset with JSON.

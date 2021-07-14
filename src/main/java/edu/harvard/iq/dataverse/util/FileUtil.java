@@ -1477,8 +1477,9 @@ public class FileUtil implements java.io.Serializable  {
         // 1. License and Terms of Use:
         if (datasetVersion.getTermsOfUseAndAccess() != null) {
             License license = datasetVersion.getTermsOfUseAndAccess().getLicense();
-            if (license == null || !TermsOfUseAndAccess.defaultLicense.equals(license.getName())
-                    && !(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null
+// TODO: FIX FOR MULTI-LICENSE
+            if ( /*license == null || !TermsOfUseAndAccess.defaultLicense.equals(license.getName())
+                    &&*/ !(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null
                     || datasetVersion.getTermsOfUseAndAccess().getTermsOfUse().equals(""))) {
                 logger.fine("Download popup required because of license or terms of use.");
                 return true;
@@ -1515,8 +1516,9 @@ public class FileUtil implements java.io.Serializable  {
         }
         // 1. License and Terms of Use:
         if (datasetVersion.getTermsOfUseAndAccess() != null) {
-            if (!TermsOfUseAndAccess.defaultLicense.equals(datasetVersion.getTermsOfUseAndAccess().getLicense().getName())
-                    && !(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null
+// TODO: FIX FOR MULTI-LICENSE
+            if (/*!TermsOfUseAndAccess.defaultLicense.equals(datasetVersion.getTermsOfUseAndAccess().getLicense().getName())
+                    && */!(datasetVersion.getTermsOfUseAndAccess().getTermsOfUse() == null
                     || datasetVersion.getTermsOfUseAndAccess().getTermsOfUse().equals(""))) {
                 logger.fine("Download popup required because of license or terms of use.");
                 return true;

@@ -205,6 +205,7 @@ Here are the configuration options for handles:
 - :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
 - :ref:`:IndependentHandleService <:IndependentHandleService>` (optional)
+- :ref:`:HandleAuthHandle <:HandleAuthHandle>` (optional)
 
 Note: If you are **minting your own handles** and plan to set up your own handle service, please refer to `Handle.Net documentation <http://handle.net/hnr_documentation.html>`_.
 
@@ -1542,6 +1543,17 @@ Specific for Handle PIDs. Set this setting to true if you want to use a Handle s
 By default this setting is absent and the Dataverse Software assumes it to be false.
 
 ``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:IndependentHandleService``
+
+.. _:HandleAuthHandle:
+
+:HandleAuthHandle
++++++++++++++++++++++++++
+
+Specific for Handle PIDs. Set this setting to <prefix>/<suffix> to be used on a global handle service when the public key is NOT stored in the default handle.
+By default this setting is absent and the Dataverse Software assumes it to be not set. If the public key for instance is stored in handle: 21.T12996/USER01.
+For this handle the prefix is '21.T12996' and the suffix is 'USER01'. The command to execute is then:
+
+``curl -X PUT -d '21.T12996/USER01' http://localhost:8080/api/admin/settings/:HandleAuthHandle``
 
 .. _:FileValidationOnPublishEnabled:
 

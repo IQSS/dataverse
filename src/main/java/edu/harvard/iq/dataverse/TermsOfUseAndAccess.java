@@ -7,7 +7,6 @@ package edu.harvard.iq.dataverse;
 
 import java.io.Serializable;
 import java.net.URI;
-import java.net.URISyntaxException;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -61,7 +60,7 @@ public class TermsOfUseAndAccess implements Serializable {
     
     @ManyToOne
     @JoinColumn(name="license_id")
-    private edu.harvard.iq.dataverse.License license;
+    private License license;
 
     @Column(columnDefinition="TEXT")      
     private String termsOfUse;
@@ -118,11 +117,11 @@ public class TermsOfUseAndAccess implements Serializable {
         this.fileAccessRequest = fileAccessRequest;
     }
     
-    public edu.harvard.iq.dataverse.License getLicense() {
+    public License getLicense() {
         return license;
     }
 
-    public void setLicense(edu.harvard.iq.dataverse.License license) {
+    public void setLicense(License license) {
         this.license = license;
     }
 
@@ -270,12 +269,13 @@ public class TermsOfUseAndAccess implements Serializable {
 
         return retVal;
     }
-    
-    public edu.harvard.iq.dataverse.License getCC0() {
+
+    // TODO: REMOVE, IS ONLY USED IN TESTS
+    public License getCC0() {
         String shortDescription = "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.";
         URI uri = URI.create("https://creativecommons.org/publicdomain/zero/1.0/");
-        URI iconUrl = URI.create("https://www.researchgate.net/profile/Donat-Agosti/publication/51971424/figure/fig2/AS:203212943564807@1425461149299/Logo-of-the-CC-Zero-or-CC0-Public-Domain-Dedication-License-No-Rights-Reserved-CC.png");
-        edu.harvard.iq.dataverse.License license = new edu.harvard.iq.dataverse.License("CC0", shortDescription, uri, iconUrl, true);
+        URI iconUrl = URI.create("/resources/images/cc0.png");
+        License license = new edu.harvard.iq.dataverse.License("CC0", shortDescription, uri, iconUrl, true);
         return license;
     }
 
@@ -294,7 +294,8 @@ public class TermsOfUseAndAccess implements Serializable {
      * @todo What does the GUI use for a default license? What does the "native"
      * API use? See also https://github.com/IQSS/dataverse/issues/1385
      */
-    public static String defaultLicense = "CC0";
+    // TODO: FIX FOR MULTI-LICENSE
+    //public static TermsOfUseAndAccess.License defaultLicense = TermsOfUseAndAccess.License.CC0;
 
     @Override
     public int hashCode() {

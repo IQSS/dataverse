@@ -1050,6 +1050,11 @@ public class SystemConfig {
     
     }
     
+    public String getHandleAuthHandle() {
+        String handleAuthHandle = settingsService.getValueForKey(SettingsServiceBean.Key.HandleAuthHandle, null);
+        return handleAuthHandle;
+    }
+
     public String getMDCLogPath() {
         String mDCLogPath = settingsService.getValueForKey(SettingsServiceBean.Key.MDCLogPath, null);
         return mDCLogPath;
