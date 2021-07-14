@@ -1160,7 +1160,7 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse wrappedResponse) {
            return wrappedResponse.getResponse();
         }
-        return Response.temporaryRedirect(URI.create(systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + persistentId + "&version=" + versionId + "&selectTab=termsTab")).build();
+        return Response.seeOther(URI.create(systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + persistentId + "&version=" + versionId + "&selectTab=termsTab")).build();
     }
 
     
