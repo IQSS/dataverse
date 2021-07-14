@@ -85,6 +85,8 @@ public class DatasetFieldCompoundValue implements Serializable {
       "ResearcherID", "https://publons.com/researcher/%s/",
       "ScopusID", "https://www.scopus.com/authid/detail.uri?authorId=%s"
     );
+
+    // field for handling links. Annotation '@Transient' prevents these fields to be saved in DB
     @Transient
     private Map<DatasetField, Boolean> linkMap = new LinkedHashMap<>();
     @Transient
