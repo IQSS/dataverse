@@ -331,7 +331,7 @@
     <copyField source="coverage.Temporal" dest="_text_" maxChars="3000"/>
     <copyField source="coverage.Temporal.StartTime" dest="_text_" maxChars="3000"/>
     <copyField source="coverage.Temporal.StopTime" dest="_text_" maxChars="3000"/>
-    <copyField source="creator" dest="_text_" maxChars="3000"/>
+<!--    <copyField source="creator" dest="_text_" maxChars="3000"/>-->
     <copyField source="dataCollectionSituation" dest="_text_" maxChars="3000"/>
     <copyField source="dataCollector" dest="_text_" maxChars="3000"/>
     <copyField source="dataSources" dest="_text_" maxChars="3000"/>
