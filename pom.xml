@@ -158,6 +158,24 @@
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
+            
+            <!-- Dependency of Sword2-Server -->
+            <!-- HINT: sword2-server does not get updated. We need to manage the version by ourself. -->
+            <dependency>
+                <groupId>xom</groupId>
+                <artifactId>xom</artifactId>
+                <version>1.3.7</version>
+            </dependency>
+            
+            <!-- Dependency of Tika and Xom (a dep of Sword2-Server) -->
+            <!-- THIS IS INTENIONALLY COMMENTED OUT
+                 As long as Tika is a direct dependency, we don't need to manage Xerces by ourself.
+            <dependency>
+                <groupId>xerces</groupId>
+                <artifactId>xercesImpl</artifactId>
+                <version>2.12.1</version>
+            </dependency>
+            -->
         </dependencies>
     </dependencyManagement>
     <!-- Declare any DIRECT dependencies here.
@@ -278,13 +296,6 @@
             <artifactId>jackson-databind</artifactId>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <!-- required by org.swordapp.server.sword2-server -->
-            <groupId>com.io7m.xom</groupId>
-            <artifactId>xom</artifactId>
-            <version>1.2.10</version>
-        </dependency>
-        <!-- END Data Deposit API v1 (SWORD v2) -->
         <dependency>
             <!-- There are later versions of this lib available at jitpack.io,
                  but it seemed better to not add another repo. -->
