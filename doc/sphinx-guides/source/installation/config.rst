@@ -541,6 +541,7 @@ dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploa
 dataverse.files.<id>.min-part-size           <?>                 Multipart direct uploads will occur for files larger than this. Optional.  ``1024**3``
 dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.         (none)
 dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                            ``dataverse``
+dataverse.files.<id>.profile                 <?>                 Allows the use of AWS profiles for storage spanning multiple AWS accounts. (none)
 dataverse.files.<id>.proxy-url               <?>                 URL of a proxy protecting the S3 store. Optional.                          (none)
 dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                    ``false``
 dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                           ``false``
@@ -2257,4 +2258,4 @@ In the DDI metadata exports, the default behavior is to always add the repositor
 A comma-separated list of field type names that should be 'withheld' when dataset access occurs via a Private Url with Anonymized Access (e.g. to support anonymized review). 
 A suggested minimum includes author, datasetContact, and contributor, but additional fields such as depositor, grantNumber, and publication might also need to be included.
 
-``curl -X PUT -d 'author, datasetContact, contributor, depositor, grantNumber, publication' http://localhost:8080/api/admin/settings/:AnonymizedFieldTypeNames`` 
+``curl -X PUT -d 'author, datasetContact, contributor, depositor, grantNumber, publication' http://localhost:8080/api/admin/settings/:AnonymizedFieldTypeNames``
