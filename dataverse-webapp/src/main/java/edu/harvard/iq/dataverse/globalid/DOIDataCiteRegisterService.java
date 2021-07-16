@@ -577,12 +577,6 @@ class DataCiteMetadataTemplate {
                         .append(funding.getProgramIdentifier().getValue())
                         .append("</awardNumber>");
             }
-            if(funding.getProgramName() != null && !funding.getProgramName().isEmpty()) {
-                fundingsElement
-                        .append("<awardTitle>")
-                        .append(funding.getProgramName().getValue())
-                        .append("</awardTitle>");
-            }
             fundingsElement.append("</fundingReference>");
         }
         fundingsElement.append("</fundingReferences>");

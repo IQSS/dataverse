@@ -128,7 +128,7 @@ class DOIDataCiteRegisterServiceTest {
                 "    <contributors></contributors>\n" +
                 "    <fundingReferences><fundingReference><funderName>grantNumberAgency</funderName><funderIdentifier " +
                 "funderIdentifierType=\"ROR\">grantNumberAgencyIdentifier</funderIdentifier><awardNumber>grantNumberValue" +
-                "</awardNumber><awardTitle>grantNumberProgram</awardTitle></fundingReference></fundingReferences>\n" +
+                "</awardNumber></fundingReference></fundingReferences>\n" +
                 "</resource>\n");
 
     }

@@ -14,5 +14,5 @@
         <description descriptionType="Abstract">EXPORT</description>
     </descriptions>
     <contributors><contributor contributorType="ContactPerson"><contributorName>Admin, Dataverse</contributorName><affiliation>Dataverse.org</affiliation></contributor></contributors>
-    <fundingReferences><fundingReference><funderName>Grant Agency</funderName><funderIdentifier funderIdentifierType="ROR">https://ror.org/00e0c0q64</funderIdentifier><awardNumber>grant-123</awardNumber><awardTitle>Grant Program</awardTitle></fundingReference></fundingReferences>
+    <fundingReferences><fundingReference><funderName>Grant Agency</funderName><funderIdentifier funderIdentifierType="ROR">https://ror.org/00e0c0q64</funderIdentifier><awardNumber>grant-123</awardNumber></fundingReference></fundingReferences>
 </resource>
