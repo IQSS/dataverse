@@ -73,7 +73,7 @@ public class RorSuggestionHandlerTest {
         // then
         assertThat(suggestions)
             .extracting(Suggestion::getValue)
-            .containsExactly("https://ror.org/013cjyk83", "https://ror.org/013cjyk84", "https://ror.org/013cjyk85");
+            .containsExactlyInAnyOrder("https://ror.org/013cjyk83", "https://ror.org/013cjyk84", "https://ror.org/013cjyk85");
     }
 
     // -------------------- PRIVATE --------------------
