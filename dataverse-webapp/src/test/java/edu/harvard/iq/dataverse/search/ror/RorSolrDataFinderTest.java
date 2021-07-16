@@ -45,11 +45,12 @@ class RorSolrDataFinderTest {
         //when
         Mockito.when(solrClient.query(Mockito.any())).thenReturn(queryResponse);
         Mockito.when(solrQuerySanitizer.sanitizeRorQuery(searchPhrase)).thenReturn(searchPhrase);
-        solrDataFinder.findRorData(searchPhrase);
+        solrDataFinder.findRorData(searchPhrase, 15);
 
         //then
         Mockito.verify(solrClient, Mockito.times(1)).query(solrQueryArgumentCaptor.capture());
         Assertions.assertThat(solrQueryArgumentCaptor.getValue().getQuery()).isEqualTo("search*");
+        Assertions.assertThat(solrQueryArgumentCaptor.getValue().getRows()).isEqualTo(15);
     }
 
     @Test
@@ -62,10 +63,11 @@ class RorSolrDataFinderTest {
         //when
         Mockito.when(solrClient.query(Mockito.any())).thenReturn(queryResponse);
         Mockito.when(solrQuerySanitizer.sanitizeRorQuery(searchPhrase)).thenReturn(searchPhrase);
-        solrDataFinder.findRorData(searchPhrase);
+        solrDataFinder.findRorData(searchPhrase, 15);
 
         //then
         Mockito.verify(solrClient, Mockito.times(1)).query(solrQueryArgumentCaptor.capture());
         Assertions.assertThat(solrQueryArgumentCaptor.getValue().getQuery()).isEqualTo("search* AND many* AND phrases*");
+        Assertions.assertThat(solrQueryArgumentCaptor.getValue().getRows()).isEqualTo(15);
     }
 }

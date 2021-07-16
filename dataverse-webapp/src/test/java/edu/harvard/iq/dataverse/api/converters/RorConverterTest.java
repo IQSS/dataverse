@@ -81,6 +81,8 @@ class RorConverterTest {
         final RorDto convertedDto = rorConverter.toSolrDto(rorData);
 
         //then
+        Assertions.assertThat(convertedDto.getRorId()).isEqualTo(ror);
+        Assertions.assertThat(convertedDto.getRorUrl()).isEqualTo("https://ror.org/" + ror);
         Assertions.assertThat(convertedDto.getLabels().get(0)).isEqualTo(label);
         Assertions.assertThat(convertedDto.getAcronyms().get(0)).isEqualTo(acronym);
         Assertions.assertThat(convertedDto.getNameAliases().get(0)).isEqualTo(alias);

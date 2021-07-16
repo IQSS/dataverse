@@ -14,6 +14,8 @@ public class RorDto {
     @Field
     private String rorId;
     @Field
+    private String rorUrl;
+    @Field
     private String name;
     @Field
     private String countryName;
@@ -33,9 +35,10 @@ public class RorDto {
     public RorDto() {
     }
 
-    public RorDto(String rorId, String name, String countryName, String countryCode, String city,
+    public RorDto(String rorId, String rorUrl, String name, String countryName, String countryCode, String city,
            String website, List<String> nameAliases, List<String> acronyms, List<String> labels) {
         this.rorId = rorId;
+        this.rorUrl = rorUrl;
         this.name = name;
         this.countryName = countryName;
         this.countryCode = countryCode;
@@ -48,6 +51,10 @@ public class RorDto {
 
     public String getRorId() {
         return rorId;
+    }
+
+    public String getRorUrl() {
+        return rorUrl;
     }
 
     public String getName() {
@@ -84,6 +91,11 @@ public class RorDto {
 
     public RorDto setRorId(String rorId) {
         this.rorId = rorId;
+        return this;
+    }
+
+    public RorDto setRorUrl(String rorUrl) {
+        this.rorUrl = rorUrl;
         return this;
     }
 

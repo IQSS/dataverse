@@ -294,17 +294,22 @@ VALUES ('{"email": "test@gmail.com"}', 'SEND_NEWSLETTER_EMAIL', 1);
 
 -------------------- SUGGESTIONS ---------------------
 
-INSERT INTO grantsuggestion (id, grantagency, grantagencyacronym, fundingprogram, suggestionname, suggestionnamelocale)
-VALUES (1, 'Test Agency', 'TA', 'FREE', 'Test Agency', 'EN');
+INSERT INTO grantsuggestion (grantagency, grantagencyacronym, fundingprogram, suggestionname, suggestionnamelocale)
+VALUES ('Test Agency', 'TURA', 'FREE', 'Test Agency', 'EN');
+INSERT INTO grantsuggestion (grantagency, grantagencyacronym, fundingprogram, suggestionname, suggestionnamelocale)
+VALUES ('Test Agency', 'TURA', 'FREE', 'Agencja Testowa', 'PL');
 
-INSERT INTO grantsuggestion (id, grantagency, grantagencyacronym, fundingprogram, suggestionname, suggestionnamelocale)
-VALUES (2, 'Test Agency', 'TA', 'FREE', 'Agencja Testowa', 'PL');
+INSERT INTO grantsuggestion (grantagency, grantagencyacronym, fundingprogram, suggestionname, suggestionnamelocale)
+VALUES ('Turkish Agency', 'TUR', 'EURO', 'Turkish Agency', 'EN');
+INSERT INTO grantsuggestion (grantagency, grantagencyacronym, fundingprogram, suggestionname, suggestionnamelocale)
+VALUES ('Turkish Agency', 'TUR', 'EURO', 'Turecka Agencja', 'PL');
 
-INSERT INTO grantsuggestion (id, grantagency, grantagencyacronym, fundingprogram, suggestionname, suggestionnamelocale)
-VALUES (3, 'Turkish Agency', 'TUR', 'EURO', 'Turkish Agency', 'EN');
-
-INSERT INTO grantsuggestion (id, grantagency, grantagencyacronym, fundingprogram, suggestionname, suggestionnamelocale)
-VALUES (4, 'Turkish Agency', 'TUR', 'EURO', 'Turecka Agencja', 'PL');
+INSERT INTO grantsuggestion (grantagency, grantagencyacronym, fundingprogram, suggestionname, suggestionnamelocale)
+VALUES ('Some institution', 'SOMEI', 'Program No. 2000', 'Some institution', 'EN');
+INSERT INTO grantsuggestion (grantagency, grantagencyacronym, fundingprogram, suggestionname, suggestionnamelocale)
+VALUES ('Some institution', 'SOMEI', 'Program No. 2000', 'Jakaś instytucja', 'PL');
+INSERT INTO grantsuggestion (grantagency, grantagencyacronym, fundingprogram, suggestionname, suggestionnamelocale)
+VALUES ('Some institution', 'SOMEI', 'Program No. 2001', 'Some institution', 'EN');
 
 -------------------- ROR ---------------------
 

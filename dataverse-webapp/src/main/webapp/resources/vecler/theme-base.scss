@@ -1347,6 +1347,12 @@ input.fancy-checkbox[type=checkbox] {
 	}
 }
 
+// FIXME: This adresses issue with too wide autocomplete suggestion
+// only for widescreen viewport
+.ui-autocomplete-panel.autocomplete-panel-maxwidth {
+    max-width: 800px;
+}
+
 .ui-autocomplete-emptyMessage {
 	border-radius: 9px;
 }

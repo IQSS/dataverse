@@ -50,8 +50,7 @@ public class SolrQuerySanitizer {
             char currentChar = query.charAt(i);
 
             if (SOLR_SPECIAL_CHARACTERS.contains(currentChar)) {
-                transformedQuery.append("\\")
-                                .append(currentChar);
+                transformedQuery.append(' ');
             } else {
                 transformedQuery.append(currentChar);
             }

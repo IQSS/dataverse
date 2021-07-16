@@ -11,6 +11,10 @@ import java.util.Locale;
 @Entity
 public class GrantSuggestion {
 
+    public static final String GRANT_AGENCY_ACRONYM_COLUMN = "grantAgencyAcronym";
+    public static final String FUNDING_PROGRAM_COLUMN = "fundingProgram";
+    public static final String SUGGESTION_NAME_COLUMN = "suggestionName";
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -63,20 +67,6 @@ public class GrantSuggestion {
 
     public Locale getSuggestionNameLocale() {
         return suggestionNameLocale;
-    }
-
-    // -------------------- LOGIC --------------------
-
-    public static String getFundingProgramFieldName() {
-        return "fundingProgram";
-    }
-
-    public static String getSuggestionNameFieldName() {
-        return "suggestionName";
-    }
-
-    public static String getGrantAgencyAcronymFieldName() {
-        return "grantAgencyAcronym";
     }
 
 }

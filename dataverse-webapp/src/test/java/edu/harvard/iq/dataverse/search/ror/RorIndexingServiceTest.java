@@ -32,6 +32,7 @@ class RorIndexingServiceTest {
     void indexRorRecord() throws IOException, SolrServerException {
         //given
         String rorId = "testRor";
+        String rorUrl = "https://ror.org/testRor";
         String name = "testName";
         String countryName = "Poland";
         String countryCode = "PL";
@@ -39,7 +40,7 @@ class RorIndexingServiceTest {
         final ImmutableList<String> acronyms = ImmutableList.of("acronym");
         final ImmutableList<String> labels = ImmutableList.of("label");
 
-        final RorDto rorData = new RorDto(rorId, name, countryName, countryCode, "","", aliases, acronyms, labels);
+        final RorDto rorData = new RorDto(rorId, rorUrl, name, countryName, countryCode, "","", aliases, acronyms, labels);
 
         //when
         rorIndexingService.indexRorRecord(rorData);

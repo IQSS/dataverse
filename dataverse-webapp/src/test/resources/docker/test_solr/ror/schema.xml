@@ -130,6 +130,7 @@
     <!-- ROR FIELDS -->
 
     <field name="rorId" type="string" indexed="true" stored="true" multiValued="false" required="true"/>
+    <field name="rorUrl" type="string" indexed="true" stored="true" multiValued="false"/>
     <field name="name" type="string" indexed="true" stored="true" multiValued="false"/>
     <field name="countryName" type="string" indexed="true" stored="true" multiValued="false"/>
     <field name="countryCode" type="string" indexed="true" stored="true" multiValued="false"/>
@@ -141,6 +142,7 @@
     <field name="label" type="string" indexed="true" stored="true" multiValued="true"/>
 
     <copyField source="rorId" dest="_text_" maxChars="30000"/>
+    <copyField source="rorUrl" dest="_text_" maxChars="30000"/>
     <copyField source="name" dest="_text_" maxChars="30000"/>
     <copyField source="countryName" dest="_text_" maxChars="30000"/>
     <copyField source="countryCode" dest="_text_" maxChars="30000"/>

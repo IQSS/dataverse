@@ -8,7 +8,9 @@
     <!--@elvariable id="inputRenderer" type="edu.harvard.iq.dataverse.dataset.metadata.inputRenderer.SuggestionInputFieldRenderer"-->
 
     <div class="control-label-with-tooltip">
-        <p:outputLabel styleClass="control-label #{hiddenLabel ? 'sr-only' : ''}" for="suggestionText" escape="false"
+        <p:outputLabel styleClass="control-label #{hiddenLabel ? 'sr-only' : ''}"
+                       for="#{inputRenderer.suggestionDisplayType eq 'SIMPLE' ? 'suggestionTextSimple' : 'suggestionTextTwoColumns'}"
+                       escape="false"
                        value="#{datasetField.datasetFieldType.localeTitle}">
             <h:outputText value=" #{labelFieldNumber}" rendered="#{not (labelFieldNumber eq 0)}" />
             <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value=""
@@ -25,19 +27,46 @@
     <!-- input text start -->
     <span id="pre-input-#{datasetField.datasetFieldType.name}" class="pre-input-tag"/>
     <p:autoComplete
-            id="suggestionText"
+            id="suggestionTextSimple"
             value="#{datasetField.value}"
-            completeMethod="#{inputRenderer.processSuggestionQuery(datasetField, 'suggestionText')}"
+            completeMethod="#{inputRenderer.processSuggestionQuery(datasetField, 'suggestionTextSimple')}"
             styleClass="autocomplete-form-control"
             resultsMessage="#{bundle['common.forms.autocomplete.resultsMessage']}"
             emptyMessage="#{bundle['common.forms.autocomplete.emptySuggestionMessage']}"
+            var="suggestion" itemLabel="#{suggestion}" itemValue="#{suggestion.value}"
             autoSelection="false"
             autoHighlight="false"
+            rendered="#{inputRenderer.suggestionDisplayType eq 'SIMPLE'}"
     >
         <p:ajax process="@form:@id(fieldsByTypeFragment)" event="focus" />
+        #{suggestion.value}
     </p:autoComplete>
 
-    <p:watermark for="suggestionText" value="#{datasetField.datasetFieldType.localeWatermark}"/>
+    <p:autoComplete
+            id="suggestionTextTwoColumns"
+            value="#{datasetField.value}"
+            completeMethod="#{inputRenderer.processSuggestionQuery(datasetField, 'suggestionTextTwoColumns')}"
+            styleClass="autocomplete-form-control"
+            panelStyleClass="autocomplete-panel-maxwidth"
+            resultsMessage="#{bundle['common.forms.autocomplete.resultsMessage']}"
+            emptyMessage="#{bundle['common.forms.autocomplete.emptySuggestionMessage']}"
+            var="suggestion" itemLabel="#{suggestion}" itemValue="#{suggestion.value}"
+            autoSelection="false"
+            autoHighlight="false"
+            rendered="#{inputRenderer.suggestionDisplayType eq 'TWO_COLUMNS'}"
+    >
+        <p:ajax process="@form:@id(fieldsByTypeFragment)" event="focus" />
+
+        <p:column headerText="#{inputRenderer.valueHeaderText}">
+            <h:outputText value="#{suggestion.value}"/>
+        </p:column>
+        <p:column headerText="#{inputRenderer.detailsHeaderText}">
+            <h:outputText value="#{suggestion.details}"/>
+        </p:column>
+    </p:autoComplete>
+
+    <p:watermark for="#{inputRenderer.suggestionDisplayType eq 'SIMPLE' ? 'suggestionTextSimple' : 'suggestionTextTwoColumns'}"
+                 value="#{datasetField.datasetFieldType.localeWatermark}"/>
 
     <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite"
          jsf:rendered="#{!empty datasetField.validationMessage}">

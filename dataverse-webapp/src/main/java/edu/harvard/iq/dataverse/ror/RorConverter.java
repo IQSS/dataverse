@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 @Stateless
 public class RorConverter {
 
+    private static final String ROR_URL_PREFIX = "https://ror.org/";
+
     // -------------------- LOGIC --------------------
 
     public RorData toEntity(RorEntryDTO entry) {
@@ -51,6 +53,7 @@ public class RorConverter {
         RorDto converted = new RorDto();
 
         converted.setRorId(entry.getRorId());
+        converted.setRorUrl(ROR_URL_PREFIX + entry.getRorId());
         converted.setName(entry.getName());
 
         converted.setCity(entry.getCity());
