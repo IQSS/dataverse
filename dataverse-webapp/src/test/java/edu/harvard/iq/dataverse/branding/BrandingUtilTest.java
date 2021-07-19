@@ -71,7 +71,7 @@ public class BrandingUtilTest {
                                                                 "support@librascholar.edu"
                                                         );
         System.out.println("message: " + message);
-        assertEquals("Welcome to LibraScholar! Get started by adding or finding data. "
+        assertEquals("Welcome to LibraScholar! "
                              + "Have questions? Check out the User Guide at http://guides.librascholar.edu/en/4.3/user/index.html"
                              + " or ask for assistance by writing at support@librascholar.edu .",
                      message);
