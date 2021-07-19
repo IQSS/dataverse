@@ -21,14 +21,14 @@ function expandSkosmos() {
             var lang = displayElement.hasAttribute("lang") ? $(displayElement).attr('lang') : "";
             //The value in the element. Currently, this must be either the URI of a term or plain text - with the latter not being formatted at all by this script
             var id = displayElement.textContent;
-            
+
             // Try to retrieve info about the term
             //Assume anything starting with http is a valid term - could use stricter tests
             if (id.startsWith("http")) {
                 $.ajax({
                     type: "GET",
-                    //Construct the specific request URL required 
-                    url: cvocUrl + "rest/v1/data?uri=" + id,
+                    //Construct the specific request URL required
+                    url: cvocUrl + "rest/v1/data?uri=" + encodeURIComponent(id),
                     dataType: 'json',
                     headers: {
                         'Accept': 'application/json'
@@ -44,33 +44,33 @@ function expandSkosmos() {
                                 //Within this object the prefLabel element contains a list of lang/value pairs
                                 //Look for the one in the desired language
                                 var defaultName='';
-                                for (let j = 0; j < def.prefLabel.length; j++) {
-                                    var label = def.prefLabel[j];
-                                    if (label.lang == lang) {
-                                        termName = label.value;
-                                        //Stop looking if we find it
-                                        break;
+                                if (Array.isArray(def.prefLabel)) {
+                                    for (let j = 0; j < def.prefLabel.length; j++) {
+                                        var label = def.prefLabel[j];
+                                        if (label.lang == lang) {
+                                                termName = label.value;
+                                                //Stop looking if we find it
+                                                break;
+                                            }
+                                            if (label.lang == "en") {
+                                                //Look for English as a default
+                                                termName = label.value;
+                                                // Don't break so we continue to find one
+                                                // matching lang if it exists
+                                            }
+                                        if(defaultName.length==0 && termName.length==0) {
+                                            //Get a default in case there is no entry for the requested language or 'en'
+                                            defaultName = def.prefLabel[j].value;
+                                        }
                                     }
-                                    if (label.lang == "en") {
-                                        //Look for English as a default
-                                        termName = label.value;
-                                        // Don't break so we continue to find one
-                                        // matching lang if it exists
+                                    if(termName.length==0) {
+                                        //Use the default if needed
+                                        termName=defaultName;
                                     }
-                                    if(defaultName.length==0 && termName.length==0) {
-                                        //Get a default in case there is no entry for the requested language or 'en'
-                                        defaultName = label.value;
-                                    }
-                                }
-                                if(termName.length==0) {
-                                    //Use the default if needed
-                                    termName=defaultName;
+                                } else {
+                                    termName = def.prefLabel.value;
                                 }
                             }
-                        }
-                        if(termName.length==0) {
-                            //Not even a default available
-                            lang.length==0 ? termName = '(name not available)' : termName = '(name not available in ' + lang + ')';
                         }
                         //Now construct the desired HTML display element and add it in place of the original text
                         var html;
@@ -118,21 +118,21 @@ function updateSkosmosInputs() {
 
             //Mark this field as processed
             $(skosmosInput).attr('data-skosmos', num);
-            //Decide what needs to be hidden. In the single field case, we hide the input itself. For compound fields, we hide everything leading to this input from the specified parent field 
+            //Decide what needs to be hidden. In the single field case, we hide the input itself. For compound fields, we hide everything leading to this input from the specified parent field
             let anchorSib = skosmosInput;
             //If there is a parent field
             if ($("[data-cvoc-parentfield='" + parentField + "']").length > 0) {
                 //Find it's child that contains the input for the term uri
                 anchorSib = $(skosmosInput).parentsUntil("[data-cvoc-parentfield='" + parentField + "']").last();
             }
-            //Then hide all children of this element's parent. 
-            //For a single field, this just hides the input itself (and any siblings if there are any). 
-            //For a compound field, this hides other fields that may store term name/ vocab name/uri ,etc. ToDo: only hide children that are marked as managedFields?   
+            //Then hide all children of this element's parent.
+            //For a single field, this just hides the input itself (and any siblings if there are any).
+            //For a compound field, this hides other fields that may store term name/ vocab name/uri ,etc. ToDo: only hide children that are marked as managedFields?
             $(anchorSib).parent().children().hide();
-            
+
             //Vocab Selector
             //Currently the code creates a selection form even if there is one vocabulary, and then hides it in that case. (ToDo: only create it if needed)
-            //We create a unique id to be able to find this particular input again 
+            //We create a unique id to be able to find this particular input again
             var vocabId = "skosmosVocabSelect_" + num;
             //Create a div covering 3/12s of the width
             $(anchorSib).before($('<div/>').addClass('cvoc-vocab col-sm-3'));
@@ -165,7 +165,7 @@ function updateSkosmosInputs() {
                     return $result;
                 },
                 placeholder: "Select a vocabulary",
-                //Shows the full list when nothing has been typed 
+                //Shows the full list when nothing has been typed
                 minimumInputLength: 0,
             });
             //When a vocab is selected
@@ -281,7 +281,7 @@ function updateSkosmosInputs() {
             if (id.startsWith("http")) {
                 $.ajax({
                     type: "GET",
-                    url: cvocUrl + "rest/v1/data?uri=" + id,
+                    url: cvocUrl + "rest/v1/data?uri=" + encodeURIComponent(id),
                     dataType: 'json',
                     headers: {
                         'Accept': 'application/json'
@@ -293,26 +293,31 @@ function updateSkosmosInputs() {
                             var def = uriArray[i];
                             if (def.uri == id) {
                                 var defaultName='';
-                                for (let j = 0; j < def.prefLabel.length; j++) {
-                                    var label = def.prefLabel[j];
-                                    if (label.lang == lang) {
-                                        termName = label.value;
-                                        break;
+                                if (Array.isArray(def.prefLabel)) {
+                                    for (let j = 0; j < def.prefLabel.length; j++) {
+                                        var label = def.prefLabel[j];
+                                        if (label.lang == lang) {
+                                                termName = label.value;
+                                                //Stop looking if we find it
+                                                break;
+                                            }
+                                            if (label.lang == "en") {
+                                                //Look for English as a default
+                                                termName = label.value;
+                                                // Don't break so we continue to find one
+                                                // matching lang if it exists
+                                            }
+                                        if(defaultName.length==0 && termName.length==0) {
+                                            //Get a default in case there is no entry for the requested language or 'en'
+                                            defaultName = def.prefLabel[j].value;
+                                        }
                                     }
-                                    if (label.lang == "en") {
-                                        termName = label.value;
-                                        // Don't break so we continue to find one matching
-                                        // lang if it exists
+                                    if(termName.length==0) {
+                                        //Use the default if needed
+                                        termName=defaultName;
                                     }
-                                    if(defaultName.length==0 && termName.length==0) {
-                                        //Get a default in case there is no entry for the requested language or 'en'
-                                        defaultName = label.value;
-                                    }
-                                    
-                                }
-                                if(termName.length==0) {
-                                    //Use the default if needed
-                                    termName=defaultName;
+                                } else {
+                                    termName = def.prefLabel.value;
                                 }
                             }
                         }
