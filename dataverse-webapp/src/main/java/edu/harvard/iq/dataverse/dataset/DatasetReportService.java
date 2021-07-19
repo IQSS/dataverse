@@ -116,10 +116,10 @@ public class DatasetReportService {
         for (FileMetadata fileMetadata : allFilesMetadataSorted) {
             String licenseOrTerms = Optional.ofNullable(fileMetadata)
                     .map(FileMetadata::getTermsOfUse)
-                    .map(this::getLicenseOrTermsOfUser).orElse(StringUtils.EMPTY);
+                    .map(this::getFormattedLicenseOrTermsOfUse).orElse(StringUtils.EMPTY);
             datasetVersionRecord.setLicenseOrTerms(licenseOrTerms);
             datasetVersionRecord.setFileName(fileMetadata.getLabel());
-          
+
             processFile(fileMetadata, csvPrinter, datasetVersionRecord);
         }
     }
@@ -167,9 +167,19 @@ public class DatasetReportService {
         return fileRecord;
     }
 
-    private String getLicenseOrTermsOfUser(FileTermsOfUse termsOfUse) {
-        return termsOfUse.getTermsOfUseType().equals(FileTermsOfUse.TermsOfUseType.LICENSE_BASED) ?
-                termsOfUse.getLicense().getName() : termsOfUse.getTermsOfUseType().toString();
+    private String getFormattedLicenseOrTermsOfUse(FileTermsOfUse termsOfUse) {
+        if (FileTermsOfUse.TermsOfUseType.LICENSE_BASED.equals(termsOfUse.getTermsOfUseType())) {
+            return termsOfUse.getLicense().getName();
+        } else {
+            switch (termsOfUse.getTermsOfUseType()) {
+                case RESTRICTED:
+                    return "Restricted access";
+                case ALL_RIGHTS_RESERVED:
+                    return "All rights reserved";
+                default:
+                    return termsOfUse.getTermsOfUseType().toString();
+            }
+        }
     }
 
     private String getTags(FileMetadata fileMetadata, DataFile dataFile) {
