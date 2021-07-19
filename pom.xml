@@ -32,6 +32,7 @@
         <commons.logging.version>1.2</commons.logging.version>
         <commons.lang3.version>3.12.0</commons.lang3.version>
         <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
+        <google.cloud.version>0.157.0</google.cloud.version>
         <junit.version>4.13.1</junit.version>
         <junit.jupiter.version>5.7.0</junit.jupiter.version>
         <junit.vintage.version>${junit.jupiter.version}</junit.vintage.version>
@@ -146,7 +147,7 @@
             <dependency>
               <groupId>com.google.cloud</groupId>
               <artifactId>google-cloud-bom</artifactId>
-              <version>0.115.0-alpha</version>
+              <version>${google.cloud.version}</version>
               <type>pom</type>
               <scope>import</scope>
             </dependency>
@@ -173,8 +174,20 @@
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.json</artifactId>
-            <version>1.0.4</version>
+            <version>1.1.4</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.skyscreamer</groupId>
+            <artifactId>jsonassert</artifactId>
+            <version>1.5.0</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.vaadin.external.google</groupId>
+                    <artifactId>android-json</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -217,6 +230,11 @@
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
             <!-- no version here as managed by BOM above! -->
+        </dependency>
+        <dependency>
+          <groupId>com.apicatalog</groupId>
+          <artifactId>titanium-json-ld</artifactId>
+          <version>0.8.6</version>
         </dependency>
         <dependency>
             <!-- required by org.swordapp.server.sword2-server -->
@@ -304,6 +322,11 @@
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
             <version>${jakartaee-api.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>jakarta.mail</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -509,7 +532,7 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>oauth2-oidc-sdk</artifactId>
-            <version>6.18</version>
+            <version>9.9.1</version>
         </dependency>
         <!-- EXPERIMENTAL: -->
         <!-- lyncode xoai OAI-PMH implementation: -->
@@ -617,7 +640,6 @@
         <dependency>
           <groupId>com.google.cloud</groupId>
           <artifactId>google-cloud-storage</artifactId>
-          <version>1.97.0</version>
         </dependency>
         
         
