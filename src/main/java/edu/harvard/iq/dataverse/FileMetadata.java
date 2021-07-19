@@ -374,23 +374,19 @@ public class FileMetadata implements Serializable {
         }
         return "";
     }
-     
-    public String getFileCitation(){
-         return getFileCitation(false);
-     }
-     
 
-    
-     
-    public String getFileCitation(boolean html){
-         return new DataCitation(this).toString(html);
-     }
-    
-    public String getDirectFileCitation(boolean html){
-    	return new DataCitation(this, true).toString(html);
+    public String getFileCitation(){
+        return getFileCitation(false, false);
     }
-    
-        
+
+    public String getFileCitation(boolean html, boolean anonymized){
+         return new DataCitation(this).toString(html, anonymized);
+    }
+
+    public String getDirectFileCitation(boolean html, boolean anonymized){
+        return new DataCitation(this, true).toString(html, anonymized);
+    }
+
     public DatasetVersion getDatasetVersion() {
         return datasetVersion;
     }

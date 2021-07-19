@@ -1863,7 +1863,7 @@ public class DatasetVersion implements Serializable {
             JsonObjectBuilder license = Json.createObjectBuilder().add("@type", "Dataset");
             
             if (TermsOfUseAndAccess.License.CC0.equals(terms.getLicense())) {
-                license.add("text", "CC0").add("url", "https://creativecommons.org/publicdomain/zero/1.0/");
+                license.add("text", "CC0").add("url", TermsOfUseAndAccess.CC0_URI);
             } else {
                 String termsOfUse = terms.getTermsOfUse();
                 // Terms of use can be null if you create the dataset with JSON.
