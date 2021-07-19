@@ -412,7 +412,7 @@ public class ImportGenericServiceBean {
      * protocol/authority/identifier parts that are assigned to the datasetDTO.
      * The name reflects the original purpose but it is now used in ImportDDIServiceBean as well.
      */
-    String reassignIdentifierAsGlobalId(String identifierString, DatasetDTO datasetDTO) {
+    public String reassignIdentifierAsGlobalId(String identifierString, DatasetDTO datasetDTO) {
 
         int index1 = identifierString.indexOf(':');
         int index2 = identifierString.indexOf('/');
