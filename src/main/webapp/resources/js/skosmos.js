@@ -244,7 +244,7 @@ function updateSkosmosInputs() {
                     //Call the specified skosmos service to get matching terms
                     //Add the current vocab, any subvocabulary(termParentUri) filter, and desired language
                     url: function() {
-                        return cvocUrl + 'rest/v1/search?unique=true&vocab=' + $('#' + selectId).attr('data-cvoc-cur-vocab') + termParentUri + langParam;
+                        return cvocUrl + 'rest/v1/search?unique=true&vocab=' + $('#' + selectId).attr('data-cvoc-cur-vocab') + '&parent=' + termParentUri + langParam;
                     },
                     dataType: "json",
                     data: function(params) {
