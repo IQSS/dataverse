@@ -203,7 +203,7 @@ function updateSkosmosInputs() {
             $("#" + selectId).select2({
                 theme: "bootstrap",
                 //tags true allows a free text entry (not a term uri, just plain text): ToDo - make this configurable
-                tags: true,
+                tags: false,
                 delay: 500,
                 templateResult: function(item) {
                     // No need to template the searching text
