@@ -1,21 +1,25 @@
 package edu.harvard.iq.dataverse.license.dto;
 
-import org.primefaces.model.StreamedContent;
+import org.apache.commons.lang.StringUtils;
 
 public class LicenseIconDto {
 
     private Long id;
 
-    private StreamedContent content;
+    private byte[] content;
+    private String contentType;
 
     // -------------------- CONSTRUCTORS --------------------
 
     public LicenseIconDto() {
+        content = new byte[0];
+        contentType = StringUtils.EMPTY;
     }
 
-    public LicenseIconDto(Long id, StreamedContent content) {
+    public LicenseIconDto(Long id, byte[] content, String contentType) {
         this.id = id;
         this.content = content;
+        this.contentType = contentType;
     }
 
     // -------------------- GETTERS --------------------
@@ -25,8 +29,12 @@ public class LicenseIconDto {
         return id;
     }
 
-    public StreamedContent getContent() {
+    public byte[] getContent() {
         return content;
+    }
+
+    public String getContentType() {
+        return contentType;
     }
 
     // -------------------- SETTERS --------------------
@@ -36,7 +44,11 @@ public class LicenseIconDto {
         this.id = id;
     }
 
-    public void setContent(StreamedContent content) {
+    public void setContent(byte[] content) {
         this.content = content;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
     }
 }

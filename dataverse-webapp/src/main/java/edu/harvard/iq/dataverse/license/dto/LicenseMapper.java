@@ -3,12 +3,9 @@ package edu.harvard.iq.dataverse.license.dto;
 import edu.harvard.iq.dataverse.persistence.datafile.license.License;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseIcon;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LocaleText;
-import io.vavr.control.Try;
-import org.apache.commons.io.IOUtils;
-import org.primefaces.model.DefaultStreamedContent;
+import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.Stateless;
-import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -55,6 +52,21 @@ public class LicenseMapper {
         return licenseSimpleDtos;
     }
 
+    public License editLicense(LicenseDto licenseDto, License license) {
+        license.setPosition(licenseDto.getPosition());
+        license.setActive(licenseDto.isActive());
+        license.setUrl(licenseDto.getUrl());
+        license.setName(licenseDto.getName());
+        license.setIcon(licenseDto.getIcon().getContent() == null ? null : editLicenseIcon(licenseDto, license, license.getIcon()));
+
+        license.removeLocalizedNames(licenseDto.getLocalizedNames().stream()
+                .map(LocaleTextDto::getLocale).collect(Collectors.toList()));
+        licenseDto.getLocalizedNames().forEach(localeTextDto -> license.addLocalizedName(
+                new LocaleText(localeTextDto.getLocale(), localeTextDto.getText())));
+
+        return license;
+    }
+
     public License mapToLicense(LicenseDto licenseDto) {
         License license = new License();
 
@@ -76,29 +88,33 @@ public class LicenseMapper {
     private LicenseIcon mapToLicenseIcon(LicenseDto licenseDto, License license) {
         LicenseIcon licenseIcon = new LicenseIcon();
         licenseIcon.setId(licenseDto.getId());
-        licenseIcon.setContent(
-                Try.of(() -> IOUtils.toByteArray(licenseDto.getIcon().getContent().getStream()))
-                        .getOrElseThrow(throwable -> new IllegalStateException("Unable to read image", throwable)));
+        licenseIcon.setContent(licenseDto.getIcon().getContent());
 
         licenseIcon.setLicense(license);
-        licenseIcon.setContentType(licenseDto.getIcon().getContent().getContentType());
+        licenseIcon.setContentType(licenseDto.getIcon().getContentType());
 
         return licenseIcon;
     }
 
+    private LicenseIcon editLicenseIcon(LicenseDto licenseDto, License license, LicenseIcon licenseIcon) {
+        LicenseIcon icon = licenseIcon == null ? new LicenseIcon() : licenseIcon;
+
+        byte[] bytes = licenseDto.getIcon().getContent();
+
+        icon.setContent(bytes);
+        icon.setContentType(licenseDto.getIcon().getContentType());
+
+        icon.setLicense(license);
+
+        return icon;
+    }
+
     private LicenseIconDto mapToDto(LicenseIcon licenseIcon) {
         if (licenseIcon == null) {
-            return new LicenseIconDto(0L, DefaultStreamedContent.builder()
-                    .build());
+            return new LicenseIconDto(0L, new byte[0], StringUtils.EMPTY);
         }
 
-        return new LicenseIconDto(licenseIcon.getId(),
-                                  DefaultStreamedContent.builder()
-                                          .contentType(licenseIcon.getContentType())
-                                          .name(licenseIcon.getLicense().getName())
-                                          .contentLength(licenseIcon.getContent().length)
-                                          .stream(() -> new ByteArrayInputStream(licenseIcon.getContent()))
-                                          .build());
+        return new LicenseIconDto(licenseIcon.getId(), licenseIcon.getContent(),licenseIcon.getContentType());
     }
 
     private LocaleTextDto mapToDto(LocaleText localeText) {

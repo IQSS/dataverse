@@ -1,8 +1,6 @@
 package edu.harvard.iq.dataverse.persistence.datafile.license;
 
 import com.google.common.base.Preconditions;
-import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseIcon;
-import edu.harvard.iq.dataverse.persistence.datafile.license.LocaleText;
 
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
@@ -147,6 +145,14 @@ public class License implements Serializable {
             }
         }
         return getName();
+    }
+
+    /**
+     * Removes localizedNames for given {@param locales}
+     * @param locales
+     */
+    public void removeLocalizedNames(List<Locale> locales) {
+        localizedNames.removeIf(localizedName -> locales.contains(localizedName.getLocale()));
     }
 
     //-------------------- SETTERS --------------------

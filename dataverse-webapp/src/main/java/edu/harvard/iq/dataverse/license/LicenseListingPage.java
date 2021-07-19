@@ -1,12 +1,15 @@
 package edu.harvard.iq.dataverse.license;
 
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.GenericDao;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
+import edu.harvard.iq.dataverse.bannersandmessages.validation.ImageValidator;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.license.dto.LicenseDto;
 import edu.harvard.iq.dataverse.license.dto.LicenseIconDto;
 import edu.harvard.iq.dataverse.license.dto.LicenseMapper;
 import edu.harvard.iq.dataverse.license.dto.LocaleTextDto;
+import edu.harvard.iq.dataverse.persistence.config.URLValidator;
 import edu.harvard.iq.dataverse.persistence.datafile.license.License;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
@@ -14,10 +17,13 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 
 import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
+import javax.faces.validator.ValidatorException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -50,10 +56,16 @@ public class LicenseListingPage implements Serializable {
     private LicenseDAO licenseDAO;
 
     @Inject
+    private GenericDao genericDao;
+
+    @Inject
     private LicenseMapper licenseMapper;
 
     @Inject
     private SystemConfig systemConfig;
+
+    @Inject
+    private LicenseLimits licenseLimits;
 
     private List<LicenseDto> licenses = new ArrayList<>();
 
@@ -105,10 +117,11 @@ public class LicenseListingPage implements Serializable {
      */
     public void uploadImageForNewLicenseEvent(FileUploadEvent event) {
         UploadedFile uploadedImage = event.getFile();
-        freshLicense.getIcon().setContent(DefaultStreamedContent.builder()
-                .contentType(uploadedImage.getContentType())
-                                                  .stream(() -> new ByteArrayInputStream(uploadedImage.getContent()))
-                                          .build());
+
+        if (!isUploadedImageValid(event, uploadedImage)) return;
+
+        freshLicense.getIcon().setContent(uploadedImage.getContent());
+        freshLicense.getIcon().setContentType(uploadedImage.getContentType());
     }
 
     /**
@@ -118,10 +131,11 @@ public class LicenseListingPage implements Serializable {
      */
     public void editLicenseImageEvent(FileUploadEvent event) {
         UploadedFile uploadedImage = event.getFile();
-        licenseForEdit.getIcon().setContent(DefaultStreamedContent.builder()
-                                                    .contentType(uploadedImage.getContentType())
-                                                    .stream(() -> new ByteArrayInputStream(uploadedImage.getContent()))
-                                                    .build());
+
+        if (!isUploadedImageValid(event, uploadedImage)) return;
+
+        licenseForEdit.getIcon().setContent(uploadedImage.getContent());
+        licenseForEdit.getIcon().setContentType(uploadedImage.getContentType());
     }
 
     /**
@@ -160,18 +174,52 @@ public class LicenseListingPage implements Serializable {
 
     public String saveEditedLicense(LicenseDto licenseDto) {
 
-        License license = licenseMapper.mapToLicense(licenseDto);
+        License license = licenseDAO.find(licenseDto.getId());
+        license = licenseMapper.editLicense(licenseDto, license);
         licenseDAO.saveChanges(license);
 
         return "/dashboard-licenses.xhtml?&faces-redirect=true";
+    }
+
+    public void validateLicenseUrl(FacesContext context, UIComponent toValidate, Object rawValue) throws ValidatorException {
+        String valueStr = (String)rawValue;
+
+        if (!URLValidator.isURLValid(valueStr)) {
+            String message = BundleUtil.getStringFromBundle("dashboard.license.invalidURL", BundleUtil.getStringFromBundle("dashboard.license.licenseURL"));
+            throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "", message));
+        }
     }
 
     public String redirectToLicenseReorderPage() {
         return "/dashboard-licenses-reorder.xhtml?&faces-redirect=true";
     }
 
-    public String refreshPage() {
-        return "/dashboard-licenses.xhtml?&faces-redirect=true";
+    public int getLicenseIconFileSizeLimit() {
+        return licenseLimits.getMaxSizeInBytes();
+    }
+
+    public StreamedContent getLicenseIconForDisplay(LicenseIconDto licenseIconDto) {
+        return DefaultStreamedContent.builder()
+                .contentType(licenseIconDto.getContentType())
+                .stream(() -> new ByteArrayInputStream(licenseIconDto.getContent()))
+                .build();
+    }
+
+    public void removeLicenseIcon(LicenseIconDto licenseIconDto) {
+        licenseIconDto.setContent(new byte[0]);
+        licenseIconDto.setContentType(StringUtils.EMPTY);
+    }
+
+    public boolean hasIcon(LicenseIconDto licenseIconDto) {
+        return licenseIconDto != null && licenseIconDto.getContent() != null && licenseIconDto.getContent().length > 0;
+    }
+
+    public String getLocalizedNameLabel(LocaleTextDto localeTextDto) {
+        return BundleUtil.getStringFromBundle("dashboard.license.localizedName", localeTextDto.getLocale().getDisplayName(session.getLocale()));
+    }
+
+    public String getRequiredMessage(String fieldName) {
+        return BundleUtil.getStringFromBundle("dashboard.license.missingTextField", fieldName);
     }
 
     // -------------------- PRIVATE --------------------
@@ -188,6 +236,10 @@ public class LicenseListingPage implements Serializable {
                                                                         licenseDto.getLocalizedNames().add(new LocaleTextDto(Locale.forLanguageTag(localeKey), StringUtils.EMPTY)));
 
         licenseDto.setIcon(new LicenseIconDto());
+        licenseDto.setUrl(StringUtils.EMPTY);
+        licenseDto.setName(StringUtils.EMPTY);
+        licenseDto.setActive(false);
+
         return licenseDto;
     }
 
@@ -207,6 +259,19 @@ public class LicenseListingPage implements Serializable {
                                                   BundleUtil.getStringFromBundle("dashboard.license.noActiveLicensesWarning")));
     }
 
+    private boolean isUploadedImageValid(FileUploadEvent event, UploadedFile uploadedImage) {
+        if (ImageValidator.isImageResolutionTooBig(uploadedImage.getContent(),
+                licenseLimits.getMaxWidth(), licenseLimits.getMaxHeight())) {
+
+            FacesContext context = FacesContext.getCurrentInstance();
+            context.validationFailed();
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("dashboard.license.fileType.resolutionError"));
+            FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(context), message);
+            return false;
+        }
+        return true;
+    }
+
     // -------------------- SETTERS --------------------
 
     public void setLicenseForPreview(LicenseDto licenseForPreview) {
@@ -216,4 +281,5 @@ public class LicenseListingPage implements Serializable {
     public void setLicenseForEdit(LicenseDto licenseForEdit) {
         this.licenseForEdit = licenseForEdit;
     }
+
 }

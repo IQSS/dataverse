@@ -53,8 +53,8 @@
                                 <h:outputLink value="#{license.url}">#{license.url}</h:outputLink>
                             </p:column>
                             <p:column headerText="#{bundle['dashboard.license.badge']}" style="width: 15%">
-                                <p:graphicImage value="#{license.icon.content}" stream="false"
-                                                rendered="#{license.icon.content.contentLength>0}" width="81"
+                                <p:graphicImage value="#{LicenseListingPage.getLicenseIconForDisplay(license.icon)}" stream="false"
+                                                rendered="#{LicenseListingPage.hasIcon(license.icon)}" width="81"
                                                 height="31"/>
                             </p:column>
                             <p:column headerText="#{bundle['dashboard.license.active']}"
@@ -83,7 +83,7 @@
                                                        styleClass="btn btn-default bootstrap-button-tooltip"
                                                        title="#{bundle['dashboard.license.editLicenseButton']}"
                                                        update=":licenseEditForm"
-                                                       action="#{LicenseListingPage.licenseForEdit(license)}"
+                                                       action="#{LicenseListingPage.setLicenseForEdit(license)}"
                                                        onclick="PF('licenseEdit').show(); ">
                                             <span style="text-align: center" class="glyphicon glyphicon-edit"/>
                                         </p:commandLink>
@@ -115,66 +115,117 @@
                 </p:tabView>
             </h:form>
 
-            <p:dialog modal="true" widgetVar="licenseEdit" id="licenseEdit"
-                      styleClass="disable-scroll"
-                      draggable="false" closable="false" resizable="false">
-                <h:form id="licenseEditForm">
+            <p:dialog modal="true" widgetVar="licenseEdit" id="licenseEdit" position="center top" dynamic="true"
+                      header="#{bundle['dashboard.license.editLicense.header']}">
+                <p:fragment>
+                    <h:form id="licenseEditForm" class="form-horizontal">
+                        <p:focus context="licenseEditForm" rendered="#{facesContext.validationFailed}" />
 
-                    <div style="display: grid; grid-template-columns: repeat(3, 33%); grid-row-gap: 5%;">
-                        <div style="grid-column: 1;">
-                            <p:outputLabel for="urlLicenseEdit" value="#{bundle['dashboard.license.licenseURL']}:"/>
+                        <div class="form-group">
+                            <div class="col-sm-12">
+                                <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                <h:outputText value=" #{bundle['common.forms.asterisk.tip']}"/>
+                            </div>
                         </div>
-                        <div style="grid-column: 2;">
-                            <p:inputTextarea id="urlLicenseEdit" value="#{LicenseListingPage.licenseForEdit.url}"
+
+                        <!--license universal name-->
+                        <div class="form-group">
+                            <p:outputLabel styleClass="col-sm-3 control-label" indicateRequired="false" >
+                                #{bundle['dashboard.license.universalLicenseName']}
+                            </p:outputLabel>
+                            <div class="col-sm-9">
+                                <p class="help-block">#{LicenseListingPage.licenseForEdit.name}</p>
+                            </div>
+                        </div>
+
+                        <!--license url-->
+                        <div class="form-group">
+                            <p:outputLabel for="urlLicenseEdit"
+                                           styleClass="col-sm-3 control-label" indicateRequired="false" >
+                                #{bundle['dashboard.license.licenseURL']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}" />
+                            </p:outputLabel>
+                            <div class="col-sm-9">
+                                <p:inputText id="urlLicenseEdit" value="#{LicenseListingPage.licenseForEdit.url}"
                                              required="true"
-                                             requiredMessage="#{bundle['dashboard.license.missingTextField']}">
-                                <f:validator validatorId="licenseValidator"/>
-                            </p:inputTextarea>
+                                             styleClass="form-control"
+                                             requiredMessage="#{LicenseListingPage.getRequiredMessage(bundle['dashboard.license.licenseURL'])}"
+                                             validator="#{LicenseListingPage.validateLicenseUrl}" />
+
+                                <p:message id="urlLicenseEdit-errors" for="urlLicenseEdit" display="text"
+                                            styleClass="bg-danger text-danger" />
+                            </div>
                         </div>
 
-                        <div style="grid-column: 3;">
-                            <p:message for="urlLicenseEdit" display="text"/>
+                        <!--licese badge-->
+                        <div class="form-group">
+                            <p:outputLabel for="licenseEditFileUpload" styleClass="col-sm-3 control-label" indicateRequired="false"
+                                           value="#{bundle['dashboard.license.newLicense.badgeLabel']}"/>
+                            <div class="col-sm-9">
+                                <p class="help-block">#{bundle['dashboard.license.fileType.tip']}</p>
+                                <p:fileUpload id="licenseEditFileUpload" label="#{bundle.selectFile}"
+                                              listener="#{LicenseListingPage.editLicenseImageEvent}"
+                                              update="licenseEditFileUpload-errors, licensePreview"
+                                              process="licensePreview"
+                                              mode="advanced" skinSimple="true" auto="true"
+                                              allowTypes="/(\.|\/)(jpg|jpeg|png)$/"
+                                              invalidFileMessage="#{bundle['dashboard.license.fileType.invalidExtension']}"
+                                              sizeLimit="#{LicenseListingPage.getLicenseIconFileSizeLimit()}"
+                                              invalidSizeMessage="#{bundle['dashboard.license.fileType.sizeError']}" />
+
+                                <p:message id="licenseEditFileUpload-errors" for="licenseEditFileUpload" display="text"
+                                            styleClass="bg-danger text-danger" />
+                            </div>
+
                         </div>
 
-                        <div style="grid-column: 1;">
-                            <p:outputLabel for="licenseEditFileUpload"
-                                           value="#{bundle['dashboard.license.newLicense.badgeLabel']}:"/>
-                        </div>
-                        <div style="grid-column: 2;">
-                            <p:fileUpload id="licenseEditFileUpload" label="#{bundle.selectFile}"
-                                          listener="#{LicenseListingPage.editLicenseImageEvent}"
-                                          mode="advanced" skinSimple="true" auto="true"/>
+                        <!--license badge preview-->
+                        <div class="form-group">
+                            <p:outputLabel for="licensePreview" styleClass="col-sm-3 control-label" indicateRequired="false"
+                                           value="" />
+                            <div class="col-sm-9">
+                                <p:graphicImage id="licensePreview" value="#{LicenseListingPage.getLicenseIconForDisplay(LicenseListingPage.licenseForEdit.icon)}" stream="false"
+                                                rendered="#{not empty LicenseListingPage.licenseForEdit.icon}" width="81"
+                                                height="31"/>
+                                <p:commandButton update="licensePreview"
+                                                 value="#{bundle['dashboard.license.badge.removeButton']}"
+                                                 action="#{LicenseListingPage.removeLicenseIcon(LicenseListingPage.licenseForEdit.icon)}"
+                                                 rendered="#{not empty LicenseListingPage.licenseForEdit.icon}" />
+                            </div>
                         </div>
 
+                        <!--localized names-->
                         <ui:repeat value="#{LicenseListingPage.licenseForEdit.localizedNames}" var="localLicense">
-                            <div style="grid-column: 1;">
-                                <p:outputLabel for="localizedName" value="
-                                #{settingsWrapper.getConfiguredLocaleName(localLicense.locale)}:"/>
-                            </div>
-                            <div style="grid-column: 2;">
-                                <p:inputTextarea id="localizedName"
-                                                 value="#{localLicense.text}"
-                                                 required="true"
-                                                 requiredMessage="#{bundle['dashboard.license.missingTextField']}"/>
-                            </div>
-                            <div style="grid-column: 3;">
-                                <p:message for="localizedName" display="text"/>
+                            <div class="form-group">
+                                <p:outputLabel for="localizedName" indicateRequired="false" styleClass="col-sm-3 control-label" >
+                                    #{LicenseListingPage.getLocalizedNameLabel(localLicense)} <span class="glyphicon glyphicon-asterisk text-danger"
+                                                                                                          title="#{bundle.requiredField}" />
+                                </p:outputLabel>
+
+                                <div class="col-sm-9">
+                                    <p:inputTextarea id="localizedName"
+                                                     value="#{localLicense.text}"
+                                                     required="true" styleClass="form-control"
+                                                     requiredMessage="#{LicenseListingPage.getRequiredMessage(LicenseListingPage.getLocalizedNameLabel(localLicense))}"/>
+
+                                    <p:message id="llocalizedName-errors" for="localizedName" display="text"
+                                               styleClass="bg-danger text-danger" />
+                                </div>
                             </div>
                         </ui:repeat>
-                    </div>
-                    <div class="button-block">
-                        <p:commandButton value="#{bundle.save}"
-                                            update=":licenseEditForm"
-                                            action="#{LicenseListingPage.saveEditedLicense(LicenseListingPage.licenseForEdit)}"
-                                            style="margin-right: 1%"
-                                            styleClass="btn btn-default"/>
 
-                        <p:commandButton value="#{bundle.close}"
-                                            action="#{LicenseListingPage.refreshPage}"
-                                            process="@this"
-                                            styleClass="btn btn-default"/>
-                    </div>
-                </h:form>
+                        <!-- save | cancel buttons -->
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.save}"
+                                             update=":licenseEditForm"
+                                             action="#{LicenseListingPage.saveEditedLicense(LicenseListingPage.licenseForEdit)}"
+                                             styleClass="btn btn-default btn-access"/>
+
+                            <p:commandButton value="#{bundle.cancel}"
+                                             onclick="PF('licenseEdit').hide()"
+                                             type="button" />
+                        </div>
+                    </h:form>
+                </p:fragment>
             </p:dialog>
 
             <p:dialog modal="true" widgetVar="licenseLocalizedPreview" id="licenseLocalizedPreview"
@@ -200,81 +251,123 @@
                 </p:outputPanel>
             </p:dialog>
 
-            <p:dialog modal="true" widgetVar="newLicense" id="newLicense" styleClass="disable-scroll"
-                      draggable="false" closable="false" resizable="false"
+            <p:dialog modal="true" widgetVar="newLicense" id="newLicense" position="center top" dynamic="true"
                       header="#{bundle['dashboard.license.newLicense.add']}">
+                <p:fragment>
+                    <h:form id="licenseNewForm" class="form-horizontal">
+                        <p:focus context="licenseNewForm" rendered="#{facesContext.validationFailed}" />
 
-                <h:form id="dialogForm">
-                    <div style="display: grid; grid-template-columns: repeat(3, 29%);
-                     grid-row-gap: 5%; grid-auto-rows: minmax(auto, auto);">
-                        <div style="grid-column: 1;">
-                            <p:outputLabel for="universalName"
-                                           value="#{bundle['dashboard.license.newLicense.universalName']}:"
-                            />
-                        </div>
-
-                        <div style="grid-column: 2;">
-                            <p:inputText id="universalName" value="#{LicenseListingPage.freshLicense.name}"
-                                         required="true"
-                                         requiredMessage="#{bundle['dashboard.license.missingTextField']}"/>
-                        </div>
-                        <div style="grid-column: 3;">
-                            <p:message for="universalName"
-                                       display="text"/>
-                        </div>
-
-                        <ui:repeat id="repeater" value="#{LicenseListingPage.freshLicense.localizedNames}"
-                                   var="localizedLicenses" varStatus="loopIndex">
-                            <div style="grid-column: 1;">
-                                <p:outputLabel for="locale"
-                                               value="#{bundle['language.'.concat(localizedLicenses.locale)]}:"/>
+                        <div class="form-group">
+                            <div class="col-sm-12">
+                                <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
+                                <h:outputText value=" #{bundle['common.forms.asterisk.tip']}"/>
                             </div>
-                            <div style="grid-column: 2;">
-                                <p:inputText id="locale" value="#{localizedLicenses.text}"
+                        </div>
+
+                        <!--license universal name-->
+                        <div class="form-group">
+                            <p:outputLabel for="nameLicenseNew" styleClass="col-sm-3 control-label" indicateRequired="false" >
+                                #{bundle['dashboard.license.universalLicenseName']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}" />
+                            </p:outputLabel>
+                            <div class="col-sm-9">
+                                <p:inputText id="nameLicenseNew" value="#{LicenseListingPage.freshLicense.name}"
                                              required="true"
-                                             requiredMessage="#{bundle['dashboard.license.missingTextField']}"/>
+                                             styleClass="form-control"
+                                             requiredMessage="#{LicenseListingPage.getRequiredMessage(bundle['dashboard.license.universalLicenseName'])}" />
+
+                                <p:message id="nameLicenseNew-errors" for="nameLicenseNew" display="text"
+                                           styleClass="bg-danger text-danger" />
                             </div>
-                            <div style="grid-column: 3;">
-                                <p:message id="localeError" for="locale" display="text"/>
+                        </div>
+
+                        <!--license url-->
+                        <div class="form-group">
+                            <p:outputLabel for="urlLicenseNew"
+                                           styleClass="col-sm-3 control-label" indicateRequired="false" >
+                                #{bundle['dashboard.license.licenseURL']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}" />
+                            </p:outputLabel>
+                            <div class="col-sm-9">
+                                <p:inputText id="urlLicenseNew" value="#{LicenseListingPage.freshLicense.url}"
+                                             required="true"
+                                             styleClass="form-control"
+                                             requiredMessage="#{LicenseListingPage.getRequiredMessage(bundle['dashboard.license.licenseURL'])}"
+                                             validator="#{LicenseListingPage.validateLicenseUrl}" />
+
+                                <p:message id="urlLicenseNew-errors" for="urlLicenseNew" display="text"
+                                           styleClass="bg-danger text-danger" />
+                            </div>
+                        </div>
+
+                        <!--licese badge-->
+                        <div class="form-group">
+                            <p:outputLabel for="licenseNewFileUpload" styleClass="col-sm-3 control-label" indicateRequired="false"
+                                           value="#{bundle['dashboard.license.newLicense.badgeLabel']}"/>
+                            <div class="col-sm-9">
+                                <p class="help-block">#{bundle['dashboard.license.fileType.tip']}</p>
+                                <p:fileUpload id="licenseNewFileUpload" label="#{bundle.selectFile}"
+                                              listener="#{LicenseListingPage.uploadImageForNewLicenseEvent}"
+                                              update="licenseNewFileUpload-errors, newLicensePreview"
+                                              process="newLicensePreview"
+                                              mode="advanced" skinSimple="true" auto="true"
+                                              allowTypes="/(\.|\/)(jpg|jpeg|png)$/"
+                                              invalidFileMessage="#{bundle['dashboard.license.fileType.invalidExtension']}"
+                                              sizeLimit="#{LicenseListingPage.getLicenseIconFileSizeLimit()}"
+                                              invalidSizeMessage="#{bundle['dashboard.license.fileType.sizeError']}" />
+
+                                <p:message id="licenseNewFileUpload-errors" for="licenseNewFileUpload" display="text"
+                                           styleClass="bg-danger text-danger" />
+                            </div>
+
+                        </div>
+
+                        <!--license badge preview-->
+                        <div class="form-group">
+                            <p:outputLabel for="newLicensePreview" styleClass="col-sm-3 control-label" indicateRequired="false"
+                                           value="" />
+                            <div class="col-sm-9">
+                                <p:graphicImage id="newLicensePreview" value="#{LicenseListingPage.getLicenseIconForDisplay(LicenseListingPage.freshLicense.icon)}" stream="false"
+                                                rendered="#{not empty LicenseListingPage.freshLicense.icon}" width="81"
+                                                height="31"/>
+                                <p:commandButton update="newLicensePreview"
+                                                 value="#{bundle['dashboard.license.badge.removeButton']}"
+                                                 action="#{LicenseListingPage.removeLicenseIcon(LicenseListingPage.freshLicense.icon)}"
+                                                 rendered="#{not empty LicenseListingPage.freshLicense.icon}" />
+                            </div>
+                        </div>
+
+                        <!--localized names-->
+                        <ui:repeat value="#{LicenseListingPage.freshLicense.localizedNames}" var="localLicense">
+                            <div class="form-group">
+                                <p:outputLabel for="newLocalizedName" indicateRequired="false" styleClass="col-sm-3 control-label" >
+                                    #{LicenseListingPage.getLocalizedNameLabel(localLicense)} <span class="glyphicon glyphicon-asterisk text-danger"
+                                                                                                          title="#{bundle.requiredField}" />
+                                </p:outputLabel>
+
+                                <div class="col-sm-9">
+                                    <p:inputTextarea id="newLocalizedName"
+                                                     value="#{localLicense.text}"
+                                                     required="true" styleClass="form-control"
+                                                     requiredMessage="#{LicenseListingPage.getRequiredMessage(LicenseListingPage.getLocalizedNameLabel(localLicense))}"/>
+
+                                    <p:message id="newLocalizedName-errors" for="newLocalizedName" display="text"
+                                               styleClass="bg-danger text-danger" />
+                                </div>
                             </div>
                         </ui:repeat>
 
-                        <div style="grid-column: 1;">
-                            <p:outputLabel for="url" value="#{bundle['dashboard.license.newLicense.url']}"/>
-                        </div>
-                        <div style="grid-column: 2;">
-                            <p:inputText id="url" value="#{LicenseListingPage.freshLicense.url}"
-                                         required="true"
-                                         requiredMessage="#{bundle['dashboard.license.missingTextField']}">
-                                <f:validator validatorId="licenseValidator"/>
-                            </p:inputText>
-                        </div>
-                        <div style="grid-column: 3;">
-                            <p:message id="urlError" for="url" display="text"/>
-                        </div>
+                        <!-- save | cancel buttons -->
+                        <div class="button-block">
+                            <p:commandButton value="#{bundle.save}"
+                                             update=":licenseNewForm"
+                                             action="#{LicenseListingPage.saveNewLicense()}"
+                                             styleClass="btn btn-default btn-access"/>
 
-                        <div style="grid-column: 1;">
-                            <p:outputLabel value="#{bundle['dashboard.license.newLicense.badgeLabel']}:"/>
+                            <p:commandButton value="#{bundle.cancel}"
+                                             onclick="PF('newLicense').hide()"
+                                             type="button" />
                         </div>
-
-                        <div style="grid-column: 2;">
-                            <p:fileUpload id="icon" label="#{bundle.selectFile}"
-                                          listener="#{LicenseListingPage.uploadImageForNewLicenseEvent}"
-                                          mode="advanced" skinSimple="true" auto="true"/>
-                        </div>
-                    </div>
-
-                    <div class="button-block">
-                        <p:commandButton value="#{bundle.save}"
-                                            update="dialogForm"
-                                            action="#{LicenseListingPage.saveNewLicense()}"
-                                            style="margin-right: 1%" styleClass="btn btn-default"/>
-                        <p:commandButton value="#{bundle.cancel}"
-                                            action="#{LicenseListingPage.refreshPage}"
-                                            process="@this"
-                                            styleClass="btn btn-default"/>
-                    </div>
-                </h:form>
+                    </h:form>
+                </p:fragment>
             </p:dialog>
         </ui:define>
     </ui:composition>
