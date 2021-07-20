@@ -325,6 +325,11 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>jakarta.mail</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.faces</artifactId>
             <scope>provided</scope>
@@ -527,7 +532,7 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>oauth2-oidc-sdk</artifactId>
-            <version>6.18</version>
+            <version>9.9.1</version>
         </dependency>
         <!-- EXPERIMENTAL: -->
         <!-- lyncode xoai OAI-PMH implementation: -->
