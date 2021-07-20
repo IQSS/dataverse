@@ -5,7 +5,9 @@ import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
 import java.text.MessageFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,10 +35,14 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.httpclient.HttpException;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -393,8 +399,21 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             if (evv.getValue() == null) {
                 String adjustedTerm = (prefix==null)? term: term.replace(prefix, "");
                 retrievalUri = retrievalUri.replace("{0}", adjustedTerm);
-                logger.info("Didn't find " + term + ", calling " + retrievalUri);
-                try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+                logger.fine("Didn't find " + term + ", calling " + retrievalUri);
+                try (CloseableHttpClient httpClient = HttpClients.custom()
+                        .addInterceptorLast(new HttpResponseInterceptor() {
+                            @Override
+                            public void process(HttpResponse response, HttpContext context) throws HttpException, IOException {
+                                int statusCode = response.getStatusLine().getStatusCode();
+                                if (statusCode == 504) {
+                                    //Throwing an exception triggers the retry handler
+                                    throw new IOException("Retry due to 504 response");
+                                }
+                            }
+                        })
+                        //The retry handler will also do retries for network errors/other things that cause an IOException
+                        .setRetryHandler(new DefaultHttpRequestRetryHandler(3, false))
+                        .build()) {
                     HttpGet httpGet = new HttpGet(retrievalUri);
                     httpGet.addHeader("Accept", "application/json+ld, application/json");
 
@@ -406,19 +425,20 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                         try (JsonReader jsonReader = Json.createReader(new StringReader(data))) {
                             String dataObj =filterResponse(cvocEntry, jsonReader.readObject(), term).toString(); 
                             evv.setValue(dataObj);
+                            evv.setLastUpdateDate(Timestamp.from(Instant.now()));
                             logger.fine("JsonObject: " + dataObj);
                             em.merge(evv);
                             em.flush();
                             logger.fine("Wrote value for term: " + term);
                         } catch (JsonException je) {
-                            logger.warning("Error retrieving: " + retrievalUri + " : " + je.getMessage());
+                            logger.severe("Error retrieving: " + retrievalUri + " : " + je.getMessage());
                         }
                     } else {
-                        logger.warning("Received response code : " + statusCode + " when retrieving " + retrievalUri
+                        logger.severe("Received response code : " + statusCode + " when retrieving " + retrievalUri
                                 + " : " + data);
                     }
                 } catch (IOException ioe) {
-                    logger.warning("IOException when retrieving url: " + retrievalUri + " : " + ioe.getMessage());
+                    logger.severe("IOException when retrieving url: " + retrievalUri + " : " + ioe.getMessage());
                 }
 
             }
@@ -432,19 +452,19 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
 
         JsonObjectBuilder job = Json.createObjectBuilder();
         JsonObject filtering = cvocEntry.getJsonObject("retrieval-filtering");
-        logger.info("RF: " + filtering.toString());
+        logger.fine("RF: " + filtering.toString());
         JsonObject managedFields = cvocEntry.getJsonObject("managed-fields");
-        logger.info("MF: " + managedFields.toString());
+        logger.fine("MF: " + managedFields.toString());
         for (String filterKey : filtering.keySet()) {
             if (!filterKey.equals("@context")) {
                 try {
                     JsonObject filter = filtering.getJsonObject(filterKey);
-                    logger.info("F: " + filter.toString());
+                    logger.fine("F: " + filter.toString());
                     JsonArray params = filter.getJsonArray("params");
                     if (params == null) {
                         params = Json.createArrayBuilder().build();
                     }
-                    logger.info("Params: " + params.toString());
+                    logger.fine("Params: " + params.toString());
                     List<Object> vals = new ArrayList<Object>();
                     for (int i = 0; i < params.size(); i++) {
                         String param = params.getString(i);
@@ -452,14 +472,14 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                             // Remove leading /
                             param = param.substring(1);
                             String[] pathParts = param.split("/");
-                            logger.info("PP: " + String.join(", ", pathParts));
+                            logger.fine("PP: " + String.join(", ", pathParts));
                             JsonValue curPath = readObject;
                             for (int j = 0; j < pathParts.length - 1; j++) {
                                 if (pathParts[j].contains("=")) {
                                     JsonArray arr = ((JsonArray) curPath);
                                     for (int k = 0; k < arr.size(); k++) {
                                         String[] keyVal = pathParts[j].split("=");
-                                        logger.info("Looking for object where " + keyVal[0] + " is " + keyVal[1]);
+                                        logger.fine("Looking for object where " + keyVal[0] + " is " + keyVal[1]);
                                         JsonObject jo = arr.getJsonObject(k);
                                         String val = jo.getString(keyVal[0]);
                                         String expected = keyVal[1];
@@ -467,14 +487,14 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                                             expected = termUri;
                                         }
                                         if (val.equals(expected)) {
-                                            logger.info("Found: " + jo.toString());
+                                            logger.fine("Found: " + jo.toString());
                                             curPath = jo;
                                             break;
                                         }
                                     }
                                 } else {
                                     curPath = ((JsonObject) curPath).get(pathParts[j]);
-                                    logger.info("Found next Path object " + curPath.toString());
+                                    logger.fine("Found next Path object " + curPath.toString());
                                 }
                             }
                             JsonValue jv = ((JsonObject) curPath).get(pathParts[pathParts.length - 1]);
@@ -485,16 +505,16 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                             } else if (jv.getValueType().equals(JsonValue.ValueType.OBJECT)) {
                                 vals.add(i, jv);
                             }
-                            logger.info("Added param value: " + i + ": " + vals.get(i));
+                            logger.fine("Added param value: " + i + ": " + vals.get(i));
                         } else {
-                            logger.info("Param is: " + param);
+                            logger.fine("Param is: " + param);
                             // param is not a path - either a reference to the term URI
                             if (param.equals("@id")) {
-                                logger.info("Adding id param: " + termUri);
+                                logger.fine("Adding id param: " + termUri);
                                 vals.add(i, termUri);
                             } else {
                                 // or a hardcoded value
-                                logger.info("Adding hardcoded param: " + param);
+                                logger.fine("Adding hardcoded param: " + param);
                                 vals.add(i, param);
                             }
                         }
@@ -503,9 +523,9 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                     // hardcoded value allows the same options as letting the pattern itself be @id
                     // or a hardcoded value
                     String pattern = filter.getString("pattern");
-                    logger.info("Pattern: " + pattern);
+                    logger.fine("Pattern: " + pattern);
                     if (pattern.equals("@id")) {
-                        logger.info("Added #id pattern: " + filterKey + ": " + termUri);
+                        logger.fine("Added #id pattern: " + filterKey + ": " + termUri);
                         job.add(filterKey, termUri);
                     } else if (pattern.contains("{")) {
                         if (pattern.equals("{0}")) {
@@ -516,23 +536,25 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                             }
                         } else {
                             String result = MessageFormat.format(pattern, vals.toArray());
-                            logger.info("Result: " + result);
+                            logger.fine("Result: " + result);
                             job.add(filterKey, result);
-                            logger.info("Added : " + filterKey + ": " + result);
+                            logger.fine("Added : " + filterKey + ": " + result);
                         }
                     } else {
-                        logger.info("Added hardcoded pattern: " + filterKey + ": " + pattern);
+                        logger.fine("Added hardcoded pattern: " + filterKey + ": " + pattern);
                         job.add(filterKey, pattern);
                     }
                 } catch (Exception e) {
-                    logger.info("External Vocabulary: " + termUri + " - Failed to find value for " + filterKey + ": "
+                    logger.warning("External Vocabulary: " + termUri + " - Failed to find value for " + filterKey + ": "
                             + e.getMessage());
                 }
             }
         }
         JsonObject filteredResponse = job.build();
         if(filteredResponse.isEmpty()) {
-            return readObject;
+            logger.severe("Unable to filter response for term: " + termUri + ",  received: " + readObject.toString());
+            //Better to store nothing in this case so unknown values don't propagate to exported metadata (we'll just send the termUri itself in those cases).
+            return null;
         } else {
             return filteredResponse;
         }
