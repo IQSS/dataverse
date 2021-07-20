@@ -168,7 +168,8 @@ public class DdiExportUtil {
         String persistentAuthority = datasetDto.getAuthority();
         String persistentId = datasetDto.getIdentifier();
 
-        String pidUri = persistentProtocol + ":" + persistentAuthority + "/" + persistentId;
+        String pid = persistentProtocol + ":" + persistentAuthority + "/" + persistentId;
+        String pidUri = pid;
         //Some tests don't send real PIDs - don't try to get their URL form
         if(!pidUri.equals("null:null/null")) {
             pidUri= new GlobalId(persistentProtocol + ":" + persistentAuthority + "/" + persistentId).toURL().toString();
@@ -198,7 +199,7 @@ public class DdiExportUtil {
         writeAttribute(xmlw, "agency", persistentAgency);
         
         
-        xmlw.writeCharacters(pidUri);
+        xmlw.writeCharacters(pid);
         xmlw.writeEndElement(); // IDNo
         writeOtherIdElement(xmlw, version);
         xmlw.writeEndElement(); // titlStmt
