@@ -1,9 +1,37 @@
 package edu.harvard.iq.dataverse.export;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
+import edu.harvard.iq.dataverse.UnitTestUtils;
+import edu.harvard.iq.dataverse.persistence.MocksFactory;
+import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
+import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
+import edu.harvard.iq.dataverse.persistence.datafile.license.License;
+import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
+import edu.harvard.iq.dataverse.persistence.dataset.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.qualifiers.TestBean;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JsonParser;
+import org.junit.Assert;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-import java.io.PrintWriter;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -16,36 +44,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-
-import org.junit.Assert;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.UnitTestUtils;
-import edu.harvard.iq.dataverse.persistence.MocksFactory;
-import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
-import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
-import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
-import edu.harvard.iq.dataverse.persistence.dataset.TermsOfUseAndAccess;
-import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.qualifiers.TestBean;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.SystemConfig;
-import edu.harvard.iq.dataverse.util.json.JsonParser;
-import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 /**
  * For docs see {@link SchemaDotOrgExporter}.
@@ -62,6 +65,11 @@ public class SchemaDotOrgExporterTest {
     
     @Mock
     private SystemConfig systemConfig;
+
+    @Mock
+    DataFileServiceBean dataFileService;
+
+    private JsonLdBuilder jsonLdBuilder;
     
     MockDatasetFieldSvc datasetFieldTypeSvc = null;
 
@@ -70,6 +78,10 @@ public class SchemaDotOrgExporterTest {
     public void setUp() {
         when(systemConfig.getDataverseSiteUrl()).thenReturn("https://librascholar.org");
         when(settingsService.isTrueForKey(SettingsServiceBean.Key.HideSchemaDotOrgDownloadUrls)).thenReturn(false);
+        when(dataFileService.isSameTermsOfUse(any(), any())).thenReturn(true);
+        jsonLdBuilder = new JsonLdBuilder(dataFileService, settingsService, systemConfig);
+        schemaDotOrgExporter = new SchemaDotOrgExporter(jsonLdBuilder);
+
         datasetFieldTypeSvc = new MockDatasetFieldSvc();
 
         DatasetFieldType titleType = datasetFieldTypeSvc.add(new DatasetFieldType("title", FieldType.TEXTBOX, false));
@@ -234,7 +246,6 @@ public class SchemaDotOrgExporterTest {
      */
     @Test
     public void testExportDataset() throws Exception {
-        System.out.println("exportDataset");
         String datasetVersionAsJson = UnitTestUtils.readFileToString("json/dataset-finch2.json");
 
         JsonReader jsonReader1 = Json.createReader(new StringReader(datasetVersionAsJson));
@@ -272,15 +283,24 @@ public class SchemaDotOrgExporterTest {
         fmd.setDatasetVersion(version);
         fmd.setDataFile(dataFile);
         fmd.setDescription("README file.");
+
         List<FileMetadata> fileMetadatas = new ArrayList<>();
+        FileTermsOfUse fileTermsOfUse = new FileTermsOfUse();
+        License license = new License();
+        license.setId(1L);
+        license.setUrl("testLicenseUrl");
+        license.setName("test universal name");
+        license.setActive(true);
+        fileTermsOfUse.setLicense(license);
+        fileTermsOfUse.setId(1L);
+        fileTermsOfUse.setAllRightsReserved(false);
+        fmd.setTermsOfUse(fileTermsOfUse);
         fileMetadatas.add(fmd);
         dataFile.setFileMetadatas(fileMetadatas);
         dataFile.setOwner(dataset);
         version.setFileMetadatas(fileMetadatas);
 
         String jsonLd = schemaDotOrgExporter.exportDataset(version);
-        String prettyJson = JsonUtil.prettyPrint(jsonLd);
-        System.out.println("schema.org JSON-LD: " + prettyJson);
         JsonReader jsonReader2 = Json.createReader(new StringReader(jsonLd));
         JsonObject json2 = jsonReader2.readObject();
         assertEquals("http://schema.org", json2.getString("@context"));
@@ -315,9 +335,7 @@ public class SchemaDotOrgExporterTest {
         assertEquals("2002/2005", json2.getJsonArray("temporalCoverage").getString(0));
         assertEquals("2001-10-01/2015-11-15", json2.getJsonArray("temporalCoverage").getString(1));
         assertEquals(null, json2.getString("schemaVersion", null));
-        assertEquals("Dataset", json2.getJsonObject("license").getString("@type"));
-        assertEquals("CC0", json2.getJsonObject("license").getString("text"));
-        assertEquals("https://creativecommons.org/publicdomain/zero/1.0/", json2.getJsonObject("license").getString("url"));
+        assertNotNull(json2.getJsonObject("license"));
         assertEquals("DataCatalog", json2.getJsonObject("includedInDataCatalog").getString("@type"));
         assertEquals("LibraScholar", json2.getJsonObject("includedInDataCatalog").getString("name"));
         assertEquals("https://librascholar.org", json2.getJsonObject("includedInDataCatalog").getString("url"));
@@ -335,16 +353,295 @@ public class SchemaDotOrgExporterTest {
         assertEquals(2, json2.getJsonArray("spatialCoverage").size());
         assertEquals("DataDownload", json2.getJsonArray("distribution").getJsonObject(0).getString("@type"));
         assertEquals("README.md", json2.getJsonArray("distribution").getJsonObject(0).getString("name"));
-        assertEquals("text/plain", json2.getJsonArray("distribution").getJsonObject(0).getString("fileFormat"));
+        assertEquals("text/plain", json2.getJsonArray("distribution").getJsonObject(0).getString("encodingFormat"));
         assertEquals(1234, json2.getJsonArray("distribution").getJsonObject(0).getInt("contentSize"));
         assertEquals("README file.", json2.getJsonArray("distribution").getJsonObject(0).getString("description"));
         assertEquals("https://doi.org/10.5072/FK2/7V5MPI", json2.getJsonArray("distribution").getJsonObject(0).getString("@id"));
         assertEquals("https://doi.org/10.5072/FK2/7V5MPI", json2.getJsonArray("distribution").getJsonObject(0).getString("identifier"));
         assertEquals("https://librascholar.org/api/access/datafile/42", json2.getJsonArray("distribution").getJsonObject(0).getString("contentUrl"));
         assertEquals(1, json2.getJsonArray("distribution").size());
-        try (PrintWriter printWriter = new PrintWriter("/tmp/dvjsonld.json")) {
-            printWriter.println(prettyJson);
-        }
+    }
+
+    @Test
+    public void testExportDataset_sameLicenses() throws Exception {
+        DatasetVersion version = new DatasetVersion();
+        version.setVersionState(DatasetVersion.VersionState.RELEASED);
+        SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
+        Date publicationDate = dateFmt.parse("19551105");
+        version.setReleaseTime(publicationDate);
+        version.setVersionNumber(1l);
+
+        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+        terms.setLicense(TermsOfUseAndAccess.License.CC0);
+        version.setTermsOfUseAndAccess(terms);
+
+        Dataset dataset = new Dataset();
+        dataset.setProtocol("doi");
+        dataset.setAuthority("10.5072/FK2");
+        dataset.setIdentifier("IMK5A4");
+        dataset.setPublicationDate(new Timestamp(publicationDate.getTime()));
+        version.setDataset(dataset);
+        Dataverse dataverse = new Dataverse();
+        dataverse.setName("LibraScholar");
+        dataset.setOwner(dataverse);
+
+        FileMetadata fmd = MocksFactory.makeFileMetadata(10L, "README.md", 0);
+        DataFile dataFile = new DataFile();
+        dataFile.setId(42l);
+        dataFile.setFilesize(1234);
+        dataFile.setContentType("text/plain");
+        dataFile.setProtocol("doi");
+        dataFile.setAuthority("10.5072/FK2");
+        dataFile.setIdentifier("7V5MPI");
+        fmd.setDatasetVersion(version);
+        fmd.setDataFile(dataFile);
+        fmd.setDescription("README file.");
+
+        List<FileMetadata> fileMetadatas = new ArrayList<>();
+        FileTermsOfUse fileTermsOfUse = new FileTermsOfUse();
+        License license = new License();
+        license.setId(1L);
+        license.setUrl("testLicenseUrl");
+        license.setName("test universal name");
+        license.setActive(true);
+        fileTermsOfUse.setLicense(license);
+        fileTermsOfUse.setId(1L);
+        fileTermsOfUse.setAllRightsReserved(false);
+        fmd.setTermsOfUse(fileTermsOfUse);
+        fileMetadatas.add(fmd);
+
+        fileTermsOfUse = new FileTermsOfUse();
+        license = new License();
+        license.setId(2L);
+        license.setUrl("testLicenseUrl");
+        license.setName("test universal name");
+        license.setActive(true);
+        fileTermsOfUse.setLicense(license);
+        fileTermsOfUse.setId(2L);
+        fileTermsOfUse.setAllRightsReserved(false);
+        fmd.setTermsOfUse(fileTermsOfUse);
+        fileMetadatas.add(fmd);
+
+        dataFile.setFileMetadatas(fileMetadatas);
+        dataFile.setOwner(dataset);
+        version.setFileMetadatas(fileMetadatas);
+
+        String jsonLd = schemaDotOrgExporter.exportDataset(version);
+        JsonReader jsonReader2 = Json.createReader(new StringReader(jsonLd));
+        JsonObject json2 = jsonReader2.readObject();
+
+        assertEquals("CreativeWork", json2.getJsonObject("license").getString("@type"));
+        assertEquals("test universal name", json2.getJsonObject("license").getString("name"));
+        assertEquals("testLicenseUrl", json2.getJsonObject("license").getString("url"));
+    }
+
+    @Test
+    public void testExportDataset_differentLicenses() throws Exception {
+
+        when(dataFileService.isSameTermsOfUse(any(), any())).thenReturn(false);
+        jsonLdBuilder = new JsonLdBuilder(dataFileService, settingsService, systemConfig);
+        schemaDotOrgExporter = new SchemaDotOrgExporter(jsonLdBuilder);
+
+        DatasetVersion version = new DatasetVersion();
+        version.setVersionState(DatasetVersion.VersionState.RELEASED);
+        SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
+        Date publicationDate = dateFmt.parse("19551105");
+        version.setReleaseTime(publicationDate);
+        version.setVersionNumber(1l);
+
+        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+        terms.setLicense(TermsOfUseAndAccess.License.CC0);
+        version.setTermsOfUseAndAccess(terms);
+
+        Dataset dataset = new Dataset();
+        dataset.setProtocol("doi");
+        dataset.setAuthority("10.5072/FK2");
+        dataset.setIdentifier("IMK5A4");
+        dataset.setPublicationDate(new Timestamp(publicationDate.getTime()));
+        version.setDataset(dataset);
+        Dataverse dataverse = new Dataverse();
+        dataverse.setName("LibraScholar");
+        dataset.setOwner(dataverse);
+
+        FileMetadata fmd = MocksFactory.makeFileMetadata(10L, "README.md", 0);
+        DataFile dataFile = new DataFile();
+        dataFile.setId(42l);
+        dataFile.setFilesize(1234);
+        dataFile.setContentType("text/plain");
+        dataFile.setProtocol("doi");
+        dataFile.setAuthority("10.5072/FK2");
+        dataFile.setIdentifier("7V5MPI");
+        fmd.setDatasetVersion(version);
+        fmd.setDataFile(dataFile);
+        fmd.setDescription("README file.");
+
+        List<FileMetadata> fileMetadatas = new ArrayList<>();
+        FileTermsOfUse fileTermsOfUse = new FileTermsOfUse();
+        License license = new License();
+        license.setId(1L);
+        license.setUrl("testLicenseUrl");
+        license.setName("test universal name");
+        license.setActive(true);
+        fileTermsOfUse.setLicense(license);
+        fileTermsOfUse.setId(1L);
+        fileTermsOfUse.setAllRightsReserved(false);
+        fmd.setTermsOfUse(fileTermsOfUse);
+        fileMetadatas.add(fmd);
+
+        fileTermsOfUse = new FileTermsOfUse();
+        license = new License();
+        license.setId(2L);
+        license.setUrl("some testLicenseUrl");
+        license.setName("Different test universal name");
+        license.setActive(true);
+        fileTermsOfUse.setLicense(license);
+        fileTermsOfUse.setId(2L);
+        fileTermsOfUse.setAllRightsReserved(false);
+        fmd.setTermsOfUse(fileTermsOfUse);
+        fileMetadatas.add(fmd);
+
+        dataFile.setFileMetadatas(fileMetadatas);
+        dataFile.setOwner(dataset);
+        version.setFileMetadatas(fileMetadatas);
+
+        String jsonLd = schemaDotOrgExporter.exportDataset(version);
+        JsonReader jsonReader2 = Json.createReader(new StringReader(jsonLd));
+        JsonObject json2 = jsonReader2.readObject();
+
+        assertEquals("CreativeWork", json2.getJsonObject("license").getString("@type"));
+        assertEquals("Different licenses or terms for individual files", json2.getJsonObject("license").getString("name"));
+        assertNull(json2.getJsonObject("license").getOrDefault("url", null));
+    }
+
+    @Test
+    public void testExportDataset_restrictedAccess() throws Exception {
+
+        DatasetVersion version = new DatasetVersion();
+        version.setVersionState(DatasetVersion.VersionState.RELEASED);
+        SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
+        Date publicationDate = dateFmt.parse("19551105");
+        version.setReleaseTime(publicationDate);
+        version.setVersionNumber(1l);
+
+        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+        terms.setLicense(TermsOfUseAndAccess.License.CC0);
+        version.setTermsOfUseAndAccess(terms);
+
+        Dataset dataset = new Dataset();
+        dataset.setProtocol("doi");
+        dataset.setAuthority("10.5072/FK2");
+        dataset.setIdentifier("IMK5A4");
+        dataset.setPublicationDate(new Timestamp(publicationDate.getTime()));
+        version.setDataset(dataset);
+        Dataverse dataverse = new Dataverse();
+        dataverse.setName("LibraScholar");
+        dataset.setOwner(dataverse);
+
+        FileMetadata fmd = MocksFactory.makeFileMetadata(10L, "README.md", 0);
+        DataFile dataFile = new DataFile();
+        dataFile.setId(42l);
+        dataFile.setFilesize(1234);
+        dataFile.setContentType("text/plain");
+        dataFile.setProtocol("doi");
+        dataFile.setAuthority("10.5072/FK2");
+        dataFile.setIdentifier("7V5MPI");
+        fmd.setDatasetVersion(version);
+        fmd.setDataFile(dataFile);
+        fmd.setDescription("README file.");
+
+        List<FileMetadata> fileMetadatas = new ArrayList<>();
+        FileTermsOfUse fileTermsOfUse = new FileTermsOfUse();
+        fileTermsOfUse.setLicense(null);
+        fileTermsOfUse.setId(1L);
+        fileTermsOfUse.setAllRightsReserved(false);
+        fileTermsOfUse.setRestrictType(FileTermsOfUse.RestrictType.ACADEMIC_PURPOSE);
+        fmd.setTermsOfUse(fileTermsOfUse);
+        fileMetadatas.add(fmd);
+
+        fileTermsOfUse = new FileTermsOfUse();
+        fileTermsOfUse.setLicense(null);
+        fileTermsOfUse.setId(2L);
+        fileTermsOfUse.setAllRightsReserved(false);
+        fileTermsOfUse.setRestrictType(FileTermsOfUse.RestrictType.ACADEMIC_PURPOSE);
+        fmd.setTermsOfUse(fileTermsOfUse);
+        fileMetadatas.add(fmd);
+
+        dataFile.setFileMetadatas(fileMetadatas);
+        dataFile.setOwner(dataset);
+        version.setFileMetadatas(fileMetadatas);
+
+        String jsonLd = schemaDotOrgExporter.exportDataset(version);
+        JsonReader jsonReader2 = Json.createReader(new StringReader(jsonLd));
+        JsonObject json2 = jsonReader2.readObject();
+
+        assertEquals("CreativeWork", json2.getJsonObject("license").getString("@type"));
+        assertEquals("Restricted access", json2.getJsonObject("license").getString("name"));
+        assertNull(json2.getJsonObject("license").getOrDefault("url", null));
+
+    }
+
+    @Test
+    public void testExportDataset_allRightsReserved() throws Exception {
+
+        DatasetVersion version = new DatasetVersion();
+        version.setVersionState(DatasetVersion.VersionState.RELEASED);
+        SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
+        Date publicationDate = dateFmt.parse("19551105");
+        version.setReleaseTime(publicationDate);
+        version.setVersionNumber(1l);
+
+        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+        terms.setLicense(TermsOfUseAndAccess.License.CC0);
+        version.setTermsOfUseAndAccess(terms);
+
+        Dataset dataset = new Dataset();
+        dataset.setProtocol("doi");
+        dataset.setAuthority("10.5072/FK2");
+        dataset.setIdentifier("IMK5A4");
+        dataset.setPublicationDate(new Timestamp(publicationDate.getTime()));
+        version.setDataset(dataset);
+        Dataverse dataverse = new Dataverse();
+        dataverse.setName("LibraScholar");
+        dataset.setOwner(dataverse);
+
+        FileMetadata fmd = MocksFactory.makeFileMetadata(10L, "README.md", 0);
+        DataFile dataFile = new DataFile();
+        dataFile.setId(42l);
+        dataFile.setFilesize(1234);
+        dataFile.setContentType("text/plain");
+        dataFile.setProtocol("doi");
+        dataFile.setAuthority("10.5072/FK2");
+        dataFile.setIdentifier("7V5MPI");
+        fmd.setDatasetVersion(version);
+        fmd.setDataFile(dataFile);
+        fmd.setDescription("README file.");
+
+        List<FileMetadata> fileMetadatas = new ArrayList<>();
+        FileTermsOfUse fileTermsOfUse = new FileTermsOfUse();
+        fileTermsOfUse.setLicense(null);
+        fileTermsOfUse.setId(1L);
+        fileTermsOfUse.setAllRightsReserved(true);
+        fmd.setTermsOfUse(fileTermsOfUse);
+        fileMetadatas.add(fmd);
+
+        fileTermsOfUse = new FileTermsOfUse();
+        fileTermsOfUse.setLicense(null);
+        fileTermsOfUse.setId(2L);
+        fileTermsOfUse.setAllRightsReserved(true);
+        fmd.setTermsOfUse(fileTermsOfUse);
+        fileMetadatas.add(fmd);
+
+        dataFile.setFileMetadatas(fileMetadatas);
+        dataFile.setOwner(dataset);
+        version.setFileMetadatas(fileMetadatas);
+
+        String jsonLd = schemaDotOrgExporter.exportDataset(version);
+        JsonReader jsonReader2 = Json.createReader(new StringReader(jsonLd));
+        JsonObject json2 = jsonReader2.readObject();
+
+        assertEquals("CreativeWork", json2.getJsonObject("license").getString("@type"));
+        assertEquals("All rights reserved", json2.getJsonObject("license").getString("name"));
+        assertNull(json2.getJsonObject("license").getOrDefault("url", null));
     }
 
     /**

@@ -1,38 +1,58 @@
 package edu.harvard.iq.dataverse.export;
 
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.common.BrandingUtil;
 import edu.harvard.iq.dataverse.common.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
+import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetAuthor;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetRelPublication;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.persistence.dataset.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.FileUtil.ApiDownloadType;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-
 import java.net.URL;
 import java.util.List;
 
+@Stateless
 public class JsonLdBuilder {
     // TODO: Consider moving this comment into the Exporter code.
     // The export subsystem assumes there is only
     // one metadata export in a given format per dataset (it uses the current 
     // released (published) version. This JSON fragment is generated for a 
     // specific released version - and we can have multiple released versions. 
-    // So something will need to be modified to accommodate this. -- L.A.  
+    // So something will need to be modified to accommodate this. -- L.A.
+
+    private DataFileServiceBean dataFileService;
+    private SettingsServiceBean settingsService;
+    private SystemConfig systemConfig;
+
+    @Deprecated
+    public JsonLdBuilder() {
+    }
+
+    @Inject
+    public JsonLdBuilder(DataFileServiceBean dataFileService, SettingsServiceBean settingsService, SystemConfig systemConfig) {
+        this.dataFileService = dataFileService;
+        this.settingsService = settingsService;
+        this.systemConfig = systemConfig;
+    }
 
     /**
      * We call the export format "Schema.org JSON-LD" and extensive Javadoc can
      * be found in {@link SchemaDotOrgExporter}.
      */
-    public static String buildJsonLd(DatasetVersion datasetVersion,  String dataverseSiteUrl, String hideSchemaDotOrgDownloadUrls) {
+    public String buildJsonLd(DatasetVersion datasetVersion) {
         // We show published datasets only for "datePublished" field below.
         if (!datasetVersion.isReleased()) {
             return "";
@@ -188,38 +208,32 @@ public class JsonLdBuilder {
             job.add("temporalCoverage", temporalCoverage);
         }
 
-        /**
-         * https://schema.org/version/3.4/ says, "Note that schema.org release
-         * numbers are not generally included when you use schema.org. In
-         * contexts (e.g. related standards work) when a particular release
-         * needs to be cited, this document provides the appropriate URL."
-         *
-         * For the reason above we decided to take out schemaVersion but we're
-         * leaving this Javadoc in here to remind us that we made this decision.
-         * We used to include "https://schema.org/version/3.3" in the output for
-         * "schemaVersion".
-         */
-        TermsOfUseAndAccess terms = datasetVersion.getTermsOfUseAndAccess();
-        if (terms != null) {
-            JsonObjectBuilder license = Json.createObjectBuilder().add("@type", "Dataset");
+        List<FileMetadata> filesMetadata = datasetVersion.getFileMetadatas();
+        JsonObjectBuilder license = Json.createObjectBuilder().add("@type", "CreativeWork");
 
-            if (TermsOfUseAndAccess.License.CC0.equals(terms.getLicense())) {
-                license.add("text", "CC0").add("url", "https://creativecommons.org/publicdomain/zero/1.0/");
+        if(hasSameTermsForAllFiles(filesMetadata)) {
+            FileTermsOfUse firstFileTerms = filesMetadata.get(0).getTermsOfUse();
+            FileTermsOfUse.TermsOfUseType termsType = firstFileTerms.getTermsOfUseType();
+
+            if(termsType.equals(FileTermsOfUse.TermsOfUseType.LICENSE_BASED)) {
+                license.add("name", firstFileTerms.getLicense().getName());
+                license.add("url", firstFileTerms.getLicense().getUrl());
+            } else if (termsType.equals(FileTermsOfUse.TermsOfUseType.RESTRICTED)) {
+                license.add("name", "Restricted access");
             } else {
-                String termsOfUse = terms.getTermsOfUse();
-                // Terms of use can be null if you create the dataset with JSON.
-                if (termsOfUse != null) {
-                    license.add("text", termsOfUse);
-                }
+                license.add("name", "All rights reserved");
             }
-
-            job.add("license", license);
+        } else {
+            license.add("name", "Different licenses or terms for individual files");
         }
+
+        job.add("license", license);
+
 
         job.add("includedInDataCatalog", Json.createObjectBuilder()
                 .add("@type", "DataCatalog")
                 .add("name", datasetVersion.getRootDataverseNameforCitation())
-                .add("url", dataverseSiteUrl)
+                .add("url", systemConfig.getDataverseSiteUrl())
         );
 
         String installationBrandName = BrandingUtil.getInstallationBrandName(datasetVersion.getRootDataverseNameforCitation());
@@ -271,16 +285,17 @@ public class JsonLdBuilder {
                     }
                     fileObject.add("@type", "DataDownload");
                     fileObject.add("name", fileMetadata.getLabel());
-                    fileObject.add("fileFormat", fileMetadata.getDataFile().getContentType());
+                    fileObject.add("encodingFormat", fileMetadata.getDataFile().getContentType());
                     fileObject.add("contentSize", fileMetadata.getDataFile().getFilesize());
                     fileObject.add("description", fileMetadata.getDescription());
                     fileObject.add("@id", filePidUrlAsString);
                     fileObject.add("identifier", filePidUrlAsString);
+                    String hideSchemaDotOrgDownloadUrls = settingsService.getValueForKey(SettingsServiceBean.Key.HideSchemaDotOrgDownloadUrls);
                     if (hideSchemaDotOrgDownloadUrls != null && hideSchemaDotOrgDownloadUrls.equals("true")) {
                         // no-op
                     } else {
                         if (FileUtil.isPubliclyDownloadable(fileMetadata)) {
-                            fileObject.add("contentUrl", dataverseSiteUrl + FileUtil.getFileDownloadUrlPath(ApiDownloadType.DEFAULT, fileMetadata.getDataFile().getId(), false));
+                            fileObject.add("contentUrl", systemConfig.getDataverseSiteUrl() + FileUtil.getFileDownloadUrlPath(ApiDownloadType.DEFAULT, fileMetadata.getDataFile().getId(), false));
                         }
                     }
                     fileArray.add(fileObject);
@@ -290,5 +305,21 @@ public class JsonLdBuilder {
         }
         
         return job.build().toString();
+    }
+
+
+    private boolean hasSameTermsForAllFiles(List<FileMetadata> filesMetadata) {
+        if (filesMetadata.isEmpty()) {
+            return false;
+        }
+        FileTermsOfUse firstTermsOfUse = filesMetadata.get(0).getTermsOfUse();
+
+        for (FileMetadata fileMetadata : filesMetadata) {
+            if (!dataFileService.isSameTermsOfUse(firstTermsOfUse, fileMetadata.getTermsOfUse())) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

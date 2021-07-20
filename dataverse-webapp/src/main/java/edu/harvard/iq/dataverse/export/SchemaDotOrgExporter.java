@@ -3,8 +3,6 @@ package edu.harvard.iq.dataverse.export;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.export.spi.Exporter;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -68,24 +66,20 @@ import javax.ws.rs.core.MediaType;
 @ApplicationScoped
 public class SchemaDotOrgExporter implements Exporter {
 
-    private SettingsServiceBean settingsService;
-    private SystemConfig systemConfig;
+    private JsonLdBuilder jsonLdBuilder;
 
     // -------------------- CONSTRUCTORS --------------------
 
     @Inject
-    public SchemaDotOrgExporter(SettingsServiceBean settingsService, SystemConfig systemConfig) {
-        this.settingsService = settingsService;
-        this.systemConfig = systemConfig;
+    public SchemaDotOrgExporter(JsonLdBuilder jsonLdBuilder) {
+        this.jsonLdBuilder = jsonLdBuilder;
     }
 
     // -------------------- LOGIC --------------------
 
     @Override
     public String exportDataset(DatasetVersion version) throws ExportException {
-        return JsonLdBuilder.buildJsonLd(version,
-                systemConfig.getDataverseSiteUrl(),
-                settingsService.getValueForKey(SettingsServiceBean.Key.HideSchemaDotOrgDownloadUrls));
+        return jsonLdBuilder.buildJsonLd(version);
     }
 
     @Override

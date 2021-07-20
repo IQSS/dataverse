@@ -1,17 +1,26 @@
 package edu.harvard.iq.dataverse.export;
 
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -19,12 +28,41 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class JsonLdBuilderTest {
+
+    @InjectMocks
+    private JsonLdBuilder jsonLdBuilder;
+
+    @Mock
+    private DataFileServiceBean dataFileService;
+
+    @Mock
+    private SettingsServiceBean settingsService;
+
+    @Mock
+    private SystemConfig systemConfig;
 
     /**
      * See also SchemaDotOrgExporterTest.java for more extensive tests.
      */
+
+    @BeforeEach
+    public void beforeEach() {
+        Dataverse dv = new Dataverse();
+        dv.setName("RepOD");
+
+        when(dataFileService.isSameTermsOfUse(any(), any())).thenReturn(true);
+        when(systemConfig.getDataverseSiteUrl()).thenReturn("localhost");
+        when(settingsService.getValueForKey(SettingsServiceBean.Key.HideSchemaDotOrgDownloadUrls)).thenReturn("true");
+
+        jsonLdBuilder = new JsonLdBuilder(dataFileService, settingsService, systemConfig);
+    }
+
     @Test
     public void testGetJsonLd() throws ParseException {
         Dataset dataset = new Dataset();
@@ -36,7 +74,7 @@ public class JsonLdBuilderTest {
         datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
         assertEquals("", datasetVersion.getPublicationDateAsString());
         // Only published datasets return any JSON.
-        assertEquals("", JsonLdBuilder.buildJsonLd(datasetVersion, "localhost", "true"));
+        assertEquals("", jsonLdBuilder.buildJsonLd(datasetVersion));
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
         datasetVersion.setVersionNumber(1L);
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
@@ -49,7 +87,7 @@ public class JsonLdBuilderTest {
         TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
         terms.setLicense(TermsOfUseAndAccess.License.CC0);
         datasetVersion.setTermsOfUseAndAccess(terms);
-        String jsonLd = JsonLdBuilder.buildJsonLd(datasetVersion, "localhost", "true");
+        String jsonLd = jsonLdBuilder.buildJsonLd(datasetVersion);
         System.out.println("jsonLd: " + JsonUtil.prettyPrint(jsonLd));
         JsonReader jsonReader = Json.createReader(new StringReader(jsonLd));
         JsonObject obj = jsonReader.readObject();
@@ -58,9 +96,8 @@ public class JsonLdBuilderTest {
         assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("@id"));
         assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("identifier"));
         assertEquals(null, obj.getString("schemaVersion", null));
-        assertEquals("Dataset", obj.getJsonObject("license").getString("@type"));
-        assertEquals("CC0", obj.getJsonObject("license").getString("text"));
-        assertEquals("https://creativecommons.org/publicdomain/zero/1.0/", obj.getJsonObject("license").getString("url"));
+        assertEquals("CreativeWork", obj.getJsonObject("license").getString("@type"));
+        assertEquals("Different licenses or terms for individual files", obj.getJsonObject("license").getString("name"));
         assertEquals("1955-11-05", obj.getString("dateModified"));
         assertEquals("1955-11-05", obj.getString("datePublished"));
         assertEquals("1", obj.getString("version"));
@@ -90,7 +127,7 @@ public class JsonLdBuilderTest {
         datasetVersion.setVersionState(DatasetVersion.VersionState.DRAFT);
         assertEquals("", datasetVersion.getPublicationDateAsString());
         // Only published datasets return any JSON.
-        assertEquals("", JsonLdBuilder.buildJsonLd(datasetVersion, "localhost", "true"));
+        assertEquals("", jsonLdBuilder.buildJsonLd(datasetVersion));
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
         datasetVersion.setVersionNumber(1L);
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
@@ -106,7 +143,7 @@ public class JsonLdBuilderTest {
         terms.setTermsOfUse("Call me maybe");
         datasetVersion.setTermsOfUseAndAccess(terms);
 
-        String jsonLd = JsonLdBuilder.buildJsonLd(datasetVersion, "localhost", "true");
+        String jsonLd = jsonLdBuilder.buildJsonLd(datasetVersion);
         System.out.println("jsonLd: " + JsonUtil.prettyPrint(jsonLd));
         JsonReader jsonReader = Json.createReader(new StringReader(jsonLd));
         JsonObject obj = jsonReader.readObject();
@@ -115,8 +152,8 @@ public class JsonLdBuilderTest {
         assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("@id"));
         assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("identifier"));
         assertEquals(null, obj.getString("schemaVersion", null));
-        assertEquals("Dataset", obj.getJsonObject("license").getString("@type"));
-        assertEquals("Call me maybe", obj.getJsonObject("license").getString("text"));
+        assertEquals("CreativeWork", obj.getJsonObject("license").getString("@type"));
+        assertEquals("Different licenses or terms for individual files", obj.getJsonObject("license").getString("name"));
         assertEquals("1955-11-05", obj.getString("dateModified"));
         assertEquals("1955-11-05", obj.getString("datePublished"));
         assertEquals("1", obj.getString("version"));

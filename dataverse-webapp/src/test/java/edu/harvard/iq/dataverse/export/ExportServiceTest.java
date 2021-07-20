@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.export;
 
 import com.google.common.collect.Lists;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.UnitTestUtils;
 import edu.harvard.iq.dataverse.citation.CitationDataExtractor;
@@ -51,6 +52,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -75,7 +77,12 @@ public class ExportServiceTest {
     private SystemConfig systemConfig;
 
     @Mock
+    private DataFileServiceBean dataFileService;
+
+    @Mock
     private Instance<Exporter> exporters;
+
+    private JsonLdBuilder jsonLdBuilder;
 
     private JsonPrinter jsonPrinter = new JsonPrinter(
             new CitationFactory(new CitationDataExtractor(), new StandardCitationFormatsConverter()));
@@ -84,6 +91,9 @@ public class ExportServiceTest {
     void prepareData() {
         when(settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport)).thenReturn(false);
         when(systemConfig.getDataverseSiteUrl()).thenReturn("https://localhost");
+        when(dataFileService.isSameTermsOfUse(any(), any())).thenReturn(false);
+        jsonLdBuilder = new JsonLdBuilder(dataFileService, settingsService, systemConfig);
+
         mockDatasetFields();
 
         when(exporters.iterator()).thenReturn(IteratorUtils.arrayIterator(
@@ -91,7 +101,7 @@ public class ExportServiceTest {
                 new DCTermsExporter(settingsService, jsonPrinter),
                 new DublinCoreExporter(settingsService,jsonPrinter),
                 new OAI_OREExporter(settingsService, systemConfig, clock),
-                new SchemaDotOrgExporter(settingsService, systemConfig),
+                new SchemaDotOrgExporter(jsonLdBuilder),
                 new OpenAireExporter(settingsService, jsonPrinter),
                 new JSONExporter(settingsService, jsonPrinter)));
         exportService = new ExportService(exporters);
