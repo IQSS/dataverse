@@ -5499,10 +5499,6 @@ public class DatasetPage implements java.io.Serializable {
         return cachedCvocMap;
     }
     
-    public List<String> getVocabList(long id) {
-        return getCVocConf().get(id).getJsonArray("vocabs").getValuesAs(JsonString::getString);
-    }
-    
     public List<String> getVocabScripts() {
         //ToDo - only return scripts that are needed (those fields are set on display pages, those blocks/fields are allowed in the Dataverse collection for create/edit)?
         Set<String> scripts = new HashSet<String>();
