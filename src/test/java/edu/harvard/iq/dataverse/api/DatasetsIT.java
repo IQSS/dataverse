@@ -7,6 +7,7 @@ import com.jayway.restassured.response.Response;
 import java.util.logging.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
 import org.junit.Ignore;
 import com.jayway.restassured.path.json.JsonPath;
 
@@ -26,18 +27,21 @@ import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import java.util.UUID;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import com.jayway.restassured.parsing.Parser;
 import static com.jayway.restassured.path.json.JsonPath.with;
 import com.jayway.restassured.path.xml.XmlPath;
-import edu.harvard.iq.dataverse.Dataset;
 import static edu.harvard.iq.dataverse.api.UtilIT.equalToCI;
-import static edu.harvard.iq.dataverse.authorization.AuthenticationResponse.Status.ERROR;
 import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
+
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -45,26 +49,15 @@ import java.util.HashMap;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObjectBuilder;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-import javax.persistence.PersistenceContext;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import org.junit.Before;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
 public class DatasetsIT {
@@ -2162,6 +2155,113 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         fileMetadataDdiGuest.then().assertThat()
                 .statusCode(BAD_REQUEST.getStatusCode())
                 .body("message", equalTo("You do not have permission to download this file."));
+    }
+
+    @Test
+    public void testSemanticMetadataAPIs() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        // Create a dataset using native api
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+
+        // Get the metadata with the semantic api
+        Response response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+        // Compare the metadata with an expected value - the metadatablock entries
+        // should be the same but there will be additional fields with values related to
+        // the dataset's creation (e.g. new id)
+        String jsonLDString = getData(response.getBody().asString());
+        JsonObject jo = null;
+        try {
+            jo = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
+        } catch (NoSuchMethodError e) {
+            logger.info(ExceptionUtils.getStackTrace(e));
+        }
+        
+
+        String expectedJsonLD = UtilIT.getDatasetJson("scripts/search/tests/data/dataset-finch1.jsonld");
+        jo = Json.createObjectBuilder(jo).remove("@id").remove("http://schema.org/dateModified").build();
+        String jsonLD = jo.toString();
+
+        // ToDo: Are the static pars as expected
+        JSONAssert.assertEquals(expectedJsonLD, jsonLD, false);
+        // Now change the title
+        response = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken,
+                "{\"Title\": \"New Title\", \"@context\":{\"Title\": \"http://purl.org/dc/terms/title\"}}", true);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+
+        response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Check that the semantic api returns the new title
+        jsonLDString = getData(response.getBody().asString());
+        JsonObject jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
+        assertEquals("New Title", jsonLDObject.getString("http://purl.org/dc/terms/title"));
+
+        // Add an additional description (which is multi-valued and compound)
+        // Also add new terms of use (single value so would fail with replace false if a
+        // value existed)
+        String newDescription = "{\"citation:Description\": {\"dsDescription:Text\": \"New description\"}, \"https://dataverse.org/schema/core#termsOfUse\": \"New terms\", \"@context\":{\"citation\": \"https://dataverse.org/schema/citation/\",\"dsDescription\": \"https://dataverse.org/schema/citation/dsDescription#\"}}";
+        response = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken, newDescription, false);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+
+        response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Look for a second description
+        jsonLDString = getData(response.getBody().asString());
+        jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
+        assertEquals("New description",
+                ((JsonObject) jsonLDObject.getJsonArray("https://dataverse.org/schema/citation/Description").get(1))
+                        .getString("https://dataverse.org/schema/citation/dsDescription#Text"));
+
+        // Can't add terms of use with replace=false and a value already set (single
+        // valued field)
+        String badTerms = "{\"https://dataverse.org/schema/core#termsOfUse\": \"Bad terms\"}}";
+        response = UtilIT.updateDatasetJsonLDMetadata(datasetId, apiToken, badTerms, false);
+        response.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+
+        // Delete the terms of use
+        response = UtilIT.deleteDatasetJsonLDMetadata(datasetId, apiToken,
+                "{\"https://dataverse.org/schema/core#termsOfUse\": \"New terms\"}");
+        response.then().assertThat().statusCode(OK.getStatusCode());
+
+        response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Verify that they're gone
+        jsonLDString = getData(response.getBody().asString());
+        jsonLDObject = JSONLDUtil.decontextualizeJsonLD(jsonLDString);
+        assertTrue(!jsonLDObject.containsKey("https://dataverse.org/schema/core#termsOfUse"));
+
+        // Cleanup - delete dataset, dataverse, user...
+        Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
+        deleteDatasetResponse.prettyPrint();
+        assertEquals(200, deleteDatasetResponse.getStatusCode());
+
+        Response deleteDataverseResponse = UtilIT.deleteDataverse(dataverseAlias, apiToken);
+        deleteDataverseResponse.prettyPrint();
+        assertEquals(200, deleteDataverseResponse.getStatusCode());
+
+        Response deleteUserResponse = UtilIT.deleteUser(username);
+        deleteUserResponse.prettyPrint();
+        assertEquals(200, deleteUserResponse.getStatusCode());
+
+    }
+
+    private String getData(String body) {
+        try (StringReader rdr = new StringReader(body)) {
+            return Json.createReader(rdr).readObject().getJsonObject("data").toString();
+        }
     }
 
 }

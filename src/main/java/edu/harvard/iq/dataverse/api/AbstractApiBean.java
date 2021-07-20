@@ -79,7 +79,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
-import static org.apache.commons.lang.StringUtils.isNumeric;
+import static org.apache.commons.lang3.StringUtils.isNumeric;
 
 /**
  * Base class for API beans
@@ -362,7 +362,17 @@ public abstract class AbstractApiBean {
             return GuestUser.get();
         }
         PrivateUrlUser privateUrlUser = privateUrlSvc.getPrivateUrlUserFromToken(requestApiKey);
+        // For privateUrlUsers restricted to anonymized access, all api calls are off-limits except for those used in the UI
+        // to download the file or image thumbs
         if (privateUrlUser != null) {
+            if (privateUrlUser.hasAnonymizedAccess()) {
+                String pathInfo = httpRequest.getPathInfo();
+                String prefix= "/access/datafile/";
+                if (!(pathInfo.startsWith(prefix) && !pathInfo.substring(prefix.length()).contains("/"))) {
+                    logger.info("Anonymized access request for " + pathInfo);
+                    throw new WrappedResponse(error(Status.UNAUTHORIZED, "API Access not allowed with this Key"));
+                }
+            }
             return privateUrlUser;
         }
         return findAuthenticatedUserOrDie(requestApiKey, requestWFKey);

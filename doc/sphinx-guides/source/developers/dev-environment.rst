@@ -85,9 +85,9 @@ To install Payara, run the following commands:
 
 ``cd /usr/local``
 
-``sudo curl -O -L https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2020.6/payara-5.2020.6.zip``
+``sudo curl -O -L https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2021.4/payara-5.2021.4.zip``
 
-``sudo unzip payara-5.2020.6.zip``
+``sudo unzip payara-5.2021.4.zip``
 
 ``sudo chown -R $USER /usr/local/payara5``
 
@@ -138,8 +138,6 @@ To install Solr, execute the following commands:
 ``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/8.8.1/schema.xml``
 
 ``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/8.8.1/schema_dv_mdb_fields.xml``
-
-``curl -O https://raw.githubusercontent.com/IQSS/dataverse/develop/conf/solr/8.8.1/schema_dv_mdb_copies.xml``
 
 ``mv schema*.xml collection1/conf``
 

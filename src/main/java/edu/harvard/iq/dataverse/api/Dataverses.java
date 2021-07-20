@@ -11,6 +11,8 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
+import edu.harvard.iq.dataverse.GuestbookServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
@@ -61,6 +63,8 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
+
+import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import java.io.StringReader;
@@ -98,10 +102,16 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import java.io.IOException;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.Context;
 import javax.xml.stream.XMLStreamException;
 
 /**
@@ -114,6 +124,7 @@ import javax.xml.stream.XMLStreamException;
 public class Dataverses extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Dataverses.class.getCanonicalName());
+    private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
     @EJB
     ExplicitGroupServiceBean explicitGroupSvc;
@@ -123,6 +134,12 @@ public class Dataverses extends AbstractApiBean {
     
     @EJB
     SettingsServiceBean settingsService;
+    
+    @EJB
+    GuestbookResponseServiceBean guestbookResponseService;
+    
+    @EJB
+    GuestbookServiceBean guestbookService;
 
     @POST
     public Response addRoot(String body) {
@@ -214,6 +231,7 @@ public class Dataverses extends AbstractApiBean {
 
     @POST
     @Path("{identifier}/datasets")
+    @Consumes("application/json")
     public Response createDataset(String jsonBody, @PathParam("identifier") String parentIdtf) {
         try {
             User u = findUserOrDie();
@@ -230,6 +248,45 @@ public class Dataverses extends AbstractApiBean {
             }
 
             // clean possible version metadata
+            DatasetVersion version = ds.getVersions().get(0);
+            version.setMinorVersionNumber(null);
+            version.setVersionNumber(null);
+            version.setVersionState(DatasetVersion.VersionState.DRAFT);
+
+            ds.setAuthority(null);
+            ds.setIdentifier(null);
+            ds.setProtocol(null);
+            ds.setGlobalIdCreateTime(null);
+
+            Dataset managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u)));
+            return created("/datasets/" + managedDs.getId(),
+                    Json.createObjectBuilder()
+                            .add("id", managedDs.getId())
+                            .add("persistentId", managedDs.getGlobalIdString())
+            );
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    
+    @POST
+    @Path("{identifier}/datasets")
+    @Consumes("application/ld+json, application/json-ld")
+    public Response createDatasetFromJsonLd(String jsonLDBody, @PathParam("identifier") String parentIdtf) {
+        try {
+            User u = findUserOrDie();
+            Dataverse owner = findDataverseOrDie(parentIdtf);
+            Dataset ds = new Dataset();
+
+            ds.setOwner(owner);
+            ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, false); 
+            
+            ds.setOwner(owner);
+            
+            
+
+            // clean possible dataset/version metadata
             DatasetVersion version = ds.getVersions().get(0);
             version.setMinorVersionNumber(null);
             version.setVersionNumber(null);
@@ -832,7 +889,49 @@ public class Dataverses extends AbstractApiBean {
                 req,
                 grpAliasInOwner))));
     }
+    
+    @GET
+    @Path("{identifier}/guestbookResponses/")
+    @Produces({"application/download"})
+    public Response getGuestbookResponsesByDataverse(@PathParam("identifier") String dvIdtf,
+            @QueryParam("guestbookId") Long gbId, @Context HttpServletResponse response) {
+        
+        try {
+            Dataverse dv = findDataverseOrDie(dvIdtf);
+            User u = findUserOrDie();
+            DataverseRequest req = createDataverseRequest(u);
+            if (permissionSvc.request(req)
+                    .on(dv)
+                    .has(Permission.EditDataverse)) {
+            } else {
+                return error(Status.FORBIDDEN, "Not authorized");
+            }
+            
+            String fileTimestamp = dateFormatter.format(new Date());
+            String filename = dv.getAlias() + "_GBResponses_" + fileTimestamp + ".csv";
+            
+            response.setHeader("Content-Disposition", "attachment; filename="
+                + filename);
+               ServletOutputStream outputStream = response.getOutputStream();
 
+            Map<Integer, Object> customQandAs = guestbookResponseService.mapCustomQuestionAnswersAsStrings(dv.getId(), gbId);
+
+            List<Object[]> guestbookResults = guestbookResponseService.getGuestbookResults(dv.getId(), gbId);
+            outputStream.write("Guestbook, Dataset, Dataset PID, Date, Type, File Name, File Id, File PID, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
+            for (Object[] result : guestbookResults) {
+                StringBuilder sb = guestbookResponseService.convertGuestbookResponsesToCSV(customQandAs, result);
+                outputStream.write(sb.toString().getBytes());
+                outputStream.flush();
+            }
+            return Response.ok().build();
+        } catch (IOException io) {
+            return error(Status.BAD_REQUEST, "Failed to produce response file. Exception: " + io.getMessage());
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+    }
+    
     @PUT
     @Path("{identifier}/groups/{aliasInOwner}")
     public Response updateGroup(ExplicitGroupDTO groupDto,

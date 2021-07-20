@@ -49,7 +49,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.StoredProcedureQuery;
 import javax.persistence.TypedQuery;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.ocpsoft.common.util.Strings;
 
 /**
@@ -732,21 +732,30 @@ public class DatasetServiceBean implements java.io.Serializable {
     //depends on dataset state and user privleges
     public String getReminderString(Dataset dataset, boolean canPublishDataset) {
 
+        String reminderString;
+
         if(!dataset.isReleased() ){
             //messages for draft state.
             if (canPublishDataset){
-                return BundleUtil.getStringFromBundle("dataset.message.publish.remind.draft");
+                reminderString = BundleUtil.getStringFromBundle("dataset.message.publish.remind.draft");
             } else {
-                return BundleUtil.getStringFromBundle("dataset.message.submit.remind.draft");
+                reminderString = BundleUtil.getStringFromBundle("dataset.message.submit.remind.draft");
             }            
         } else{
             //messages for new version - post-publish
             if (canPublishDataset){
-                return BundleUtil.getStringFromBundle("dataset.message.publish.remind.version");
+                reminderString = BundleUtil.getStringFromBundle("dataset.message.publish.remind.version");
             } else {
-                return BundleUtil.getStringFromBundle("dataset.message.submit.remind.version");
+                reminderString = BundleUtil.getStringFromBundle("dataset.message.submit.remind.version");
             }           
         }             
+
+        if (reminderString != null) {
+            return reminderString;
+        } else {
+            logger.warning("Unable to get reminder string from bundle. Returning empty string.");
+            return "";
+        }
     }
     
     public void updateLastExportTimeStamp(Long datasetId) {

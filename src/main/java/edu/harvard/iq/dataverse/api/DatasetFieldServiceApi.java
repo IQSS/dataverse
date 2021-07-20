@@ -34,7 +34,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.asJsonArray;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 
@@ -137,6 +137,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
             String solrFieldSearchable = dsf.getSolrField().getNameSearchable();
             String solrFieldFacetable = dsf.getSolrField().getNameFacetable();
             String metadataBlock = dsf.getMetadataBlock().getName();
+            String uri=dsf.getUri();
             boolean hasParent = dsf.isHasParent();
             boolean allowsMultiples = dsf.isAllowMultiples();
             boolean isRequired = dsf.isRequired();
@@ -168,7 +169,8 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                     .add("parentAllowsMultiples", parentAllowsMultiplesDisplay)
                     .add("solrFieldSearchable", solrFieldSearchable)
                     .add("solrFieldFacetable", solrFieldFacetable)
-                    .add("isRequired", isRequired));
+                    .add("isRequired", isRequired)
+                    .add("uri", uri));
         
         } catch ( NoResultException nre ) {
             return notFound(name);
@@ -356,7 +358,7 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
                                                  int wrongIndex) {
 
         List<String> columns = getColumnsByHeader(header);
-
+        
         String column = columns.get(wrongIndex - 1);
         List<String> arguments = new ArrayList<>();
         arguments.add(header.name());
