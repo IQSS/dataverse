@@ -482,6 +482,8 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                                 vals.add(i, ((JsonString) jv).getString());
                             } else if (jv.getValueType().equals(JsonValue.ValueType.ARRAY)) {
                                 vals.add(i, jv);
+                            } else if (jv.getValueType().equals(JsonValue.ValueType.OBJECT)) {
+                                vals.add(i, jv);
                             }
                             logger.info("Added param value: " + i + ": " + vals.get(i));
                         } else {
