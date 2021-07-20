@@ -110,11 +110,11 @@
     </stdyInfo>
     <method>
       <dataColl>
-        <timeMeth xml:lang="en">TimeMethod</timeMeth>
+        <timeMeth>TimeMethod</timeMeth>
         <dataCollector>LastDataCollector1, FirstDataCollector1</dataCollector>
         <collectorTraining>CollectorTraining</collectorTraining>
         <frequenc>Frequency</frequenc>
-        <sampProc xml:lang="en">SamplingProcedure</sampProc>
+        <sampProc>SamplingProcedure</sampProc>
         <targetSampleSize>
           <sampleSizeFormula>TargetSampleSizeFormula</sampleSizeFormula>
           <sampleSize>100</sampleSize>
@@ -127,8 +127,8 @@
           <srcChar>CharacteristicOfSourcesNoted</srcChar>
           <srcDocu>DocumentationAndAccessToSources</srcDocu>
         </sources>
-        <collMode xml:lang="en">CollectionMode</collMode>
-        <resInstru xml:lang="en">TypeOfResearchInstrument</resInstru>
+        <collMode>CollectionMode</collMode>
+        <resInstru>TypeOfResearchInstrument</resInstru>
         <collSitu>CharacteristicsOfDataCollectionSituation</collSitu>
         <actMin>ActionsToMinimizeLosses</actMin>
         <conOps>ControlOperations</conOps>
