@@ -32,6 +32,7 @@ import edu.harvard.iq.dataverse.error.DataverseError;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.export.ExporterType;
 import edu.harvard.iq.dataverse.guestbook.GuestbookResponseServiceBean;
+import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.MapLayerMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseIcon;
@@ -45,6 +46,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.PrivateUrlUser;
+import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -84,6 +86,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  * @author gdurand
@@ -133,6 +136,8 @@ public class DatasetPage implements java.io.Serializable {
     private DatasetCitationsCountRepository datasetCitationsCountRepository;
     @Inject
     private GuestbookResponseServiceBean guestbookResponseService;
+    @Inject
+    private ConfirmEmailServiceBean confirmEmailService;
 
     private Dataset dataset = new Dataset();
 
@@ -292,7 +297,14 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public boolean canLinkDatasetToSomeDataverse() {
-        return !systemConfig.isReadonlyMode() && session.getUser().isAuthenticated()
+        User user = session.getUser();
+
+        boolean isUserAllowedToLink = Stream.of(user)
+              .filter(User::isAuthenticated)
+              .anyMatch(authUser -> !systemConfig.isUnconfirmedMailRestrictionModeEnabled() || (systemConfig.isUnconfirmedMailRestrictionModeEnabled() &&
+                      confirmEmailService.hasVerifiedEmail((AuthenticatedUser) authUser)));
+
+        return !systemConfig.isReadonlyMode() && isUserAllowedToLink
                 && !workingVersion.isDeaccessioned() && dataset.isReleased();
     }
 
