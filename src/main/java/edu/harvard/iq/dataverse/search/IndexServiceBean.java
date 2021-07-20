@@ -781,6 +781,9 @@ public class IndexServiceBean {
             if (datasetVersion.isInReview()) {
                 solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, IN_REVIEW_STRING);
             }
+            if(datasetVersion.getExternalStatusLabel()!=null) {
+                solrInputDocument.addField(SearchFields.EXTERNAL_STATUS, datasetVersion.getExternalStatusLabel());
+            }
 
             for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
 

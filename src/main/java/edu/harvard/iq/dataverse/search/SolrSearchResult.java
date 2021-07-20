@@ -253,6 +253,9 @@ public class SolrSearchResult {
      */
     private List<String> matchedFields;
 
+    //External Status Label (enabled via AllowedCurationLabels setting)
+    private String externalStatus;
+
     /**
      * @todo: remove name?
      */
@@ -1204,5 +1207,14 @@ public class SolrSearchResult {
     
     public void setNameOfDataverse(String id) {
         this.nameOfDataverse = id;
+    }
+    
+    public String getExternalStatus() {
+        return externalStatus;
+    }
+
+    public void setExternalStatus(String externalStatus) {
+        this.externalStatus = externalStatus;
+        
     }
 }
