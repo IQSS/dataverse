@@ -218,10 +218,7 @@ public class DdiExportUtil {
                 distributorSet=true;
             }
         }
-        logger.info("Dsitr set?: " + distributorSet);
-        logger.info("Pub?: " + datasetDto.getPublisher());
         boolean excludeRepository = settingsService.isTrueForKey(SettingsServiceBean.Key.ExportInstallationAsDistributorOnlyWhenNotSet, false);
-        logger.info("Exclude: " + excludeRepository);
         if (!StringUtils.isEmpty(datasetDto.getPublisher()) && !(excludeRepository && distributorSet)) {
             xmlw.writeStartElement("distrbtr");
             writeAttribute(xmlw, "source", "archive");
