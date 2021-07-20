@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
