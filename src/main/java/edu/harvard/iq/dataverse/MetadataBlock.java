@@ -1,10 +1,8 @@
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 
 import java.io.Serializable;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Objects;
