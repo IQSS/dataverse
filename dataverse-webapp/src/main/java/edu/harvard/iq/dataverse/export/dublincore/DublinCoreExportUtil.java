@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.export.dublincore;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
 import edu.harvard.iq.dataverse.api.dto.FieldDTO;
@@ -15,6 +16,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.OutputStream;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -165,7 +167,9 @@ public class DublinCoreExportUtil {
 
         writeContributorElement(xmlw, version, dcFlavor);
 
-        writeFullElementList(xmlw, dcFlavor + ":" + "relation", dto2PrimitiveList(version, DatasetFieldConstant.relatedDatasets));
+        writeFullElement(xmlw, dcFlavor + ":" + "relation", extractChildValue(version,
+                                                                                  DatasetFieldConstant.relatedDatasets,
+                                                                                  DatasetFieldConstant.relatedDatasetCitation));
 
         writeFullElementList(xmlw, dcFlavor + ":" + "type", dto2PrimitiveList(version, DatasetFieldConstant.kindOfData));
 
@@ -452,6 +456,23 @@ public class DublinCoreExportUtil {
                     return fieldDTO.getMultiple()
                             ? fieldDTO.getMultiplePrimitive()
                             : Stream.of(fieldDTO.getSinglePrimitive()).collect(Collectors.toList());
+                }
+            }
+        }
+        return null;
+    }
+
+    private static String extractChildValue(DatasetVersionDTO datasetVersionDTO, String dsfParentName, String dsfChildName) {
+        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
+            MetadataBlockDTO value = entry.getValue();
+            for (FieldDTO fieldDTO : value.getFields()) {
+                if (dsfParentName.equals(fieldDTO.getTypeName())) {
+                    return fieldDTO.getMultipleCompound().stream().flatMap(Collection::stream)
+                            .filter(field -> field.getTypeName().equals(dsfChildName))
+                            .map(FieldDTO::getValue)
+                            .map(JsonElement::getAsString)
+                            .findFirst()
+                            .orElse(null);
                 }
             }
         }

@@ -1,0 +1,58 @@
+<oai_dc:dc
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
+        xmlns:dc="http://purl.org/dc/elements/1.1/"
+        xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+    <dc:title>MEDW 2012 Quebec Provincial Election Study</dc:title>
+    <dc:identifier>https://doi.org/10.7910/DVN/06OOVN</dc:identifier>
+    <dc:creator>Cross, William</dc:creator>
+    <dc:creator>Gélineau, François</dc:creator>
+    <dc:creator>Gidengil, Elisabeth</dc:creator>
+    <dc:creator>Pruysers, Scott</dc:creator>
+    <dc:creator>Andrea, Lawlor</dc:creator>
+    <dc:creator>Blais, André</dc:creator>
+    <dc:creator>Stephenson, Laura</dc:creator>
+    <dc:publisher>Harvard Dataverse</dc:publisher>
+    <dc:description>
+        This dataset was produced within the framework of the Making Electoral Democracy Work project.
+        It
+        contains pre-election and post-election survey data from the 2012 provincial election in Quebec.
+        Making
+        Electoral Democracy Work (MEDW) is an international collaborative project that was conducted
+        between
+        2009 and 2017 by a large team of political scientists, economists, and psychologists from
+        Canada,
+        Europe, and the United States. Its goal was to examine how the rules of the game (especially the
+        electoral system) and the electoral context (especially the competitiveness and salience of the
+        election) influence the dynamic and reciprocal relationship between voters and parties. To do
+        so, the
+        project gathered data for different types of elections held in Canada, France, Germany, Spain,
+        and
+        Switzerland between 2010 and 2016. In each country, two subnational units, typically regions,
+        were
+        studied. The analyses were complemented by laboratory and online experiments, as well as data on
+        the
+        parties’ campaigns. A selection of the project publications can be found at
+        http://electoraldemocracy.com/publications. For more information on the project visit the
+        project
+        website (http://electoraldemocracy.com) or read André Blais, “Making Electoral Democracy Work,”
+        Electoral Studies 29 (2010): 169–70.
+    </dc:description>
+    <dc:subject>Social Sciences</dc:subject>
+    <dc:subject>Elections</dc:subject>
+    <dc:subject>Canada</dc:subject>
+    <dc:subject>Political Behavior</dc:subject>
+    <dc:subject>Voting</dc:subject>
+    <dc:subject>Mass political attitudes</dc:subject>
+    <dc:language>English</dc:language>
+    <dc:language>French</dc:language>
+    <dc:contributor>Kostelka, Filip</dc:contributor>
+    <dc:relation>
+        Stephenson, Laura; Blais, André; Bol, Damien; Kostelka, Filip, 2017, "Making Electoral Democracy
+        Work",
+        doi:10.7910/DVN/RR0NNQ, Harvard Dataverse.
+    </dc:relation>
+    <dc:relation>
+        REL 2
+    </dc:relation>
+    <!--<dc:type>Survey data</dc:type>-->
+</oai_dc:dc>

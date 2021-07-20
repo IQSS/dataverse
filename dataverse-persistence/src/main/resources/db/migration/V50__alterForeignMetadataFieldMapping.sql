@@ -1,0 +1,1 @@
+UPDATE ForeignMetadataFieldMapping fr SET datasetfieldName ='relatedMaterialCitation' WHERE fr.datasetfieldName = 'relatedMaterial';
