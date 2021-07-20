@@ -593,7 +593,7 @@
                             <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{result.draftState}"/>
                             <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{result.inReviewState}"/>
                             <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
-                            <h:outputText value="#{result.externalStatusLabel}" styleClass="label label-primary" rendered="#{result.externalStatusLabel!=null}"/>
+                            <h:outputText value="#{result.externalStatus}" styleClass="label label-primary" rendered="#{result.externalStatus!=null}"/>
                             <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
                         </div>
 

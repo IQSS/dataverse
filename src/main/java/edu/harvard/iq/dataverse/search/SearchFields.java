@@ -221,6 +221,8 @@ public class SearchFields {
      * i.e. "Unpublished", "Draft" (multivalued)
      */
     public static final String PUBLICATION_STATUS = "publicationStatus";
+    
+    public static final String EXTERNAL_STATUS = "externalStatus";
     /**
      * @todo reconcile different with Solr schema.xml where type is Long rather
      * than String.
