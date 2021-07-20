@@ -6,9 +6,14 @@
         "protocol": "skosmos",
         "retrieval-uri": "https://skosmos.dev.finto.fi/rest/v1/data?uri={0}",
         "term-parent-uri": "",
+        "allow-free-text": "false",
         "languages":"en, fr, es, ru",
         "vocabs": {
-            "unesco": "http://skos.um.es/unescothes/CS000"
+            "unesco": {
+                "vocabularyUri": "http://skos.um.es/unescothes/CS000",
+                "uriSpace": "http://skos.um.es/unescothes/"
+            }
+            	
         },
         "managed-fields": {
             "vocabularyName": "cvocDemoVocabulary",
@@ -47,6 +52,7 @@
         "js-url": "/resources/js/people.js",
         "protocol": "orcid",
         "retrieval-uri": "https://pub.orcid.org/v3.0/{0}/person",
+        "allow-free-text": "true",
         "prefix": "https://orcid.org/",
         "managed-fields": {},
         "languages":"",
@@ -78,10 +84,18 @@
         "js-url": "/resources/js/skosmos.js",
         "protocol": "skosmos",
         "retrieval-uri": "https://skosmos.dev.finto.fi/rest/v1/data?uri={0}",
+        "allow-free-text": "true",
         "languages":"en, uk, es, zh, ar, tr, lo, sk, th, pt, hu, pl, de, cs, it, fr, hi, ja, ro, fa",
         "vocabs":{
-            "unesco": "http://skos.um.es/unescothes/CS000",
-            "agrovoc" : "http://aims.fao.org/vest-registry/kos/agrovoc"
+            "unesco": {
+                "vocabularyUri": "http://skos.um.es/unescothes/CS000",
+                "uriSpace": "http://skos.um.es/unescothes/"
+            },
+            "agrovoc" : {
+            	   "vocabularyUri": "http://aims.fao.org/vest-registry/kos/agrovoc",
+                   "uriSpace": "http://aims.fao.org/aos/agrovoc/"
+               }
+            }
         },
         "managed-fields": {},
         "retrieval-filtering": {
