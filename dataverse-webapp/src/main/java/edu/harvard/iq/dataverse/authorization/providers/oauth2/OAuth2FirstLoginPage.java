@@ -11,6 +11,8 @@ import edu.harvard.iq.dataverse.authorization.exceptions.AuthenticationFailedExc
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinUserServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.consent.ConsentDto;
+import edu.harvard.iq.dataverse.consent.ConsentService;
 import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.config.EMailValidator;
 import edu.harvard.iq.dataverse.persistence.config.ValidateEmail;
@@ -38,13 +40,16 @@ import javax.inject.Named;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Backing bean for {@code oauth/welcome.xhtml}, the page that greets new users
@@ -85,6 +90,10 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     @Inject
     private SettingsWrapper settingsWrapper;
 
+    @Inject
+    private ConsentService consentService;
+
+
     OAuth2UserRecord newUser;
 
     @NotBlank(message = "{oauth.username}")
@@ -98,73 +107,66 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
 
     String installationName;
 
+    private List<ConsentDto> consents = new ArrayList<>();
+
     boolean authenticationFailed = false;
+
     private AuthenticationProvider authProvider;
+
     private PasswordValidatorServiceBean passwordValidatorService;
+
     private Locale preferredNotificationsLanguage;
 
+    // -------------------- GETTERS --------------------
+
+    public AuthenticationProvider getAuthProvider() {
+        return authProvider;
+    }
+
+    public List<ConsentDto> getConsents() {
+        return consents;
+    }
+
+    public OAuth2UserRecord getNewUser() {
+        return newUser;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getSelectedEmail() {
+        return selectedEmail;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public boolean isAuthenticationFailed() {
+        return authenticationFailed;
+    }
+
+    // -------------------- LOGIC --------------------
 
     /**
      * Attempts to init the page. Redirects the user to {@code /} in case the
      * initialization fails.
      *
      * @throws IOException If the redirection fails to be sent. Should not
-     *                     happen*
-     *                     <p>
-     *                     <p>
-     *                     <p>
-     *                     * Famous last sentences etc.
+     *                     happen* <p> <p> <p> * Famous last sentences etc.
      */
     public String init() throws IOException {
-        logger.fine("init called");
+
         if (systemConfig.isReadonlyMode()) {
             return "/403.xhtml";
         }
 
         DevOAuthAccountType devMode = systemConfig.getDevOAuthAccountType();
-        logger.log(Level.FINE, "devMode: {0}", devMode);
+        logger.log(Level.FINEST, () -> "devMode: " + devMode);
+
         if (!DevOAuthAccountType.PRODUCTION.equals(devMode)) {
-            if (devMode.toString().startsWith("RANDOM")) {
-                Map<String, String> randomUser = authTestDataSvc.getRandomUser();
-                String lastName = randomUser.get("lastName");
-                String firstName = randomUser.get("firstName");
-                String email = null;
-                List<String> extraEmails = null;
-                String authProviderId = "orcid";
-                switch (devMode) {
-                    case RANDOM_EMAIL0:
-                        authProviderId = "github";
-                        break;
-                    case RANDOM_EMAIL1:
-                        firstName = null;
-                        lastName = null;
-                        authProviderId = "google";
-                        email = randomUser.get("email");
-                        break;
-                    case RANDOM_EMAIL2:
-                        firstName = null;
-                        email = randomUser.get("email");
-                        extraEmails = new ArrayList<>();
-                        extraEmails.add("extra1@example.com");
-                        break;
-                    case RANDOM_EMAIL3:
-                        lastName = null;
-                        email = randomUser.get("email");
-                        extraEmails = new ArrayList<>();
-                        extraEmails.add("extra1@example.com");
-                        extraEmails.add("extra2@example.com");
-                        break;
-                    default:
-                        break;
-                }
-                String randomUsername = randomUser.get("username");
-                String eppn = randomUser.get("eppn");
-                OAuth2TokenData accessToken = new OAuth2TokenData();
-                accessToken.setAccessToken("qwe-addssd-iiiiie");
-                setNewUser(new OAuth2UserRecord(authProviderId, eppn, randomUsername, accessToken,
-                                                new AuthenticatedUserDisplayInfo(firstName, lastName, email, "myAffiliation", "myPosition"),
-                                                extraEmails));
-            }
+            createRandomAuthentication(devMode);
         }
 
         if (newUser == null) {
@@ -176,46 +178,36 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         }
 
         // Suggest the best email we can.
-        String emailToSuggest = null;
         String emailFromDisplayInfo = newUser.getDisplayInfo().getEmailAddress();
-        if (emailFromDisplayInfo != null && !emailFromDisplayInfo.isEmpty()) {
-            emailToSuggest = emailFromDisplayInfo;
-        } else {
-            List<String> extraEmails = newUser.getAvailableEmailAddresses();
-            if (extraEmails != null && !extraEmails.isEmpty()) {
-                String firstExtraEmail = extraEmails.get(0);
-                if (firstExtraEmail != null && !firstExtraEmail.isEmpty()) {
-                    emailToSuggest = firstExtraEmail;
-                }
-            }
-        }
+
+        String emailToSuggest = StringUtils.isNotBlank(emailFromDisplayInfo)
+                ? emailFromDisplayInfo
+                : Optional.ofNullable(newUser.getAvailableEmailAddresses())
+                    .orElse(Collections.emptyList()).stream()
+                    .findFirst()
+                    .orElse(null);
+
         setSelectedEmail(emailToSuggest);
         preferredNotificationsLanguage = session.getLocale();
-
         authProvider = authenticationSvc.getAuthenticationProvider(newUser.getServiceId());
-
         installationName = installationConfigService.getNameOfInstallation();
+        consents = consentService.prepareConsentsForView(session.getLocale());
 
         return StringUtils.EMPTY;
     }
 
     public String createNewAccount() {
+        AuthenticatedUserDisplayInfo displayInfo = newUser.getDisplayInfo();
+        AuthenticatedUserDisplayInfo newAuthenticatedUserDisplayInfo = new AuthenticatedUserDisplayInfo(
+                displayInfo.getFirstName(), displayInfo.getLastName(), getSelectedEmail(), displayInfo.getAffiliation(),
+                displayInfo.getPosition());
 
-        AuthenticatedUserDisplayInfo newAud = new AuthenticatedUserDisplayInfo(newUser.getDisplayInfo().getFirstName(),
-                                                                               newUser.getDisplayInfo().getLastName(),
-                                                                               getSelectedEmail(),
-                                                                               newUser.getDisplayInfo().getAffiliation(),
-                                                                               newUser.getDisplayInfo().getPosition());
-        final AuthenticatedUser user = authenticationSvc.createAuthenticatedUser(newUser.getUserRecordIdentifier(), getUsername(),
-                newAud, true, preferredNotificationsLanguage).getOrNull();
+        final AuthenticatedUser user = authenticationSvc.createAuthenticatedUser(newUser.getUserRecordIdentifier(),
+                getUsername(), newAuthenticatedUserDisplayInfo, true, preferredNotificationsLanguage).getOrNull();
+
         session.setUser(user);
-        /**
-         * @todo Move this to AuthenticationServiceBean.createAuthenticatedUser
-         */
-        userNotificationService.sendNotification(user,
-                                                 new Timestamp(new Date().getTime()),
-                                                 NotificationType.CREATEACC);
-
+        userNotificationService.sendNotification(user, new Timestamp(new Date().getTime()), NotificationType.CREATEACC);
+        consentService.executeActionsAndSaveAcceptedConsents(consents, user);
         final OAuth2TokenData tokenData = newUser.getTokenData();
         if (tokenData != null) {
             tokenData.setUser(user);
@@ -226,68 +218,62 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     }
 
     public String convertExistingAccount() {
-        BuiltinAuthenticationProvider biap = new BuiltinAuthenticationProvider(builtinUserSvc, passwordValidatorService, authenticationSvc);
-        AuthenticationRequest auReq = new AuthenticationRequest();
-        final List<CredentialsAuthenticationProvider.Credential> creds = biap.getRequiredCredentials();
-        auReq.putCredential(creds.get(0).getKey(), getUsername());
-        auReq.putCredential(creds.get(1).getKey(), getPassword());
+        BuiltinAuthenticationProvider builtinAuthenticationProvider =
+                new BuiltinAuthenticationProvider(builtinUserSvc, passwordValidatorService, authenticationSvc);
+
+        AuthenticationRequest authenticationRequest = new AuthenticationRequest();
+        final List<CredentialsAuthenticationProvider.Credential> creds = builtinAuthenticationProvider.getRequiredCredentials();
+        authenticationRequest.putCredential(creds.get(0).getKey(), getUsername());
+        authenticationRequest.putCredential(creds.get(1).getKey(), getPassword());
+
         try {
-            AuthenticatedUser existingUser = authenticationSvc.getUpdateAuthenticatedUser(BuiltinAuthenticationProvider.PROVIDER_ID, auReq);
+            AuthenticatedUser existingUser = authenticationSvc.getUpdateAuthenticatedUser(
+                    BuiltinAuthenticationProvider.PROVIDER_ID, authenticationRequest);
             authenticationSvc.updateProvider(existingUser, newUser.getServiceId(), newUser.getIdInService());
             builtinUserSvc.removeUser(existingUser.getUserIdentifier());
 
             session.setUser(existingUser);
             AuthenticationProvider newUserAuthProvider = authenticationSvc.getAuthenticationProvider(newUser.getServiceId());
-            JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("oauth2.convertAccount.success", newUserAuthProvider.getInfo().getTitle()));
-
+            JsfHelper.addFlashSuccessMessage(
+                    BundleUtil.getStringFromBundle("oauth2.convertAccount.success", newUserAuthProvider.getInfo().getTitle()));
             return "/dataverse.xhtml?faces-redirect=true";
-
         } catch (AuthenticationFailedException ex) {
             setAuthenticationFailed(true);
             return null;
         }
     }
 
-    public boolean isEmailAvailable() {
-        return authenticationSvc.isEmailAddressAvailable(getSelectedEmail());
-    }
-
-    /*
-     * @todo This was copied from DataverseUserPage and modified so consider
-     * consolidating common code (DRY).
-     */
     public void validateUserName(FacesContext context, UIComponent toValidate, Object value) {
         String userName = (String) value;
-        logger.log(Level.FINE, "Validating username: {0}", userName);
+        logger.log(Level.FINEST, () -> "Validating username: " + userName);
         boolean userNameFound = authenticationSvc.identifierExists(userName);
         if (userNameFound) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.taken"), null);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    BundleUtil.getStringFromBundle("user.username.taken"), null);
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
 
-    /*
-     * @todo This was copied from DataverseUserPage and modified so consider
-     * consolidating common code (DRY).
-     */
     public void validateUserEmail(FacesContext context, UIComponent toValidate, Object value) {
         String userEmail = (String) value;
         boolean emailValid = EMailValidator.isEmailValid(userEmail, null);
         if (!emailValid) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("oauth2.newAccount.emailInvalid"), null);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    BundleUtil.getStringFromBundle("oauth2.newAccount.emailInvalid"), null);
             context.addMessage(toValidate.getClientId(context), message);
             return;
         }
         boolean userEmailFound = false;
-        AuthenticatedUser aUser = authenticationSvc.getAuthenticatedUserByEmail(userEmail);
-        if (aUser != null) {
+        AuthenticatedUser authenticatedUser = authenticationSvc.getAuthenticatedUserByEmail(userEmail);
+        if (authenticatedUser != null) {
             userEmailFound = true;
         }
         if (userEmailFound) {
             ((UIInput) toValidate).setValid(false);
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.email.taken"), null);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    BundleUtil.getStringFromBundle("user.email.taken"), null);
             context.addMessage(toValidate.getClientId(context), message);
         }
     }
@@ -295,79 +281,28 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     public String getWelcomeMessage() {
         AuthenticatedUserDisplayInfo displayInfo = newUser.getDisplayInfo();
         String displayName = AuthUtil.getDisplayName(displayInfo.getFirstName(), displayInfo.getLastName());
-        if (displayName != null) {
-            return BundleUtil.getStringFromBundle("oauth2.newAccount.welcomeWithName", displayName);
-        } else {
-            return BundleUtil.getStringFromBundle("oauth2.newAccount.welcomeNoName");
-        }
-    }
-
-    public OAuth2UserRecord getNewUser() {
-        return newUser;
+        return displayName != null
+                ? BundleUtil.getStringFromBundle("oauth2.newAccount.welcomeWithName", displayName)
+                : BundleUtil.getStringFromBundle("oauth2.newAccount.welcomeNoName");
     }
 
     public void setNewUser(OAuth2UserRecord newUser) {
         this.newUser = newUser;
         // uncomment to suggest username to user
-        //setUsername(newUser.getUsername());
+        // setUsername(newUser.getUsername());
         setSelectedEmail(newUser.getDisplayInfo().getEmailAddress());
-    }
-
-    // It's a design decision to not suggest a username.
-    public String getNeverSuggestUsername() {
-        return null;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public void setSelectedEmail(String selectedEmail) {
-        this.selectedEmail = selectedEmail;
-    }
-
-    public String getSelectedEmail() {
-        return selectedEmail;
-    }
-
-    public List<String> getExtraEmails() {
-        return newUser.getAvailableEmailAddresses();
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public boolean isAuthenticationFailed() {
-        return authenticationFailed;
-    }
-
-    public void setAuthenticationFailed(boolean authenticationFailed) {
-        this.authenticationFailed = authenticationFailed;
-    }
-
-    public AuthenticationProvider getAuthProvider() {
-        return authProvider;
     }
 
     public String getCreateFromWhereTip() {
         if (authProvider == null) {
-            return "Unknown identity provider. Are you a developer playing with :DebugOAuthAccountType? Try adding this provider to the authenticationproviderrow table: " + newUser.getServiceId();
+            return "Unknown identity provider. Are you a developer playing with :DebugOAuthAccountType? " +
+                    "Try adding this provider to the authenticationproviderrow table: " + newUser.getServiceId();
         }
         return BundleUtil.getStringFromBundle("oauth2.newAccount.explanation", authProvider.getInfo().getTitle(), installationName);
     }
 
     public boolean isConvertFromBuiltinIsPossible() {
-        AuthenticationProvider builtinAuthProvider = authenticationSvc.getAuthenticationProvider(BuiltinAuthenticationProvider.PROVIDER_ID);
-        return builtinAuthProvider != null;
+        return authenticationSvc.getAuthenticationProvider(BuiltinAuthenticationProvider.PROVIDER_ID) != null;
     }
 
     public String getSuggestConvertInsteadOfCreate() {
@@ -375,11 +310,11 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     }
 
     public String getConvertTip() {
-        if (authProvider == null) {
-            return "";
-        }
-        return BundleUtil.getStringFromBundle("oauth2.convertAccount.explanation", installationName, authProvider.getInfo().getTitle(),
-                systemConfig.getGuidesBaseUrl(preferredNotificationsLanguage), systemConfig.getGuidesVersion());
+        return authProvider == null
+                ? StringUtils.EMPTY
+                : BundleUtil.getStringFromBundle(
+                        "oauth2.convertAccount.explanation", installationName, authProvider.getInfo().getTitle(),
+                        systemConfig.getGuidesBaseUrl(preferredNotificationsLanguage), systemConfig.getGuidesVersion());
     }
 
     public List<String> getEmailsToPickFrom() {
@@ -387,19 +322,12 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         if (selectedEmail != null) {
             emailsToPickFrom.add(selectedEmail);
         }
-        List<String> extraEmails = newUser.getAvailableEmailAddresses();
-        if (extraEmails != null && !extraEmails.isEmpty()) {
-            for (String extra : newUser.getAvailableEmailAddresses()) {
-                if (selectedEmail != null) {
-                    if (!selectedEmail.equals(extra)) {
-                        emailsToPickFrom.add(extra);
-                    }
-                } else {
-                    emailsToPickFrom.add(extra);
-                }
-            }
-        }
-        logger.log(Level.FINE, "{0} emails to pick from: {1}", new Object[]{emailsToPickFrom.size(), emailsToPickFrom});
+        List<String> extraEmails = Optional.ofNullable(newUser.getAvailableEmailAddresses())
+                .orElse(Collections.emptyList()).stream()
+                .filter(e -> StringUtils.isNotBlank(e) && !e.equals(selectedEmail))
+                .collect(Collectors.toList());
+        emailsToPickFrom.addAll(extraEmails);
+        logger.log(Level.FINEST, () -> emailsToPickFrom.size() + " emails to pick from: " + emailsToPickFrom);
         return emailsToPickFrom;
     }
 
@@ -409,12 +337,8 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
 
     public String getPreferredNotificationsLanguage() {
         return Option.of(preferredNotificationsLanguage)
-                .map(locale -> locale.getLanguage())
+                .map(Locale::getLanguage)
                 .getOrNull();
-    }
-
-    public String getLocalizedPreferredNotificationsLanguage() {
-        return getLocalizedDisplayNameForLanguage(preferredNotificationsLanguage);
     }
 
     public String getLocalizedDisplayNameForLanguage(String language) {
@@ -422,7 +346,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
     }
 
     public void validatePreferredNotificationsLanguage(FacesContext context, UIComponent toValidate, Object value) {
-        if(Objects.isNull(value)) {
+        if (Objects.isNull(value)) {
             ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.notificationsLanguage.requiredMessage"), null);
             context.addMessage(toValidate.getClientId(context), message);
@@ -435,9 +359,73 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         return language.getDisplayName(session.getLocale());
     }
 
+    private void createRandomAuthentication(DevOAuthAccountType devMode) {
+        if (devMode.toString().startsWith("RANDOM")) {
+            Map<String, String> randomUser = authTestDataSvc.getRandomUser();
+            String lastName = randomUser.get("lastName");
+            String firstName = randomUser.get("firstName");
+            String email = null;
+            List<String> extraEmails = null;
+            String authProviderId = "orcid";
+            switch (devMode) {
+                case RANDOM_EMAIL0:
+                    authProviderId = "github";
+                    break;
+                case RANDOM_EMAIL1:
+                    firstName = null;
+                    lastName = null;
+                    authProviderId = "google";
+                    email = randomUser.get("email");
+                    break;
+                case RANDOM_EMAIL2:
+                    firstName = null;
+                    email = randomUser.get("email");
+                    extraEmails = new ArrayList<>();
+                    extraEmails.add("extra1@example.com");
+                    break;
+                case RANDOM_EMAIL3:
+                    lastName = null;
+                    email = randomUser.get("email");
+                    extraEmails = new ArrayList<>();
+                    extraEmails.add("extra1@example.com");
+                    extraEmails.add("extra2@example.com");
+                    break;
+                default:
+                    break;
+            }
+            String randomUsername = randomUser.get("username");
+            String eppn = randomUser.get("eppn");
+            OAuth2TokenData accessToken = new OAuth2TokenData();
+            accessToken.setAccessToken("qwe-addssd-iiiiie");
+            setNewUser(new OAuth2UserRecord(authProviderId, eppn, randomUsername, accessToken,
+                    new AuthenticatedUserDisplayInfo(firstName, lastName, email, "myAffiliation", "myPosition"),
+                    extraEmails));
+        }
+    }
+
     // -------------------- SETTERS --------------------
+
+    public void setAuthenticationFailed(boolean authenticationFailed) {
+        this.authenticationFailed = authenticationFailed;
+    }
+
+    public void setConsents(List<ConsentDto> consents) {
+        this.consents = consents;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     public void setPreferredNotificationsLanguage(String preferredNotificationsLanguage) {
         this.preferredNotificationsLanguage = Locale.forLanguageTag(preferredNotificationsLanguage);
+    }
+
+    public void setSelectedEmail(String selectedEmail) {
+        this.selectedEmail = selectedEmail;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }
