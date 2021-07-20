@@ -1,0 +1,2 @@
+UPDATE datasetfieldtype SET description='ROR identifier of the organization the author is affiliated to. Please provide the identifier only if the "Affiliation" field contains exactly one institution. The identifier must be provided in its URL form, for instance "https://ror.org/039bjqg32" for University of Warsaw.'
+WHERE name='authorAffiliationIdentifier';
