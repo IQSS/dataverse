@@ -53,7 +53,7 @@
         "retrieval-filtering": {
             "@context": {
                 "personName": "https://schema.org/name",
-                "scheme": "https://schema.org/identifier"
+                "scheme": "http://www.w3.org/2004/02/skos/core#inScheme"
             },
             "personName": {
                 "pattern": "{0}, {1}",
@@ -66,7 +66,9 @@
             "scheme": {
                 "pattern": "ORCID"
             },
-            "@type": "https://schema.org/Person"
+            "@type": {
+                "pattern": "https://schema.org/Person"
+            }
         }
     },
     {
