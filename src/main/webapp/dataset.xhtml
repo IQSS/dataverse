@@ -332,13 +332,13 @@
                                                                           #{status}
                                                                         </p:commandLink>
                                                                     </li>
-                                                                    <p:separator/>
-                                                                    <li>
-                                                                        <p:commandLink action="#{DatasetPage.setExternalStatus(null)}" update=":datasetForm:topDatasetBlockFragment,:messagePanel">
-                                                                          #{bundle['dataset.removestatus']}
-                                                                        </p:commandLink>
-                                                                    </li>
                                                                 </ui:repeat>
+                                                                <p:separator/>
+                                                                <li>
+                                                                    <p:commandLink action="#{DatasetPage.setExternalStatus(null)}" update=":datasetForm:topDatasetBlockFragment,:messagePanel">
+                                                                        #{bundle['dataset.removestatus']}
+                                                                    </p:commandLink>
+                                                                </li>
                                                             </ul>
                                                         </li>
                                                     </ui:fragment>
