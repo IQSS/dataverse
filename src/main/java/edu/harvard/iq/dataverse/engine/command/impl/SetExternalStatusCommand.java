@@ -27,6 +27,9 @@ import java.util.regex.Pattern;
 
 import org.apache.solr.client.solrj.SolrServerException;
 
+import com.beust.jcommander.Strings;
+import com.google.api.LabelDescriptor;
+
 @RequiredPermissions(Permission.PublishDataset)
 public class SetExternalStatusCommand extends AbstractDatasetCommand<Dataset> {
 
@@ -45,7 +48,7 @@ public class SetExternalStatusCommand extends AbstractDatasetCommand<Dataset> {
         if (getDataset().getLatestVersion().isReleased()) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure.isReleased"), this);
         }
-        if (label == null) {
+        if (label==null || label.isEmpty()) {
             getDataset().getLatestVersion().setExternalStatusLabel(label);
         } else {
             String allowedLabels = ctxt.settings().getValueForKey(SettingsServiceBean.Key.AllowedCurationLabels, "");
