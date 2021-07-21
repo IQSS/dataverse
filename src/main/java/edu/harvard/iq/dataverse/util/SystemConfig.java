@@ -93,6 +93,7 @@ public class SystemConfig {
      * zip file upload.
      */
     private static final int defaultZipUploadFilesLimit = 1000; 
+    private static final long defaultZipDownloadLimit = 104857600L; // 100MB
     private static final int defaultMultipleUploadFilesLimit = 1000;
     private static final int defaultLoginSessionTimeout = 480; // = 8 hours
 
@@ -423,13 +424,12 @@ public class SystemConfig {
 
     /**
      * Download-as-zip size limit.
-     * returns 0 if not specified; 
-     * (the file zipper will then use the default value)
+     * returns defaultZipDownloadLimit if not specified; 
      * set to -1 to disable zip downloads. 
      */
     public long getZipDownloadLimit() {
         String zipLimitOption = settingsService.getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit);
-        return getLongLimitFromStringOrDefault(zipLimitOption, 0L);
+        return getLongLimitFromStringOrDefault(zipLimitOption, defaultZipDownloadLimit);
     }
     
     public int getZipUploadFilesLimit() {
