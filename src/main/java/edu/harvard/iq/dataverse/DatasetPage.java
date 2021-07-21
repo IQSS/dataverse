@@ -5482,8 +5482,12 @@ public class DatasetPage implements java.io.Serializable {
     public void setExternalStatus(String status) {
         try {
             dataset = commandEngine.submit(new SetExternalStatusCommand(dvRequestService.getDataverseRequest(), dataset, status));
-            JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.externalstatus.header"),
-                    (status == null || status.isEmpty()) ? "" : BundleUtil.getStringFromBundle("dataset.externalstatus.info", Arrays.asList(status)));
+            if (status == null || status.isEmpty()) {
+                JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("dataset.externalstatus.removed"));
+            } else {
+                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.externalstatus.header"), BundleUtil.getStringFromBundle("dataset.externalstatus.info", Arrays.asList(status)));
+            }
+
         } catch (CommandException ex) {
             String msg = BundleUtil.getStringFromBundle("dataset.externalstatus.cantchange");
             logger.warning("Unable to change external status to " + status + " for dataset id " + dataset.getId() + ". Message to user: " + msg + " Exception: " + ex);
