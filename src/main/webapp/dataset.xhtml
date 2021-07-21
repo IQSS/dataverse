@@ -287,6 +287,9 @@
                                         <div class="btn-group btn-group-justified" jsf:rendered="#{showPublishLink or showSubmitForReviewLink}">
                                             <div class="btn-group">
                                                 <!-- Publish BTN -->
+                                                <h:outputText value="#{showSubmitForReviewLink}"/>
+                                                <h:outputText value="#{showPublishLink}"/>
+                                                <h:outputText value="#{showReturnToAuthorLink}"/>
                                                 <h:outputLink value="#" disabled="#{DatasetPage.lockedFromPublishing}">
                                                     <c:if test="#{!((showSubmitForReviewLink and showPublishLink) or showReturnToAuthorLink)}">
                                                         <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}"/>
