@@ -319,7 +319,8 @@ public class SettingsWrapper implements java.io.Serializable {
 
     public List<String> getAllowedExternalStatuses() {
         String names = get(SettingsServiceBean.Key.AllowedCurationLabels.toString(), "");
-        if (allowedExternalStatuses == null) {
+        if (names != null && allowedExternalStatuses == null) {
+            allowedExternalStatuses = new ArrayList<String>();
             allowedExternalStatuses.addAll(Arrays.asList(names.split(",\\s")));
         }
         return allowedExternalStatuses;
