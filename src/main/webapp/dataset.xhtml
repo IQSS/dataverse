@@ -326,6 +326,20 @@
                                                             #{bundle['dataset.rejectBtn']}
                                                         </p:commandLink>
                                                     </li>
+                                                    <ui:fragment rendered="#{not empty settingsWrapper.allowedExternalStatuses}">
+                                                        <li class="dropdown-submenu pull-left">
+                                                            <a tabindex="-1" href="#">#{bundle['dataset.changestatus']}</a>
+                                                            <ul class="dropdown-menu">
+                                                                <ui:repeat value="#{settingsWrapper.allowedExternalStatuses}" var="status">
+                                                                    <li>
+                                                                        <p:commandLink action="#{DatasetPage.setExternalStatus(status)}" update=":topDatasetBlockFragment,:messagePanel">
+                                                                          #{status}
+                                                                        </p:commandLink>
+                                                                    </li>
+                                                                </ui:repeat>
+                                                            </ul>
+                                                        </li>
+                                                    </ui:fragment>
                                                 </ul>
                                             </div>
                                         </div>

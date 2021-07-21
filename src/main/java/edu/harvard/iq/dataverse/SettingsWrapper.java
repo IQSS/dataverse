@@ -315,5 +315,14 @@ public class SettingsWrapper implements java.io.Serializable {
         return anonymizedFieldTypes.contains(df.getDatasetFieldType().getName());
     }
 
+    List<String> allowedExternalStatuses = null;
+
+    public List<String> getAllowedExternalStatuses() {
+        String names = get(SettingsServiceBean.Key.AllowedCurationLabels.toString(), "");
+        if (allowedExternalStatuses == null) {
+            allowedExternalStatuses.addAll(Arrays.asList(names.split(",\\s")));
+        }
+        return allowedExternalStatuses;
+    }
 }
 
