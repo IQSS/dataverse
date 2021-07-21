@@ -1740,7 +1740,7 @@ public class DatasetVersion implements Serializable {
         JsonArrayBuilder authors = Json.createArrayBuilder();
         for (DatasetAuthor datasetAuthor : this.getDatasetAuthors()) {
             JsonObjectBuilder author = Json.createObjectBuilder();
-            String name = datasetAuthor.getName().getValue();
+            String name = datasetAuthor.getName().getDisplayValue();
             DatasetField authorAffiliation = datasetAuthor.getAffiliation();
             String affiliation = null;
             if (authorAffiliation != null) {
@@ -1982,6 +1982,7 @@ public class DatasetVersion implements Serializable {
             job.add("distribution", fileArray);
         }
         jsonLd = job.build().toString();
+        jsonLd = MarkupChecker.stripAllTags(jsonLd);
         return jsonLd;
     }
 
