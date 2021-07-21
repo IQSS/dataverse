@@ -1904,11 +1904,10 @@ public class DatasetPage implements java.io.Serializable {
                             setHasRsyncScript(false);
                         }
                     } catch (RuntimeException ex) {
-                        logger.warning("Problem getting rsync script: " + ex.getLocalizedMessage());
-                        FacesContext.getCurrentInstance().addMessage("Dataset Page Runtime", new FacesMessage("message")
-					);
+                        logger.warning("Problem getting rsync script(RuntimeException): " + ex.getLocalizedMessage());
+                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Problem getting rsync script:",  ex.getLocalizedMessage())); 
                     } catch (CommandException cex) {
-                        logger.warning("Problem getting rsync script (Command Exception): -catching in page.." + cex.getLocalizedMessage());
+                        logger.warning("Problem getting rsync script (Command Exception): " + cex.getLocalizedMessage());
                            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Problem getting rsync script:",  cex.getLocalizedMessage()));                        
                     }
                 }

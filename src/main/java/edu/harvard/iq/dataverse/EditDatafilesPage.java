@@ -2049,11 +2049,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     			// -----------------------------------------------------------
     			if (this.isFileReplaceOperation()){
     				this.handleReplaceFileUpload(storageLocation, fileName, contentType, checksumValue, checksumType);
-                                if (!saveEnabled){
-                                    uploadWarningMessage = fileReplacePageHelper.getErrorMessages();
-                                    return;
-                                }
-                                this.setFileMetadataSelectedForTagsPopup(fileReplacePageHelper.getNewFileMetadatasBeforeSave().get(0));
+                                if (fileReplacePageHelper.getNewFileMetadatasBeforeSave() != null){
+                                    this.setFileMetadataSelectedForTagsPopup(fileReplacePageHelper.getNewFileMetadatasBeforeSave().get(0));
+                                }                               
     				return;
     			}
     			// -----------------------------------------------------------
