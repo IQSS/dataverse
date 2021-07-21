@@ -283,15 +283,12 @@
                                         <div class="btn-group btn-group-justified" jsf:rendered="#{showPublishLink or showSubmitForReviewLink}">
                                             <div class="btn-group">
                                                 <!-- Publish BTN -->
-                                                <h:outputText value="#{showSubmitForReviewLink}"/>
-                                                <h:outputText value="#{showPublishLink}"/>
-                                                <h:outputText value="#{showReturnToAuthorLink}"/>
                                                 <h:outputLink value="#" disabled="#{DatasetPage.lockedFromPublishing}">
-                                                    <c:if test="#{!((showSubmitForReviewLink and showPublishLink) or showReturnToAuthorLink)}">
+                                                    <c:if test="#{!((showSubmitForReviewLink and showPublishLink) or showReturnToAuthorLink) and empty settingsWrapper.allowedExternalStatuses}">
                                                         <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}"/>
                                                         <f:passThroughAttribute name="onclick" value="$(this).parent().find( 'li > a' ).trigger( 'click' );"/>
                                                     </c:if>
-                                                    <c:if test="#{(showSubmitForReviewLink and showPublishLink) or showReturnToAuthorLink}">
+                                                    <c:if test="#{(showSubmitForReviewLink and showPublishLink) or showReturnToAuthorLink or not empty settingsWrapper.allowedExternalStatuses}">
                                                         <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}"/>
                                                         <f:passThroughAttribute name="data-toggle" value="dropdown"/>
                                                         <f:passThroughAttribute name="aria-haspopup" value="true"/>
