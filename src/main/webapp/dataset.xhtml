@@ -332,7 +332,7 @@
                                                             <ul class="dropdown-menu">
                                                                 <ui:repeat value="#{settingsWrapper.allowedExternalStatuses}" var="status">
                                                                     <li>
-                                                                        <p:commandLink action="#{DatasetPage.setExternalStatus(status)}" update=":topDatasetBlockFragment,:messagePanel">
+                                                                        <p:commandLink action="#{DatasetPage.setExternalStatus(status)}" update=":datasetForm:topDatasetBlockFragment,:messagePanel">
                                                                           #{status}
                                                                         </p:commandLink>
                                                                     </li>
