@@ -1476,49 +1476,96 @@ Out of the box, the DOI shoulder is set to "FK2/" but this is for testing only! 
 :IdentifierGenerationStyle
 ++++++++++++++++++++++++++
 
-By default, the Dataverse Software generates a random 6 character string, pre-pended by the Shoulder if set, to use as the identifier
-for a Dataset. Set this to ``sequentialNumber`` to use sequential numeric values
-instead (again pre-pended by the Shoulder if set). (the assumed default setting is ``randomString``).
-In addition to this setting, a database sequence must be created in the database.
-We provide the script below (downloadable :download:`here </_static/util/createsequence.sql>`).
-You may need to make some changes to suit your system setup, see the comments for more information:
+By default, the Dataverse Software generates a random 6 character string,
+pre-pended by the Shoulder if set, to use as the identifier for a Dataset.
+Set this to ``storedProcGenerated`` to generate instead a custom *unique*
+identifier (again pre-pended by the Shoulder if set) through a database
+stored procedure or function (the assumed default setting is ``randomString``).
+In addition to this setting, a stored procedure or function must be created in
+the database.
+
+As a first example, the script below (downloadable
+:download:`here </_static/util/createsequence.sql>`) produces
+sequential numerical values. You may need to make some changes to suit your
+system setup, see the comments for more information:
 
 .. literalinclude:: ../_static/util/createsequence.sql
+   :language: plpgsql
 
-Note that the SQL above is Postgres-specific. If necessary, it can be reimplemented
-in any other SQL flavor - the standard JPA code in the application simply expects
-the database to have a saved function ("stored procedure") named ``generateIdentifierAsSequentialNumber``
-with the single return argument ``identifier``.
+As a second example, the script below (downloadable
+:download:`here </_static/util/identifier_from_timestamp.sql>`) produces
+sequential 8 character identifiers from a base36 representation of current
+timestamp.
 
-Please note that ``:IdentifierGenerationStyle`` also plays a role for the "identifier" for files. See the section on ``:DataFilePIDFormat`` below for more details.
+.. literalinclude:: ../_static/util/identifier_from_timestamp.sql
+   :language: plpgsql
+
+Note that the SQL in these examples scripts is Postgres-specific.
+If necessary, it can be reimplemented in any other SQL flavor - the standard
+JPA code in the application simply expects the database to have a saved
+function ("stored procedure") named ``generateIdentifierFromStoredProcedure()``
+returning a single ``varchar`` argument.
+
+Please note that ``:IdentifierGenerationStyle`` also plays a role for the
+"identifier" for files. See the section on :ref:`:DataFilePIDFormat` below for
+more details.
 
 .. _:DataFilePIDFormat:
 
 :DataFilePIDFormat
 ++++++++++++++++++
 
-This setting controls the way that the "identifier" component of a file's persistent identifier (PID) relates to the PID of its "parent" dataset.
+This setting controls the way that the "identifier" component of a file's
+persistent identifier (PID) relates to the PID of its "parent" dataset.
 
-By default the identifier for a file is dependent on its parent dataset. For example, if the identifier of a dataset is "TJCLKP", the identifier for a file within that dataset will consist of the parent dataset's identifier followed by a slash ("/"), followed by a random 6 character string, yielding "TJCLKP/MLGWJO". Identifiers in this format are what you should expect if you leave ``:DataFilePIDFormat`` undefined or set it to ``DEPENDENT`` and have not changed the ``:IdentifierGenerationStyle`` setting from its default.
+By default the identifier for a file is dependent on its parent dataset.
+For example, if the identifier of a dataset is "TJCLKP", the identifier for
+a file within that dataset will consist of the parent dataset's identifier
+followed by a slash ("/"), followed by a random 6 character string,
+yielding "TJCLKP/MLGWJO". Identifiers in this format are what you should
+expect if you leave ``:DataFilePIDFormat`` undefined or set it to
+``DEPENDENT`` and have not changed the ``:IdentifierGenerationStyle``
+setting from its default.
 
-Alternatively, the identifier for File PIDs can be configured to be independent of Dataset PIDs using the setting "``INDEPENDENT``". In this case, file PIDs will not contain the PIDs of their parent datasets, and their PIDs will be generated the exact same way that datasets' PIDs are, based on the ``:IdentifierGenerationStyle`` setting described above (random 6 character strings or sequential numbers, pre-pended by any shoulder).
+Alternatively, the identifier for File PIDs can be configured to be
+independent of Dataset PIDs using the setting ``INDEPENDENT``.
+In this case, file PIDs will not contain the PIDs of their parent datasets,
+and their PIDs will be generated the exact same way that datasets' PIDs are,
+based on the ``:IdentifierGenerationStyle`` setting described above
+(random 6 character strings or custom unique identifiers through a stored
+procedure, pre-pended by any shoulder).
 
-The chart below shows examples from each possible combination of parameters from the two settings. ``:IdentifierGenerationStyle`` can be either ``randomString`` (the default) or ``sequentialNumber`` and ``:DataFilePIDFormat`` can be either ``DEPENDENT`` (the default) or ``INDEPENDENT``. In the examples below the "identifier" for the dataset is "TJCLKP" for "randomString" and "100001" for "sequentialNumber".
+The chart below shows examples from each possible combination of parameters
+from the two settings. ``:IdentifierGenerationStyle`` can be either
+``randomString`` (the default) or ``storedProcGenerated`` and
+``:DataFilePIDFormat`` can be either ``DEPENDENT`` (the default) or
+``INDEPENDENT``. In the examples below the "identifier" for the dataset is
+"TJCLKP" for ``randomString`` and "100001" for ``storedProcGenerated`` (when
+using sequential numerical values, as described in
+:ref:`:IdentifierGenerationStyle` above), or "krby26qt" for
+``storedProcGenerated`` (when using base36 timestamps, as described in
+:ref:`:IdentifierGenerationStyle` above).
 
-+-----------------+---------------+------------------+
-|                 | randomString  | sequentialNumber |
-|                 |               |                  |
-+=================+===============+==================+
-| **DEPENDENT**   | TJCLKP/MLGWJO | 100001/1         |
-+-----------------+---------------+------------------+
-| **INDEPENDENT** | MLGWJO        | 100002           |
-+-----------------+---------------+------------------+
++-----------------+---------------+----------------------+---------------------+
+|                 | randomString  | storedProcGenerated  | storedProcGenerated |
+|                 |               |                      |                     |
+|                 |               | (sequential numbers) | (base36 timestamps) |
++=================+===============+======================+=====================+
+| **DEPENDENT**   | TJCLKP/MLGWJO | 100001/1             | krby26qt/1          |
++-----------------+---------------+----------------------+---------------------+
+| **INDEPENDENT** | MLGWJO        | 100002               | krby27pz            |
++-----------------+---------------+----------------------+---------------------+
 
-As seen above, in cases where ``:IdentifierGenerationStyle`` is set to *sequentialNumber* and ``:DataFilePIDFormat`` is set to *DEPENDENT*, each file within a dataset will be assigned a number *within* that dataset starting with "1".
+As seen above, in cases where ``:IdentifierGenerationStyle`` is set to
+``storedProcGenerated`` and ``:DataFilePIDFormat`` is set to ``DEPENDENT``,
+each file within a dataset will be assigned a number *within* that dataset
+starting with "1".
 
-Otherwise, if ``:DataFilePIDFormat`` is set to *INDEPENDENT*, then each file will be assigned a PID with the next number in the overall sequence, regardless of what dataset it is in. If the file is created after a dataset with the PID 100001, then the file will be assigned the PID 100002. This option is functional, but it is not a recommended use case.
-
-Note that in either case, when using the ``sequentialNumber`` option, datasets and files share the same database sequence that was created as part of the setup described in ``:IdentifierGenerationStyle`` above.
+Otherwise, if ``:DataFilePIDFormat`` is set to ``INDEPENDENT``, each file
+within the dataset is assigned with a new PID which is the next available
+identifier provided from the database stored procedure. In our example:
+"100002" when using sequential numbers or "krby27pz" when using base36
+timestamps.
 
 .. _:FilePIDsEnabled:
 
