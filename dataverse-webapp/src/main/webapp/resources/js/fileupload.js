@@ -7,7 +7,7 @@ function removeErrors() {
 }
 var observer=null;
 function uploadStarted() {
-                       	  	// If this is not the first upload, remove error messages since 
+                       	  	// If this is not the first upload, remove error messages since
   	// the upload of any files that failed will be tried again.
   	removeErrors();
   	var curId=0;
@@ -21,7 +21,7 @@ function uploadStarted() {
   	//Setup an observer to watch for additional rows being added
   	var config={childList: true};
   	var callback = function(mutations) {
-		//Add an id attribute to all new entries  
+		//Add an id attribute to all new entries
     	mutations.forEach(function(mutation) {
     	for(i=0; i<mutation.addedNodes.length;i++) {
       		mutation.addedNodes[i].setAttribute('upid',curId);
@@ -39,8 +39,9 @@ function uploadStarted() {
 	observer.observe(files[0].parentElement,config);
 }
 
-function uploadFinished(fileupload) {
-    if (fileupload.files.length === 0) {
+function uploadFinished() {
+    var files = $('.ui-fileupload-files .ui-fileupload-row');
+    if (files.length === 1) {
         $('button[id$="AllUploadsFinished"]').trigger('click');
         //stop observer when we're done
         if(observer !=null) {
@@ -55,25 +56,25 @@ function uploadFailure(fileUpload) {
 	// and 504 (Gateway timeout) where the upload call to the server fails (the server doesn't receive the request)
 	// It notifies the user and provides info about the error (status, statusText)
 	// On some browsers, the status is available in an event: window.event.srcElement.status
-	// but others, (Firefox) don't support this. The calls below retrieve the status and other info 
+	// but others, (Firefox) don't support this. The calls below retrieve the status and other info
 	// from the call stack instead (arguments to the fail() method that calls onerror() that calls this function
-	
+
 	//Retrieve the error number (status) and related explanation (statusText)
 	var status = arguments.callee.caller.caller.arguments[1].jqXHR.status;
     var statusText = arguments.callee.caller.caller.arguments[1].jqXHR.statusText;
     //statusText for error 0 is the unhelpful 'error'
     if(status == 0) statusText='Network Error';
-    
+
     // There are various metadata available about which file the error pertains to
-    // including the name and size. 
-    // However, since the table rows created by PrimeFaces only show name and approximate size, 
+    // including the name and size.
+    // However, since the table rows created by PrimeFaces only show name and approximate size,
     // these may not uniquely identify the affected file. Therefore, we set a unique upid attribute
     // in uploadStarted (and the MutationObserver there) and look for that here. The files array has
     // only one element and that element includes a description of the row involved, including it's upid.
-    
+
     var name = arguments.callee.caller.caller.arguments[1].files[0].name;
 	var id = arguments.callee.caller.caller.arguments[1].files[0].row[0].attributes.upid.value;
-	//Log the error 
+	//Log the error
 	console.log('Upload error:' + name + ' upid=' + id + ', Error ' + status + ': ' + statusText );
     //Find the table
     var rows  =  $('.ui-fileupload-files .ui-fileupload-row');

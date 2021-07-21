@@ -154,7 +154,7 @@
                                               process="filesTable"
                                               update=":datasetForm:filesTable, @([id$=filesButtons])"
                                               label="#{bundle['file.selectToAddBtn']}"
-                                              oncomplete="uploadFinished(PF('fileUploadWidget'));"
+                                              oncomplete="uploadFinished();"
                                               onstart="javascript:uploadWidgetDropRemoveMsg();uploadStarted();"
                                               onerror="javascript:uploadFailure();"
                                               sizeLimit="#{EditDatafilesPage.getMaxFileUploadSizeInBytes()}"
@@ -351,13 +351,13 @@
                                      update="datasetForm:fileUpload,datasetForm:dropBoxUserButton,datasetForm:uploadMessage,datasetForm:rsyncPanel,datasetForm:filesCounts,datasetForm:filesTable"
                                      oncomplete="javascript:uploadWidgetDropMsg();" style="display:none"/>
                     <!-- ????? TODO: How scalable are all these hidden update buttons ????? -->
-                    <!-- ????? 
+                    <!-- ?????
                     datasetForm:fileUpload,
                     datasetForm:dropBoxUserButton,
                     datasetForm:uploadMessage,
                     datasetForm:filesCounts,
                     datasetForm:filesTable,
-                    datasetForm:filesButtons 
+                    datasetForm:filesButtons
                     ????? -->
 
                 </div>
