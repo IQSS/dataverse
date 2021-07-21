@@ -1356,3 +1356,7 @@ progress::-webkit-progress-value {
   background-color: #4b74ff;
   background-image: none;
 }
+
+.external-status {
+  background-color: #EA4CED
+}
