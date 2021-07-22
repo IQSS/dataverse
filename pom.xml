@@ -252,17 +252,23 @@
             </exclusions>
         </dependency>
         
+        <!-- TECHNICAL DEBT
+             For a very long time, in a lots of places people used org.apache.commons.httpclient to access
+             HTTP resources, wrap responses in exceptions etc.
+             
+             This library had been used via an transitive dependency of sword2-server. During its recent updates,
+             the dependency was dropped, went missing, eventually breaking our code. Re-adding this 2007 goodie here
+             as a direct dependency.
+             
+             There is a lot of technical debt in the codebase regarding HTTP client calls. Sometimes
+             java.net.HttpUrlConnection is used, sometimes Apache, sometimes Unirest and what not.
+             A big pile of historically grown mess. Some poor dev should take a Kleenex and call for "payback time". -->
         <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <!-- no version here as managed in <dependencyManagement> above for convergence! -->
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
+            <version>3.1</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpcore</artifactId>
-            <!-- no version here as managed in <dependencyManagement> above for convergence! -->
-        </dependency>
-        
+    
         <!-- BEGIN Data Deposit API v1 (SWORD v2) -->
         <dependency>
             <groupId>org.swordapp</groupId>
