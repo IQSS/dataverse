@@ -29,6 +29,7 @@
         <payara.version>5.2021.4</payara.version>
         <postgresql.version>42.2.19</postgresql.version>
         <aws.version>1.11.762</aws.version>
+        <slf4j.version>1.7.32</slf4j.version>
         <commons.io.version>2.11.0</commons.io.version>
         <commons.logging.version>1.2</commons.logging.version>
         <commons.lang3.version>3.12.0</commons.lang3.version>
@@ -185,6 +186,31 @@
                 <artifactId>commons-io</artifactId>
                 <version>${commons.io.version}</version>
             </dependency>
+    
+            <!-- Dependency of A LOT of libraries. Ensuring convergence here. -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-jdk14</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <!-- In *theory* the log4j12 bridge should not be made convergent, as WE decide which way logs flow.
+                 Libraries should *only* rely on the api package. But sometimes... :-/ -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jcl-over-slf4j</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            
         </dependencies>
     </dependencyManagement>
     <!-- Declare any DIRECT dependencies here.
@@ -193,6 +219,15 @@
     -->
     <!-- TODO: Housekeeping is utterly needed. -->
     <dependencies>
+    
+        <!-- This dependency ensures the lib is on the classpath. That way, anything coming from
+             SLF4J should flow through our usual ways of using java.util.logging.
+             (Which makes it also configurable using those mechanisms.) No direct use intended. -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+        </dependency>
+        
         <dependency>
             <groupId>org.passay</groupId>
             <artifactId>passay</artifactId>
@@ -507,26 +542,6 @@
             <artifactId>jsoup</artifactId>
             <version>1.11.3</version>
         </dependency>
-        <!-- Added specific versionf of SLF4J jars; otherwise we end up with
-        conflicting versions of slf4j-api and slf4j-log4j12, loaded as
-        dependencies for different packages; which was causing some incompatibility
-        issues -L.A. 4.3 -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.7</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.7</version>
-        </dependency>
-        <!-- Added for DataCite -->
-        <!--dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.6.1</version>
-        </dependency -->
         <dependency>
             <groupId>io.searchbox</groupId>
             <artifactId>jest</artifactId>
