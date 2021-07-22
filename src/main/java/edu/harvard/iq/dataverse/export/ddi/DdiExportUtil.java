@@ -1331,13 +1331,9 @@ public class DdiExportUtil {
                 if (datasetFieldTypeName.equals(fieldDTO.getTypeName())) {
                     String rawVal = fieldDTO.getSinglePrimitive();
                     if (fieldDTO.getTypeClass().equals("controlledVocabulary")) {
-                        String localeVal = ControlledVocabularyValue.getLocaleStrValue(rawVal, datasetFieldTypeName, value.getName(),
+                        return ControlledVocabularyValue.getLocaleStrValue(rawVal, datasetFieldTypeName, value.getName(),
                                 locale, false);
-                        if (localeVal != null) {
-                            rawVal = localeVal;
-                        }
                     }
-                    return rawVal;
                 }
             }
         }
@@ -1402,20 +1398,32 @@ public class DdiExportUtil {
         }
     }
     
-    private static void writeI18NElement(XMLStreamWriter xmlw, String name, DatasetVersionDTO version, String fieldTypeName,
-            String lang)  throws XMLStreamException {
+    private static void writeI18NElement(XMLStreamWriter xmlw, String name, DatasetVersionDTO version,
+            String fieldTypeName, String lang) throws XMLStreamException {
+        // Get the default value
         String val = dto2Primitive(version, fieldTypeName);
         Locale defaultLocale = Locale.getDefault();
+        // Get the language-specific value for the default language
         String localeVal = dto2Primitive(version, fieldTypeName, defaultLocale);
-        if (localeVal == null) {
+        String requestedLocaleVal = null;
+        if (lang != null && !defaultLocale.getLanguage().equals(lang)) {
+            // Also get the value in the requested locale/lang if that's not the default
+            // lang.
+            requestedLocaleVal = dto2Primitive(version, fieldTypeName, new Locale(lang));
+        }
+        // FWIW locale-specific vals will only be non-null for CVV values (at present)
+        if (localeVal == null && requestedLocaleVal == null) {
+            // Not CVV/no translations so print without lang tag
             writeFullElement(xmlw, name, val);
         } else {
-            writeFullElement(xmlw, name, localeVal, defaultLocale.getLanguage());
-        }
-        if (lang != null && !defaultLocale.getLanguage().equals(lang)) {
-            localeVal = dto2Primitive(version, fieldTypeName, new Locale(lang));
+            // Print in either/both languages if we have values
             if (localeVal != null) {
-                writeFullElement(xmlw, name, localeVal, lang);
+                // Print the value for the default locale with it's own lang tag
+                writeFullElement(xmlw, name, localeVal, defaultLocale.getLanguage());
+            }
+            // Also print in the request lang (i.e. the metadata language for the dataset) if a value exists, print it with a lang tag
+            if (requestedLocaleVal != null) {
+                writeFullElement(xmlw, name, requestedLocaleVal, lang);
             }
         }
     }
