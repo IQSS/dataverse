@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
@@ -38,7 +40,6 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.StoredProcedureQuery;
 import javax.persistence.TypedQuery;
-
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -454,13 +455,17 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
 
     public DataFile save(DataFile dataFile) {
-
         if (dataFile.isMergeable()) {
             DataFile savedDataFile = em.merge(dataFile);
             return savedDataFile;
         } else {
             throw new IllegalArgumentException("This DataFile object has been set to NOT MERGEABLE; please ensure a MERGEABLE object is passed to the save method.");
         }
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public DataFile saveInNewTransaction(DataFile dataFile) {
+        return save(dataFile);
     }
 
     private void msg(String m) {

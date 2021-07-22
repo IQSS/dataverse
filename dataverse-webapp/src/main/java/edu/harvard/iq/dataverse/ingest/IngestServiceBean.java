@@ -139,7 +139,7 @@ public class IngestServiceBean {
 
     @Inject
     private SettingsServiceBean settingsService;
-    
+
     private DataAccess dataAccess = DataAccess.dataAccess();
 
     @Resource(mappedName = "jms/DataverseIngest")
@@ -152,23 +152,23 @@ public class IngestServiceBean {
     private static String dateTimeFormat_ymdhmsS = "yyyy-MM-dd HH:mm:ss.SSS";
     private static String dateFormat_ymd = "yyyy-MM-dd";
 
-    // This method tries to permanently store new files on the filesystem. 
-    // Then it adds the files that *have been successfully saved* to the 
+    // This method tries to permanently store new files on the filesystem.
+    // Then it adds the files that *have been successfully saved* to the
     // dataset (by attaching the DataFiles to the Dataset, and the corresponding
-    // FileMetadatas to the DatasetVersion). It also tries to ensure that none 
+    // FileMetadatas to the DatasetVersion). It also tries to ensure that none
     // of the parts of the DataFiles that failed to be saved (if any) are still
-    // attached to the Dataset via some cascade path (for example, via 
-    // DataFileCategory objects, if any were already assigned to the files). 
-    // It must be called before we attempt to permanently save the files in 
-    // the database by calling the Save command on the dataset and/or version. 
+    // attached to the Dataset via some cascade path (for example, via
+    // DataFileCategory objects, if any were already assigned to the files).
+    // It must be called before we attempt to permanently save the files in
+    // the database by calling the Save command on the dataset and/or version.
     public List<DataFile> saveAndAddFilesToDataset(DatasetVersion version, List<DataFile> newFiles) {
         List<DataFile> ret = new ArrayList<>();
 
         if (newFiles != null && newFiles.size() > 0) {
             //ret = new ArrayList<>();
-            // final check for duplicate file names; 
-            // we tried to make the file names unique on upload, but then 
-            // the user may have edited them on the "add files" page, and 
+            // final check for duplicate file names;
+            // we tried to make the file names unique on upload, but then
+            // the user may have edited them on the "add files" page, and
             // renamed FOOBAR-1.txt back to FOOBAR.txt...
 
             IngestUtil.checkForDuplicateFileNamesFinal(version, newFiles);
@@ -204,8 +204,8 @@ public class IngestServiceBean {
                     logger.warning("Failed to save the file, storage id " + dataFile.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
                 }
 
-                // Since we may have already spent some CPU cycles scaling down image thumbnails, 
-                // we may as well save them, by moving these generated images to the permanent 
+                // Since we may have already spent some CPU cycles scaling down image thumbnails,
+                // we may as well save them, by moving these generated images to the permanent
                 // dataset directory. We should also remember to delete any such files in the
                 // temp directory:
                 List<Path> generatedTempFiles = listGeneratedTempFiles(Paths.get(FileUtil.getFilesTempDirectory()),
@@ -252,12 +252,12 @@ public class IngestServiceBean {
                 if (unattached) {
                     dataFile.setOwner(null);
                 }
-                // Any necessary post-processing: 
+                // Any necessary post-processing:
                 //performPostProcessingTasks(dataFile);
 
                 if (savedSuccess) {
-                    // These are all brand new files, so they should all have 
-                    // one filemetadata total. -- L.A. 
+                    // These are all brand new files, so they should all have
+                    // one filemetadata total. -- L.A.
                     FileMetadata fileMetadata = dataFile.getFileMetadatas().get(0);
                     String fileName = fileMetadata.getLabel();
 
@@ -276,8 +276,8 @@ public class IngestServiceBean {
                     } else if (fileMetadataExtractable(dataFile)) {
 
                         try {
-                            // FITS is the only type supported for metadata 
-                            // extraction, as of now. -- L.A. 4.0 
+                            // FITS is the only type supported for metadata
+                            // extraction, as of now. -- L.A. 4.0
                             dataFile.setContentType("application/fits");
                             metadataExtracted = extractMetadata(tempLocationPath.toString(), dataFile, version);
                         } catch (IOException mex) {
@@ -290,8 +290,8 @@ public class IngestServiceBean {
                         }
                     }
                     // temp dbug line
-                    //System.out.println("ADDING FILE: " + fileName + "; for dataset: " + dataset.getGlobalId());                    
-                    // Make sure the file is attached to the dataset and to the version, if this 
+                    //System.out.println("ADDING FILE: " + fileName + "; for dataset: " + dataset.getGlobalId());
+                    // Make sure the file is attached to the dataset and to the version, if this
                     // hasn't been done yet:
                     if (dataFile.getOwner() == null) {
                         dataFile.setOwner(dataset);
@@ -358,8 +358,8 @@ public class IngestServiceBean {
     }
 
 
-    // TODO: consider creating a version of this method that would take 
-    // datasetversion as the argument. 
+    // TODO: consider creating a version of this method that would take
+    // datasetversion as the argument.
     // -- L.A. 4.6
     public void startIngestJobsForDataset(Dataset dataset, AuthenticatedUser user) {
         List<DataFile> scheduledFiles = new ArrayList<>();
@@ -368,7 +368,7 @@ public class IngestServiceBean {
             if (dataFile.isIngestScheduled()) {
                 // todo: investigate why when calling save with the file object
                 // gotten from the loop, the roles assignment added at create is removed
-                // (switching to refinding via id resolves that)                
+                // (switching to refinding via id resolves that)
                 dataFile = fileService.find(dataFile.getId());
                 scheduledFiles.add(dataFile);
             }
@@ -424,7 +424,7 @@ public class IngestServiceBean {
                                       (user != null) ? user.getId() : null,
                                       info);
 
-            // Sort ingest jobs by file size: 
+            // Sort ingest jobs by file size:
             DataFile[] scheduledFilesArray = scheduledFiles.toArray(new DataFile[count]);
             scheduledFiles = null;
 
@@ -500,17 +500,17 @@ public class IngestServiceBean {
 
     public void produceContinuousSummaryStatistics(DataFile dataFile, File generatedTabularFile) throws IOException {
 
-        /* 
+        /*
         // quick, but memory-inefficient way:
-        // - this method just loads the entire file-worth of continuous vectors 
-        // into a Double[][] matrix. 
+        // - this method just loads the entire file-worth of continuous vectors
+        // into a Double[][] matrix.
         //Double[][] variableVectors = subsetContinuousVectors(dataFile);
         //calculateContinuousSummaryStatistics(dataFile, variableVectors);
-        
-        // A more sophisticated way: this subsets one column at a time, using 
-        // the new optimized subsetting that does not have to read any extra 
+
+        // A more sophisticated way: this subsets one column at a time, using
+        // the new optimized subsetting that does not have to read any extra
         // bytes from the file to extract the column:
-        
+
         TabularSubsetGenerator subsetGenerator = new TabularSubsetGenerator();
         */
 
@@ -554,7 +554,7 @@ public class IngestServiceBean {
                 Long[] variableVector = TabularSubsetGenerator.subsetLongVector(new FileInputStream(generatedTabularFile),
                                                                                 i,
                                                                                 dataFile.getDataTable().getCaseQuantity().intValue());
-                // We are discussing calculating the same summary stats for 
+                // We are discussing calculating the same summary stats for
                 // all numerics (the same kind of sumstats that we've been calculating
                 // for numeric continuous type)  -- L.A. Jul. 2014
                 calculateContinuousSummaryStatistics(dataFile, i, variableVector);
@@ -569,17 +569,17 @@ public class IngestServiceBean {
 
     public void produceCharacterSummaryStatistics(DataFile dataFile, File generatedTabularFile) throws IOException {
 
-        /* 
+        /*
             At this point it's still not clear what kinds of summary stats we
-            want for character types. Though we are pretty confident we don't 
-            want to keep doing what we used to do in the past, i.e. simply 
-            store the total counts for all the unique values; even if it's a 
-            very long vector, and *every* value in it is unique. (As a result 
-            of this, our Categorical Variable Value table is the single 
-            largest in the production database. With no evidence whatsoever, 
-            that this information is at all useful. 
-                -- L.A. Jul. 2014 
-        
+            want for character types. Though we are pretty confident we don't
+            want to keep doing what we used to do in the past, i.e. simply
+            store the total counts for all the unique values; even if it's a
+            very long vector, and *every* value in it is unique. (As a result
+            of this, our Categorical Variable Value table is the single
+            largest in the production database. With no evidence whatsoever,
+            that this information is at all useful.
+                -- L.A. Jul. 2014
+
         TabularSubsetGenerator subsetGenerator = new TabularSubsetGenerator();
         */
 
@@ -716,8 +716,8 @@ public class IngestServiceBean {
             // If this is a reingest request, we'll still have a chance
             // to find an ingest plugin for this file, once we try
             // to identify the file type again.
-            // Otherwise, we can give up - there is no point in proceeding to 
-            // the next step if no ingest plugin is available. 
+            // Otherwise, we can give up - there is no point in proceeding to
+            // the next step if no ingest plugin is available.
 
             dataFile.SetIngestProblem();
             dataFile.setIngestReport(IngestReport.createIngestFailureReport(dataFile,
@@ -823,8 +823,8 @@ public class IngestServiceBean {
 
                 dataFile.setFilesize(tabFile.length());
 
-                // and change the mime type to "Tabular Data" on the final datafile, 
-                // and replace (or add) the extension ".tab" to the filename: 
+                // and change the mime type to "Tabular Data" on the final datafile,
+                // and replace (or add) the extension ".tab" to the filename:
                 dataFile.setContentType(TextMimeType.TSV_ALT.getMimeValue());
                 IngestUtil.modifyExistingFilename(dataFile.getOwner().getLatestVersion(),
                                                   dataFile.getFileMetadata(),
@@ -874,14 +874,19 @@ public class IngestServiceBean {
                 }
 
                 try {
-                    /* 
+                    /*
                          In order to test a database save failure, uncomment this:
-                        
+
                         if (true) {
                             throw new EJBException("Deliberate database save failure");
                         }
                      */
-                    dataFile = fileService.save(dataFile);
+
+                    // We have to start a new transaction in order to save produced
+                    // datafiles, as the processing time is very long and during that time
+                    // our original transaction may have been closed.
+                    // This solution is taken from Harvard's Dataverse.
+                    dataFile = fileService.saveInNewTransaction(dataFile);
                     databaseSaveSuccessful = true;
 
                     logger.fine("Ingest (" + dataFile.getFileMetadata().getLabel() + ".");
@@ -892,7 +897,8 @@ public class IngestServiceBean {
                     }
                 } catch (Exception unknownEx) {
                     // this means that an error occurred while saving the datafile
-                    // in the database. 
+                    // in the database.
+                    logger.log(Level.SEVERE, "Ingest Exception: ", unknownEx);
                     logger.warning(
                             "Ingest failure: Failed to save tabular metadata (datatable, datavariables, etc.) in the database. Clearing the datafile object.");
 
@@ -918,14 +924,14 @@ public class IngestServiceBean {
                     return false;
                 }
 
-                // Finally, let's swap the original and the tabular files: 
+                // Finally, let's swap the original and the tabular files:
                 try {
                     /* Start of save as backup */
 
                     StorageIO<DataFile> tabularStorageIO = dataAccess.getStorageIO(dataFile);
                     tabularStorageIO.open();
 
-                    // and we want to save the original of the ingested file: 
+                    // and we want to save the original of the ingested file:
                     try {
                         tabularStorageIO.backupAsAux(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION);
                         logger.fine("Saved the ingested original as a backup aux file: " + StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION);
@@ -935,7 +941,7 @@ public class IngestServiceBean {
 
                     // Replace contents of the file with the tab-delimited data produced:
                     tabularStorageIO.savePath(Paths.get(tabFile.getAbsolutePath()));
-                    // Reset the file size: 
+                    // Reset the file size:
                     dataFile.setFilesize(tabularStorageIO.getSize());
 
                     // delete the temp tab-file:
@@ -988,8 +994,8 @@ public class IngestServiceBean {
     // (i.e., the code that doesn't need to persist anything in the database) into
     // outside static utilities and/or helpers; so that unit tests could be written
     // easily. -- L.A. 4.6
-    
-    /* not needed anymore, but keeping it around, as a demo of how Push 
+
+    /* not needed anymore, but keeping it around, as a demo of how Push
        notifications work
     private void sendStatusNotification(Long datasetId, FacesMessage message) {*/
         /*
@@ -999,8 +1005,8 @@ public class IngestServiceBean {
             logger.warning("Failed to obtain eventBus!");
             return;
         }
-        // TODO: 
-        // add more diagnostics here! 4.2.3 -- L.A. 
+        // TODO:
+        // add more diagnostics here! 4.2.3 -- L.A.
         eventBus.publish("/ingest/dataset/" + datasetId, message);
         */
     /* }*/
@@ -1085,7 +1091,7 @@ public class IngestServiceBean {
 
         // Store the fields and values we've gathered for safe-keeping:
         // from 3.6:
-        // attempt to ingest the extracted metadata into the database; 
+        // attempt to ingest the extracted metadata into the database;
         // TODO: this should throw an exception if anything goes wrong.
         FileMetadata fileMetadata = dataFile.getFileMetadata();
 
@@ -1120,7 +1126,7 @@ public class IngestServiceBean {
                     if (dsft.isPrimitive()) {
                         if (!dsft.isHasParent()) {
                             String dsfName = dsft.getName();
-                            // See if the plugin has found anything for this field: 
+                            // See if the plugin has found anything for this field:
                             if (fileMetadataMap.get(dsfName) != null && !fileMetadataMap.get(dsfName).isEmpty()) {
 
                                 logger.fine("Ingest Service: found extracted metadata for field " + dsfName);
@@ -1128,24 +1134,24 @@ public class IngestServiceBean {
                                 for (DatasetField dsf : editVersion.getFlatDatasetFields()) {
                                     if (dsf.getDatasetFieldType().equals(dsft)) {
                                         // yep, this is our field!
-                                        // let's go through the values that the ingest 
-                                        // plugin found in the file for this field: 
+                                        // let's go through the values that the ingest
+                                        // plugin found in the file for this field:
 
                                         Set<String> mValues = fileMetadataMap.get(dsfName);
 
-                                        // Special rules apply to aggregation of values for 
-                                        // some specific fields - namely, the resolution.* 
-                                        // fields from the Astronomy Metadata block. 
+                                        // Special rules apply to aggregation of values for
+                                        // some specific fields - namely, the resolution.*
+                                        // fields from the Astronomy Metadata block.
                                         // TODO: rather than hard-coded, this needs to be
                                         // programmatically defined. -- L.A. 4.0
                                         if (dsfName.equals("resolution.Temporal")
                                                 || dsfName.equals("resolution.Spatial")
                                                 || dsfName.equals("resolution.Spectral")) {
-                                            // For these values, we aggregate the minimum-maximum 
-                                            // pair, for the entire set. 
-                                            // So first, we need to go through the values found by 
-                                            // the plugin and select the min. and max. values of 
-                                            // these: 
+                                            // For these values, we aggregate the minimum-maximum
+                                            // pair, for the entire set.
+                                            // So first, we need to go through the values found by
+                                            // the plugin and select the min. and max. values of
+                                            // these:
                                             // (note that we are assuming that they all must
                                             // validate as doubles!)
 
@@ -1167,10 +1173,10 @@ public class IngestServiceBean {
                                                 }
                                             }
 
-                                            // Now let's see what aggregated values we 
-                                            // have stored already: 
+                                            // Now let's see what aggregated values we
+                                            // have stored already:
 
-                                            // (all of these resolution.* fields have allowedMultiple set to FALSE, 
+                                            // (all of these resolution.* fields have allowedMultiple set to FALSE,
                                             // so there can be only one!)
                                             //logger.fine("Min value: "+minValue+", Max value: "+maxValue);
                                             if (minValue != null) {
@@ -1224,11 +1230,11 @@ public class IngestServiceBean {
                                                     dsf.setFieldValue(newAggregateValue);
                                                 }
                                             }
-                                            // Ouch. 
+                                            // Ouch.
                                         } else {
-                                            // Other fields are aggregated simply by 
-                                            // collecting a list of *unique* values encountered 
-                                            // for this Field throughout the dataset. 
+                                            // Other fields are aggregated simply by
+                                            // collecting a list of *unique* values encountered
+                                            // for this Field throughout the dataset.
                                             // This means we need to only add the values *not yet present*.
                                             // (the implementation below may be inefficient - ?)
 
@@ -1245,8 +1251,8 @@ public class IngestServiceBean {
                                                     }
 
                                                 } else {
-                                                    // A controlled vocabulary entry: 
-                                                    // first, let's see if it's a legit control vocab. entry: 
+                                                    // A controlled vocabulary entry:
+                                                    // first, let's see if it's a legit control vocab. entry:
                                                     ControlledVocabularyValue legitControlledVocabularyValue = null;
                                                     Collection<ControlledVocabularyValue> definedVocabularyValues = dsft.getControlledVocabularyValues();
                                                     if (definedVocabularyValues != null) {
@@ -1259,8 +1265,8 @@ public class IngestServiceBean {
                                                         }
                                                     }
                                                     if (legitControlledVocabularyValue != null) {
-                                                        // Only need to add the value if it is new, 
-                                                        // i.e. if it does not exist yet: 
+                                                        // Only need to add the value if it is new,
+                                                        // i.e. if it does not exist yet:
                                                         boolean valueExists = false;
 
                                                         List<ControlledVocabularyValue> existingControlledVocabValues = dsf.getControlledVocabularyValues();
@@ -1291,11 +1297,11 @@ public class IngestServiceBean {
                             }
                         }
                     } else {
-                        // A compound field: 
-                        // See if the plugin has found anything for the fields that 
-                        // make up this compound field; if we find at least one 
-                        // of the child values in the map of extracted values, we'll 
-                        // create a new compound field value and its child 
+                        // A compound field:
+                        // See if the plugin has found anything for the fields that
+                        // make up this compound field; if we find at least one
+                        // of the child values in the map of extracted values, we'll
+                        // create a new compound field value and its child
                         //
                         List<DatasetField> missingFields = new ArrayList<>();
                         int nonEmptyFields = 0;
@@ -1306,8 +1312,8 @@ public class IngestServiceBean {
 
                                 if (cdsft.isPrimitive()) {
                                     // probably an unnecessary check - child fields
-                                    // of compound fields are always primitive... 
-                                    // but maybe it'll change in the future. 
+                                    // of compound fields are always primitive...
+                                    // but maybe it'll change in the future.
                                     if (!cdsft.isControlledVocabulary()) {
                                         // TODO: can we have controlled vocabulary
                                         // sub-fields inside compound fields?
@@ -1378,16 +1384,16 @@ public class IngestServiceBean {
     private void processFileLevelMetadata(FileMetadataIngest fileLevelMetadata, FileMetadata fileMetadata) {
         // The only type of metadata that ingest plugins can extract from ingested
         // files (as of 4.0 beta) that *stay* on the file-level is the automatically
-        // generated "metadata summary" note. We attach it to the "description" 
-        // field of the fileMetadata object. -- L.A. 
+        // generated "metadata summary" note. We attach it to the "description"
+        // field of the fileMetadata object. -- L.A.
 
         String metadataSummary = fileLevelMetadata.getMetadataSummary();
         if (metadataSummary != null) {
             if (!metadataSummary.equals("")) {
-                // The file upload page allows a user to enter file description 
-                // on ingest. We don't want to overwrite whatever they may 
-                // have entered. Rather, we'll append this generated metadata summary 
-                // to the existing value. 
+                // The file upload page allows a user to enter file description
+                // on ingest. We don't want to overwrite whatever they may
+                // have entered. Rather, we'll append this generated metadata summary
+                // to the existing value.
                 String userEnteredFileDescription = fileMetadata.getDescription();
                 if (userEnteredFileDescription != null
                         && !(userEnteredFileDescription.equals(""))) {
@@ -1503,7 +1509,7 @@ public class IngestServiceBean {
                 if (dataVector[i] != null) {
 
                     if (simplifiedFormatParser != null) {
-                        // first, try to parse the value against the "full" 
+                        // first, try to parse the value against the "full"
                         // format (with the milliseconds part):
                         fullFormatParser.setLenient(false);
 
@@ -1565,7 +1571,7 @@ public class IngestServiceBean {
     // 4.0 Ingest against DVN 3.*; because of the nature of the UNF bug, reading
     // the tab file entry with 7+ digits of precision as a Double will result
     // in a UNF signature *different* from what was produced by the v. 3.* ingest,
-    // from a STATA float value directly. 
+    // from a STATA float value directly.
     // TODO: remove this from the final production 4.0!
     // -- L.A., Jul 2014
 
@@ -1588,11 +1594,11 @@ public class IngestServiceBean {
         }
     }
 
-    // This method takes a list of file ids, checks the format type of the ingested 
-    // original, and attempts to fix it if it's missing. 
-    // Note the @Asynchronous attribute - this allows us to just kick off and run this 
-    // (potentially large) job in the background. 
-    // The method is called by the "fixmissingoriginaltypes" /admin api call. 
+    // This method takes a list of file ids, checks the format type of the ingested
+    // original, and attempts to fix it if it's missing.
+    // Note the @Asynchronous attribute - this allows us to just kick off and run this
+    // (potentially large) job in the background.
+    // The method is called by the "fixmissingoriginaltypes" /admin api call.
     @Asynchronous
     public void fixMissingOriginalTypes(List<Long> datafileIds) {
         for (Long fileId : datafileIds) {
@@ -1601,11 +1607,11 @@ public class IngestServiceBean {
         logger.info("Finished repairing tabular data files that were missing the original file format labels.");
     }
 
-    // This method takes a list of file ids and tries to fix the size of the saved 
+    // This method takes a list of file ids and tries to fix the size of the saved
     // original, if present
-    // Note the @Asynchronous attribute - this allows us to just kick off and run this 
-    // (potentially large) job in the background. 
-    // The method is called by the "fixmissingoriginalsizes" /admin api call. 
+    // Note the @Asynchronous attribute - this allows us to just kick off and run this
+    // (potentially large) job in the background.
+    // The method is called by the "fixmissingoriginalsizes" /admin api call.
     @Asynchronous
     public void fixMissingOriginalSizes(List<Long> datafileIds) {
         for (Long fileId : datafileIds) {
@@ -1618,9 +1624,9 @@ public class IngestServiceBean {
         logger.info("Finished repairing tabular data files that were missing the original file sizes.");
     }
 
-    // This method fixes a datatable object that's missing the format type of 
-    // the ingested original. It will check the saved original file to 
-    // determine the type. 
+    // This method fixes a datatable object that's missing the format type of
+    // the ingested original. It will check the saved original file to
+    // determine the type.
     private void fixMissingOriginalType(long fileId) {
         DataFile dataFile = fileService.find(fileId);
 
@@ -1630,17 +1636,17 @@ public class IngestServiceBean {
             if (StringUtil.isEmpty(originalFormat) || originalFormat.equals(TextMimeType.TSV_ALT.getMimeValue())) {
 
                 // We need to determine the mime type of the saved original
-                // and save it in the database. 
-                // 
-                // First, we need access to the file. Note that the code below 
+                // and save it in the database.
+                //
+                // First, we need access to the file. Note that the code below
                 // works with any supported StorageIO driver (although, as of now
                 // all the production installations out there are only using filesystem
                 // access; but just in case)
-                // The FileUtil method that determines the type takes java.io.File 
-                // as an argument. So for StorageIO drivers that provide local 
-                // file access, we'll just go directly to the stored file. For 
-                // s3 and similar implementations, we'll read the saved aux 
-                // channel and save it as a local temp file. 
+                // The FileUtil method that determines the type takes java.io.File
+                // as an argument. So for StorageIO drivers that provide local
+                // file access, we'll just go directly to the stored file. For
+                // s3 and similar implementations, we'll read the saved aux
+                // channel and save it as a local temp file.
 
                 String fileTypeDetermined = null;
                 Long savedOriginalFileSize = null;
@@ -1651,7 +1657,7 @@ public class IngestServiceBean {
                     File savedOriginalFile = StorageIOUtils.obtainAuxAsLocalFile(storageIO, StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION, storageIO.isRemoteFile());
 
                     tmpFile = storageIO.isRemoteFile() ? Optional.of(savedOriginalFile) : Optional.empty();
-                    
+
                     savedOriginalFileSize = savedOriginalFile.length();
                     fileTypeDetermined = FileUtil.determineFileType(savedOriginalFile, "");
 
@@ -1667,9 +1673,9 @@ public class IngestServiceBean {
                     return;
                 }
                 // adjust the final result:
-                // we know that this file has been successfully ingested; 
+                // we know that this file has been successfully ingested;
                 // so if the FileUtil is telling us it's a "plain text" file at this point,
-                // it really means it must be a CSV file. 
+                // it really means it must be a CSV file.
                 if (fileTypeDetermined.startsWith("text/plain")) {
                     fileTypeDetermined = TextMimeType.CSV.getMimeValue();
                 }
@@ -1692,8 +1698,8 @@ public class IngestServiceBean {
         }
     }
 
-    // This method fixes a datatable object that's missing the size of the 
-    // ingested original. 
+    // This method fixes a datatable object that's missing the size of the
+    // ingested original.
     private void fixMissingOriginalSize(long fileId) {
         DataFile dataFile = fileService.find(fileId);
 

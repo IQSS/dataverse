@@ -93,11 +93,11 @@ public class TabularSubsetGenerator {
             if (scanner.hasNext()) {
                 String[] line = (scanner.next()).split("\t", -1);
 
-                // Verified: new Double("nan") works correctly, 
+                // Verified: new Double("nan") works correctly,
                 // resulting in Double.NaN;
-                // Double("[+-]Inf") doesn't work however; 
+                // Double("[+-]Inf") doesn't work however;
                 // (the constructor appears to be expecting it
-                // to be spelled as "Infinity", "-Infinity", etc. 
+                // to be spelled as "Infinity", "-Infinity", etc.
                 if ("inf".equalsIgnoreCase(line[column]) || "+inf".equalsIgnoreCase(line[column])) {
                     retVector[caseIndex] = java.lang.Double.POSITIVE_INFINITY;
                 } else if ("-inf".equalsIgnoreCase(line[column])) {
@@ -146,11 +146,11 @@ public class TabularSubsetGenerator {
         for (int caseIndex = 0; caseIndex < numCases; caseIndex++) {
             if (scanner.hasNext()) {
                 String[] line = (scanner.next()).split("\t", -1);
-                // Verified: new Float("nan") works correctly, 
+                // Verified: new Float("nan") works correctly,
                 // resulting in Float.NaN;
-                // Float("[+-]Inf") doesn't work however; 
+                // Float("[+-]Inf") doesn't work however;
                 // (the constructor appears to be expecting it
-                // to be spelled as "Infinity", "-Infinity", etc. 
+                // to be spelled as "Infinity", "-Infinity", etc.
                 if ("inf".equalsIgnoreCase(line[column]) || "+inf".equalsIgnoreCase(line[column])) {
                     retVector[caseIndex] = java.lang.Float.POSITIVE_INFINITY;
                 } else if ("-inf".equalsIgnoreCase(line[column])) {
@@ -199,7 +199,7 @@ public class TabularSubsetGenerator {
             if (scanner.hasNext()) {
                 String[] line = (scanner.next()).split("\t", -1);
                 try {
-                    retVector[caseIndex] = new Long(line[column]);
+                    retVector[caseIndex] = Long.valueOf(line[column]);
                 } catch (NumberFormatException ex) {
                     retVector[caseIndex] = null; // assume missing value
                 }
@@ -248,21 +248,21 @@ public class TabularSubsetGenerator {
                     line[column] = line[column].replaceFirst("^\\\"", "");
                     line[column] = line[column].replaceFirst("\\\"$", "");
 
-                    // We need to restore the special characters that 
-                    // are stored in tab files escaped - quotes, new lines 
-                    // and tabs. Before we do that however, we need to 
-                    // take care of any escaped backslashes stored in 
-                    // the tab file. I.e., "foo\t" should be transformed 
-                    // to "foo<TAB>"; but "foo\\t" should be transformed 
+                    // We need to restore the special characters that
+                    // are stored in tab files escaped - quotes, new lines
+                    // and tabs. Before we do that however, we need to
+                    // take care of any escaped backslashes stored in
+                    // the tab file. I.e., "foo\t" should be transformed
+                    // to "foo<TAB>"; but "foo\\t" should be transformed
                     // to "foo\t". This way new lines and tabs that were
-                    // already escaped in the original data are not 
-                    // going to be transformed to unescaped tab and 
+                    // already escaped in the original data are not
+                    // going to be transformed to unescaped tab and
                     // new line characters!
                     String[] splitTokens = line[column].split(Matcher.quoteReplacement("\\\\"), -2);
 
-                    // (note that it's important to use the 2-argument version 
+                    // (note that it's important to use the 2-argument version
                     // of String.split(), and set the limit argument to a
-                    // negative value; otherwise any trailing backslashes 
+                    // negative value; otherwise any trailing backslashes
                     // are lost.)
                     for (int i = 0; i < splitTokens.length; i++) {
                         splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\\""), "\"");
@@ -270,11 +270,11 @@ public class TabularSubsetGenerator {
                         splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\n"), "\n");
                         splitTokens[i] = splitTokens[i].replaceAll(Matcher.quoteReplacement("\\r"), "\r");
                     }
-                    // TODO: 
-                    // Make (some of?) the above optional; for ex., we 
+                    // TODO:
+                    // Make (some of?) the above optional; for ex., we
                     // do need to restore the newlines when calculating UNFs;
-                    // But if we are subsetting these vectors in order to 
-                    // create a new tab-delimited file, they will 
+                    // But if we are subsetting these vectors in order to
+                    // create a new tab-delimited file, they will
                     // actually break things! -- L.A. Jul. 28 2014
 
                     line[column] = StringUtils.join(splitTokens, '\\');
