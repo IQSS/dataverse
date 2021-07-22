@@ -176,6 +176,8 @@ public class DatasetReportService {
                     return "Restricted access";
                 case ALL_RIGHTS_RESERVED:
                     return "All rights reserved";
+                case TERMS_UNKNOWN:
+                    return "Terms unknown";
                 default:
                     return termsOfUse.getTermsOfUseType().toString();
             }

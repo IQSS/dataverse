@@ -26,7 +26,8 @@ public class FileTermsOfUse implements Serializable, JpaEntity<Long> {
     public enum TermsOfUseType {
         LICENSE_BASED,
         ALL_RIGHTS_RESERVED,
-        RESTRICTED
+        RESTRICTED,
+        TERMS_UNKNOWN
     }
 
     public enum RestrictType {
@@ -103,7 +104,7 @@ public class FileTermsOfUse implements Serializable, JpaEntity<Long> {
         if (restrictType != null) {
             return TermsOfUseType.RESTRICTED;
         }
-        throw new RuntimeException("Unknown terms of use type");
+        return TermsOfUseType.TERMS_UNKNOWN;
     }
 
     public FileTermsOfUse createCopy() {

@@ -1,10 +1,10 @@
 package edu.harvard.iq.dataverse.license;
 
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
-import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
-import edu.harvard.iq.dataverse.persistence.datafile.license.TermsOfUseForm;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.RestrictType;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
+import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
+import edu.harvard.iq.dataverse.persistence.datafile.license.TermsOfUseForm;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.ejb.Stateless;
@@ -48,7 +48,7 @@ public class TermsOfUseFormMapper {
             termsOfUse.setRestrictCustomText(termsOfUseForm.getCustomRestrictText());
         } else if (termsOfUseForm.getTypeWithLicenseId().startsWith(TermsOfUseType.LICENSE_BASED.toString())) {
             String licenseId = termsOfUseForm.getTypeWithLicenseId().split(":")[1];
-            termsOfUse.setLicense(licenseDao.find(Long.valueOf(licenseId)));
+            termsOfUse.setLicense(licenseDao.find(Long.parseLong(licenseId)));
         }
 
         return termsOfUse;
