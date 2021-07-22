@@ -21,7 +21,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 @TestMethodOrder(OrderAnnotation.class)
@@ -41,9 +41,9 @@ public class DdiExportUtilTest {
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
         File ddiFile = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.xml");
         String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(ddiFile.getAbsolutePath()))));
-        logger.info(datasetAsDdi);
+        logger.fine(datasetAsDdi);
         String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
-        logger.info(result);
+        logger.fine(result);
         assertEquals(datasetAsDdi, result);
     }
 
@@ -53,9 +53,9 @@ public class DdiExportUtilTest {
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
         File ddiFile = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/exportfull.xml");
         String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(ddiFile.getAbsolutePath()))));
-        logger.info(datasetAsDdi);
+        logger.fine(datasetAsDdi);
         String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
-        logger.info(result);
+        logger.fine(result);
         assertEquals(datasetAsDdi, result);
     }
 
@@ -71,9 +71,9 @@ public class DdiExportUtilTest {
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
         File ddiFile = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-spruce1.xml");
         String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(ddiFile.getAbsolutePath()))));
-        logger.info(datasetAsDdi);
+        logger.fine(datasetAsDdi);
         String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
-        logger.info(result);
+        logger.fine(result);
         boolean filesMinimallySupported = false;
         // TODO: 
         // setting "filesMinimallySupported" to false here, thus disabling the test;

@@ -216,10 +216,10 @@ public class DdiExportUtil {
                 distributorSet=true;
             }
         }
-        logger.info("Dsitr set?: " + distributorSet);
-        logger.info("Pub?: " + datasetDto.getPublisher());
+        logger.fine("Dsitr set?: " + distributorSet);
+        logger.fine("Pub?: " + datasetDto.getPublisher());
         boolean excludeRepository = settingsService.isTrueForKey(SettingsServiceBean.Key.ExportInstallationAsDistributorOnlyWhenNotSet, false);
-        logger.info("Exclude: " + excludeRepository);
+        logger.fine("Exclude: " + excludeRepository);
         if (!StringUtils.isEmpty(datasetDto.getPublisher()) && !(excludeRepository && distributorSet)) {
             xmlw.writeStartElement("distrbtr");
             writeAttribute(xmlw, "source", "archive");
@@ -1819,7 +1819,7 @@ public class DdiExportUtil {
             logger.severe("Parser configuration error " + pce.getMessage());
         } catch (IOException ioe) {
             // I/O error
-            logger.info("I/O error " + ioe.getMessage());
+            logger.warning("I/O error " + ioe.getMessage());
         }
 
     }
