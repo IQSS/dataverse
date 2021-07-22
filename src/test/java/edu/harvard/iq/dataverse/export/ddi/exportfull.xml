@@ -56,6 +56,7 @@
         <serName>SeriesName</serName>
         <serInfo>SeriesInformation</serInfo>
       </serStmt>
+      <holdings URI="https://doi.org/10.5072/FK2/WKUKGV"></holdings>
     </citation>
     <stdyInfo>
       <subject>
