@@ -375,6 +375,9 @@ form.btn-form {display:inline-block;}
 .button-block span.ui-state-disabled:last-child, .button-block.pull-right .btn:last-child, 
 .button-block .btn:only-child, .button-block div.btn-group:only-child {margin-right:0;}
 
+.disabledTitle {
+  pointer-events: auto;
+}
 /* DIASABLED LINK-BTN TITLE PF COMMANDLINK HACK */
 /* TODO - REVIEW DISABLED CLASS LINKS WHICH 
           ARE NOW FUNCTIONAL DUE TO HACK?? 
@@ -655,7 +658,7 @@ div.edit-field div.ui-message {margin:6px 0;}
 /* TRUNCATION */
 div.more-block {text-align:center; padding-top:250px; width:100%; position:absolute; bottom:0; background:linear-gradient(180deg,hsla(0,0%,100%,0),#fff 80%);}
 button.desc-more-link {margin:0; padding:0;}
-div.less-block {text-align:center;};
+div.less-block {text-align:center;}
 
 /* Primefaces vs Bootstrap selectOneMenu fix */
 div.ui-selectonemenu.form-control {padding:0px;}

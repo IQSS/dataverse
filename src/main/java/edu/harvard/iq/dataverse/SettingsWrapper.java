@@ -12,8 +12,12 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
@@ -274,6 +278,18 @@ public class SettingsWrapper implements java.io.Serializable {
         //Defaults to true
         return isTrueForKey(SettingsServiceBean.Key.ChronologicalDateFacets, true);
     
+    }
+    
+    List<String> anonymizedFieldTypes = null;
+
+    public boolean shouldBeAnonymized(DatasetField df) {
+        // Set up once per view
+        if (anonymizedFieldTypes == null) {
+            anonymizedFieldTypes = new ArrayList<String>();
+            String names = get(SettingsServiceBean.Key.AnonymizedFieldTypeNames.toString(), "");
+            anonymizedFieldTypes.addAll(Arrays.asList(names.split(",\\s")));
+        }
+        return anonymizedFieldTypes.contains(df.getDatasetFieldType().getName());
     }
 
     List<String> allowedExternalStatuses = null;

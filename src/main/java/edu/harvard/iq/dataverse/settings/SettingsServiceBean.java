@@ -357,6 +357,11 @@ public class SettingsServiceBean {
         IndependentHandleService,
 
         /**
+        Handle to use for authentication if the default is not being used
+        */
+        HandleAuthHandle,
+
+        /**
          * Archiving can be configured by providing an Archiver class name (class must extend AstractSubmitToArchiverCommand)
          * and a list of settings that should be passed to the Archiver.
          * Note: 
@@ -434,6 +439,14 @@ public class SettingsServiceBean {
          * when the Distributor field (citation metadatablock) is set (true)
          */
         ExportInstallationAsDistributorOnlyWhenNotSet,
+        /**
+         * A comma-separated list of field type names that should be 'withheld' when
+         * dataset access occurs via a Private Url with Anonymized Access (e.g. to
+         * support anonymized review). A suggested minimum includes author,
+         * datasetContact, and contributor, but additional fields such as depositor, grantNumber, and
+         * publication might also need to be included.
+         */
+        AnonymizedFieldTypeNames,
         /**
          * A comma separated list of the allowed labels. These should correspond to the states in an organizations curation process. 
          */

@@ -1017,7 +1017,7 @@ public class SystemConfig {
     public boolean isDataFilePIDSequentialDependent(){
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
         String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
-        if (doiIdentifierType.equals("sequentialNumber") && doiDataFileFormat.equals("DEPENDENT")){
+        if (doiIdentifierType.equals("storedProcGenerated") && doiDataFileFormat.equals("DEPENDENT")){
             return true;
         }
         return false;
@@ -1045,6 +1045,11 @@ public class SystemConfig {
     
     }
     
+    public String getHandleAuthHandle() {
+        String handleAuthHandle = settingsService.getValueForKey(SettingsServiceBean.Key.HandleAuthHandle, null);
+        return handleAuthHandle;
+    }
+
     public String getMDCLogPath() {
         String mDCLogPath = settingsService.getValueForKey(SettingsServiceBean.Key.MDCLogPath, null);
         return mDCLogPath;
