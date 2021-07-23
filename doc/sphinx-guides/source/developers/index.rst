@@ -37,3 +37,4 @@ Developer Guide
    s3-direct-upload-api
    dataset-semantic-metadata-api
    workflows
+   fontcustom

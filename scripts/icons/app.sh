@@ -2,7 +2,7 @@
 # Filenames change each time so remove the old ones.
 rm ../../src/main/webapp/resources/fontcustom/*
 # Generate new files (see config file for paths).
-fontcustom compile -c fontcustom.yml
+fontcustom compile -c fontcustom-app.yml
 # Use absolute src url path to "/resources..." 
 # We've always done it this way.
 # The sed command is extra verbose for precision and clarity.
