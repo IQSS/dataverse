@@ -1443,11 +1443,11 @@ public class DataFileServiceBean implements java.io.Serializable {
         switch (doiIdentifierType) {
             case "randomString":               
                 return generateIdentifierAsRandomString(datafile, idServiceBean, prepend);
-            case "sequentialNumber":
+            case "storedProcGenerated":
                 if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.INDEPENDENT.toString())){ 
-                    return generateIdentifierAsIndependentSequentialNumber(datafile, idServiceBean, prepend);
+                    return generateIdentifierFromStoredProcedureIndependent(datafile, idServiceBean, prepend);
                 } else {
-                    return generateIdentifierAsDependentSequentialNumber(datafile, idServiceBean, prepend);
+                    return generateIdentifierFromStoredProcedureDependent(datafile, idServiceBean, prepend);
                 }
             default:
                 /* Should we throw an exception instead?? -- L.A. 4.6.2 */
@@ -1465,24 +1465,24 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
 
 
-    private String generateIdentifierAsIndependentSequentialNumber(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
+    private String generateIdentifierFromStoredProcedureIndependent(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
         String identifier; 
         do {
-            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierAsSequentialNumber");
+            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierFromStoredProcedure");
             query.execute();
-            Integer identifierNumeric = (Integer) query.getOutputParameterValue(1); 
+            String identifierFromStoredProcedure = (String) query.getOutputParameterValue(1);
             // some diagnostics here maybe - is it possible to determine that it's failing 
             // because the stored procedure hasn't been created in the database?
-            if (identifierNumeric == null) {
+            if (identifierFromStoredProcedure == null) {
                 return null; 
             }
-            identifier = prepend + identifierNumeric.toString();
+            identifier = prepend + identifierFromStoredProcedure;
         } while (!isGlobalIdUnique(identifier, datafile, idServiceBean));
         
         return identifier;
     }
     
-    private String generateIdentifierAsDependentSequentialNumber(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
+    private String generateIdentifierFromStoredProcedureDependent(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
         String identifier;
         Long retVal;
 
