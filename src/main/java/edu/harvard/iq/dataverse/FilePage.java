@@ -1020,7 +1020,7 @@ public class FilePage implements java.io.Serializable {
                 logger.fine("After: " + emb.getDataFiles().size());
             }
             file.setEmbargo(selectionEmbargo);
-            if (!emb.getDataFiles().isEmpty()) {
+            if (emb != null && !emb.getDataFiles().isEmpty()) {
                 emb = null;
             }
         }

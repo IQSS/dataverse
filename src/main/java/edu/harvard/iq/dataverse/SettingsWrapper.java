@@ -315,6 +315,11 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         return null;
     }
+    
+    public LocalDate getMinEmbargoDate() {
+            return LocalDate.now().plusDays(1);
+    }
+    
     public boolean isEmbargoAllowed() {
         //Need a valid :MaxEmbargoDurationInMonths setting to allow embargoes
         return getMaxEmbargoDate()!=null;

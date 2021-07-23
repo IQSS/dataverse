@@ -872,9 +872,10 @@
                         <ui:include src="file-edit-popup-fragment.xhtml">
                               <ui:param name="datasetVersion" value="#{DatasetPage.workingVersion}"/>   
                               <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
-                              <ui:param name="bean" value="#{DatasetPage}"/>                        
+                              <ui:param name="bean" value="#{DatasetPage}"/>
                               <ui:param name="restrictFileAction" value="restrictFiles"/>
-                              <ui:param name="deleteFileAction" value="deleteFiles"/> 
+                              <ui:param name="deleteFileAction" value="deleteFiles"/>
+                              <ui:param name="saveEmbargoAction" value="saveEmbargo"/> 
                               <ui:param name="updateElements" value=":datasetForm:tabView:filesTable, :datasetForm"/>
                         </ui:include>
                     </ui:fragment>

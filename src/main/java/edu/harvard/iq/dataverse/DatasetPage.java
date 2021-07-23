@@ -5555,9 +5555,16 @@ public class DatasetPage implements java.io.Serializable {
             selectionEmbargo=null;
         }
         List<Embargo> orphanedEmbargoes = new ArrayList<Embargo>();
+        List<FileMetadata> embargoFMs = null;
         if (selectedFiles != null && selectedFiles.size() > 0) {
+            embargoFMs = selectedFiles;
+        } else if (fileMetadataForAction != null) {
+            embargoFMs = new ArrayList<FileMetadata>();
+            embargoFMs.add(fileMetadataForAction);
+        }
+        if(embargoFMs!=null && !embargoFMs.isEmpty()) {
             for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
-                for (FileMetadata fm : selectedFiles) {
+                for (FileMetadata fm : embargoFMs) {
                     if (fm.getDataFile().equals(fmd.getDataFile()) && (isSuperUser()||!fmd.getDataFile().isReleased())) {
                         Embargo emb = fmd.getDataFile().getEmbargo();
                         if (emb != null) {

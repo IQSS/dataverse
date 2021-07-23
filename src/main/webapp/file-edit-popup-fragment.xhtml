@@ -66,7 +66,7 @@
     </p:dialog>  
 
     <!-- Embargo Dialog-->
-    <p:dialog id="fileEmbargoPopup" styleClass="smallPopUp" header="#{bundle['file.editEmbargo']}" widgetVar="fileEmbargoPopup" modal="true">
+    <p:dialog id="fileEmbargoPopup" styleClass="smallPopUp" resizable="false" header="#{bundle['file.editEmbargo']}" widgetVar="fileEmbargoPopup" modal="true">
         <p:focus for="fileEmbargoMenuDS"/>
         <p class="help-block" jsf:rendered="#{bean.validEmbargoSelection}">#{bundle['file.editEmbargoDialog.tip']}</p>
         <p class="help-block" jsf:rendered="#{bean.validEmbargoSelection and !bean.embargoForWholeSelection}">#{bundle['file.editEmbargoDialog.partial.tip']}</p>
@@ -74,7 +74,7 @@
         <div class="form-horizontal" jsf:rendered="#{bean.validEmbargoSelection}">
             <div class="p-field p-col-12 p-md-4">
                 <p:outputLabel for="fileEmbargoMenuDS" value="#{bundle['file.editEmbargoDialog.newDate']}"/>
-                <p:datePicker id="fileEmbargoMenuDS" class="embargodatepicker" value="#{bean.selectionEmbargo.dateAvailable}" mindate="#{LocalDate.now()}"
+                <p:datePicker id="fileEmbargoMenuDS" class="embargodatepicker" value="#{bean.selectionEmbargo.dateAvailable}" locale="#{dataverseSession.localeCode}" mindate="#{settingsWrapper.minEmbargoDate}"
                     maxdate="#{settingsWrapper.maxEmbargoDate}"/>
             </div>
             <div class="p-field p-col-12 p-md-4">
@@ -88,7 +88,7 @@
             </div>
         </div>
         <div class="button-block">
-            <p:commandButton rendered="#{bean.validEmbargoSelection}" styleClass="btn btn-default" id="fileEmbargoPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('fileEmbargoPopup').hide()" update="#{updateElements}" action="#{bean.saveEmbargo()}"/>
+            <p:commandButton rendered="#{bean.validEmbargoSelection}" styleClass="btn btn-default" id="fileEmbargoPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('fileEmbargoPopup').hide()" update="#{updateElements}" action="#{bean[saveEmbargoAction]}"/>
             <p:commandButton styleClass="btn btn-link" id="fileEmbargoPopupCancelButton" value="#{bundle.cancel}" onclick="PF('fileEmbargoPopup').hide();
                     PF('blockDatasetForm').hide();" actionListener="#{bean.clearFileMetadataSelectedForEmbargoPopup()}"/>
         </div>

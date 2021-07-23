@@ -38,6 +38,7 @@ public class Embargo {
     private List<DataFile> dataFiles;
 
     public Embargo(){
+        dateAvailable = LocalDate.now().plusDays(1);
     }
 
     public Embargo(LocalDate dateAvailable, String reason) {
