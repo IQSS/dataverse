@@ -425,22 +425,12 @@ public class HarvestingSetsPage implements java.io.Serializable {
 
     public int getSetInfoNumOfExported(OAISet oaiSet) {
         List<OAIRecord> records = oaiRecordService.findActiveOaiRecordsBySetName(oaiSet.getSpec());
-
-        if (records == null || records.isEmpty()) {
-            return 0;
-        }
-
         return records.size();
 
     }
 
     public int getSetInfoNumOfDeleted(OAISet oaiSet) {
         List<OAIRecord> records = oaiRecordService.findDeletedOaiRecordsBySetName(oaiSet.getSpec());
-
-        if (records == null || records.isEmpty()) {
-            return 0;
-        }
-
         return records.size();
 
     }

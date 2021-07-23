@@ -5,6 +5,10 @@
  */
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
+import edu.harvard.iq.dataverse.DatasetDao;
+import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
+import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
+import edu.harvard.iq.dataverse.persistence.harvest.OAIRecord;
 import org.dspace.xoai.dataprovider.exceptions.IdDoesNotExistException;
 import org.dspace.xoai.dataprovider.exceptions.OAIException;
 import org.dspace.xoai.dataprovider.filter.ScopedFilter;
@@ -12,17 +16,13 @@ import org.dspace.xoai.dataprovider.handlers.results.ListItemIdentifiersResult;
 import org.dspace.xoai.dataprovider.handlers.results.ListItemsResults;
 import org.dspace.xoai.dataprovider.model.Item;
 import org.dspace.xoai.dataprovider.model.ItemIdentifier;
-import org.dspace.xoai.dataprovider.model.Set;
 import org.dspace.xoai.dataprovider.repository.ItemRepository;
-import edu.harvard.iq.dataverse.DatasetDao;
-import edu.harvard.iq.dataverse.harvest.server.OAIRecordServiceBean;
-import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
-import edu.harvard.iq.dataverse.persistence.harvest.OAIRecord;
-import edu.harvard.iq.dataverse.util.StringUtil;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -49,28 +49,24 @@ public class XitemRepository implements ItemRepository {
     public Item getItem(String identifier) throws IdDoesNotExistException, OAIException {
         logger.fine("getItem; calling findOaiRecordsByGlobalId, identifier " + identifier);
         List<OAIRecord> oaiRecords = recordService.findOaiRecordsByGlobalId(identifier);
-        if (oaiRecords != null && !oaiRecords.isEmpty()) {
-            Xitem xoaiItem = null;
-            for (OAIRecord record : oaiRecords) {
-                if (xoaiItem == null) {
-                    Dataset dataset = datasetDao.findByGlobalId(record.getGlobalId());
-                    if (dataset != null) {
-                        xoaiItem = new Xitem(record).withDataset(dataset);
-                    }
-                } else {
-                    // Adding extra set specs to the XOAI Item, if this record
-                    // is part of multiple sets:
-                    if (!StringUtil.isEmpty(record.getSetName())) {
-                        xoaiItem.getSets().add(new Set(record.getSetName()));
-                    }
-                }
-            }
-            if (xoaiItem != null) {
-                return xoaiItem;
-            }
+        if (oaiRecords.isEmpty()) {
+            throw new IdDoesNotExistException();
         }
+        
+        Dataset dataset = datasetDao.findByGlobalId(identifier);
+        if (dataset == null) {
+            throw new IdDoesNotExistException();
+        }
+        
+        boolean removed = oaiRecords.stream().allMatch(oaiRecord -> oaiRecord.isRemoved());
+        Date lastUpdateTimestamp = oaiRecords.get(0).getLastUpdateTime();
+        
+        Xitem xoaiItem = new Xitem(identifier, lastUpdateTimestamp, removed)
+                .withDataset(dataset);
 
-        throw new IdDoesNotExistException();
+        oaiRecords.forEach(record -> xoaiItem.addSet(record.getSetName()));
+
+        return xoaiItem;
     }
 
     @Override
@@ -121,17 +117,19 @@ public class XitemRepository implements ItemRepository {
         logger.fine("total " + oaiRecords.size() + " returned");
 
         List<ItemIdentifier> xoaiItems = new ArrayList<>();
-        if (oaiRecords != null && !oaiRecords.isEmpty()) {
+        if (!oaiRecords.isEmpty()) {
 
             for (int i = offset; i < offset + length && i < oaiRecords.size(); i++) {
                 OAIRecord record = oaiRecords.get(i);
-                xoaiItems.add(new Xitem(record));
+                Xitem xItem = new Xitem(record.getGlobalId(), record.getLastUpdateTime(), record.isRemoved());
+
+                xoaiItems.add(xItem);
             }
 
             // Run a second pass, looking for records in this set that occur
             // in *other* sets. Then we'll add these multiple sets to the
             // formatted output in the header:
-            addExtraSets(xoaiItems, setSpec, from, until);
+            addExtraSets(xoaiItems);
 
             boolean hasMore = offset + length < oaiRecords.size();
             ListItemIdentifiersResult result = new ListItemIdentifiersResult(hasMore, xoaiItems);
@@ -190,18 +188,19 @@ public class XitemRepository implements ItemRepository {
         logger.fine("total " + oaiRecords.size() + " returned");
 
         List<Item> xoaiItems = new ArrayList<>();
-        if (oaiRecords != null && !oaiRecords.isEmpty()) {
+        if (!oaiRecords.isEmpty()) {
 
             for (int i = offset; i < offset + length && i < oaiRecords.size(); i++) {
                 OAIRecord oaiRecord = oaiRecords.get(i);
                 Dataset dataset = datasetDao.findByGlobalId(oaiRecord.getGlobalId());
                 if (dataset != null) {
-                    Xitem xItem = new Xitem(oaiRecord).withDataset(dataset);
+                    Xitem xItem = new Xitem(oaiRecord.getGlobalId(), oaiRecord.getLastUpdateTime(), oaiRecord.isRemoved())
+                            .withDataset(dataset);
                     xoaiItems.add(xItem);
                 }
             }
 
-            addExtraSets(xoaiItems, setSpec, from, until);
+            addExtraSets(xoaiItems);
 
             boolean hasMore = offset + length < oaiRecords.size();
             ListItemsResults result = new ListItemsResults(hasMore, xoaiItems);
@@ -212,35 +211,14 @@ public class XitemRepository implements ItemRepository {
         return new ListItemsResults(false, xoaiItems);
     }
 
-    private void addExtraSets(Object xoaiItemsList, String setSpec, Date from, Date until) {
+    private void addExtraSets(List<? extends ItemIdentifier> xoaiItemsList) {
 
-        List<Xitem> xoaiItems = (List<Xitem>) xoaiItemsList;
+        Map<String, Xitem> xoaiItemsMap = new HashMap<>();
+        xoaiItemsList.forEach(item -> xoaiItemsMap.put(item.getIdentifier(), (Xitem)item));
 
-        List<OAIRecord> oaiRecords = recordService.findOaiRecordsNotInThisSet(setSpec, from, until);
+        List<OAIRecord> oaiRecords = recordService.findOaiRecordsByGlobalIds(new ArrayList<>(xoaiItemsMap.keySet()));
 
-        if (oaiRecords == null || oaiRecords.isEmpty()) {
-            return;
-        }
-
-        // Make a second pass through the list of xoaiItems already found for this set,
-        // and add any other sets in which this item occurs:
-
-        int j = 0;
-        for (int i = 0; i < xoaiItems.size(); i++) {
-            // fast-forward the second list, until we find a record with this identifier,
-            // or until we are past this record (both lists are sorted alphabetically by
-            // the identifier:
-            Xitem xitem = xoaiItems.get(i);
-
-            while (j < oaiRecords.size() && xitem.getIdentifier().compareTo(oaiRecords.get(j).getGlobalId()) > 0) {
-                j++;
-            }
-
-            while (j < oaiRecords.size() && xitem.getIdentifier().equals(oaiRecords.get(j).getGlobalId())) {
-                xoaiItems.get(i).getSets().add(new Set(oaiRecords.get(j).getSetName()));
-                j++;
-            }
-        }
+        oaiRecords.forEach(oaiRecord -> xoaiItemsMap.get(oaiRecord.getGlobalId()).addSet(oaiRecord.getSetName()));
 
     }
 }

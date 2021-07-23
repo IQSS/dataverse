@@ -81,7 +81,6 @@ public class OAIServlet extends HttpServlet {
     private ExportService exportService;
 
     private static final Logger logger = Logger.getLogger("edu.harvard.iq.dataverse.harvest.server.web.servlet.OAIServlet");
-    protected HashMap attributesMap = new HashMap();
     private static final String OAI_PMH = "OAI-PMH";
     private static final String RESPONSEDATE_FIELD = "responseDate";
     private static final String REQUEST_FIELD = "request";

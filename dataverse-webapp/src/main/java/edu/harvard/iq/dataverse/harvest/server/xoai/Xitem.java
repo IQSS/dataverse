@@ -14,7 +14,10 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 
 /**
@@ -26,26 +29,25 @@ import java.util.List;
  */
 public class Xitem implements Item {
 
-    public Xitem(OAIRecord oaiRecord) {
-        super();
-        this.oaiRecord = oaiRecord;
-        oaisets = new ArrayList<>();
-        if (!StringUtil.isEmpty(oaiRecord.getSetName())) {
-            oaisets.add(new Set(oaiRecord.getSetName()));
-        }
-    }
+    private String identifier;
 
-    private OAIRecord oaiRecord;
+    private Date lastUpdateTimestamp;
 
-    public OAIRecord getOaiRecord() {
-        return oaiRecord;
-    }
+    private boolean deleted;
 
-    public void setOaiRecord(OAIRecord oaiRecord) {
-        this.oaiRecord = oaiRecord;
-    }
+    private java.util.Set<String> oaisets = new HashSet<>();
 
     private Dataset dataset;
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    public Xitem(String identifier, Date lastUpdateTimestamp, boolean deleted) {
+        this.identifier = identifier;
+        this.lastUpdateTimestamp = lastUpdateTimestamp;
+        this.deleted = deleted;
+    }
+
+    // -------------------- GETTERS --------------------
 
     public Dataset getDataset() {
         return dataset;
@@ -68,26 +70,28 @@ public class Xitem implements Item {
 
     @Override
     public String getIdentifier() {
-        return oaiRecord.getGlobalId();
+        return identifier;
     }
 
     @Override
     public Date getDatestamp() {
-        return oaiRecord.getLastUpdateTime();
-    }
-
-    private List<Set> oaisets;
-
-    @Override
-    public List<Set> getSets() {
-
-        return oaisets;
-
+        return lastUpdateTimestamp;
     }
 
     @Override
     public boolean isDeleted() {
-        return oaiRecord.isRemoved();
+        return deleted;
+    }
+
+    @Override
+    public List<Set> getSets() {
+        return oaisets.stream().map(s -> new Set(s)).collect(toList());
+    }
+
+    public void addSet(String setName) {
+        if (!StringUtil.isEmpty(setName)) {
+            oaisets.add(setName);
+        }
     }
 
 }

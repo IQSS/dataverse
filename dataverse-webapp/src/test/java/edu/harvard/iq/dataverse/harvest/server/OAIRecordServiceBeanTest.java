@@ -48,9 +48,6 @@ class OAIRecordServiceBeanTest {
     @Mock
     private DatasetRepository datasetRepository;
     
-    @Mock
-    private EntityManager entityManager;
-    
     @Captor
     private ArgumentCaptor<OAIRecord> oaiRecordCaptor;
 
