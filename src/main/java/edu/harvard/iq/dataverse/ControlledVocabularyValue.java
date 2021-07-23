@@ -115,23 +115,30 @@ public class ControlledVocabularyValue implements Serializable  {
     }
 
     public String getLocaleStrValue() {
-        return getLocaleStrValue(strValue, this.datasetFieldType.getName(),getDatasetFieldType().getMetadataBlock().getName(),null, true);
+        return getLocaleStrValue(null);
     }
     
     public String getLocaleStrValue(String language) {
+        //Sword input uses a special controlled vacab value ("N/A" that does not have a datasetFieldType / is not part of any metadata block, so handle it specially
+        if(strValue.equals(DatasetField.NA_VALUE) && this.datasetFieldType == null) {
+            return strValue;
+        }
+        if(this.datasetFieldType == null) {
+            logger.warning("Null datasetFieldType for value: " + strValue);
+        }
         return getLocaleStrValue(strValue, this.datasetFieldType.getName(),getDatasetFieldType().getMetadataBlock().getName(),language == null ? null : new Locale(language), true);
     }
     
-    public static String getLocaleStrValue(String strValue, String fieldTypeName, String metadataBlockName, Locale locale, boolean sendDefault)
-    {
-        String key = strValue.toLowerCase().replace(" " , "_");
+    public static String getLocaleStrValue(String strValue, String fieldTypeName, String metadataBlockName,
+            Locale locale, boolean sendDefault) {
+        String key = strValue.toLowerCase().replace(" ", "_");
         key = StringUtils.stripAccents(key);
         try {
-            logger.fine("Looking for : " + "controlledvocabulary." + fieldTypeName + "." + key + " in " + metadataBlockName + " : " + locale.getLanguage());
-            String val = BundleUtil.getStringFromPropertyFile("controlledvocabulary." + fieldTypeName + "." + key, metadataBlockName, locale); 
-            logger.fine("Found : " + val);
-            if(!val.isBlank()) {
-            return val;
+            String val = BundleUtil.getStringFromPropertyFile("controlledvocabulary." + fieldTypeName + "." + key,
+                    metadataBlockName, locale);
+            if (!val.isBlank()) {
+                logger.fine("Found : " + val);
+                return val;
             } else {
                 return sendDefault ? strValue : null;
             }
