@@ -3,6 +3,8 @@
 rm ../../src/main/webapp/resources/fontcustom/*
 # Generate new files (see config file for paths).
 fontcustom compile -c fontcustom-app.yml
+# We want a fresh run each time since we have two scripts.
+rm .fontcustom-manifest.json
 # Use absolute src url path to "/resources..." 
 # We've always done it this way.
 # The sed command is extra verbose for precision and clarity.
