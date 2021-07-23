@@ -2292,8 +2292,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response response = UtilIT.getDatasetJsonLDMetadata(datasetId, apiToken);
         response.then().assertThat().statusCode(OK.getStatusCode());
 
-        String expectedString = JsonPath.from(response.getBody().asString()).getString("data");
-
+        String expectedString = getData(response.getBody().asString());
+        
         // Delete the dataset via native API
         Response deleteDatasetResponse = UtilIT.deleteDatasetViaNativeApi(datasetId, apiToken);
         deleteDatasetResponse.prettyPrint();
