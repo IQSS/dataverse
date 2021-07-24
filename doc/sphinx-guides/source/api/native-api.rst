@@ -2116,6 +2116,49 @@ The fully expanded example above (without environment variables) looks like this
 
 Note: The ``id`` returned in the json response is the id of the file metadata version.
 
+
+
+Adding File Metadata
+~~~~~~~~~~~~~~~~~~~~
+
+This API call requires a ``jsonString`` expressing the metadata of multiple files. It adds file metadata to the database table where the file has already been copied to the storage.
+
+The jsonData object includes values for:
+
+* "description" - A description of the file
+* "directoryLabel" - The "File Path" of the file, indicating which folder the file should be uploaded to within the dataset
+* "storageIdentifier" - String
+* "fileName" - String
+* "mimeType" - String
+* "fixity/checksum" either:
+
+  * "md5Hash" - String with MD5 hash value, or
+  * "checksum" - Json Object with "@type" field specifying the algorithm used and "@value" field with the value from that algorithm, both Strings
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
+
+A curl example using an ``PERSISTENT_ID``
+
+* ``SERVER_URL`` - e.g. https://demo.dataverse.org
+* ``API_TOKEN`` - API endpoints require an API token that can be passed as the X-Dataverse-key HTTP header.  For more details, see the :doc:`auth` section.
+* ``PERSISTENT_IDENTIFIER`` - Example: ``doi:10.5072/FK2/7U7YBV``
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/7U7YBV
+  export JSON_DATA="[{'description':'My description.','directoryLabel':'data/subdir1','categories':['Data'], 'restrict':'false', 'storageIdentifier':'s3://demo-dataverse-bucket:176e28068b0-1c3f80357c42', 'fileName':'file1.txt', 'mimeType':'text/plain', 'checksum': {'@type': 'SHA-1', '@value': '123456'}}, \
+                      {'description':'My description.','directoryLabel':'data/subdir1','categories':['Data'], 'restrict':'false', 'storageIdentifier':'s3://demo-dataverse-bucket:176e28068b0-1c3f80357d53', 'fileName':'file2.txt', 'mimeType':'text/plain', 'checksum': {'@type': 'SHA-1', '@value': '123789'}}]"
+
+  curl -X POST -H "X-Dataverse-key: $API_TOKEN" "$SERVER_URL/api/datasets/:persistentId/addFiles?persistentId=$PERSISTENT_IDENTIFIER" -F "jsonData=$JSON_DATA"
+
+The fully expanded example above (without environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST https://demo.dataverse.org/api/datasets/:persistentId/addFiles?persistentId=doi:10.5072/FK2/7U7YBV -F jsonData='[{"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false", "storageIdentifier":"s3://demo-dataverse-bucket:176e28068b0-1c3f80357c42", "fileName":"file1.txt", "mimeType":"text/plain", "checksum": {"@type": "SHA-1", "@value": "123456"}}, {"description":"My description.","directoryLabel":"data/subdir1","categories":["Data"], "restrict":"false", "storageIdentifier":"s3://demo-dataverse-bucket:176e28068b0-1c3f80357d53", "fileName":"file2.txt", "mimeType":"text/plain", "checksum": {"@type": "SHA-1", "@value": "123789"}}]'
+
 Updating File Metadata
 ~~~~~~~~~~~~~~~~~~~~~~
 

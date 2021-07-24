@@ -2705,22 +2705,21 @@ public class UtilIT {
         return deleteLicenseResponse;
     }
 
-
     static Response updateDatasetJsonLDMetadata(Integer datasetId, String apiToken, String jsonLDBody, boolean replace) {
         Response response = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .contentType("application/ld+json")
-                .body(jsonLDBody.getBytes(StandardCharsets.UTF_8))
-                .put("/api/datasets/" + datasetId + "/metadata?replace=" + replace);
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .contentType("application/ld+json")
+            .body(jsonLDBody.getBytes(StandardCharsets.UTF_8))
+            .put("/api/datasets/" + datasetId + "/metadata?replace=" + replace);
         return response;
     }
 
     static Response deleteDatasetJsonLDMetadata(Integer datasetId, String apiToken, String jsonLDBody) {
         Response response = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .contentType("application/ld+json")
-                .body(jsonLDBody.getBytes(StandardCharsets.UTF_8))
-                .put("/api/datasets/" + datasetId + "/metadata/delete");
+            .header(API_TOKEN_HTTP_HEADER, apiToken)
+            .contentType("application/ld+json")
+            .body(jsonLDBody.getBytes(StandardCharsets.UTF_8))
+            .put("/api/datasets/" + datasetId + "/metadata/delete");
         return response;
     }
 }

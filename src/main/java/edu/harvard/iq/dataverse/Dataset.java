@@ -60,29 +60,22 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 })
 
 /*
-    Below is the stored procedure for getting a numeric value from a database 
-    sequence. Used when the Dataverse is (optionally) configured to use 
-    incremental numeric values for dataset ids, instead of the default 
+    Below is the database stored procedure for getting a string dataset id.
+    Used when the Dataverse is (optionally) configured to use
+    procedurally generated values for dataset ids, instead of the default
     random strings. 
 
-    Unfortunately, there's no standard EJB way of handling sequences. So in the 
-    past we would simply use a NativeQuery to call a proprietary Postgres
-    sequence query. A better way of handling this however is to define any 
-    proprietary SQL functionality outside of the application, in the database, 
-    and call it using the standard JPA @StoredProcedureQuery. 
-
-    The identifier sequence and the stored procedure for accessing it are currently 
-    implemented with PostgresQL "CREATE SEQUENCE ..." and "CREATE FUNCTION ..."; 
-    (we explain how to create these in the installation documentation and supply 
-    a script). If necessary, it can be implemented using other SQL flavors -
+    The use of a stored procedure to create an identifier is explained in the
+    installation documentation (where an example script is supplied).
+    The stored procedure can be implemented using other SQL flavors -
     without having to modify the application code. 
-            -- L.A. 4.6.2
+            -- L.A. 4.6.2 (modified by C.S. for version 5.4.1+)
 */ 
 @NamedStoredProcedureQuery(
-        name = "Dataset.generateIdentifierAsSequentialNumber",
-        procedureName = "generateIdentifierAsSequentialNumber",
+        name = "Dataset.generateIdentifierFromStoredProcedure",
+        procedureName = "generateIdentifierFromStoredProcedure",
         parameters = {
-            @StoredProcedureParameter(mode = ParameterMode.OUT, type = Integer.class)
+            @StoredProcedureParameter(mode = ParameterMode.OUT, type = String.class)
         }
 )
 @Entity

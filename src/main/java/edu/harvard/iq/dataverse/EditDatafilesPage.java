@@ -601,7 +601,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
 
         if (mode == FileEditMode.UPLOAD) {
-            if (settingsWrapper.getUploadMethodsCount() == 1){
+            if (settingsWrapper.getUploadMethodsCount() == 1){               
                 JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.uploadFiles.label"), BundleUtil.getStringFromBundle("dataset.message.uploadFilesSingle.message", Arrays.asList(systemConfig.getGuidesBaseUrl(), systemConfig.getGuidesVersion())));
             } else if (settingsWrapper.getUploadMethodsCount() > 1) {
                 JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.message.uploadFiles.label"), BundleUtil.getStringFromBundle("dataset.message.uploadFilesMultiple.message", Arrays.asList(systemConfig.getGuidesBaseUrl(), systemConfig.getGuidesVersion())));
@@ -1530,10 +1530,22 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
             } catch (EJBException ex) {
                 logger.warning("Problem getting rsync script (EJBException): " + EjbUtil.ejbExceptionToString(ex));
+                FacesContext.getCurrentInstance().addMessage(uploadComponentId,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Problem getting rsync script (EJBException): " + EjbUtil.ejbExceptionToString(ex),
+                                "Problem getting rsync script (EJBException):"));
             } catch (RuntimeException ex) {
                 logger.warning("Problem getting rsync script (RuntimeException): " + ex.getLocalizedMessage());
+                FacesContext.getCurrentInstance().addMessage(uploadComponentId,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Problem getting rsync script (RuntimeException): " + ex.getMessage(),
+                                "Problem getting rsync script (RuntimeException):"));
             } catch (CommandException cex) {
                 logger.warning("Problem getting rsync script (Command Exception): " + cex.getLocalizedMessage());
+                FacesContext.getCurrentInstance().addMessage(uploadComponentId,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Problem getting rsync script (Command Exception): " + cex.getMessage(),
+                                "Problem getting rsync script (Command Exception):"));
             }
         }
     }
@@ -2040,7 +2052,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     			// -----------------------------------------------------------
     			if (this.isFileReplaceOperation()){
     				this.handleReplaceFileUpload(storageLocation, fileName, contentType, checksumValue, checksumType);
-    				this.setFileMetadataSelectedForTagsPopup(fileReplacePageHelper.getNewFileMetadatasBeforeSave().get(0));
+                                if (fileReplacePageHelper.getNewFileMetadatasBeforeSave() != null){
+                                    this.setFileMetadataSelectedForTagsPopup(fileReplacePageHelper.getNewFileMetadatasBeforeSave().get(0));
+                                }                               
     				return;
     			}
     			// -----------------------------------------------------------
@@ -2970,8 +2984,15 @@ public class EditDatafilesPage implements java.io.Serializable {
     	// ToDo - rsync was written before multiple store support and currently is hardcoded to use the "s3" store. 
     	// When those restrictions are lifted/rsync can be configured per store, the test in the 
         // Dataset Util method should be updated
+          if(settingsWrapper.isRsyncUpload() && !DatasetUtil.isAppropriateStorageDriver(dataset) ){
+              //dataset.file.upload.setUp.rsync.failed.detail
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("dataset.file.upload.setUp.rsync.failed"), BundleUtil.getStringFromBundle("dataset.file.upload.setUp.rsync.failed.detail"));
+                FacesContext.getCurrentInstance().addMessage(null, message);
+          }
 
-    	return settingsWrapper.isRsyncUpload() && DatasetUtil.isAppropriateStorageDriver(dataset);
+
+          
+          return settingsWrapper.isRsyncUpload() && DatasetUtil.isAppropriateStorageDriver(dataset);
     }
     
     
