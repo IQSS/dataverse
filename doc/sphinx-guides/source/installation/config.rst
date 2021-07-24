@@ -1741,7 +1741,7 @@ For performance reasons, your Dataverse installation will only allow creation of
 
 ``curl -X PUT -d 1000000000 http://localhost:8080/api/admin/settings/:ZipDownloadLimit``
 
-In the UI, users trying to download a zip file larger than the Dataverse installation's :ZipDownloadLimit will receive messaging that the zip file is too large, and the user will be presented with alternate access options. 
+In the UI, users trying to download a zip file larger than the Dataverse installation's :ZipDownloadLimit will receive messaging that the zip file is too large, and the user will be presented with alternate access options.
 
 :TabularIngestSizeLimit
 +++++++++++++++++++++++
@@ -2304,7 +2304,7 @@ In the DDI metadata exports, the default behavior is to always add the repositor
 :AnonymizedFieldTypeNames
 +++++++++++++++++++++++++
 
-A comma-separated list of field type names that should be 'withheld' when dataset access occurs via a Private Url with Anonymized Access (e.g. to support anonymized review).
+A comma-separated list of field type names that should be 'withheld' when dataset access occurs via a Private Url with Anonymized Access (e.g. to support anonymized review). 
 A suggested minimum includes author, datasetContact, and contributor, but additional fields such as depositor, grantNumber, and publication might also need to be included.
 
 ``curl -X PUT -d 'author, datasetContact, contributor, depositor, grantNumber, publication' http://localhost:8080/api/admin/settings/:AnonymizedFieldTypeNames``
