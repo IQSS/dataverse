@@ -80,7 +80,7 @@ public class LicenseServiceBean {
         }
         catch (PersistenceException p) {
             if (p.getMessage().contains("duplicate key")) {
-                throw new ConflictException("A license with the same URI or name is already present.");
+                throw new ConflictException("A license with the same URI or name is already present.", p);
             }
             else {
                 throw p;
@@ -116,7 +116,7 @@ public class LicenseServiceBean {
             return em.createNamedQuery("License.deleteById").setParameter("id", id).executeUpdate();
         } catch (PersistenceException p) {
             if (p.getMessage().contains("violates foreign key constraint")) {
-                throw new ConflictException("License with id " + id + " is referenced and cannot be deleted.");
+                throw new ConflictException("License with id " + id + " is referenced and cannot be deleted.", p);
             } else {
                 throw p;
             }
