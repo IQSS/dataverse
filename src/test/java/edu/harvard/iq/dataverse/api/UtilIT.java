@@ -11,12 +11,13 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
 import com.jayway.restassured.path.xml.XmlPath;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import com.jayway.restassured.specification.RequestSpecification;
@@ -38,7 +39,6 @@ import static com.jayway.restassured.path.xml.XmlPath.from;
 import static com.jayway.restassured.RestAssured.given;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.StringReader;
-import javax.json.JsonArray;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -53,7 +53,7 @@ public class UtilIT {
     private static final String API_TOKEN_KEY = "apiToken";
     private static final String BUILTIN_USER_KEY = "burrito";
     private static final String EMPTY_STRING = "";
-    public static final int MAXIMUM_INGEST_LOCK_DURATION = 3;
+    public static final int MAXIMUM_INGEST_LOCK_DURATION = 15;
     public static final int MAXIMUM_PUBLISH_LOCK_DURATION = 15;
     
     private static SwordConfigurationImpl swordConfiguration = new SwordConfigurationImpl();
@@ -397,7 +397,7 @@ public class UtilIT {
         return createDatasetResponse;
     }
 
-    private static String getDatasetJson(String pathToJsonFile) {
+    static String getDatasetJson(String pathToJsonFile) {
         File datasetVersionJson = new File(pathToJsonFile);
         try {
             String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
@@ -642,7 +642,25 @@ public class UtilIT {
         }
         return requestSpecification.post("/api/datasets/" + datasetId + "/add");
     }
-    
+
+    static Response uploadAuxFile(Long fileId, String pathToFile, String formatTag, String formatVersion, String mimeType, boolean isPublic, String type, String apiToken) {
+        RequestSpecification requestSpecification = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .multiPart("file", new File(pathToFile), mimeType)
+                .multiPart("isPublic", isPublic);
+        if (type != null) {
+            requestSpecification.multiPart("type", type);
+        }
+        return requestSpecification.post("/api/access/datafile/" + fileId + "/auxiliary/" + formatTag + "/" + formatVersion);
+    }
+
+    static Response downloadAuxFile(Long fileId, String formatTag, String formatVersion, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/access/datafile/" + fileId + "/auxiliary/" + formatTag + "/" + formatVersion);
+        return response;
+    }
+
     static Response getCrawlableFileAccess(String datasetId, String folderName, String apiToken) {
         RequestSpecification requestSpecification = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken);
@@ -1079,7 +1097,7 @@ public class UtilIT {
                 .post(swordConfiguration.getBaseUrlPathCurrent() + "/edit/study/" + persistentId);
         
         // Wait for the dataset to get unlocked, if/as needed:
-        sleepForLock(persistentId, "finalizePublication", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);            
+        sleepForLock(persistentId, "finalizePublication", apiToken, UtilIT.MAXIMUM_PUBLISH_LOCK_DURATION);
         return publishResponse;
     }
 
@@ -1099,7 +1117,7 @@ public class UtilIT {
         Response publishResponse = requestSpecification.post("/api/datasets/" + idInPath + "/actions/:publish?type=" + majorOrMinor + optionalQueryParam);
         
         // Wait for the dataset to get unlocked, if/as needed:
-        sleepForLock(idOrPersistentId, "finalizePublication", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);            
+        sleepForLock(idOrPersistentId, "finalizePublication", apiToken, UtilIT.MAXIMUM_PUBLISH_LOCK_DURATION);
         
         return publishResponse;
     }
@@ -1115,7 +1133,7 @@ public class UtilIT {
                 .get("/api/datasets/:persistentId/actions/:publish?type=" + majorOrMinor + "&persistentId=" + persistentId);
         
         // Wait for the dataset to get unlocked, if/as needed:
-        sleepForLock(persistentId, "finalizePublication", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION);            
+        sleepForLock(persistentId, "finalizePublication", apiToken, UtilIT.MAXIMUM_PUBLISH_LOCK_DURATION);
         
         return publishResponse;
     }
@@ -2341,7 +2359,12 @@ public class UtilIT {
         String apiPath = String.format("/oai?verb=ListIdentifiers&set=%s&metadataPrefix=%s", setName, metadataFormat);
         return given().get(apiPath);
     }
-    
+
+    static Response getOaiListRecords(String setName, String metadataFormat) {
+        String apiPath = String.format("/oai?verb=ListRecords&set=%s&metadataPrefix=%s", setName, metadataFormat);
+        return given().get(apiPath);
+    }
+
     static Response changeAuthenticatedUserIdentifier(String oldIdentifier, String newIdentifier, String apiToken) {
         Response response;
         String path = String.format("/api/users/%s/changeIdentifier/%s", oldIdentifier, newIdentifier );
@@ -2610,5 +2633,29 @@ public class UtilIT {
         return "0";
     }
     
+    static Response getDatasetJsonLDMetadata(Integer datasetId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .accept("application/ld+json")
+                .get("/api/datasets/" + datasetId + "/metadata");
+        return response;
+    }
     
+    static Response updateDatasetJsonLDMetadata(Integer datasetId, String apiToken, String jsonLDBody, boolean replace) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/ld+json")
+                .body(jsonLDBody.getBytes(StandardCharsets.UTF_8))
+                .put("/api/datasets/" + datasetId + "/metadata?replace=" + replace);
+        return response;
+    }
+    
+    static Response deleteDatasetJsonLDMetadata(Integer datasetId, String apiToken, String jsonLDBody) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .contentType("application/ld+json")
+                .body(jsonLDBody.getBytes(StandardCharsets.UTF_8))
+                .put("/api/datasets/" + datasetId + "/metadata/delete");
+        return response;
+    }
 }

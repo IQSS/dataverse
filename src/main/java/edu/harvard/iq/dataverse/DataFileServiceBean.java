@@ -38,7 +38,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.StoredProcedureQuery;
 import javax.persistence.TypedQuery;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 
 /**
  *
@@ -564,10 +564,8 @@ public class DataFileServiceBean implements java.io.Serializable {
      * It should only be used to retrieve filemetadata for the DatasetPage!
      * It is not guaranteed to adequately perform anywhere else. 
     */
-    public void findFileMetadataOptimizedExperimental(Dataset owner) {
-        findFileMetadataOptimizedExperimental(owner, null);
-    }
-    public void findFileMetadataOptimizedExperimental(Dataset owner, DatasetVersion requestedVersion) {
+
+    public void findFileMetadataOptimizedExperimental(Dataset owner, DatasetVersion version, AuthenticatedUser au) {
         List<DataFile> dataFiles = new ArrayList<>();
         List<DataTable> dataTables = new ArrayList<>();
         //List<FileMetadata> retList = new ArrayList<>(); 
@@ -580,6 +578,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         Map<Long, Integer> datatableMap = new HashMap<>();
         Map<Long, Integer> categoryMap = new HashMap<>();
         Map<Long, Set<Integer>> fileTagMap = new HashMap<>();
+        List<Long> accessRequestFileIds = new ArrayList();
         
         List<String> fileTagLabels = DataFileTag.listTags();
         
@@ -612,8 +611,7 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         
         logger.fine("Retrieved "+dataTables.size()+" DataTable objects.");
-        
-        i = 0; 
+         
         List<Object[]> dataTagsResults = em.createNativeQuery("SELECT t0.DATAFILE_ID, t0.TYPE FROM DataFileTag t0, dvObject t1 WHERE (t1.ID = t0.DATAFILE_ID) AND (t1.OWNER_ID="+ owner.getId() + ")").getResultList();
         for (Object[] result : dataTagsResults) {
             Long datafile_id = (Long) result[0];
@@ -622,13 +620,21 @@ public class DataFileServiceBean implements java.io.Serializable {
                 fileTagMap.put(datafile_id, new HashSet<>());
             }
             fileTagMap.get(datafile_id).add(tagtype_id);
-            i++; 
         }
+        logger.fine("Retrieved "+dataTagsResults.size()+" data tags.");
         dataTagsResults = null;
-        
-        logger.fine("Retrieved "+i+" data tags.");
-        
-        i = 0; 
+
+        //Only need to check for access requests if there is an authenticated user       
+        if (au != null) {
+            List<Object> accessRequests = em.createNativeQuery("SELECT t0.ID FROM DVOBJECT t0, FILEACCESSREQUESTS t1 WHERE t1.datafile_id = t0.id and t0.OWNER_ID = " + owner.getId() + "  and t1.AUTHENTICATED_USER_ID = " + au.getId() + " ORDER BY t0.ID").getResultList();
+            for (Object result : accessRequests) {               
+                accessRequestFileIds.add(Long.valueOf((Integer)result));
+            }
+            logger.fine("Retrieved " + accessRequests.size() + " access requests.");           
+            accessRequests = null;
+        }
+
+        i = 0;
         
         List<Object[]> fileResults = em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t1.CONTENTTYPE, t0.STORAGEIDENTIFIER, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t1.CHECKSUMTYPE, t1.PREVIOUSDATAFILEID, t1.ROOTDATAFILEID, t0.PROTOCOL, t0.AUTHORITY, t0.IDENTIFIER FROM DVOBJECT t0, DATAFILE t1 WHERE ((t0.OWNER_ID = " + owner.getId() + ") AND ((t1.ID = t0.ID) AND (t0.DTYPE = 'DataFile'))) ORDER BY t0.ID").getResultList(); 
     
@@ -773,8 +779,12 @@ public class DataFileServiceBean implements java.io.Serializable {
                     tag.setDataFile(dataFile);
                     dataFile.addTag(tag);
                 }
-            }            
-            dataFile.setFileAccessRequesters(retrieveFileAccessRequesters(dataFile));              
+            } 
+            
+            if (dataFile.isRestricted() && accessRequestFileIds.contains(dataFile.getId())) {
+                dataFile.setFileAccessRequesters(Collections.singletonList(au));
+            } 
+
             dataFiles.add(dataFile);
             filesMap.put(dataFile.getId(), i++);
         }
@@ -789,32 +799,10 @@ public class DataFileServiceBean implements java.io.Serializable {
         }
         
         logger.fine("Retrieved "+i+" file categories attached to the dataset.");
-        
-        if (requestedVersion != null) {
-            requestedVersion.setFileMetadatas(retrieveFileMetadataForVersion(owner, requestedVersion, dataFiles, filesMap, categoryMap));
-        } else {
-            for (DatasetVersion version : owner.getVersions()) {
-                version.setFileMetadatas(retrieveFileMetadataForVersion(owner, version, dataFiles, filesMap, categoryMap));
-                logger.fine("Retrieved "+version.getFileMetadatas().size()+" filemetadatas for the version "+version.getId());
-            }
-        }
+
+        version.setFileMetadatas(retrieveFileMetadataForVersion(owner, version, dataFiles, filesMap, categoryMap));
+        logger.fine("Retrieved " + version.getFileMetadatas().size() + " filemetadatas for the version " + version.getId());
         owner.setFiles(dataFiles);
-    }
-    
-     private List<AuthenticatedUser> retrieveFileAccessRequesters(DataFile fileIn){
-        List<AuthenticatedUser> retList = new ArrayList<>();
-        
-        List<Object> requesters  = em.createNativeQuery("select authenticated_user_id from fileaccessrequests where datafile_id = "+fileIn.getId()).getResultList();
-        
-        for (Object userIdObj : requesters){
-            Long userId = (Long) userIdObj;
-            AuthenticatedUser user = userService.find(userId);
-            if (user != null){
-                retList.add(user);
-            }
-        }
-        
-        return retList;
     }
     
     private List<FileMetadata> retrieveFileMetadataForVersion(Dataset dataset, DatasetVersion version, List<DataFile> dataFiles, Map<Long, Integer> filesMap, Map<Long, Integer> categoryMap) {
@@ -1440,11 +1428,11 @@ public class DataFileServiceBean implements java.io.Serializable {
         switch (doiIdentifierType) {
             case "randomString":               
                 return generateIdentifierAsRandomString(datafile, idServiceBean, prepend);
-            case "sequentialNumber":
+            case "storedProcGenerated":
                 if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.INDEPENDENT.toString())){ 
-                    return generateIdentifierAsIndependentSequentialNumber(datafile, idServiceBean, prepend);
+                    return generateIdentifierFromStoredProcedureIndependent(datafile, idServiceBean, prepend);
                 } else {
-                    return generateIdentifierAsDependentSequentialNumber(datafile, idServiceBean, prepend);
+                    return generateIdentifierFromStoredProcedureDependent(datafile, idServiceBean, prepend);
                 }
             default:
                 /* Should we throw an exception instead?? -- L.A. 4.6.2 */
@@ -1462,24 +1450,24 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
 
 
-    private String generateIdentifierAsIndependentSequentialNumber(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
+    private String generateIdentifierFromStoredProcedureIndependent(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
         String identifier; 
         do {
-            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierAsSequentialNumber");
+            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierFromStoredProcedure");
             query.execute();
-            Integer identifierNumeric = (Integer) query.getOutputParameterValue(1); 
+            String identifierFromStoredProcedure = (String) query.getOutputParameterValue(1);
             // some diagnostics here maybe - is it possible to determine that it's failing 
             // because the stored procedure hasn't been created in the database?
-            if (identifierNumeric == null) {
+            if (identifierFromStoredProcedure == null) {
                 return null; 
             }
-            identifier = prepend + identifierNumeric.toString();
+            identifier = prepend + identifierFromStoredProcedure;
         } while (!isGlobalIdUnique(identifier, datafile, idServiceBean));
         
         return identifier;
     }
     
-    private String generateIdentifierAsDependentSequentialNumber(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
+    private String generateIdentifierFromStoredProcedureDependent(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
         String identifier;
         Long retVal;
 

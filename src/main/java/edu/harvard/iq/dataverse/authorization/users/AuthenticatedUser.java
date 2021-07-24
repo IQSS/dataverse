@@ -115,7 +115,7 @@ public class AuthenticatedUser implements User, Serializable {
     
     private boolean superuser;
 
-    @Column(nullable=true)
+    @Column(nullable=false)
     private boolean deactivated;
 
     @Column(nullable=true)

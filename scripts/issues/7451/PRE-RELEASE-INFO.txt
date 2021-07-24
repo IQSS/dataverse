@@ -1,0 +1,39 @@
+In the next release another constraint is being added to existing
+databases, to prevent any possibility of creating datafile objects
+referencing the same file. This was originally planned for v4.20, but
+in that release the constraint was only added to newly created
+databases, and was not forced on the databases that had already
+existed. If your current database was originally created by version
+4.20 or newer, you don't need to do anything.
+
+If you do have an older database, it MUST BE RE-CHECKED for any
+existing duplicates before the next release (5.6, presumably) can be
+deployed. Hopefully there are no such inconsistencies in your
+database, but if there are any, they will need to be resolved, or the
+next version of the application WILL FAIL TO DEPLOY, with an error
+message from FlyWay. Please run the following script:
+
+https://github.com/IQSS/dataverse/raw/develop/scripts/issues/7451/check_datafiles_7451.sh
+
+The script relies on the PostgreSQL utility psql to access the
+database. You will need to edit the credentials at the top of the script
+to match your database configuration.
+
+The script will check your database for any duplicated storage
+identifiers that would violate the new constraint. 
+
+For harvested files,  it will directly resolve any conflicts.
+
+For local files, rather than attempt to make any changes right away 
+(this being an issue of data integrity with a potential to affect your 
+users) it will instruct you to send the produced diagnostic 
+information to support@dataverse.org so that we can assist you 
+in resolving the issues in your database. 
+
+If no inconsistencies are found, the script will report that the database 
+is ready to be upgraded to the next release.
+
+(Please note that there's a very good chance that your database does
+not have any conflicts of this nature. But we want to do this to be
+absolutely sure. We apologize for any inconvenience.)
+

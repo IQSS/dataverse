@@ -14,7 +14,7 @@ After following all the steps below, you can proceed to the :doc:`installation-m
 Linux
 -----
 
-We assume you plan to run your Dataverse installation on Linux and we recommend RHEL/CentOS, which is the Linux distribution tested by the Dataverse Project team. Please be aware that while el8 (RHEL/CentOS 8) is the recommended platform, the steps below were orginally written for el6 and may need to be updated (please feel free to make a pull request!).
+We assume you plan to run your Dataverse installation on Linux and we recommend RHEL or a derivative such as RockyLinux or AlmaLinux, which is the distribution family tested by the Dataverse Project team. Please be aware that while EL8 (RHEL/derivatives) is the recommended platform, the steps below were orginally written for EL6 and may need to be updated (please feel free to make a pull request!). A number of community members have installed the Dataverse Software in Debian/Ubuntu environments.
 
 Java
 ----
@@ -28,13 +28,13 @@ The Dataverse Software should run fine with only the Java Runtime Environment (J
 
 The Oracle JDK can be downloaded from http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
-On a RHEL/CentOS, install OpenJDK (devel version) using yum::
+On a RHEL/derivative, install OpenJDK (devel version) using yum::
 
 	# sudo yum install java-11-openjdk
 
 If you have multiple versions of Java installed, Java 11 should be the default when ``java`` is invoked from the command line. You can test this by running ``java -version``.
 
-On RHEL/CentOS you can make Java 11 the default with the ``alternatives`` command, having it prompt you to select the version of Java from a list::
+On RHEL/derivative you can make Java 11 the default with the ``alternatives`` command, having it prompt you to select the version of Java from a list::
 
         # alternatives --config java
 
@@ -44,7 +44,7 @@ On RHEL/CentOS you can make Java 11 the default with the ``alternatives`` comman
 Payara
 ------
 
-Payara 5.2020.6 is recommended. Newer versions might work fine, regular updates are recommended.
+Payara 5.2021.4 is recommended. Newer versions might work fine, regular updates are recommended.
 
 Installing Payara
 =================
@@ -55,8 +55,8 @@ Installing Payara
 
 - Download and install Payara (installed in ``/usr/local/payara5`` in the example commands below)::
 
-	# wget https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2020.6/payara-5.2020.6.zip
-	# unzip payara-5.2020.6.zip
+	# wget https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2021.4/payara-5.2021.4.zip
+	# unzip payara-5.2021.4.zip
 	# mv payara5 /usr/local
 
 If you intend to install and run Payara under a service account (and we hope you do), chown -R the Payara hierarchy to root to protect it but give the service account access to the below directories:
@@ -80,15 +80,15 @@ Launching Payara on System Boot
 
 The Dataverse Software installation script will start Payara if necessary, but you may find the following scripts helpful to launch Payara start automatically on boot. They were originally written for Glassfish but have been adjusted for Payara.
 
-- This :download:`Systemd file<../_static/installation/files/etc/systemd/payara.service>` may be serve as a reference for systems using Systemd (such as RHEL/CentOS 7 or Ubuntu 16+)
-- This :download:`init script<../_static/installation/files/etc/init.d/payara.init.service>` may be useful for RHEL/CentOS 6 or Ubuntu >= 14 if you're using a Payara service account, or
+- This :download:`Systemd file<../_static/installation/files/etc/systemd/payara.service>` may be serve as a reference for systems using Systemd (such as RHEL/derivative or Debian 10, Ubuntu 16+)
+- This :download:`init script<../_static/installation/files/etc/init.d/payara.init.service>` may be useful for RHEL/derivative or Ubuntu >= 14 if you're using a Payara service account, or
 - This :download:`Payara init script <../_static/installation/files/etc/init.d/payara.init.root>` may be helpful if you're just going to run Payara as root (not recommended).
 
 It is not necessary for Payara to be running before you execute the Dataverse Software installation script; it will start Payara for you.
 
 Please note that you must run Payara in an English locale. If you are using something like ``LANG=de_DE.UTF-8``, ingest of tabular data will fail with the message "RoundRoutines:decimal separator no in right place".
 
-Also note that Payara may utilize more than the default number of file descriptors, especially when running batch jobs such as harvesting. We have increased ours by adding ulimit -n 32768 to our Payara init script. On operating systems which use systemd such as RHEL or CentOS 7, file descriptor limits may be increased by adding a line like LimitNOFILE=32768 to the systemd unit file. You may adjust the file descriptor limits on running processes by using the prlimit utility::
+Also note that Payara may utilize more than the default number of file descriptors, especially when running batch jobs such as harvesting. We have increased ours by adding ulimit -n 32768 to our Payara init script. On operating systems which use systemd such as RHEL/derivative, file descriptor limits may be increased by adding a line like LimitNOFILE=32768 to the systemd unit file. You may adjust the file descriptor limits on running processes by using the prlimit utility::
 
 	# sudo prlimit --pid pid --nofile=32768:32768
 
@@ -98,7 +98,7 @@ PostgreSQL
 Installing PostgreSQL
 =======================
 
-The application has been tested with PostgreSQL versions up to 13. We recommend installing the latest version that is available for your OS distribution. *For example*, to install PostgreSQL 13 under RHEL/CentOS 7::
+The application has been tested with PostgreSQL versions up to 13. We recommend installing the latest version that is available for your OS distribution. *For example*, to install PostgreSQL 13 under RHEL7/derivative::
 
 	# yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 	# yum makecache fast
@@ -107,7 +107,7 @@ The application has been tested with PostgreSQL versions up to 13. We recommend 
 	# /usr/bin/systemctl start postgresql-13
 	# /usr/bin/systemctl enable postgresql-13
 
-For RHEL/CentOS 8 the process would be identical, except for the very first command - you would need to install the "EL-8" yum repository configuration instead. 
+For RHEL8/derivative the process would be identical, except for the very first command - you would need to install the "EL-8" yum repository configuration instead. 
 
 Configuring Database Access for the Dataverse Installation (and the Dataverse Software Installer)
 =================================================================================================
@@ -141,7 +141,7 @@ Configuring Database Access for the Dataverse Installation (and the Dataverse So
 
   The file ``postgresql.conf`` will be located in the same directory as the ``pg_hba.conf`` above.
 
-- **Important: PostgreSQL must be restarted** for the configuration changes to take effect! On RHEL/CentOS 7 and similar (provided you installed Postgres as instructed above)::
+- **Important: PostgreSQL must be restarted** for the configuration changes to take effect! On RHEL7/derivative and similar (provided you installed Postgres as instructed above)::
 
         # systemctl restart postgresql-13
 
@@ -193,7 +193,7 @@ Solr will warn about needing to increase the number of file descriptors and max 
         solr soft nofile 65000
         solr hard nofile 65000
 
-On operating systems which use systemd such as RHEL or CentOS 7, you may then add a line like LimitNOFILE=65000 for the number of open file descriptors and a line with LimitNPROC=65000 for the max processes to the systemd unit file, or adjust the limits on a running process using the prlimit tool::
+On operating systems which use systemd such as RHEL/derivative, you may then add a line like LimitNOFILE=65000 for the number of open file descriptors and a line with LimitNPROC=65000 for the max processes to the systemd unit file, or adjust the limits on a running process using the prlimit tool::
 
         # sudo prlimit --pid pid --nofile=65000:65000
 
@@ -211,7 +211,7 @@ Solr Init Script
 Please choose the right option for your underlying Linux operating system.
 It will not be necessary to execute both!
 
-For systems running systemd (like CentOS/RedHat since 7, Debian since 9, Ubuntu since 15.04), as root, download :download:`solr.service<../_static/installation/files/etc/systemd/solr.service>` and place it in ``/tmp``. Then start Solr and configure it to start at boot with the following commands::
+For systems running systemd (like RedHat or derivatives since 7, Debian since 9, Ubuntu since 15.04), as root, download :download:`solr.service<../_static/installation/files/etc/systemd/solr.service>` and place it in ``/tmp``. Then start Solr and configure it to start at boot with the following commands::
 
         cp /tmp/solr.service /etc/systemd/system
         systemctl daemon-reload
@@ -273,7 +273,7 @@ The Dataverse Software uses `ImageMagick <https://www.imagemagick.org>`_ to gene
 Installing and configuring ImageMagick
 ======================================
 
-On a Red Hat and similar Linux distributions, you can install ImageMagick with something like::
+On a Red Hat or derivative Linux distribution, you can install ImageMagick with something like::
 
 	# yum install ImageMagick
 
@@ -307,15 +307,15 @@ components and libraries. Please consult the instructions in the
 Installing R
 ============
 
-For RHEL/CentOS, the EPEL distribution is strongly recommended:
+For RHEL/derivative, the EPEL distribution is strongly recommended:
 
 If :fixedwidthplain:`yum` isn't configured to use EPEL repositories ( https://fedoraproject.org/wiki/EPEL ):
 
-RHEL/CentOS 8 users can install the epel-release RPM::
+RHEL8/derivative users can install the epel-release RPM::
 
        yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
 
-RHEL/CentOS 7 users can install the epel-release RPM::
+RHEL7/derivative users can install the epel-release RPM::
 
        yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
@@ -323,9 +323,9 @@ RHEL 8 users will need to enable the CodeReady-Builder repository::
 
        subscription-manager repos --enable codeready-builder-for-rhel-8-x86_64-rpms
 
-CentOS 8 users will need to enable the PowerTools repository::
+Rocky or AlmaLinux 8.3+ users will need to enable the PowerTools repository::
 
-       dnf config-manager --enable PowerTools
+       dnf config-manager --enable powertools
 
 RHEL 7 users will want to log in to their organization's respective RHN interface, find the particular machine in question and:
 
@@ -362,7 +362,14 @@ The Dataverse Software uses `Rserve <https://rforge.net/Rserve/>`_ to communicat
 to R. Rserve is installed as a library package, as described in the
 step above. It runs as a daemon process on the server, accepting
 network connections on a dedicated port. This requires some extra
-configuration and we provide a  script (:fixedwidthplain:`scripts/r/rserve/rserve-setup.sh`) for setting it up.
+configuration and we provide a script for setting it up.
+
+You'll want to obtain local copies of the Rserve setup files found in
+https://github.com/IQSS/dataverse/tree/master/scripts/r/rserve
+either by cloning a local copy of the IQSS repository:
+:fixedwidthplain:`git clone -b master https://github.com/IQSS/dataverse.git`
+or by downloading the files individually.
+
 Run the script as follows (as root)::
 
     cd <DATAVERSE SOURCE TREE>/scripts/r/rserve
