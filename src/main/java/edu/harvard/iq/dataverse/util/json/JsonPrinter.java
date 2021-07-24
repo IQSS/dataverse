@@ -403,14 +403,6 @@ public class JsonPrinter {
         return bld;
     }
 
-// TODO: FIX FOR MULTI-LICENSE
-//    private static String getLicenseInfo(DatasetVersion dsv) {
-//        if (dsv.getTermsOfUseAndAccess().getLicense() != null && dsv.getTermsOfUseAndAccess().getLicense().getName().equals(TermsOfUseAndAccess.defaultLicense)) {
-//            return "CC0 Waiver";
-//        }
-//        return dsv.getTermsOfUseAndAccess().getTermsOfUse();
-//    }
-
     /**
      * Export formats such as DDI require the citation to be included. See
      * https://github.com/IQSS/dataverse/issues/2579 for more on DDI export.

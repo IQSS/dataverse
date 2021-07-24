@@ -132,7 +132,7 @@ public class DatasetVersionTest {
         assertEquals("https://doi.org/10.5072/FK2/LK0D1H", obj.getString("identifier"));
         assertEquals(null, obj.getString("schemaVersion", null));
         assertEquals("Dataset", obj.getJsonObject("license").getString("@type"));
-        assertEquals("CC0", obj.getJsonObject("license").getString("text"));
+        assertEquals("CC0", obj.getJsonObject("license").getString("name"));
         assertEquals("https://creativecommons.org/publicdomain/zero/1.0/", obj.getJsonObject("license").getString("url"));
         assertEquals("1955-11-05", obj.getString("dateModified"));
         assertEquals("1955-11-05", obj.getString("datePublished"));

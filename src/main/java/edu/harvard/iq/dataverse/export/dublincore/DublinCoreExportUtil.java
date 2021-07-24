@@ -139,7 +139,7 @@ public class DublinCoreExportUtil {
         writeSpatialElements(xmlw, version, dcFlavor);
         
         //License and Terms
-        writeFullElement(xmlw, dcFlavor+":"+"license", version.getLicense());        
+        writeFullElement(xmlw, dcFlavor+":"+"license", version.getLicense().getLabel());
         writeFullElement(xmlw, dcFlavor+":"+"rights", version.getTermsOfUse()); 
         writeFullElement(xmlw, dcFlavor+":"+"rights", version.getRestrictions()); 
 

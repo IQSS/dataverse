@@ -122,9 +122,7 @@ public class FileUtilTest {
             assertEquals(false, FileUtil.isDownloadPopupRequired(dsv1));
         }
 
-        // TODO: FIX FOR MULTI-LICENSE
         @Test
-        @Ignore
         public void testIsDownloadPopupRequiredLicenseCC0() {
             DatasetVersion dsv1 = new DatasetVersion();
             dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
@@ -134,9 +132,7 @@ public class FileUtilTest {
             assertEquals(false, FileUtil.isDownloadPopupRequired(dsv1));
         }
 
-        // TODO: FIX FOR MULTI-LICENSE
         @Test
-        @Ignore
         public void testIsDownloadPopupRequiredHasTermsOfUseAndCc0License() {
             DatasetVersion dsv1 = new DatasetVersion();
             dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);

@@ -270,12 +270,12 @@ public class TermsOfUseAndAccess implements Serializable {
         return retVal;
     }
 
-    // TODO: REMOVE, IS ONLY USED IN TESTS
-    public License getCC0() {
+    public static License getCC0() {
         String shortDescription = "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.";
         URI uri = URI.create("https://creativecommons.org/publicdomain/zero/1.0/");
         URI iconUrl = URI.create("/resources/images/cc0.png");
         License license = new edu.harvard.iq.dataverse.License("CC0", shortDescription, uri, iconUrl, true);
+        license.setDefault(true);
         return license;
     }
 
@@ -294,8 +294,6 @@ public class TermsOfUseAndAccess implements Serializable {
      * @todo What does the GUI use for a default license? What does the "native"
      * API use? See also https://github.com/IQSS/dataverse/issues/1385
      */
-    // TODO: FIX FOR MULTI-LICENSE
-    //public static TermsOfUseAndAccess.License defaultLicense = TermsOfUseAndAccess.License.CC0;
 
     @Override
     public int hashCode() {

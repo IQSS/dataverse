@@ -153,7 +153,7 @@ public class SwordServiceBean {
             License existingLicense = datasetVersionToMutate.getTermsOfUseAndAccess().getLicense();
             if (existingLicense != null) {
                 // leave the license alone but set terms of use
-                setTermsOfUse(datasetVersionToMutate, dcterms, existingLicense.getName());
+                setTermsOfUse(datasetVersionToMutate, dcterms, existingLicense);
             } else {
                 License defaultLicense = licenseServiceBean.getDefault();
                 List<String> listOfRights = dcterms.get("rights");
@@ -167,7 +167,7 @@ public class SwordServiceBean {
                     }
                 }
                 terms.setLicense(null);
-                setTermsOfUse(datasetVersionToMutate, dcterms, "NONE");
+                setTermsOfUse(datasetVersionToMutate, dcterms, null);
             }
             return;
         }
@@ -182,25 +182,24 @@ public class SwordServiceBean {
         try {
             License licenseToSet = new License(licenseProvided, "", new URI("https://creativecommons.org/publicdomain/zero/1.0/"), new URI(""), true);
             terms.setLicense(licenseToSet);
-            setTermsOfUse(datasetVersionToMutate, dcterms, licenseToSet.toString());
+            setTermsOfUse(datasetVersionToMutate, dcterms, licenseToSet);
         } catch (URISyntaxException e) {
             throw new SwordError("License URI was invalid.");
         }
 
     }
 
-    // TODO: FIX FOR MULTI-LICENSE
-    private void setTermsOfUse(DatasetVersion datasetVersionToMutate, Map<String, List<String>> dcterms, String providedLicense) throws SwordError {
-//        if (providedLicense.equals(TermsOfUseAndAccess.defaultLicense)) {
-//            String existingTermsOfUse = datasetVersionToMutate.getTermsOfUseAndAccess().getTermsOfUse();
-//            if (existingTermsOfUse != null) {
-//                throw new SwordError("Can not change license to \"" + DatasetVersion.License.CC0 + "\" due to existing Terms of Use (dcterms:rights): \"" + existingTermsOfUse + "\". You can specify a license of \"" + DatasetVersion.License.NONE + "\'.");
-//            }
-//        }
+    private void setTermsOfUse(DatasetVersion datasetVersionToMutate, Map<String, List<String>> dcterms, License providedLicense) throws SwordError {
+        if (providedLicense.getName().equals(DatasetVersion.License.CC0.toString())) {
+            String existingTermsOfUse = datasetVersionToMutate.getTermsOfUseAndAccess().getTermsOfUse();
+            if (existingTermsOfUse != null) {
+                throw new SwordError("Can not change license to \"" + DatasetVersion.License.CC0 + "\" due to existing Terms of Use (dcterms:rights): \"" + existingTermsOfUse + "\". You can specify a license of \"" + DatasetVersion.License.NONE + "\'.");
+            }
+        }
         List<String> listOfRightsProvided = dcterms.get("rights");
         if (listOfRightsProvided != null) {
             int numRightsProvided = listOfRightsProvided.size();
-            if (providedLicense.equals(DatasetVersion.License.CC0.toString())) {
+            if (providedLicense.getName().equals(DatasetVersion.License.CC0.toString())) {
                 if (numRightsProvided > 0) {
                     throw new SwordError("Terms of Use (dcterms:rights) can not be specified in combination with the license \"CC0\". A license of \"NONE\" can be used instead.");
                 }

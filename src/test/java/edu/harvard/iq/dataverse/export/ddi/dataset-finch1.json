@@ -13,6 +13,10 @@
     "lastUpdateTime": "2015-09-24T17:07:57Z",
     "releaseTime": "2015-09-24T17:07:57Z",
     "createTime": "2015-09-24T16:47:51Z",
+    "license": {
+      "label": "CC0-1.0",
+      "uri": "http://creativecommons.org/publicdomain/zero/1.0"
+    },
     "metadataBlocks": {
       "citation": {
         "displayName": "Citation Metadata",

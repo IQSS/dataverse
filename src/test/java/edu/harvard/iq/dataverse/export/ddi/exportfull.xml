@@ -143,7 +143,6 @@
       <notes type="NotesType" subject="NotesSubject">NotesText</notes>
     </method>
     <dataAccs>
-      <notes type="DVN:TOU" level="dv">CC0 Waiver</notes>
       <notes type="DVN:TOA" level="dv">Terms of Access</notes>
       <setAvail>
         <accsPlac>Data Access Place</accsPlac>
