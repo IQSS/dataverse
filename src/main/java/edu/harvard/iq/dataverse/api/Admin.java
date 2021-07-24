@@ -2036,7 +2036,14 @@ public class Admin extends AbstractApiBean {
     @Path("/licenses/{id}")
     public Response deleteLicenseById(@PathParam("id") long id) {
         try {
-            int result = licenseService.deleteById(id);
+	        try {
+		        if (licenseService.getById(id).isDefault()){
+			        return error(Status.CONFLICT, "Please make sure the license is not the default before deleting it. ");
+		        }
+	        } catch (FetchException e) {
+		        return error(Status.NOT_FOUND, e.getMessage());
+	        }
+	        int result = licenseService.deleteById(id);
             if (result == 1) {
                 return ok("OK. License with ID " + id + " was deleted.");
             }
