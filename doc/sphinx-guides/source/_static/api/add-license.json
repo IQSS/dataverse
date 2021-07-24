@@ -1,6 +1,7 @@
 {
-  "name": "Apache License 2.0",
-  "uri": "http://www.apache.org/licenses/LICENSE-2.0",
-  "iconUrl": "https://developers.redhat.com/sites/default/files/2016-12/images_icons_products_products_apache_logo_v2-2.png",
+  "name": "CC-BY-4.0",
+  "uri": "http://creativecommons.org/licenses/by/4.0",
+  "shortDescription": "Creative Commons Attribution 4.0 International License.",
+  "iconUrl": "https://i.creativecommons.org/l/by/4.0/88x31.png",
   "active": true
 }
