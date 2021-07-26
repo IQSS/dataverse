@@ -38,7 +38,7 @@ List Dataverse Collection Links
 
 Provides information about whether a certain Dataverse collection ($dataverse-alias) is linked to or links to another collection. Only accessible to superusers. ::
 
-    curl -H X-Dataverse-key:$API_TOKEN http://$SERVER/api/dataverses/$dataverse-alias/links
+    curl -H "X-Dataverse-key:$API_TOKEN" http://$SERVER/api/dataverses/$dataverse-alias/links
 
 Add Dataverse Collection RoleAssignments to Dataverse Subcollections
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
