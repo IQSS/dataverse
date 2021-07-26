@@ -160,8 +160,8 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
                             || (dataset.getLatestVersion().isReleased() && file.getFileMetadata().getDatasetVersion().equals(dataset.getLatestVersion())));
 
                     if (!isShowDeleted() && fileIsDeleted) {
-                        //if don't show deleted and is deleted get out.
-                        break;
+                        //if don't show deleted and is deleted go to next file...
+                        continue;
                     }
                 // we get the direct role assignments assigned to the file
                 List<RoleAssignment> ras = roleService.directRoleAssignments(file);
