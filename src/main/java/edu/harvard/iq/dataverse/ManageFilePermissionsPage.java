@@ -117,13 +117,13 @@ public class ManageFilePermissionsPage implements java.io.Serializable {
     
     private boolean backingShowDeleted = true;
 
-    public String showDeletedCheckboxChange() {
+    public void showDeletedCheckboxChange() {
 
         if (backingShowDeleted != showDeleted) {
             initMaps();
             backingShowDeleted = showDeleted;
         }
-        return "";
+
     }
     
     public String init() {
