@@ -34,12 +34,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -314,7 +314,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
             // Provide both the "Content-disposition" and "Content-Type" headers,
             // to satisfy the widest selection of browsers out there.
 
-            fileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString());
+            fileName = encodeURI(fileName);
             httpHeaders.add("Content-Disposition", "attachment; filename*=utf-8''"+ fileName + "; filename="+fileName);
             httpHeaders.add("Content-Type", mimeType + "; name=\"" + fileName + "\"");
 
@@ -348,6 +348,24 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
         } finally {
             outstream.close();
         }
+    }
+
+    /**
+     * Fix for RFC6266 Content-Disposition encoding taken from primefaces:
+     * https://github.com/primefaces/primefaces/pull/2368
+     */
+    private static String encodeURI(String string) throws UnsupportedEncodingException {
+        if (string == null) {
+            return null;
+        }
+
+        return URLEncoder.encode(string, "UTF-8")
+                .replace("+", "%20")
+                .replace("%21", "!")
+                .replace("%27", "'")
+                .replace("%28", "(")
+                .replace("%29", ")")
+                .replace("%7E", "~");
     }
 
     private long getContentSize(StorageIO<?> accessObject) {
