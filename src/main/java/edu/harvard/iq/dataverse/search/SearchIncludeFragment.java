@@ -1251,8 +1251,15 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     }
 
-    public boolean canPublishDataset(long datasetId){
+    public boolean canPublishDataset(String id){
+        try {
+        //Should only be called with a valid id (set during indexing) but catch/log any exception.
+        Long datasetId = Long.parseLong(id);
         return permissionsWrapper.canIssuePublishDatasetCommand(dvObjectService.findDvObject(datasetId));
+        } catch (NumberFormatException nfe) {
+            logger.warning("canPublishDataset called with dataset id: " + id);
+            return false;
+        }
     }
     
     public void setDisplayCardValues() {
