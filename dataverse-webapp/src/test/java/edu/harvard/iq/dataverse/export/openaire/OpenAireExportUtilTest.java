@@ -302,9 +302,6 @@ public class OpenAireExportUtilTest {
                                     + "<contributor contributorType=\"ContactPerson\">"
                                     + "<contributorName nameType=\"Personal\">John Smith</contributorName>"
                                     + "<givenName>John</givenName><familyName>Smith</familyName></contributor>"
-                                    + "<contributor contributorType=\"ContactPerson\">"
-                                    + "<contributorName>pete@malinator.com</contributorName>"
-                                    + "</contributor>"
                                     + "</contributors>",
                             writer.toString());
     }
@@ -346,9 +343,6 @@ public class OpenAireExportUtilTest {
                                     + "<contributor contributorType=\"ContactPerson\">"
                                     + "<contributorName nameType=\"Organizational\">Michael J. Fox Foundation for Parkinson's Research</contributorName>"
                                     + "</contributor>"
-                                    + "<contributor contributorType=\"ContactPerson\">"
-                                    + "<contributorName>pete@malinator.com</contributorName>"
-                                    + "</contributor>"
                                     + "</contributors>",
                             writer.toString());
     }
@@ -371,23 +365,13 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeContributorsElement(writer.xml, dto, null);
 
         writer.close();
-        Assert.assertEquals("<contributors>"
-                                    + "<contributor contributorType=\"ContactPerson\">"
-                                    + "<contributorName nameType=\"Organizational\">Digital Archive of Massachusetts Anti-Slavery and Anti-Segregation Petitions, Massachusetts Archives, Boston MA</contributorName>"
-                                    + "</contributor>"
-                                    + "<contributor contributorType=\"ContactPerson\">"
-                                    + "<contributorName nameType=\"Organizational\">U.S. Department of Commerce, Bureau of the Census, Geography Division</contributorName>"
-                                    + "</contributor>"
-                                    + "<contributor contributorType=\"ContactPerson\">"
-                                    + "<contributorName nameType=\"Organizational\">Harvard Map Collection, Harvard College Library</contributorName>"
-                                    + "</contributor>"
-                                    + "<contributor contributorType=\"ContactPerson\">"
-                                    + "<contributorName nameType=\"Organizational\">Geographic Data Technology, Inc. (GDT)</contributorName>"
-                                    + "</contributor>"
-                                    + "<contributor contributorType=\"ContactPerson\">"
-                                    + "<contributorName>pete@malinator.com</contributorName>"
-                                    + "</contributor>"
-                                    + "</contributors>",
+        Assert.assertEquals("<contributors><contributor " +
+                        "contributorType=\"ContactPerson\">" +
+                        "<contributorName nameType=\"Personal\">Smith, John</contributorName>" +
+                        "<givenName>John</givenName><familyName>Smith</familyName></contributor>" +
+                        "<contributor contributorType=\"ContactPerson\"><contributorName nameType=\"Personal\">John Smith</contributorName>" +
+                        "<givenName>John</givenName><familyName>Smith</familyName></contributor>" +
+                        "</contributors>",
                             writer.toString());
     }
 
@@ -407,45 +391,28 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeContributorsElement(writer.xml, dto, null);
 
         writer.close();
-        Assert.assertEquals("<contributors>"
-                                    + "<contributor contributorType=\"ContactPerson\">"
-                                    + "<contributorName nameType=\"Organizational\">LastContact1, FirstContact1</contributorName>"
-                                    + "<affiliation>ContactAffiliation1</affiliation>"
-                                    + "</contributor>"
-                                    + "<contributor contributorType=\"ContactPerson\">"
-                                    + "<contributorName nameType=\"Personal\">Condon, Kevin</contributorName>"
-                                    + "<givenName>Kevin</givenName><familyName>Condon</familyName>"
-                                    + "<affiliation>ContactAffiliation2</affiliation>"
-                                    + "</contributor>"
-                                    + "<contributor contributorType=\"ContactPerson\">"
-                                    + "<contributorName nameType=\"Personal\">Philip Durbin</contributorName>"
-                                    + "<givenName>Philip</givenName><familyName>Durbin</familyName>"
-                                    + "<affiliation>ContactAffiliation3</affiliation>"
-                                    + "</contributor>"
-                                    + "<contributor contributorType=\"Producer\">"
-                                    + "<contributorName>LastProducer1, FirstProducer1</contributorName>"
-                                    + "<affiliation>ProducerAffiliation1</affiliation>"
-                                    + "</contributor><contributor contributorType=\"Producer\">"
-                                    + "<contributorName>LastProducer2, FirstProducer2</contributorName>"
-                                    + "<affiliation>ProducerAffiliation2</affiliation>"
-                                    + "</contributor>"
-                                    + "<contributor contributorType=\"DataCollector\">"
-                                    + "<contributorName>LastContributor1, FirstContributor1</contributorName>"
-                                    + "</contributor>"
-                                    + "<contributor contributorType=\"DataCurator\">"
-                                    + "<contributorName>LastContributor2, FirstContributor2</contributorName>"
-                                    + "</contributor>"
-                                    + "<contributor contributorType=\"Funder\"><contributorName>GrantInformationGrantAgency1</contributorName>" +
-                                    "<nameIdentifier nameIdentifierScheme=\"info\">info:eu-repo/grantAgreement/grantNumberAgencyShortName1/grantNumberProgram1/GrantInformationGrantNumber1</nameIdentifier></contributor>"
-                                    + "<contributor contributorType=\"Distributor\">"
-                                    + "<contributorName>LastDistributor1, FirstDistributor1</contributorName>"
-                                    + "<affiliation>DistributorAffiliation1</affiliation>"
-                                    + "</contributor>"
-                                    + "<contributor contributorType=\"Distributor\">"
-                                    + "<contributorName>LastDistributor2, FirstDistributor2</contributorName>"
-                                    + "<affiliation>DistributorAffiliation2</affiliation>"
-                                    + "</contributor>"
-                                    + "</contributors>",
+        Assert.assertEquals("<contributors><contributor contributorType=\"ContactPerson\">" +
+                        "<contributorName nameType=\"Organizational\">LastContact1, FirstContact1</contributorName>" +
+                        "<affiliation>ContactAffiliation1</affiliation></contributor><contributor contributorType=\"ContactPerson\">" +
+                        "<contributorName nameType=\"Personal\">Condon, Kevin</contributorName>" +
+                        "<givenName>Kevin</givenName><familyName>Condon</familyName><affiliation>ContactAffiliation2</affiliation>" +
+                        "</contributor><contributor contributorType=\"ContactPerson\">" +
+                        "<contributorName nameType=\"Personal\">Philip Durbin</contributorName><givenName>Philip</givenName>" +
+                        "<familyName>Durbin</familyName><affiliation>ContactAffiliation3</affiliation></contributor>" +
+                        "<contributor contributorType=\"Producer\"><contributorName nameType=\"Organizational\">LastProducer1, FirstProducer1</contributorName>" +
+                        "<affiliation>ProducerAffiliation1</affiliation></contributor><contributor contributorType=\"Producer\">" +
+                        "<contributorName nameType=\"Organizational\">LastProducer2, FirstProducer2</contributorName>" +
+                        "<affiliation>ProducerAffiliation2</affiliation></contributor><contributor contributorType=\"DataCollector\">" +
+                        "<contributorName nameType=\"Organizational\">LastContributor1, FirstContributor1</contributorName>" +
+                        "</contributor><contributor contributorType=\"DataCurator\"><contributorName " +
+                        "nameType=\"Organizational\">LastContributor2, FirstContributor2</contributorName></contributor>" +
+                        "<contributor contributorType=\"Funder\"><contributorName>GrantInformationGrantAgency1</contributorName>" +
+                        "<nameIdentifier nameIdentifierScheme=\"info\">info:eu-repo/grantAgreement/grantNumberAgencyShortName1/grantNumberProgram1/GrantInformationGrantNumber1</nameIdentifier>" +
+                        "</contributor><contributor contributorType=\"Distributor\"><contributorName " +
+                        "nameType=\"Organizational\">LastDistributor1, FirstDistributor1</contributorName>" +
+                        "<affiliation>DistributorAffiliation1</affiliation></contributor><contributor contributorType=\"Distributor\">" +
+                        "<contributorName nameType=\"Organizational\">LastDistributor2, FirstDistributor2</contributorName>" +
+                        "<affiliation>DistributorAffiliation2</affiliation></contributor></contributors>",
                             writer.toString());
     }
 

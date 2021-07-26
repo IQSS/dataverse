@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.qualifiers.TestBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
+import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -360,6 +361,72 @@ public class SchemaDotOrgExporterTest {
         assertEquals("https://doi.org/10.5072/FK2/7V5MPI", json2.getJsonArray("distribution").getJsonObject(0).getString("identifier"));
         assertEquals("https://librascholar.org/api/access/datafile/42", json2.getJsonArray("distribution").getJsonObject(0).getString("contentUrl"));
         assertEquals(1, json2.getJsonArray("distribution").size());
+    }
+
+    /**
+     * Test of exportDataset method, of class SchemaDotOrgExporter.
+     */
+    @Test
+    public void testExportDataset_authorTypes() throws Exception {
+        String datasetVersionAsJson = UnitTestUtils.readFileToString("json/dataset-finch3.json");
+
+        JsonReader jsonReader1 = Json.createReader(new StringReader(datasetVersionAsJson));
+        JsonObject json1 = jsonReader1.readObject();
+        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, null);
+        DatasetVersion version = jsonParser.parseDatasetVersion(json1.getJsonObject("datasetVersion"));
+        version.setVersionState(DatasetVersion.VersionState.RELEASED);
+        SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
+        Date publicationDate = dateFmt.parse("19551105");
+        version.setReleaseTime(publicationDate);
+        version.setVersionNumber(1l);
+
+        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
+        terms.setLicense(TermsOfUseAndAccess.License.CC0);
+        version.setTermsOfUseAndAccess(terms);
+
+        Dataset dataset = new Dataset();
+        dataset.setProtocol("doi");
+        dataset.setAuthority("10.5072/FK2");
+        dataset.setIdentifier("IMK5A4");
+        dataset.setPublicationDate(new Timestamp(publicationDate.getTime()));
+        version.setDataset(dataset);
+        Dataverse dataverse = new Dataverse();
+        dataverse.setName("LibraScholar");
+        dataset.setOwner(dataverse);
+
+        version.setFileMetadatas(Lists.emptyList());
+
+        String jsonLd = schemaDotOrgExporter.exportDataset(version);
+        JsonReader jsonReader2 = Json.createReader(new StringReader(jsonLd));
+        JsonObject json2 = jsonReader2.readObject();
+
+        assertEquals("Finch, Fiona", json2.getJsonArray("creator").getJsonObject(0).getString("name"));
+        assertEquals("Person", json2.getJsonArray("creator").getJsonObject(0).getString("@type"));
+
+        assertEquals("Admin, Dataverse", json2.getJsonArray("creator").getJsonObject(1).getString("name"));
+        assertEquals("Person", json2.getJsonArray("creator").getJsonObject(1).getString("@type"));
+        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("creator").getJsonObject(1).getString("@id"));
+        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("creator").getJsonObject(1).getString("identifier"));
+
+        assertEquals("Jan Kowalski", json2.getJsonArray("creator").getJsonObject(2).getString("name"));
+        assertEquals("Person", json2.getJsonArray("creator").getJsonObject(2).getString("@type"));
+
+        assertEquals("Gallup Foundation", json2.getJsonArray("creator").getJsonObject(3).getString("name"));
+        assertEquals("Organization", json2.getJsonArray("creator").getJsonObject(3).getString("@type"));
+
+
+        assertEquals("Finch, Fiona", json2.getJsonArray("author").getJsonObject(0).getString("name"));
+        assertEquals("Person", json2.getJsonArray("author").getJsonObject(0).getString("@type"));
+
+        assertEquals("Admin, Dataverse", json2.getJsonArray("author").getJsonObject(1).getString("name"));
+        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("author").getJsonObject(1).getString("@id"));
+        assertEquals("https://orcid.org/0000-0002-1825-0097", json2.getJsonArray("author").getJsonObject(1).getString("identifier"));
+
+        assertEquals("Jan Kowalski", json2.getJsonArray("author").getJsonObject(2).getString("name"));
+        assertEquals("Person", json2.getJsonArray("author").getJsonObject(2).getString("@type"));
+
+        assertEquals("Gallup Foundation", json2.getJsonArray("author").getJsonObject(3).getString("name"));
+        assertEquals("Organization", json2.getJsonArray("author").getJsonObject(3).getString("@type"));
     }
 
     @Test

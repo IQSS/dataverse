@@ -1,12 +1,15 @@
 package edu.harvard.iq.dataverse.export.openaire;
 
+import io.vavr.Tuple2;
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.logging.Logger;
 import java.util.HashMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -84,59 +87,39 @@ public class FirstNames {
     }
 
     /**
-     * Check if firstName exists on map.
-     *
-     * @param fullname full name
-     * @return First name or null.
+     * extracts first name and given name from full name
+     * @param fullname text potentially representing full name of a person
+     * @return Pair of text values, 1st element stores first names, 2nd element stores last names;
+     *          values separated by space (" "). Returns null if extraction fails.
      */
-    public String getFirstName(String fullname) {
-        boolean commaConvention = false;
-        if (fullname.contains(",")) {
-            // fix fullname
-            fullname = fullname.substring(fullname.indexOf(",") + 1).trim();
-            commaConvention = true;
-        }
+    public Tuple2<String, String> extractFirstAndLastName(String fullname) {
+        int commaCount = StringUtils.countMatches(fullname, ",");
+        if (commaCount == 0) {
+            String[] words = fullname.split("\\s+");
+            int firstNameWordsCount = 0;
 
-        if (fullname.contains(" ")) {
-            int last = 0, pos = 0;
-            StringBuilder firstName = new StringBuilder(fullname.length());
-            firstName.setLength(0);
+            for (int i=0; i<words.length; ++i) {
+                String word = words[i];
+                boolean isLastWord = (i == (words.length - 1));
+                boolean isFirstWord = (i == 0);
 
-            while (pos >= 0) {
-                pos = fullname.indexOf(" ", last);
-
-                boolean isFirstName = false;
-                if (pos >= 0) {
-                    isFirstName = isFirstName(fullname.substring(last, pos));
-                    if (isFirstName && isStartOfLastName(fullname.substring(last, pos))) {
-                        isFirstName = false;
-                    }
-                } else if (commaConvention) {
-                    isFirstName = isFirstName(fullname.substring(last));
-                } else if (!commaConvention && firstName.length() > 0) {
-                    // last word is part of family name
-                    isFirstName = false;
+                if (isWordPartOfFirstName(word, isFirstWord, isLastWord)) {
+                    firstNameWordsCount = i+1;
+                } else {
+                    break;
                 }
 
-                if (isFirstName) {
-                    if (firstName.length() > 0) {
-                        firstName.append(" ");
-                    }
-
-                    if (pos >= 0) {
-                        firstName.append(fullname.substring(last, pos));
-                    } else {
-                        firstName.append(fullname.substring(last));
-                    }
-                }
-
-                last = pos + 1;
             }
 
-            return (firstName.length() > 0) ? firstName.toString() : null;
-        } else {
-            return isFirstName(fullname) ? fullname : null;
+            return new Tuple2<String, String>(
+                    StringUtils.join(words, ' ', 0, firstNameWordsCount),
+                    StringUtils.join(words, ' ', firstNameWordsCount, words.length));
+
+        } else if (commaCount == 1 && !fullname.endsWith(",")) {
+            String[] words = fullname.split(",");
+            return new Tuple2<>(words[1].trim(), words[0].trim());
         }
+        return null;
     }
 
     /**
@@ -259,5 +242,17 @@ public class FirstNames {
             }
             br.close();
         }
+    }
+
+    private boolean isWordPartOfFirstName(String word, boolean isFirstWord, boolean isLastWord) {
+        boolean wordIsAFirstName = isFirstName(word);
+
+        if (wordIsAFirstName) {
+            if (isFirstWord && isLastWord) {
+                return true;
+            }
+            return !isLastWord && !isStartOfLastName(word);
+        }
+        return false;
     }
 }

@@ -1,7 +1,12 @@
 package edu.harvard.iq.dataverse.export.openaire;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.from;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -22,38 +27,25 @@ public class FirstNamesTest {
         assertTrue(firstNames.isFirstName("Lainey"));
     }
 
-    /**
-     * Name is composed of:
-     * <First Names> <Family Name>
-     */
-    @Test
-    public void testName() {
-        assertEquals(firstNames.getFirstName("Jorge Mario Bergoglio"), "Jorge Mario");
-        assertNull(firstNames.getFirstName("Bergoglio"));
-        assertEquals(firstNames.getFirstName("Francesco Cadili"), "Francesco");
-        // This Philip Seymour Hoffman example is from ShibUtilTest.
-        assertEquals("Philip Seymour", firstNames.getFirstName("Philip Seymour Hoffman"));
-
-        // test Smith (is also a name)
-        assertEquals("John", firstNames.getFirstName("John Smith"));
-        // resolved using hint file
-        assertEquals("Guido", firstNames.getFirstName("Guido van Rossum"));
-        // test only name
-        assertEquals(firstNames.getFirstName("Francesco"), "Francesco");
-        // test only family name
-        assertEquals(firstNames.getFirstName("Cadili"), null);
-    }
-
-    /**
-     * Name is composed of: The string is composed of:
-     * <Family Name>, <First Names>
-     */
-    @Test
-    public void testNameConvention2() {
-        assertEquals(firstNames.getFirstName("Awesome, Audrey"), "Audrey");
-        assertEquals(firstNames.getFirstName("Bergoglio, Jorge Mario"), "Jorge Mario");
-        assertEquals(firstNames.getFirstName("Cadili, Francesco"), "Francesco");
-        assertEquals("Guido", firstNames.getFirstName("van Rossum, Guido"));
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', value = {
+            "Awesome, Audrey|Audrey|Awesome",
+            "Bergoglio, Jorge Mario|Jorge Mario|Bergoglio",
+            "Cadili, Francesco|Francesco|Cadili",
+            "Bergoglio|''|Bergoglio",
+            "Francesco Cadili|Francesco|Cadili",
+            "Philip Seymour Hoffman|Philip Seymour|Hoffman",
+            "John Smith|John|Smith",
+            "Guido van Rossum|Guido|van Rossum",
+            "Francesco|Francesco|''",
+            "Cadili|''|Cadili",
+            "Jorge Mario Bergoglio|Jorge Mario|Bergoglio",
+            "Jorge Bergoglio Mario Luigi|Jorge|Bergoglio Mario Luigi"
+    })
+    public void testExtractFirstAndLastNames(String fullname, String expectedFirstName, String expectedLastName) {
+        assertThat(firstNames.extractFirstAndLastName(fullname))
+                .returns(expectedFirstName, from(firstAndLastName -> firstAndLastName._1()))
+                .returns(expectedLastName, from(firstAndLastName -> firstAndLastName._2()));
     }
 
 }

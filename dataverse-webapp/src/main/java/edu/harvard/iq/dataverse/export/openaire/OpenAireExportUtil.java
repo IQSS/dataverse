@@ -9,9 +9,11 @@ import edu.harvard.iq.dataverse.api.dto.FileDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.common.MarkupChecker;
+import edu.harvard.iq.dataverse.export.ExportUtil;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
+import io.vavr.Tuple2;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -259,63 +261,19 @@ public class OpenAireExportUtil {
                                 creator_check = writeOpenTag(xmlw, "creators", creator_check);
                                 xmlw.writeStartElement("creator"); // <creator>
 
-                                boolean nameType_check = false;
-                                Map<String, String> creator_map = new HashMap<String, String>();
-                                if ((StringUtils.containsIgnoreCase(nameIdentifierScheme, "orcid"))) {
-                                    creator_map.put("nameType", "Personal");
-                                    nameType_check = true;
-                                }
-
                                 creatorName = Cleanup.normalize(creatorName);
-                                // Datacite algorithm, https://github.com/IQSS/dataverse/issues/2243#issuecomment-358615313
-                                if (creatorName.contains(",")) {
-                                    String givenName = FirstNames.getInstance().getFirstName(creatorName);
-                                    boolean isOrganization = Organizations.getInstance().isOrganization(creatorName);
+                                boolean isPerson = ExportUtil.isPerson(creatorName);
+                                Map<String, String> creator_map = new HashMap<String, String>();
 
-                                    // creatorName=<FamilyName>, <FirstName>
-                                    if (givenName != null && !isOrganization) {
-                                        // givenName ok
-                                        creator_map.put("nameType", "Personal");
-                                        nameType_check = true;
-                                    } else if (isOrganization) {
-                                        creator_map.put("nameType", "Organizational");
-                                        nameType_check = false;
-                                    }
-                                    writeFullElement(xmlw, null, "creatorName", creator_map, creatorName, language);
-
-                                    if ((nameType_check) && (!creatorName.replaceFirst(",", "").contains(","))) {
-                                        // creatorName=<FamilyName>, <FirstName>
-                                        String[] fullName = creatorName.split(", ");
-                                        givenName = fullName[1];
-                                        String familyName = fullName[0];
-
-                                        writeFullElement(xmlw, null, "givenName", null, givenName, language);
-                                        writeFullElement(xmlw, null, "familyName", null, familyName, language);
-                                    }
+                                if ((StringUtils.containsIgnoreCase(nameIdentifierScheme, "orcid")) || isPerson) {
+                                    creator_map.put("nameType", "Personal");
                                 } else {
-                                    String givenName = FirstNames.getInstance().getFirstName(creatorName);
-                                    boolean isOrganization = Organizations.getInstance().isOrganization(creatorName);
+                                    creator_map.put("nameType", "Organizational");
+                                }
+                                writeFullElement(xmlw, null, "creatorName", creator_map, creatorName, language);
 
-                                    if (givenName != null && !isOrganization) {
-                                        // givenName ok, creatorName=<FirstName> <FamilyName>
-                                        creator_map.put("nameType", "Personal");
-                                        nameType_check = true;
-                                        writeFullElement(xmlw, null, "creatorName", creator_map, creatorName, language);
-
-                                        String familyName = "";
-                                        if (givenName.length() + 1 < creatorName.length()) {
-                                            familyName = creatorName.substring(givenName.length() + 1);
-                                        }
-
-                                        writeFullElement(xmlw, null, "givenName", null, givenName, language);
-                                        writeFullElement(xmlw, null, "familyName", null, familyName, language);
-                                    } else {
-                                        // default
-                                        if (isOrganization) {
-                                            creator_map.put("nameType", "Organizational");
-                                        }
-                                        writeFullElement(xmlw, null, "creatorName", creator_map, creatorName, language);
-                                    }
+                                if(isPerson) {
+                                    writeGivenNameAndFamilyNameElements(xmlw, creatorName, language);
                                 }
 
                                 if (StringUtils.isNotBlank(nameIdentifier)) {
@@ -633,44 +591,26 @@ public class OpenAireExportUtil {
                             }
                         }
                     } else if (DatasetFieldConstant.datasetContact.equals(fieldDTO.getTypeName())) {
-                        if ("primitive".equals(fieldDTO.getTypeClass())) {
-                            String contactAffiliation = null;
+                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
                             String contactName = null;
+                            String contactAffiliation = null;
 
-                            for (Iterator<String> iterator = fieldDTO.getMultiplePrimitive().iterator(); iterator.hasNext(); ) {
-                                contactName = iterator.next();
-
-                                if (StringUtils.isNotBlank(contactName)) {
-                                    contributor_check = writeOpenTag(xmlw, "contributors", contributor_check);
-                                    writeContributorElement(xmlw,
-                                                            "ContactPerson",
-                                                            contactName,
-                                                            contactAffiliation,
-                                                            language);
+                            for (FieldDTO next : foo) {
+                                if (DatasetFieldConstant.datasetContactName.equals(next.getTypeName())) {
+                                    contactName = next.getSinglePrimitive();
+                                }
+                                if (DatasetFieldConstant.datasetContactAffiliation.equals(next.getTypeName())) {
+                                    contactAffiliation = next.getSinglePrimitive();
                                 }
                             }
-                        } else {
-                            for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                                String contactName = null;
-                                String contactAffiliation = null;
 
-                                for (FieldDTO next : foo) {
-                                    if (DatasetFieldConstant.datasetContactName.equals(next.getTypeName())) {
-                                        contactName = next.getSinglePrimitive();
-                                    }
-                                    if (DatasetFieldConstant.datasetContactAffiliation.equals(next.getTypeName())) {
-                                        contactAffiliation = next.getSinglePrimitive();
-                                    }
-                                }
-
-                                if (StringUtils.isNotBlank(contactName)) {
-                                    contributor_check = writeOpenTag(xmlw, "contributors", contributor_check);
-                                    writeContributorElement(xmlw,
-                                                            "ContactPerson",
-                                                            contactName,
-                                                            contactAffiliation,
-                                                            language);
-                                }
+                            if (StringUtils.isNotBlank(contactName)) {
+                                contributor_check = writeOpenTag(xmlw, "contributors", contributor_check);
+                                writeContributorElement(xmlw,
+                                                        "ContactPerson",
+                                                        contactName,
+                                                        contactAffiliation,
+                                                        language);
                             }
                         }
                     } else if (DatasetFieldConstant.contributor.equals(fieldDTO.getTypeName())) {
@@ -768,7 +708,8 @@ public class OpenAireExportUtil {
      * @param language               current language
      * @throws XMLStreamException
      */
-    public static void writeContributorElement(XMLStreamWriter xmlw, String contributorType, String contributorName, String contributorAffiliation, String language) throws XMLStreamException {
+    public static void writeContributorElement(XMLStreamWriter xmlw, String contributorType, String contributorName,
+                                               String contributorAffiliation, String language) throws XMLStreamException {
         // write a contributor
         xmlw.writeStartElement("contributor"); // <contributor>
 
@@ -776,63 +717,34 @@ public class OpenAireExportUtil {
             xmlw.writeAttribute("contributorType", contributorType.replaceAll(" ", ""));
         }
 
-        boolean nameType_check = false;
         Map<String, String> contributor_map = new HashMap<String, String>();
-
         contributorName = Cleanup.normalize(contributorName);
-        // Datacite algorithm, https://github.com/IQSS/dataverse/issues/2243#issuecomment-358615313
-        if (contributorName.contains(",")) {
-            String givenName = FirstNames.getInstance().getFirstName(contributorName);
-            boolean isOrganization = Organizations.getInstance().isOrganization(contributorName);
+        boolean isPerson = ExportUtil.isPerson(contributorName);
 
-            // contributorName=<FamilyName>, <FirstName>
-            if (givenName != null && !isOrganization) {
-                // givenName ok
-                contributor_map.put("nameType", "Personal");
-                nameType_check = true;
-            } else if (isOrganization || ("ContactPerson".equals(contributorType) && !isValidEmailAddress(
-                    contributorName))) {
-                contributor_map.put("nameType", "Organizational");
-            }
-            writeFullElement(xmlw, null, "contributorName", contributor_map, contributorName, language);
-
-            if ((nameType_check) && (!contributorName.replaceFirst(",", "").contains(","))) {
-                // contributorName=<FamilyName>, <FirstName>
-                String[] fullName = contributorName.split(", ");
-                givenName = fullName[1];
-                String familyName = fullName[0];
-
-                writeFullElement(xmlw, null, "givenName", null, givenName, language);
-                writeFullElement(xmlw, null, "familyName", null, familyName, language);
-            }
+        if (isPerson) {
+            contributor_map.put("nameType", "Personal");
         } else {
-            String givenName = FirstNames.getInstance().getFirstName(contributorName);
-            boolean isOrganization = Organizations.getInstance().isOrganization(contributorName);
+            contributor_map.put("nameType", "Organizational");
+        }
+        writeFullElement(xmlw, null, "contributorName", contributor_map, contributorName, language);
 
-            if (givenName != null && !isOrganization) {
-                contributor_map.put("nameType", "Personal");
-                writeFullElement(xmlw, null, "contributorName", contributor_map, contributorName, language);
-
-                String familyName = "";
-                if (givenName.length() + 1 < contributorName.length()) {
-                    familyName = contributorName.substring(givenName.length() + 1);
-                }
-
-                writeFullElement(xmlw, null, "givenName", null, givenName, language);
-                writeFullElement(xmlw, null, "familyName", null, familyName, language);
-            } else {
-                // default
-                if (isOrganization || ("ContactPerson".equals(contributorType) && !isValidEmailAddress(contributorName))) {
-                    contributor_map.put("nameType", "Organizational");
-                }
-                writeFullElement(xmlw, null, "contributorName", contributor_map, contributorName, language);
-            }
+        if (isPerson) {
+            writeGivenNameAndFamilyNameElements(xmlw, contributorName, language);
         }
 
         if (StringUtils.isNotBlank(contributorAffiliation)) {
             writeFullElement(xmlw, null, "affiliation", null, contributorAffiliation, language);
         }
         xmlw.writeEndElement(); // </contributor>
+    }
+
+    private static void writeGivenNameAndFamilyNameElements(XMLStreamWriter xmlw, String contributorName, String language) throws XMLStreamException {
+        Tuple2<String, String> firstAndLastNames = FirstNames.getInstance().extractFirstAndLastName(contributorName);
+
+        if (firstAndLastNames != null) {
+            writeFullElement(xmlw, null, "givenName", null, firstAndLastNames._1, language);
+            writeFullElement(xmlw, null, "familyName", null, firstAndLastNames._2, language);
+        }
     }
 
     /**

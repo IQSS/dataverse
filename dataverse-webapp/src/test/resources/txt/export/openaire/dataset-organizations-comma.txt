@@ -77,53 +77,29 @@
                                 }
                             ]
                         },
-                        {
-                            "typeName": "datasetContact",
-                            "multiple": true,
-                            "typeClass": "compound",
-                            "value": [
-                                {
-                                  "datasetContactName": {
-                                    "typeName": "datasetContactName",
-                                    "multiple": false,
-                                    "typeClass": "primitive",
-                                    "value": "Digital Archive of Massachusetts Anti-Slavery and Anti-Segregation Petitions, Massachusetts Archives, Boston MA"
-                                    }
-                                },
-                                {
-                                  "datasetContactName": {
-                                    "typeName": "datasetContactName",
-                                    "multiple": false,
-                                    "typeClass": "primitive",
-                                    "value": "U.S. Department of Commerce, Bureau of the Census, Geography Division"
-                                    }
-                                },
-                                {
-                                  "datasetContactName": {
-                                    "typeName": "datasetContactName",
-                                    "multiple": false,
-                                    "typeClass": "primitive",
-                                    "value": "Harvard Map Collection, Harvard College Library"
-                                    }
-                                },
-                                {
-                                  "datasetContactName": {
-                                    "typeName": "datasetContactName",
-                                    "multiple": false,
-                                    "typeClass": "primitive",
-                                    "value": "Geographic Data Technology, Inc. (GDT)"
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            "multiple": true,
-                            "typeClass": "primitive",
-                            "typeName": "datasetContact",
-                            "value": [
-                                "pete@malinator.com"
-                            ]
-                        },
+                         {
+                             "typeName": "datasetContact",
+                             "multiple": true,
+                             "typeClass": "compound",
+                             "value": [
+                                 {
+                                   "datasetContactName": {
+                                     "typeName": "datasetContactName",
+                                     "multiple": false,
+                                     "typeClass": "primitive",
+                                     "value": "Smith, John"
+                                     }
+                                 },
+                                 {
+                                   "datasetContactName": {
+                                     "typeName": "datasetContactName",
+                                     "multiple": false,
+                                     "typeClass": "primitive",
+                                     "value": "John Smith"
+                                     }
+                                 }
+                             ]
+                         },
                         {
                             "multiple": false,
                             "typeClass": "primitive",
