@@ -606,7 +606,7 @@
                                                     <td>
                                                         <ui:fragment rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.license}">
                                                             <p>
-                                                                <img src="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.iconUrl}" title="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.shortDescription}" alt="#{bundle['file.icon.alttxt']}" style="max-width:90px;width:100%;max-height:30px;height:100%" />
+                                                                <img src="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.iconUrl}" title="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.shortDescription}" style="display:none"  onload="this.style.display='inline'" />
                                                                 <a href="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.uri}" title="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.shortDescription}" target="_blank">#{DatasetPage.workingVersion.termsOfUseAndAccess.license.name}</a>
                                                             </p>
                                                         </ui:fragment>
@@ -1637,7 +1637,7 @@
                                     </ui:fragment>
                                     <ui:fragment rendered="#{!empty DatasetPage.workingVersion.termsOfUseAndAccess.license}">
                                         <p>
-                                            <img src="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.iconUrl}" alt="#{bundle['file.icon.alttxt']}" />
+                                            <img src="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.iconUrl}" title="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.shortDescription}" style="display:none"  onload="this.style.display='inline'" />
                                             <a href="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.uri}" target="_blank">#{DatasetPage.workingVersion.termsOfUseAndAccess.license.name}</a>
                                         </p>
                                     </ui:fragment>
