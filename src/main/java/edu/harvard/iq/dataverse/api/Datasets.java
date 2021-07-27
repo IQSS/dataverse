@@ -1271,11 +1271,11 @@ public class Datasets extends AbstractApiBean {
                 if (prePubWf.isPresent()) {
                     // Start the workflow, the workflow will call FinalizeDatasetPublication later
                     wfService.start(prePubWf.get(),
-                            new WorkflowContext(createDataverseRequest(user), ds, TriggerType.PrePublishDataset, true),
+                            new WorkflowContext(createDataverseRequest(user), ds, TriggerType.PrePublishDataset, false),
                             false);
                 } else {
                     FinalizeDatasetPublicationCommand cmd = new FinalizeDatasetPublicationCommand(ds,
-                            createDataverseRequest(user), true);
+                            createDataverseRequest(user), false);
                     ds = commandEngine.submit(cmd);
                 }
             } catch (CommandException ex) {
