@@ -1,24 +1,50 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
-import static junit.framework.TestCase.assertNull;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Testing DataCitation class
  * @author pkiraly@gwdg.de
  */
 public class DataCitationTest {
-
+    
+    /**
+     * This test relies on {@link BrandingUtil}. We need to provide mocks for it.
+     */
+    @BeforeAll
+    static void setup() {
+        BrandingUtilTest.setupMocks();
+    }
+    /**
+     * After this test is done, the mocks should be turned of
+     * (so we keep atomicity and no one relies on them being present).
+     */
+    @AfterAll
+    static void tearDown() {
+        BrandingUtilTest.tearDownMocks();
+    }
+    
     /**
      * Test the public properties of DataCitation class via their getters
      * @throws ParseException
