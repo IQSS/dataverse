@@ -16,6 +16,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
+import javax.json.Json;
 import javax.json.JsonObject;
 
 /**
@@ -32,6 +33,7 @@ public class DatasetFieldWalker {
 
     public interface Listener {
         void startField( DatasetField f );
+        void addExpandedValuesArray( DatasetField f );
         void endField( DatasetField f );
         void externalVocabularyValue( DatasetFieldValue dsfv, JsonObject cvocEntry );
         void primitiveValue( DatasetFieldValue dsfv );
@@ -81,16 +83,8 @@ public class DatasetFieldWalker {
     public void walk(DatasetField fld, SettingsServiceBean settingsService) {
         l.startField(fld);
         DatasetFieldType datasetFieldType = fld.getDatasetFieldType();
-        if(datasetFieldType.isPrimitive() && cvocMap.containsKey(datasetFieldType.getId())) {
-            for ( DatasetFieldValue evv : sort(fld.getDatasetFieldValues(), DatasetFieldValue.DisplayOrder) ) {
-                if (settingsService != null && settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false) && DatasetFieldType.FieldType.EMAIL.equals(evv.getDatasetField().getDatasetFieldType().getFieldType())) {
-                    continue;
-                }
-                l.externalVocabularyValue(evv, cvocMap.get(datasetFieldType.getId()));
-            }
-            
-        }
-        else if ( datasetFieldType.isControlledVocabulary() ) {
+        
+        if ( datasetFieldType.isControlledVocabulary() ) {
             for ( ControlledVocabularyValue cvv 
                     : sort(fld.getControlledVocabularyValues(), ControlledVocabularyValue.DisplayOrder) ) {
                 l.controlledVocabularyValue(cvv);
@@ -112,6 +106,16 @@ public class DatasetFieldWalker {
                }
                l.endCompoundValue(dsfcv);
            }
+        }
+        l.addExpandedValuesArray(fld); 
+        if(datasetFieldType.isPrimitive() && cvocMap.containsKey(datasetFieldType.getId())) {
+            for ( DatasetFieldValue evv : sort(fld.getDatasetFieldValues(), DatasetFieldValue.DisplayOrder) ) {
+                if (settingsService != null && settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false) && DatasetFieldType.FieldType.EMAIL.equals(evv.getDatasetField().getDatasetFieldType().getFieldType())) {
+                    continue;
+                }
+                l.externalVocabularyValue(evv, cvocMap.get(datasetFieldType.getId()));
+            }
+            
         }
         l.endField(fld);
     }

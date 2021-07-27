@@ -696,10 +696,17 @@ public class JsonPrinter {
             objectStack.peek().add("multiple", typ.isAllowMultiples());
             objectStack.peek().add("typeClass", typeClassString(typ));
         }
+        
+        @Override
+        public void addExpandedValuesArray(DatasetField f) {
+            // Invariant: all values are multiple. Diffrentiation between multiple and single is done at endField.
+            valueArrStack.push(Json.createArrayBuilder());
+        }
 
         @Override
         public void endField(DatasetField f) {
             JsonObjectBuilder jsonField = objectStack.pop();
+            JsonArray expandedValues = valueArrStack.pop().build();
             JsonArray jsonValues = valueArrStack.pop().build();
             if (!jsonValues.isEmpty()) {
                 jsonField.add("value",
@@ -707,19 +714,21 @@ public class JsonPrinter {
                                 : jsonValues.get(0));
                 valueArrStack.peek().add(jsonField);
             }
+            if (!expandedValues.isEmpty()) {
+                jsonField.add("expandedvalue",
+                        f.getDatasetFieldType().isAllowMultiples() ? expandedValues
+                                : expandedValues.get(0));
+                valueArrStack.peek().add(jsonField);
+            }
         }
 
         @Override
         public void externalVocabularyValue(DatasetFieldValue dsfv, JsonObject cvocEntry) {
             if (dsfv.getValue() != null) {
-                if (!cvocEntry.containsKey("retrieval-filtering")) {
-                    valueArrStack.peek().add(dsfv.getValue());
-                } else {
+                if (cvocEntry.containsKey("retrieval-filtering")) {
                     JsonObject value = datasetFieldService.getExternalVocabularyValue(dsfv.getValue());
                     if (value!=null) {
                         valueArrStack.peek().add(value);
-                    } else {
-                        valueArrStack.peek().add(dsfv.getValue());
                     }
                 }
             }
