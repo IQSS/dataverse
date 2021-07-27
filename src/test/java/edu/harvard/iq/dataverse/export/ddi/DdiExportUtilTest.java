@@ -6,25 +6,33 @@ import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.util.xml.html.HtmlPrinter;
 
-import org.junit.jupiter.api.Order;
+import org.jsoup.Jsoup;
+import org.jsoup.helper.W3CDom;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.w3c.dom.Document;
+import org.xmlunit.assertj3.XmlAssert;
+import org.xmlunit.builder.DiffBuilder;
+import org.xmlunit.diff.Diff;
+
+import javax.xml.stream.XMLStreamException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-@TestMethodOrder(OrderAnnotation.class)
 public class DdiExportUtilTest {
 
     private static final Logger logger = Logger.getLogger(DdiExportUtilTest.class.getCanonicalName());
@@ -32,31 +40,44 @@ public class DdiExportUtilTest {
     @Mock
     SettingsServiceBean settingsSvc;
     
-    @Test
-    @Order(1)
-    public void testJson2DdiNoFiles() throws Exception {
-        Mockito.when(settingsSvc.isTrueForKey(SettingsServiceBean.Key.ExportInstallationAsDistributorOnlyWhenNotSet, false)).thenReturn(false);
+    @BeforeEach
+    void setup() {
+        Mockito.lenient().when(settingsSvc.isTrueForKey(SettingsServiceBean.Key.ExportInstallationAsDistributorOnlyWhenNotSet, false)).thenReturn(false);
         DdiExportUtil.injectSettingsService(settingsSvc);
-        File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.json");
-        String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
-        File ddiFile = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.xml");
-        String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(ddiFile.getAbsolutePath()))));
+    }
+    
+    @Test
+    public void testJson2DdiNoFiles() throws Exception {
+        // given
+        Path datasetVersionJson = Path.of("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.json");
+        String datasetVersionAsJson = Files.readString(datasetVersionJson, StandardCharsets.UTF_8);
+        Path ddiFile = Path.of("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.xml");
+        String datasetAsDdi = XmlPrinter.prettyPrintXml(Files.readString(ddiFile, StandardCharsets.UTF_8));
         logger.fine(datasetAsDdi);
+        
+        // when
         String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
         logger.fine(result);
-        assertEquals(datasetAsDdi, result);
+        
+        // then
+        XmlAssert.assertThat(result).and(datasetAsDdi).ignoreWhitespace().areSimilar();
     }
 
     @Test
     public void testExportDDI() throws Exception {
-        File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-create-new-all-ddi-fields.json");
-        String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
-        File ddiFile = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/exportfull.xml");
-        String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(ddiFile.getAbsolutePath()))));
+        // given
+        Path datasetVersionJson = Path.of("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-create-new-all-ddi-fields.json");
+        String datasetVersionAsJson = Files.readString(datasetVersionJson, StandardCharsets.UTF_8);
+        Path ddiFile = Path.of("src/test/java/edu/harvard/iq/dataverse/export/ddi/exportfull.xml");
+        String datasetAsDdi = XmlPrinter.prettyPrintXml(Files.readString(ddiFile, StandardCharsets.UTF_8));
         logger.fine(datasetAsDdi);
+        
+        // when
         String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
         logger.fine(result);
-        assertEquals(datasetAsDdi, result);
+        
+        // then
+        XmlAssert.assertThat(result).and(datasetAsDdi).ignoreWhitespace().areSimilar();
     }
 
     @Test
@@ -67,10 +88,10 @@ public class DdiExportUtilTest {
          * but datasets created in the GUI sometimes don't have a description
          * field at all.
          */
-        File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-spruce1.json");
-        String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
-        File ddiFile = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-spruce1.xml");
-        String datasetAsDdi = XmlPrinter.prettyPrintXml(new String(Files.readAllBytes(Paths.get(ddiFile.getAbsolutePath()))));
+        Path datasetVersionJson = Path.of("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-spruce1.json");
+        String datasetVersionAsJson = Files.readString(datasetVersionJson, StandardCharsets.UTF_8);
+        Path ddiFile = Path.of("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-spruce1.xml");
+        String datasetAsDdi = XmlPrinter.prettyPrintXml(Files.readString(ddiFile, StandardCharsets.UTF_8));
         logger.fine(datasetAsDdi);
         String result = DdiExportUtil.datasetDtoAsJson2ddi(datasetVersionAsJson);
         logger.fine(result);
@@ -89,19 +110,40 @@ public class DdiExportUtilTest {
     }
 
     @Test
-    public void testDatasetHtmlDDI() throws Exception {
+    public void testDatasetHtmlDDI() throws IOException, XMLStreamException {
+        // given
         File fileXML = new File("src/test/resources/xml/dct_codebook.xml");
-
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+        // when
         DdiExportUtil.datasetHtmlDDI( new FileInputStream(fileXML), byteArrayOutputStream);
-        assertNotNull(byteArrayOutputStream);
-        assertNotEquals("",byteArrayOutputStream.toString());
-        String datasetAsDdiHtml = HtmlPrinter.prettyPrint(byteArrayOutputStream.toString());
-
-        File htmlFile = new File("src/test/resources/html/dct_codebook.html");
-        String sampleHtml = HtmlPrinter.prettyPrint(new String(Files.readAllBytes(Paths.get(htmlFile.getAbsolutePath()))));
-        assertEquals(sampleHtml,datasetAsDdiHtml);
-
+        String generatedDdiHTML = byteArrayOutputStream.toString(StandardCharsets.UTF_8);
+        
+        // then
+        assertNotNull(generatedDdiHTML);
+        assertFalse(generatedDdiHTML.isEmpty());
+        assertFalse(generatedDdiHTML.isBlank());
+    
+        // pipe through pretty printer before parsing as DOM
+        generatedDdiHTML = HtmlPrinter.prettyPrint(generatedDdiHTML);
+        Document generatedDdiHtmlDom = W3CDom.convert(Jsoup.parse(generatedDdiHTML));
+        
+        // read comparison file to build diff
+        Path htmlFile = Path.of("src/test/resources/html/dct_codebook.html");
+        String subjectHtml = HtmlPrinter.prettyPrint(new String(Files.readAllBytes(htmlFile)));
+        Document subjectHtmlDom = W3CDom.convert(Jsoup.parse(subjectHtml));
+    
+        // compare generated and sample
+        Diff diff = DiffBuilder.compare(subjectHtmlDom)
+                        .withTest(generatedDdiHtmlDom)
+                        .ignoreComments()
+                        .ignoreWhitespace()
+                        .checkForSimilar()
+                        .build();
+    
+        // assert matching and print differences if any.
+        diff.getDifferences().forEach(d -> logger.info(d.toString()));
+        assertFalse(diff.hasDifferences());
     }
 
 }
