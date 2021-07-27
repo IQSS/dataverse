@@ -80,19 +80,14 @@ public class JSONLDUtil {
         DatasetVersion dsv = new DatasetVersion();
 
         JsonObject jsonld = decontextualizeJsonLD(jsonLDBody);
-        String id = null;
-        try {
-            id=jsonld.getString("@id");
-        } catch (NullPointerException npe) {
-            //Do nothing - a null value and other invalid values will be caught in parsing
-        }
-        Optional<GlobalId> maybePid = GlobalId.parse(id);
-        if (maybePid.isPresent()) {
-            ds.setGlobalId(maybePid.get());
-        } else {
-            if(migrating) {
-              // unparsable PID passed. Terminate.
-              throw new BadRequestException("Cannot parse the @id. Make sure it is in valid form - see Dataverse Native API documentation.");
+        if (migrating) {
+            Optional<GlobalId> maybePid = GlobalId.parse(jsonld.getString("@id"));
+            if (maybePid.isPresent()) {
+                ds.setGlobalId(maybePid.get());
+            } else {
+                // unparsable PID passed. Terminate.
+                throw new BadRequestException("Cannot parse the @id '" + jsonld.getString("@id")
+                        + "'. Make sure it is in valid form - see Dataverse Native API documentation.");
             }
         }
 
@@ -103,24 +98,18 @@ public class JSONLDUtil {
         versions.add(dsv);
 
         ds.setVersions(versions);
-        if (jsonld.containsKey(JsonLDTerm.schemaOrg("dateModified").getUrl())) {
-            String dateString = jsonld.getString(JsonLDTerm.schemaOrg("dateModified").getUrl());
-            LocalDateTime dateTime = getDateTimeFrom(dateString);
-            ds.setModificationTime(Timestamp.valueOf(dateTime));
-        }
-        try {
-            if (logger.isLoggable(Level.FINE)) {
-                if (ds.getModificationTime() == null) {
-                    // Create (migrating==false case - modification time will be set in the create
-                    // call, but we need a non-null value to reuse the OREMap method for logging
-                    // here
-                    ds.setModificationTime(Timestamp.from(Instant.now()));
-                }
-                logger.fine("Output dsv: " + new OREMap(dsv, false).getOREMap().toString());
+        if (migrating) {
+            if (jsonld.containsKey(JsonLDTerm.schemaOrg("dateModified").getUrl())) {
+                String dateString = jsonld.getString(JsonLDTerm.schemaOrg("dateModified").getUrl());
+                LocalDateTime dateTime = getDateTimeFrom(dateString);
+                ds.setModificationTime(Timestamp.valueOf(dateTime));
             }
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            try {
+                logger.fine("Output dsv: " + new OREMap(dsv, false).getOREMap().toString());
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
         return ds;
     }
@@ -191,7 +180,7 @@ public class JSONLDUtil {
                     addField(dsf, valArray, dsft, datasetFieldSvc, append);
 
                 } else {
-
+                    //When migrating, the publication date and version number can be set
                     if (key.equals(JsonLDTerm.schemaOrg("datePublished").getUrl())&& migrating && !append) {
                         dsv.setVersionState(VersionState.RELEASED);
                     } else if (key.equals(JsonLDTerm.schemaOrg("version").getUrl())&& migrating && !append) {
@@ -248,7 +237,6 @@ public class JSONLDUtil {
                     // ToDo: support Dataverse location metadata? e.g. move to new dataverse?
                     // re: JsonLDTerm.schemaOrg("includedInDataCatalog")
                 }
-
             }
         }
 
