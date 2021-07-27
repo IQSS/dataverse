@@ -1241,16 +1241,15 @@ public class Datasets extends AbstractApiBean {
                         ds.getLatestVersion().setVersionNumber(Long.valueOf(ds.getVersionNumber() + 1));
                         ds.getLatestVersion().setMinorVersionNumber(Long.valueOf(0));
                     }
-                    if(ds.getLatestVersion().getVersionNumber()==1 && ds.getLatestVersion().getMinorVersionNumber()==0) {
-                        //Also set publication date if this is the first 
-                        if(dateTime != null) {
-                          ds.setPublicationDate(Timestamp.valueOf(dateTime));
-                        }
-                        // Release User is only set in FinalizeDatasetPublicationCommand if the pub date
-                        // is null, so set it here.
-                        ds.setReleaseUser((AuthenticatedUser) user);
+                }
+                if(ds.getLatestVersion().getVersionNumber()==1 && ds.getLatestVersion().getMinorVersionNumber()==0) {
+                    //Also set publication date if this is the first 
+                    if(dateTime != null) {
+                      ds.setPublicationDate(Timestamp.valueOf(dateTime));
                     }
-                    
+                    // Release User is only set in FinalizeDatasetPublicationCommand if the pub date
+                    // is null, so set it here.
+                    ds.setReleaseUser((AuthenticatedUser) user);
                 }
             } catch (Exception e) {
                 logger.fine(e.getMessage());
