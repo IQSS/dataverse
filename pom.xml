@@ -233,12 +233,6 @@
             <artifactId>passay</artifactId>
             <version>1.6.0</version>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
-            <version>1.1.4</version>
-            <scope>test</scope>
-        </dependency>
         
         <!-- TECHNICAL DEBT
              For a very long time, in a lots of places people used org.apache.commons.httpclient to access
@@ -370,6 +364,13 @@
             <artifactId>jakarta.jakartaee-api</artifactId>
             <version>${jakartaee-api.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <!-- JSON-P -->
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.json</artifactId>
+            <scope>provided</scope>
+            <!-- no version here as managed by Payara BOM above! -->
         </dependency>
         <dependency>
             <groupId>com.sun.mail</groupId>
