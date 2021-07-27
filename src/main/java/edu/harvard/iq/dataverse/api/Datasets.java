@@ -1233,6 +1233,15 @@ public class Datasets extends AbstractApiBean {
                         // First Release
                         ds.getLatestVersion().setVersionNumber(Long.valueOf(1));
                         ds.getLatestVersion().setMinorVersionNumber(Long.valueOf(0));
+                    } else if (ds.getLatestVersion().isMinorUpdate()) {
+                        ds.getLatestVersion().setVersionNumber(Long.valueOf(ds.getVersionNumber()));
+                        ds.getLatestVersion().setMinorVersionNumber(Long.valueOf(ds.getMinorVersionNumber() + 1));
+                    } else {
+                        // major, non-first release
+                        ds.getLatestVersion().setVersionNumber(Long.valueOf(ds.getVersionNumber() + 1));
+                        ds.getLatestVersion().setMinorVersionNumber(Long.valueOf(0));
+                    }
+                    if(ds.getLatestVersion().getVersionNumber()==1 && ds.getLatestVersion().getMinorVersionNumber()==0) {
                         //Also set publication date if this is the first 
                         if(dateTime != null) {
                           ds.setPublicationDate(Timestamp.valueOf(dateTime));
@@ -1240,15 +1249,6 @@ public class Datasets extends AbstractApiBean {
                         // Release User is only set in FinalizeDatasetPublicationCommand if the pub date
                         // is null, so set it here.
                         ds.setReleaseUser((AuthenticatedUser) user);
-
-                    } else if (ds.getLatestVersion().isMinorUpdate()) {
-                        ds.getLatestVersion().setVersionNumber(Long.valueOf(ds.getVersionNumber()));
-                        ds.getLatestVersion().setMinorVersionNumber(Long.valueOf(ds.getMinorVersionNumber() + 1));
-
-                    } else {
-                        // major, non-first release
-                        ds.getLatestVersion().setVersionNumber(Long.valueOf(ds.getVersionNumber() + 1));
-                        ds.getLatestVersion().setMinorVersionNumber(Long.valueOf(0));
                     }
                     
                 }
