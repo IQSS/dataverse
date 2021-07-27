@@ -113,6 +113,16 @@
             <name>Local repository for hosting jars not available from network repositories.</name>
             <url>file://${project.basedir}/local_lib</url>
         </repository>
+        <repository>
+            <id>oss-sonatype</id>
+            <name>oss-sonatype</name>
+            <url>
+                https://s01.oss.sonatype.org/content/repositories/snapshots/
+            </url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
     </repositories>
     <!-- Transitive dependencies, bigger library "bill of materials" (BOM) and
          versions of dependencies used both directly and transitive are managed here. -->
@@ -174,17 +184,24 @@
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
-            <!-- Dependency of Tika, Sword2-lib, SolrJ and maybe others -->
-            <dependency>
-                <groupId>xom</groupId>
-                <artifactId>xom</artifactId>
-                <version>1.3.7</version>
-            </dependency>
+            
             <!-- Dependency of Tika, Sword2-server, JOSS (Swift), DuraCloud, Lyncode XOAI -->
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
                 <version>${commons.io.version}</version>
+            </dependency>
+            
+            <!-- Dependency of sword2-server and used in our codebase -->
+            <dependency>
+                <groupId>org.apache.abdera</groupId>
+                <artifactId>abdera-core</artifactId>
+                <version>1.1.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.abdera</groupId>
+                <artifactId>abdera-i18n</artifactId>
+                <version>1.1.3</version>
             </dependency>
     
             <!-- Dependency of A LOT of libraries. Ensuring convergence here. -->
@@ -253,31 +270,21 @@
     
         <!-- BEGIN Data Deposit API v1 (SWORD v2) -->
         <dependency>
-            <groupId>org.swordapp</groupId>
+            <groupId>io.gdcc</groupId>
             <artifactId>sword2-server</artifactId>
-            <version>1.0</version>
-            <type>jar</type>
-            <classifier>classes</classifier>
+            <version>1.2.0-SNAPSHOT</version>
         </dependency>
+        <!-- Dependency to use sword2-server in our codebase -->
         <dependency>
-            <groupId>org.swordapp</groupId>
-            <artifactId>sword2-server</artifactId>
-            <!--
-            Built from https://github.com/IQSS/swordv2-java-server-library
-            to return a proper SWORD error message rather than a Glassfish
-            Exception per https://github.com/IQSS/dataverse/issues/893
-            If the fix is merged upstream at
-            https://github.com/swordapp/JavaServer2.0/issues/6
-            we can switch back to the official SWORD library.
-            -->
-            <version>1.1-SNAPSHOT</version>
-            <type>war</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>xerces</groupId>
-                    <artifactId>xercesImpl</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.apache.abdera</groupId>
+            <artifactId>abdera-core</artifactId>
+            <!-- no version here as managed in <dependencyManagement> above for convergence! -->
+        </dependency>
+        <!-- Dependency to use sword2-server in our codebase -->
+        <dependency>
+            <groupId>org.apache.abdera</groupId>
+            <artifactId>abdera-i18n</artifactId>
+            <!-- no version here as managed in <dependencyManagement> above for convergence! -->
         </dependency>
         
         <dependency>
@@ -289,24 +296,6 @@
           <groupId>com.apicatalog</groupId>
           <artifactId>titanium-json-ld</artifactId>
           <version>0.8.6</version>
-        </dependency>
-        <dependency>
-            <!-- required by org.swordapp.server.sword2-server -->
-            <groupId>org.apache.abdera</groupId>
-            <artifactId>abdera-core</artifactId>
-            <version>1.1.3</version>
-        </dependency>
-        <dependency>
-            <!-- required by org.swordapp.server.sword2-server -->
-            <groupId>org.apache.abdera</groupId>
-            <artifactId>abdera-parser</artifactId>
-            <version>1.1.3</version>
-        </dependency>
-        <dependency>
-            <!-- required by org.swordapp.server.sword2-server -->
-            <groupId>commons-fileupload</groupId>
-            <artifactId>commons-fileupload</artifactId>
-            <version>1.3.3</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
