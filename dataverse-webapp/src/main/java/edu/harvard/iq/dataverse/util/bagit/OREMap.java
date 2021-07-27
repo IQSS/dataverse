@@ -156,7 +156,7 @@ public class OREMap {
                              .add(JsonLDTerm.schemaOrg("Dataset").getLabel()))
                 .add(JsonLDTerm.schemaOrg("version").getLabel(), version.getFriendlyVersionNumber())
                 .add(JsonLDTerm.schemaOrg("datePublished").getLabel(), dataset.getPublicationDateFormattedYYYYMMDD())
-                .add(JsonLDTerm.schemaOrg("name").getLabel(), version.getTitle())
+                .add(JsonLDTerm.schemaOrg("name").getLabel(), version.getParsedTitle())
                 .add(JsonLDTerm.schemaOrg("dateModified").getLabel(),
                      DateUtil.retrieveISOFormatter(ZoneId.of("UTC")).format(version.getLastUpdateTime().toInstant()));
 

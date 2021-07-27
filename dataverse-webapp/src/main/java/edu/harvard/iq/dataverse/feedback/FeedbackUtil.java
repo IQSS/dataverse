@@ -12,7 +12,6 @@ import edu.harvard.iq.dataverse.persistence.dataverse.DataverseContact;
 
 import javax.mail.internet.InternetAddress;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -55,7 +54,7 @@ public class FeedbackUtil {
                 }
             } else if (recipient.isInstanceofDataset()) {
                 Dataset dataset = (Dataset) recipient;
-                String datasetTitle = dataset.getLatestVersion().getTitle();
+                String datasetTitle = dataset.getLatestVersion().getParsedTitle();
                 String datasetPid = dataset.getGlobalIdString();
                 String datasetContextEnding = BundleUtil.getStringFromBundle("contact.context.dataset.ending", supportTeamName, systemEmail, dataverseSiteUrl, dataset.getGlobalIdString(), supportTeamName, systemEmail);
                 List<DvObjectContact> datasetContacts = getDatasetContacts(dataset);
@@ -75,7 +74,7 @@ public class FeedbackUtil {
                 }
             } else {
                 DataFile datafile = (DataFile) recipient;
-                String datasetTitle = datafile.getOwner().getLatestVersion().getTitle();
+                String datasetTitle = datafile.getOwner().getLatestVersion().getParsedTitle();
                 String datasetPid = datafile.getOwner().getGlobalIdString();
                 String filename = datafile.getFileMetadatas().get(0).getLabel();
                 List<DvObjectContact> datasetContacts = getDatasetContacts(datafile.getOwner());

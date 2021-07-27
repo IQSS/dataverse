@@ -13,7 +13,7 @@
     </h:head>
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{editDatasetMetadataPage.workingVersion.title} - #{editDatasetMetadataPage.dataset.owner.name}"/>
+            <ui:param name="pageTitle" value="#{editDatasetMetadataPage.pageTitle}"/>
             <ui:param name="dataverse" value="#{editDatasetMetadataPage.dataset.owner}"/>
             <ui:param name="dataset" value="#{editDatasetMetadataPage.dataset}"/>
             

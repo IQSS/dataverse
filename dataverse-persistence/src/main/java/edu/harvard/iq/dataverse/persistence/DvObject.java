@@ -86,7 +86,7 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
 
         @Override
         public String visit(Dataset ds) {
-            return ds.getLatestVersion().getTitle();
+            return ds.getLatestVersion().getParsedTitle();
         }
 
         @Override
@@ -103,7 +103,7 @@ public abstract class DvObject extends DataverseEntity implements java.io.Serial
 
         @Override
         public String visit(Dataset ds) {
-            return "[" + ds.getId() + (ds.getLatestVersion() != null ? " " + ds.getLatestVersion().getTitle() : "") + "]";
+            return "[" + ds.getId() + (ds.getLatestVersion() != null ? " " + ds.getLatestVersion().getParsedTitle() : "") + "]";
         }
 
         @Override

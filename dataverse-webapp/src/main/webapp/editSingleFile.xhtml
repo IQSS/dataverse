@@ -18,7 +18,7 @@
 
 <h:body>
     <ui:composition template="/dataverse_template.xhtml">
-        <ui:param name="pageTitle" value="#{bundle['file.editSingleFile']} - #{EditSingleFilePage.workingVersion.title}"/>
+        <ui:param name="pageTitle" value="#{EditSingleFilePage.pageTitle}"/>
         <ui:param name="dataverse" value="#{EditSingleFilePage.dataset.owner}"/>
         <ui:param name="dataset" value="#{EditSingleFilePage.dataset}"/>
         <ui:param name="version" value="#{EditSingleFilePage.workingVersion}"/>

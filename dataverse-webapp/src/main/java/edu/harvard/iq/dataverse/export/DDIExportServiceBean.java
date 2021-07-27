@@ -532,7 +532,7 @@ public class DDIExportServiceBean {
 
     private void createStdyDscr(XMLStreamWriter xmlw, Set<String> excludedFieldSet, Set<String> includedFieldSet, DatasetVersion version) throws XMLStreamException {
 
-        String title = version.getTitle();
+        String title = version.getParsedTitle();
         String authors = version.getAuthorsStr(false);
         String persistentAgency = version.getDataset().getProtocol();
         String persistentAuthority = version.getDataset().getAuthority();

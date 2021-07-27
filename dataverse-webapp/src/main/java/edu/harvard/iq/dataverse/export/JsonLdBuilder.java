@@ -64,7 +64,7 @@ public class JsonLdBuilder {
         // Note that whenever you use "@id" you should also use "identifier" and vice versa.
         job.add("@id", datasetVersion.getDataset().getPersistentURL());
         job.add("identifier", datasetVersion.getDataset().getPersistentURL());
-        job.add("name", datasetVersion.getTitle());
+        job.add("name", datasetVersion.getParsedTitle());
         JsonArrayBuilder authors = Json.createArrayBuilder();
         for (DatasetAuthor datasetAuthor : datasetVersion.getDatasetAuthors()) {
             JsonObjectBuilder author = Json.createObjectBuilder();

@@ -398,12 +398,12 @@
             <ui:repeat value="#{dataverseHeaderFragment.breadcrumbs}" var="breadcrumb" varStatus="status">
                 <h:outputText value=" > " styleClass="breadcrumbCarrot" rendered="#{!status.first}"/>
                 <div class="breadcrumbBlock">
-                    <h:outputText value="#{breadcrumb.breadcrumbText}" styleClass="breadcrumbActive" rendered="#{status.last}"/>
+                    <h:outputText value="#{breadcrumb.breadcrumbText}" styleClass="breadcrumbActive" rendered="#{status.last}" escape="false"/>
                     <ui:fragment rendered="#{!status.last}">
                         <h:outputText value="#{breadcrumb.breadcrumbText}" rendered="#{empty breadcrumb.url}"/>
                         <ui:fragment rendered="#{!empty breadcrumb.url}">
                             <a id="breadcrumbLnk#{status.index}" href="${breadcrumb.url}" target="#{breadcrumb.openUrlInNewTab ? '_blank' : ''}">
-                                <h:outputText value="#{breadcrumb.breadcrumbText}"/>
+                                <h:outputText value="#{breadcrumb.breadcrumbText}" escape="false" />
                             </a>
                         </ui:fragment>
                     </ui:fragment>

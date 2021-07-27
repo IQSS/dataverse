@@ -65,7 +65,7 @@ public class CitationDataExtractor {
 
         data.getAuthors().addAll(extractAuthors(dsv));
         data.setYear(new SimpleDateFormat("yyyy").format(dataDate))
-                .setTitle(dsv.getTitle());
+                .setTitle(dsv.getParsedTitle());
 
         if (!dsv.getDataset().isHarvested()) {
             data.getProducers().addAll(extractProducers(dsv));

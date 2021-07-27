@@ -14,7 +14,7 @@
 
 <h:body>
     <ui:composition template="/dataverse_template.xhtml">
-        <ui:param name="pageTitle" value="#{bundle['file.reorderFiles']} - #{ReorderDataFilesPage.datasetVersion.title}"/>
+        <ui:param name="pageTitle" value="#{ReorderDataFilesPage.pageTitle}"/>
         <ui:param name="fileMetadatas" value="#{ReorderDataFilesPage.fileMetadatas}"/>
         <ui:define name="body">
             <f:metadata>

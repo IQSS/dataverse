@@ -246,7 +246,7 @@ public class DatasetField implements Serializable {
 
     public String getRawValue() {
         StringBuilder returnString = new StringBuilder();
-        for (String value : getRawValuesList()) {
+        for (String value : getRawValues()) {
             if (value == null) {
                 value = "";
             }
@@ -267,7 +267,7 @@ public class DatasetField implements Serializable {
     public String getCompoundRawValue() {
         StringBuilder returnString = new StringBuilder();
         for (DatasetField dsf : getDatasetFieldsChildren()) {
-            for (String value : dsf.getRawValuesList()) {
+            for (String value : dsf.getRawValues()) {
                 if (value != null) {
                     returnString.append((returnString.length() == 0) ? "" : "; ")
                             .append(value.trim());
@@ -295,7 +295,7 @@ public class DatasetField implements Serializable {
         return returnList;
     }
 
-    private List<String> getRawValuesList() {
+    private List<String> getRawValues() {
         List<String> returnList = new ArrayList<>();
         if (getFieldValue().isDefined()) {
             returnList.add(getUnsanitizedDisplayValue());

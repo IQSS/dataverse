@@ -24,7 +24,7 @@ public class WorkflowUtil {
             workflowCommentAsJson.add("commentBy", workflowComment.getAuthenticatedUser().getIdentifier());
             workflowCommentAsJson.add("datasetId", datasetVersion.getDataset().getId());
             workflowCommentAsJson.add("datasetVersionId", datasetVersion.getId());
-            workflowCommentAsJson.add("datasetTitle", datasetVersion.getTitle());
+            workflowCommentAsJson.add("datasetTitle", datasetVersion.getParsedTitle());
             workflowCommentsAsJson.add(workflowCommentAsJson);
         }
         return workflowCommentsAsJson;

@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
+import org.jsoup.Jsoup;
 
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -122,6 +123,10 @@ public class SelectGuestbookPage implements java.io.Serializable {
 
     public void viewSelectedGuestbook(Guestbook selectedGuestbook) {
         this.selectedGuestbook = selectedGuestbook;
+    }
+
+    public String getPageTitle() {
+        return dataset.getLatestVersion().getParsedTitle()+ " - " + Jsoup.parse(dataset.getOwner().getName()).text();
     }
 
     // -------------------- PRIVATE --------------------

@@ -72,7 +72,7 @@ public class StatementManagerImpl implements StatementManager {
             }
             String feedUri = urlManagerServiceBean.getHostnamePlusBaseUrlPath() + "/edit/study/" + dataset.getGlobalIdString();
             String author = dataset.getLatestVersion().getAuthorsStr();
-            String title = dataset.getLatestVersion().getTitle();
+            String title = dataset.getLatestVersion().getParsedTitle();
             // in the statement, the element is called "updated"
             Date lastUpdatedFinal = new Date();
             Date lastUpdateTime = dataset.getLatestVersion().getLastUpdateTime();

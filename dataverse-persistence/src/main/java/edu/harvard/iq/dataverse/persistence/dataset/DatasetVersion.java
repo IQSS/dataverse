@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowComment;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.persistence.annotations.Customizer;
+import org.jsoup.Jsoup;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -656,6 +657,10 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
             }
         }
         return retVal;
+    }
+
+    public String getParsedTitle() {
+        return Jsoup.parse(getTitle()).text();
     }
 
     public String getProductionDate() {

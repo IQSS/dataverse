@@ -278,10 +278,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     // -------------------- LOGIC --------------------
 
     public Boolean isSanitizeHtml() {
-        if (FieldType.URL.equals(this.fieldType)) {
-            return true;
-        }
-        return FieldType.TEXTBOX.equals(this.fieldType);
+        return FieldType.URL.equals(this.fieldType) || FieldType.TEXTBOX.equals(this.fieldType);
     }
 
     public Boolean isEscapeOutputText() {

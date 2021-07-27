@@ -63,6 +63,7 @@ import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import org.jsoup.Jsoup;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -922,7 +923,7 @@ public class Dataverses extends AbstractApiBean {
             List<Dataset> datasetsThisDvHasLinkedToList = dataverseSvc.findDatasetsThisIdHasLinkedTo(dv.getId());
             JsonArrayBuilder datasetsThisDvHasLinkedToBuilder = Json.createArrayBuilder();
             for (Dataset dataset : datasetsThisDvHasLinkedToList) {
-                datasetsThisDvHasLinkedToBuilder.add(dataset.getLatestVersion().getTitle());
+                datasetsThisDvHasLinkedToBuilder.add(dataset.getLatestVersion().getParsedTitle());
             }
 
             JsonObjectBuilder response = Json.createObjectBuilder();

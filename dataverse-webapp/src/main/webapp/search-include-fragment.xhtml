@@ -536,7 +536,7 @@
                                 </div>
                                 <a href="#{dsUrlFinal}" target="#{dsCardUrlsTarget}">
                                     <h:outputText value="#{bundle.dataset}" styleClass="sr-only" />
-                                    <h:outputText value="#{result.title}" rendered="#{result.titleHighlightSnippet == null}"/>
+                                    <h:outputText value="#{result.title}" escape="false" rendered="#{result.titleHighlightSnippet == null}"/>
                                     <h:outputText value="#{result.titleHighlightSnippet}" rendered="#{result.titleHighlightSnippet != null}" escape="false"/>
                                     <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="sr-only" rendered="#{result.draftState}" />
                                 </a>
@@ -620,7 +620,7 @@
                                 <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard} - "/>
                                 <a href="#{fileParentUrlFinal}" target="#{fileCardUrlsTarget}">
                                     <h:outputText value="#{bundle.dataset}" styleClass="sr-only" />
-                                    <h:outputText value="#{result.parent.get('name')}"/></a>
+                                    <h:outputText value="#{result.parent.get('name')}" escape="false"/></a>
                             </div>
     
                             <div>

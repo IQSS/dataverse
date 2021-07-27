@@ -194,7 +194,8 @@
               widgetVar="detailsBlocks" modal="true">
         <ui:fragment rendered="#{datasetVersionsTab.versionsDifferenceForDialog.isNotEmpty()}">
             <div id="version-title"
-                 class="margin-bottom-half">#{datasetVersionsTab.versionsDifferenceForDialog.newVersion.title}</div>
+                 class="margin-bottom-half">
+                <h:outputText value="#{datasetVersionsTab.versionsDifferenceForDialog.newVersion.title}" escape="false" /></div>
 
             <div id="files-section-hidden-msg" jsf:rendered="#{datasetVersionsTab.isUserUnderEmbargo()}"
                  class="margin-bottom margin-top">

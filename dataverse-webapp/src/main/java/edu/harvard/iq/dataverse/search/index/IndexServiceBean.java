@@ -306,7 +306,7 @@ public class IndexServiceBean {
         List<String> solrIdsOfFilesToDelete = new ArrayList<>();
         for (DatasetVersion datasetVersion : versions) {
             Long versionDatabaseId = datasetVersion.getId();
-            String versionTitle = datasetVersion.getTitle();
+            String versionTitle = datasetVersion.getParsedTitle();
             String semanticVersion = datasetVersion.getSemanticVersion();
             DatasetVersion.VersionState versionState = datasetVersion.getVersionState();
             if (versionState.equals(DatasetVersion.VersionState.RELEASED)) {

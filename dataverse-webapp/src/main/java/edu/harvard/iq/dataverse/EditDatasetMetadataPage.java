@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.importer.metadata.ImporterRegistry;
 import edu.harvard.iq.dataverse.importer.metadata.MetadataImporter;
 import edu.harvard.iq.dataverse.importers.ui.ImporterForm;
-
 import edu.harvard.iq.dataverse.importers.ui.ImportersForView;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
@@ -21,15 +20,14 @@ import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
+import org.jsoup.Jsoup;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.faces.application.FacesMessage;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.validation.ValidationException;
-
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
@@ -196,6 +194,10 @@ public class EditDatasetMetadataPage implements Serializable {
             logger.log(Level.SEVERE, "Couldn't edit dataset metadata: " + throwable.getMessage(), throwable);
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.metadataFailure"));
         }
+    }
+
+    public String getPageTitle() {
+        return workingVersion.getParsedTitle() + " - " + Jsoup.parse(dataset.getOwner().getName()).text();
     }
 
     // -------------------- SETTERS --------------------

@@ -23,7 +23,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
@@ -274,6 +273,10 @@ public class EditSingleFilePage implements java.io.Serializable {
         selectedFileMetadataTags.forEach(selectedFile::addCategoryByName);
 
         setTagsForTabularData(selectedDataFileTags, selectedFile);
+    }
+
+    public String getPageTitle() {
+        return BundleUtil.getStringFromBundle("file.editSingleFile") + " - " + workingVersion.getParsedTitle();
     }
 
     // -------------------- PRIVATE ---------------------

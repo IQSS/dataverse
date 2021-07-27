@@ -449,7 +449,7 @@ public class WorldMapRelatedData extends AbstractApiBean {
         jsonData.add("dataset_version_id", dset_version.getId());   // database id
         jsonData.add("dataset_semantic_version", dset_version.getSemanticVersion());  // major/minor version number, e.g. 3.1
 
-        jsonData.add("dataset_name", dset_version.getTitle());
+        jsonData.add("dataset_name", dset_version.getParsedTitle());
         jsonData.add("dataset_citation", citationFactory.create(dset_version).toString(true));
 
         jsonData.add("dataset_description", "");  // Need to fix to/do

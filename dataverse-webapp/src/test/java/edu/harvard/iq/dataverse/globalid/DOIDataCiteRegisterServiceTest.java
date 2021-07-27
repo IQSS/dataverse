@@ -75,7 +75,7 @@ class DOIDataCiteRegisterServiceTest {
         dataset.setVersions(Collections.singletonList(version));
         when(version.getDescriptionPlainText()).thenReturn("&nbsp;Description&nbsp;&nbsp;&nbsp;1&nbsp;");
         when(version.getRootDataverseNameforCitation()).thenReturn("");
-        when(version.getTitle()).thenReturn("");
+        when(version.getParsedTitle()).thenReturn("");
 
         // when
         String xml = DOIDataCiteRegisterService.getMetadataFromDvObject(

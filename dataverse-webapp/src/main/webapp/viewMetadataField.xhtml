@@ -23,7 +23,7 @@
             
                 <ui:repeat var="value" value="#{datasetField.values}" varStatus="valuesLoop">
                         <h:outputText value="#{valuesLoop.first?'':'; '}#{ value }"
-                                escape="#{datasetField.datasetFieldType.isEscapeOutputText()}"/>
+                                escape="false"/>
                 </ui:repeat>
                 
                 <ui:repeat var="childField" value="#{datasetField.datasetFieldsChildren}" varStatus="childLoop">

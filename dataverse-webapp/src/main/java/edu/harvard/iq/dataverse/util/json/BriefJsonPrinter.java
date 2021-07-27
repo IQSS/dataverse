@@ -22,7 +22,7 @@ public class BriefJsonPrinter {
                 : jsonObjectBuilder().add("id", dsv.getId())
                 .add("version", dsv.getVersion())
                 .add("versionState", dsv.getVersionState().name())
-                .add("title", dsv.getTitle());
+                .add("title", dsv.getParsedTitle());
     }
 
     public JsonObjectBuilder json(MetadataBlock blk) {

@@ -59,6 +59,7 @@ import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jsoup.Jsoup;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
@@ -805,6 +806,10 @@ public class DatasetPage implements java.io.Serializable {
                 .filter(item -> item.getFileSummary().getFileId().equals(fileId))
                 .map(DatasetFileTermDifferenceItem::getFileName)
                 .findFirst().orElse(StringUtils.EMPTY);
+    }
+
+    public String getPageTitle() {
+        return workingVersion.getParsedTitle() + " - " + Jsoup.parse(dataset.getOwner().getName()).text();
     }
 
 

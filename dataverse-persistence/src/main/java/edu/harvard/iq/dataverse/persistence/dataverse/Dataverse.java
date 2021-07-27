@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.persistence.dataverse;
 
 import edu.harvard.iq.dataverse.common.BundleUtil;
+import edu.harvard.iq.dataverse.common.MarkupChecker;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.DvObjectContainer;
 import edu.harvard.iq.dataverse.persistence.dataset.ControlledVocabularyValue;
@@ -770,7 +771,7 @@ public class Dataverse extends DvObjectContainer {
 
     @Override
     public String getDisplayName() {
-        return getName();
+        return MarkupChecker.stripAllTags(MarkupChecker.sanitizeBasicHTML(getName()));
     }
 
     @Override

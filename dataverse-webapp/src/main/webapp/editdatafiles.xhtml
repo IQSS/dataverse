@@ -15,7 +15,7 @@
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
             <ui:param name="pageTitle"
-                      value="#{datasetPage || EditDatafilesPage.showFileUploadFragment() ? bundle['file.uploadFiles'] : bundle['file.editFiles']} - #{EditDatafilesPage.workingVersion.title}"/>
+                      value="#{EditDatafilesPage.getPageTitle(datasetPage)}"/>
             <ui:param name="dataverse" value="#{EditDatafilesPage.dataset.owner}"/>
             <ui:param name="dataset" value="#{EditDatafilesPage.dataset}"/>
             <ui:param name="version" value="#{EditDatafilesPage.workingVersion}"/>

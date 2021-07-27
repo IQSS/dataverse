@@ -195,7 +195,7 @@ public final class DatasetVersionDifference {
 
         String retVal = "";
 
-        retVal = System.lineSeparator() + this.newVersion.getTitle() + " (" + this.originalVersion.getDataset().getIdentifier() + ") was updated " + new Date();
+        retVal = System.lineSeparator() + this.newVersion.getParsedTitle() + " (" + this.originalVersion.getDataset().getIdentifier() + ") was updated " + new Date();
 
         String valueString = "";
         String groupString = "";

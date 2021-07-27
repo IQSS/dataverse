@@ -175,7 +175,7 @@ public class PermissionsSolrDocFactory {
 
     private PermissionsSolrDoc makeDatasetSolrDoc(DatasetVersion version) {
         String solrId = buildDatasetPermissionSolrId(version);
-        String name = version.getTitle();
+        String name = version.getParsedTitle();
         SearchPermissions perms = searchPermissionsService.findDatasetVersionPerms(version);
 
         return new PermissionsSolrDoc(version.getDataset().getId(), solrId, version.getId(), name, perms);

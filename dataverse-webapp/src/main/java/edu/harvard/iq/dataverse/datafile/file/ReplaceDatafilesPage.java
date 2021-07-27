@@ -373,6 +373,10 @@ public class ReplaceDatafilesPage implements Serializable {
         return settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);
     }
 
+    public String getPageTitle() {
+        return BundleUtil.getStringFromBundle("file.replaceFile") + " - " + dataset.getEditVersion().getParsedTitle();
+    }
+
     // -------------------- PRIVATE --------------------
 
     private String checkPermissions(Dataset dataset, DataFile fileToBeReplaced) {

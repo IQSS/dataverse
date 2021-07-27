@@ -724,7 +724,7 @@ public class Dataset extends DvObjectContainer {
     @Override
     public String getDisplayName() {
         DatasetVersion dsv = getReleasedVersion();
-        return dsv != null ? dsv.getTitle() : getLatestVersion().getTitle();
+        return dsv != null ? dsv.getParsedTitle() : getLatestVersion().getParsedTitle();
     }
 
     @Override

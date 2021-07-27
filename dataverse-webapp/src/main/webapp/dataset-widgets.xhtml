@@ -11,7 +11,7 @@
 
     <h:body>
         <ui:composition template="/dataverse_template.xhtml">
-            <ui:param name="pageTitle" value="#{bundle['dataset.widgets.title']} - #{DatasetWidgetsPage.dataset.latestVersion.title}"/>
+            <ui:param name="pageTitle" value="#{bundle['dataset.widgets.title']} - #{DatasetWidgetsPage.dataset.latestVersion.parsedTitle}"/>
             <ui:param name="dataverse" value="#{DatasetWidgetsPage.dataset.owner}"/>
             <ui:param name="dataset" value="#{DatasetWidgetsPage.dataset}"/>
             <ui:param name="showMessagePanel" value="#{true}"/>

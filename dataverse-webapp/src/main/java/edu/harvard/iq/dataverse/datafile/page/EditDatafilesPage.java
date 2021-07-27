@@ -50,6 +50,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.jsoup.Jsoup;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 
@@ -794,6 +795,11 @@ public class EditDatafilesPage implements java.io.Serializable {
         return "/dataset.xhtml?persistentId=" + dataset.getGlobalId().asString() + "&faces-redirect=true";
     }
 
+    public String getPageTitle(boolean datasetPage) {
+        return datasetPage || showFileUploadFragment() ?
+                BundleUtil.getStringFromBundle("file.uploadFiles") :
+                BundleUtil.getStringFromBundle("file.editFiles") + " - " + workingVersion.getParsedTitle();
+    }
 
     public String cancel() {
         uploadInProgress = false;

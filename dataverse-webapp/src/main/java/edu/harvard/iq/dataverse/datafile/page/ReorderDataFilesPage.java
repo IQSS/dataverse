@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.datafile.page;
 
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.PermissionsWrapper;
+import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
@@ -13,7 +14,6 @@ import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -123,6 +123,10 @@ public class ReorderDataFilesPage implements java.io.Serializable {
                     + datasetVersion.getDataset().getGlobalId().asString()
                     + "&faces-redirect=true&version="
                     + datasetVersion.getVersionNumber() + "." + datasetVersion.getMinorVersionNumber();
+    }
+
+    public String getPageTitle() {
+        return BundleUtil.getStringFromBundle("file.reorderFiles") + " - " + datasetVersion.getParsedTitle();
     }
 
     public DatasetVersion getDatasetVersion() {
