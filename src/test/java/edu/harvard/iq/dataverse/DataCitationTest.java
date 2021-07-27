@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.xmlunit.assertj3.XmlAssert;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -251,27 +252,29 @@ public class DataCitationTest {
     public void testToEndNoteString_withTitleAndAuthor() throws ParseException {
         DatasetVersion datasetVersion = createATestDatasetVersion("Dataset Title", true);
         DataCitation dataCitation = new DataCitation(datasetVersion);
-        assertEquals(
-           "<?xml version='1.0' encoding='UTF-8'?>" +
-           "<xml>" +
-           "<records>" +
-           "<record>" +
-           "<ref-type name=\"Dataset\">59</ref-type>" +
-           "<contributors>" +
-           "<authors><author>First Last</author></authors>" +
-           "</contributors>" +
-           "<titles><title>Dataset Title</title></titles>" +
-           "<section>1955-11-05</section>" +
-           "<dates><year>1955</year></dates>" +
-           "<edition>V1</edition>" +
-           "<publisher>LibraScholar</publisher>" +
-           "<urls><related-urls><url>https://doi.org/10.5072/FK2/LK0D1H</url></related-urls></urls>" +
-           "<electronic-resource-num>doi/10.5072/FK2/LK0D1H</electronic-resource-num>" +
-           "</record>" +
-           "</records>" +
-           "</xml>",
-           dataCitation.toEndNoteString()
-        );
+        String expected = "<?xml version='1.0' encoding='UTF-8'?>" +
+            "<xml>" +
+            "<records>" +
+            "<record>" +
+            "<ref-type name=\"Dataset\">59</ref-type>" +
+            "<contributors>" +
+            "<authors><author>First Last</author></authors>" +
+            "</contributors>" +
+            "<titles><title>Dataset Title</title></titles>" +
+            "<section>1955-11-05</section>" +
+            "<dates><year>1955</year></dates>" +
+            "<edition>V1</edition>" +
+            "<publisher>LibraScholar</publisher>" +
+            "<urls><related-urls><url>https://doi.org/10.5072/FK2/LK0D1H</url></related-urls></urls>" +
+            "<electronic-resource-num>doi/10.5072/FK2/LK0D1H</electronic-resource-num>" +
+            "</record>" +
+            "</records>" +
+            "</xml>";
+    
+        // similar = the content of the nodes in the documents are the same, but minor differences exist
+        //           e.g. sequencing of sibling elements, values of namespace prefixes, use of implied attribute values
+        // https://www.xmlunit.org/api/java/2.8.2/org/custommonkey/xmlunit/Diff.html
+        XmlAssert.assertThat(dataCitation.toEndNoteString()).and(expected).areSimilar();
     }
 
     @Test
@@ -279,7 +282,7 @@ public class DataCitationTest {
         String nullDatasetTitle = null;
         DatasetVersion datasetVersion = createATestDatasetVersion(nullDatasetTitle, false);
         DataCitation dataCitation = new DataCitation(datasetVersion);
-        assertEquals(
+        String expected =
            "<?xml version='1.0' encoding='UTF-8'?>" +
            "<xml>" +
            "<records>" +
@@ -295,9 +298,12 @@ public class DataCitationTest {
            "<electronic-resource-num>doi/10.5072/FK2/LK0D1H</electronic-resource-num>" +
            "</record>" +
            "</records>" +
-           "</xml>",
-           dataCitation.toEndNoteString()
-        );
+           "</xml>";
+    
+        // similar = the content of the nodes in the documents are the same, but minor differences exist
+        //           e.g. sequencing of sibling elements, values of namespace prefixes, use of implied attribute values
+        // https://www.xmlunit.org/api/java/2.8.2/org/custommonkey/xmlunit/Diff.html
+        XmlAssert.assertThat(dataCitation.toEndNoteString()).and(expected).areSimilar();
     }
 
     @Test
