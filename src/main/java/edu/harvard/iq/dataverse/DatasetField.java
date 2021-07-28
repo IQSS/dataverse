@@ -248,8 +248,12 @@ public class DatasetField implements Serializable {
     }
 
     public String getDisplayValue() {
+        return getDisplayValue(null);
+    }
+    
+    public String getDisplayValue(String lang) {
         String returnString = "";
-        for (String value : getValues()) {
+        for (String value : getValues(lang)) {
             if(value == null) {
                 value="";
             }
@@ -301,6 +305,10 @@ public class DatasetField implements Serializable {
      * despite the name, this returns a list of display values; not a list of values
      */
     public List<String> getValues() {
+        return getValues(null);
+    }
+
+    public List<String> getValues(String langCode) {
         List<String> returnList = new ArrayList<>();
         if (!datasetFieldValues.isEmpty()) {
             for (DatasetFieldValue dsfv : datasetFieldValues) {
@@ -308,8 +316,8 @@ public class DatasetField implements Serializable {
             }
         } else {
             for (ControlledVocabularyValue cvv : controlledVocabularyValues) {
-                if (cvv != null && cvv.getLocaleStrValue() != null) {
-                    returnList.add(cvv.getLocaleStrValue());
+                if (cvv != null && cvv.getLocaleStrValue(langCode) != null) {
+                    returnList.add(cvv.getLocaleStrValue(langCode));
                 }
             }
         }

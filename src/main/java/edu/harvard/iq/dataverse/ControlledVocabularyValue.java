@@ -114,19 +114,36 @@ public class ControlledVocabularyValue implements Serializable  {
         this.controlledVocabAlternates = controlledVocabAlternates;
     }
 
-    public String getLocaleStrValue()
-    {
-        String key = strValue.toLowerCase().replace(" " , "_");
+    public String getLocaleStrValue() {
+        return getLocaleStrValue(null);
+    }
+    
+    public String getLocaleStrValue(String language) {
+        //Sword input uses a special controlled vacab value ("N/A" that does not have a datasetFieldType / is not part of any metadata block, so handle it specially
+        if(strValue.equals(DatasetField.NA_VALUE) && this.datasetFieldType == null) {
+            return strValue;
+        }
+        if(this.datasetFieldType == null) {
+            logger.warning("Null datasetFieldType for value: " + strValue);
+        }
+        return getLocaleStrValue(strValue, this.datasetFieldType.getName(),getDatasetFieldType().getMetadataBlock().getName(),language == null ? null : new Locale(language), true);
+    }
+    
+    public static String getLocaleStrValue(String strValue, String fieldTypeName, String metadataBlockName,
+            Locale locale, boolean sendDefault) {
+        String key = strValue.toLowerCase().replace(" ", "_");
         key = StringUtils.stripAccents(key);
         try {
-            String val = BundleUtil.getStringFromPropertyFile("controlledvocabulary." + this.datasetFieldType.getName() + "." + key, getDatasetFieldType().getMetadataBlock().getName()); 
-            if( val == null) {
-                //Default to raw value 
-                val=strValue; 
+            String val = BundleUtil.getStringFromPropertyFile("controlledvocabulary." + fieldTypeName + "." + key,
+                    metadataBlockName, locale);
+            if (!val.isBlank()) {
+                logger.fine("Found : " + val);
+                return val;
+            } else {
+                return sendDefault ? strValue : null;
             }
-            return val;
         } catch (MissingResourceException | NullPointerException e) {
-            return strValue;
+            return sendDefault ? strValue : null;
         }
     }
 
