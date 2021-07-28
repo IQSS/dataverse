@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 
 import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;
@@ -28,199 +29,34 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * For docs see {@link SchemaDotOrgExporter}.
  */
 public class SchemaDotOrgExporterTest {
 
-    private final SchemaDotOrgExporter schemaDotOrgExporter;
-    MockDatasetFieldSvc datasetFieldTypeSvc = null;
+    private static final Logger logger = Logger.getLogger(SchemaDotOrgExporterTest.class.getCanonicalName());
+    private static final MockDatasetFieldSvc datasetFieldTypeSvc = new MockDatasetFieldSvc();
+    private static final SchemaDotOrgExporter schemaDotOrgExporter = new SchemaDotOrgExporter();
 
-    public SchemaDotOrgExporterTest() {
-        schemaDotOrgExporter = new SchemaDotOrgExporter();
-    }
-
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() {
+        BrandingUtilTest.setupMocks();
+        mockDatasetFieldSvc();
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-        datasetFieldTypeSvc = new MockDatasetFieldSvc();
-
-        DatasetFieldType titleType = datasetFieldTypeSvc.add(new DatasetFieldType("title", DatasetFieldType.FieldType.TEXTBOX, false));
-        DatasetFieldType authorType = datasetFieldTypeSvc.add(new DatasetFieldType("author", DatasetFieldType.FieldType.TEXT, true));
-        Set<DatasetFieldType> authorChildTypes = new HashSet<>();
-        authorChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("authorName", DatasetFieldType.FieldType.TEXT, false)));
-        authorChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("authorAffiliation", DatasetFieldType.FieldType.TEXT, false)));
-        authorChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("authorIdentifier", DatasetFieldType.FieldType.TEXT, false)));
-        DatasetFieldType authorIdentifierSchemeType = datasetFieldTypeSvc.add(new DatasetFieldType("authorIdentifierScheme", DatasetFieldType.FieldType.TEXT, false));
-        authorIdentifierSchemeType.setAllowControlledVocabulary(true);
-        authorIdentifierSchemeType.setControlledVocabularyValues(Arrays.asList(
-                // Why aren't these enforced? Should be ORCID, etc.
-                new ControlledVocabularyValue(1l, "ark", authorIdentifierSchemeType),
-                new ControlledVocabularyValue(2l, "doi", authorIdentifierSchemeType),
-                new ControlledVocabularyValue(3l, "url", authorIdentifierSchemeType)
-        ));
-        authorChildTypes.add(datasetFieldTypeSvc.add(authorIdentifierSchemeType));
-        for (DatasetFieldType t : authorChildTypes) {
-            t.setParentDatasetFieldType(authorType);
-        }
-        authorType.setChildDatasetFieldTypes(authorChildTypes);
-
-        DatasetFieldType datasetContactType = datasetFieldTypeSvc.add(new DatasetFieldType("datasetContact", DatasetFieldType.FieldType.TEXT, true));
-        Set<DatasetFieldType> datasetContactTypes = new HashSet<>();
-        datasetContactTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("datasetContactEmail", DatasetFieldType.FieldType.TEXT, false)));
-        datasetContactTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("datasetContactName", DatasetFieldType.FieldType.TEXT, false)));
-        datasetContactTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("datasetContactAffiliation", DatasetFieldType.FieldType.TEXT, false)));
-        for (DatasetFieldType t : datasetContactTypes) {
-            t.setParentDatasetFieldType(datasetContactType);
-        }
-        datasetContactType.setChildDatasetFieldTypes(datasetContactTypes);
-
-        DatasetFieldType dsDescriptionType = datasetFieldTypeSvc.add(new DatasetFieldType("dsDescription", DatasetFieldType.FieldType.TEXT, true));
-        Set<DatasetFieldType> dsDescriptionTypes = new HashSet<>();
-        dsDescriptionTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("dsDescriptionValue", DatasetFieldType.FieldType.TEXT, false)));
-        for (DatasetFieldType t : dsDescriptionTypes) {
-            t.setParentDatasetFieldType(dsDescriptionType);
-        }
-        dsDescriptionType.setChildDatasetFieldTypes(dsDescriptionTypes);
-
-        DatasetFieldType keywordType = datasetFieldTypeSvc.add(new DatasetFieldType("keyword", DatasetFieldType.FieldType.TEXT, true));
-        Set<DatasetFieldType> keywordChildTypes = new HashSet<>();
-        keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordValue", DatasetFieldType.FieldType.TEXT, false)));
-        keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordVocabulary", DatasetFieldType.FieldType.TEXT, false)));
-        keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordVocabularyURI", DatasetFieldType.FieldType.TEXT, false)));
-        keywordType.setChildDatasetFieldTypes(keywordChildTypes);
-
-        DatasetFieldType topicClassificationType = datasetFieldTypeSvc.add(new DatasetFieldType("topicClassification", DatasetFieldType.FieldType.TEXT, true));
-        Set<DatasetFieldType> topicClassificationTypes = new HashSet<>();
-        topicClassificationTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("topicClassValue", DatasetFieldType.FieldType.TEXT, false)));
-        topicClassificationTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("topicClassVocab", DatasetFieldType.FieldType.TEXT, false)));
-        topicClassificationTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("topicClassVocabURI", DatasetFieldType.FieldType.TEXT, false)));
-        topicClassificationType.setChildDatasetFieldTypes(topicClassificationTypes);
-
-        DatasetFieldType descriptionType = datasetFieldTypeSvc.add(new DatasetFieldType("description", DatasetFieldType.FieldType.TEXTBOX, false));
-
-        DatasetFieldType subjectType = datasetFieldTypeSvc.add(new DatasetFieldType("subject", DatasetFieldType.FieldType.TEXT, true));
-        subjectType.setAllowControlledVocabulary(true);
-        subjectType.setControlledVocabularyValues(Arrays.asList(
-                new ControlledVocabularyValue(1l, "mgmt", subjectType),
-                new ControlledVocabularyValue(2l, "law", subjectType),
-                new ControlledVocabularyValue(3l, "cs", subjectType)
-        ));
-
-        DatasetFieldType pubIdType = datasetFieldTypeSvc.add(new DatasetFieldType("publicationIdType", DatasetFieldType.FieldType.TEXT, false));
-        pubIdType.setAllowControlledVocabulary(true);
-        pubIdType.setControlledVocabularyValues(Arrays.asList(
-                new ControlledVocabularyValue(1l, "ark", pubIdType),
-                new ControlledVocabularyValue(2l, "doi", pubIdType),
-                new ControlledVocabularyValue(3l, "url", pubIdType)
-        ));
-
-        DatasetFieldType compoundSingleType = datasetFieldTypeSvc.add(new DatasetFieldType("coordinate", DatasetFieldType.FieldType.TEXT, true));
-        Set<DatasetFieldType> childTypes = new HashSet<>();
-        childTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("lat", DatasetFieldType.FieldType.TEXT, false)));
-        childTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("lon", DatasetFieldType.FieldType.TEXT, false)));
-
-        for (DatasetFieldType t : childTypes) {
-            t.setParentDatasetFieldType(compoundSingleType);
-        }
-        compoundSingleType.setChildDatasetFieldTypes(childTypes);
-
-        DatasetFieldType contributorType = datasetFieldTypeSvc.add(new DatasetFieldType("contributor", DatasetFieldType.FieldType.TEXT, true));
-        Set<DatasetFieldType> contributorChildTypes = new HashSet<>();
-        contributorChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("contributorName", DatasetFieldType.FieldType.TEXT, false)));
-        DatasetFieldType contributorTypes = datasetFieldTypeSvc.add(new DatasetFieldType("contributorType", DatasetFieldType.FieldType.TEXT, false));
-        contributorTypes.setAllowControlledVocabulary(true);
-        contributorTypes.setControlledVocabularyValues(Arrays.asList(
-                // Why aren't these enforced?
-                new ControlledVocabularyValue(1l, "Data Collector", contributorTypes),
-                new ControlledVocabularyValue(2l, "Data Curator", contributorTypes),
-                new ControlledVocabularyValue(3l, "Data Manager", contributorTypes),
-                new ControlledVocabularyValue(3l, "Editor", contributorTypes),
-                new ControlledVocabularyValue(3l, "Funder", contributorTypes),
-                new ControlledVocabularyValue(3l, "Hosting Institution", contributorTypes)
-        // Etc. There are more.
-        ));
-        contributorChildTypes.add(datasetFieldTypeSvc.add(contributorTypes));
-        for (DatasetFieldType t : contributorChildTypes) {
-            t.setParentDatasetFieldType(contributorType);
-        }
-        contributorType.setChildDatasetFieldTypes(contributorChildTypes);
-
-        DatasetFieldType grantNumberType = datasetFieldTypeSvc.add(new DatasetFieldType("grantNumber", DatasetFieldType.FieldType.TEXT, true));
-        Set<DatasetFieldType> grantNumberChildTypes = new HashSet<>();
-        grantNumberChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("grantNumberAgency", DatasetFieldType.FieldType.TEXT, false)));
-        grantNumberChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("grantNumberValue", DatasetFieldType.FieldType.TEXT, false)));
-        grantNumberType.setChildDatasetFieldTypes(grantNumberChildTypes);
-
-        DatasetFieldType publicationType = datasetFieldTypeSvc.add(new DatasetFieldType("publication", DatasetFieldType.FieldType.TEXT, true));
-        Set<DatasetFieldType> publicationChildTypes = new HashSet<>();
-        publicationChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("publicationCitation", DatasetFieldType.FieldType.TEXT, false)));
-        DatasetFieldType publicationIdTypes = datasetFieldTypeSvc.add(new DatasetFieldType("publicationIDType", DatasetFieldType.FieldType.TEXT, false));
-        publicationIdTypes.setAllowControlledVocabulary(true);
-        publicationIdTypes.setControlledVocabularyValues(Arrays.asList(
-                // Why aren't these enforced?
-                new ControlledVocabularyValue(1l, "ark", publicationIdTypes),
-                new ControlledVocabularyValue(2l, "arXiv", publicationIdTypes),
-                new ControlledVocabularyValue(3l, "bibcode", publicationIdTypes),
-                new ControlledVocabularyValue(4l, "doi", publicationIdTypes),
-                new ControlledVocabularyValue(5l, "ean13", publicationIdTypes),
-                new ControlledVocabularyValue(6l, "handle", publicationIdTypes)
-        // Etc. There are more.
-        ));
-        publicationChildTypes.add(datasetFieldTypeSvc.add(publicationIdTypes));
-        publicationChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("publicationIDNumber", DatasetFieldType.FieldType.TEXT, false)));
-        DatasetFieldType publicationURLType = new DatasetFieldType("publicationURL", DatasetFieldType.FieldType.URL, false);
-        publicationURLType.setDisplayFormat("<a href=\"#VALUE\" target=\"_blank\">#VALUE</a>");
-        publicationChildTypes.add(datasetFieldTypeSvc.add(publicationURLType));
-        publicationType.setChildDatasetFieldTypes(publicationChildTypes);
-
-        DatasetFieldType timePeriodCoveredType = datasetFieldTypeSvc.add(new DatasetFieldType("timePeriodCovered", DatasetFieldType.FieldType.NONE, true));
-        Set<DatasetFieldType> timePeriodCoveredChildTypes = new HashSet<>();
-        timePeriodCoveredChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("timePeriodCoveredStart", DatasetFieldType.FieldType.DATE, false)));
-        timePeriodCoveredChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("timePeriodCoveredEnd", DatasetFieldType.FieldType.DATE, false)));
-        timePeriodCoveredType.setChildDatasetFieldTypes(timePeriodCoveredChildTypes);
-
-        DatasetFieldType geographicCoverageType = datasetFieldTypeSvc.add(new DatasetFieldType("geographicCoverage", DatasetFieldType.FieldType.TEXT, true));
-        Set<DatasetFieldType> geographicCoverageChildTypes = new HashSet<>();
-        DatasetFieldType countries = datasetFieldTypeSvc.add(new DatasetFieldType("country", DatasetFieldType.FieldType.TEXT, false));
-        countries.setAllowControlledVocabulary(true);
-        countries.setControlledVocabularyValues(Arrays.asList(
-                // Why aren't these enforced?
-                new ControlledVocabularyValue(1l, "Afghanistan", countries),
-                new ControlledVocabularyValue(2l, "Albania", countries)
-        // And many more countries.
-        ));
-        geographicCoverageChildTypes.add(datasetFieldTypeSvc.add(countries));
-        geographicCoverageChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("state", DatasetFieldType.FieldType.TEXT, false)));
-        geographicCoverageChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("city", DatasetFieldType.FieldType.TEXT, false)));
-        geographicCoverageChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("otherGeographicCoverage", DatasetFieldType.FieldType.TEXT, false)));
-        geographicCoverageChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("geographicUnit", DatasetFieldType.FieldType.TEXT, false)));
-        for (DatasetFieldType t : geographicCoverageChildTypes) {
-            t.setParentDatasetFieldType(geographicCoverageType);
-        }
-        geographicCoverageType.setChildDatasetFieldTypes(geographicCoverageChildTypes);
-
-    }
-
-    @After
-    public void tearDown() {
+        BrandingUtilTest.tearDownMocks();
     }
 
     /**
@@ -228,7 +64,6 @@ public class SchemaDotOrgExporterTest {
      */
     @Test
     public void testExportDataset() throws Exception {
-        System.out.println("exportDataset");
         File datasetVersionJson = new File("src/test/resources/json/dataset-finch2.json");
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
 
@@ -282,7 +117,7 @@ public class SchemaDotOrgExporterTest {
         schemaDotOrgExporter.exportDataset(version, json1, byteArrayOutputStream);
         String jsonLd = byteArrayOutputStream.toString();
         String prettyJson = JsonUtil.prettyPrint(jsonLd);
-        System.out.println("schema.org JSON-LD: " + prettyJson);
+        logger.fine("schema.org JSON-LD: " + prettyJson);
         JsonReader jsonReader2 = Json.createReader(new StringReader(jsonLd));
         JsonObject json2 = jsonReader2.readObject();
         assertEquals("http://schema.org", json2.getString("@context"));
@@ -354,7 +189,6 @@ public class SchemaDotOrgExporterTest {
      */
     @Test
     public void testGetProviderName() {
-        System.out.println("getProviderName");
         assertEquals("schema.org", schemaDotOrgExporter.getProviderName());
     }
 
@@ -363,7 +197,6 @@ public class SchemaDotOrgExporterTest {
      */
     @Test
     public void testGetDisplayName() {
-        System.out.println("getDisplayName");
         // We capitalize "Schema.org" because it looks better in the dropdown list and it's what DataCite does in their UI.
         assertEquals("Schema.org JSON-LD", schemaDotOrgExporter.getDisplayName());
     }
@@ -373,7 +206,6 @@ public class SchemaDotOrgExporterTest {
      */
     @Test
     public void testIsXMLFormat() {
-        System.out.println("isXMLFormat");
         assertEquals(false, schemaDotOrgExporter.isXMLFormat());
     }
 
@@ -382,7 +214,6 @@ public class SchemaDotOrgExporterTest {
      */
     @Test
     public void testIsHarvestable() {
-        System.out.println("isHarvestable");
         assertEquals(false, schemaDotOrgExporter.isHarvestable());
     }
 
@@ -391,7 +222,6 @@ public class SchemaDotOrgExporterTest {
      */
     @Test
     public void testIsAvailableToUsers() {
-        System.out.println("isAvailableToUsers");
         assertEquals(true, schemaDotOrgExporter.isAvailableToUsers());
     }
 
@@ -399,8 +229,7 @@ public class SchemaDotOrgExporterTest {
      * Test of getXMLNameSpace method, of class SchemaDotOrgExporter.
      */
     @Test
-    public void testGetXMLNameSpace() throws Exception {
-        System.out.println("getXMLNameSpace");
+    public void testGetXMLNameSpace() {
         ExportException expectedException = null;
         try {
             String result = schemaDotOrgExporter.getXMLNameSpace();
@@ -414,8 +243,7 @@ public class SchemaDotOrgExporterTest {
      * Test of getXMLSchemaLocation method, of class SchemaDotOrgExporter.
      */
     @Test
-    public void testGetXMLSchemaLocation() throws Exception {
-        System.out.println("getXMLSchemaLocation");
+    public void testGetXMLSchemaLocation() {
         ExportException expectedException = null;
         try {
             String result = schemaDotOrgExporter.getXMLSchemaLocation();
@@ -429,8 +257,7 @@ public class SchemaDotOrgExporterTest {
      * Test of getXMLSchemaVersion method, of class SchemaDotOrgExporter.
      */
     @Test
-    public void testGetXMLSchemaVersion() throws Exception {
-        System.out.println("getXMLSchemaVersion");
+    public void testGetXMLSchemaVersion() {
         ExportException expectedException = null;
         try {
             String result = schemaDotOrgExporter.getXMLSchemaVersion();
@@ -445,10 +272,166 @@ public class SchemaDotOrgExporterTest {
      */
     @Test
     public void testSetParam() {
-        System.out.println("setParam");
         String name = "";
         Object value = null;
         schemaDotOrgExporter.setParam(name, value);
+    }
+    
+    private static void mockDatasetFieldSvc() {
+        DatasetFieldType titleType = datasetFieldTypeSvc.add(new DatasetFieldType("title", DatasetFieldType.FieldType.TEXTBOX, false));
+        DatasetFieldType authorType = datasetFieldTypeSvc.add(new DatasetFieldType("author", DatasetFieldType.FieldType.TEXT, true));
+        Set<DatasetFieldType> authorChildTypes = new HashSet<>();
+        authorChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("authorName", DatasetFieldType.FieldType.TEXT, false)));
+        authorChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("authorAffiliation", DatasetFieldType.FieldType.TEXT, false)));
+        authorChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("authorIdentifier", DatasetFieldType.FieldType.TEXT, false)));
+        DatasetFieldType authorIdentifierSchemeType = datasetFieldTypeSvc.add(new DatasetFieldType("authorIdentifierScheme", DatasetFieldType.FieldType.TEXT, false));
+        authorIdentifierSchemeType.setAllowControlledVocabulary(true);
+        authorIdentifierSchemeType.setControlledVocabularyValues(Arrays.asList(
+            // Why aren't these enforced? Should be ORCID, etc.
+            new ControlledVocabularyValue(1l, "ark", authorIdentifierSchemeType),
+            new ControlledVocabularyValue(2l, "doi", authorIdentifierSchemeType),
+            new ControlledVocabularyValue(3l, "url", authorIdentifierSchemeType)
+        ));
+        authorChildTypes.add(datasetFieldTypeSvc.add(authorIdentifierSchemeType));
+        for (DatasetFieldType t : authorChildTypes) {
+            t.setParentDatasetFieldType(authorType);
+        }
+        authorType.setChildDatasetFieldTypes(authorChildTypes);
+    
+        DatasetFieldType datasetContactType = datasetFieldTypeSvc.add(new DatasetFieldType("datasetContact", DatasetFieldType.FieldType.TEXT, true));
+        Set<DatasetFieldType> datasetContactTypes = new HashSet<>();
+        datasetContactTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("datasetContactEmail", DatasetFieldType.FieldType.TEXT, false)));
+        datasetContactTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("datasetContactName", DatasetFieldType.FieldType.TEXT, false)));
+        datasetContactTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("datasetContactAffiliation", DatasetFieldType.FieldType.TEXT, false)));
+        for (DatasetFieldType t : datasetContactTypes) {
+            t.setParentDatasetFieldType(datasetContactType);
+        }
+        datasetContactType.setChildDatasetFieldTypes(datasetContactTypes);
+    
+        DatasetFieldType dsDescriptionType = datasetFieldTypeSvc.add(new DatasetFieldType("dsDescription", DatasetFieldType.FieldType.TEXT, true));
+        Set<DatasetFieldType> dsDescriptionTypes = new HashSet<>();
+        dsDescriptionTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("dsDescriptionValue", DatasetFieldType.FieldType.TEXT, false)));
+        for (DatasetFieldType t : dsDescriptionTypes) {
+            t.setParentDatasetFieldType(dsDescriptionType);
+        }
+        dsDescriptionType.setChildDatasetFieldTypes(dsDescriptionTypes);
+    
+        DatasetFieldType keywordType = datasetFieldTypeSvc.add(new DatasetFieldType("keyword", DatasetFieldType.FieldType.TEXT, true));
+        Set<DatasetFieldType> keywordChildTypes = new HashSet<>();
+        keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordValue", DatasetFieldType.FieldType.TEXT, false)));
+        keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordVocabulary", DatasetFieldType.FieldType.TEXT, false)));
+        keywordChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("keywordVocabularyURI", DatasetFieldType.FieldType.TEXT, false)));
+        keywordType.setChildDatasetFieldTypes(keywordChildTypes);
+    
+        DatasetFieldType topicClassificationType = datasetFieldTypeSvc.add(new DatasetFieldType("topicClassification", DatasetFieldType.FieldType.TEXT, true));
+        Set<DatasetFieldType> topicClassificationTypes = new HashSet<>();
+        topicClassificationTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("topicClassValue", DatasetFieldType.FieldType.TEXT, false)));
+        topicClassificationTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("topicClassVocab", DatasetFieldType.FieldType.TEXT, false)));
+        topicClassificationTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("topicClassVocabURI", DatasetFieldType.FieldType.TEXT, false)));
+        topicClassificationType.setChildDatasetFieldTypes(topicClassificationTypes);
+    
+        DatasetFieldType descriptionType = datasetFieldTypeSvc.add(new DatasetFieldType("description", DatasetFieldType.FieldType.TEXTBOX, false));
+    
+        DatasetFieldType subjectType = datasetFieldTypeSvc.add(new DatasetFieldType("subject", DatasetFieldType.FieldType.TEXT, true));
+        subjectType.setAllowControlledVocabulary(true);
+        subjectType.setControlledVocabularyValues(Arrays.asList(
+            new ControlledVocabularyValue(1l, "mgmt", subjectType),
+            new ControlledVocabularyValue(2l, "law", subjectType),
+            new ControlledVocabularyValue(3l, "cs", subjectType)
+        ));
+    
+        DatasetFieldType pubIdType = datasetFieldTypeSvc.add(new DatasetFieldType("publicationIdType", DatasetFieldType.FieldType.TEXT, false));
+        pubIdType.setAllowControlledVocabulary(true);
+        pubIdType.setControlledVocabularyValues(Arrays.asList(
+            new ControlledVocabularyValue(1l, "ark", pubIdType),
+            new ControlledVocabularyValue(2l, "doi", pubIdType),
+            new ControlledVocabularyValue(3l, "url", pubIdType)
+        ));
+    
+        DatasetFieldType compoundSingleType = datasetFieldTypeSvc.add(new DatasetFieldType("coordinate", DatasetFieldType.FieldType.TEXT, true));
+        Set<DatasetFieldType> childTypes = new HashSet<>();
+        childTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("lat", DatasetFieldType.FieldType.TEXT, false)));
+        childTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("lon", DatasetFieldType.FieldType.TEXT, false)));
+    
+        for (DatasetFieldType t : childTypes) {
+            t.setParentDatasetFieldType(compoundSingleType);
+        }
+        compoundSingleType.setChildDatasetFieldTypes(childTypes);
+    
+        DatasetFieldType contributorType = datasetFieldTypeSvc.add(new DatasetFieldType("contributor", DatasetFieldType.FieldType.TEXT, true));
+        Set<DatasetFieldType> contributorChildTypes = new HashSet<>();
+        contributorChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("contributorName", DatasetFieldType.FieldType.TEXT, false)));
+        DatasetFieldType contributorTypes = datasetFieldTypeSvc.add(new DatasetFieldType("contributorType", DatasetFieldType.FieldType.TEXT, false));
+        contributorTypes.setAllowControlledVocabulary(true);
+        contributorTypes.setControlledVocabularyValues(Arrays.asList(
+            // Why aren't these enforced?
+            new ControlledVocabularyValue(1l, "Data Collector", contributorTypes),
+            new ControlledVocabularyValue(2l, "Data Curator", contributorTypes),
+            new ControlledVocabularyValue(3l, "Data Manager", contributorTypes),
+            new ControlledVocabularyValue(3l, "Editor", contributorTypes),
+            new ControlledVocabularyValue(3l, "Funder", contributorTypes),
+            new ControlledVocabularyValue(3l, "Hosting Institution", contributorTypes)
+            // Etc. There are more.
+        ));
+        contributorChildTypes.add(datasetFieldTypeSvc.add(contributorTypes));
+        for (DatasetFieldType t : contributorChildTypes) {
+            t.setParentDatasetFieldType(contributorType);
+        }
+        contributorType.setChildDatasetFieldTypes(contributorChildTypes);
+    
+        DatasetFieldType grantNumberType = datasetFieldTypeSvc.add(new DatasetFieldType("grantNumber", DatasetFieldType.FieldType.TEXT, true));
+        Set<DatasetFieldType> grantNumberChildTypes = new HashSet<>();
+        grantNumberChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("grantNumberAgency", DatasetFieldType.FieldType.TEXT, false)));
+        grantNumberChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("grantNumberValue", DatasetFieldType.FieldType.TEXT, false)));
+        grantNumberType.setChildDatasetFieldTypes(grantNumberChildTypes);
+    
+        DatasetFieldType publicationType = datasetFieldTypeSvc.add(new DatasetFieldType("publication", DatasetFieldType.FieldType.TEXT, true));
+        Set<DatasetFieldType> publicationChildTypes = new HashSet<>();
+        publicationChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("publicationCitation", DatasetFieldType.FieldType.TEXT, false)));
+        DatasetFieldType publicationIdTypes = datasetFieldTypeSvc.add(new DatasetFieldType("publicationIDType", DatasetFieldType.FieldType.TEXT, false));
+        publicationIdTypes.setAllowControlledVocabulary(true);
+        publicationIdTypes.setControlledVocabularyValues(Arrays.asList(
+            // Why aren't these enforced?
+            new ControlledVocabularyValue(1l, "ark", publicationIdTypes),
+            new ControlledVocabularyValue(2l, "arXiv", publicationIdTypes),
+            new ControlledVocabularyValue(3l, "bibcode", publicationIdTypes),
+            new ControlledVocabularyValue(4l, "doi", publicationIdTypes),
+            new ControlledVocabularyValue(5l, "ean13", publicationIdTypes),
+            new ControlledVocabularyValue(6l, "handle", publicationIdTypes)
+            // Etc. There are more.
+        ));
+        publicationChildTypes.add(datasetFieldTypeSvc.add(publicationIdTypes));
+        publicationChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("publicationIDNumber", DatasetFieldType.FieldType.TEXT, false)));
+        DatasetFieldType publicationURLType = new DatasetFieldType("publicationURL", DatasetFieldType.FieldType.URL, false);
+        publicationURLType.setDisplayFormat("<a href=\"#VALUE\" target=\"_blank\">#VALUE</a>");
+        publicationChildTypes.add(datasetFieldTypeSvc.add(publicationURLType));
+        publicationType.setChildDatasetFieldTypes(publicationChildTypes);
+    
+        DatasetFieldType timePeriodCoveredType = datasetFieldTypeSvc.add(new DatasetFieldType("timePeriodCovered", DatasetFieldType.FieldType.NONE, true));
+        Set<DatasetFieldType> timePeriodCoveredChildTypes = new HashSet<>();
+        timePeriodCoveredChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("timePeriodCoveredStart", DatasetFieldType.FieldType.DATE, false)));
+        timePeriodCoveredChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("timePeriodCoveredEnd", DatasetFieldType.FieldType.DATE, false)));
+        timePeriodCoveredType.setChildDatasetFieldTypes(timePeriodCoveredChildTypes);
+    
+        DatasetFieldType geographicCoverageType = datasetFieldTypeSvc.add(new DatasetFieldType("geographicCoverage", DatasetFieldType.FieldType.TEXT, true));
+        Set<DatasetFieldType> geographicCoverageChildTypes = new HashSet<>();
+        DatasetFieldType countries = datasetFieldTypeSvc.add(new DatasetFieldType("country", DatasetFieldType.FieldType.TEXT, false));
+        countries.setAllowControlledVocabulary(true);
+        countries.setControlledVocabularyValues(Arrays.asList(
+            // Why aren't these enforced?
+            new ControlledVocabularyValue(1l, "Afghanistan", countries),
+            new ControlledVocabularyValue(2l, "Albania", countries)
+            // And many more countries.
+        ));
+        geographicCoverageChildTypes.add(datasetFieldTypeSvc.add(countries));
+        geographicCoverageChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("state", DatasetFieldType.FieldType.TEXT, false)));
+        geographicCoverageChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("city", DatasetFieldType.FieldType.TEXT, false)));
+        geographicCoverageChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("otherGeographicCoverage", DatasetFieldType.FieldType.TEXT, false)));
+        geographicCoverageChildTypes.add(datasetFieldTypeSvc.add(new DatasetFieldType("geographicUnit", DatasetFieldType.FieldType.TEXT, false)));
+        for (DatasetFieldType t : geographicCoverageChildTypes) {
+            t.setParentDatasetFieldType(geographicCoverageType);
+        }
+        geographicCoverageType.setChildDatasetFieldTypes(geographicCoverageChildTypes);
     }
 
 }
