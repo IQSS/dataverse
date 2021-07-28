@@ -6,6 +6,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
@@ -14,6 +16,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,6 +57,9 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     
     @EJB
     DataFileServiceBean datafileService;
+    
+    @EJB
+    BannerMessageServiceBean bannerMessageService;
 
     @Inject
     DataverseSession dataverseSession;
@@ -68,6 +74,8 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     UserNotificationServiceBean userNotificationService;
     
     List<Breadcrumb> breadcrumbs = new ArrayList<>();
+    
+    private List<BannerMessage> bannerMessages = new ArrayList<>();
 
     private Long unreadNotificationCount = null;
     
@@ -275,6 +283,39 @@ public class DataverseHeaderFragment implements java.io.Serializable {
         } else {
             return false;
         }
+    }
+    
+    
+    public List<BannerMessage> getBannerMessages() {
+        User user = dataverseSession.getUser();
+        AuthenticatedUser au = null;
+        if (user.isAuthenticated()) {
+            au = (AuthenticatedUser) user;
+        }           
+        
+        if(au == null){
+            bannerMessages = bannerMessageService.findBannerMessages();
+        } else{
+            bannerMessages = bannerMessageService.findBannerMessages(au.getId());
+        } 
+        
+        if (!dataverseSession.getDismissedMessages().isEmpty()) {           
+            for (BannerMessage dismissed : dataverseSession.getDismissedMessages()) {
+                Iterator<BannerMessage> itr = bannerMessages.iterator();
+                while (itr.hasNext()) {
+                    BannerMessage test = itr.next();
+                    if (test.equals(dismissed)) {
+                        itr.remove();
+                    }
+                }
+            }            
+        }
+        
+        return bannerMessages;
+    }
+
+    public void setBannerMessages(List<BannerMessage> bannerMessages) {
+        this.bannerMessages = bannerMessages;
     }
 
     public String getSignupUrl(String loginRedirect) {

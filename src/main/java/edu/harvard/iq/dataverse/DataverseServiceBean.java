@@ -16,7 +16,9 @@ import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SolrSearchResult;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.File;
 import java.io.IOException;
@@ -35,14 +37,11 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import javax.ws.rs.core.Response;
 import org.apache.solr.client.solrj.SolrServerException;
 
 /**
@@ -56,6 +55,9 @@ public class DataverseServiceBean implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(DataverseServiceBean.class.getCanonicalName());
     @EJB
     IndexServiceBean indexService;
+    
+    @EJB
+    SolrIndexServiceBean solrIndexService; 
 
     @EJB
     AuthenticationServiceBean authService;
@@ -91,21 +93,33 @@ public class DataverseServiceBean implements java.io.Serializable {
        
         dataverse.setModificationTime(new Timestamp(new Date().getTime()));
         Dataverse savedDataverse = em.merge(dataverse);
+        return savedDataverse;
+    }
+    
+    public boolean index(Dataverse dataverse) {
+        return index(dataverse, false);
+
+    }
+        
+    public boolean index(Dataverse dataverse, boolean indexPermissions) {    
         /**
          * @todo check the result to see if indexing was successful or not
          * added logging of exceptions 
          */
         try {
-            Future<String> indexingResult = indexService.indexDataverse(savedDataverse);
+            indexService.indexDataverse(dataverse);
+            if (indexPermissions) {
+                solrIndexService.indexPermissionsOnSelfAndChildren(dataverse);
+            }
         } catch (IOException | SolrServerException e) {
-            String failureLogText = "Post-save indexing failed. You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + savedDataverse.getId().toString();
+            String failureLogText = "Post-save indexing failed. You can kickoff a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + dataverse.getId().toString();
             failureLogText += "\r\n" + e.getLocalizedMessage();
-            LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, savedDataverse);
+            LoggingUtil.writeOnSuccessFailureLog(null, failureLogText, dataverse);
+            return false;
         }
 
-//        logger.log(Level.INFO, "during dataverse save, indexing result was: {0}", indexingResult);
-        return savedDataverse;
-    }
+        return true;
+    }    
 
     public Dataverse find(Object pk) {
         return em.find(Dataverse.class, pk);
@@ -113,6 +127,13 @@ public class DataverseServiceBean implements java.io.Serializable {
 
     public List<Dataverse> findAll() {
         return em.createNamedQuery("Dataverse.findAll").getResultList();
+    }
+    
+    public List<Long> findIdStale() {
+        return em.createNamedQuery("Dataverse.findIdStale").getResultList();
+    }
+    public List<Long> findIdStalePermission() {
+        return em.createNamedQuery("Dataverse.findIdStalePermission").getResultList();
     }
 
     /**
@@ -152,6 +173,14 @@ public class DataverseServiceBean implements java.io.Serializable {
         
     }
 
+    public List<Dataverse> findByCreatorId(Long creatorId) {
+        return em.createNamedQuery("Dataverse.findByCreatorId").setParameter("creatorId", creatorId).getResultList();
+    }
+
+    public List<Dataverse> findByReleaseUserId(Long releaseUserId) {
+        return em.createNamedQuery("Dataverse.findByReleaseUserId").setParameter("releaseUserId", releaseUserId).getResultList();
+    }
+
     public List<Dataverse> findByOwnerId(Long ownerId) {
         return em.createNamedQuery("Dataverse.findByOwnerId").setParameter("ownerId", ownerId).getResultList();
     }
@@ -173,6 +202,15 @@ public class DataverseServiceBean implements java.io.Serializable {
      */
     public Dataverse findRootDataverse() {
         return em.createNamedQuery("Dataverse.findRoot", Dataverse.class).getSingleResult();
+    }
+    
+    
+    //Similarly - if the above throws that exception, do we need to catch it here?
+    //ToDo - consider caching?
+    public String getRootDataverseName() {
+        Dataverse root = findRootDataverse();
+        String rootDataverseName=root.getName();
+        return StringUtil.isEmpty(rootDataverseName) ? "" : rootDataverseName; 
     }
     
     public List<Dataverse> findAllPublishedByOwnerId(Long ownerId) {
@@ -448,7 +486,7 @@ public class DataverseServiceBean implements java.io.Serializable {
     }
 
     public List<Dataset> findDatasetsThisIdHasLinkedTo(long dataverseId) {
-        return datasetLinkingService.findDatasetsThisDataverseIdHasLinkedTo(dataverseId);
+        return datasetLinkingService.findLinkedDatasets(dataverseId);
     }
 
     public List<Dataverse> findDataversesThatLinkToThisDatasetId(long datasetId) {

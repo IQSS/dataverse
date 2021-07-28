@@ -125,7 +125,7 @@ public class SettingsWrapper implements java.io.Serializable {
         if (true)
 
             if (guidesBaseUrl == null) {
-            String saneDefault = "http://guides.dataverse.org";
+            String saneDefault = "https://guides.dataverse.org";
         
             guidesBaseUrl = getValueForKey(SettingsServiceBean.Key.GuidesBaseUrl);
             if (guidesBaseUrl == null) {
@@ -144,6 +144,10 @@ public class SettingsWrapper implements java.io.Serializable {
 
     public String getGuidesVersion() {
         return systemConfig.getGuidesVersion();
+    }
+    
+    public Long getZipDownloadLimit(){
+        return systemConfig.getZipDownloadLimit();
     }
 
     public boolean isPublicInstall(){
@@ -173,13 +177,13 @@ public class SettingsWrapper implements java.io.Serializable {
     public String getSupportTeamName() {
         String systemEmail = getValueForKey(SettingsServiceBean.Key.SystemEmail);
         InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);
-        return BrandingUtil.getSupportTeamName(systemAddress, dataverseService.findRootDataverse().getName());
+        return BrandingUtil.getSupportTeamName(systemAddress);
     }
     
     public String getSupportTeamEmail() {
         String systemEmail = getValueForKey(SettingsServiceBean.Key.SystemEmail);
         InternetAddress systemAddress = MailUtil.parseSystemAddress(systemEmail);        
-        return BrandingUtil.getSupportTeamEmailAddress(systemAddress) != null ? BrandingUtil.getSupportTeamEmailAddress(systemAddress) : BrandingUtil.getSupportTeamName(systemAddress, dataverseService.findRootDataverse().getName());
+        return BrandingUtil.getSupportTeamEmailAddress(systemAddress) != null ? BrandingUtil.getSupportTeamEmailAddress(systemAddress) : BrandingUtil.getSupportTeamName(systemAddress);
     }
     
     public Integer getUploadMethodsCount() {
@@ -250,10 +254,25 @@ public class SettingsWrapper implements java.io.Serializable {
             return false;
         }
     }
-    
+
+    public boolean isDataCiteInstallation() {
+        String protocol = getValueForKey(SettingsServiceBean.Key.DoiProvider);
+        if ("DataCite".equals(protocol)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public boolean isMakeDataCountDisplayEnabled() {
         boolean safeDefaultIfKeyNotFound = (getValueForKey(SettingsServiceBean.Key.MDCLogPath)!=null); //Backward compatible
         return isTrueForKey(SettingsServiceBean.Key.DisplayMDCMetrics, safeDefaultIfKeyNotFound);
+    
+    }
+    
+    public boolean displayChronologicalDateFacets() {
+        //Defaults to true
+        return isTrueForKey(SettingsServiceBean.Key.ChronologicalDateFacets, true);
     
     }
 

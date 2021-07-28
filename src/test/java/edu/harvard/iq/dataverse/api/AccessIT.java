@@ -6,27 +6,25 @@
 package edu.harvard.iq.dataverse.api;
 
 import com.jayway.restassured.RestAssured;
+import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.DataFile;
+import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import java.io.IOException;
 import java.util.zip.ZipInputStream;
-import static javax.ws.rs.core.Response.Status.OK;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import java.util.zip.ZipEntry;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.HashMap;
+import static javax.ws.rs.core.Response.Status.OK;
 import org.hamcrest.collection.IsMapContaining;
-import static junit.framework.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -105,6 +103,10 @@ public class AccessIT {
         Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
         createDatasetResponse.prettyPrint();
         datasetId = JsonPath.from(createDatasetResponse.body().asString()).getInt("data.id");
+
+        Response allowAccessRequests = UtilIT.allowAccessRequests(datasetId.toString(), true, apiToken);
+        allowAccessRequests.prettyPrint();
+        allowAccessRequests.then().assertThat().statusCode(200);
         
         basicFileName = "004.txt";
         String basicPathToFile = "scripts/search/data/replace_test/" + basicFileName;
@@ -156,6 +158,7 @@ public class AccessIT {
         String tab4PathToFile = "scripts/search/data/tabular/" + tabFile4NameUnpublished;
         Response tab4AddResponse = UtilIT.uploadFileViaNative(datasetId.toString(), tab4PathToFile, apiToken);
         tabFile4IdUnpublished = JsonPath.from(tab4AddResponse.body().asString()).getInt("data.files[0].dataFile.id");
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + tabFile2Name, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", apiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
                         
     }
     
@@ -172,6 +175,24 @@ public class AccessIT {
     }
     
 
+    @Test
+    public void testSaveAuxiliaryFileWithVersion() throws IOException {
+        System.out.println("Add aux file with update");
+        String mimeType = null;
+        String pathToFile = "scripts/search/data/tabular/1char";
+        String formatTag = "dpJSON";
+        String formatVersion = "v1";
+
+        Response uploadResponse = UtilIT.uploadAuxFile(tabFile3IdRestricted.longValue(), pathToFile, formatTag, formatVersion, mimeType, true, null, apiToken);
+        uploadResponse.prettyPrint();
+        uploadResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        System.out.println("Downloading Aux file that was just added");
+        Response downloadResponse = UtilIT.downloadAuxFile(tabFile3IdRestricted.longValue(), formatTag, formatVersion, apiToken);
+        downloadResponse.then().assertThat().statusCode(OK.getStatusCode());
+        String dataStr = downloadResponse.prettyPrint();
+        assertEquals(dataStr, "a\n");
+    }
     
     //This test does a lot of testing of non-original downloads as well
     @Test

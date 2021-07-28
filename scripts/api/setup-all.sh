@@ -86,9 +86,9 @@ echo
 if [ $SECURESETUP = 1 ]
 then
     # Revoke the "burrito" super-key; 
-    # Block the sensitive API endpoints;
+    # Block sensitive API endpoints;
     curl -X DELETE $SERVER/admin/settings/BuiltinUsers.KEY
-    curl -X PUT -d admin,test $SERVER/admin/settings/:BlockedApiEndpoints
+    curl -X PUT -d 'admin,builtin-users' $SERVER/admin/settings/:BlockedApiEndpoints
     echo "Access to the /api/admin and /api/test is now disabled, except for connections from localhost."
 else 
     echo "IMPORTANT!!!"

@@ -9,6 +9,11 @@
   <var ID="v1170" name="Var1" intrvl="discrete">
     <location fileid="f446"/>
     <labl level="variable">gender</labl>
+    <qstn>
+      <qstnLit>This is a literal question.</qstnLit>
+      <ivuInstr>These are interview instructions.</ivuInstr>
+    </qstn>
+    <universe>Our universe</universe>
     <sumStat type="mean">1.4952380952380968</sumStat>
     <sumStat type="max">2.0</sumStat>
     <sumStat type="min">1.0</sumStat>
@@ -27,19 +32,15 @@
       <labl level="category">Female</labl>
       <catStat type="freq">1508</catStat>
     </catgry>
-    <qstn>
-      <qstnLit>This is a literal question.</qstnLit>
-      <ivuInstr>These are interview instructions.</ivuInstr>
-    </qstn>
     <varFormat type="numeric"/>
     <notes><![CDATA[These are notes.
 A lot of them.]]></notes>
     <notes subject="Universal Numeric Fingerprint" level="variable" type="VDC:UNF">UNF:6:HbM1tFHAsgACfUYee9JhTQ==</notes>
-    <universe>Our universe</universe>
   </var>
   <var ID="v1169" name="Var2" intrvl="discrete" wgt-var="v1168">
     <location fileid="f446"/>
     <labl level="variable">age_rollup</labl>
+    <qstn/>
     <sumStat type="max">4.0</sumStat>
     <sumStat type="medn">3.0</sumStat>
     <sumStat type="invd">0.0</sumStat>
@@ -72,7 +73,6 @@ A lot of them.]]></notes>
       <catStat type="freq">1262</catStat>
       <catStat wgtd="wgtd" type="freq">1226.3455293050008</catStat>
     </catgry>
-    <qstn/>
     <varFormat type="numeric"/>
     <notes><![CDATA[This variable is weighted.]]></notes>
     <notes subject="Universal Numeric Fingerprint" level="variable" type="VDC:UNF">UNF:6:VGyH5f6KGRmMBFDAy6l6NQ==</notes>
@@ -80,6 +80,9 @@ A lot of them.]]></notes>
   <var ID="v1168" name="Var3" intrvl="contin" wgt="wgt">
     <location fileid="f446"/>
     <labl level="variable">weight</labl>
+    <qstn>
+      <qstnLit>Literal question for weight</qstnLit>
+    </qstn>
     <sumStat type="mean">1.0000000020183908</sumStat>
     <sumStat type="mode">.</sumStat>
     <sumStat type="min">0.0</sumStat>
@@ -88,9 +91,6 @@ A lot of them.]]></notes>
     <sumStat type="medn">0.894478155</sumStat>
     <sumStat type="max">6.206337719</sumStat>
     <sumStat type="invd">0.0</sumStat>
-    <qstn>
-      <qstnLit>Literal question for weight</qstnLit>
-    </qstn>
     <varFormat type="numeric"/>
     <notes><![CDATA[Notes]]></notes>
     <notes subject="Universal Numeric Fingerprint" level="variable" type="VDC:UNF">UNF:6:j+BtC84BNZ44dNOkCwg/0Q==</notes>

@@ -8,7 +8,6 @@
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
-
         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
         <p class="help-block">
             #{bundle['file.requestAccessTermsDialog.tip']}
@@ -16,7 +15,7 @@
         
         <div class="form-horizontal">
             <div class="form-group" jsf:rendered="#{workingVersion.termsOfUseAndAccess.license != 'CC0' and !empty workingVersion.termsOfUseAndAccess.termsOfUse}">
-                <label class="col-sm-3 control-label" for="guestbook_tou">
+                <label class="col-sm-3 control-label">
                     #{bundle['file.dataFilesTab.terms.list.termsOfUse.termsOfUse']}
                 </label>
                 <div class="col-sm-6">
@@ -28,7 +27,7 @@
                 </div>
             </div>
             <div class="form-group" jsf:rendered="#{!empty workingVersion.termsOfUseAndAccess.termsOfAccess}">
-                <label class="col-sm-3 control-label" for="guestbook_toa">
+                <label class="col-sm-3 control-label">
                     #{bundle['file.dataFilesTab.terms.list.termsOfAccess.termsOfsAccess']}
                 </label>
                 <div class="col-sm-6">
@@ -43,7 +42,7 @@
         <div class="button-block">
             <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}" 
                            action="#{fileDownloadHelper.requestAccessIndirect()}"    
-                           update="@([id$=requestAccessPopupButton])" oncomplete="PF('requestAccessPopup').hide();">
+                           update="@([id$=requestAccessConsolidated]), @([id$=requestPanel])" oncomplete="PF('requestAccessPopup').hide();">
             </p:commandButton>
             <button class="btn btn-link" onclick="PF('requestAccessPopup').hide();PF('blockDatasetForm').hide();" type="button">
                 #{bundle.cancel}

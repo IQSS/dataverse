@@ -11,7 +11,7 @@ public class Failure implements WorkflowStepResult {
     private final String message;
     
     public Failure( String reason ) {
-        this(reason, reason);
+        this(reason, null);
     }
     
     /**

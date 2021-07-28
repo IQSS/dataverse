@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 
 /**
  *
@@ -64,12 +65,19 @@ public class GuestbookResponse implements Serializable {
     @OrderBy ("id")
     private List<CustomQuestionResponse> customQuestionResponses;
 
+    @Size(max = 255, message = "{guestbook.response.nameLength}")
     private String name;
+
+    // TODO: Consider using EMailValidator as well.
+    @Size(max = 255, message = "{guestbook.response.nameLength}")
     private String email;
+
+    @Size(max = 255, message = "{guestbook.response.nameLength}")
     private String institution;
+
+    @Size(max = 255, message = "{guestbook.response.nameLength}")
     private String position;
     
-        
     @Temporal(value = TemporalType.TIMESTAMP)
     private Date responseTime;
     

@@ -1,9 +1,16 @@
 package edu.harvard.iq.dataverse.externaltools;
 
+import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.StringUtil;
+
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Logger;
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -11,6 +18,8 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 
 /**
@@ -21,14 +30,17 @@ import javax.persistence.Transient;
 @Entity
 public class ExternalTool implements Serializable {
 
+    private static final Logger logger = Logger.getLogger(ExternalToolServiceBean.class.getCanonicalName());
+
     public static final String DISPLAY_NAME = "displayName";
     public static final String DESCRIPTION = "description";
-    public static final String TYPE = "type";
+    public static final String LEGACY_SINGLE_TYPE = "type";
+    public static final String TYPES = "types";
     public static final String SCOPE = "scope";
     public static final String TOOL_URL = "toolUrl";
     public static final String TOOL_PARAMETERS = "toolParameters";
     public static final String CONTENT_TYPE = "contentType";
-    public static final String HAS_PREVIEW_MODE = "hasPreviewMode";
+    public static final String TOOL_NAME = "toolName";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,6 +54,12 @@ public class ExternalTool implements Serializable {
     private String displayName;
 
     /**
+     * Type of tool such as dct, explorer, etc
+     */
+    @Column(nullable = true)
+    private String toolName;
+
+    /**
      * The description of the tool in English.
      */
     // TODO: How are we going to internationalize the description?
@@ -49,11 +67,11 @@ public class ExternalTool implements Serializable {
     private String description;
 
     /**
-     * Whether the tool is an "explore" tool or a "configure" tool, for example.
+     * A tool can be multiple types, "explore", "configure", "preview", etc.
      */
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private Type type;
+    @OneToMany(mappedBy = "externalTool", cascade = CascadeType.ALL)
+    @JoinColumn(nullable = false)
+    private List<ExternalToolType> externalToolTypes;
 
     /**
      * Whether the tool operates at the dataset or file level.
@@ -78,22 +96,6 @@ public class ExternalTool implements Serializable {
      */
     @Column(nullable = true, columnDefinition = "TEXT")
     private String contentType;
-    
-    @Column(nullable = false)
-    private boolean hasPreviewMode;   
-
-
-    
-    @Transient
-    private boolean worldMapTool;
-    
-    public boolean isWorldMapTool() {
-        return worldMapTool;
-    }
-
-    public void setWorldMapTool(boolean worldMapTool) {
-        this.worldMapTool = worldMapTool;
-    }
 
     /**
      * This default constructor is only here to prevent this error at
@@ -109,32 +111,22 @@ public class ExternalTool implements Serializable {
     public ExternalTool() {
     }
 
-    public ExternalTool(String displayName, String description, Type type, Scope scope, String toolUrl, String toolParameters, String contentType) {
+    public ExternalTool(String displayName, String toolName, String description, List<ExternalToolType> externalToolTypes, Scope scope, String toolUrl, String toolParameters, String contentType) {
         this.displayName = displayName;
+        this.toolName = toolName;
         this.description = description;
-        this.type = type;
+        this.externalToolTypes = externalToolTypes;
         this.scope = scope;
         this.toolUrl = toolUrl;
         this.toolParameters = toolParameters;
         this.contentType = contentType;
-        this.hasPreviewMode = false;
-    }
-    
-    public ExternalTool(String displayName, String description, Type type, Scope scope, String toolUrl, String toolParameters, String contentType, boolean hasPreviewMode) {
-        this.displayName = displayName;
-        this.description = description;
-        this.type = type;
-        this.scope = scope;
-        this.toolUrl = toolUrl;
-        this.toolParameters = toolParameters;
-        this.contentType = contentType;
-        this.hasPreviewMode = hasPreviewMode;
     }
 
     public enum Type {
 
         EXPLORE("explore"),
-        CONFIGURE("configure");
+        CONFIGURE("configure"),
+        PREVIEW("preview");
 
         private final String text;
 
@@ -199,9 +191,13 @@ public class ExternalTool implements Serializable {
         return displayName;
     }
 
+    public String  getToolName() { return toolName; }
+
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
+
+    public void setToolName(String toolName) { this.toolName = toolName; }
 
     public String getDescription() {
         return description;
@@ -211,8 +207,23 @@ public class ExternalTool implements Serializable {
         this.description = description;
     }
 
-    public Type getType() {
-        return type;
+    public List<ExternalToolType> getExternalToolTypes() {
+        return externalToolTypes;
+    }
+
+    public void setExternalToolTypes(List<ExternalToolType> externalToolTypes) {
+        this.externalToolTypes = externalToolTypes;
+    }
+
+    public boolean isExploreTool() {
+        boolean isExploreTool = false;
+        for (ExternalToolType externalToolType : externalToolTypes) {
+            if (externalToolType.getType().equals(Type.EXPLORE)) {
+                isExploreTool = true;
+                break;
+            }
+        }
+        return isExploreTool;
     }
 
     public Scope getScope() {
@@ -242,31 +253,25 @@ public class ExternalTool implements Serializable {
     public void setContentType(String contentType) {
         this.contentType = contentType;
     }
-    
-    public boolean getHasPreviewMode() {
-        return hasPreviewMode;
-    }
 
-    public void setHasPreviewMode(boolean hasPreviewMode) {
-        this.hasPreviewMode = hasPreviewMode;
-    }
-    
     public JsonObjectBuilder toJson() {
         JsonObjectBuilder jab = Json.createObjectBuilder();
         jab.add("id", getId());
         jab.add(DISPLAY_NAME, getDisplayName());
+        if (getToolName() != null) {
+            jab.add(TOOL_NAME, getToolName());
+        }
         jab.add(DESCRIPTION, getDescription());
-        jab.add(TYPE, getType().text);
+        JsonArrayBuilder types = Json.createArrayBuilder();
+        for (ExternalToolType externalToolType : externalToolTypes) {
+            types.add(externalToolType.getType().text);
+        }
+        jab.add(TYPES, types);
         jab.add(SCOPE, getScope().text);
         jab.add(TOOL_URL, getToolUrl());
         jab.add(TOOL_PARAMETERS, getToolParameters());
         if (getContentType() != null) {
             jab.add(CONTENT_TYPE, getContentType());
-        }
-        if (getHasPreviewMode()) {
-            jab.add(HAS_PREVIEW_MODE, getHasPreviewMode());
-        } else {
-            
         }
         return jab;
     }
@@ -327,5 +332,28 @@ public class ExternalTool implements Serializable {
             return text;
         }
     }
+
+    public String getDescriptionLang() {
+        String description = "";
+        if (this.toolName != null) {
+            description = (BundleUtil.getStringFromBundle("externaltools." + this.toolName + ".description"));
+        } 
+        if (StringUtil.isEmpty(description)) {
+            description = this.getDescription();
+        }
+        return description;
+    }
+
+    public String getDisplayNameLang() {
+        String displayName = "";
+        if (this.toolName != null) {
+            displayName = (BundleUtil.getStringFromBundle("externaltools." + this.toolName + ".displayname"));
+        } 
+        if (StringUtil.isEmpty(displayName)) {
+            displayName = this.getDisplayName();
+        }
+        return displayName;
+    }
+
 
 }

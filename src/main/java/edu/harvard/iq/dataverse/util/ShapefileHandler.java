@@ -273,14 +273,25 @@ public class ShapefileHandler{
         }
         return unzipFileName;
     }
-    /*
-        Unzip the files to the directory, FLATTENING the directory structure
-        
-        Any colliding names will result  in overwrites
     
+    private String getFolderName(String fileName){
+        if (fileName==null){
+            return null;
+        }
+        return new File(fileName).getParent(); 
+    }
+    /*
+        We used to unzip the files to the directory, FLATTENING the directory structure
+        Any colliding names would result  in overwrites
+        HOWEVER, starting with v5.1, we are now preserving the folder structure
+        inside the uploaded zip file (issue #6873). To achieve this, we recreate 
+        all the folders as they appear in the original zip archive, and as we 
+        rezip any found shape file sets. The FileUtil then preserve any such
+        subfolders in the FileMetadata of the newly created DataFiles. 
+        (-- L.A. 09/2020) 
     */
     private boolean unzipFilesToDirectory(FileInputStream zipfile_input_stream, File target_directory){
-        //logger.info("unzipFilesToDirectory: " + target_directory.getAbsolutePath() );
+        logger.fine("unzipFilesToDirectory: " + target_directory.getAbsolutePath() );
 
         if (zipfile_input_stream== null){
             this.addErrorMessage("unzipFilesToDirectory. The zipfile_input_stream is null.");
@@ -301,7 +312,7 @@ public class ShapefileHandler{
             while((origEntry = zipStream.getNextEntry())!=null){
                 
                 String zentryFileName = origEntry.getName();
-                //logger.info("\nOriginal entry name: " + origEntry);
+                logger.fine("\nOriginal entry name: " + origEntry);
                 
                  if (this.isFileToSkip(zentryFileName)){
                     logger.fine("Skip file");
@@ -312,20 +323,35 @@ public class ShapefileHandler{
                 if (origEntry.isDirectory()) {
                     //logger.info("Subdirectory found!");
                     logger.fine("Skip directory");
-                    //String dirpath = target_directory.getAbsolutePath() + "/" + zentryFileName;
-                    //createDirectory(dirpath);
+                    String dirpath = target_directory.getAbsolutePath() + "/" + zentryFileName;
+                    createDirectory(dirpath);
                     continue;           // Continue to next Entry
                 }
                 logger.fine("file found!");
                 
                 // Write the file
                 String unzipFileName = this.getFileBasename(zentryFileName);
+                String unzipFolderName = this.getFolderName(zentryFileName);
+                
+                String unzipFilePath = unzipFileName; 
+                if (unzipFolderName != null) {
+                    unzipFilePath = unzipFolderName + "/" + unzipFileName;
+                    
+                    // There's a chance we haven't created this folder yet 
+                    // in the destination directory (this happens if the folder 
+                    // is not explicitly listed in the Zip archive directory). 
+                    String dirpath = target_directory.getAbsolutePath() + "/" + unzipFolderName;
+                    // (and if it already exists, it'll be skipped)
+                    createDirectory(dirpath);
+                }
+                
                 if (unzipFileName==null){
                     logger.warning("Zip Entry Basename is an empty string: " + zentryFileName);
                     continue;
                 }
                 
-                String outpath = target_directory.getAbsolutePath() + "/" + unzipFileName;
+                //String outpath = target_directory.getAbsolutePath() + "/" + unzipFileName;
+                String outpath = target_directory.getAbsolutePath() + "/" + unzipFilePath;
                 if (unzippedFileNames.contains(outpath)){
                    logger.info("Potential name collision.  Avoiding duplicate files in 'collapsed' zip directories. Skipping file: " + zentryFileName);
                    continue;
@@ -493,6 +519,8 @@ public class ShapefileHandler{
                 //this.msg("source_dirname: "+ source_dirname);
                 
                 //msgt("create zipped shapefile");
+                // Make sure the parent folder(s) are there:
+                createDirectory(new File(target_zipfile_name).getParentFile());
                 ZipMaker zip_maker = new ZipMaker(namesToZip, source_dirname, target_zipfile_name);
                 this.addFinalRezippedFile(target_zipfile_name);
 
@@ -526,6 +554,11 @@ public class ShapefileHandler{
         
         File source_file = new File(sourceFileName);
         File target_file = new File(targetFileName);
+        
+        if (target_file.getParentFile() != null) {
+            // Make sure the parent folder(s) are there:
+            createDirectory(target_file.getParentFile());
+        }
         try {
             Files.copy(source_file.toPath(), target_file.toPath(), REPLACE_EXISTING);    
         } catch (IOException ex) {
@@ -681,22 +714,28 @@ public class ShapefileHandler{
                    //createDirectory(dirpath);
                    continue;       
                 }
-                
+                                
                 String unzipFileName = this.getFileBasename(zentryFileName);
                 if (unzipFileName==null){
                     logger.warning("Zip Entry Basename is an empty string: " + zentryFileName);
                     continue;
                 }
+                String unzipFolderName = this.getFolderName(zentryFileName);
+                                
+                String unzipFilePath = unzipFileName; 
+                if (unzipFolderName != null) {
+                    unzipFilePath = unzipFolderName + "/" + unzipFileName; 
+                }
 
                 
                 String s = String.format("Entry: %s len %d added %TD",
-                                   unzipFileName, entry.getSize(),
+                                   unzipFilePath, entry.getSize(),
                                    new Date(entry.getTime()));
 
                 if (!this.filesListInDir.contains(s)){                   
                     this.filesListInDir.add(s);
-                    updateFileGroupHash(unzipFileName);
-                    this.filesizeHash.put(unzipFileName, entry.getSize());
+                    updateFileGroupHash(unzipFilePath);
+                    this.filesizeHash.put(unzipFilePath, entry.getSize());
                 }
            } // end while
            

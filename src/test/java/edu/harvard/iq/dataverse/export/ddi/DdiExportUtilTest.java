@@ -1,30 +1,42 @@
 package edu.harvard.iq.dataverse.export.ddi;
 
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.util.xml.html.HtmlPrinter;
-import org.junit.Test;
 
-import javax.json.JsonObject;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.Assert.*;
 
+@ExtendWith(MockitoExtension.class)
+@TestMethodOrder(OrderAnnotation.class)
 public class DdiExportUtilTest {
 
     private static final Logger logger = Logger.getLogger(DdiExportUtilTest.class.getCanonicalName());
 
+    @Mock
+    SettingsServiceBean settingsSvc;
+    
     @Test
+    @Order(1)
     public void testJson2DdiNoFiles() throws Exception {
+        Mockito.when(settingsSvc.isTrueForKey(SettingsServiceBean.Key.ExportInstallationAsDistributorOnlyWhenNotSet, false)).thenReturn(false);
+        DdiExportUtil.injectSettingsService(settingsSvc);
         File datasetVersionJson = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.json");
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
         File ddiFile = new File("src/test/java/edu/harvard/iq/dataverse/export/ddi/dataset-finch1.xml");

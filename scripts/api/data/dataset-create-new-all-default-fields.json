@@ -181,7 +181,7 @@
                   "typeName": "dsDescriptionValue",
                   "multiple": false,
                   "typeClass": "primitive",
-                  "value": "DescriptionText 1"
+                  "value": "DescriptionText1"
                 },
                 "dsDescriptionDate": {
                   "typeName": "dsDescriptionDate",
@@ -265,6 +265,53 @@
             ]
           },
           {
+            "typeName": "topicClassification",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "topicClassValue": {
+                  "typeName": "topicClassValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Topic Classification Term1"
+                },
+                "topicClassVocab": {
+                  "typeName": "topicClassVocab",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Topic Classification Vocab1"
+                },
+                "topicClassVocabURI": {
+                  "typeName": "topicClassVocabURI",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "https://TopicClassificationURL1.com"
+                }
+              },
+              {
+                "topicClassValue": {
+                  "typeName": "topicClassValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Topic Classification Term2"
+                },
+                "topicClassVocab": {
+                  "typeName": "topicClassVocab",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Topic Classification Vocab2"
+                },
+                "topicClassVocabURI": {
+                  "typeName": "topicClassVocabURI",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "https://TopicClassificationURL2.com"
+                }
+              }
+            ]
+          },
+          {
             "typeName": "publication",
             "multiple": true,
             "typeClass": "compound",
@@ -328,6 +375,15 @@
             "multiple": false,
             "typeClass": "primitive",
             "value": "Notes1"
+          },
+          {
+            "typeName": "language",
+            "multiple": true,
+            "typeClass": "controlledVocabulary",
+            "value": [
+              "Abkhaz",
+              "Afar"
+            ]
           },
           {
             "typeName": "producer",

@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileCategory;
 import edu.harvard.iq.dataverse.DataFileTag;
+import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
@@ -154,6 +155,9 @@ public class JsonPrinterTest {
         tag.setTypeByLabel("Survey");
         dataFileTags.add(tag);
         dataFile.setTags(dataFileTags);
+        DataTable dt = new DataTable();
+        dataFile.setDataTable(dt);
+        dataFile.getDataTable().setOriginalFileName("50by1000.dta");
         fmd.setDatasetVersion(dsVersion);
         fmd.setDataFile(dataFile);
         List<DataFileCategory> fileCategories = new ArrayList<>();
@@ -171,6 +175,7 @@ public class JsonPrinterTest {
         assertEquals("", jsonObject.getJsonObject("dataFile").getString("filename"));
         assertEquals(-1, jsonObject.getJsonObject("dataFile").getInt("filesize"));
         assertEquals(-1, jsonObject.getJsonObject("dataFile").getInt("rootDataFileId"));
+        assertEquals("50by1000.dta", jsonObject.getJsonObject("dataFile").getString("originalFileName"));
         assertEquals("Survey", jsonObject.getJsonObject("dataFile").getJsonArray("tabularTags").getString(0));
     }
 
@@ -196,7 +201,7 @@ public class JsonPrinterTest {
         fields.add(datasetContactField);
 
         SettingsServiceBean nullServiceBean = null;
-        JsonPrinter.setSettingsService(nullServiceBean);
+        JsonPrinter.injectSettingsService(nullServiceBean);
         
         JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
@@ -237,7 +242,7 @@ public class JsonPrinterTest {
         datasetContactField.setDatasetFieldCompoundValues(vals);
         fields.add(datasetContactField);
 
-        JsonPrinter.setSettingsService(new MockSettingsSvc());
+        JsonPrinter.injectSettingsService(new MockSettingsSvc());
 
         JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);

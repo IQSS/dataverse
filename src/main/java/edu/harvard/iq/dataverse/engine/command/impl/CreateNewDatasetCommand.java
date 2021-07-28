@@ -87,7 +87,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(ctxt);
         if ( !idServiceBean.registerWhenPublished() ) {
             // pre-register a persistent id
-            registerExternalIdentifier(theDataset, ctxt);
+            registerExternalIdentifier(theDataset, ctxt, true);
         }
     }
     

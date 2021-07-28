@@ -62,24 +62,26 @@ public class StorageIOTest {
     @Test
     public void testGetDvObject() {
         assertEquals(null, instance.getDvObject());
-        instance.setDvObject(new Dataset());
-        assertEquals(new Dataset(), instance.getDataset());
-
-        try {
+        Dataset d= new Dataset();
+        instance.setDvObject(d);
+        //assertSame uses == rather than the .equals() method which would (currently) be true for any two Datasets 
+        assertSame(d, instance.getDataset());        try {
             instance.getDataFile();
             fail("This should have thrown");
         } catch (ClassCastException ex) {
-            assertEquals(ex.getMessage(), "edu.harvard.iq.dataverse.Dataset cannot be cast to edu.harvard.iq.dataverse.DataFile");
+            //Test succeeds
         }
         try {
             instance.getDataverse();
             fail("This should have thrown");
         } catch (ClassCastException ex) {
-            assertEquals(ex.getMessage(), "edu.harvard.iq.dataverse.Dataset cannot be cast to edu.harvard.iq.dataverse.Dataverse");
+            //Test succeeds
         }
         // null driver defaults to 'file'
-        assertEquals(new DataFile(), new FileAccessIO<>(new DataFile(), null, null).getDataFile());
-        assertEquals(new Dataverse(), new FileAccessIO<>(new Dataverse(), null, null).getDataverse());
+        DataFile f= new DataFile();
+        Dataverse dv = new Dataverse();
+        assertSame(f, new FileAccessIO<>(f, null, null).getDataFile());
+        assertSame(dv, new FileAccessIO<>(dv, null, null).getDataverse());
     }
 
     @Test

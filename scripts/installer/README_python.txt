@@ -16,20 +16,28 @@ backward compatibility, for now, but please use version 2.7 or newer.
 
 
 The extra module psycopg2 (PostgreSQL client) is required. The
-installer has been tested with psycopg2 version 2.8.4.
+installer has been tested with psycopg2 version 2.8.4. 
 
-Install the module with 
+We recommend that you try installing the "binary", pre-built version of the package:
 
-pip install psycopg2 
+pip install psycopg2-binary
 
-(or "pip3 install psycopg2" if you intend to use python3 and it's
+(or "pip3 install psycopg2-binary" if you intend to use python3 and it's
 installed separately on your system)
 
-In order to build the module, pip will need to execute pg_config,
-PostgreSQL configuration utility. Make sure it is in your PATH. If you
-have multiple versions of PostgresQL installed, make sure the version
-that you will be using with Dataverse is the first on your PATH. For
-example,
+If for whatever reason the binary psycopg2 package doesn't run
+properly on your system, you can try the more complex process of
+making pip build it from sources:
+
+pip3 install psycopg2
+
+This will require compilers to be properly installed on your system.
+(On MacOS, you'll need XCode installed). 
+In order to link with the PostgresQL libraries, pip will need to
+execute pg_config, PostgreSQL configuration utility. Make sure it is
+in your PATH. If you have multiple versions of PostgresQL installed,
+make sure the version that you will be using with Dataverse is the
+first on your PATH. For example,
 
    PATH=/usr/pgsql-9.6/bin:$PATH; export PATH
 

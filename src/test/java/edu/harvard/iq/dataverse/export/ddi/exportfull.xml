@@ -10,7 +10,7 @@
         <distrbtr source="archive">Root</distrbtr>
         <distDate>2020-02-19</distDate>
       </distStmt>
-      <verStmt source="DVN">
+      <verStmt source="archive">
         <version date="2020-02-19" type="RELEASED">1</version>
       </verStmt>
       <biblCit>LastAuthor1, FirstAuthor1; LastAuthor2, FirstAuthor2, 2020, "Replication Data for: Title", https://doi.org/10.5072/FK2/WKUKGV, Root, V1</biblCit>

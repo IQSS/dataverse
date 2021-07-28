@@ -26,6 +26,8 @@ import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.logging.Logger;
+
+import org.apache.tika.io.IOUtils;
 /**
  *
  * @author Leonid Andreev
@@ -37,7 +39,7 @@ public class StoredOriginalFile {
         
     }
     
-    private static final String SAVED_ORIGINAL_FILENAME_EXTENSION = "orig";
+    public static final String SAVED_ORIGINAL_FILENAME_EXTENSION = "orig";
     
     public static StorageIO<DataFile> retreive(StorageIO<DataFile> storageIO) {
         String originalMimeType;
@@ -56,17 +58,18 @@ public class StoredOriginalFile {
 
         long storedOriginalSize; 
         InputStreamIO inputStreamIO;
-        
+        Channel storedOriginalChannel = null;
         try {
             storageIO.open();
-            Channel storedOriginalChannel = storageIO.openAuxChannel(SAVED_ORIGINAL_FILENAME_EXTENSION);
+            storedOriginalChannel = storageIO.openAuxChannel(SAVED_ORIGINAL_FILENAME_EXTENSION);
             storedOriginalSize = dataFile.getDataTable().getOriginalFileSize() != null ? 
                     dataFile.getDataTable().getOriginalFileSize() : 
                     storageIO.getAuxObjectSize(SAVED_ORIGINAL_FILENAME_EXTENSION);
             inputStreamIO = new InputStreamIO(Channels.newInputStream((ReadableByteChannel) storedOriginalChannel), storedOriginalSize);
             logger.fine("Opened stored original file as Aux "+SAVED_ORIGINAL_FILENAME_EXTENSION);
         } catch (IOException ioEx) {
-            // The original file not saved, or could not be opened.
+        	IOUtils.closeQuietly(storedOriginalChannel);
+        	// The original file not saved, or could not be opened.
             logger.fine("Failed to open stored original file as Aux "+SAVED_ORIGINAL_FILENAME_EXTENSION+"!");
             return null;
         }
@@ -81,27 +84,14 @@ public class StoredOriginalFile {
             inputStreamIO.setMimeType("application/x-unknown");
         }
 
-        String fileName = storageIO.getFileName();
-        if (fileName != null) {
-            if (originalMimeType != null) {
-                String origFileExtension = generateOriginalExtension(originalMimeType);
-                inputStreamIO.setFileName(fileName.replaceAll(".tab$", origFileExtension));
-            } else {
-                inputStreamIO.setFileName(fileName.replaceAll(".tab$", ""));
-            }
-        }
+        inputStreamIO.setFileName(dataFile.getOriginalFileName());
 
         return inputStreamIO;
 
     }
 
-    // TODO: 
-    // do what the comment below says - move this code into the file util, 
-    // or something like that!
-    // -- L.A. 4.0 beta15
-    // Shouldn't be here; should be part of the DataFileFormatType, or 
-    // something like that... 
-    
+    /* 
+            DataFile.getOriginalFileName() method replaces this code
     private static String generateOriginalExtension(String fileType) {
 
         if (fileType.equalsIgnoreCase("application/x-spss-sav")) {
@@ -125,5 +115,5 @@ public class StoredOriginalFile {
         }
         logger.severe(fileType + " does not have an associated file extension");
         return "";
-    }
+    } */
 }

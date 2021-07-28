@@ -21,8 +21,7 @@ files. Some companies publish the specifications of their formats
 still frowning at you here at the Dataverse Project). Either way,
 reading these specially-formatted files requires some extra knowledge
 or special software. For these reasons they are not considered ideal
-for the purposes of archival preservation. Dataverse stores the raw
-data content extracted from such files in plain text, TAB-delimited
+for the purposes of archival preservation. The Dataverse installation stores the raw data content extracted from such files in plain text, TAB-delimited
 files. The metadata information that describes this content is stored
 separately, in a relational database, so that it can be accessed
 efficiently by the application. For the purposes of archival
@@ -49,11 +48,11 @@ the 2 numeric values have *categorical labels* of "Democrat" for 0 and
 "Republican" for 1. This extra information that adds value to the data
 is *metadata*.
 
-Tabular Metadata in Dataverse
-------------------------------------
+Tabular Metadata in the Dataverse Software
+------------------------------------------
 
 The structure of the metadata defining tabular data variables used in
-Dataverse was originally based on the `DDI Codebook
+the Dataverse Software was originally based on the `DDI Codebook
 <http://www.ddialliance.org/Specification/DDI-Codebook/2.5/>`_ format.
 
 You can see an example of DDI output under the :ref:`data-variable-metadata-access` section of the :doc:`/api/dataaccess` section of the API Guide.

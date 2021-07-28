@@ -10,6 +10,11 @@
                 xmlns:of="http://omnifaces.org/functions"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     <o:resourceInclude path="/CustomizationFilesServlet?customFileType=header" rendered="#{!widgetWrapper.widgetView}"/>
+    <o:importFunctions type="edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers" />
+    <ui:param name="showAddDataverseLink" value="#{permissionServiceBean.userOn(AuthenticatedUsers:get(),dataverseServiceBean.findRootDataverse()).canIssueCommand('CreateDataverseCommand') }"/>
+    <ui:param name="showAddDatasetLink" value="#{permissionServiceBean.userOn(AuthenticatedUsers:get(),dataverseServiceBean.findRootDataverse()).canIssueCommand('AbstractCreateDatasetCommand') }"/>
+    <ui:param name="showAddDataGroup" value="#{showAddDataverseLink or showAddDatasetLink}"/>
+
     <div id="dataverse-header-block">
         <!-- Navbar Panel -->
         <nav id="navbarFixed" class="navbar navbar-default navbar-fixed-top" jsf:rendered="#{!widgetWrapper.widgetView}">
@@ -31,15 +36,15 @@
                 </div>
                 <div class="collapse navbar-collapse" id="topNavBar">
                     <ul class="nav navbar-nav navbar-right">
-                        <li class="dropdown">
+                        <li class="dropdown" jsf:rendered="#{showAddDataGroup}">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">#{bundle['dataverse.results.btn.addData']} <b class="caret"></b></a>
                             <ul class="dropdown-menu">
-                                <li>
+                                <li jsf:rendered="#{showAddDataverseLink}">
                                     <h:outputLink value="/dataverse.xhtml?ownerId=#{dataverseServiceBean.findRootDataverse().id}">
                                         <h:outputText value="#{bundle['dataverse.results.btn.addData.newDataverse']}"/>
                                     </h:outputLink>
                                 </li>
-                                <li>
+                                <li jsf:rendered="#{showAddDatasetLink}">
                                     <h:outputLink value="/dataset.xhtml?ownerId=#{dataverseServiceBean.findRootDataverse().id}">
                                         <h:outputText value="#{bundle['dataverse.results.btn.addData.newDataset']}"/>
                                     </h:outputLink>
@@ -50,13 +55,12 @@
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">#{bundle.search} <b class="caret"></b></a>
                             <ul class="dropdown-menu navbar-search">
                                 <form class="form-inline" role="search">
-                                    <label class="sr-only" for="navbarsearch">#{bundle.search}</label>
+                                    <label id="searchNavLabel" class="sr-only" for="navbarsearch">#{bundle.search}</label>
                                     <div class="input-group">
-                                        <input id="navbarsearch" type="text" class="form-control" size="28" value="" placeholder="#{bundle['header.search.title']}"/>
+                                        <input id="navbarsearch" type="text" class="form-control" size="28" value="" placeholder="#{bundle['header.search.title']}" aria-labelledby="searchNavLabel"/>
                                         <span class="input-group-btn">
-                                            <button type="submit" class="btn btn-default" onclick="window.location = '/dataverse/#{dataverseServiceBean.findRootDataverse().alias}&#63;q=' + document.getElementById('navbarsearch').value;
-                                                    return false;">
-                                                <span class="glyphicon glyphicon-search"/> #{bundle.find}
+                                            <button type="submit" title="#{bundle.find}" class="btn btn-default bootstrap-button-tooltip" onclick="window.location='/dataverse/#{dataverseServiceBean.findRootDataverse().alias}&#63;q=' + document.getElementById('navbarsearch').value;return false;">
+                                                <span class="glyphicon glyphicon-search no-text"/>
                                             </button>
                                         </span>
                                     </div>
@@ -69,7 +73,7 @@
                             </h:outputLink>
                         </li>
                         <li>
-                            <h:outputLink value="#{settingsWrapper.guidesBaseUrl}/#{systemConfig.guidesVersion}/user" target="_blank" rel="noopener">
+                            <h:outputLink value="#{settingsWrapper.get(':NavbarGuidesUrl', settingsWrapper.guidesBaseUrl.concat('/').concat(systemConfig.guidesVersion).concat('/user'))}" target="_blank" rel="noopener">
                                 <h:outputText value="#{bundle['header.guides.user']}"/>
                             </h:outputLink>
                         </li>
@@ -189,16 +193,20 @@
                 </div>
             </div>
         </noscript>
-        <!-- Status Alert -->
+        <!-- Banner Message -->
         <o:form class="form-inline">
-            <div id="status-alert" class="bg-warning" jsf:rendered="#{!empty settingsWrapper.get(':StatusMessageText') and !empty settingsWrapper.get(':StatusMessageHeader') and !dataverseSession.isStatusDismissed()}">
-                <div class="alert alert-dismissible container text-warning">
-                    <p:commandButton class="close" id="closeButton" actionListener="#{dataverseSession.setStatusDismissed(true)}" update="@form" value="&#215;"/>
-                    <h:outputText styleClass="highlightBold" value="#{!empty settingsWrapper.get(':StatusMessageHeader') ? settingsWrapper.get(':StatusMessageHeader') : bundle['header.status.header']}"/>
-                    <h:outputText rendered="#{!empty settingsWrapper.get(':StatusMessageText')}" value=" – #{settingsWrapper.get(':StatusMessageText')}" escape="false"/>
-                </div>
-            </div>
+            <ui:fragment rendered="#{!empty dataverseHeaderFragment.bannerMessages}">
+                <ui:repeat value="#{dataverseHeaderFragment.bannerMessages}" var="message" varStatus="status">                
+                    <div id="status-alert" class="bg-warning" jsf:rendered="#{!empty message.displayValue }">
+                        <div class="alert alert-dismissible container text-warning">
+                            <p:commandButton class="close" id="closeButton" actionListener="#{dataverseSession.dismissMessage(message)}" update="@form" value="&#215;"/>
+                            <h:outputText rendered="#{!empty message.displayValue }" value=" #{message.displayValue }" escape="false"/>
+                        </div>
+                    </div>
+                </ui:repeat>
+            </ui:fragment>
         </o:form>
+        
         <!-- Header Panel -->
         <!-- FIXME: Rather than hard-coding "FFFFFF", get it from the backend (ThemeWidgetFragment.DEFAULT_BACKGROUND_COLOR). -->
         <div id="dataverseHeader" class="container bg-muted"
@@ -232,12 +240,15 @@
                 </div>
             </div>
         </div>
-	<p:fragment id="breadCrumbPanel" rendered="#{dataverseHeaderFragment.breadcrumbs.size() > 1}">
+        <p:fragment id="breadCrumbPanel" rendered="#{dataverseHeaderFragment.breadcrumbs.size() > 2 or (dataverseHeaderFragment.breadcrumbs.size() > 1 and dataverseHeaderFragment.breadcrumbs[1].dvObject.instanceofDataverse)}">
         <div id="breadcrumbNavBlock" class="container" jsf:rendered="#{dataverseHeaderFragment.breadcrumbs.size() > 1}">
             <ui:repeat value="#{dataverseHeaderFragment.breadcrumbs}" var="breadcrumb" varStatus="status">
                 <h:outputText value=" > " styleClass="breadcrumbCarrot" rendered="#{!status.first}"/>
                 <div class="breadcrumbBlock">
-                    <h:outputText value="#{breadcrumb.breadcrumbText}" styleClass="#{'breadcrumbActive'}" rendered="#{status.last}"/>
+                    
+                    <!-- TO-DO, REMOVED HIGHLIGHTED CURRENT PAGE TITLE WITH false RENDER, NEED TO MOVE TO PGS...??? -->
+                    <h:outputText value="#{breadcrumb.breadcrumbText}" styleClass="#{'breadcrumbActive'}" rendered="#{false}"/>
+                    
                     <ui:fragment rendered="#{!status.last}">
                         <h:outputText value="#{breadcrumb.breadcrumbText}" rendered="#{!breadcrumb.dvObject.instanceofDataverse and !breadcrumb.dvObject.instanceofDataset and !breadcrumb.dvObject.instanceofDataFile and empty breadcrumb.url}"/>
                         <ui:fragment rendered="#{breadcrumb.dvObject == null and !empty breadcrumb.url}">

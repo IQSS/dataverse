@@ -1,0 +1,37 @@
+Auxiliary File Support
+======================
+
+Auxiliary file support is experimental and as such, related APIs may be added, changed or removed without standard backward compatibility. Auxiliary files in the Dataverse Software are being added to support depositing and downloading differentially private metadata, as part of the OpenDP project (opendp.org). In future versions, this approach will likely become more broadly used and supported.
+
+Adding an Auxiliary File to a Datafile
+--------------------------------------
+To add an auxiliary file, specify the primary key of the datafile (FILE_ID), and the formatTag and formatVersion (if applicable) associated with the auxiliary file. There are multiple form parameters. "Origin" specifies the application/entity that created the auxiliary file, and "isPublic" controls access to downloading the file. If "isPublic" is true, any user can download the file if the dataset has been published, else, access authorization is based on the access rules as defined for the DataFile itself. The "type" parameter is used to group similar auxiliary files in the UI. Currently, auxiliary files with type "DP" appear under "Differentially Private Statistics", while all other auxiliary files appear under "Other Auxiliary Files".
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export FILENAME='auxfile.txt'
+  export FILE_ID='12345'
+  export FORMAT_TAG='dpJson'
+  export FORMAT_VERSION='v1'
+  export TYPE='DP'
+  export SERVER_URL=https://demo.dataverse.org
+ 
+  curl -H X-Dataverse-key:$API_TOKEN -X POST -F "file=@$FILENAME" -F 'origin=myApp' -F 'isPublic=true' -F "type=$TYPE" "$SERVER_URL/api/access/datafile/$FILE_ID/auxiliary/$FORMAT_TAG/$FORMAT_VERSION"
+
+You should expect a 200 ("OK") response and JSON with information about your newly uploaded auxiliary file.
+
+Downloading an Auxiliary File that belongs to a Datafile 
+--------------------------------------------------------
+To download an auxiliary file, use the primary key of the datafile, and the
+formatTag and formatVersion (if applicable) associated with the auxiliary file:
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export FILE_ID='12345'
+  export FORMAT_TAG='dpJson'
+  export FORMAT_VERSION='v1'
+
+  curl "$SERVER_URL/api/access/datafile/$FILE_ID/auxiliary/$FORMAT_TAG/$FORMAT_VERSION"

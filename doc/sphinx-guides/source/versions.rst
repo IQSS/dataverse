@@ -1,13 +1,21 @@
 :orphan:
 .. _guides_versions:
 
-Dataverse Documentation Versions
-================================
+Dataverse Software Documentation Versions
+=========================================
 
-This list provides a way to refer to the documentation for previous versions of Dataverse. In order to learn more about the updates delivered from one version to another, visit the `Releases <https://github.com/IQSS/dataverse/releases>`__ page in our GitHub repo.
+This list provides a way to refer to the documentation for previous versions of the Dataverse Software. In order to learn more about the updates delivered from one version to another, visit the `Releases <https://github.com/IQSS/dataverse/releases>`__ page in our GitHub repo.
 
-- 4.20
+- 5.5
 
+- `5.4.1 </en/5.4.1/>`__
+- `5.4 </en/5.4/>`__
+- `5.3 </en/5.3/>`__
+- `5.2 </en/5.2/>`__
+- `5.1.1 </en/5.1.1/>`__
+- `5.1 </en/5.1/>`__
+- `5.0 </en/5.0/>`__
+- `4.20 </en/4.20/>`__
 - `4.19 </en/4.19/>`__
 - `4.18.1 </en/4.18.1/>`__
 - `4.18 </en/4.18/>`__

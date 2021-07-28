@@ -13,7 +13,7 @@ import org.junit.Test;
 import java.util.UUID;
 
 import static com.jayway.restassured.RestAssured.given;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.OK;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.fail;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -118,6 +118,8 @@ public class FileMetadataIT {
     @Test
     public void testJsonParserWithDirectoryLabels() {
         try {
+            //SEK 4/14/2020 need to be super user to add a dataset with files
+            UtilIT.makeSuperUser(testName).then().assertThat().statusCode(OK.getStatusCode());
 
             // try to create a dataset with directory labels that contain both leading and trailing file separators
             //Should work now

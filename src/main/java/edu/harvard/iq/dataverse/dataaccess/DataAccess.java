@@ -20,6 +20,7 @@
 
 package edu.harvard.iq.dataverse.dataaccess;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DvObject;
 import java.io.IOException;
 import java.util.HashMap;
@@ -147,7 +148,11 @@ public class DataAccess {
             throw new IOException("getDataAccessObject: null or invalid datafile.");
         }
                 
-        return createNewStorageIO(dvObject, storageTag, dvObject.getDataverseContext().getEffectiveStorageDriverId());
+        if (dvObject instanceof Dataset) {
+            return createNewStorageIO(dvObject, storageTag, ((Dataset)dvObject).getEffectiveStorageDriverId());
+        } 
+        // it's a DataFile:
+        return createNewStorageIO(dvObject, storageTag, dvObject.getOwner().getEffectiveStorageDriverId());
     }
 
     public static <T extends DvObject> StorageIO<T> createNewStorageIO(T dvObject, String storageTag, String storageDriverId) throws IOException {

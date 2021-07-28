@@ -10,8 +10,8 @@
 
   function enableAnalyticsEventCapture() {
     // Download button
-    $(document).on("click", ".btn-download", function() {
-      var category = $(this).text();
+    $(document).on("click", ".btn-download, .btn-download.dropdown-toggle + ul.dropdown-menu li a", function() {
+      var category = stripSize($(this).text());
       var label = getFileId($(this));
       gtag('event', 'Download',{'event_category' : category,
                                 'event_label' : label});
@@ -26,7 +26,7 @@
     });
 
     // Explore button
-    $(document).on("click", ".btn-explore + ul.dropdown-menu li a", function() {
+    $(document).on("click", ".btn-explore, .btn-explore.dropdown-toggle + ul.dropdown-menu li a", function() {
       var category = $(this).text();
       var label = getFileId($(this));
       gtag('event', 'Explore', {'event_category' : category,
@@ -34,7 +34,7 @@
     });
 
     // Compute button
-    $(document).on("click", ".btn-compute", function() {
+    $(document).on("click", ".btn-compute, .btn-compute.dropdown-toggle + ul.dropdown-menu li a", function() {
       var category = $(this).text();
       var label = getFileId($(this));
       gtag('event', 'Compute', {'event_category' : category,
@@ -42,7 +42,7 @@
     });
 
     // Preview button
-    $(document).on("click", ".btn-preview", function() {
+    $(document).on("click", ".btn-preview, .btn-preview.dropdown-toggle + ul.dropdown-menu li a", function() {
       var category = $(this).text();
       var label = getFileId($(this));
       gtag('event', 'Preview', {'event_category' : category,
@@ -110,7 +110,7 @@
 
   function getFileId(target) {
     var label = 'Unknown';
-    if(target.parents('th').length>0) {
+    if(target.parents('th, #actionButtonBlock .btn-access-dataset + ul.dropdown-menu').length>0) {
       //Special case - the Download button that downloads all selected files in the dataset
       label = 'file(s) from ' + stripId($('#datasetForm').attr('action'));
     } else {
@@ -144,6 +144,14 @@
     var index = label.length;
     label = label.substring(label.indexOf('/dataverse/') + 11, index).split(/[?#]/)[0];
     return(label);
+  }
+
+  function stripSize(category) {
+    var index = category.indexOf('ZIP (');
+    if(index >= 0) {
+      category = category.substring(0, index + 3);
+    }
+    return(category);
   }
   //]]>
 </script>

@@ -78,7 +78,6 @@ public class ManageGroupsPage implements java.io.Serializable {
     private Dataverse dataverse;
     private Long dataverseId;
     private ExplicitGroup selectedGroup = null;
-    private Boolean showDeletePopup = false;
 
     public String init() {
         setDataverse(dataverseService.find(getDataverseId()));
@@ -102,7 +101,6 @@ public class ManageGroupsPage implements java.io.Serializable {
 
 
     public void setSelectedGroup(ExplicitGroup selectedGroup) {
-        setShowDeletePopup(true);
         this.selectedGroup = selectedGroup;
     }
 
@@ -237,18 +235,6 @@ public class ManageGroupsPage implements java.io.Serializable {
 
     public void removeMemberFromSelectedGroup(RoleAssignee ra) {
         selectedGroup.remove(ra);
-    }
-    
-    public Boolean getShowDeletePopup() {
-        return showDeletePopup;
-    }
-
-    public void setShowDeletePopup(Boolean showDeletePopup) {
-        this.showDeletePopup = showDeletePopup;
-    }
-    
-    public void unrenderDeletePopup() {
-        setShowDeletePopup(false);
     }
 
     public List<RoleAssignee> completeRoleAssignee( String query ) {

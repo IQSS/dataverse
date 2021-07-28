@@ -648,13 +648,8 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
      */
     public RetrieveDatasetVersionResponse retrieveDatasetVersionById(Long datasetId, String version){
         msg("retrieveDatasetVersionById: " + datasetId + " " + version);
-        if (datasetId==null){
-            return null;
-        }        
         
-        String identifierClause = " AND ds.id = " + datasetId;
-
-        DatasetVersion ds = retrieveDatasetVersionByIdentiferClause(identifierClause, version);
+        DatasetVersion ds = getDatasetVersionById(datasetId, version);
         
         if (ds != null){
             return new RetrieveDatasetVersionResponse(ds, version);
@@ -665,6 +660,30 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
           
     } // end: retrieveDatasetVersionById
     
+    public DatasetVersion getDatasetVersionById(Long datasetId, String version){
+        msg("retrieveDatasetVersionById: " + datasetId + " " + version);
+        if (datasetId==null){
+            return null;
+        }        
+        
+        String identifierClause = this.getIdClause(datasetId);
+
+        DatasetVersion ds = retrieveDatasetVersionByIdentiferClause(identifierClause, version);
+        
+        return ds;
+
+          
+    } // end: getDatasetVersionById
+    
+    public DatasetVersion getLatestReleasedVersionFast(Long datasetId) {
+        String identifierClause = this.getIdClause(datasetId);
+        String latestVersionQuery = this.getLatestReleasedDatasetVersionQuery(identifierClause);
+        return this.getDatasetVersionByQuery(latestVersionQuery);
+    }
+    
+    private String getIdClause(Long datasetId) {
+        return " AND ds.id = " + datasetId;
+    }
     
      /**
      * Find a DatasetVersion using the dataset versionId
@@ -688,7 +707,7 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
         }
         return null;          
     } // end: retrieveDatasetVersionByVersionId
-
+    
     // This is an optimized, native query-based method for picking an image 
     // that can be used as the thumbnail for a given dataset/version. 
     // It is primarily designed to be used when thumbnails are requested

@@ -121,13 +121,15 @@ public class PasswordResetPage implements java.io.Serializable {
                 actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.BuiltinUser, "passwordResetSent")
                             .setInfo("Email Address: " + emailAddress) );
             } else {
-                /**
-                 * @todo remove "single" when it's no longer necessary. See
-                 * https://github.com/IQSS/dataverse/issues/844 and
-                 * https://github.com/IQSS/dataverse/issues/1141
-                 */
-                logger.log(Level.INFO, "Couldn''t find single account using {0}", emailAddress);
+                logger.log(Level.INFO, "Cannot find account (or it's deactivated) given {0}", emailAddress);
             }
+            /**
+             * We show this "an email will be sent" message no matter what (if
+             * the account can be found or not, if the account has been
+             * deactivated or not) to prevent hackers from figuring out if you
+             * have an account based on your email address. Yes, this is a white
+             * lie sometimes, in the name of security.
+             */
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("passwdVal.passwdReset.resetInitiated"), 
                     BundleUtil.getStringFromBundle("passwdReset.successSubmit.tip", Arrays.asList(emailAddress))));
         } catch (PasswordResetException ex) {
@@ -146,7 +148,6 @@ public class PasswordResetPage implements java.io.Serializable {
             String builtinAuthProviderId = BuiltinAuthenticationProvider.PROVIDER_ID;
             AuthenticatedUser au = authSvc.lookupUser(builtinAuthProviderId, user.getUserName());
             session.setUser(au);
-            session.configureSessionTimeout();
             return "/dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias() + "faces-redirect=true";
         } else {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, response.getMessageSummary(), response.getMessageDetail()));

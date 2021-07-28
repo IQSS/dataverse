@@ -22,7 +22,6 @@ import edu.harvard.iq.dataverse.datasetutility.NoFilesException;
 import edu.harvard.iq.dataverse.datasetutility.OptionalFileParams;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteMapLayerMetadataCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDraftFileMetadataIfAvailableCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RedetectFileTypeCommand;
@@ -33,6 +32,7 @@ import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
+import edu.harvard.iq.dataverse.ingest.IngestUtil;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
@@ -41,6 +41,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,6 +49,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.JsonReader;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -209,17 +212,33 @@ public class Files extends AbstractApiBean {
                 } catch (DataFileTagException ex) {
                     return error(Response.Status.BAD_REQUEST, ex.getMessage());
                 }
-            } catch (ClassCastException ex) {
-                logger.info("Exception parsing string '" + jsonData + "': " + ex);
+            } catch (ClassCastException | com.google.gson.JsonParseException ex) {
+                return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("file.addreplace.error.parsing"));
             }
         }
 
         // (3) Get the file name and content type
-        if(null == contentDispositionHeader) {
-             return error(BAD_REQUEST, "You must upload a file.");
+        String newFilename = null;
+        String newFileContentType = null;
+        String newStorageIdentifier = null;
+        if (null == contentDispositionHeader) {
+            if (optionalFileParams.hasStorageIdentifier()) {
+                newStorageIdentifier = optionalFileParams.getStorageIdentifier();
+                // ToDo - check that storageIdentifier is valid
+                if (optionalFileParams.hasFileName()) {
+                    newFilename = optionalFileParams.getFileName();
+                    if (optionalFileParams.hasMimetype()) {
+                        newFileContentType = optionalFileParams.getMimeType();
+                    }
+                }
+            } else {
+                return error(BAD_REQUEST,
+                        "You must upload a file or provide a storageidentifier, filename, and mimetype.");
+            }
+        } else {
+            newFilename = contentDispositionHeader.getFileName();
+            newFileContentType = formDataBodyPart.getMediaType().toString();
         }
-        String newFilename = contentDispositionHeader.getFileName();
-        String newFileContentType = formDataBodyPart.getMediaType().toString();
         
         // (4) Create the AddReplaceFileHelper object
         msg("REPLACE!");
@@ -251,14 +270,16 @@ public class Files extends AbstractApiBean {
             addFileHelper.runForceReplaceFile(fileToReplaceId,
                                     newFilename,
                                     newFileContentType,
+                                    newStorageIdentifier,
                                     testFileInputStream,
                                     optionalFileParams);
         }else{
             addFileHelper.runReplaceFile(fileToReplaceId,
                                     newFilename,
                                     newFileContentType,
+                                    newStorageIdentifier,
                                     testFileInputStream,
-                                    optionalFileParams);            
+                                    optionalFileParams);
         }    
             
         msg("we're back.....");
@@ -354,7 +375,7 @@ public class Files extends AbstractApiBean {
                         return error(Response.Status.BAD_REQUEST, ex.getMessage());
                     }
                 } catch (ClassCastException | com.google.gson.JsonParseException ex) {
-                    return error(Response.Status.BAD_REQUEST, "Exception parsing provided json");
+                    return error(Response.Status.BAD_REQUEST, BundleUtil.getStringFromBundle("file.addreplace.error.parsing"));
                 }
             }
 
@@ -368,14 +389,33 @@ public class Files extends AbstractApiBean {
                 List<FileMetadata> fmdList = editVersion.getFileMetadatas();
                 for(FileMetadata testFmd : fmdList) {
                     DataFile daf = testFmd.getDataFile();
-                    if(daf.getChecksumType().equals(df.getChecksumType())
-                        && daf.getChecksumValue().equals(df.getChecksumValue())) {
-                        upFmd = testFmd;
+                    if(daf.equals(df)){
+                       upFmd = testFmd;
+                       break;
                     }
                 }
                 
                 if (upFmd == null){
                     return error(Response.Status.BAD_REQUEST, "An error has occurred attempting to update the requested DataFile. It is not part of the current version of the Dataset.");
+                }
+
+                JsonReader jsonReader = Json.createReader(new StringReader(jsonData));
+                javax.json.JsonObject jsonObject = jsonReader.readObject();
+                String incomingLabel = jsonObject.getString("label", null);
+                String incomingDirectoryLabel = jsonObject.getString("directoryLabel", null);
+                String existingLabel = df.getFileMetadata().getLabel();
+                String existingDirectoryLabel = df.getFileMetadata().getDirectoryLabel();
+                String pathPlusFilename = IngestUtil.getPathAndFileNameToCheck(incomingLabel, incomingDirectoryLabel, existingLabel, existingDirectoryLabel);
+                // We remove the current file from the list we'll check for duplicates.
+                // Instead, the current file is passed in as pathPlusFilename.
+                List<FileMetadata> fmdListMinusCurrentFile = new ArrayList<>();
+                for (FileMetadata fileMetadata : fmdList) {
+                    if (!fileMetadata.equals(df.getFileMetadata())) {
+                        fmdListMinusCurrentFile.add(fileMetadata);
+                    }
+                }
+                if (IngestUtil.conflictsWithExistingFilenames(pathPlusFilename, fmdListMinusCurrentFile)) {
+                    return error(BAD_REQUEST, BundleUtil.getStringFromBundle("files.api.metadata.update.duplicateFile", Arrays.asList(pathPlusFilename)));
                 }
 
                 optionalFileParams.addOptionalParams(upFmd);
@@ -384,7 +424,7 @@ public class Files extends AbstractApiBean {
 
             } catch (Exception e) {
                 logger.log(Level.WARNING, "Dataset publication finalization: exception while exporting:{0}", e);
-                return error(Response.Status.INTERNAL_SERVER_ERROR, "Error adding metadata to DataFile" + e);
+                return error(Response.Status.INTERNAL_SERVER_ERROR, "Error adding metadata to DataFile: " + e);
             }
 
         } catch (WrappedResponse wr) {
@@ -445,31 +485,7 @@ public class Files extends AbstractApiBean {
     public Response getFileMetadataDraft(@PathParam("id") String fileIdOrPersistentId, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response, Boolean getDraft) throws WrappedResponse, Exception {
         return getFileMetadata(fileIdOrPersistentId, versionId, uriInfo, headers, response, true);
     }
-    
-    // TODO: Rather than only supporting looking up files by their database IDs, consider supporting persistent identifiers.
-    // TODO: Rename this start with "delete" rather than "get".
-    @DELETE
-    @Path("{id}/map")
-    public Response getMapLayerMetadatas(@PathParam("id") Long idSupplied) {
-        DataverseRequest dataverseRequest = null;
-        try {
-            dataverseRequest = createDataverseRequest(findUserOrDie());
-        } catch (WrappedResponse wr) {
-            return error(BAD_REQUEST, "Couldn't find user to execute command: " + wr.getLocalizedMessage());
-        }
-        DataFile dataFile = fileService.find(idSupplied);
-        try {
-            boolean deleted = engineSvc.submit(new DeleteMapLayerMetadataCommand(dataverseRequest, dataFile));
-            if (deleted) {
-                return ok("Map deleted from file id " + dataFile.getId());
-            } else {
-                return error(BAD_REQUEST, "Could not delete map from file id " + dataFile.getId());
-            }
-        } catch (CommandException ex) {
-            return error(BAD_REQUEST, "Problem trying to delete map from file id " + dataFile.getId() + ": " + ex.getLocalizedMessage());
-        }
-    }
-    
+
     @Path("{id}/uningest")
     @POST
     public Response uningestDatafile(@PathParam("id") String id) {
@@ -603,7 +619,7 @@ public class Files extends AbstractApiBean {
     private void exportDatasetMetadata(SettingsServiceBean settingsServiceBean, Dataset theDataset) {
 
         try {
-            ExportService instance = ExportService.getInstance(settingsServiceBean);
+            ExportService instance = ExportService.getInstance();
             instance.exportAllFormats(theDataset);
 
         } catch (ExportException ex) {

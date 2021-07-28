@@ -38,9 +38,29 @@ def validate_admin_email(emailAddress):
         return True
     return False
 
-def test_glassfish_directory(directory):
+def test_appserver_directory(directory):
     if os.path.isdir(directory+"/glassfish/domains/domain1"):
+        major_version = 0
+        minor_version = 0
+        try:
+            with open(directory+"/glassfish/config/branding/glassfish-version.properties") as f:
+                for line in f:
+                    if "=" in line:            
+                        name, value = line.rstrip().split("=", 1)
+                
+                        if name == "major_version":
+                            major_version = int(value)
+                        elif name == "minor_version":
+                            minor_version = int(value)
+        except:
+            return False
+
+        #print("version: major: "+str(major_version)+", minor: "+str(minor_version))
+
+        if major_version != 5 or minor_version < 201:
+            return False
         return True
+
     return False
 
 def test_smtp_server(address):

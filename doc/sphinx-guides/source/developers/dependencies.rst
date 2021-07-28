@@ -5,13 +5,13 @@ Dependency Management
 .. contents:: |toctitle|
 	:local:
 
-Dataverse is (currently) a Java EE 7 based application, that uses a lot of additional libraries for special purposes.
+The Dataverse Software is (currently) a Jakarta EE 8 based application, that uses a lot of additional libraries for special purposes.
 This includes features like support for SWORD-API, S3 storage and many others.
 
 Besides the code that glues together the single pieces, any developer needs to describe used dependencies for the
 Maven-based build system. As is familiar to any Maven user, this happens inside the "Project Object Model" (POM) living in
 ``pom.xml`` at the root of the project repository. Recursive and convergent dependency resolution makes dependency
-management with Maven very easy. But sometimes, in projects with many complex dependencies like Dataverse, you have
+management with Maven very easy. But sometimes, in projects with many complex dependencies like the Dataverse Software, you have
 to help Maven make the right choices.
 
 Terms
@@ -19,7 +19,7 @@ Terms
 
 As a developer, you should familiarize yourself with the following terms:
 
-- **Direct dependencies**: things *you use* yourself in your own code for Dataverse.
+- **Direct dependencies**: things *you use* yourself in your own code for the Dataverse Software.
 - **Transitive dependencies**: things *others use* for things you use, pulled in recursively.
   See also: `Maven docs <https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Transitive_Dependencies>`_.
 
@@ -76,7 +76,7 @@ dependency definition does not change.
 2. **Clean up** direct dependencies no longer in use. It will bloat the deployment package otherwise!
 3. Care about the **scope**. Do not include "testing only" dependencies in the package - it will hurt you in IDEs and bloat things. [#f1]_
 4. Avoid using different dependencies for the **same purpose**, e. g. different JSON parsing libraries.
-5. Refactor your code to **use Java EE** standards as much as possible.
+5. Refactor your code to **use Jakarta EE** standards as much as possible.
 6. When you rely on big SDKs or similar big cool stuff, try to **include the smallest portion possible**. Complete SDK
    bundles are typically heavyweight and most of the time unnecessary.
 7. **Don't include transitive dependencies.** [#f2]_
@@ -167,7 +167,7 @@ A reduced example, only showing bits relevant to the above cases and usage of an
                 <scope>import</scope>
             </dependency>
             <!-- Second example for case 4 and an example for explicit direct usage of a transitive dependency.
-                 Jackson is used by AWS SDK and others, but we also use it in Dataverse. -->
+                 Jackson is used by AWS SDK and others, but we also use it in the Dataverse Software. -->
             <dependency>
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
@@ -175,7 +175,7 @@ A reduced example, only showing bits relevant to the above cases and usage of an
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
-            <!-- Example for case 3. Joda is not used in Dataverse (as of writing this). -->
+            <!-- Example for case 3. Joda is not used in the Dataverse Software (as of writing this). -->
             <dependency>
                 <groupId>joda-time</groupId>
                 <artifactId>joda-time</artifactId>
@@ -194,13 +194,13 @@ A reduced example, only showing bits relevant to the above cases and usage of an
             <artifactId>aws-java-sdk-s3</artifactId>
             <!-- no version here as managed by BOM above! -->
         </dependency>
-        <!-- Should be refactored and removed once on Java EE 8 -->
+        <!-- Should be refactored and removed now that we are on Jakarta EE 8 -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <!-- no version here as managed above! -->
         </dependency>
-        <!-- Should be refactored and removed once on Java EE 8 -->
+        <!-- Should be refactored and removed now that we are on Jakarta EE 8 -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
@@ -230,9 +230,9 @@ Repositories
 
 Maven receives all dependencies from *repositories*. Those can be public like `Maven Central <https://search.maven.org/>`_
 and others, but you can also use a private repository on premises or in the cloud. Last but not least, you can use
-local repositories, which can live next to your application code (see ``local_lib`` dir within Dataverse codebase).
+local repositories, which can live next to your application code (see ``local_lib`` dir within the Dataverse Software codebase).
 
-Repositories are defined within the Dataverse POM like this:
+Repositories are defined within the Dataverse Software POM like this:
 
 .. code:: xml
 

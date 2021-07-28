@@ -6,8 +6,6 @@
 package edu.harvard.iq.dataverse.mydata;
 
 import edu.harvard.iq.dataverse.DvObject;
-import static edu.harvard.iq.dataverse.DvObject.DATASET_DTYPE_STRING;
-import static edu.harvard.iq.dataverse.DvObject.DATAVERSE_DTYPE_STRING;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -18,14 +16,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import org.apache.commons.lang.StringUtils;
-import org.primefaces.json.JSONException;
-import org.primefaces.json.JSONObject;
 
 /**
  *

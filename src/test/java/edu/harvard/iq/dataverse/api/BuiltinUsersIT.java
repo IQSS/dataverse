@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static junit.framework.Assert.assertEquals;
@@ -72,6 +73,31 @@ public class BuiltinUsersIT {
                 .statusCode(OK.getStatusCode());
 
     }
+    
+        @Test
+    public void testFindByToken() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response getUserAsJsonByToken = UtilIT.getAuthenticatedUserByToken(apiToken);
+
+        getUserAsJsonByToken.then().assertThat()
+                .statusCode(OK.getStatusCode());
+
+        getUserAsJsonByToken = UtilIT.getAuthenticatedUserByToken("badcode");
+        getUserAsJsonByToken.then().assertThat()
+                .body("status", equalTo("ERROR"))
+                .body("message", equalTo("User with token badcode not found."))
+                .statusCode(BAD_REQUEST.getStatusCode());
+
+    }
+
 
     @Test
     public void testLastApiUse() {

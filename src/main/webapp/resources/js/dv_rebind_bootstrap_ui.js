@@ -29,11 +29,20 @@ function bind_bsui_components(){
     // Disabled pagination links
     disabledLinks();
     
+    // Truncate checksums
+    checksumTruncate();
+    
     // Sharrre
     sharrre();
     
     // Custom Popover with HTML content
     popoverHTML();
+    
+    // clipboard.js click to copy
+    clickCopyClipboard();
+    
+    // Scrolling autoComplete dropdown in popups
+    handle_dropdown_popup_scroll();
     
     // Dialog Listener For Calling handleResizeDialog
     PrimeFaces.widget.Dialog.prototype.postShow = function() {
@@ -149,6 +158,114 @@ function sharrre(){
             // var sharrrecount = $('#sharrre-total').val();
             // $('#sharrre-count').prepend(sharrrecount);
         }
+    });
+}
+
+/*
+ * Truncate dataset description content
+ */
+function contentTruncate(truncSelector, truncMoreBtn, truncMoreTip, truncLessBtn, truncLessTip){
+    // SELECTOR ID FROM PARAMETERS
+    $('#' + truncSelector + ' td > div:first-child').each(function () {
+        
+        // add responsive img class to limit width to that of container
+        $(this).find('img').attr('class', 'img-responsive');
+        
+        // find container height
+        var containerHeight = $(this).outerHeight();
+        
+        if (containerHeight > 250) {
+            // ADD A MAX-HEIGHT TO CONTAINER
+            $(this).css({'max-height':'250px','overflow-y':'hidden','position':'relative'});
+
+            // BTN LABEL TEXT, ARIA ATTR'S, FROM BUNDLE VIA PARAMETERS
+            var readMoreBtn = '<button class="btn btn-link desc-more-link" type="button" data-toggle="tooltip" data-original-title="' + truncMoreTip + '" aria-expanded="false" aria-controls="#' + truncSelector + '">' + truncMoreBtn + '</button>';
+            var moreBlock = '<div class="more-block">' + readMoreBtn + '</div>';
+            var readLessBtn = '<button class="btn btn-link desc-less-link" type="button" data-toggle="tooltip" data-original-title="' + truncLessTip + '" aria-expanded="true" aria-controls="#' + truncSelector + '">' + truncLessBtn + '</button>';
+            var lessBlock = '<div class="less-block">' + readLessBtn + '</div>';
+
+            // add "Read full desc [+]" btn, background fade
+            $(this).append(moreBlock);
+
+            // show full description in summary block on "Read full desc [+]" btn click
+            $(document).on('click', 'button.desc-more-link', function() {
+                $(this).tooltip('hide').parent('div').parent('div').css({'max-height':'none','overflow-y':'visible','position':'relative'});
+                $(this).parent('div.more-block').replaceWith(lessBlock);
+                $('.less-block button').tooltip();
+            });
+            
+            // trucnate description in summary block on "Collapse desc [-]" btn click
+            $(document).on('click', 'button.desc-less-link', function() {
+                $(this).tooltip('hide').parent('div').parent('div').css({'max-height':'250px','overflow-y':'hidden','position':'relative'});
+                $(this).parent('div.less-block').replaceWith(moreBlock);
+                $('html, body').animate({scrollTop: $('#' + truncSelector).offset().top - 60}, 500);
+                $('.more-block button').tooltip();
+            });
+        }
+    });
+}
+
+/*
+ * Truncate file checksums
+ */
+function checksumTruncate(){
+    $('span.checksum-truncate').each(function () {
+        $(this).toggleClass('sr-only').toggleClass('visisble');
+        var checksumText = $(this).text();
+        var checksumLength = checksumText.length;
+        if (checksumLength > 25) {
+            // COUNT " " IN TYPE LABEL, UNF HAS NONE
+            var prefixCount = (checksumText.match(/ /g) || []).length;
+            
+            // INDEX OF LAST ":" IN TYPE LABEL, UNF HAS MORE THAN ONE
+            var labelIndex = checksumText.lastIndexOf(':');
+            
+            // COUNT "=" IN UNF SUFFIX
+            var suffixCount = (checksumText.match(/=/g) || []).length;
+            
+            // TRUNCATE MIDDLE W/ "..." + FIRST/LAST 3 CHARACTERS
+            // CHECK IF UNF LABEL, LESS THAN ONE " "
+            if (prefixCount < 0) {
+                $(this).text(checksumText.substr(0,(labelIndex + 3)) + '...' + checksumText.substr((checksumLength - suffixCount - 3),checksumLength));
+            }
+            else {
+                $(this).text(checksumText.substr(0,(labelIndex + 5)) + '...' + checksumText.substr((checksumLength - suffixCount - 3),checksumLength));
+            }
+        }
+    });
+    $('span.checksum-tooltip').on('inserted.bs.tooltip', function () {
+        $("body div.tooltip-inner").css("word-break", "break-all");
+    });
+}
+
+function clickCopyClipboard(){
+    // clipboard.js click to copy
+    // pass selector to clipboard
+    var clipboard = new ClipboardJS('button.btn-copy, span.checksum-truncate, span.btn-copy');
+
+    clipboard.on('success', (e)=> {
+        // DEV TOOL DEBUG
+        // console.log(e);
+
+        // check which selector was clicked
+        // swap icon for success ok
+        if ($(e.trigger).hasClass('glyphicon')) {
+            $(e.trigger).removeClass('glyphicon-copy').addClass('glyphicon-ok text-success');
+            // then swap icon back to clipboard
+            // https://stackoverflow.com/a/54270499
+            setTimeout(()=> { // use arrow function
+                $(e.trigger).removeClass('glyphicon-ok text-success').addClass('glyphicon-copy')
+            }, 2000);
+        }
+        else {
+            $(e.trigger).next('.btn-copy.glyphicon').removeClass('glyphicon-copy').addClass('glyphicon-ok text-success');
+            setTimeout(()=> {
+                $(e.trigger).next('.btn-copy.glyphicon').removeClass('glyphicon-ok text-success').addClass('glyphicon-copy')
+            }, 2000);
+        }
+    });
+    clipboard.on('error', (e)=> {
+        console.log(e);
     });
 }
 

@@ -68,7 +68,7 @@ public class IngestableDataChecker implements java.io.Serializable {
     private static String regex = "^test(\\w+)format$";
 
     // static initialization block
-    private static String rdargx = "^(52)(44)(41|42|58)(31|32)(0A)$";
+    private static String rdargx = "^(52)(44)(41|42|58)(31|32|33)(0A)$";
     private static int RDA_HEADER_SIZE = 5;
     private static Pattern ptn;
 

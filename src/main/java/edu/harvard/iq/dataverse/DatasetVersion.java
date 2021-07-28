@@ -214,6 +214,33 @@ public class DatasetVersion implements Serializable {
         Collections.sort(fileMetadatasCopy, FileMetadata.compareByLabelAndFolder);
         return fileMetadatasCopy;
     }
+    
+    public List<FileMetadata> getFileMetadatasFolderListing(String folderName) {
+        ArrayList<FileMetadata> fileMetadatasCopy = new ArrayList<>();
+        HashSet<String> subFolders = new HashSet<>();
+
+        for (FileMetadata fileMetadata : fileMetadatas) {
+            String thisFolder = fileMetadata.getDirectoryLabel() == null ? "" : fileMetadata.getDirectoryLabel(); 
+            
+            if (folderName.equals(thisFolder)) {
+                fileMetadatasCopy.add(fileMetadata);
+            } else if (thisFolder.startsWith(folderName)) {
+                String subFolder = "".equals(folderName) ? thisFolder : thisFolder.substring(folderName.length() + 1);
+                if (subFolder.indexOf('/') > 0) {
+                    subFolder = subFolder.substring(0, subFolder.indexOf('/'));
+                }
+                
+                if (!subFolders.contains(subFolder)) {
+                    fileMetadatasCopy.add(fileMetadata);
+                    subFolders.add(subFolder);
+                }
+                
+            }
+        }
+        Collections.sort(fileMetadatasCopy, FileMetadata.compareByFullPath);
+                
+        return fileMetadatasCopy; 
+    }
 
     public void setFileMetadatas(List<FileMetadata> fileMetadatas) {
         this.fileMetadatas = fileMetadatas;
@@ -843,7 +870,7 @@ public class DatasetVersion implements Serializable {
                             datasetAuthor.setAffiliation(subField);
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdType)){
-                             datasetAuthor.setIdType(subField.getDisplayValue());
+                             datasetAuthor.setIdType(subField.getRawValue());
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.authorIdValue)){
                             datasetAuthor.setIdValue(subField.getDisplayValue());
@@ -871,7 +898,7 @@ public class DatasetVersion implements Serializable {
                             contributorName = subField.getDisplayValue();
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.contributorType)) {
-                            contributorType = subField.getDisplayValue();
+                            contributorType = subField.getRawValue();
                         }
                     }
                     //SEK 02/12/2019 move outside loop to prevent contrib type to carry over to next contributor
@@ -1364,21 +1391,6 @@ public class DatasetVersion implements Serializable {
         }
         return null;
     }
-    
-    // TODO: Consider renaming this method since it's also used for getting the "provider" for Schema.org JSON-LD.
-    public String getRootDataverseNameforCitation(){
-                    //Get root dataverse name for Citation
-        Dataverse root = this.getDataset().getOwner();
-        while (root.getOwner() != null) {
-            root = root.getOwner();
-        }
-        String rootDataverseName = root.getName();
-        if (!StringUtil.isEmpty(rootDataverseName)) {
-            return rootDataverseName;
-        } else {
-            return "";
-        }
-    }
 
     public List<DatasetDistributor> getDatasetDistributors() {
         //todo get distributors from DatasetfieldValues
@@ -1510,16 +1522,7 @@ public class DatasetVersion implements Serializable {
         }
         return serverName + "/dataset.xhtml?id=" + dset.getId() + "&versionId=" + this.getId();
     } 
-    
-    /*
-    Per #3511 we  are returning all users to the File Landing page
-    If we in the future we are going to return them to the referring page we will need the 
-    getReturnToDatasetURL method and add something to the call to the api to
-    pass the referring page and some kind of decision point in  the getWorldMapDatafileInfo method in 
-    WorldMapRelatedData
-    SEK 3/24/2017
-    */
-    
+
     public String getReturnToFilePageURL (String serverName, Dataset dset, DataFile dataFile){
         if (serverName == null || dataFile == null) {
             return null;
@@ -1870,11 +1873,11 @@ public class DatasetVersion implements Serializable {
         
         job.add("includedInDataCatalog", Json.createObjectBuilder()
                 .add("@type", "DataCatalog")
-                .add("name", this.getRootDataverseNameforCitation())
+                .add("name", BrandingUtil.getRootDataverseCollectionName())
                 .add("url", SystemConfig.getDataverseSiteUrlStatic())
         );
 
-        String installationBrandName = BrandingUtil.getInstallationBrandName(getRootDataverseNameforCitation());
+        String installationBrandName = BrandingUtil.getInstallationBrandName();
         /**
          * Both "publisher" and "provider" are included but they have the same
          * values. Some services seem to prefer one over the other.

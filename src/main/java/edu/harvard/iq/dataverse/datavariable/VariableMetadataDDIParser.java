@@ -113,13 +113,13 @@ public class VariableMetadataDDIParser {
             if (event == XMLStreamConstants.START_ELEMENT) {
                 if (xmlr.getLocalName().equals("labl")) {
                     processLabel(xmlr, newVM);
+                } else if (xmlr.getLocalName().equals("qstn")) {
+                    processQstn(xmlr, newVM);
                 } else if (xmlr.getLocalName().equals("universe")) {
                     processUniverse(xmlr, newVM);
                 } else if (xmlr.getLocalName().equals("notes")) {
                     processNote(xmlr, newVM);
-                } else if (xmlr.getLocalName().equals("qstn")) {
-                    processQstn(xmlr, newVM);
-                } else if (xmlr.getLocalName().equals("catgry")) {
+                }  else if (xmlr.getLocalName().equals("catgry")) {
                     processCatgry(xmlr, newVM);
                 }
 

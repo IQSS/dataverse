@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.workflows.WorkflowComment;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
@@ -60,7 +61,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         // final DatasetVersion editVersion = getDataset().getEditVersion();
         tidyUpFields(updateVersion);
 
-        // Merge the new version into out JPA context
+        // Merge the new version into our JPA context
         ctxt.em().merge(updateVersion);
 
 
@@ -70,7 +71,8 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         updateVersion.setTermsOfUseAndAccess(newTerms);
         //Put old terms on version that will be deleted....
         getDataset().getEditVersion().setTermsOfUseAndAccess(oldTerms);
-        
+        //Also set the fileaccessrequest boolean on the dataset to match the new terms
+        getDataset().setFileAccessRequest(updateVersion.getTermsOfUseAndAccess().isFileAccessRequest());
         List<WorkflowComment> newComments = getDataset().getEditVersion().getWorkflowComments();
         if (newComments!=null && newComments.size() >0) {
             for(WorkflowComment wfc: newComments) {
@@ -85,18 +87,29 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         Dataset tempDataset = ctxt.em().merge(getDataset());
 
         // Look for file metadata changes and update published metadata if needed
-        for (DataFile dataFile : tempDataset.getFiles()) {
-            List<FileMetadata> fmdList = dataFile.getFileMetadatas();
+        List<FileMetadata> pubFmds = updateVersion.getFileMetadatas();
+        int pubFileCount = pubFmds.size();
+        int newFileCount = tempDataset.getEditVersion().getFileMetadatas().size();
+        /* The policy for this command is that it should only be used when the change is a 'minor update' with no file changes.
+         * Nominally we could call .isMinorUpdate() for that but we're making the same checks as we go through the update here. 
+         */
+        if (pubFileCount != newFileCount) {
+            logger.severe("Draft version of dataset: " + tempDataset.getId() + " has: " + newFileCount + " while last published version has " + pubFileCount);
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("datasetversion.update.failure"), this);
+        }
+        for (FileMetadata publishedFmd : pubFmds) {
+            DataFile dataFile = publishedFmd.getDataFile();
             FileMetadata draftFmd = dataFile.getLatestFileMetadata();
-            FileMetadata publishedFmd = null;
-            for (FileMetadata fmd : fmdList) {
-                if (fmd.getDatasetVersion().equals(updateVersion)) {
-                    publishedFmd = fmd;
-                    break;
-                }
-            }
             boolean metadataUpdated = false;
-            if (draftFmd != null && publishedFmd != null) {
+            if (draftFmd == null || draftFmd.getDatasetVersion().equals(updateVersion)) {
+                if (draftFmd == null) {
+                    logger.severe("Unable to find latest FMD for file id: " + dataFile.getId());
+                } else {
+                    logger.severe("No filemetadata for file id: " + dataFile.getId() + " in draft version");
+                }
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("datasetversion.update.failure"), this);
+            } else {
+
                 if (!draftFmd.getLabel().equals(publishedFmd.getLabel())) {
                     publishedFmd.setLabel(draftFmd.getLabel());
                     metadataUpdated = true;
@@ -131,8 +144,6 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
                 }
                 publishedFmd.copyVarGroups(draftFmd.getVarGroups());
 
-            } else {
-                throw new IllegalCommandException("Cannot change files in the dataset", this);
             }
             if (metadataUpdated) {
                 dataFile.setModificationTime(getTimestamp());
@@ -152,7 +163,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         // Update modification time on the published version and the dataset
         updateVersion.setLastUpdateTime(getTimestamp());
         tempDataset.setModificationTime(getTimestamp());
-
+        ctxt.em().merge(updateVersion);
         Dataset savedDataset = ctxt.em().merge(tempDataset);
 
         // Flush before calling DeleteDatasetVersion which calls
@@ -174,7 +185,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         
         //And the exported metadata files
         try {
-            ExportService instance = ExportService.getInstance(ctxt.settings());
+            ExportService instance = ExportService.getInstance();
             instance.exportAllFormats(getDataset());
         } catch (ExportException ex) {
             // Just like with indexing, a failure to export is not a fatal condition.

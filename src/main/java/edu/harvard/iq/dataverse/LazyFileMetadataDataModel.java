@@ -5,10 +5,9 @@
  */
 package edu.harvard.iq.dataverse;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import javax.ejb.EJB;
+import org.primefaces.model.FilterMeta;
 import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.SortOrder;
 
@@ -29,7 +28,7 @@ public class LazyFileMetadataDataModel extends LazyDataModel<FileMetadata> {
     
     @Override
     public List<FileMetadata> load(int first, int pageSize, String sortField,
-            SortOrder sortOrder, Map<String, Object> filters) {
+            SortOrder sortOrder, Map<String, FilterMeta> filters) {
 
         List<FileMetadata>  listFileMetadata = null; //fileServiceBean.findFileMetadataByDatasetVersionIdLazy(datasetVersionId, pageSize, sortField, sortField, first);
         //this.setRowCount(fileServiceBean.findCountByDatasetVersionId(datasetVersionId).intValue());

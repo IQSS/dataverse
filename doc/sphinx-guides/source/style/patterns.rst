@@ -15,43 +15,41 @@ When logged in, the account name is a dropdown menu, linking the user to account
 
 .. raw:: html
 
-	<div class="panel panel-default code-example">
-	  <div class="panel-body">
-	  	
-  		<nav id="navbarFixed" class="navbar navbar-default"><!-- navbar-fixed-top -->
-            <div class="container" style="width:auto !important;">
-                <div class="navbar-header">
-                    <a href="#" onclick="return false;">
-                        <span class="navbar-brand"><i id="icon-dataverse" class="icon-dataverse"></i> Dataverse</span>
-                    </a>
+    <div class="panel panel-default code-example">
+        <div class="panel-body">
+            <nav id="navbarFixed" class="navbar navbar-default"><!-- navbar-fixed-top -->
+                <div class="container" style="width:auto !important;">
+                    <div class="navbar-header">
+                        <a href="#" onclick="return false;">
+                            <span class="navbar-brand"><i id="icon-dataverse" class="icon-dataverse"></i> Dataverse</span>
+                        </a>
+                    </div>
+                    <div class="collapse navbar-collapse" id="topNavBar">
+                        <ul class="nav navbar-nav navbar-right">
+                            <li class="dropdown">
+                                <span id="dataverseSupportLink" class="dropdown-toggle" data-toggle="dropdown">
+                                    User Name <b class="caret"></b>
+                                </span>
+                                <ul class="dropdown-menu">
+                                    <li><a href="#" onclick="return false;">My Data</a>
+                                    </li>
+                                    <li><a href="#" onclick="return false;">Notifications</a>
+                                    </li>
+                                    <li><a href="#" onclick="return false;">Account Information</a>
+                                    </li>
+                                    <li><a href="#" onclick="return false;">API Token</a>
+                                    </li>
+                                    <li class="divider"></li>
+                                    <li class="logout"><a href="#" onclick="return false;">Log Out</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="collapse navbar-collapse" id="topNavBar">
-                    <ul class="nav navbar-nav navbar-right">
-                        <li class="dropdown">
-                            <span id="dataverseSupportLink" class="dropdown-toggle" data-toggle="dropdown">
-                                User Name <b class="caret"></b>
-                            </span>
-                            <ul class="dropdown-menu">
-                                <li><a href="#" onclick="return false;">My Data</a>
-                                </li>
-                                <li><a href="#" onclick="return false;">Notifications</a>
-                                </li>
-                                <li><a href="#" onclick="return false;">Account Information</a>
-                                </li>
-                                <li><a href="#" onclick="return false;">API Token</a>
-                                </li>
-                                <li class="divider"></li>
-                                <li class="logout"><a href="#" onclick="return false;">Log Out</a>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-  		
-	  </div>
-	</div>
+            </nav>
+        </div>
+    </div>
 
 .. code-block:: html
 
@@ -76,35 +74,30 @@ When logged in, the account name is a dropdown menu, linking the user to account
 Breadcrumbs
 ===========
 
-The breadcrumbs are displayed under the header, and provide a trail of links for users to navigate the hierarchy of containing objects, from file to dataset to dataverse. It utilizes a JSF `repeat component <http://docs.oracle.com/javaee/6/javaserverfaces/2.0/docs/pdldocs/facelets/ui/repeat.html>`_ to iterate through the breadcrumbs.
+The breadcrumbs are displayed under the header, and provide a trail of links for users to navigate the hierarchy of containing objects, from file to dataset to Dataverse collection. It utilizes a JSF `repeat component <http://docs.oracle.com/javaee/6/javaserverfaces/2.0/docs/pdldocs/facelets/ui/repeat.html>`_ to iterate through the breadcrumbs.
 
 .. raw:: html
 
-	<div class="panel panel-default code-example">
-	  <div class="panel-body">
-	  	
-  		<div id="breadcrumbNavBlock" class="container">
-            <div class="breadcrumbBlock">
-                <a id="breadcrumbLnk0" href="#" onclick="return false;">Name of a Dataverse</a>
+    <div class="panel panel-default code-example">
+	<div class="panel-body">
+            <div id="breadcrumbNavBlock" class="container" style="width:auto !important;">
+                <div class="breadcrumbBlock">
+                    <a id="breadcrumbLnk0" href="#" onclick="return false;">Name of a Dataverse collection</a>
+                </div>
+                <span class="breadcrumbCarrot"> &gt; </span>
+                <div class="breadcrumbBlock">
+                    <a id="breadcrumbLnk1" href="#" onclick="return false;">Name of Another Dataverse collection</a>
+                </div>
+                <span class="breadcrumbCarrot"> &gt; </span>
             </div>
-            <span class="breadcrumbCarrot"> &gt; </span>
-            <div class="breadcrumbBlock">
-                <a id="breadcrumbLnk1" href="#" onclick="return false;">Name of Another Dataverse</a>
-            </div>
-            <span class="breadcrumbCarrot"> &gt; </span>
-            <div class="breadcrumbBlock">
-                <span class="breadcrumbActive">Title of Dataset</span>
-            </div>
-        </div>
-  		
-	  </div>
 	</div>
+    </div>
 
 .. code-block:: html
 
     <div id="breadcrumbNavBlock" class="container" jsf:rendered="#{true}">
       <ui:repeat value="#{page.breadcrumbs}" var="breadcrumb" varStatus="status">
-        <h:outputText value=" > " styleClass="breadcrumbCarrot" rendered="#{true}"/>
+        <h:outputText value=" &gt; " styleClass="breadcrumbCarrot" rendered="#{true}"/>
         <div class="breadcrumbBlock">
           ...
         </div>
@@ -122,61 +115,63 @@ Most tables use the `DataTable components <https://www.primefaces.org/showcase/u
   <div class="panel panel-default code-example">
     <div class="panel-body">
     	<div class="ui-datatable ui-widget">
-	      	<div class="ui-datatable-tablewrapper">
-	      		<table role="grid">
-	      			<thead>
-	      				<tr role="row">
-	      					<th style="width:60px;" class="ui-state-default ui-selection-column col-select-width text-center" role="columnheader"><span class="ui-column-title"></span><div class="ui-chkbox ui-chkbox-all ui-widget"><div class="ui-helper-hidden-accessible"><input type="checkbox" name="table_checkbox"></div><div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default"><span class="ui-chkbox-icon ui-icon ui-icon-blank ui-c"></span></div></div></th><th class="ui-state-default col-sm-2 text-center" role="columnheader"><span class="ui-column-title">Dataset</span></th><th class="ui-state-default" role="columnheader"><span class="ui-column-title">Summary</span></th><th class="ui-state-default col-sm-3" role="columnheader"><span class="ui-column-title">Published</span></th>
-	  					</tr>
-					</thead>
-					<tbody class="ui-datatable-data ui-widget-content">
-						<tr data-ri="0" class="ui-widget-content ui-datatable-even ui-datatable-selectable" role="row" aria-selected="false">
-							<td role="gridcell" class="ui-selection-column col-select-width text-center">
-								<div class="ui-chkbox ui-widget"><div class="ui-helper-hidden-accessible"><input type="checkbox" name="table_checkbox"></div><div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default"><span class="ui-chkbox-icon ui-icon ui-icon-blank ui-c"></span></div></div>
-							</td>
-							<td role="gridcell" class="text-center">
-		                    	<a href="#" class="ui-commandlink ui-widget" onclick="return false;">3.0</a>
-			                </td>
-			                <td role="gridcell">
-			                	<span class="highlightBold">Files (Changed File Metadata: 1); </span><a href="#" class="ui-commandlink ui-widget" onclick="return false;">View Details</a>
-			                </td>
-			                <td role="gridcell"><span>March 8, 2017</span></td>
-		                </tr>
-		                <tr data-ri="1" class="ui-widget-content ui-datatable-odd ui-datatable-selectable" role="row" aria-selected="false">
-		                    <td role="gridcell" class="ui-selection-column col-select-width text-center">
-		                    	<div class="ui-chkbox ui-widget"><div class="ui-helper-hidden-accessible"><input type="checkbox" name="table_checkbox"></div><div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default"><span class="ui-chkbox-icon ui-icon ui-icon-blank ui-c"></span></div></div>
-		                    </td>
-		                    <td role="gridcell" class="text-center">
-		                    	<a href="#" class="ui-commandlink ui-widget" onclick="return false;">2.0</a>
-		                    </td>
-		                    <td role="gridcell">
-		                    	<span class="highlightBold">Additional Citation Metadata: </span> (1 Added); <a href="#" class="ui-commandlink ui-widget" onclick="return false;">View Details</a>
-		                	</td>
-		                	<td role="gridcell"><span>January 25, 2017</span></td>
-		                </tr>
-		                <tr data-ri="2" class="ui-widget-content ui-datatable-even ui-datatable-selectable" role="row" aria-selected="false">
-		                	<td role="gridcell" class="ui-selection-column col-select-width text-center">
-		                		<div class="ui-chkbox ui-widget"><div class="ui-helper-hidden-accessible"><input type="checkbox" name="table_checkbox"></div><div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default"><span class="ui-chkbox-icon ui-icon ui-icon-blank ui-c"></span></div></div>
-			                </td>
-			                <td role="gridcell" class="text-center">
-			                    <a href="#" class="ui-commandlink ui-widget" onclick="return false;">1.1</a></td><td role="gridcell"><span class="highlightBold">Additional Citation Metadata: </span> (1 Added); <a href="#" class="ui-commandlink ui-widget" onclick="return false;">View Details</a>
-			                </td>
-			                <td role="gridcell"><span>October 25, 2016</span></td>
-		                </tr>
-		                <tr data-ri="3" class="ui-widget-content ui-datatable-odd ui-datatable-selectable" role="row" aria-selected="false">
-		                	<td role="gridcell" class="ui-selection-column col-select-width text-center">
-		                		<div class="ui-chkbox ui-widget"><div class="ui-helper-hidden-accessible"><input type="checkbox" name="table_checkbox"></div><div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default"><span class="ui-chkbox-icon ui-icon ui-icon-blank ui-c"></span></div></div>
-			                </td>
-			                <td role="gridcell" class="text-center">
-			                    <a href="#" class="ui-commandlink ui-widget" onclick="return false;">1.0</a></td><td role="gridcell">
-			                    This is the first published version.
-			                </td>
-			                <td role="gridcell"><span>September 19, 2016</span></td>
-		                </tr>
-		            </tbody>
-		        </table>
-		    </div>
-		</div>
+            <div class="ui-datatable-tablewrapper">
+                <table role="grid">
+                    <thead>
+                        <tr role="row">
+                            <th style="width:60px;" class="ui-state-default ui-selection-column col-select-width text-center" role="columnheader"><span class="ui-column-title"></span><div class="ui-chkbox ui-chkbox-all ui-widget"><div class="ui-helper-hidden-accessible"><input type="checkbox" name="table_checkbox"></div><div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default"><span class="ui-chkbox-icon ui-icon ui-icon-blank ui-c"></span></div></div></th><th class="ui-state-default col-sm-2 text-center" role="columnheader"><span class="ui-column-title">Dataset</span></th><th class="ui-state-default" role="columnheader"><span class="ui-column-title">Summary</span></th><th class="ui-state-default col-sm-3" role="columnheader"><span class="ui-column-title">Published</span></th>
+                        </tr>
+                    </thead>
+                    <tbody class="ui-datatable-data ui-widget-content">
+                        <tr data-ri="0" class="ui-widget-content ui-datatable-even ui-datatable-selectable" role="row" aria-selected="false">
+                            <td role="gridcell" class="ui-selection-column col-select-width text-center">
+                                <div class="ui-chkbox ui-widget"><div class="ui-helper-hidden-accessible"><input type="checkbox" name="table_checkbox"></div><div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default"><span class="ui-chkbox-icon ui-icon ui-icon-blank ui-c"></span></div></div>
+                            </td>
+                            <td role="gridcell" class="text-center">
+                                <a href="#" class="ui-commandlink ui-widget" onclick="return false;">3.0</a>
+                            </td>
+                            <td role="gridcell">
+                                <span class="highlightBold">Files (Changed File Metadata: 1); </span><a href="#" class="ui-commandlink ui-widget" onclick="return false;">View Details</a>
+                            </td>
+                            <td role="gridcell"><span>March 8, 2017</span></td>
+                        </tr>
+                        <tr data-ri="1" class="ui-widget-content ui-datatable-odd ui-datatable-selectable" role="row" aria-selected="false">
+                            <td role="gridcell" class="ui-selection-column col-select-width text-center">
+                                <div class="ui-chkbox ui-widget"><div class="ui-helper-hidden-accessible"><input type="checkbox" name="table_checkbox"></div><div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default"><span class="ui-chkbox-icon ui-icon ui-icon-blank ui-c"></span></div></div>
+                            </td>
+                            <td role="gridcell" class="text-center">
+                                <a href="#" class="ui-commandlink ui-widget" onclick="return false;">2.0</a>
+                            </td>
+                            <td role="gridcell">
+                                <span class="highlightBold">Additional Citation Metadata: </span> (1 Added); <a href="#" class="ui-commandlink ui-widget" onclick="return false;">View Details</a>
+                            </td>
+                            <td role="gridcell"><span>January 25, 2017</span></td>
+                        </tr>
+                        <tr data-ri="2" class="ui-widget-content ui-datatable-even ui-datatable-selectable" role="row" aria-selected="false">
+                            <td role="gridcell" class="ui-selection-column col-select-width text-center">
+                                <div class="ui-chkbox ui-widget"><div class="ui-helper-hidden-accessible"><input type="checkbox" name="table_checkbox"></div><div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default"><span class="ui-chkbox-icon ui-icon ui-icon-blank ui-c"></span></div></div>
+                            </td>
+                            <td role="gridcell" class="text-center">
+                                <a href="#" class="ui-commandlink ui-widget" onclick="return false;">1.1</a></td><td role="gridcell"><span class="highlightBold">Additional Citation Metadata: </span> (1 Added); <a href="#" class="ui-commandlink ui-widget" onclick="return false;">View Details</a>
+                            </td>
+                            <td role="gridcell"><span>October 25, 2016</span></td>
+                        </tr>
+                        <tr data-ri="3" class="ui-widget-content ui-datatable-odd ui-datatable-selectable" role="row" aria-selected="false">
+                            <td role="gridcell" class="ui-selection-column col-select-width text-center">
+                                <div class="ui-chkbox ui-widget"><div class="ui-helper-hidden-accessible"><input type="checkbox" name="table_checkbox"></div><div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default"><span class="ui-chkbox-icon ui-icon ui-icon-blank ui-c"></span></div></div>
+                            </td>
+                            <td role="gridcell" class="text-center">
+                                <a href="#" class="ui-commandlink ui-widget" onclick="return false;">1.0</a>
+                            </td>
+                            <td role="gridcell">
+                                This is the first published version.
+                            </td>
+                            <td role="gridcell"><span>September 19, 2016</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
   </div>
 
@@ -196,76 +191,73 @@ Forms fulfill various functions across the site, but we try to style them consis
 
 .. raw:: html
 
-  <div class="panel panel-default code-example">
-    <div class="panel-body">
-
-		      <div class="form-horizontal">
-			       <div class="form-group">
-                <label for="userNameEmail" class="col-sm-3 control-label">
-                    Username 
-                </label>
-                <div class="col-sm-4">
-                	<input name="userName" type="text" value="" tabindex="1" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all ui-state-default form-control" role="textbox" aria-disabled="false" aria-readonly="false">
+    <div class="panel panel-default code-example">
+        <div class="panel-body">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label for="userNameEmail" class="col-sm-3 control-label">
+                        Username 
+                    </label>
+                    <div class="col-sm-4">
+                        <input name="userName" type="text" value="" tabindex="1" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all ui-state-default form-control" role="textbox" aria-disabled="false" aria-readonly="false">
+                    </div>
                 </div>
-            </div>
-            <div class="form-group">
-                <label for="email" class="col-sm-3 control-label">
-                    Email 
-                </label>
-                <div class="col-sm-4">
-                	<input name="email" type="text" value="" tabindex="6" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control" role="textbox" aria-disabled="false" aria-readonly="false">
+                <div class="form-group">
+                    <label for="email" class="col-sm-3 control-label">
+                        Email 
+                    </label>
+                    <div class="col-sm-4">
+                        <input name="email" type="text" value="" tabindex="6" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control" role="textbox" aria-disabled="false" aria-readonly="false">
+                    </div>
                 </div>
             </div>
         </div>
-
     </div>
-  </div>
 
 .. code-block:: html
 
-  <div class="form-horizontal">
-    <div class="form-group">
-      <label for="userNameEmail" class="col-sm-3 control-label">
-        #{bundle['user.username']} 
-      </label>
-      <div class="col-sm-4">
-        <p:inputText id="userName" styleClass="form-control"></p>
+    <div class="form-horizontal">
+      <div class="form-group">
+        <label for="userNameEmail" class="col-sm-3 control-label">
+          #{bundle['user.username']} 
+        </label>
+        <div class="col-sm-4">
+          <p:inputText id="userName" styleClass="form-control"></p>
+        </div>
       </div>
     </div>
-  </div>
 
 Here are additional form elements that are common across many pages, including required asterisks, icon tooltips, placeholder text, input info message with popover link, and validation error message.
 
 .. raw:: html
 
-  <div class="panel panel-default code-example">
-    <div class="panel-body">
-
-      <div class="form-group form-col-container col-sm-9 edit-compound-field">
-          <div class="form-col-container col-sm-12">
-              <p class="help-block">
-                  This field supports only certain <span class="text-info popoverHTML">HTML tags</span>.
-              </p>
-              <label class="control-label" for="metadata_dsDescriptionValue">
-                  Text <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                  <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto right" data-original-title="A summary describing the purpose, nature, and scope of the Dataset."></span>
-              </label>
-              <div>
-                  <textarea id="datasetForm:description" name="datasetForm:description" cols="60" rows="5" tabindex="1" maxlength="2147483647" class="ui-inputfield ui-inputtextarea ui-widget ui-state-default ui-corner-all form-control ui-inputtextarea-resizable" role="textbox" aria-disabled="false" aria-readonly="false" aria-multiline="true" data-autosize-on="true" placeholder="" style="overflow: hidden; word-wrap: break-word; height: 114px;"></textarea>
-                  
-                  <div aria-live="polite" class="ui-message ui-message-error ui-widget ui-corner-all">
-                      <span class="ui-message-error-detail">Description Text is required.</span>
-                  </div>
-              </div>
-          </div>
-          <div class="form-col-container col-sm-6">
-               <label class="control-label" for="metadata_dsDescriptionDate">
+    <div class="panel panel-default code-example">
+        <div class="panel-body">
+            <div class="form-group form-col-container col-sm-9 edit-compound-field">
+                <div class="form-col-container col-sm-12">
+                    <p class="help-block">
+                        This field supports only certain <span class="text-info popoverHTML">HTML tags</span>.
+                    </p>
+                    <label class="control-label" for="metadata_dsDescriptionValue">
+                        Text <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                        <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto right" data-original-title="A summary describing the purpose, nature, and scope of the Dataset."></span>
+                    </label>
+                    <div>
+                        <textarea id="datasetForm:description" name="datasetForm:description" cols="60" rows="5" tabindex="1" maxlength="2147483647" class="ui-inputfield ui-inputtextarea ui-widget ui-state-default ui-corner-all form-control ui-inputtextarea-resizable" role="textbox" aria-disabled="false" aria-readonly="false" aria-multiline="true" data-autosize-on="true" placeholder="" style="overflow: hidden; word-wrap: break-word; height: 114px;"></textarea>
+                        <div aria-live="polite" class="ui-message ui-message-error ui-widget ui-corner-all">
+                            <span class="ui-message-error-detail">Description Text is required.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-col-container col-sm-6">
+                <label class="control-label" for="metadata_dsDescriptionDate">
                    Date
                    <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto right" data-original-title="In cases where a Dataset contains more than one description (for example, one might be supplied by the data producer and another prepared by the data repository where the data are deposited), the date attribute is used to distinguish between the two descriptions. The date attribute follows the ISO convention of YYYY-MM-DD."></span>
-              </label>
-              <div>
-                <input id="datasetForm:inputText" name="datasetForm:inputText" type="text" tabindex="1" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control " role="textbox" aria-disabled="false" aria-readonly="false" placeholder="YYYY-MM-DD">
-              </div>
+                </label>
+                <div>
+                    <input id="datasetForm:inputText" name="datasetForm:inputText" type="text" tabindex="1" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control " role="textbox" aria-disabled="false" aria-readonly="false" placeholder="YYYY-MM-DD">
+                </div>
             </div>
         </div>
     </div>
@@ -273,24 +265,24 @@ Here are additional form elements that are common across many pages, including r
 .. code-block:: html
 
   <div class="form-group form-col-container col-sm-9 edit-compound-field">
-      <div class="form-col-container col-sm-12">
-          <p class="help-block">
-              <h:outputFormat value="#{bundle.htmlAllowedMsg}" escape="false">
-                  <f:param value="#{bundle.htmlAllowedTags}"/>
-              </h:outputFormat>
-          </p>
-          <label class="control-label" for="metadata_#{subdsf.datasetFieldType.name}">
-              #{subdsf.datasetFieldType.localeTitle}
-              <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" />
-              <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto right" data-original-title="#{subdsf.datasetFieldType.localeDescription}"></span>
-          </label>
-          <div>
-              <p:inputTextarea value="#{dsfv.valueForEdit}" id="description" tabindex="#{block.index+1}" rows="5" cols="60" styleClass="form-control" />
-              <div class="alert-danger" jsf:rendered="#{!empty subdsf.validationMessage}">
-                  <strong>#{subdsf.validationMessage}</strong>
-              </div>
-          </div>
+    <div class="form-col-container col-sm-12">
+      <p class="help-block">
+        <h:outputFormat value="#{bundle.htmlAllowedMsg}" escape="false">
+          <f:param value="#{bundle.htmlAllowedTags}"/>
+        </h:outputFormat>
+      </p>
+      <label class="control-label" for="metadata_#{subdsf.datasetFieldType.name}">
+        #{subdsf.datasetFieldType.localeTitle}
+        <h:outputText styleClass="glyphicon glyphicon-asterisk text-danger" value="" />
+        <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto right" data-original-title="#{subdsf.datasetFieldType.localeDescription}"></span>
+      </label>
+      <div>
+        <p:inputTextarea value="#{dsfv.valueForEdit}" id="description" tabindex="#{block.index+1}" rows="5" cols="60" styleClass="form-control" />
+        <div class="alert-danger" jsf:rendered="#{!empty subdsf.validationMessage}">
+            <strong>#{subdsf.validationMessage}</strong>
+        </div>
       </div>
+    </div>
   </div>
 
 
@@ -302,51 +294,49 @@ There are various types of buttons for various actions, so we have many componen
 Action Buttons
 --------------
 
-For action buttons on a page, we include an icon and text label. Action buttons are generally aligned to the right side of the page.
+For action buttons on a page, we include an icon and text label.
 
 .. raw:: html
 
 	<div class="panel panel-default code-example">
 	  <div class="panel-body">
-	  	
-	  	<div class="btn-group pull-right">
-            <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
-                <span class="glyphicon glyphicon-pencil"></span> Edit <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu pull-right text-left" role="menu">
-                <li>
-                	<a href="#" onclick="return false;">Files (Upload)</a>
-                </li>
-                <li>
-                	<a id="datasetForm:editMetadata" href="#" class="ui-commandlink ui-widget" onclick="return false;">Metadata</a>
-                </li>
-                <li>
-                	<a id="datasetForm:editTerms" href="#" class="ui-commandlink ui-widget" onclick="return false;">Terms</a>
-                </li>
-                <li class="dropdown-submenu pull-left">
-                    <a tabindex="-1" href="#">Permissions</a>
-                    <ul class="dropdown-menu">
-                        <li>
-                        	<a id="datasetForm:managePermissions" href="#" onclick="return false;" class="ui-commandlink ui-widget">Dataset</a>
-                        </li>
-                        <li>
-                        	<a id="datasetForm:manageFilePermissions" href="#" onclick="return false;" class="ui-commandlink ui-widget">File</a>
-                        </li>
-                    </ul>
-                </li>
-                <li>
-                	<a id="datasetForm:privateUrl" href="#" class="ui-commandlink ui-widget" onclick="return false;">Private URL</a>
-                </li>
-                <li>
-                	<a href="#" onclick="return false;">Thumbnails + Widgets</a>
-                </li>
-                <li class="divider"></li>
-                <li>
-                	<a id="datasetForm:deaccessionDatasetLink" href="#" class="ui-commandlink ui-widget" onclick="return false;">Deaccession Dataset</a>
-                </li>
-            </ul>
-        </div>
-
+	    <div class="btn-group">
+                <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
+                    <span class="glyphicon glyphicon-pencil"></span> Edit <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu text-left">
+                    <li>
+                        <a href="#" onclick="return false;">Files (Upload)</a>
+                    </li>
+                    <li>
+                        <a href="#" class="ui-commandlink ui-widget" onclick="return false;">Metadata</a>
+                    </li>
+                    <li>
+                        <a href="#" class="ui-commandlink ui-widget" onclick="return false;">Terms</a>
+                    </li>
+                    <li class="dropdown-submenu pull-left">
+                        <a tabindex="-1" href="#">Permissions</a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href="#" onclick="return false;" class="ui-commandlink ui-widget">Dataset</a>
+                            </li>
+                            <li>
+                                <a href="#" onclick="return false;" class="ui-commandlink ui-widget">File</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#" class="ui-commandlink ui-widget" onclick="return false;">Private URL</a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="return false;">Thumbnails + Widgets</a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#" class="ui-commandlink ui-widget" onclick="return false;">Deaccession Dataset</a>
+                    </li>
+                </ul>
+            </div>
 	  </div>
 	</div>
 
@@ -356,7 +346,7 @@ For action buttons on a page, we include an icon and text label. Action buttons 
       <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
         <span class="glyphicon glyphicon-pencil"/> Edit <span class="caret"></span>
       </button>
-      <ul class="dropdown-menu pull-right text-left" role="menu">
+      <ul class="dropdown-menu text-left">
         <li>
           <h:outputLink> ... </h:outputLink>
         </li>
@@ -375,6 +365,145 @@ For action buttons on a page, we include an icon and text label. Action buttons 
       </ul>
     </div>
 
+Action Buttons Block
+--------------------
+
+For the main actions on a page, we use a container block to group them together. They use the Bootstrap justified button groups style class ``.btn-group.btn-group-justified`` in order to create a group of buttons that stretch at equal sizes to span the entire width of its parent.
+
+The Bootstrap theme provides a ``.btn-primary`` style class to highlight the primary action for the user. This stronger color provides extra visual weight and identifies the primary action in a set of buttons on the page. In this example button group from the file page, you can see the Download and Explore options are listed together, providing a more scalable solution to configurable options.
+
+.. raw:: html
+
+	<div class="panel panel-default code-example">
+	  <div class="panel-body">
+            <div class="col-xs-4">
+                <div id="actionButtonBlock">
+                    <div class="btn-group btn-group-justified">
+                        <div class="btn-group">
+                            <button type="button" id="accessFile" class="btn btn-primary btn-access-file dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Access File <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu pull-right text-left">
+                                <li class="dropdown-header">
+                                    Download Options <span class="glyphicon glyphicon-download-alt"></span>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="return false;" class="ui-commandlink ui-widget">
+                                        Original File Format (R Data)
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="return false;" class="ui-commandlink ui-widget">
+                                        Tab-Delimited
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="return false;" class="ui-commandlink ui-widget">
+                                        RData Format
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="return false;" class="ui-commandlink ui-widget">
+                                        Variable Metadata
+                                    </a>
+                                </li>
+                                <li class="dropdown-submenu pull-left">
+                                    <a tabindex="-1" href="javascript:void(0);">Data File Citation</a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="#" onclick="return false;">RIS</a>
+                                        </li>
+                                        <li><a href="#" onclick="return false;">EndNote XML</a>
+                                        </li>
+                                        <li><a href="#" onclick="return false;">BibTeX</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li role="presentation" class="clearfix"></li>
+                                <li class="dropdown-header">
+                                    Explore Options <span class="glyphicon glyphicon-equalizer"></span>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="return false;" class="ui-commandlink ui-widget btn-explore">
+                                        Data Explorer
+                                    </a>
+                                </li>                    
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="btn-group btn-group-justified">
+                        <div class="btn-group">
+                            <button type="button" id="editFile" class="btn btn-default btn-access btn-edit dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Edit File <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu pull-right text-left">
+                                <li>
+                                    <a href="#" onclick="return false;" class="ui-commandlink ui-widget" aria-label="Metadata" title="Metadata">Metadata</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="return false;" class="ui-commandlink ui-widget" aria-label="Restrict" title="Restrict">Restrict</a>
+                                </li>                                        
+                                <li>
+                                    <a href="#" onclick="return false;" class="ui-commandlink ui-widget" aria-label="Replace" title="Replace">Replace</a>
+                                </li> 
+                                <li>
+                                    <a href="#" onclick="return false;" class="ui-commandlink ui-widget" aria-label="Delete" title="Delete">Delete</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="btn-group btn-group-justified">
+                        <a href="#" onclick="return false;" class="btn btn-default btn-xs btn-contact" aria-label="Contact Dataset Owner" title="Contact Dataset Owner">
+                            Contact Owner
+                        </a>
+                        <a href="#" onclick="return false;" class="btn btn-default btn-xs btn-share" aria-label="Share Dataset" title="Share Dataset">
+                            Share
+                        </a>
+                    </div>
+                </div>
+            </div>
+	  </div>
+	</div>
+
+.. code-block:: html
+
+        <div class="col-xs-4">
+          <div id="actionButtonBlock">
+            <div class="btn-group btn-group-justified">
+              <div class="btn-group">
+                <button type="button" id="accessFile" class="btn btn-primary btn-access-file dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Access File
+                </button>
+                <ul class="dropdown-menu pull-right text-left">
+                  <li class="dropdown-header">
+                    Download Options <span class="glyphicon glyphicon-download-alt"></span>
+                  </li>
+                  ...
+                </ul>
+              </div>
+            </div>
+            <div class="btn-group btn-group-justified">
+              <div class="btn-group">
+                <button type="button" id="editFile" class="btn btn-default btn-access btn-edit dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Edit File <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu pull-right text-left">
+                  <li>
+                    ...
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="btn-group btn-group-justified">
+              <a href="#" onclick="return false;" class="btn btn-default btn-xs btn-contact" aria-label="Contact Dataset Owner" title="Contact Dataset Owner">
+                Contact Owner
+              </a>
+              <a href="#" onclick="return false;" class="btn btn-default btn-xs btn-share" aria-label="Share Dataset" title="Share Dataset">
+                Share
+              </a>
+            </div>
+          </div>
+        </div>
+
 Form Buttons
 ------------
 
@@ -384,14 +513,14 @@ Form buttons typically appear at the bottom of a form, aligned to the left. They
 
 	<div class="panel panel-default code-example">
 	  <div class="panel-body">
-	  	<div class="button-block">
-	  		<button id="datasetForm:save" name="datasetForm:save" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only btn btn-default" onclick="return false;" tabindex="1000" type="submit" role="button" aria-disabled="false">
-	  			<span class="ui-button-text ui-c">Save Changes</span>
-	  		</button>
-	  		<button id="datasetForm:cancel" name="datasetForm:cancel" class="btn btn-link" onclick="return false;" tabindex="1000" type="submit" role="button" aria-disabled="false">
-	  			<span class="ui-button-text ui-c">Cancel</span>
-	  		</button>
-  		</div>
+            <div class="button-block">
+                <button id="datasetForm:save" name="datasetForm:save" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only btn btn-default" onclick="return false;" tabindex="1000" type="submit" role="button" aria-disabled="false">
+                    <span class="ui-button-text ui-c">Save Changes</span>
+                </button>
+                <button id="datasetForm:cancel" name="datasetForm:cancel" class="btn btn-link" onclick="return false;" tabindex="1000" type="submit" role="button" aria-disabled="false">
+                    <span class="ui-button-text ui-c">Cancel</span>
+                </button>
+            </div>
 	  </div>
 	</div>
 
@@ -416,11 +545,11 @@ We use the style class ``.no-text`` with the ``.glyphicon`` class to fix spacing
 	<div class="panel panel-default code-example">
 	  <div class="panel-body">
 	    <a href="#" class="ui-commandlink ui-widget btn btn-default btn-sm bootstrap-button-tooltip compound-field-btn" aria-label="Add" onclick="return false;" tabindex="1" title="" data-original-title="Add">
-            <span class="glyphicon glyphicon-plus no-text"></span>
-        </a>
-        <a href="#" class="ui-commandlink ui-widget btn btn-default btn-sm bootstrap-button-tooltip compound-field-btn" aria-label="Delete" onclick="return false;" tabindex="1" title="" data-original-title="Delete">
-            <span class="glyphicon glyphicon-minus no-text"></span>
-        </a>
+                <span class="glyphicon glyphicon-plus no-text"></span>
+            </a>
+            <a href="#" class="ui-commandlink ui-widget btn btn-default btn-sm bootstrap-button-tooltip compound-field-btn" aria-label="Delete" onclick="return false;" tabindex="1" title="" data-original-title="Delete">
+                <span class="glyphicon glyphicon-minus no-text"></span>
+            </a>
 	  </div>
 	</div>
 
@@ -433,6 +562,113 @@ We use the style class ``.no-text`` with the ``.glyphicon`` class to fix spacing
       <h:outputText styleClass="glyphicon glyphicon-minus no-text"/>
     </p:commandLink>
 
+Another variation of icon-only buttons uses the ``.btn-link`` style class from Bootstrap, styling it more like a link while maintaining button behavior. The button group provides space for up to three buttons for a file in the table, and if there are more than three action button, they utilize the "kebab" More Options button dropdown with the ``.glyphicon-option-vertical`` icon.
+
+.. raw:: html
+
+	<div class="panel panel-default code-example">
+	  <div class="panel-body">
+            <div class="btn-group" role="group" aria-label="File Actions">
+                <a href="#" onclick="return false;" class="ui-commandlink ui-widget btn-preview btn btn-link bootstrap-button-tooltip" aria-label="Preview" data-original-title="Preview">
+                    <span class="glyphicon glyphicon-eye-open"></span><span class="sr-only">Preview</span>
+                </a>
+                <a href="#" onclick="return false;" class="ui-commandlink ui-widget btn-download btn btn-link bootstrap-button-tooltip" aria-label="Download" data-original-title="Download">
+                    <span class="glyphicon glyphicon-download-alt"></span><span class="sr-only">Download</span>
+                </a>
+                <div class="btn-group">
+                    <a class="btn-explore btn btn-link bootstrap-button-tooltip dropdown-toggle" id="exploreBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-original-title="Explore">
+                        <span class="glyphicon glyphicon-equalizer"></span><span class="sr-only">Explore</span><span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu multi-level pull-right text-left" aria-labelledby="exploreBtn">
+                        <li>
+                            <a href="#" rel="noopener" class="ui-commandlink ui-widget" onclick="return false;">
+                                TwoRavens
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" rel="noopener" class="ui-commandlink ui-widget" onclick="return false;">
+                                Data Explorer
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="btn-group">
+                    <a class="btn-options btn btn-link bootstrap-button-tooltip dropdown-toggle" id="optionsBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-original-title="More Options">
+                        <span class="glyphicon glyphicon-option-vertical"></span><span class="sr-only">More Options</span><span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu multi-level pull-right text-left" aria-labelledby="optionsBtn">
+                        <li>
+                            <a href="#" class="ui-commandlink ui-widget" onclick="return false;">
+                                Misc. Option
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="ui-commandlink ui-widget" onclick="return false;">
+                                Misc. Option
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+	  </div>
+	</div>
+
+.. code-block:: html
+
+    <div class="btn-group" role="group" aria-label="#{bundle['file.actionsBlock']}">
+
+        <ui:fragment rendered="#{true}">
+            <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{bundle.preview}"
+                href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(...)}">
+                <span class="glyphicon glyphicon-eye-open"/><span class="sr-only">#{bundle.preview}</span>
+            </a>
+        </ui:fragment>
+
+        <p:commandLink rendered="#{true}" styleClass="btn-download btn btn-link bootstrap-button-tooltip" 
+                       title="#{bundle.download}"
+                       disabled="#{locked ? 'disabled' : ''}" 
+                       process="@this" update="@widgetVar(popup)" oncomplete="PF('popup').show();">
+          <f:actionListener binding="#{pageBean.function()}" />
+          <f:actionListener binding="#{pageBean.function()}" />
+          <span class="glyphicon glyphicon-download-alt"/><span class="sr-only">#{bundle.download}</span>
+        </p:commandLink>
+
+        <div class="btn-group" jsf:rendered="#{true}">
+          <a class="btn-explore btn btn-link bootstrap-button-tooltip" 
+             title="#{bundle.explore}" id="exploreBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-original-title="#{bundle.explore}">
+            <span class="glyphicon glyphicon-equalizer"/><span class="sr-only">#{bundle.explore}</span><span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu multi-level pull-right text-left" aria-labelledby="exploreBtn">
+            <ui:repeat var="tool" value="#{exploreTools}">
+              <li>
+                <p:commandLink styleClass="#{locked ? 'disabled' : ''}"
+                               disabled="#{locked ? 'disabled' : ''}"
+                               action="#{pageBean.function()}">
+                  #{tool.getDisplayNameLang()}
+                </p:commandLink>
+              </li>
+            </ui:repeat>
+          </ul>
+        </div>
+
+        <div class="btn-group" jsf:rendered="#{true}">
+          <a class="btn-options btn btn-link bootstrap-button-tooltip" 
+             id="optionsBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="#{bundle.moreOptions}" data-original-title="#{bundle.moreOptions}">
+            <span class="glyphicon glyphicon-option-vertical"/><span class="sr-only">#{bundle.moreOptions}</span><span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu multi-level pull-right text-left" aria-labelledby="optionsBtn">
+            <ui:repeat var="options" value="#{fileOptions}">
+              <li>
+                <p:commandLink styleClass="#{locked ? 'disabled' : ''}"
+                               disabled="#{locked ? 'disabled' : ''}"
+                               action="#{pageBean.function()}">
+                  ...
+                </p:commandLink>
+              </li>
+            </ui:repeat>
+          </ul>
+        </div>
+    </div>
 
 Pagination
 ==========
@@ -452,7 +688,7 @@ We use the `Pagination component <http://getbootstrap.com/components/#pagination
                 <a href="#" onclick="return false;">&lt; Previous</a>
             </li>
                 <li class="active"><a href="#" onclick="return false;">1
-                	<span class="sr-only">(Current)</span></a>
+                    <span class="sr-only">(Current)</span></a>
                 </li>
                 <li><a href="#" onclick="return false;">2</a>
                 </li>
@@ -546,9 +782,9 @@ For our help/information, success, warning, and error message blocks we use a cu
       <div class="messagePanel">
         <div class="alert alert-dismissable alert-info">
           <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-	        <span class="glyphicon glyphicon-info-sign"></span>&nbsp;<strong>Edit Dataset Metadata</strong> - Add more metadata about this dataset to help others easily find it.
-	      </div>
-	      <div class="alert alert-success">
+          <span class="glyphicon glyphicon-info-sign"></span>&nbsp;<strong>Edit Dataset Metadata</strong> - Add more metadata about this dataset to help others easily find it.
+        </div>
+        <div class="alert alert-success">
           <span class="glyphicon glyphicon glyphicon-ok-sign"></span>&nbsp;<strong>Success!</strong> – The metadata for this dataset has been updated.
         </div>
         <div class="alert alert-warning">
@@ -580,7 +816,7 @@ Style classes can be added to ``p``, ``div``, ``span`` and other elements to add
     <div class="panel-body">
 
       <p class="help-block">
-        <span class="text-muted">Select dataverses to feature on the homepage of this dataverse.</span>
+        <span class="text-muted">Select Dataverse collections to feature on the homepage of this Dataverse collection.</span>
       </p>
 
       <p class="help-block">
@@ -588,7 +824,7 @@ Style classes can be added to ``p``, ``div``, ``span`` and other elements to add
       </p>
 
       <p class="help-block">
-        <span class="glyphicon glyphicon-asterisk text-info"></span> <span class="text-info">Permissions with an asterisk icon indicate actions that can be performed by users not logged into Dataverse.</span>
+        <span class="glyphicon glyphicon-asterisk text-info"></span> <span class="text-info">Permissions with an asterisk icon indicate actions that can be performed by users not logged into the Dataverse installation.</span>
       </p>
 
       <p class="help-block">

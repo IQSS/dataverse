@@ -47,43 +47,80 @@ public class DatasetFieldValidatorTest {
      */
     @Test
     public void testIsValid() {
-        DatasetField dataSetField = new DatasetField();
-        DatasetFieldValidator datasetFieldValidator = new DatasetFieldValidator();
-
-        // if it is a template field it is always valid
-        dataSetField.setTemplate(new Template());
-        boolean expResult = true;
-        boolean result = datasetFieldValidator.isValid(dataSetField, constraintValidatorContext);
-        assertEquals("test isValid() on template field", expResult, result);
-
-        // if not a template field and required
-        dataSetField.setTemplate(null);
-        DatasetVersion datasetVersion = new DatasetVersion();
-        Dataset dataset = new Dataset();
+        
         Dataverse dataverse = new Dataverse();
+        Dataset dataset = new Dataset();
         dataset.setOwner(dataverse);
-        datasetVersion.setDataset(dataset);
-        dataSetField.setDatasetVersion(datasetVersion);
+        DatasetVersion datasetVersion = new DatasetVersion();        
+        datasetVersion.setDataset(dataset);        
+           
+        testPrimitiveDatasetField("test isValid() on template field", true, "", null, true);
+        testPrimitiveDatasetField("test isValid() for required primitive with empty value", true, "", datasetVersion, false);
+        testPrimitiveDatasetField("test isValid() for required primitive with nonempty value",  true, "test", datasetVersion, true);
+        testPrimitiveDatasetField("test isValid() for not required primitive", false, "", datasetVersion, true);
 
-        DatasetFieldValue datasetFieldValue = new DatasetFieldValue();
-        DatasetFieldType datasetFieldType = new DatasetFieldType("test", DatasetFieldType.FieldType.TEXT, false);
-        datasetFieldType.setRequired(true);
-        dataSetField.setDatasetFieldType(datasetFieldType);
-        dataSetField.setSingleValue("");
-        datasetFieldValue.setValue("");
-        result = datasetFieldValidator.isValid(dataSetField, constraintValidatorContext);
-        assertEquals("test isValid() if not template field and required with empty DataSetField", false, result);
+        // the compound tests are defined by parent/child1 required and child1/child2 values
+        testCompoundDatasetField("test isValid() for false/false compound with empty/empty children", false, false, "", "", datasetVersion, true);
+        testCompoundDatasetField("test isValid() for true/true compound with empty/empty children", true, true, "", "", datasetVersion, false);
+        testCompoundDatasetField("test isValid() for true/true compound with empty/nonempty children", true, true, "", "test", datasetVersion, false);
+        testCompoundDatasetField("test isValid() for true/true compound with nonempty/empty children", true, true, "test", "", datasetVersion, true);
+        testCompoundDatasetField("test isValid() for false/true compound with empty/empty children", false, true, "", "", datasetVersion, true);
+        testCompoundDatasetField("test isValid() for false/true compound with empty/nonempty children", false, true, "", "test", datasetVersion, false);
+        testCompoundDatasetField("test isValid() for false/true compound with nonempty/empty children", false, true, "test", "", datasetVersion, true);        
+    }
+    
+    private void testPrimitiveDatasetField(String test, boolean required, String value,
+        DatasetVersion dsv, boolean expectedOutcome) {
+        DatasetFieldType primitiveDSFType = new DatasetFieldType("primitive", DatasetFieldType.FieldType.TEXT, false);
+        primitiveDSFType.setRequired(required); 
+        
+        DatasetField testDatasetField = new DatasetField();
+        if (dsv != null) {
+            testDatasetField.setDatasetVersion(dsv);
+        } else {
+            testDatasetField.setTemplate(new Template());
+        }
+        testDatasetField.setDatasetFieldType(primitiveDSFType);
+        testDatasetField.setSingleValue(value);
+        
+        DatasetFieldValidator datasetFieldValidator = new DatasetFieldValidator();
+        assertEquals( test, expectedOutcome, datasetFieldValidator.isValid(testDatasetField, constraintValidatorContext));
+       
+    }
+      
+    private void testCompoundDatasetField(String test, boolean requiredParent, boolean requiredChild1,
+            String valueChild1, String valueChild2, DatasetVersion dsv, boolean expectedOutcome) {    
 
-        // fill in a value - the required constraint is satisfied now
-        dataSetField.setSingleValue("value");
-        result = datasetFieldValidator.isValid(dataSetField, constraintValidatorContext);
-        assertEquals("test isValid() if not template field and required with non-empty DataSetField", true, result);
+        DatasetFieldType parentDSFType = new DatasetFieldType("parent", DatasetFieldType.FieldType.TEXT, false);
+        DatasetFieldType child1DSFType = new DatasetFieldType("child1", DatasetFieldType.FieldType.TEXT, false);
+        DatasetFieldType child2DSFType = new DatasetFieldType("child2", DatasetFieldType.FieldType.TEXT, false);
 
-        // if not required the field can be blank
-        datasetFieldType.setRequired(false);
-        dataSetField.setSingleValue("");
-        result = datasetFieldValidator.isValid(dataSetField, constraintValidatorContext);
-        assertEquals("test isValid() if not template field and not required", true, result);
+        parentDSFType.setRequired(requiredParent); 
+        child1DSFType.setRequired(requiredChild1); 
+        child2DSFType.setRequired(false);        
+        
+        DatasetField parentDatasetField = new DatasetField();
+        parentDatasetField.setDatasetVersion(dsv);
+        parentDatasetField.setDatasetFieldType(parentDSFType);
+        
+        DatasetFieldCompoundValue compound = new DatasetFieldCompoundValue();
+        compound.setParentDatasetField(parentDatasetField);
+
+        DatasetField child1DatasetField = new DatasetField();
+        child1DatasetField.setParentDatasetFieldCompoundValue(compound);
+        compound.getChildDatasetFields().add(child1DatasetField);
+        child1DatasetField.setDatasetFieldType(child1DSFType);
+        child1DatasetField.setSingleValue(valueChild1);    
+
+        DatasetField child2DatasetField = new DatasetField();
+        child2DatasetField.setParentDatasetFieldCompoundValue(compound);
+        compound.getChildDatasetFields().add(child2DatasetField);        
+        child2DatasetField.setDatasetFieldType(child2DSFType);
+        child2DatasetField.setSingleValue(valueChild2);   
+        
+
+        DatasetFieldValidator datasetFieldValidator = new DatasetFieldValidator();
+        assertEquals( test, expectedOutcome, datasetFieldValidator.isValid(child1DatasetField, constraintValidatorContext));
     }
     
 }

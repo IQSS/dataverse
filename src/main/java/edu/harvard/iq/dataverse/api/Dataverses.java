@@ -102,7 +102,7 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
-import javax.persistence.NoResultException;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * A REST API for dataverses.
@@ -224,6 +224,10 @@ public class Dataverses extends AbstractApiBean {
             if (ds.getVersions().isEmpty()) {
                 return badRequest("Please provide initial version in the dataset json");
             }
+            
+            if (!ds.getFiles().isEmpty() && !u.isSuperuser()){
+                return badRequest("Only a superuser may add files via this api");
+            }
 
             // clean possible version metadata
             DatasetVersion version = ds.getVersions().get(0);
@@ -253,6 +257,9 @@ public class Dataverses extends AbstractApiBean {
     public Response importDataset(String jsonBody, @PathParam("identifier") String parentIdtf, @QueryParam("pid") String pidParam, @QueryParam("release") String releaseParam) {
         try {
             User u = findUserOrDie();
+            if (!u.isSuperuser()) {
+                return error(Status.FORBIDDEN, "Not a superuser");
+            }
             Dataverse owner = findDataverseOrDie(parentIdtf);
             Dataset ds = parseDataset(jsonBody);
             ds.setOwner(owner);
@@ -318,7 +325,7 @@ public class Dataverses extends AbstractApiBean {
     // TODO decide if I merge importddi with import just below (xml and json on same api, instead of 2 api)
     @POST
     @Path("{identifier}/datasets/:importddi")
-    public Response importDatasetDdi(String xml, @PathParam("identifier") String parentIdtf, @QueryParam("pid") String pidParam, @QueryParam("release") String releaseParam) throws ImportException {
+    public Response importDatasetDdi(String xml, @PathParam("identifier") String parentIdtf, @QueryParam("pid") String pidParam, @QueryParam("release") String releaseParam) {
         try {
             User u = findUserOrDie();
             if (!u.isSuperuser()) {
@@ -328,9 +335,12 @@ public class Dataverses extends AbstractApiBean {
             Dataset ds = null;
             try {
                 ds = jsonParser().parseDataset(importService.ddiToJson(xml));
-            }
-            catch (JsonParseException jpe) {
-                return badRequest("Error parsing datas as Json: "+jpe.getMessage());
+            } catch (JsonParseException jpe) {
+                return badRequest("Error parsing data as Json: "+jpe.getMessage());
+            } catch (ImportException e) {
+                return badRequest("Invalid DOI found in the XML: "+e.getMessage());
+            } catch (XMLStreamException e) {
+                return badRequest("Invalid file content: "+e.getMessage());
             }
             ds.setOwner(owner);
             if (nonEmpty(pidParam)) {
@@ -382,7 +392,7 @@ public class Dataverses extends AbstractApiBean {
             return ex.getResponse();
         }
     }
-
+    
     private Dataset parseDataset(String datasetJson) throws WrappedResponse {
         try (StringReader rdr = new StringReader(datasetJson)) {
             return jsonParser().parseDataset(Json.createReader(rdr).readObject());

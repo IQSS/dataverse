@@ -5,6 +5,7 @@
  */
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 
 import java.io.BufferedWriter;
@@ -191,7 +192,7 @@ public class DataCitation {
         citationList.add(year);
         if ((fileTitle != null) && isDirect()) {
             citationList.add(formatString(fileTitle, html, "\""));
-            citationList.add(formatString(title, html, "<i>", "</i>"));
+            citationList.add(formatString(title, html, "<em>", "</em>"));
         } else {
         citationList.add(formatString(title, html, "\""));
         }
@@ -745,7 +746,7 @@ public class DataCitation {
 
     private String getPublisherFrom(DatasetVersion dsv) {
         if (!dsv.getDataset().isHarvested()) {
-            return dsv.getRootDataverseNameforCitation();
+            return BrandingUtil.getInstallationBrandName();
         } else {
             return dsv.getDistributorName();
             // remove += [distributor] SEK 8-18-2016

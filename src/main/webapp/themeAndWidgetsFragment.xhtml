@@ -51,11 +51,11 @@
                                         <p:commandButton update=":themeWidgetsForm:themeWidgetsTabView" value="#{bundle.remove}" action="#{themeWidgetFragment.removeLogo()}" oncomplete="bind_bsui_components();"/>
                                     </p:column>                              
                                     <p:fileUpload invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" id="changelogo" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":themeWidgetsForm:themeWidgetsTabView" oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
-                                                  fileUploadListener="#{themeWidgetFragment.handleImageFileUpload}" label="#{bundle['dataverse.theme.logo.image.upload']}"/>
+                                                  listener="#{themeWidgetFragment.handleImageFileUpload}" label="#{bundle['dataverse.theme.logo.image.upload']}"/>
                                 </p:panelGrid>
                                 <p:panelGrid rendered="#{empty themeWidgetFragment.editDv.dataverseTheme.logo}" columns="2" styleClass="noBorders">
                                     <p:fileUpload id="uploadlogo" invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" sizeLimit="#{systemConfig.uploadLogoSizeLimit}" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":themeWidgetsForm:themeWidgetsTabView" oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
-                                                  fileUploadListener="#{themeWidgetFragment.handleImageFileUpload}" label="#{bundle['dataverse.theme.logo.image.uploadImgFile']}"/>
+                                                  listener="#{themeWidgetFragment.handleImageFileUpload}" label="#{bundle['dataverse.theme.logo.image.uploadImgFile']}"/>
                                 </p:panelGrid>
                                 <ui:fragment rendered="#{not empty themeWidgetFragment.editDv.dataverseTheme.logo}">
                                     <div class="form-col-container col-sm-4">
@@ -197,11 +197,11 @@
                                             <p:commandButton update=":themeWidgetsForm:themeWidgetsTabView" value="#{bundle.remove}" action="#{themeWidgetFragment.removeLogoFooter()}" oncomplete="bind_bsui_components();"/>
                                         </p:column>
                                         <p:fileUpload invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" id="changelogoFooter" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":themeWidgetsForm:themeWidgetsTabView" oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
-                                                      fileUploadListener="#{themeWidgetFragment.handleImageFooterFileUpload}" label="#{bundle['dataverse.theme.logo.image.upload']}"/>
+                                                      listener="#{themeWidgetFragment.handleImageFooterFileUpload}" label="#{bundle['dataverse.theme.logo.image.upload']}"/>
                                     </p:panelGrid>
                                     <p:panelGrid rendered="#{empty themeWidgetFragment.editDv.dataverseTheme.logoFooter}" columns="2" styleClass="noBorders">
                                         <p:fileUpload id="uploadlogoFooter" invalidFileMessage="#{bundle['dataverse.theme.logo.image.invalidMsg']}" sizeLimit="#{systemConfig.uploadLogoSizeLimit}" allowTypes="/(\.|\/)(jpg|jpeg|tff|png|gif)$/" update=":themeWidgetsForm:themeWidgetsTabView" oncomplete="bind_bsui_components();" dragDropSupport="true" auto="true" multiple="false"
-                                                      fileUploadListener="#{themeWidgetFragment.handleImageFooterFileUpload}" label="#{bundle['dataverse.theme.logo.image.uploadImgFile']}"/>
+                                                      listener="#{themeWidgetFragment.handleImageFooterFileUpload}" label="#{bundle['dataverse.theme.logo.image.uploadImgFile']}"/>
                                     </p:panelGrid>
                                     <ui:fragment rendered="#{not empty themeWidgetFragment.editDv.dataverseTheme.logoFooter}">
                                         <div class="form-col-container col-sm-3">

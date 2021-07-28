@@ -39,6 +39,10 @@ import edu.harvard.iq.dataverse.util.StringUtil;
  * @author skraffmiller
  */
 @NamedQueries({
+    @NamedQuery(name = "Dataset.findIdStale",
+               query = "SELECT d.id FROM Dataset d WHERE d.indexTime is NULL OR d.indexTime < d.modificationTime"),
+    @NamedQuery(name = "Dataset.findIdStalePermission",
+               query = "SELECT d.id FROM Dataset d WHERE d.permissionIndexTime is NULL OR d.permissionIndexTime < d.permissionModificationTime"),
     @NamedQuery(name = "Dataset.findByIdentifier",
                query = "SELECT d FROM Dataset d WHERE d.identifier=:identifier"),
     @NamedQuery(name = "Dataset.findByIdentifierAuthorityProtocol",
@@ -49,6 +53,10 @@ import edu.harvard.iq.dataverse.util.StringUtil;
                 query = "SELECT o.id FROM Dataset o WHERE o.owner.id=:ownerId"),
     @NamedQuery(name = "Dataset.findByOwnerId", 
                 query = "SELECT o FROM Dataset o WHERE o.owner.id=:ownerId"),
+    @NamedQuery(name = "Dataset.findByCreatorId",
+                query = "SELECT o FROM Dataset o WHERE o.creator.id=:creatorId"),
+    @NamedQuery(name = "Dataset.findByReleaseUserId",
+                query = "SELECT o FROM Dataset o WHERE o.releaseUser.id=:releaseUserId"),
 })
 
 /*
@@ -74,7 +82,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
         name = "Dataset.generateIdentifierAsSequentialNumber",
         procedureName = "generateIdentifierAsSequentialNumber",
         parameters = {
-            @StoredProcedureParameter(mode = ParameterMode.OUT, type = Integer.class, name = "identifier")
+            @StoredProcedureParameter(mode = ParameterMode.OUT, type = Integer.class)
         }
 )
 @Entity
@@ -336,6 +344,7 @@ public class Dataset extends DvObjectContainer {
                 newFm.setDataFile(fm.getDataFile());
                 newFm.setDatasetVersion(dsv);
                 newFm.setProvFreeForm(fm.getProvFreeForm());
+                newFm.setInPriorVersion(true);
 
                 //fmVarMet would be updated in DCT
                 if ((fmVarMet != null && !fmVarMet.getId().equals(fm.getId())) || (fmVarMet == null))  {
@@ -419,6 +428,15 @@ public class Dataset extends DvObjectContainer {
     public DatasetVersion getReleasedVersion() {
         for (DatasetVersion version : this.getVersions()) {
             if (version.isReleased()) {
+                return version;
+            }
+        }
+        return null;
+    }
+    
+    public DatasetVersion getVersionFromId(Long datasetVersionId) {
+        for (DatasetVersion version : this.getVersions()) {
+            if (datasetVersionId == version.getId().longValue()) {
                 return version;
             }
         }
@@ -836,8 +854,8 @@ public class Dataset extends DvObjectContainer {
         return equals(other) || equals(other.getOwner());
     }
 
-    public DatasetThumbnail getDatasetThumbnail() {
-        return DatasetUtil.getThumbnail(this);
+    public DatasetThumbnail getDatasetThumbnail(int size) {
+        return DatasetUtil.getThumbnail(this, size);
     }
     
     /** 
@@ -848,8 +866,8 @@ public class Dataset extends DvObjectContainer {
      * @param datasetVersion
      * @return A thumbnail of the dataset (may be {@code null}).
      */
-    public DatasetThumbnail getDatasetThumbnail(DatasetVersion datasetVersion) {
-        return DatasetUtil.getThumbnail(this, datasetVersion);
+    public DatasetThumbnail getDatasetThumbnail(DatasetVersion datasetVersion, int size) {
+        return DatasetUtil.getThumbnail(this, datasetVersion, size);
     }
 
 }

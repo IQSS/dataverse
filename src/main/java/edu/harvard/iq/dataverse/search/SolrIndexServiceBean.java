@@ -22,16 +22,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
-import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
 
@@ -405,8 +401,6 @@ public class SolrIndexServiceBean {
                 }
             }
         } else if (definitionPoint.isInstanceofDataset()) {
-            // index the dataset itself
-            indexPermissionsForOneDvObject(definitionPoint);
             dvObjectsToReindexPermissionsFor.add(definitionPoint);
             // index files
             Dataset dataset = (Dataset) definitionPoint;
@@ -425,22 +419,15 @@ public class SolrIndexServiceBean {
          */
         String response = reindexFilesInBatches(filesToReindexAsBatch);
 
-        List<String> updatePermissionTimeSuccessStatus = new ArrayList<>();
         for (DvObject dvObject : dvObjectsToReindexPermissionsFor) {
             /**
              * @todo do something with this response
              */
             IndexResponse indexResponse = indexPermissionsForOneDvObject(dvObject);
-            DvObject managedDefinitionPoint = dvObjectService.updatePermissionIndexTime(definitionPoint);
-            boolean updatePermissionTimeSuccessful = false;
-            if (managedDefinitionPoint != null) {
-                updatePermissionTimeSuccessful = true;
-            }
-            updatePermissionTimeSuccessStatus.add(dvObject + ":" + updatePermissionTimeSuccessful);
         }
+        
         return new IndexResponse("Number of dvObject permissions indexed for " + definitionPoint
-                + " (updatePermissionTimeSuccessful:" + updatePermissionTimeSuccessStatus
-                + "): " + dvObjectsToReindexPermissionsFor.size()
+                + ": " + dvObjectsToReindexPermissionsFor.size()
         );
     }
 
@@ -541,47 +528,29 @@ public class SolrIndexServiceBean {
     }
 
     /**
-     * @todo Do we want to report the root dataverse (id 1, often) in
-     * permissionsInDatabaseButMissingFromSolr?
+     * 
      *
      * @return A list of dvobject ids that should have their permissions
-     * re-indexed Solr was down when a permission was added. The permission
-     * should be added to Solr.
+     * re-indexed because Solr was down when a permission was added. The permission
+     * should be added to Solr. The id of the permission contains the type of
+     * DvObject and the primary key of the dvObject.
+     * DvObjects of type DataFile are currently skipped because their index
+     * time isn't stored in the database, since they are indexed along 
+     * with their parent dataset (this may change).
      */
     public List<Long> findPermissionsInDatabaseButStaleInOrMissingFromSolr() {
         List<Long> indexingRequired = new ArrayList<>();
         long rootDvId = dataverseService.findRootDataverse().getId();
-        for (DvObject dvObject : dvObjectService.findAll()) {
-//            logger.info("examining dvObjectId " + dvObject.getId() + "...");
-            Timestamp permissionModificationTime = dvObject.getPermissionModificationTime();
-            Timestamp permissionIndexTime = dvObject.getPermissionIndexTime();
-            if (permissionIndexTime == null) {
-                if (dvObject.getId() != rootDvId) {
-                    // we don't index the rootDv
-                    indexingRequired.add(dvObject.getId());
-                }
-            } else if (permissionModificationTime == null) {
-                /**
-                 * @todo What should we do here? Permissions should always be
-                 * there. They are assigned at create time.
-                 */
-                logger.info("no permission modification time for dvobject id " + dvObject.getId());
-            } else if (permissionIndexTime.before(permissionModificationTime)) {
-                indexingRequired.add(dvObject.getId());
+        List<Long> missingDataversePermissionIds = dataverseService.findIdStalePermission();
+        List<Long> missingDatasetPermissionIds = datasetService.findIdStalePermission();
+        for (Long id : missingDataversePermissionIds) {          
+            if (!id.equals(rootDvId)) {
+            indexingRequired.add(id);
             }
         }
+        indexingRequired.addAll(missingDatasetPermissionIds);
         return indexingRequired;
     }
 
-    /**
-     * @return A list of dvobject ids that should have their permissions
-     * re-indexed because Solr was down when a permission was revoked. The
-     * permission should be removed from Solr.
-     */
-    public List<Long> findPermissionsInSolrNoLongerInDatabase() {
-        /**
-         * @todo Implement this!
-         */
-        return new ArrayList<>();
-    }
+  
 }

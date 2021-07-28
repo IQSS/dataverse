@@ -23,8 +23,11 @@ import org.hamcrest.CoreMatchers;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import static junit.framework.Assert.assertEquals;
 import static java.lang.Thread.sleep;
+import javax.imageio.ImageIO;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -32,6 +35,7 @@ import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import static org.junit.Assert.assertNotEquals;
+import static java.lang.Thread.sleep;
 
 public class SearchIT {
 
@@ -428,6 +432,24 @@ public class SearchIT {
         getThumbnailImageA.then().assertThat()
                 .contentType("image/png")
                 .statusCode(OK.getStatusCode());
+
+        String trueOrWidthInPixels = "true";
+        Response getFileThumbnailImageA = UtilIT.getFileThumbnail(dataFileId1.toString(), trueOrWidthInPixels, apiToken);
+        getFileThumbnailImageA.then().assertThat()
+                .contentType("image/png")
+                .statusCode(OK.getStatusCode());
+
+        try {
+            BufferedImage bufferedImage = ImageIO.read(getFileThumbnailImageA.body().asInputStream());
+            int width = bufferedImage.getWidth();
+            int height = bufferedImage.getHeight();
+            System.out.println("width: " + width);
+            System.out.println("height: " + height);
+            int expectedWidth = 64;
+            assertEquals(expectedWidth, width);
+        } catch (IOException ex) {
+            Logger.getLogger(SearchIT.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         InputStream inputStream2creator = UtilIT.getInputStreamFromUnirest(thumbnailUrl, apiToken);
         assertEquals(treesAsBase64, UtilIT.inputStreamToDataUrlSchemeBase64Png(inputStream2creator));

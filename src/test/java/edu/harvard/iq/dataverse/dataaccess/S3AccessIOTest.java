@@ -89,7 +89,7 @@ public class S3AccessIOTest {
     }
     
     @Test
-    void keyNullstorageIdNull_getMainFileKey() throws IOException {
+    void keyNullstorageIdInvalid_getMainFileKey() throws IOException {
         // given
         dataFile.setStorageIdentifier("invalid://abcd");
         // when & then

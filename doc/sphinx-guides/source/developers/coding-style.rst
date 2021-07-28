@@ -2,7 +2,7 @@
 Coding Style
 ============
 
-Like all development teams, the `Dataverse developers at IQSS <https://dataverse.org/about>`_ have their habits and styles when it comes to writing code. Let's attempt to get on the same page. :)
+Like all development teams, the `Dataverse  Project developers at IQSS <https://dataverse.org/about>`_ have their habits and styles when it comes to writing code. Let's attempt to get on the same page. :)
 
 .. contents:: |toctitle|
 	:local:
@@ -62,7 +62,7 @@ As you probably gathered from the :doc:`dev-environment` section, IQSS has stand
 Checking Your Formatting With Checkstyle
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The easiest way to adopt Dataverse coding style is to use Netbeans as your IDE, avoid change the default Netbeans formatting settings, and only reformat code you've changed, as described above.
+The easiest way to adopt the Dataverse Project coding style is to use Netbeans as your IDE, avoid change the default Netbeans formatting settings, and only reformat code you've changed, as described above.
 
 If you do not use Netbeans, you are encouraged to check the formatting of your code using Checkstyle.
 
@@ -85,7 +85,7 @@ Use this ``logger`` field with varying levels such as ``fine`` or ``info`` like 
 
     logger.fine("will get thumbnail from dataset logo");
 
-Generally speaking you should use ``fine`` for everything that you don't want to show up in Glassfish's ``server.log`` file by default. If you use a higher level such as ``info`` for common operations, you will probably hear complaints that your code is too "chatty" in the logs. These logging levels can be controlled at runtime both on your development machine and in production as explained in the :doc:`debugging` section.
+Generally speaking you should use ``fine`` for everything that you don't want to show up by default in the app server's log file. If you use a higher level such as ``info`` for common operations, you will probably hear complaints that your code is too "chatty" in the logs. These logging levels can be controlled at runtime both on your development machine and in production as explained in the :doc:`debugging` section.
 
 When adding logging, do not simply add ``System.out.println()`` lines because the logging level cannot be controlled.
 
@@ -97,7 +97,7 @@ Special strings should be defined as public constants. For example, ``DatasetFie
 Avoid Hard-Coding User-Facing Messaging in English
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-There is an ongoing effort to translate Dataverse into various languages. Look for "lang" or "languages" in the :doc:`/installation/config` section of the Installation Guide for details if you'd like to help or play around with this feature.
+There is an ongoing effort to translate the Dataverse Software into various languages. Look for "lang" or "languages" in the :doc:`/installation/config` section of the Installation Guide for details if you'd like to help or play around with this feature.
 
 The translation effort is hampered if you hard code user-facing messages in English in the Java code. Put English strings in ``Bundle.properties`` and use ``BundleUtil`` to pull them out. This is especially important for messages that appear in the UI. We are aware that the API has many, many hard coded English strings in it. If you touch a method in the API and notice English strings, you are strongly encouraged to use that opportunity to move the English to ``Bundle.properties``.
 

@@ -41,14 +41,17 @@ public class LinkDatasetCommand extends AbstractCommand<DatasetLinkingDataverse>
     @Override
     public DatasetLinkingDataverse execute(CommandContext ctxt) throws CommandException {
         
-        if (!linkedDataset.isReleased()) {
-            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.link.not.published"), this);
+        if (!linkedDataset.isReleased() && !linkedDataset.isHarvested()) {
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.link.not.available"), this);
         }       
         if (linkedDataset.getOwner().equals(linkingDataverse)) {           
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.link.not.to.owner"), this);
         }
         if (linkedDataset.getOwner().getOwners().contains(linkingDataverse)) {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.link.not.to.parent.dataverse"), this);
+        }
+        if (ctxt.dsLinking().alreadyLinked(linkingDataverse, linkedDataset)) {
+            throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.link.not.already.linked"), this);
         }
        
         DatasetLinkingDataverse datasetLinkingDataverse = new DatasetLinkingDataverse();

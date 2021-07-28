@@ -44,7 +44,7 @@ Use ``semodule -l | grep shibboleth`` to see if the ``shibboleth.te`` rules are 
 Exercising SELinux denials
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-As of this writing, there are two optional components of Dataverse that are known not to work with SELinux out of the box with SELinux: Shibboleth and rApache.
+As of this writing, there are two optional components of the Dataverse Software that are known not to work with SELinux out of the box with SELinux: Shibboleth and rApache.
 
 We will be exercising SELinux denials with Shibboleth, and the SELinux-related issues are expected out the box:
 

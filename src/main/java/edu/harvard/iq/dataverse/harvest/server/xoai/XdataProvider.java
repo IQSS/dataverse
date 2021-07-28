@@ -6,6 +6,7 @@ import com.lyncode.xoai.dataprovider.exceptions.*;
 import com.lyncode.xoai.dataprovider.handlers.*;
 import com.lyncode.xoai.exceptions.InvalidResumptionTokenException;
 import com.lyncode.xoai.dataprovider.model.Context;
+import com.lyncode.xoai.model.oaipmh.Identify;
 import com.lyncode.xoai.model.oaipmh.OAIPMH;
 import com.lyncode.xoai.model.oaipmh.Request;
 import com.lyncode.xoai.dataprovider.parameters.OAICompiledRequest;
@@ -76,7 +77,9 @@ public class XdataProvider {
 
             switch (request.getVerbType()) {
                 case Identify:
-                    response.withVerb(identifyHandler.handle(parameters));
+                    Identify identify = identifyHandler.handle(parameters);
+                    identify.getDescriptions().clear(); // We don't want to use the default description
+                    response.withVerb(identify);
                     break;
                 case ListSets:
                     response.withVerb(listSetsHandler.handle(parameters));

@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
+import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -16,7 +17,6 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.export.ExportException;
 import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -31,8 +31,11 @@ import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
+import edu.harvard.iq.dataverse.util.FileUtil;
+import java.util.ArrayList;
 import java.util.concurrent.Future;
 import org.apache.solr.client.solrj.SolrServerException;
+
 
 /**
  *
@@ -50,6 +53,10 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
      */
     final boolean datasetExternallyReleased;
     
+    List<Dataverse> dataversesToIndex = new ArrayList<>();
+    
+    public static final String FILE_VALIDATION_ERROR = "FILE VALIDATION ERROR";
+    
     public FinalizeDatasetPublicationCommand(Dataset aDataset, DataverseRequest aRequest) {
         this( aDataset, aRequest, false );
     }
@@ -62,8 +69,41 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
     public Dataset execute(CommandContext ctxt) throws CommandException {
         Dataset theDataset = getDataset();
         
+        logger.info("Finalizing publication of the dataset "+theDataset.getGlobalId().asString());
+        
+        // validate the physical files before we do anything else: 
+        // (unless specifically disabled; or a minor version)
+        if (theDataset.getLatestVersion().getVersionState() != RELEASED
+                && theDataset.getLatestVersion().getMinorVersionNumber() != null
+                && theDataset.getLatestVersion().getMinorVersionNumber().equals((long) 0)
+                && ctxt.systemConfig().isDatafileValidationOnPublishEnabled()) {
+            // some imported datasets may already be released.
+
+            // validate the physical files (verify checksums):
+            validateDataFiles(theDataset, ctxt);
+            // (this will throw a CommandException if it fails)
+        }
+
+		/*
+		 * Try to register the dataset identifier. For PID providers that have registerWhenPublished == false (all except the FAKE provider at present)
+		 * the registerExternalIdentifier command will make one try to create the identifier if needed (e.g. if reserving at dataset creation wasn't done/failed).
+		 * For registerWhenPublished == true providers, if a PID conflict is found, the call will retry with new PIDs. 
+		 */
         if ( theDataset.getGlobalIdCreateTime() == null ) {
-            registerExternalIdentifier(theDataset, ctxt);
+            try {
+                // This can potentially throw a CommandException, so let's make 
+                // sure we exit cleanly:
+
+            	registerExternalIdentifier(theDataset, ctxt, false);
+            } catch (CommandException comEx) {
+                logger.warning("Failed to reserve the identifier "+theDataset.getGlobalId().asString()+"; notifying the user(s), unlocking the dataset");
+                // Send failure notification to the user: 
+                notifyUsersDatasetPublishStatus(ctxt, theDataset, UserNotification.Type.PUBLISHFAILED_PIDREG);
+                // Remove the dataset lock: 
+                ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.finalizePublication);
+                // re-throw the exception:
+                throw comEx;
+            }
         }
                 
         // is this the first publication of the dataset?
@@ -125,38 +165,44 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             ctxt.engine().submit(new DeletePrivateUrlCommand(getRequest(), theDataset));
         }
         
-	if ( theDataset.getLatestVersion().getVersionState() != RELEASED ) {
-		// some imported datasets may already be released.
-		if (!datasetExternallyReleased){
-			publicizeExternalIdentifier(theDataset, ctxt);
-		}
-		theDataset.getLatestVersion().setVersionState(RELEASED);
-	}
-        
+	if (theDataset.getLatestVersion().getVersionState() != RELEASED) {
+            // some imported datasets may already be released.
 
-        // Remove locks
-        ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.Workflow));
-        ctxt.engine().submit(new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.pidRegister));
-        if ( theDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
-            ctxt.engine().submit( 
-                    new RemoveLockCommand(getRequest(), theDataset, DatasetLock.Reason.InReview) );
+            if (!datasetExternallyReleased) {
+                publicizeExternalIdentifier(theDataset, ctxt);
+                // Will throw a CommandException, unless successful.
+                // This will end the execution of the command, but the method 
+                // above takes proper care to "clean up after itself" in case of
+                // a failure - it will remove any locks, and it will send a
+                // proper notification to the user(s). 
+            }
+            theDataset.getLatestVersion().setVersionState(RELEASED);
         }
         
         final Dataset ds = ctxt.em().merge(theDataset);
+        //Remove any pre-pub workflow lock (not needed as WorkflowServiceBean.workflowComplete() should already have removed it after setting the finalizePublication lock?)
+        ctxt.datasets().removeDatasetLocks(ds, DatasetLock.Reason.Workflow);
         
+        //Should this be in onSuccess()?
         ctxt.workflows().getDefaultWorkflow(TriggerType.PostPublishDataset).ifPresent(wf -> {
             try {
-                ctxt.workflows().start(wf, buildContext(ds, TriggerType.PostPublishDataset, datasetExternallyReleased));
+                ctxt.workflows().start(wf, buildContext(ds, TriggerType.PostPublishDataset, datasetExternallyReleased), false);
             } catch (CommandException ex) {
+                ctxt.datasets().removeDatasetLocks(ds, DatasetLock.Reason.Workflow);
                 logger.log(Level.SEVERE, "Error invoking post-publish workflow: " + ex.getMessage(), ex);
             }
         });
+
+        Dataset readyDataset = ctxt.em().merge(ds);
         
-        Dataset readyDataset = ctxt.em().merge(theDataset);
-        
-        if ( readyDataset != null ) {
-            notifyUsersDatasetPublish(ctxt, theDataset);
+        // Finally, unlock the dataset (leaving any post-publish workflow lock in place)
+        ctxt.datasets().removeDatasetLocks(readyDataset, DatasetLock.Reason.finalizePublication);
+        if (readyDataset.isLockedFor(DatasetLock.Reason.InReview) ) {
+            ctxt.datasets().removeDatasetLocks(readyDataset, DatasetLock.Reason.InReview);
         }
+        
+        logger.info("Successfully published the dataset "+readyDataset.getGlobalId().asString());
+        readyDataset = ctxt.em().merge(readyDataset);
         
         return readyDataset;
     }
@@ -170,19 +216,40 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         } catch (ClassCastException e){
             dataset  = ((PublishDatasetResult) r).getDataset();
         }
-
+        
+        try {
+            // Success! - send notification:
+            notifyUsersDatasetPublishStatus(ctxt, dataset, UserNotification.Type.PUBLISHEDDS);
+        } catch (Exception e) {
+            logger.warning("Failure to send dataset published messages for : " + dataset.getId() + " : " + e.getMessage());
+        }
         try {
             Future<String> indexString = ctxt.index().indexDataset(dataset, true);                   
         } catch (IOException | SolrServerException e) {    
-            String failureLogText = "Post-publication indexing failed. You can kickoff a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
+            String failureLogText = "Post-publication indexing failed. You can kick off a re-index of this dataset with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + dataset.getId().toString();
             failureLogText += "\r\n" + e.getLocalizedMessage();
             LoggingUtil.writeOnSuccessFailureLog(this, failureLogText,  dataset);
             retVal = false;
         }
+        
+        //re-indexing dataverses that have additional subjects
+        if (!dataversesToIndex.isEmpty()){
+            for (Dataverse dv : dataversesToIndex) {
+                try {
+                    Future<String> indexString = ctxt.index().indexDataverse(dv);
+                } catch (IOException | SolrServerException e) {
+                    String failureLogText = "Post-publication indexing failed. You can kick off a re-index of this dataverse with: \r\n curl http://localhost:8080/api/admin/index/dataverses/" + dv.getId().toString();
+                    failureLogText += "\r\n" + e.getLocalizedMessage();
+                    LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, dataset);
+                    retVal = false;
+                } 
+            }
+        }
 
-        ctxt.solrIndex().indexPermissionsForOneDvObject(dataset);
-        exportMetadata(dataset, ctxt.settings());
+        exportMetadata(dataset);
+                
         ctxt.datasets().updateLastExportTimeStamp(dataset.getId());
+
         return retVal;
     }
 
@@ -190,13 +257,13 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
      * Attempting to run metadata export, for all the formats for which we have
      * metadata Exporters.
      */
-    private void exportMetadata(Dataset dataset, SettingsServiceBean settingsServiceBean) {
+    private void exportMetadata(Dataset dataset) {
 
         try {
-            ExportService instance = ExportService.getInstance(settingsServiceBean);
+            ExportService instance = ExportService.getInstance();
             instance.exportAllFormats(dataset);
 
-        } catch (ExportException ex) {
+        } catch (Exception ex) {
             // Something went wrong!
             // Just like with indexing, a failure to export is not a fatal
             // condition. We'll just log the error as a warning and keep
@@ -209,14 +276,29 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
      * add the dataset subjects to all parent dataverses.
      */
     private void updateParentDataversesSubjectsField(Dataset savedDataset, CommandContext ctxt) throws  SolrServerException, IOException {
+        
         for (DatasetField dsf : savedDataset.getLatestVersion().getDatasetFields()) {
             if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.subject)) {
                 Dataverse dv = savedDataset.getOwner();
                 while (dv != null) {
-                    if (dv.getDataverseSubjects().addAll(dsf.getControlledVocabularyValues())) {
+                    boolean newSubjectsAdded = false;
+                    for (ControlledVocabularyValue cvv : dsf.getControlledVocabularyValues()) {                   
+                        if (!dv.getDataverseSubjects().contains(cvv)) {
+                            logger.fine("dv "+dv.getAlias()+" does not have subject "+cvv.getStrValue());
+                            newSubjectsAdded = true;
+                            dv.getDataverseSubjects().add(cvv);
+                        } else {
+                            logger.fine("dv "+dv.getAlias()+" already has subject "+cvv.getStrValue());
+                        }
+                    }
+                    if (newSubjectsAdded) {
+                        logger.fine("new dataverse subjects added - saving and reindexing in OnSuccess");
                         Dataverse dvWithSubjectJustAdded = ctxt.em().merge(dv);
                         ctxt.em().flush();
-                        ctxt.index().indexDataverse(dvWithSubjectJustAdded); // need to reindex to capture the new subjects
+                        //adding dv to list of those we need to re-index for new subjects
+                        dataversesToIndex.add(dvWithSubjectJustAdded);                       
+                    } else {
+                        logger.fine("no new subjects added to the dataverse; skipping reindexing");
                     }
                     dv = dv.getOwner();
                 }
@@ -225,26 +307,65 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         }
     }
 
+    private void validateDataFiles(Dataset dataset, CommandContext ctxt) throws CommandException {
+        try {
+            for (DataFile dataFile : dataset.getFiles()) {
+                // TODO: Should we validate all the files in the dataset, or only 
+                // the files that haven't been published previously?
+                // (the decision was made to validate all the files on every  
+                // major release; we can revisit the decision if there's any 
+                // indication that this makes publishing take significantly longer.
+                logger.log(Level.FINE, "validating DataFile {0}", dataFile.getId());
+                FileUtil.validateDataFileChecksum(dataFile);
+            }
+        } catch (Throwable e) {
+            
+            if (dataset.isLockedFor(DatasetLock.Reason.finalizePublication)) {
+                DatasetLock lock = dataset.getLockFor(DatasetLock.Reason.finalizePublication);
+                lock.setReason(DatasetLock.Reason.FileValidationFailed);
+                lock.setInfo(FILE_VALIDATION_ERROR);
+                ctxt.datasets().updateDatasetLock(lock);
+            } else {            
+                // Lock the dataset with a new FileValidationFailed lock: 
+                DatasetLock lock = new DatasetLock(DatasetLock.Reason.FileValidationFailed, getRequest().getAuthenticatedUser()); //(AuthenticatedUser)getUser());
+                lock.setDataset(dataset);
+                lock.setInfo(FILE_VALIDATION_ERROR);
+                ctxt.datasets().addDatasetLock(dataset, lock);
+            }
+            
+            // Throw a new CommandException; if the command is being called 
+            // synchronously, it will be intercepted and the page will display 
+            // the error message for the user.
+            throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.file.validation.error.details"), this);
+        }
+    }
+    
     private void publicizeExternalIdentifier(Dataset dataset, CommandContext ctxt) throws CommandException {
         String protocol = getDataset().getProtocol();
+        String authority = getDataset().getAuthority();
         GlobalIdServiceBean idServiceBean = GlobalIdServiceBean.getBean(protocol, ctxt);
+ 
         if (idServiceBean != null) {
             List<String> args = idServiceBean.getProviderInformation();
             try {
                 String currentGlobalIdProtocol = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Protocol, "");
+                String currentGlobalAuthority = ctxt.settings().getValueForKey(SettingsServiceBean.Key.Authority, "");
                 String dataFilePIDFormat = ctxt.settings().getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
                 boolean isFilePIDsEnabled = ctxt.systemConfig().isFilePIDsEnabled();
                 // We will skip trying to register the global identifiers for datafiles 
                 // if "dependent" file-level identifiers are requested, AND the naming 
-                // protocol of the dataset global id is different from the
-                // one currently configured for the Dataverse. This is to specifically 
-                // address the issue with the datasets with handle ids registered, 
-                // that are currently configured to use DOI.
-                // ...
+                // protocol, or the authority of the dataset global id is different from 
+                // what's currently configured for the Dataverse. In other words
+                // we can't get "dependent" DOIs assigned to files in a dataset  
+                // with the registered id that is a handle; or even a DOI, but in 
+                // an authority that's different from what's currently configured.
                 // Additionaly in 4.9.3 we have added a system variable to disable 
                 // registering file PIDs on the installation level.
-                if ((currentGlobalIdProtocol.equals(protocol) || dataFilePIDFormat.equals("INDEPENDENT"))//TODO(pm) - check authority too
-                        && isFilePIDsEnabled) {
+                if (((currentGlobalIdProtocol.equals(protocol) && currentGlobalAuthority.equals(authority))
+                        || dataFilePIDFormat.equals("INDEPENDENT"))
+                        && isFilePIDsEnabled
+                        && dataset.getLatestVersion().getMinorVersionNumber() != null
+                        && dataset.getLatestVersion().getMinorVersionNumber().equals((long) 0)) {
                     //A false return value indicates a failure in calling the service
                     for (DataFile df : dataset.getFiles()) {
                         logger.log(Level.FINE, "registering global id for file {0}", df.getId());
@@ -262,7 +383,12 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                 dataset.setGlobalIdCreateTime(new Date()); // TODO these two methods should be in the responsibility of the idServiceBean.
                 dataset.setIdentifierRegistered(true);
             } catch (Throwable e) {
-                ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.pidRegister);
+                logger.warning("Failed to register the identifier "+dataset.getGlobalId().asString()+", or to register a file in the dataset; notifying the user(s), unlocking the dataset");
+
+                // Send failure notification to the user: 
+                notifyUsersDatasetPublishStatus(ctxt, dataset, UserNotification.Type.PUBLISHFAILED_PIDREG);
+                
+                ctxt.datasets().removeDatasetLocks(dataset, DatasetLock.Reason.finalizePublication);
                 throw new CommandException(BundleUtil.getStringFromBundle("dataset.publish.error", args), this);
             }
         }
@@ -285,45 +411,11 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             
             
             if (dataFile.isRestricted()) {
-                // A couple things need to happen if the file has been restricted: 
-                // 1. If there's a map layer associated with this shape file, or 
-                //    tabular-with-geo-tag file, all that map layer data (that 
-                //    includes most of the actual data in the file!) need to be
-                //    removed from WorldMap and GeoConnect, since anyone can get 
-                //    download the data from there;
-                // 2. If this (image) file has been assigned as the dedicated 
+                // If the file has been restricted: 
+                //    If this (image) file has been assigned as the dedicated 
                 //    thumbnail for the dataset, we need to remove that assignment, 
                 //    now that the file is restricted. 
-
-                // Map layer: 
-                
-                if (ctxt.mapLayerMetadata().findMetadataByDatafile(dataFile) != null) {
-                    // (We need an AuthenticatedUser in order to produce a WorldMap token!)
-                    String id = getUser().getIdentifier();
-                    id = id.startsWith("@") ? id.substring(1) : id;
-                    AuthenticatedUser authenticatedUser = ctxt.authentication().getAuthenticatedUser(id);
-                    try {
-                        ctxt.mapLayerMetadata().deleteMapLayerFromWorldMap(dataFile, authenticatedUser);
-
-                        // If that was successful, delete the layer on the Dataverse side as well:
-                        //SEK 4/20/2017                
-                        //Command to delete from Dataverse side
-                        ctxt.engine().submit(new DeleteMapLayerMetadataCommand(this.getRequest(), dataFile));
-
-                        // RP - Bit of hack, update the datafile here b/c the reference to the datafile 
-                        // is not being passed all the way up/down the chain.   
-                        //
-                        dataFile.setPreviewImageAvailable(false);
-
-                    } catch (IOException ioex) {
-                        // We are not going to treat it as a fatal condition and bail out, 
-                        // but we will send a notification to the user, warning them about
-                        // the layer still being out there, un-deleted:
-                        ctxt.notifications().sendNotification(authenticatedUser, getTimestamp(), UserNotification.Type.MAPLAYERDELETEFAILED, dataFile.getFileMetadata().getId());
-                    }
-
-                }
-                
+               
                 // Dataset thumbnail assignment: 
                 
                 if (dataFile.equals(getDataset().getThumbnailFile())) {
@@ -344,13 +436,14 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             .forEach( au -> ctxt.notifications().sendNotification(au, getTimestamp(), UserNotification.Type.GRANTFILEACCESS, getDataset().getId()) );
     }
     
-    private void notifyUsersDatasetPublish(CommandContext ctxt, DvObject subject) {
+    private void notifyUsersDatasetPublishStatus(CommandContext ctxt, DvObject subject, UserNotification.Type type) {
+        
         ctxt.roles().rolesAssignments(subject).stream()
             .filter(  ra -> ra.getRole().permissions().contains(Permission.ViewUnpublishedDataset) || ra.getRole().permissions().contains(Permission.DownloadFile))
             .flatMap( ra -> ctxt.roleAssignees().getExplicitUsers(ctxt.roleAssignees().getRoleAssignee(ra.getAssigneeIdentifier())).stream() )
             .distinct() // prevent double-send
             //.forEach( au -> ctxt.notifications().sendNotification(au, timestamp, messageType, theDataset.getId()) ); //not sure why this line doesn't work instead
-            .forEach( au -> ctxt.notifications().sendNotification(au, getTimestamp(), UserNotification.Type.PUBLISHEDDS, getDataset().getLatestVersion().getId()) ); 
+            .forEach( au -> ctxt.notifications().sendNotificationInNewTransaction(au, getTimestamp(), type, getDataset().getLatestVersion().getId()) ); 
     }
 
 }

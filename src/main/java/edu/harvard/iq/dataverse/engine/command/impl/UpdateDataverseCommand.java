@@ -90,20 +90,19 @@ public class UpdateDataverseCommand extends AbstractCommand<Dataverse> {
         
     @Override
     public boolean onSuccess(CommandContext ctxt, Object r) {
-        Dataverse result = (Dataverse) r;
-
-        List<Dataset> datasets = ctxt.datasets().findByOwnerId(result.getId());
+        
+        // first kick of async index of datasets
+        // TODO: is this actually needed? Is there a better way to handle
         try {
-            Future<String> indResponse = ctxt.index().indexDataverse(result);
+            Dataverse result = (Dataverse) r;
+            List<Dataset> datasets = ctxt.datasets().findByOwnerId(result.getId());
             ctxt.index().asyncIndexDatasetList(datasets, true);
         } catch (IOException | SolrServerException e) {
-            String failureLogText = "Indexing failed for Updated Dataverse. You can kickoff a re-index of this datavese with: \r\n curl http://localhost:8080/api/admin/index/datasets/" + result.getId().toString();
-            failureLogText += "\r\n" + e.getLocalizedMessage();
-            LoggingUtil.writeOnSuccessFailureLog(this, failureLogText, result);
-            return false;
+            // these datasets are being indexed asynchrounously, so not sure how to handle errors here
         }
-        return true;
-    }
+        
+        return ctxt.dataverses().index((Dataverse) r);
+    }  
 
 }
 

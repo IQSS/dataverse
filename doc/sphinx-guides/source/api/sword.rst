@@ -1,7 +1,7 @@
 SWORD API
 =========
 
-SWORD_ stands for "Simple Web-service Offering Repository Deposit" and is a "profile" of AtomPub (`RFC 5023`_) which is a RESTful API that allows non-Dataverse software to deposit files and metadata into a Dataverse installation. :ref:`client-libraries` are available in Python, Javascript, Java, R, Ruby, and PHP.
+SWORD_ stands for "Simple Web-service Offering Repository Deposit" and is a "profile" of AtomPub (`RFC 5023`_) which is a RESTful API that allows non-Dataverse Software to deposit files and metadata into a Dataverse installation. :ref:`client-libraries` are available in Python, Javascript, Java, R, Ruby, and PHP.
 
 .. contents:: |toctitle|
     :local:
@@ -9,11 +9,11 @@ SWORD_ stands for "Simple Web-service Offering Repository Deposit" and is a "pro
 About
 -----
 
-Introduced in Dataverse Network (DVN) `3.6 <http://guides.dataverse.org/en/3.6.2/dataverse-api-main.html#data-deposit-api>`_, the SWORD API was formerly known as the "Data Deposit API" and ``data-deposit/v1`` appeared in the URLs. For backwards compatibility these URLs continue to work (with deprecation warnings). Due to architectural changes and security improvements (especially the introduction of API tokens) in Dataverse 4.0, a few backward incompatible changes were necessarily introduced and for this reason the version has been increased to ``v1.1``. For details, see :ref:`incompatible`.
+Introduced in Dataverse Network (DVN) `3.6 <http://guides.dataverse.org/en/3.6.2/dataverse-api-main.html#data-deposit-api>`_, the SWORD API was formerly known as the "Data Deposit API" and ``data-deposit/v1`` appeared in the URLs. For backwards compatibility these URLs continue to work (with deprecation warnings). Due to architectural changes and security improvements (especially the introduction of API tokens) in Dataverse Software 4.0, a few backward incompatible changes were necessarily introduced and for this reason the version has been increased to ``v1.1``. For details, see :ref:`incompatible`.
 
-Dataverse implements most of SWORDv2_, which is specified at http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html . Please reference the `SWORDv2 specification`_ for expected HTTP status codes (i.e. 201, 204, 404, etc.), headers (i.e. "Location"), etc.
+The Dataverse Software implements most of SWORDv2_, which is specified at http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html . Please reference the `SWORDv2 specification`_ for expected HTTP status codes (i.e. 201, 204, 404, etc.), headers (i.e. "Location"), etc.
 
-As a profile of AtomPub, XML is used throughout SWORD. As of Dataverse 4.0 datasets can also be created via JSON using the "native" API. SWORD is limited to the dozen or so fields listed below in the crosswalk, but the native API allows you to populate all metadata fields available in Dataverse.
+As a profile of AtomPub, XML is used throughout SWORD. As of Dataverse Software 4.0 datasets can also be created via JSON using the "native" API. SWORD is limited to the dozen or so fields listed below in the crosswalk, but the native API allows you to populate all metadata fields available in a Dataverse installation.
 
 .. _SWORD: http://en.wikipedia.org/wiki/SWORD_%28protocol%29
 
@@ -23,6 +23,25 @@ As a profile of AtomPub, XML is used throughout SWORD. As of Dataverse 4.0 datas
 
 .. _SWORDv2 specification: http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html
 
+.. _sword-auth:
+
+Authentication for SWORD
+------------------------
+
+The :doc:`/api/auth` section describes how to pass API tokens for the "native" API (as a header or query parameter) but SWORD uses a different mechanism known as HTTP Basic Authentication (`RFC 7617`_).
+
+HTTP Basic Authentication commonly makes use of both a username and a password but the SWORD API uses only a username that is populated with the user's API token. The password should be blank or empty.
+
+Clients such as ``curl`` expect both a username and a password separated by a colon. With ``curl``, the way to indicate that the password should be blank or empty is to include the colon at the end of the username (the API token) like this:
+
+``curl -u 54b143b5-d001-4254-afc0-a1c0f6a5b5a7:``
+
+All the curl examples below take this form but instead of showing an API token like above, a Bash environment variable called ``$API_TOKEN`` is shown instead like this:
+
+``curl -u $API_TOKEN:``
+
+.. _RFC 7617: https://tools.ietf.org/html/rfc7617
+
 .. _incompatible:
 
 Backward incompatible changes
@@ -30,7 +49,7 @@ Backward incompatible changes
 
 For better security than in DVN 3.x, usernames and passwords are no longer accepted. The use of an API token is required.
 
-Differences in Dataverse 4 from DVN 3.x lead to a few minor backward incompatible changes in the Dataverse implementation of SWORD, which are listed below. Old ``v1`` URLs should continue to work but the ``Service Document`` will contain a deprecation warning and responses will contain ``v1.1`` URLs. See also :ref:`known-issues`.
+Differences in Dataverse Software 4 from DVN 3.x lead to a few minor backward incompatible changes in the Dataverse Software implementation of SWORD, which are listed below. Old ``v1`` URLs should continue to work but the ``Service Document`` will contain a deprecation warning and responses will contain ``v1.1`` URLs. See also :ref:`known-issues`.
 
 - Newly required fields when creating/editing datasets for compliance with the `Joint Declaration for Data Citation principles <http://thedata.org/blog/joint-declaration-data-citation-principles-and-dataverse>`_.
 
@@ -40,16 +59,16 @@ Differences in Dataverse 4 from DVN 3.x lead to a few minor backward incompatibl
 
 - Deaccessioning is no longer supported. An alternative will be developed at https://github.com/IQSS/dataverse/issues/778
 
-- The Service Document will show a single API Terms of Use rather than root level and dataverse level Deposit Terms of Use.
+- The Service Document will show a single API Terms of Use rather than root level and Dataverse collection level Deposit Terms of Use.
 
 New features as of v1.1
 -----------------------
 
-- Dataverse 4 supports API tokens and requires them to be used for APIs instead of a username and password. In the ``curl`` examples below, you will see ``curl -u $API_TOKEN:`` showing that you should send your API token as the username and nothing as the password. For example, ``curl -u 54b143b5-d001-4254-afc0-a1c0f6a5b5a7:``.
+- The Dataverse Software supports API tokens and requires them to be used for APIs instead of a username and password. In the ``curl`` examples below, you will see ``curl -u $API_TOKEN:`` showing that you should send your API token as the username and nothing as the password. For example, ``curl -u 54b143b5-d001-4254-afc0-a1c0f6a5b5a7:``. See also :ref:`sword-auth`.
 
-- SWORD operations no longer require "admin" permission. In order to use any SWORD operation in DVN 3.x, you had to be an "admin" on a dataverse (the container for your dataset) and similar rules were applied in Dataverse 4.4 and earlier (the ``EditDataverse`` permission was required). The SWORD API has now been fully integrated with the Dataverse 4 permission model such that any action you have permission to perform in the GUI or "native" API you are able to perform via SWORD. This means that even a user with a "Contributor" role can operate on datasets via SWORD. Note that users with the "Contributor" role do not have the ``PublishDataset`` permission and will not be able publish their datasets via any mechanism, GUI or API.
+- SWORD operations no longer require "admin" permission. In order to use any SWORD operation in DVN 3.x, you had to be an "admin" on a Dataverse collection (the container for your dataset) and similar rules were applied in Dataverse Software 4.4 and earlier (the ``EditDataverse`` permission was required). The SWORD API has now been fully integrated with the Dataverse Software permission model such that any action you have permission to perform in the GUI or "native" API you are able to perform via SWORD. This means that even a user with a "Contributor" role can operate on datasets via SWORD. Note that users with the "Contributor" role do not have the ``PublishDataset`` permission and will not be able publish their datasets via any mechanism, GUI or API.
 
-- Dataverses can be published via SWORD.
+- Dataverse collections can be published via SWORD.
 
 - Datasets versions will only be increased to the next minor version (i.e. 1.1) rather than a major version (2.0) if possible. This depends on the nature of the change. Adding or removing a file, for example, requires a major version bump.
 
@@ -73,14 +92,14 @@ curl examples
 Retrieve SWORD service document
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The service document enumerates the dataverses ("collections" from a SWORD perspective) the user can deposit data into. The "collectionPolicy" element for each dataverse contains the Terms of Use. Any user with an API token can use this API endpoint. Institution-wide Shibboleth groups are not respected because membership in such a group can only be set via a browser.
+The service document enumerates the Dataverse collections (also "collections" from a SWORD perspective) the user can deposit data into. The "collectionPolicy" element for each Dataverse collections contains the Terms of Use. Any user with an API token can use this API endpoint. Institution-wide Shibboleth groups are not respected because membership in such a group can only be set via a browser.
 
 ``curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/service-document``
 
 Create a dataset with an Atom entry
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To create a dataset, you must have the "Dataset Creator" role (the ``AddDataset`` permission) on a dataverse. Practically speaking, you should first retrieve the service document to list the dataverses into which you are authorized to deposit data.
+To create a dataset, you must have the "Dataset Creator" role (the ``AddDataset`` permission) on a Dataverse collection. Practically speaking, you should first retrieve the service document to list the Dataverse collections into which you are authorized to deposit data.
 
 ``curl -u $API_TOKEN: --data-binary "@path/to/atom-entry-study.xml" -H "Content-Type: application/atom+xml" https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/$DATAVERSE_ALIAS``
 
@@ -88,10 +107,10 @@ Example Atom entry (XML)
 
 .. literalinclude:: sword-atom-entry.xml
 
-Dublin Core Terms (DC Terms) Qualified Mapping - Dataverse DB Element Crosswalk
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Dublin Core Terms (DC Terms) Qualified Mapping - Dataverse Project DB Element Crosswalk
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
-|DC (terms: namespace)        |                Dataverse DB Element          |   Required   |                                                                     Note                                                                                    |
+|DC (terms: namespace)        |       Dataverse Software DB Element          |   Required   |                                                                     Note                                                                                    |
 +=============================+==============================================+==============+=============================================================================================================================================================+
 |dcterms:title                |                    title                     |       Y      |  Title of the Dataset.                                                                                                                                      |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -115,17 +134,17 @@ Dublin Core Terms (DC Terms) Qualified Mapping - Dataverse DB Element Crosswalk
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 |dcterms:coverage             |              otherGeographicCoverage         |              |  General information on the geographic coverage of the Dataset.                                                                                             |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
-|dcterms:license              |                   license                    |              |  Set the license to CC0 (default in Dataverse for new Datasets), otherwise enter "NONE" and fill in the dcterms:rights field.                               |                
+|dcterms:license              |                   license                    |              |  Set the license to CC0 (default in a Dataverse installation for new Datasets), otherwise enter "NONE" and fill in the dcterms:rights field.                |                
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 |dcterms:rights               |                 termsofuse                   |              |  If not using CC0, enter any terms of use or restrictions for the Dataset.                                                                                  |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 |dcterms:isReferencedBy       |             publicationCitation              |              |  The publication (journal article, book, other work) that uses this dataset (include citation, permanent identifier (DOI), and permanent URL).              |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
-List datasets in a dataverse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+List datasets in a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You must have permission to add datasets in a dataverse (the dataverse should appear in the service document) to list the datasets inside. Institution-wide Shibboleth groups are not respected because membership in such a group can only be set via a browser.
+You must have permission to add datasets in a Dataverse collection (the Dataverse collection should appear in the service document) to list the datasets inside. Institution-wide Shibboleth groups are not respected because membership in such a group can only be set via a browser.
 
 ``curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/$DATAVERSE_ALIAS``
 
@@ -173,17 +192,17 @@ You must have the ``DeleteDatasetDraft`` permission (Contributor role or above s
 
 ``curl -u $API_TOKEN: -i -X DELETE https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345``
 
-Determine if a dataverse has been published
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Determine if a Dataverse Collection has been published
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This API endpoint is the same as the "list datasets in a dataverse" endpoint documented above and the same permissions apply but it is documented here separately to point out that you can look for a boolean called ``dataverseHasBeenReleased`` to know if a dataverse has been released, which is required for publishing a dataset.
+This API endpoint is the same as the "list datasets in a Dataverse collection" endpoint documented above and the same permissions apply but it is documented here separately to point out that you can look for a boolean called ``dataverseHasBeenReleased`` to know if a Dataverse collection has been released, which is required for publishing a dataset.
 
 ``curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/$DATAVERSE_ALIAS``
 
-Publish a dataverse
-~~~~~~~~~~~~~~~~~~~
+Publish a Dataverse Collection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The ``cat /dev/null`` and ``--data-binary @-`` arguments are used to send zero-length content to the API, which is required by the upstream library to process the ``In-Progress: false`` header. You must have the ``PublishDataverse`` permission (Admin role) on the dataverse to publish it.
+The ``cat /dev/null`` and ``--data-binary @-`` arguments are used to send zero-length content to the API, which is required by the upstream library to process the ``In-Progress: false`` header. You must have the ``PublishDataverse`` permission (Admin role) on the Dataverse collection to publish it.
 
 ``cat /dev/null | curl -u $API_TOKEN: -X POST -H "In-Progress: false" --data-binary @- https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/dataverse/$DATAVERSE_ALIAS``
 
@@ -203,7 +222,7 @@ Known issues
 
 - The Service Document does not honor groups within groups: https://github.com/IQSS/dataverse/issues/3056
 
-- Should see all the fields filled in for a dataset regardless of what the parent dataverse specifies: https://github.com/IQSS/dataverse/issues/756
+- Should see all the fields filled in for a dataset regardless of what the parent Dataverse collection specifies: https://github.com/IQSS/dataverse/issues/756
 
 - SWORD 2.0 Profile 6.4 "Retrieving the content" has not been implemented: https://github.com/IQSS/dataverse/issues/183
 

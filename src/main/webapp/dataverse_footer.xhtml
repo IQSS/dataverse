@@ -9,7 +9,7 @@
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:of="http://omnifaces.org/functions"
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
-    <div id="dataverseFooter" jsf:rendered="#{!widgetWrapper.widgetView and !dataverseHeaderFragment.isRootDataverseThemeDisabled(dataverse) and !empty dataverse.dataverseTheme.logoFooter}">
+    <div id="dataverseFooter" jsf:rendered="#{!widgetView and !dataverseHeaderFragment.isRootDataverseThemeDisabled(dataverse) and !empty dataverse.dataverseTheme.logoFooter}">
         <div class="container">
             <div class="row">
                 <div class="dataverseFooterLogo col-xs-12" style="text-align:#{!empty dataverse.dataverseTheme.logoFooterAlignment ? dataverse.dataverseTheme.logoFooterAlignment : 'center'};background:##{!empty dataverse.dataverseTheme.logoFooterBackgroundColor ? dataverse.dataverseTheme.logoFooterBackgroundColor : 'FFFFFF'};">
@@ -50,5 +50,5 @@
             </div>
         </div>
     </div>
-    <o:resourceInclude path="/CustomizationFilesServlet?customFileType=footer" rendered="#{!widgetWrapper.widgetView}"/>
+    <o:resourceInclude path="/CustomizationFilesServlet?customFileType=footer" rendered="#{!widgetView}"/>
 </ui:composition>

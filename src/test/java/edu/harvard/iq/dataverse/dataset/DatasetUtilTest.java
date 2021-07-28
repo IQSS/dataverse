@@ -23,7 +23,7 @@ public class DatasetUtilTest {
      */
     @Test
     public void testGetThumbnailCandidates() {
-        assertEquals(new ArrayList<>(), DatasetUtil.getThumbnailCandidates(null, false));
+        assertEquals(new ArrayList<>(), DatasetUtil.getThumbnailCandidates(null, false, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE));
 
         Dataset dataset = MocksFactory.makeDataset();
         DataFile dataFile = MocksFactory.makeDataFile();
@@ -37,21 +37,21 @@ public class DatasetUtilTest {
         List<FileMetadata> fmds = new ArrayList<>();
         fmds.add(MocksFactory.addFileMetadata(dataFile));
         version.setFileMetadatas(fmds);
-        assertEquals(new ArrayList<>(), DatasetUtil.getThumbnailCandidates(dataset, false));
+        assertEquals(new ArrayList<>(), DatasetUtil.getThumbnailCandidates(dataset, false, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE));
     }
 
     @Test
     public void testGetThumbnailNullDataset() {
-        assertNull(DatasetUtil.getThumbnail(null));
-        assertNull(DatasetUtil.getThumbnail(null, null));
+        assertNull(DatasetUtil.getThumbnail(null, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE));
+        assertNull(DatasetUtil.getThumbnail(null, null, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE));
 
         Dataset dataset = MocksFactory.makeDataset();
         System.setProperty("dataverse.files.testfile.type", "file");
         dataset.setStorageIdentifier("testfile://");
         dataset.setUseGenericThumbnail(true);
 
-        assertNull(DatasetUtil.getThumbnail(dataset));
-        assertNull(DatasetUtil.getThumbnail(dataset, new DatasetVersion()));
+        assertNull(DatasetUtil.getThumbnail(dataset, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE));
+        assertNull(DatasetUtil.getThumbnail(dataset, new DatasetVersion(), ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE));
     }
 
     @Test
@@ -62,7 +62,7 @@ public class DatasetUtilTest {
         thumbnailFile.setId(42l);
         thumbnailFile.setRestricted(true);
         dataset.setThumbnailFile(thumbnailFile);
-        DatasetThumbnail result = DatasetUtil.getThumbnail(dataset);
+        DatasetThumbnail result = DatasetUtil.getThumbnail(dataset, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
         assertNull(result);
     }
     /**
@@ -88,7 +88,7 @@ public class DatasetUtilTest {
      */
     @Test
     public void testPersistDatasetLogoToStorageAndCreateThumbnail() {
-        assertNull(DatasetUtil.persistDatasetLogoToStorageAndCreateThumbnail(null, null));
+        assertNull(DatasetUtil.persistDatasetLogoToStorageAndCreateThumbnails(null, null));
         //Todo: a test for this that test main logic
     }
 
@@ -97,7 +97,7 @@ public class DatasetUtilTest {
      */
     @Test
     public void testGetThumbnailAsInputStream() {
-        assertNull(DatasetUtil.getThumbnailAsInputStream(null));
+        assertNull(DatasetUtil.getThumbnailAsInputStream(null, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE));
     }
 
     /**
@@ -106,7 +106,7 @@ public class DatasetUtilTest {
     @Test
     public void testIsDatasetLogoPresent() {
         Dataset dataset = MocksFactory.makeDataset();
-        assertEquals(false, DatasetUtil.isDatasetLogoPresent(dataset));
+        assertEquals(false, DatasetUtil.isDatasetLogoPresent(dataset, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE));
     }
 
     @Test
