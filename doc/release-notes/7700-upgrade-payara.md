@@ -1,9 +1,9 @@
-### Payara 5.2021.4 (or Higher) Required
+### Payara 5.2021.5 (or Higher) Required
 
-Some changes in this release require an upgrade to Payara 5.2021.4 or higher.
+Some changes in this release require an upgrade to Payara 5.2021.5 or higher.
 
 Instructions on how to update can be found in the
-[Payara documentation](https://docs.payara.fish/community/docs/5.2021.4/documentation/user-guides/upgrade-payara.html)
+[Payara documentation](https://docs.payara.fish/community/docs/5.2021.5/documentation/user-guides/upgrade-payara.html)
 
 It would likely be safer to upgrade Payara first, while still running Dataverse 5.6, and then proceed with the steps
 below. Upgrading from an earlier version of Payara should be a straightforward process: 
