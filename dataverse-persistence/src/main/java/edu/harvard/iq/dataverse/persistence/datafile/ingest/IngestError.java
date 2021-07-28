@@ -39,18 +39,8 @@ public enum IngestError {
 
     // -------------------- LOGIC --------------------
 
-    public String getErrorMessage() {
-        return BundleUtil.getStringFromBundle(ERROR_KEY_PREFIX + toString());
-    }
-
     public String getErrorMessage(List<String> arguments) {
-        return arguments.isEmpty() ? getDefaultErrorMessage() : BundleUtil.getStringFromBundle(ERROR_KEY_PREFIX + toString(), arguments.toArray());
-    }
-
-    // -------------------- PRIVATE --------------------
-
-    private static String getDefaultErrorMessage() {
-        return BundleUtil.getStringFromBundle(ERROR_KEY_PREFIX + UNKNOWN_ERROR.toString());
+        return BundleUtil.getStringFromBundle(ERROR_KEY_PREFIX + toString(), arguments.toArray());
     }
 
 }
