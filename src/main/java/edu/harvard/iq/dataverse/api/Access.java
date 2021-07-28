@@ -748,13 +748,8 @@ public class Access extends AbstractApiBean {
     }
 
     private Response downloadDatafiles(String rawFileIds, boolean donotwriteGBResponse, String apiTokenParam, UriInfo uriInfo, HttpHeaders headers, HttpServletResponse response) throws WebApplicationException /* throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
-        long setLimit = systemConfig.getZipDownloadLimit();
-        if (!(setLimit > 0L)) {
-            setLimit = DataFileZipper.DEFAULT_ZIPFILE_LIMIT;
-        }
-        
-        final long zipDownloadSizeLimit = setLimit; //to use via anon inner class
-        
+        final long zipDownloadSizeLimit = systemConfig.getZipDownloadLimit();
+                
         logger.fine("setting zip download size limit to " + zipDownloadSizeLimit + " bytes.");
         
         if (rawFileIds == null || rawFileIds.equals("")) {
