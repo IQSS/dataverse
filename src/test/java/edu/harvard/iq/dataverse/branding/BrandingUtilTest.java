@@ -24,11 +24,6 @@ import org.mockito.Mockito;
 
 public class BrandingUtilTest {
     
-    /**
-     * TODO: these fields might be necessary to expose if someone wants to
-     *       influence the mocking in tests outside this class. Left for
-     *       later exercise if ever necessary.
-     */
     static DataverseServiceBean dataverseSvc;
     static SettingsServiceBean settingsSvc;
     static final String DEFAULT_NAME = "LibraScholar";
@@ -48,6 +43,22 @@ public class BrandingUtilTest {
         // initial values (needed here for other tests where this method is reused!)
         Mockito.when(settingsSvc.getValueForKey(SettingsServiceBean.Key.InstallationName)).thenReturn(DEFAULT_NAME);
         Mockito.when(dataverseSvc.getRootDataverseName()).thenReturn(DEFAULT_NAME);
+    }
+    
+    /**
+     * Override default mocked value
+     * @param installationName
+     */
+    public static void setInstallationName(String installationName) {
+        Mockito.when(settingsSvc.getValueForKey(SettingsServiceBean.Key.InstallationName)).thenReturn(installationName);
+    }
+    
+    /**
+     * Override default mocked name
+     * @param rootDataverseName
+     */
+    public static void setRootDataverseName(String rootDataverseName) {
+        Mockito.when(dataverseSvc.getRootDataverseName()).thenReturn(rootDataverseName);
     }
     
     /**
