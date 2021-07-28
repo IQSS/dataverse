@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.persistence.datafile.license;
 
 import edu.harvard.iq.dataverse.persistence.PersistenceArquillianDeployment;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import javax.inject.Inject;
@@ -78,5 +79,17 @@ public class LicenseDAOIT extends PersistenceArquillianDeployment {
                 "MIT License",
                 "Open Data Commons Open Database License 1.0"
         ));
+    }
+
+    @Test
+    public void findLicenseByName() {
+        //given
+        String licenseName = "CC0 Creative Commons Zero 1.0 Waiver";
+
+        //when
+        final License licenseFound = licenseDao.findLicenseByName(licenseName);
+
+        //then
+        Assertions.assertThat(licenseFound).extracting(License::getName).isEqualTo(licenseName);
     }
 }

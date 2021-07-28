@@ -783,8 +783,8 @@ public class JsonPrinter {
     }
 
     private String getLicenseInfo(DatasetVersion dsv) {
-        if (dsv.getTermsOfUseAndAccess().getLicense() != null && dsv.getTermsOfUseAndAccess().getLicense().equals(
-                TermsOfUseAndAccess.License.CC0)) {
+        if (dsv.getTermsOfUseAndAccess().getLicense() != null
+                && dsv.getTermsOfUseAndAccess().getLicense().equals(TermsOfUseAndAccess.License.CC0)) {
             return "CC0 Waiver";
         }
         return dsv.getTermsOfUseAndAccess().getTermsOfUse();

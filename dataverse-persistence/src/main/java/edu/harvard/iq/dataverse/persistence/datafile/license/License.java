@@ -29,6 +29,7 @@ import java.util.Locale;
 public class License implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    public static final long CC0_LICENSE_ID = 1;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

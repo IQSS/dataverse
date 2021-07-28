@@ -1,0 +1,247 @@
+{
+  "id": 34,
+  "identifier": "FK2/C09YQ7",
+  "persistentUrl": "https://doi.org/10.1815022/FK2/C09YQ7",
+  "protocol": "doi",
+  "authority": "10.1815022",
+  "publisher": "Root",
+  "publicationDate": "2021-07-20",
+  "storageIdentifier": "s3://10.1815022/FK2/C09YQ7",
+  "hasActiveGuestbook": false,
+  "embargoActive": false,
+  "datasetVersion":
+  {
+    "id": 33,
+    "storageIdentifier": "s3://10.1815022/FK2/C09YQ7",
+    "versionNumber": 1,
+    "versionMinorNumber": 0,
+    "versionState": "RELEASED",
+    "productionDate": "Production Date",
+    "lastUpdateTime": "2021-07-20T14:07:02Z",
+    "releaseTime": "2021-07-20T14:07:02Z",
+    "createTime": "2021-07-20T13:35:17Z",
+    "fileAccessRequest": false,
+    "metadataBlocks":
+    {
+      "citation":
+      {
+        "displayName": "Citation Metadata",
+        "fields":
+        [
+          {
+            "typeName": "title",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "geo"
+          },
+          {
+            "typeName": "author",
+            "multiple": true,
+            "typeClass": "compound",
+            "value":
+            [
+              {
+                "authorName":
+                {
+                  "typeName": "authorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Admin, Dataverse"
+                },
+                "authorAffiliation":
+                {
+                  "typeName": "authorAffiliation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Dataverse.org"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "datasetContact",
+            "multiple": true,
+            "typeClass": "compound",
+            "value":
+            [
+              {
+                "datasetContactName":
+                {
+                  "typeName": "datasetContactName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Admin, Dataverse"
+                },
+                "datasetContactAffiliation":
+                {
+                  "typeName": "datasetContactAffiliation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Dataverse.org"
+                },
+                "datasetContactEmail":
+                {
+                  "typeName": "datasetContactEmail",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "dataverse@mailinator.com"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "dsDescription",
+            "multiple": true,
+            "typeClass": "compound",
+            "value":
+            [
+              {
+                "dsDescriptionValue":
+                {
+                  "typeName": "dsDescriptionValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "<p>tete</p>"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "subject",
+            "multiple": true,
+            "typeClass": "controlledVocabulary",
+            "value":
+            [
+              "Agricultural Sciences"
+            ]
+          },
+          {
+            "typeName": "depositor",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "Admin, Dataverse"
+          },
+          {
+            "typeName": "dateOfDeposit",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "2021-07-20"
+          }
+        ]
+      }
+    },
+    "files":
+    [
+      {
+        "label": "mxrdr-resized.png",
+        "restricted": false,
+        "termsOfUseType": "ALL_RIGHTS_RESERVED",
+        "licenseName": "",
+        "licenseUrl": "",
+        "accessConditions": "",
+        "version": 1,
+        "datasetVersionId": 33,
+        "dataFile":
+        {
+          "id": 37,
+          "persistentId": "",
+          "pidURL": "",
+          "filename": "mxrdr-resized.png",
+          "contentType": "image/png",
+          "filesize": 3852,
+          "storageIdentifier": "s3://dataverse:17ac43d912b-1418a087ec43",
+          "rootDataFileId": -1,
+          "md5": "4c56d243b9c7a86ff9c178ed9ec9021d",
+          "checksum":
+          {
+            "type": "MD5",
+            "value": "4c56d243b9c7a86ff9c178ed9ec9021d"
+          }
+        }
+      },
+      {
+        "label": "repod-resized.png",
+        "restricted": false,
+        "termsOfUseType": "LICENSE_BASED",
+        "licenseName": "CC0 Creative Commons Zero 1.0 Waiver",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+        "accessConditions": "",
+        "version": 1,
+        "datasetVersionId": 33,
+        "dataFile":
+        {
+          "id": 35,
+          "persistentId": "",
+          "pidURL": "",
+          "filename": "repod-resized.png",
+          "contentType": "image/png",
+          "filesize": 3717,
+          "storageIdentifier": "s3://dataverse:17ac420be9b-9a9c4bc5e731",
+          "rootDataFileId": -1,
+          "md5": "7771b719e506655ff0e055a063c4a327",
+          "checksum":
+          {
+            "type": "MD5",
+            "value": "7771b719e506655ff0e055a063c4a327"
+          }
+        }
+      },
+      {
+        "label": "rorData.json",
+        "restricted": true,
+        "termsOfUseType": "RESTRICTED",
+        "licenseName": "",
+        "licenseUrl": "",
+        "accessConditions": "CUSTOM",
+        "accessConditionsCustomText": "terms desc",
+        "version": 1,
+        "datasetVersionId": 33,
+        "dataFile":
+        {
+          "id": 38,
+          "persistentId": "",
+          "pidURL": "",
+          "filename": "rorData.json",
+          "contentType": "application/json",
+          "filesize": 2679,
+          "storageIdentifier": "s3://dataverse:17ac43d913d-54a0515b76bb",
+          "rootDataFileId": -1,
+          "md5": "ec4358e757b5234683a329d9252da18c",
+          "checksum":
+          {
+            "type": "MD5",
+            "value": "ec4358e757b5234683a329d9252da18c"
+          }
+        }
+      },
+      {
+        "label": "sample.pdf",
+        "restricted": true,
+        "termsOfUseType": "RESTRICTED",
+        "licenseName": "",
+        "licenseUrl": "",
+        "accessConditions": "ACADEMIC_PURPOSE",
+        "version": 1,
+        "datasetVersionId": 33,
+        "dataFile":
+        {
+          "id": 36,
+          "persistentId": "",
+          "pidURL": "",
+          "filename": "sample.pdf",
+          "contentType": "application/pdf",
+          "filesize": 3028,
+          "storageIdentifier": "s3://dataverse:17ac43d914e-e8dd494aa832",
+          "rootDataFileId": -1,
+          "md5": "4b41a3475132bd861b30a878e30aa56a",
+          "checksum":
+          {
+            "type": "MD5",
+            "value": "4b41a3475132bd861b30a878e30aa56a"
+          }
+        }
+      }
+    ],
+    "citation": "Admin, Dataverse, 2021, \"geo\", https://doi.org/10.1815022/FK2/C09YQ7, Root, V1"
+  }
+}

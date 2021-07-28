@@ -20,8 +20,14 @@ public class LicenseDAO {
 
     public License findFirstActive() {
         return em.createQuery("SELECT l FROM License l WHERE l.active = true ORDER BY l.position ASC", License.class)
-                .setMaxResults(1)
-                .getSingleResult();
+                 .setMaxResults(1)
+                 .getSingleResult();
+    }
+
+    public License findLicenseByName(String licenseName) {
+        return em.createQuery("SELECT l FROM License l WHERE l.name=:licenseName", License.class)
+                 .setParameter("licenseName", licenseName)
+                 .getSingleResult();
     }
 
     public List<License> findAll() {
@@ -29,7 +35,8 @@ public class LicenseDAO {
     }
 
     public List<License> findActive() {
-        return em.createQuery("SELECT l FROM License l WHERE l.active = true ORDER BY l.position ASC", License.class).getResultList();
+        return em.createQuery("SELECT l FROM License l WHERE l.active = true ORDER BY l.position ASC", License.class)
+                 .getResultList();
     }
 
     public License saveChanges(License license) {

@@ -102,6 +102,9 @@ public class ImportServiceBean {
     @EJB
     IndexServiceBean indexService;
 
+    @Inject
+    private HarvestedJsonParser harvestedJsonParser;
+
     /**
      * This is just a convenience method, for testing migration.  It creates
      * a dummy dataverse with the directory name as dataverse name & alias.
@@ -260,13 +263,8 @@ public class ImportServiceBean {
             }
         }
 
-        JsonReader jsonReader = Json.createReader(new StringReader(json));
-        JsonObject obj = jsonReader.readObject();
-        //and call parse Json to read it into a dataset   
         try {
-            JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService);
-            parser.setLenient(true);
-            Dataset ds = parser.parseDataset(obj);
+            Dataset ds = harvestedJsonParser.parseDataset(json);
 
             // For ImportType.NEW, if the metadata contains a global identifier, and it's not a protocol
             // we support, it should be rejected.

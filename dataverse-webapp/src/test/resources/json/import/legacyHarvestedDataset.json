@@ -1,0 +1,812 @@
+{
+  "id": 1334,
+  "identifier": "FK2/PDRSIQ",
+  "persistentUrl": "https://doi.org/10.70122/FK2/PDRSIQ",
+  "protocol": "doi",
+  "authority": "10.70122",
+  "publisher": "Demo Dataverse",
+  "publicationDate": "2021-04-08",
+  "storageIdentifier": "file://10.70122/FK2/PDRSIQ",
+  "datasetVersion":
+  {
+    "id": 153,
+    "datasetId": 1234,
+    "datasetPersistentId": "doi:10.70122/FK2/PDRSIQ",
+    "storageIdentifier": "file://10.70122/FK2/PDRSIQ",
+    "versionNumber": 8,
+    "versionMinorNumber": 0,
+    "versionState": "RELEASED",
+    "productionDate": "2021-07-19",
+    "lastUpdateTime": "2021-07-19T13:43:00Z",
+    "releaseTime": "2021-07-19T13:43:00Z",
+    "createTime": "2021-07-19T13:27:19Z",
+    "license": "CC0",
+    "termsOfUse": "CC0 Waiver",
+    "fileAccessRequest": false,
+    "metadataBlocks":
+    {
+      "citation":
+      {
+        "displayName": "Citation Metadata",
+        "fields":
+        [
+          {
+            "typeName": "title",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "National and Subnational Estimates of the Covid 19 Reproduction Number (R) for Canada Based on Test Results"
+          },
+          {
+            "typeName": "alternativeURL",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "http://epiforecasts.io"
+          },
+          {
+            "typeName": "author",
+            "multiple": true,
+            "typeClass": "compound",
+            "value":
+            [
+              {
+                "authorName":
+                {
+                  "typeName": "authorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Ab, Sam"
+                },
+                "authorAffiliation":
+                {
+                  "typeName": "authorAffiliation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Centre for the Mathematical Modelling of Infectious Diseases, Department of Infectious Disease Epidemiology, London School of Hygiene & Tropical Medicine, London, UK"
+                },
+                "authorIdentifierScheme":
+                {
+                  "typeName": "authorIdentifierScheme",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "ORCID"
+                },
+                "authorIdentifier":
+                {
+                  "typeName": "authorIdentifier",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "0000-0001-8057-8037"
+                }
+              },
+              {
+                "authorName":
+                {
+                  "typeName": "authorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Bento, Cheron"
+                },
+                "authorAffiliation":
+                {
+                  "typeName": "authorAffiliation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Met Office, Exeter, UK"
+                }
+              },
+              {
+                "authorName":
+                {
+                  "typeName": "authorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Banmen, Joe"
+                },
+                "authorAffiliation":
+                {
+                  "typeName": "authorAffiliation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Met Office, Exo, UK"
+                }
+              },
+              {
+                "authorName":
+                {
+                  "typeName": "authorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Test, Jamie"
+                },
+                "authorAffiliation":
+                {
+                  "typeName": "authorAffiliation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Met Office, Exo, UK"
+                }
+              },
+              {
+                "authorName":
+                {
+                  "typeName": "authorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Sheraton, Katharine"
+                },
+                "authorAffiliation":
+                {
+                  "typeName": "authorAffiliation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Centre for the Mathematical Modelling of Infectious Diseases, Department of Infectious Disease Epidemiology, London School of Hygiene & Tropical Medicine, London, UK"
+                }
+              },
+              {
+                "authorName":
+                {
+                  "typeName": "authorName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Seb, Sebastian"
+                },
+                "authorAffiliation":
+                {
+                  "typeName": "authorAffiliation",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Centre for the Mathematical Modelling of Infectious Diseases, Department of Infectious Disease Epidemiology, London School of Hygiene & Tropical Medicine, London, UK"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "datasetContact",
+            "multiple": true,
+            "typeClass": "compound",
+            "value":
+            [
+              {
+                "datasetContactName":
+                {
+                  "typeName": "datasetContactName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Abi, Sam"
+                },
+                "datasetContactEmail":
+                {
+                  "typeName": "datasetContactEmail",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "tester@gmail.com"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "dsDescription",
+            "multiple": true,
+            "typeClass": "compound",
+            "value":
+            [
+              {
+                "dsDescriptionValue":
+                {
+                  "typeName": "dsDescriptionValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Identifying changes in the reproduction number, rate of spread, and doubling time during the course of the COVID-19 outbreak whilst accounting for potential biases due to delays in case reporting both nationally and subnationally in Canada. These results are impacted by changes in testing effort, increases and decreases in testing effort will increase and decrease reproduction number estimates respectively."
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "subject",
+            "multiple": true,
+            "typeClass": "controlledVocabulary",
+            "value":
+            [
+              "Medicine, Health and Life Sciences"
+            ]
+          },
+          {
+            "typeName": "keyword",
+            "multiple": true,
+            "typeClass": "compound",
+            "value":
+            [
+              {
+                "keywordValue":
+                {
+                  "typeName": "keywordValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "COVID-19"
+                }
+              },
+              {
+                "keywordValue":
+                {
+                  "typeName": "keywordValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Coronavirus"
+                }
+              },
+              {
+                "keywordValue":
+                {
+                  "typeName": "keywordValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Pandemic"
+                }
+              },
+              {
+                "keywordValue":
+                {
+                  "typeName": "keywordValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Reproduction Number"
+                }
+              },
+              {
+                "keywordValue":
+                {
+                  "typeName": "keywordValue",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "canada"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "productionDate",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "2021-07-19"
+          },
+          {
+            "typeName": "software",
+            "multiple": true,
+            "typeClass": "compound",
+            "value":
+            [
+              {
+                "softwareName":
+                {
+                  "typeName": "softwareName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "covidrtestimates"
+                },
+                "softwareVersion":
+                {
+                  "typeName": "softwareVersion",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "0.2.0:NA"
+                }
+              },
+              {
+                "softwareName":
+                {
+                  "typeName": "softwareName",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "EpiNow2"
+                },
+                "softwareVersion":
+                {
+                  "typeName": "softwareVersion",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "1.3.3.8"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "geospatial":
+      {
+        "displayName": "Geospatial Metadata",
+        "fields":
+        [
+          {
+            "typeName": "geographicCoverage",
+            "multiple": true,
+            "typeClass": "compound",
+            "value":
+            [
+              {
+                "country":
+                {
+                  "typeName": "country",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "Canada"
+                }
+              },
+              {
+                "country":
+                {
+                  "typeName": "country",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "Canada"
+                },
+                "state":
+                {
+                  "typeName": "state",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Alberta"
+                }
+              },
+              {
+                "country":
+                {
+                  "typeName": "country",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "Canada"
+                },
+                "state":
+                {
+                  "typeName": "state",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "British Columbia"
+                }
+              },
+              {
+                "country":
+                {
+                  "typeName": "country",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "Canada"
+                },
+                "state":
+                {
+                  "typeName": "state",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Manitoba"
+                }
+              },
+              {
+                "country":
+                {
+                  "typeName": "country",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "Canada"
+                },
+                "state":
+                {
+                  "typeName": "state",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "New Brunswick"
+                }
+              },
+              {
+                "country":
+                {
+                  "typeName": "country",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "Canada"
+                },
+                "state":
+                {
+                  "typeName": "state",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Newfoundland and Labrador"
+                }
+              },
+              {
+                "country":
+                {
+                  "typeName": "country",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "Canada"
+                },
+                "state":
+                {
+                  "typeName": "state",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Northwest Territories"
+                }
+              },
+              {
+                "country":
+                {
+                  "typeName": "country",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "Canada"
+                },
+                "state":
+                {
+                  "typeName": "state",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Nova Scotia"
+                }
+              },
+              {
+                "country":
+                {
+                  "typeName": "country",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "Canada"
+                },
+                "state":
+                {
+                  "typeName": "state",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Nunavut"
+                }
+              },
+              {
+                "country":
+                {
+                  "typeName": "country",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "Canada"
+                },
+                "state":
+                {
+                  "typeName": "state",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Ontario"
+                }
+              },
+              {
+                "country":
+                {
+                  "typeName": "country",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "Canada"
+                },
+                "state":
+                {
+                  "typeName": "state",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Prince Edward Island"
+                }
+              },
+              {
+                "country":
+                {
+                  "typeName": "country",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "Canada"
+                },
+                "state":
+                {
+                  "typeName": "state",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Quebec"
+                }
+              },
+              {
+                "country":
+                {
+                  "typeName": "country",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "Canada"
+                },
+                "state":
+                {
+                  "typeName": "state",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Saskatchewan"
+                }
+              },
+              {
+                "country":
+                {
+                  "typeName": "country",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "Canada"
+                },
+                "state":
+                {
+                  "typeName": "state",
+                  "multiple": false,
+                  "typeClass": "primitive",
+                  "value": "Yukon"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "geographicUnit",
+            "multiple": true,
+            "typeClass": "primitive",
+            "value":
+            [
+              "state"
+            ]
+          }
+        ]
+      }
+    },
+    "files":
+    [
+      {
+        "description": "",
+        "label": "cases_by_infection.tab",
+        "restricted": false,
+        "version": 1,
+        "datasetVersionId": 196441,
+        "dataFile":
+        {
+          "id": 1826579,
+          "persistentId": "doi:10.70122/FK2/PDRSIQ/MGZ5PX",
+          "pidURL": "https://doi.org/10.70122/FK2/PDRSIQ/MGZ5PX",
+          "filename": "cases_by_infection.tab",
+          "contentType": "text/tab-separated-values",
+          "filesize": 118203,
+          "description": "",
+          "storageIdentifier": "file://178b1f55e75-2bb7f685cf74",
+          "originalFileFormat": "text/csv",
+          "originalFormatLabel": "Comma Separated Values",
+          "originalFileSize": 112715,
+          "originalFileName": "cases_by_infection.csv",
+          "UNF": "UNF:6:1rF2fcrU/nLLfvi6XqMveA==",
+          "rootDataFileId": 1826570,
+          "previousDataFileId": 1826571,
+          "md5": "26ce1554351232b9dfca39f2db336926",
+          "checksum":
+          {
+            "type": "MD5",
+            "value": "26ce1554351232b9dfca39f2db336926"
+          },
+          "creationDate": "2021-04-08"
+        }
+      },
+      {
+        "description": "",
+        "label": "cases_by_report.tab",
+        "restricted": false,
+        "version": 1,
+        "datasetVersionId": 196441,
+        "dataFile":
+        {
+          "id": 182658,
+          "persistentId": "doi:10.70122/FK2/PDRSIQ/8MJHDB",
+          "pidURL": "https://doi.org/10.70122/FK2/PDRSIQ/8MJHDB",
+          "filename": "cases_by_report.tab",
+          "contentType": "text/tab-separated-values",
+          "filesize": 102399,
+          "description": "",
+          "storageIdentifier": "file://178b1f64f8f-3c5254af23bf",
+          "originalFileFormat": "text/csv",
+          "originalFormatLabel": "Comma Separated Values",
+          "originalFileSize": 96911,
+          "originalFileName": "cases_by_report.csv",
+          "UNF": "UNF:6:3j1+bwx3g5OhjQlDrzerNg==",
+          "rootDataFileId": 1826566,
+          "previousDataFileId": 1826572,
+          "md5": "0dce1eb7ced3684e3bdccdbf58ba0b65",
+          "checksum":
+          {
+            "type": "MD5",
+            "value": "0dce1eb7ced3684e3bdccdbf58ba0b65"
+          },
+          "creationDate": "2021-04-08"
+        }
+      },
+      {
+        "description": "",
+        "label": "growth_rate.tab",
+        "restricted": false,
+        "version": 1,
+        "datasetVersionId": 196441,
+        "dataFile":
+        {
+          "id": 182681,
+          "persistentId": "doi:10.70122/FK2/PDRSIQ/BYTTSI",
+          "pidURL": "https://doi.org/10.70122/FK2/PDRSIQ/BYTTSI",
+          "filename": "growth_rate.tab",
+          "contentType": "text/tab-separated-values",
+          "filesize": 299242,
+          "description": "",
+          "storageIdentifier": "file://178b1f73ff8-d4f03547e094",
+          "originalFileFormat": "text/csv",
+          "originalFormatLabel": "Comma Separated Values",
+          "originalFileSize": 293754,
+          "originalFileName": "growth_rate.csv",
+          "UNF": "UNF:6:ZI+NWrVSYVapRyFjymL1Qw==",
+          "rootDataFileId": 1826564,
+          "previousDataFileId": 1826573,
+          "md5": "64bdd838cdfe73dd68ba2aaa782d5bbf",
+          "checksum":
+          {
+            "type": "MD5",
+            "value": "64bdd838cdfe73dd68ba2aaa782d5bbf"
+          },
+          "creationDate": "2021-04-08"
+        }
+      },
+      {
+        "description": "",
+        "label": "latest_date.rds",
+        "restricted": false,
+        "version": 1,
+        "datasetVersionId": 196441,
+        "dataFile":
+        {
+          "id": 126582,
+          "persistentId": "doi:10.70122/FK2/PDRSIQ/N2TVET",
+          "pidURL": "https://doi.org/10.70122/FK2/PDRSIQ/N2TVET",
+          "filename": "latest_date.rds",
+          "contentType": "application/octet-stream",
+          "filesize": 77,
+          "description": "",
+          "storageIdentifier": "file://178b1f82f19-21f27e2b596d",
+          "rootDataFileId": 1826567,
+          "previousDataFileId": 1826578,
+          "md5": "8bac32ff08a024ad7bda272746ecd4cd",
+          "checksum":
+          {
+            "type": "MD5",
+            "value": "8bac32ff08a024ad7bda272746ecd4cd"
+          },
+          "creationDate": "2021-04-08"
+        }
+      },
+      {
+        "description": "",
+        "label": "reported_cases.tab",
+        "restricted": false,
+        "version": 1,
+        "datasetVersionId": 196441,
+        "dataFile":
+        {
+          "id": 182653,
+          "persistentId": "doi:10.70122/FK2/PDRSIQ/EES2QJ",
+          "pidURL": "https://doi.org/10.70122/FK2/PDRSIQ/EES2QJ",
+          "filename": "reported_cases.tab",
+          "contentType": "text/tab-separated-values",
+          "filesize": 47193,
+          "description": "",
+          "storageIdentifier": "file://178b1f91e7c-2a7caeb88a74",
+          "originalFileFormat": "text/csv",
+          "originalFormatLabel": "Comma Separated Values",
+          "originalFileSize": 44049,
+          "originalFileName": "reported_cases.csv",
+          "UNF": "UNF:6:BGkeX432WFD8ol0UhjbjfA==",
+          "rootDataFileId": 1826569,
+          "previousDataFileId": 1826574,
+          "md5": "330d736f71545f2bdb225efe00b836cc",
+          "checksum":
+          {
+            "type": "MD5",
+            "value": "330d736f71545f2bdb225efe00b836cc"
+          },
+          "creationDate": "2021-04-08"
+        }
+      },
+      {
+        "description": "",
+        "label": "rt.tab",
+        "restricted": false,
+        "version": 1,
+        "datasetVersionId": 196441,
+        "dataFile":
+        {
+          "id": 186584,
+          "persistentId": "doi:10.70122/FK2/PDRSIQ/68QKV1",
+          "pidURL": "https://doi.org/10.70122/FK2/PDRSIQ/68QKV1",
+          "filename": "rt.tab",
+          "contentType": "text/tab-separated-values",
+          "filesize": 275995,
+          "description": "",
+          "storageIdentifier": "file://178b1fa0f32-aa200dd62fc8",
+          "originalFileFormat": "text/csv",
+          "originalFormatLabel": "Comma Separated Values",
+          "originalFileSize": 270507,
+          "originalFileName": "rt.csv",
+          "UNF": "UNF:6:co1g/aZDeI4MU7nbakPjNg==",
+          "rootDataFileId": 1826568,
+          "previousDataFileId": 1826575,
+          "md5": "3238c4d6096b08a4030fd7199e7bb43b",
+          "checksum":
+          {
+            "type": "MD5",
+            "value": "3238c4d6096b08a4030fd7199e7bb43b"
+          },
+          "creationDate": "2021-04-08"
+        }
+      },
+      {
+        "description": "",
+        "label": "summary_data.tab",
+        "restricted": false,
+        "version": 1,
+        "datasetVersionId": 196441,
+        "dataFile":
+        {
+          "id": 182685,
+          "persistentId": "doi:10.70122/FK2/PDRSIQ/3LTAOB",
+          "pidURL": "https://doi.org/10.70122/FK2/PDRSIQ/3LTAOB",
+          "filename": "summary_data.tab",
+          "contentType": "text/tab-separated-values",
+          "filesize": 2768,
+          "description": "",
+          "storageIdentifier": "file://178b1fafe0d-a122afaef0cc",
+          "originalFileFormat": "text/csv",
+          "originalFormatLabel": "Comma Separated Values",
+          "originalFileSize": 2728,
+          "originalFileName": "summary_data.csv",
+          "UNF": "UNF:6:nVW2EXByfDw4T68/sYIPNA==",
+          "rootDataFileId": 1826563,
+          "previousDataFileId": 1826576,
+          "md5": "274e31069833c0d40d5dd705397e6ae3",
+          "checksum":
+          {
+            "type": "MD5",
+            "value": "274e31069833c0d40d5dd705397e6ae3"
+          },
+          "creationDate": "2021-04-08"
+        }
+      },
+      {
+        "description": "",
+        "label": "summary_table.tab",
+        "restricted": false,
+        "version": 1,
+        "datasetVersionId": 196441,
+        "dataFile":
+        {
+          "id": 182586,
+          "persistentId": "doi:10.70122/FK2/PDRSIQ/NGFDK8",
+          "pidURL": "https://doi.org/10.70122/FK2/PDRSIQ/NGFDK8",
+          "filename": "summary_table.tab",
+          "contentType": "text/tab-separated-values",
+          "filesize": 1250,
+          "description": "",
+          "storageIdentifier": "file://178b1fbecb3-fda65d3c7e66",
+          "originalFileFormat": "text/csv",
+          "originalFormatLabel": "Comma Separated Values",
+          "originalFileSize": 1265,
+          "originalFileName": "summary_table.csv",
+          "UNF": "UNF:6:2UlLYFMfggRSrYdTmqf17A==",
+          "rootDataFileId": 1826565,
+          "previousDataFileId": 1826577,
+          "md5": "3aedcfb0e47192f031fef07a3a43cc7e",
+          "checksum":
+          {
+            "type": "MD5",
+            "value": "3aedcfb0e47192f031fef07a3a43cc7e"
+          },
+          "creationDate": "2021-04-08"
+        }
+      }
+    ],
+    "citation": "Abi, Sam; Ben, Christopher; Hick, Joe; Ali, Jamie; Sheraton, Katharine; Fin, Sebastian, 2021, \"National and Subnational Estimates of the Covid 19 Reproduction Number (R) for Canada Based on Test Results\", https://doi.org/10.70122/FK2/PDRSIQ, Demo Dataverse, V8"
+  }
+}
