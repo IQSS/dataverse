@@ -22,7 +22,7 @@ This dashboard tool allows you to define sets of local datasets to make availabl
 Metadata Export
 ---------------
 
-This part of the Dashboard is simply a reminder message that metadata export happens through the Dataverse Software API. See the :doc:`metadataexport` section and the :doc:`/api/native-api` section of the API Guide for more details.
+This part of the Dashboard is simply a reminder message that metadata export happens through the Dataverse Software API. See the :doc:`/admin/metadataexport` section and the :doc:`/api/native-api` section of the API Guide for more details.
 
 Users
 -----
