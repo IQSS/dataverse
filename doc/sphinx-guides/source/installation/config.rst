@@ -675,6 +675,17 @@ The presence of the :ref:`:Languages` database setting adds a dropdown in the he
 
 ``curl http://localhost:8080/api/admin/settings/:Languages -X PUT -d '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]'``
 
+When a user selects one of the available choices, the Dataverse user interfaces will be translated into that language (assuming you also configure the "lang" directory and populate it with translations as described below).
+
+Allowing the Language Used for Dataset Metadata to be Specified
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Since users only enter dataset metadata in one language, Dataverse also offers a separate setting that indicates the language used to enter that metadata. 
+The presence of the :ref:`:MetadataLanguages` database setting identifies the available options (which can be different from those in the :Languages setting above). 
+Dataverse collection admins can select from these options to indicate which language should be used for new Datasets created with that collection. When creating or editing a dataset, users will be asked to enter the metadata in that langauge. :
+
+``curl http://localhost:8080/api/admin/settings/:MetadataLanguages -X PUT -d '{"English":"en","Français":"fr"}'``
+
 Configuring the "lang" Directory
 ++++++++++++++++++++++++++++++++
 
@@ -1595,7 +1606,7 @@ By default this setting is absent and the Dataverse Software assumes it to be fa
 .. _:HandleAuthHandle:
 
 :HandleAuthHandle
-+++++++++++++++++++++++++
++++++++++++++++++
 
 Specific for Handle PIDs. Set this setting to <prefix>/<suffix> to be used on a global handle service when the public key is NOT stored in the default handle.
 By default this setting is absent and the Dataverse Software assumes it to be not set. If the public key for instance is stored in handle: 21.T12996/USER01.
