@@ -8,14 +8,26 @@ import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool.ReservedWord;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.IOException;
 import java.io.StringReader;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.ws.rs.HttpMethod;
 
 /**
  * Handles an operation on a specific file. Requires a file id in order to be
@@ -33,6 +45,8 @@ public class ExternalToolHandler {
 
     private ApiToken apiToken;
     private String localeCode;
+    private String requestMethod;
+    private String toolContext;
 
     /**
      * File level tool
@@ -44,6 +58,7 @@ public class ExternalToolHandler {
      */
     public ExternalToolHandler(ExternalTool externalTool, DataFile dataFile, ApiToken apiToken, FileMetadata fileMetadata, String localeCode) {
         this.externalTool = externalTool;
+        toolContext = externalTool.getToolUrl();
         if (dataFile == null) {
             String error = "A DataFile is required.";
             logger.warning("Error in ExternalToolHandler constructor: " + error);
@@ -106,6 +121,16 @@ public class ExternalToolHandler {
     
     // TODO: rename to handleRequest() to someday handle sending headers as well as query parameters.
     public String getQueryParametersForUrl(boolean preview) {
+        requestMethod = requestMethod();
+        if (requestMethod().equals(HttpMethod.POST)){
+            try {
+                return getFormData();
+            } catch (IOException ex) {
+                Logger.getLogger(ExternalToolHandler.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ExternalToolHandler.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
         String toolParameters = externalTool.getToolParameters();
         JsonReader jsonReader = Json.createReader(new StringReader(toolParameters));
         JsonObject obj = jsonReader.readObject();
@@ -183,9 +208,135 @@ public class ExternalToolHandler {
         }
         return null;
     }
+    
+    private String getFormDataValue(String key, String value) {
+        ReservedWord reservedWord = ReservedWord.fromString(value);
+        switch (reservedWord) {
+            case FILE_ID:
+                // getDataFile is never null for file tools because of the constructor
+                return ""+getDataFile().getId();
+            case FILE_PID:
+                GlobalId filePid = getDataFile().getGlobalId();
+                if (filePid != null) {
+                    return ""+getDataFile().getGlobalId();
+                }
+                break;
+            case SITE_URL:
+                return ""+SystemConfig.getDataverseSiteUrlStatic();
+            case API_TOKEN:
+                String apiTokenString = null;
+                ApiToken theApiToken = getApiToken();
+                if (theApiToken != null) {
+                    apiTokenString = theApiToken.getTokenString();
+                    return "" + apiTokenString;
+                }
+                break;
+            case DATASET_ID:
+                return "" + dataset.getId();
+            case DATASET_PID:
+                return "" + dataset.getGlobalId().asString();
+            case DATASET_VERSION:
+                String versionString = null;
+                if(fileMetadata!=null) { //true for file case
+                    versionString = fileMetadata.getDatasetVersion().getFriendlyVersionNumber();
+                } else { //Dataset case - return the latest visible version (unless/until the dataset case allows specifying a version)
+                    if (getApiToken() != null) {
+                        versionString = dataset.getLatestVersion().getFriendlyVersionNumber();
+                    } else {
+                        versionString = dataset.getLatestVersionForCopy().getFriendlyVersionNumber();
+                    }
+                }
+                if (("DRAFT").equals(versionString)) {
+                    versionString = ":draft"; // send the token needed in api calls that can be substituted for a numeric
+                                              // version.
+                }
+                return "" + versionString;
+            case FILE_METADATA_ID:
+                if(fileMetadata!=null) { //true for file case
+                    return "" + fileMetadata.getId();
+                }
+            case LOCALE_CODE:
+                return "" + getLocaleCode();
+            default:
+                break;
+        }
+        return null;
+    }
 
+    
+    private String getFormData() throws IOException, InterruptedException{
+        String url = "";
+        String toolParameters = externalTool.getToolParameters();
+        JsonReader jsonReader = Json.createReader(new StringReader(toolParameters));
+        JsonObject obj = jsonReader.readObject();
+        JsonArray queryParams = obj.getJsonArray("queryParameters");
+        if (queryParams == null || queryParams.isEmpty()) {
+            return "";
+        }
+        Map<Object, Object> data = new HashMap<>();
+        queryParams.getValuesAs(JsonObject.class).forEach((queryParam) -> {
+            queryParam.keySet().forEach((key) -> {
+                String value = queryParam.getString(key);
+                String param = getFormDataValue(key, value);
+                if (param != null && !param.isEmpty()) {
+                    data.put(key,param);
+                }
+            });
+        });
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder().POST(ofFormData(data)).uri(URI.create(externalTool.getToolUrl()))
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        boolean redirect=false;
+        int status = response.statusCode();
+        if (status != HttpURLConnection.HTTP_OK) {
+            if (status == HttpURLConnection.HTTP_MOVED_TEMP
+                    || status == HttpURLConnection.HTTP_MOVED_PERM
+                    || status == HttpURLConnection.HTTP_SEE_OTHER) {
+                redirect = true;
+            }
+        }
+        if (redirect=true){
+            String newUrl = response.headers().firstValue("location").get();
+            System.out.println(newUrl);
+            toolContext = "http://" + response.uri().getAuthority();
+            
+            url = newUrl;
+        }
+
+        System.out.println(response.statusCode());
+        System.out.println(response.body());
+        
+        return url;
+
+    }
+            
+    public static HttpRequest.BodyPublisher ofFormData(Map<Object, Object> data) {
+        var builder = new StringBuilder();
+        data.entrySet().stream().map((var entry) -> {
+            if (builder.length() > 0) {
+                builder.append("&");
+            }
+            StringBuilder append = builder.append(URLEncoder.encode(entry.getKey().toString(), StandardCharsets.UTF_8));
+            return entry;
+        }).forEachOrdered(entry -> {
+            builder.append("=");
+            builder.append(URLEncoder.encode(entry.getValue().toString(), StandardCharsets.UTF_8));
+        });
+        return HttpRequest.BodyPublishers.ofString(builder.toString());
+    }
+
+    // placeholder for a way to use the POST method instead of the GET method
+    public String requestMethod(){
+        if (externalTool.getDisplayName().startsWith("DP"))
+            return HttpMethod.POST;
+        return HttpMethod.GET;
+    }
     public String getToolUrlWithQueryParams() {
-        return externalTool.getToolUrl() + getQueryParametersForUrl();
+        String params = getQueryParametersForUrl();
+        return toolContext + params;
     }
     
     public String getToolUrlForPreviewMode() {
