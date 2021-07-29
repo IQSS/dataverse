@@ -1709,11 +1709,11 @@ public class DatasetVersion implements Serializable {
         JsonArrayBuilder authors = Json.createArrayBuilder();
         for (DatasetAuthor datasetAuthor : this.getDatasetAuthors()) {
             JsonObjectBuilder author = Json.createObjectBuilder();
-            String name = datasetAuthor.getName().getValue();
+            String name = datasetAuthor.getName().getDisplayValue();
             DatasetField authorAffiliation = datasetAuthor.getAffiliation();
             String affiliation = null;
             if (authorAffiliation != null) {
-                affiliation = datasetAuthor.getAffiliation().getValue();
+                affiliation = datasetAuthor.getAffiliation().getDisplayValue();
             }
             // We are aware of "givenName" and "familyName" but instead of a person it might be an organization such as "Gallup Organization".
             //author.add("@type", "Person");
@@ -1951,6 +1951,10 @@ public class DatasetVersion implements Serializable {
             job.add("distribution", fileArray);
         }
         jsonLd = job.build().toString();
+        
+        //Most fields above should be stripped/sanitized but, since this is output in the dataset page as header metadata, do a final sanitize step to make sure
+        jsonLd = MarkupChecker.stripAllTags(jsonLd);
+        
         return jsonLd;
     }
 
