@@ -113,6 +113,7 @@
             <name>Local repository for hosting jars not available from network repositories.</name>
             <url>file://${project.basedir}/local_lib</url>
         </repository>
+        <!-- Uncomment when using snapshot releases from Maven Central
         <repository>
             <id>oss-sonatype</id>
             <name>oss-sonatype</name>
@@ -123,6 +124,7 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+        -->
     </repositories>
     <!-- Transitive dependencies, bigger library "bill of materials" (BOM) and
          versions of dependencies used both directly and transitive are managed here. -->
@@ -272,7 +274,7 @@
         <dependency>
             <groupId>io.gdcc</groupId>
             <artifactId>sword2-server</artifactId>
-            <version>1.2.0-SNAPSHOT</version>
+            <version>1.2.0</version>
         </dependency>
         <!-- Dependency to use sword2-server in our codebase -->
         <dependency>
