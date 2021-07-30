@@ -167,7 +167,7 @@ public class MailServiceBean implements java.io.Serializable {
         return sent;
     }
 
-    private InternetAddress getSystemAddress() {
+    public InternetAddress getSystemAddress() {
        String systemEmail = settingsService.getValueForKey(Key.SystemEmail);
        return MailUtil.parseSystemAddress(systemEmail);
     }
@@ -278,7 +278,7 @@ public class MailServiceBean implements java.io.Serializable {
         return  systemConfig.getDataverseSiteUrl() + "/permissions-manage-files.xhtml?id=" + datafile.getOwner().getId();
     } 
 
-    private String getDatasetLink(Dataset dataset){        
+    public String getDatasetLink(Dataset dataset){
         return  systemConfig.getDataverseSiteUrl() + "/dataset.xhtml?persistentId=" + dataset.getGlobalIdString();
     } 
 

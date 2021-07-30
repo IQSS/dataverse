@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.engine.command;
 import edu.harvard.iq.dataverse.DOIDataCiteServiceBean;
 import edu.harvard.iq.dataverse.DOIEZIdServiceBean;
 import edu.harvard.iq.dataverse.HandlenetServiceBean;
+import edu.harvard.iq.dataverse.MailServiceBean;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
@@ -138,6 +139,8 @@ public interface CommandContext {
     public FileDownloadServiceBean fileDownload();
     
     public ConfirmEmailServiceBean confirmEmail();
+    
+    public MailServiceBean mail();
     
     public ActionLogServiceBean actionLog();
     
