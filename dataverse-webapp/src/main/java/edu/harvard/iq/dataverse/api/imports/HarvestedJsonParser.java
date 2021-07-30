@@ -236,7 +236,7 @@ public class HarvestedJsonParser {
         if (testType && type.isAllowMultiples() != json.getBoolean("multiple")) {
             throw new JsonParseException("incorrect multiple   for field " + json.getString("typeName", ""));
         }
-        if (testType && type.isCompound() && !json.getString("typeClass").equals("compound")) {
+        if (testType && type.isCompound() && !json.getString("typeClass").equals("compound") && !type.isControlledVocabulary()) {
             throw new JsonParseException("incorrect  typeClass for field " + json.getString("typeName", "") + ", should be compound.");
         }
         if (testType && !type.isControlledVocabulary() && type.isPrimitive() && !json.getString("typeClass").equals("primitive")) {
@@ -265,7 +265,7 @@ public class HarvestedJsonParser {
             // primitive
             List<DatasetField> values = parsePrimitiveValue(type, json);
 
-            if (values.size() == 1){
+            if (values.size() == 1) {
                 datasetField.setFieldValue(values.get(0).getValue());
                 parsedFields.add(datasetField);
             } else {
@@ -276,47 +276,58 @@ public class HarvestedJsonParser {
         return parsedFields;
     }
 
-    private List<ControlledVocabularyValue> parseControlledVocabularyValue(DatasetFieldType cvvType, JsonObject json) throws JsonParseException {
+    public List<ControlledVocabularyValue> parseControlledVocabularyValue(DatasetFieldType cvvType, JsonObject json) throws JsonParseException {
         try {
             if (cvvType.isAllowMultiples()) {
                 try {
-                    json.getJsonArray("value").getValuesAs(JsonObject.class);
+                    return parseControlledVocabularyValues(cvvType, json);
                 } catch (ClassCastException cce) {
-                    throw new JsonParseException("Invalid values submitted for " + cvvType.getName() + ". It should be an array of values.");
+                    return parseSingleControlledVocabularyValue(cvvType, json);
                 }
-                List<ControlledVocabularyValue> vals = new LinkedList<>();
-                for (JsonString strVal : json.getJsonArray("value").getValuesAs(JsonString.class)) {
-                    String strValue = strVal.getString();
-                    ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(cvvType, strValue, true);
-                    if (cvv == null) {
-                        throw new ControlledVocabularyException("Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'", cvvType, strValue);
-                    }
-                    // Only add value to the list if it is not a duplicate
-                    if (strValue.equals("Other")) {
-                        System.out.println("vals = " + vals + ", contains: " + vals.contains(cvv));
-                    }
-                    if (!vals.contains(cvv)) {
-                        vals.add(cvv);
-                    }
-                }
-                return vals;
-
             } else {
                 try {
-                    json.getString("value");
+                    return parseSingleControlledVocabularyValue(cvvType, json);
                 } catch (ClassCastException cce) {
-                    throw new JsonParseException("Invalid value submitted for " + cvvType.getName() + ". It should be a single value.");
+                    List<ControlledVocabularyValue> vals = parseControlledVocabularyValues(cvvType, json);
+                    for (ControlledVocabularyValue val : vals) {
+                        if (!"other".equalsIgnoreCase(val.getStrValue())) {
+                            return Collections.singletonList(val);
+                        }
+                    }
+                    return vals.size() > 0 ? Collections.singletonList(vals.get(0)) : Collections.emptyList();
                 }
-                String strValue = json.getString("value", "");
-                ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(cvvType, strValue, true);
-                if (cvv == null) {
-                    throw new ControlledVocabularyException("Value '" + strValue + "' does not exist in type '" + cvvType.getName() + "'", cvvType, strValue);
-                }
-                return Collections.singletonList(cvv);
             }
         } catch (ClassCastException cce) {
             throw new JsonParseException("Invalid values submitted for " + cvvType.getName());
         }
+    }
+
+    private List<ControlledVocabularyValue> parseControlledVocabularyValues(DatasetFieldType cvvType, JsonObject json) throws ClassCastException {
+        List<ControlledVocabularyValue> vals = new LinkedList<>();
+        for (JsonString strVal : json.getJsonArray("value").getValuesAs(JsonString.class)) {
+            String strValue = strVal.getString();
+            ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(cvvType, strValue, true);
+            if (cvv == null) {
+                continue;
+            }
+            // Only add value to the list if it is not a duplicate
+            if (strValue.equalsIgnoreCase("other")) {
+                System.out.println("vals = " + vals + ", contains: " + vals.contains(cvv));
+            }
+            if (!vals.contains(cvv)) {
+                vals.add(cvv);
+            }
+        }
+        return vals;
+    }
+
+    private List<ControlledVocabularyValue> parseSingleControlledVocabularyValue(DatasetFieldType cvvType, JsonObject json) throws ClassCastException {
+        String strValue = json.getString("value");
+        ControlledVocabularyValue cvv = datasetFieldSvc.findControlledVocabularyValueByDatasetFieldTypeAndStrValue(cvvType, strValue, true);
+        if (cvv == null) {
+            return Collections.emptyList();
+        }
+        return Collections.singletonList(cvv);
     }
 
     private List<DatasetField> parseCompoundValue(DatasetFieldType compoundType, JsonObject json, Boolean testType) throws JsonParseException {
@@ -367,7 +378,7 @@ public class HarvestedJsonParser {
                 JsonObject childFieldJson = value.getJsonObject(key);
                 DatasetField childField = null;
                 try {
-                    childField  = parseField(childFieldJson, testType).get(0);
+                    childField = parseField(childFieldJson, testType).get(0);
                 } catch (ControlledVocabularyException ex) {
                     vocabExceptions.add(ex);
                 }
@@ -456,10 +467,10 @@ public class HarvestedJsonParser {
 
     private Boolean setDatasetBasedLicense(Option<FileTermsOfUse> license, FileMetadata fileMetadata) {
         return license.toStream()
-                      .map(datasetLicense -> {
-                          fileMetadata.setTermsOfUse(datasetLicense);
-                          return true;
-                      }).getOrElse(false);
+                .map(datasetLicense -> {
+                    fileMetadata.setTermsOfUse(datasetLicense);
+                    return true;
+                }).getOrElse(false);
     }
 
     private void setFileBasedLicense(JsonObject filemetadataJson, FileMetadata fileMetadata) {
@@ -471,10 +482,10 @@ public class HarvestedJsonParser {
         if (FileTermsOfUse.TermsOfUseType.ALL_RIGHTS_RESERVED.name().equals(termsOfUseType)) {
             fileMetadata.setTermsOfUse(termsOfUseFactory.createAllRightsReservedTermsOfUse());
         }
-        if (FileTermsOfUse.TermsOfUseType.RESTRICTED.name().equals(termsOfUseType)){
+        if (FileTermsOfUse.TermsOfUseType.RESTRICTED.name().equals(termsOfUseType)) {
             final String accessConditions = filemetadataJson.getString("accessConditions");
 
-            if (FileTermsOfUse.RestrictType.CUSTOM.name().equals(accessConditions)){
+            if (FileTermsOfUse.RestrictType.CUSTOM.name().equals(accessConditions)) {
                 fileMetadata.setTermsOfUse(termsOfUseFactory.createRestrictedCustomTermsOfUse(filemetadataJson.getString("accessConditionsCustomText")));
             } else {
                 fileMetadata.setTermsOfUse(termsOfUseFactory.createRestrictedTermsOfUse(FileTermsOfUse.RestrictType.valueOf(accessConditions)));
