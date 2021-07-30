@@ -193,6 +193,12 @@
                 <artifactId>commons-io</artifactId>
                 <version>${commons.io.version}</version>
             </dependency>
+            <!-- Dependency of Sword2-server, Apache POI and in our own codebase -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-compress</artifactId>
+                <version>1.21</version>
+            </dependency>
             
             <!-- Dependency of sword2-server and used in our codebase -->
             <dependency>
@@ -611,7 +617,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.19</version>
+            <!-- no version here as managed by <dependencyManagement> above! -->
         </dependency>
         <dependency>
             <groupId>org.duracloud</groupId>
