@@ -5492,6 +5492,7 @@ public class DatasetPage implements java.io.Serializable {
     public void setExternalStatus(String status) {
         try {
             dataset = commandEngine.submit(new SetExternalStatusCommand(dvRequestService.getDataverseRequest(), dataset, status));
+            workingVersion=dataset.getLatestVersion();
             if (status == null || status.isEmpty()) {
                 JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("dataset.externalstatus.removed"));
             } else {
