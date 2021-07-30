@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.Template;
-import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
@@ -13,24 +12,12 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.util.BundleUtil;
-
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import java.util.logging.Logger;
 
-import javax.mail.internet.InternetAddress;
-
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Creates a new {@link Dataset}, used to store unpublished data. This is as opposed to 
@@ -141,9 +128,8 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
         List<AuthenticatedUser> authUsers = ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, theDataset);
         for (AuthenticatedUser au : authUsers) {
             if(!au.equals(requestor)) {
-                String subject = "Dataset Created: " + theDataset.getDisplayName();
-                InternetAddress systemAddress = ctxt.mail().getSystemAddress();
-                String body = "<a href = \"" + ctxt.mail().getDatasetLink(theDataset) + "\">" + theDataset.getDisplayName() + "</a> was just created.\n\n" + BundleUtil.getStringFromBundle("notification.email.closing.html", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress)));
+                String subject = BrandingUtil.getInstallationBrandName() + ": Data Project Created: " + theDataset.getDisplayName();
+                String body = "<a href = \"" + ctxt.mail().getDatasetLink(theDataset) + "\">" + theDataset.getDisplayName() + "</a> was just created.";
                 ctxt.mail().sendSystemEmail(au.getEmail(), subject, body, true);
             }
         }
