@@ -183,6 +183,9 @@ public class EjbDataverseEngine {
     ConfirmEmailServiceBean confirmEmailService;
     
     @EJB
+    MailServiceBean mailService;
+
+    @EJB
     EjbDataverseEngineInner innerEngine;
     
     
@@ -592,6 +595,11 @@ public class EjbDataverseEngine {
                 @Override
                 public ConfirmEmailServiceBean confirmEmail() {
                     return confirmEmailService;
+                }
+
+                @Override
+                public MailServiceBean mail() {
+                    return mailService;
                 }
                 
                 @Override
