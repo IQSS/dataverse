@@ -280,70 +280,71 @@
                                             </div>
                                             <!-- END: DOWNLOAD/ACCESS DATASET -->
 
-                                        <!-- PUBLISH DATASET -->
-                                        <div class="btn-group btn-group-justified" jsf:rendered="#{showPublishLink or showSubmitForReviewLink}">
-                                            <div class="btn-group">
-                                                <!-- Publish BTN -->
-                                                <h:outputLink value="#" disabled="#{DatasetPage.lockedFromPublishing}">
-                                                    <c:if test="#{!((showSubmitForReviewLink and showPublishLink) or showReturnToAuthorLink) and empty settingsWrapper.allowedExternalStatuses}">
-                                                        <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}"/>
-                                                        <f:passThroughAttribute name="onclick" value="$(this).parent().find( 'li > a' ).trigger( 'click' );"/>
-                                                    </c:if>
-                                                    <c:if test="#{(showSubmitForReviewLink and showPublishLink) or showReturnToAuthorLink or not empty settingsWrapper.allowedExternalStatuses}">
-                                                        <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}"/>
-                                                        <f:passThroughAttribute name="data-toggle" value="dropdown"/>
-                                                        <f:passThroughAttribute name="aria-haspopup" value="true"/>
-                                                        <f:passThroughAttribute name="aria-expanded" value="false"/>
-                                                    </c:if>
-                                                    #{showPublishLink ? bundle['dataset.publishBtn'] : (DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn'])} <span jsf:rendered="#{(showSubmitForReviewLink and showPublishLink) or showReturnToAuthorLink  or not empty settingsWrapper.allowedExternalStatuses}" class="caret"></span>
-                                                </h:outputLink>
-                                                <!-- Publish BTN DROPDOWN-MENU OPTIONS -->
-                                                <ul class="dropdown-menu pull-right text-left">
-                                                    <li jsf:rendered="#{showPublishLink}" class="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}">
-                                                        <!-- Publish LINK -->
-                                                        <p:commandLink styleClass="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" 
-                                                                       disabled="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview}"
-                                                                       action="#{DatasetPage.processPublishButton()}">
-                                                            #{bundle['dataset.publish.btn']}
-                                                        </p:commandLink>
-                                                    </li>
-                                                    <li jsf:rendered="#{showSubmitForReviewLink}" class="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}">
-                                                        <!-- Submit for Review LINK -->
-                                                        <p:commandLink class="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}" 
-                                                                       disabled="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked}"
-                                                                       onclick="PF('inreview').show()">
-                                                            #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn']}
-                                                        </p:commandLink>
-                                                    </li>
-                                                    <li jsf:rendered="#{showReturnToAuthorLink}" class="#{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) ? 'disabled' : ''}">
-                                                        <!-- Return to Author LINK -->
-                                                        <p:commandLink class="#{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) ? 'disabled' : ''}" 
-                                                                       disabled="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview}"
-                                                                       onclick="PF('sendBackToContributor').show()">
-                                                            #{bundle['dataset.rejectBtn']}
-                                                        </p:commandLink>
-                                                    </li>
-                                                    <ui:fragment rendered="#{not empty settingsWrapper.allowedExternalStatuses}">
-                                                        <li class="dropdown-submenu pull-left">
-                                                            <a tabindex="-1" href="#">#{bundle['dataset.changestatus']}</a>
-                                                            <ul class="dropdown-menu">
-                                                                <ui:repeat value="#{settingsWrapper.allowedExternalStatuses}" var="status">
+                                            <!-- PUBLISH DATASET -->
+                                            <div class="btn-group btn-group-justified" jsf:rendered="#{showPublishLink or showSubmitForReviewLink}">
+                                                <div class="btn-group">
+                                                    <!-- Publish BTN -->
+                                                    <h:outputLink value="#" disabled="#{DatasetPage.lockedFromPublishing}">
+                                                        <c:if test="#{!((showSubmitForReviewLink and showPublishLink) or showReturnToAuthorLink) and empty settingsWrapper.allowedExternalStatuses}">
+                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}"/>
+                                                            <f:passThroughAttribute name="onclick" value="$(this).parent().find( 'li > a' ).trigger( 'click' );"/>
+                                                        </c:if>
+                                                        <c:if test="#{(showSubmitForReviewLink and showPublishLink) or showReturnToAuthorLink or not empty settingsWrapper.allowedExternalStatuses}">
+                                                            <f:passThroughAttribute name="class" value="btn btn-default btn-access btn-publish dropdown-toggle #{DatasetPage.lockedFromPublishing ? 'disabled' : ''}"/>
+                                                            <f:passThroughAttribute name="data-toggle" value="dropdown"/>
+                                                            <f:passThroughAttribute name="aria-haspopup" value="true"/>
+                                                            <f:passThroughAttribute name="aria-expanded" value="false"/>
+                                                        </c:if>
+                                                        #{showPublishLink ? bundle['dataset.publishBtn'] : (DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn'])} <span jsf:rendered="#{(showSubmitForReviewLink and showPublishLink) or showReturnToAuthorLink  or not empty settingsWrapper.allowedExternalStatuses}" class="caret"></span>
+                                                    </h:outputLink>
+                                                    <!-- Publish BTN DROPDOWN-MENU OPTIONS -->
+                                                    <ul class="dropdown-menu pull-right text-left">
+                                                        <li jsf:rendered="#{showPublishLink}" class="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}">
+                                                            <!-- Publish LINK -->
+                                                            <p:commandLink styleClass="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview ? 'disabled' : ''}" 
+                                                                           disabled="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview}"
+                                                                           action="#{DatasetPage.processPublishButton()}">
+                                                                #{bundle['dataset.publish.btn']}
+                                                            </p:commandLink>
+                                                        </li>
+                                                        <li jsf:rendered="#{showSubmitForReviewLink}" class="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}">
+                                                            <!-- Submit for Review LINK -->
+                                                            <p:commandLink class="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}" 
+                                                                           disabled="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked}"
+                                                                           onclick="PF('inreview').show()">
+                                                                #{DatasetPage.dataset.latestVersion.inReview ? bundle['dataset.disabledSubmittedBtn'] : bundle['dataset.submitBtn']}
+                                                            </p:commandLink>
+                                                        </li>
+                                                        <li jsf:rendered="#{showReturnToAuthorLink}" class="#{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) ? 'disabled' : ''}">
+                                                            <!-- Return to Author LINK -->
+                                                            <p:commandLink class="#{(DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) ? 'disabled' : ''}" 
+                                                                           disabled="#{DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview}"
+                                                                           onclick="PF('sendBackToContributor').show()">
+                                                                #{bundle['dataset.rejectBtn']}
+                                                            </p:commandLink>
+                                                        </li>
+                                                        <ui:fragment rendered="#{not empty settingsWrapper.allowedExternalStatuses}">
+                                                            <li class="dropdown-submenu pull-left">
+                                                                <a tabindex="-1" href="#">#{bundle['dataset.changestatus']}</a>
+                                                                <ul class="dropdown-menu">
+                                                                    <ui:repeat value="#{settingsWrapper.allowedExternalStatuses}" var="status">
+                                                                        <li>
+                                                                            <p:commandLink action="#{DatasetPage.setExternalStatus(status)}" update=":datasetForm:topDatasetBlockFragment,:messagePanel">
+                                                                              #{status}
+                                                                            </p:commandLink>
+                                                                        </li>
+                                                                    </ui:repeat>
+                                                                    <p:separator/>
                                                                     <li>
-                                                                        <p:commandLink action="#{DatasetPage.setExternalStatus(status)}" update=":datasetForm:topDatasetBlockFragment,:messagePanel">
-                                                                          #{status}
+                                                                        <p:commandLink action="#{DatasetPage.setExternalStatus(null)}" update=":datasetForm:topDatasetBlockFragment,:messagePanel">
+                                                                            #{bundle['dataset.removestatus']}
                                                                         </p:commandLink>
                                                                     </li>
-                                                                </ui:repeat>
-                                                                <p:separator/>
-                                                                <li>
-                                                                    <p:commandLink action="#{DatasetPage.setExternalStatus(null)}" update=":datasetForm:topDatasetBlockFragment,:messagePanel">
-                                                                        #{bundle['dataset.removestatus']}
-                                                                    </p:commandLink>
-                                                                </li>
-                                                            </ul>
-                                                        </li>
-                                                    </ui:fragment>
-                                                </ul>
+                                                                </ul>
+                                                            </li>
+                                                        </ui:fragment>
+                                                    </ul>
+                                                </div>
                                             </div>
                                             <!-- END: Publish -->
 
