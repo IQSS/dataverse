@@ -1425,7 +1425,8 @@ public class DdiExportUtil {
              * These days we return early to avoid this exposure.
              */
             if (dataFile.isRestricted()) {
-                return;
+                //Skip this file but don't exit the loop so that tabular info from non-restricted files still get written
+                continue;
             }
 
             if (dataFile != null && dataFile.isTabularData()) {
