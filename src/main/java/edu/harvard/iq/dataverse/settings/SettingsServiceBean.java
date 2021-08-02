@@ -357,6 +357,11 @@ public class SettingsServiceBean {
         IndependentHandleService,
 
         /**
+        Handle to use for authentication if the default is not being used
+        */
+        HandleAuthHandle,
+
+        /**
          * Archiving can be configured by providing an Archiver class name (class must extend AstractSubmitToArchiverCommand)
          * and a list of settings that should be passed to the Archiver.
          * Note: 

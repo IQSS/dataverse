@@ -375,7 +375,8 @@ public abstract class AbstractApiBean {
         if (privateUrlUser != null) {
             if (privateUrlUser.hasAnonymizedAccess()) {
                 String pathInfo = httpRequest.getPathInfo();
-                if (!(pathInfo.startsWith("/access/datafile/") && !pathInfo.substring(17).contains("/"))) {
+                String prefix= "/access/datafile/";
+                if (!(pathInfo.startsWith(prefix) && !pathInfo.substring(prefix.length()).contains("/"))) {
                     logger.info("Anonymized access request for " + pathInfo);
                     throw new WrappedResponse(error(Status.UNAUTHORIZED, "API Access not allowed with this Key"));
                 }

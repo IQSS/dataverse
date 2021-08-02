@@ -64,7 +64,7 @@ public class OREMap {
     }
     
     public JsonObjectBuilder getOREMapBuilder(boolean aggregationOnly) throws Exception {
-
+    
         //Set this flag if it wasn't provided
         if(excludeEmail==null) {
             excludeEmail = settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false);
@@ -197,9 +197,10 @@ public class OREMap {
                 DataFile df = fmd.getDataFile();
                 JsonObjectBuilder aggRes = Json.createObjectBuilder();
 
-                String desc = fmd.getDescription();
-                if (desc != null && desc.length() != 0 ) {
-                    aggRes.add(JsonLDTerm.schemaOrg("description").getLabel(), desc);
+                if (!fmd.getDescription().isEmpty()) {
+                    aggRes.add(JsonLDTerm.schemaOrg("description").getLabel(), fmd.getDescription());
+                } else {
+                    addIfNotNull(aggRes, JsonLDTerm.schemaOrg("description"), df.getDescription());
                 }
                 addIfNotNull(aggRes, JsonLDTerm.schemaOrg("name"), fmd.getLabel()); // "label" is the filename
                 addIfNotNull(aggRes, JsonLDTerm.restricted, fmd.isRestricted());

@@ -11,6 +11,8 @@ import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
+import edu.harvard.iq.dataverse.GuestbookResponseServiceBean;
+import edu.harvard.iq.dataverse.GuestbookServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
@@ -101,10 +103,16 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
+import java.io.IOException;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.Context;
 import javax.xml.stream.XMLStreamException;
 
 /**
@@ -117,6 +125,7 @@ import javax.xml.stream.XMLStreamException;
 public class Dataverses extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Dataverses.class.getCanonicalName());
+    private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss");
 
     @EJB
     ExplicitGroupServiceBean explicitGroupSvc;
@@ -126,6 +135,12 @@ public class Dataverses extends AbstractApiBean {
     
     @EJB
     SettingsServiceBean settingsService;
+    
+    @EJB
+    GuestbookResponseServiceBean guestbookResponseService;
+    
+    @EJB
+    GuestbookServiceBean guestbookService;
 
     @POST
     public Response addRoot(String body) {
@@ -258,7 +273,7 @@ public class Dataverses extends AbstractApiBean {
     
     @POST
     @Path("{identifier}/datasets")
-    @Consumes("application/json-ld")
+    @Consumes("application/ld+json, application/json-ld")
     public Response createDatasetFromJsonLd(String jsonLDBody, @PathParam("identifier") String parentIdtf) {
         try {
             User u = findUserOrDie();
@@ -438,7 +453,7 @@ public class Dataverses extends AbstractApiBean {
     
     @POST
     @Path("{identifier}/datasets/:startmigration")
-    @Consumes("application/json-ld")
+    @Consumes("application/ld+json, application/json-ld")
     public Response recreateDataset(String jsonLDBody, @PathParam("identifier") String parentIdtf) {
         try {
             User u = findUserOrDie();
@@ -456,10 +471,10 @@ public class Dataverses extends AbstractApiBean {
             (ds.getAuthority().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Authority))&& 
             ds.getProtocol().equals(settingsService.getValueForKey(SettingsServiceBean.Key.Protocol))&&
             ds.getIdentifier().startsWith(settingsService.getValueForKey(SettingsServiceBean.Key.Shoulder)))) {
-            	throw new BadRequestException("Cannot recreate a dataset that has a PID that doesn't match the server's settings");
+                throw new BadRequestException("Cannot recreate a dataset that has a PID that doesn't match the server's settings");
             }
             if(!datasetSvc.isIdentifierLocallyUnique(ds)) {
-            	throw new BadRequestException("Cannot recreate a dataset whose PID is already in use");
+                throw new BadRequestException("Cannot recreate a dataset whose PID is already in use");
             }
 
             
@@ -470,7 +485,7 @@ public class Dataverses extends AbstractApiBean {
 
             DatasetVersion version = ds.getVersions().get(0);
             if (!version.isPublished()) {
-            	throw new BadRequestException("Cannot recreate a dataset that hasn't been published.");
+                throw new BadRequestException("Cannot recreate a dataset that hasn't been published.");
             }
             //While the datasetversion whose metadata we're importing has been published, we consider it in draft until the API caller adds files and then completes the migration
             version.setVersionState(DatasetVersion.VersionState.DRAFT);
@@ -928,7 +943,49 @@ public class Dataverses extends AbstractApiBean {
                 req,
                 grpAliasInOwner))));
     }
+    
+    @GET
+    @Path("{identifier}/guestbookResponses/")
+    @Produces({"application/download"})
+    public Response getGuestbookResponsesByDataverse(@PathParam("identifier") String dvIdtf,
+            @QueryParam("guestbookId") Long gbId, @Context HttpServletResponse response) {
+        
+        try {
+            Dataverse dv = findDataverseOrDie(dvIdtf);
+            User u = findUserOrDie();
+            DataverseRequest req = createDataverseRequest(u);
+            if (permissionSvc.request(req)
+                    .on(dv)
+                    .has(Permission.EditDataverse)) {
+            } else {
+                return error(Status.FORBIDDEN, "Not authorized");
+            }
+            
+            String fileTimestamp = dateFormatter.format(new Date());
+            String filename = dv.getAlias() + "_GBResponses_" + fileTimestamp + ".csv";
+            
+            response.setHeader("Content-Disposition", "attachment; filename="
+                + filename);
+               ServletOutputStream outputStream = response.getOutputStream();
 
+            Map<Integer, Object> customQandAs = guestbookResponseService.mapCustomQuestionAnswersAsStrings(dv.getId(), gbId);
+
+            List<Object[]> guestbookResults = guestbookResponseService.getGuestbookResults(dv.getId(), gbId);
+            outputStream.write("Guestbook, Dataset, Dataset PID, Date, Type, File Name, File Id, File PID, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
+            for (Object[] result : guestbookResults) {
+                StringBuilder sb = guestbookResponseService.convertGuestbookResponsesToCSV(customQandAs, result);
+                outputStream.write(sb.toString().getBytes());
+                outputStream.flush();
+            }
+            return Response.ok().build();
+        } catch (IOException io) {
+            return error(Status.BAD_REQUEST, "Failed to produce response file. Exception: " + io.getMessage());
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+    }
+    
     @PUT
     @Path("{identifier}/groups/{aliasInOwner}")
     public Response updateGroup(ExplicitGroupDTO groupDto,

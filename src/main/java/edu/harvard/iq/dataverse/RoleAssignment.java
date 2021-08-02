@@ -74,6 +74,9 @@ public class RoleAssignment implements java.io.Serializable {
     @Column(nullable = true)
     private Boolean privateUrlAnonymizedAccess;
 	
+    @Column(nullable = true)
+    private Boolean privateUrlAnonymizedAccess;
+	
 	public RoleAssignment() {}
 	
 	public RoleAssignment(DataverseRole aRole, RoleAssignee anAssignee, DvObject aDefinitionPoint, String privateUrlToken) {
@@ -124,6 +127,10 @@ public class RoleAssignment implements java.io.Serializable {
         return privateUrlToken;
     }
     
+    public boolean isAnonymizedAccess(){
+        return (privateUrlAnonymizedAccess==null) ? false: privateUrlAnonymizedAccess;
+    }
+
     public boolean isAnonymizedAccess(){
         return (privateUrlAnonymizedAccess==null) ? false: privateUrlAnonymizedAccess;
     }

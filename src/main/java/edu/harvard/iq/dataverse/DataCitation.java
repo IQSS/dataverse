@@ -193,7 +193,7 @@ public class DataCitation {
         // first add comma separated parts
         List<String> citationList = new ArrayList<>();
         if(anonymized) {
-            citationList.add("Author name(s) withheld");
+            citationList.add(BundleUtil.getStringFromBundle("file.anonymized.authorsWithheld"));
         } else {
             citationList.add(formatString(getAuthorsString(), html));
         }

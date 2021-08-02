@@ -1275,14 +1275,15 @@ public class DatasetVersion implements Serializable {
                                 relatedPublication.setUrl(MarkupChecker.sanitizeBasicHTML(url));
                             }
                         }
+                        //QDR idType has a trailing : now (Aug 2021)
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationIDType)) {
-                            // Prevent href and target=_blank from getting into Schema.org JSON-LD output.
+                            // Get sanitized value without any display modifications
                             subField.getDatasetFieldType().setDisplayFormat("#VALUE");
                             String idType = subField.getDisplayValue();
                             relatedPublication.setIdType(idType);
                         }
                         if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.publicationIDNumber)) {
-                            // Prevent href and target=_blank from getting into Schema.org JSON-LD output.
+                         // Get sanitized value without any display modifications
                             subField.getDatasetFieldType().setDisplayFormat("#VALUE");
                             String idNum = subField.getDisplayValue();
                             relatedPublication.setIdNumber(idNum);
@@ -1982,7 +1983,10 @@ public class DatasetVersion implements Serializable {
             job.add("distribution", fileArray);
         }
         jsonLd = job.build().toString();
+
+        //Most fields above should be stripped/sanitized but, since this is output in the dataset page as header metadata, do a final sanitize step to make sure
         jsonLd = MarkupChecker.stripAllTags(jsonLd);
+        
         return jsonLd;
     }
 

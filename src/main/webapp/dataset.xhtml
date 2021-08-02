@@ -1009,7 +1009,7 @@
                             </div>
                             <div class="button-block">
                                 <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.createPrivateUrl']}" action="#{DatasetPage.createPrivateUrl(false)}" update="privateUrlPanel,:messagePanel" rendered="#{empty(DatasetPage.privateUrl)}"/>
-                                <p:commandButton styleClass="btn btn-default disabledTitle" value="#{bundle['dataset.privateurl.createPrivateUrl.anonymized']}" action="#{DatasetPage.createPrivateUrl(true)}" update="privateUrlPanel,:messagePanel" rendered="#{empty(DatasetPage.privateUrl)}" disabled="#{DatasetPage.dataset.released}" title="#{DatasetPage.dataset.released ? bundle['dataset.privateurl.createPrivateUrl.anonymized.unavailable']:'' }"/>
+                                <p:commandButton styleClass="btn btn-default disabledTitle" value="#{bundle['dataset.privateurl.createPrivateUrl.anonymized']}" action="#{DatasetPage.createPrivateUrl(true)}" update="privateUrlPanel,:messagePanel" rendered="#{DatasetPage.anonymizedAccessEnabled and empty(DatasetPage.privateUrl)}" disabled="#{DatasetPage.dataset.released}" title="#{DatasetPage.dataset.released ? bundle['dataset.privateurl.createPrivateUrl.anonymized.unavailable']:'' }"/>
                                 <button class="btn btn-default btn-copy" data-clipboard-text="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" jsf:rendered="#{!empty(DatasetPage.privateUrl)}" type="button">
                                     #{bundle['copyClipboard']}
                                 </button>

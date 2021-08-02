@@ -440,16 +440,6 @@ public class DatasetPage implements java.io.Serializable {
     private boolean tagPresort = true;
     private boolean folderPresort = true;
 
-    private LazyFileMetadataDataModel lazyModel;
-
-    public LazyFileMetadataDataModel getLazyModel() {
-        return lazyModel;
-    }
-
-    public void setLazyModel(LazyFileMetadataDataModel lazyModel) {
-        this.lazyModel = lazyModel;
-    }
-
     public List<Entry<String,String>> getCartList() {
         if (session.getUser() instanceof AuthenticatedUser) {
             return ((AuthenticatedUser) session.getUser()).getCart().getContents();
@@ -1823,6 +1813,11 @@ public class DatasetPage implements java.io.Serializable {
                 JsfHelper.addWarningMessage(retrieveDatasetVersionResponse.getDifferentVersionMessage());//BundleUtil.getStringFromBundle("dataset.message.metadataSuccess"));
             }
 
+
+            // init the citation
+            displayCitation = dataset.getCitation(true, workingVersion, isAnonymizedAccess());
+            logger.fine("Citation: " + displayCitation);
+
             if(workingVersion.isPublished()) {
                 MakeDataCountEntry entry = new MakeDataCountEntry(FacesContext.getCurrentInstance(), dvRequestService, workingVersion);
                 mdcLogService.logEntry(entry);
@@ -1863,7 +1858,8 @@ public class DatasetPage implements java.io.Serializable {
                 this.guestbookResponse = guestbookResponseService.initGuestbookResponseForFragment(workingVersion, null, session);
                 logger.fine("Checking if rsync support is enabled.");
                 if (DataCaptureModuleUtil.rsyncSupportEnabled(settingsWrapper.getValueForKey(SettingsServiceBean.Key.UploadMethods))
-                        && dataset.getFiles().isEmpty()) { //only check for rsync if no files exist
+                        && dataset.getFiles().isEmpty()  && this.canUpdateDataset() ) { //only check for rsync if no files exist
+                                                                                        //and user can update dataset
                     try {
                         ScriptRequestResponse scriptRequestResponse = commandEngine.submit(new RequestRsyncScriptCommand(dvRequestService.getDataverseRequest(), dataset));
                         logger.fine("script: " + scriptRequestResponse.getScript());
@@ -1876,9 +1872,11 @@ public class DatasetPage implements java.io.Serializable {
                             setHasRsyncScript(false);
                         }
                     } catch (RuntimeException ex) {
-                        logger.warning("Problem getting rsync script: " + ex.getLocalizedMessage());
+                        logger.warning("Problem getting rsync script(RuntimeException): " + ex.getLocalizedMessage());
+                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Problem getting rsync script:",  ex.getLocalizedMessage())); 
                     } catch (CommandException cex) {
                         logger.warning("Problem getting rsync script (Command Exception): " + cex.getLocalizedMessage());
+                           FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Problem getting rsync script:",  cex.getLocalizedMessage()));                        
                     }
                 }
 
@@ -1961,11 +1959,6 @@ public class DatasetPage implements java.io.Serializable {
                         BundleUtil.getStringFromBundle("dataset.privateurl.infoMessageReviewer"));
             }
         }
-
-        // init the citation
-        //Need to do this after privateUrl is initialized (
-        displayCitation = dataset.getCitation(true, workingVersion, isAnonymizedAccess());
-        logger.fine("Citation: " + displayCitation);
 
         displayLockInfo(dataset);
 
@@ -2820,13 +2813,21 @@ public class DatasetPage implements java.io.Serializable {
 
     public String deleteDatasetVersion() {
         DeleteDatasetVersionCommand cmd;
+        
+        Map<Long, String> deleteStorageLocations = datafileService.getPhysicalFilesToDelete(dataset.getLatestVersion());
+        boolean deleteCommandSuccess = false;
         try {
             cmd = new DeleteDatasetVersionCommand(dvRequestService.getDataverseRequest(), dataset);
             commandEngine.submit(cmd);
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("datasetVersion.message.deleteSuccess"));
+            deleteCommandSuccess = true;
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataset.message.deleteFailure"));
             logger.severe(ex.getMessage());
+        }
+        
+        if (deleteCommandSuccess && !deleteStorageLocations.isEmpty()) {
+            datafileService.finalizeFileDeletes(deleteStorageLocations);
         }
 
         return returnToDatasetOnly();
@@ -5161,6 +5162,14 @@ public class DatasetPage implements java.io.Serializable {
     public boolean isAnonymizedPrivateUrl() {
         if(privateUrl != null) {
             return privateUrl.isAnonymizedAccess();
+        } else {
+            return false;
+        }
+    }
+    
+    public boolean isAnonymizedAccessEnabled() {
+        if (settingsWrapper.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames) != null) {
+            return true;
         } else {
             return false;
         }
