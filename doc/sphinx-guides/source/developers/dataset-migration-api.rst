@@ -51,6 +51,8 @@ datePublished is the only metadata supported in this call.
 
 An optional query parameter: updatepidatprovider (default is false) can be set to true to automatically update the metadata and targetUrl of the PID at the provider. With this set true, the result of this call will be that the PID redirects to this dataset rather than the dataset in the source repository.
 
+.. code-block:: bash
+
   curl -H 'Content-Type: application/jsonld' -H X-Dataverse-key:$API_TOKEN -X POST -d '{"schema:datePublished": "2020-10-26","@context":{ "schema":"http://schema.org/"}}' "$SERVER_URL/api/datasets/{id}/actions/:releasemigrated?updatepidatprovider=true"
 
-  If the parameter is not added and set to true, other existing APIs can be used to update the PID at the provider later, e.g. :ref:`send-metadata-to-pid-provider`
+If the parameter is not added and set to true, other existing APIs can be used to update the PID at the provider later, e.g. :ref:`send-metadata-to-pid-provider`
