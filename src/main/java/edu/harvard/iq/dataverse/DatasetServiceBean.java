@@ -207,11 +207,11 @@ public class DatasetServiceBean implements java.io.Serializable {
         return em.createQuery("SELECT o.id FROM Dataset o WHERE o.indexTime IS null ORDER BY o.id DESC", Long.class).getResultList();
     }
 
-    //QDR - for datasets curation API
+/*    //QDR - for datasets curation API
     public List<Dataset> findAllUnpublished() {
         return em.createQuery("SELECT object(o) FROM Dataset o, DVObject d WHERE d.id=o.id and d.publicationdate IS null ORDER BY o.id DESC", Dataset.class).getResultList();
     }
-
+*/
     /**
      * For docs, see the equivalent method on the DataverseServiceBean.
      * @param numPartitions

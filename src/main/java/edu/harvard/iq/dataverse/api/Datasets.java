@@ -2787,19 +2787,21 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         }
         
         StringBuilder csvSB = new StringBuilder(String.join(",", "Data Project", "URL", "Assignee", "Status"));
-        for (Dataset dataset : datasetSvc.findAllUnpublished()) {
-            List<RoleAssignment> ras = permissionService.assignmentsOn(dataset);
-            String assignee = null;
-            for(RoleAssignment ra: ras) {
-                if(ra.getRole().getName().equals("Assignee")) {
-                    assignee = ra.getAssigneeIdentifier();
-                    break;
+        for (Dataset dataset : datasetSvc.findAll()) {
+            if (!dataset.isReleased()) {
+                List<RoleAssignment> ras = permissionService.assignmentsOn(dataset);
+                String assignee = null;
+                for (RoleAssignment ra : ras) {
+                    if (ra.getRole().getName().equals("Assignee")) {
+                        assignee = ra.getAssigneeIdentifier();
+                        break;
+                    }
                 }
+                String status = dataset.getLatestVersion().getExternalStatusLabel();
+                String url = systemConfig.getDataverseSiteUrl() + dataset.getTargetUrl() + dataset.getGlobalId().asString();
+                csvSB.append("\n").append(String.join(",", dataset.getCurrentName(), url, assignee, status));
             }
-            String status = dataset.getLatestVersion().getExternalStatusLabel();
-            String url=systemConfig.getDataverseSiteUrl() + dataset.getTargetUrl() + dataset.getGlobalId().asString();
-            csvSB.append("\n").append(String.join(",",  dataset.getCurrentName(), url, assignee, status));
-            }
+        }
     return ok(csvSB.toString(), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "dataproject.status.csv");
     }
 }
