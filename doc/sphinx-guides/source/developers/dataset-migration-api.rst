@@ -45,7 +45,7 @@ The call above creates a Dataset. Once it is created, other APIs can be used to 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
  
-  curl -H 'Content-Type: application/jsonld' -H X-Dataverse-key:$API_TOKEN -X POST -d '{"schema:datePublished": "2020-10-26","@context":{ "schema":"http://schema.org/"}}' "$SERVER_URL/api/datasets/{id}/actions/:releasemigrated"
+  curl -H 'Content-Type: application/ld+json' -H X-Dataverse-key:$API_TOKEN -X POST -d '{"schema:datePublished": "2020-10-26","@context":{ "schema":"http://schema.org/"}}' "$SERVER_URL/api/datasets/{id}/actions/:releasemigrated"
 
 datePublished is the only metadata supported in this call.
 
@@ -53,6 +53,6 @@ An optional query parameter: updatepidatprovider (default is false) can be set t
 
 .. code-block:: bash
 
-  curl -H 'Content-Type: application/jsonld' -H X-Dataverse-key:$API_TOKEN -X POST -d '{"schema:datePublished": "2020-10-26","@context":{ "schema":"http://schema.org/"}}' "$SERVER_URL/api/datasets/{id}/actions/:releasemigrated?updatepidatprovider=true"
+  curl -H 'Content-Type: application/ld+json' -H X-Dataverse-key:$API_TOKEN -X POST -d '{"schema:datePublished": "2020-10-26","@context":{ "schema":"http://schema.org/"}}' "$SERVER_URL/api/datasets/{id}/actions/:releasemigrated?updatepidatprovider=true"
 
 If the parameter is not added and set to true, other existing APIs can be used to update the PID at the provider later, e.g. :ref:`send-metadata-to-pid-provider`
