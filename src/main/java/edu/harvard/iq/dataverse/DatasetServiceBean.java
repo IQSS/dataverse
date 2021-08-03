@@ -209,7 +209,7 @@ public class DatasetServiceBean implements java.io.Serializable {
 
     //QDR - for datasets curation API
     public List<Dataset> findAllUnpublished() {
-        return em.createQuery("SELECT object(o) FROM Dataset o, DVObject d WHERE d.id=o.id and d.publicationdate IS null ORDER BY o.id ASC", Dataset.class).getResultList();
+        return em.createQuery("SELECT object(o) FROM Dataset o, DvObject d WHERE d.id=o.id and d.publicationdate IS null ORDER BY o.id ASC", Dataset.class).getResultList();
     }
 
     /**
