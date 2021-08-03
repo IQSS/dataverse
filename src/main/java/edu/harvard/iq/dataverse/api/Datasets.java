@@ -2800,7 +2800,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                 String status = dataset.getLatestVersion().getExternalStatusLabel();
                 String url = systemConfig.getDataverseSiteUrl() + dataset.getTargetUrl() + dataset.getGlobalId().asString();
                 String date = new SimpleDateFormat("yyyy-MM").format(dataset.getCreateDate());
-                csvSB.append("\n").append(String.join(",", dataset.getCurrentName(), url, date, assignee, status));
+                csvSB.append("\n").append(String.join(",", "\"" + dataset.getCurrentName().replace("\"","\"\"") + "\"", url, date, assignee, status));
         }
         csvSB.append("\n");
     return ok(csvSB.toString(), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "dataproject.status.csv");
