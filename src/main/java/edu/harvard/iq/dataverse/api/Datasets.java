@@ -2802,7 +2802,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                 String url = systemConfig.getDataverseSiteUrl() + dataset.getTargetUrl() + dataset.getGlobalId().asString();
                 String date = new SimpleDateFormat("yyyy-MM").format(dataset.getCreateDate());
                 String hyperlink = "\"=HYPERLINK(\"\"" + url + "\"\",\"\"" + name + "\"\")\"";
-                csvSB.append("\n").append(String.join(",", hyperlink, date, assignee, status));
+                csvSB.append("\n").append(String.join(",", hyperlink, date, assignee==null ? "":assignee, status==null ? "": status));
         }
         csvSB.append("\n");
     return ok(csvSB.toString(), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "dataproject.status.csv");
