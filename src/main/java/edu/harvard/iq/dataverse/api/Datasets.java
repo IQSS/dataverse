@@ -124,6 +124,7 @@ import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -2786,9 +2787,8 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             return wr.getResponse();
         }
         
-        StringBuilder csvSB = new StringBuilder(String.join(",", "Data Project", "URL", "Assignee", "Status"));
-        for (Dataset dataset : datasetSvc.findAll()) {
-            if (!dataset.isReleased()) {
+        StringBuilder csvSB = new StringBuilder(String.join(",", "Data Project", "URL", "Creation Date", "Assignee", "Status"));
+        for (Dataset dataset : datasetSvc.findAllUnpublished()) {
                 List<RoleAssignment> ras = permissionService.assignmentsOn(dataset);
                 String assignee = null;
                 for (RoleAssignment ra : ras) {
@@ -2799,9 +2799,10 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                 }
                 String status = dataset.getLatestVersion().getExternalStatusLabel();
                 String url = systemConfig.getDataverseSiteUrl() + dataset.getTargetUrl() + dataset.getGlobalId().asString();
-                csvSB.append("\n").append(String.join(",", dataset.getCurrentName(), url, assignee, status));
-            }
+                String date = new SimpleDateFormat("yyyy-MM").format(dataset.getCreateDate());
+                csvSB.append("\n").append(String.join(",", dataset.getCurrentName(), url, date, assignee, status));
         }
+        csvSB.append("\n");
     return ok(csvSB.toString(), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "dataproject.status.csv");
     }
 }
