@@ -79,6 +79,7 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
+import edu.harvard.iq.dataverse.api.AbstractApiBean.WrappedResponse;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -2761,5 +2762,44 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
         return addFileHelper.addFiles(jsonData, dataset, authUser);
 
+    }
+    
+    
+    /** QDR
+     * 
+     * API to find curation assignements and statuses
+     * 
+     * @return
+     * @throws WrappedResponse
+     */
+    @GET
+    @Path("/listCurationAssignments")
+    @Produces("text/csv")
+    public Response getCurationAssignments() throws WrappedResponse {
+
+        try {
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        
+        StringBuilder csvSB = new StringBuilder(String.join(",", "Data Project", "URL", "Assignee", "Status"));
+        for (Dataset dataset : datasetSvc.findAllUnpublished()) {
+            List<RoleAssignment> ras = permissionService.assignmentsOn(dataset);
+            String assignee = null;
+            for(RoleAssignment ra: ras) {
+                if(ra.getRole().getName().equals("Assignee")) {
+                    assignee = ra.getAssigneeIdentifier();
+                    break;
+                }
+            }
+            String status = dataset.getLatestVersion().getExternalStatusLabel();
+            String url=systemConfig.getDataverseSiteUrl() + dataset.getTargetUrl() + dataset.getGlobalId().asString();
+            csvSB.append("\n").append(String.join(",",  dataset.getCurrentName(), url, assignee, status));
+            }
+    return ok(csvSB.toString(), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "dataproject.status.csv");
     }
 }
