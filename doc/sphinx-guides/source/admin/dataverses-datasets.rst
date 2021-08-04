@@ -41,7 +41,7 @@ Recursively assigns the users and groups having a role(s),that are in the set co
     curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/$dataverse-alias/addRoleAssignmentsToChildren
     
 Configure a Dataverse Collection to store all new files in a specific file store
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To direct new files (uploaded when datasets are created or edited) for all datasets in a given Dataverse collection, the store can be specified via the API as shown below, or by editing the 'General Information' for a Dataverse collection on the Dataverse collection page. Only accessible to superusers. ::
  
@@ -110,6 +110,8 @@ Mints a new identifier for a dataset previously registered with a handle. Only a
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://$SERVER/api/admin/$dataset-id/reregisterHDLToPID
     
+.. _send-metadata-to-pid-provider:
+
 Send Dataset metadata to PID provider
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
