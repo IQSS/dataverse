@@ -144,7 +144,7 @@ function updateSkosmosInputs() {
                 '<select id=' + vocabId + ' class="form-control add-resource select2" tabindex="-1" aria-hidden="true">');
             //Add all of the vocabularies as options
             for (var key in vocabs) {
-                $("#" + vocabId).append($('<option>').attr('value', key).html($('<a>').attr('href', vocabs[key]).attr('target', '_blank').attr('rel', 'noopener').text(key)));
+                $("#" + vocabId).append($('<option>').attr('value', key).html($('<a>').attr('href', vocabs[key].vocabularyUri).attr('target', '_blank').attr('rel', 'noopener').text(key)));
             }
             //Setup select2 - this allows users to find a vocab by typing a few letters in it to filter the list
             $("#" + vocabId).select2({
@@ -365,7 +365,7 @@ function updateSkosmosInputs() {
                         if (key == 'vocabularyName') {
                             $(parent).find("input[data-cvoc-managed-field='" + managedFields[key] + "']").attr('value', $('#' + selectId).attr('data-cvoc-cur-vocab'));
                         } else if (key == 'vocabularyUri') {
-                            $(parent).find("input[data-cvoc-managed-field='" + managedFields[key] + "']").attr('value', vocabs[$('#' + selectId).attr('data-cvoc-cur-vocab')]);
+                            $(parent).find("input[data-cvoc-managed-field='" + managedFields[key] + "']").attr('value', vocabs[$('#' + selectId).attr('data-cvoc-cur-vocab')].vocabularyUri);
                         } else if (key == 'termName') {
                             $(parent).find("input[data-cvoc-managed-field='" + managedFields[key] + "']").attr('value', data.name);
                         }
