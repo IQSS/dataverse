@@ -239,9 +239,11 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     } 
     
     Map <Long, JsonObject> cvocMap = null;
+    Map <Long, JsonObject> cvocMapByTermUri = null;
+
     String oldHash = null;
     
-    public Map<Long, JsonObject> getCVocConf(){
+    public Map<Long, JsonObject> getCVocConf(boolean byTermUriField){
         
         //ToDo - change to an API call to be able to provide feedback if the json is invalid?
         String cvocSetting = settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf);
@@ -251,36 +253,42 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     } 
         String newHash = DigestUtils.md5Hex(cvocSetting);
         if(newHash.equals(oldHash)) {
-            return cvocMap;
+            
+            return byTermUriField ? cvocMapByTermUri : cvocMap;
         } 
             oldHash=newHash;
         cvocMap=new HashMap<>();
+        cvocMapByTermUri=new HashMap<>();
         
         try (JsonReader jsonReader = Json.createReader(new StringReader(settingsService.getValueForKey(SettingsServiceBean.Key.CVocConf)))) {
         JsonArray cvocConfJsonArray = jsonReader.readArray();
             for (JsonObject jo : cvocConfJsonArray.getValuesAs(JsonObject.class)) {
                 DatasetFieldType dft = findByNameOpt(jo.getString("field-name"));
-                if(dft!=null) {
+                if (dft != null) {
                     cvocMap.put(dft.getId(), jo);
-                   } else {
-                       logger.warning("Ignoring External Vocabulary setting for non-existent field: " + jo.getString("field-name"));
-                   }
-                if(jo.containsKey("term-uri-field")) {
-                    String termUriField=jo.getString("term-uri-field");
+                } else {
+                    logger.warning("Ignoring External Vocabulary setting for non-existent field: "
+                            + jo.getString("field-name"));
+                }
+                if (jo.containsKey("term-uri-field")) {
+                    String termUriField = jo.getString("term-uri-field");
                     if (!dft.isHasChildren()) {
                         if (termUriField.equals(dft.getName())) {
-                            logger.info("Found primitive field for term uri : " + dft.getName());
+                            logger.fine("Found primitive field for term uri : " + dft.getName() + ": " + dft.getId());
+                            cvocMapByTermUri.put(dft.getId(), jo);
                         }
                     } else {
                         DatasetFieldType childdft = findByNameOpt(jo.getString("term-uri-field"));
-                        logger.info("Found term child field: " + childdft.getName());
+                        logger.fine("Found term child field: " + childdft.getName()+ ": " + childdft.getId());
+                        cvocMapByTermUri.put(childdft.getId(), jo);
                         if (childdft.getParentDatasetFieldType() != dft) {
                             logger.warning("Term URI field (" + childdft.getDisplayName() + ") not a child of parent: "
                                     + dft.getDisplayName());
                         }
                     }
-                    if(dft==null) {
-                        logger.warning("Ignoring External Vocabulary setting for non-existent child field: " + jo.getString("term-uri-field"));
+                    if (dft == null) {
+                        logger.warning("Ignoring External Vocabulary setting for non-existent child field: "
+                                + jo.getString("term-uri-field"));
                     }
 
                 }if(jo.containsKey("child-fields")) {
@@ -298,13 +306,13 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             } catch(JsonException e) {
                 logger.warning("Ignoring External Vocabulary setting due to parsing error: " + e.getLocalizedMessage());
             }
-        return cvocMap;
+        return byTermUriField ? cvocMapByTermUri : cvocMap;
     }
 
     public void registerExternalVocabValues(DatasetField df) {
         DatasetFieldType dft =df.getDatasetFieldType(); 
         logger.info("Registering for field: " + dft.getName());
-        JsonObject cvocEntry = getCVocConf().get(dft.getId());
+        JsonObject cvocEntry = getCVocConf(false).get(dft.getId());
         if(dft.isPrimitive()) {
             for(DatasetFieldValue dfv: df.getDatasetFieldValues()) {
                 registerExternalTerm(cvocEntry, dfv.getValue(), cvocEntry.getString("retrieval-uri"), cvocEntry.getString("prefix", null));

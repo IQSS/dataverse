@@ -84,7 +84,7 @@ public class OREMap {
         JsonObjectBuilder aggBuilder = Json.createObjectBuilder();
         List<DatasetField> fields = version.getDatasetFields();
         // That has it's own metadata
-        Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf();
+        Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(false);
         for (DatasetField field : fields) {
             if (!field.isEmpty()) {
                 DatasetFieldType dfType = field.getDatasetFieldType();

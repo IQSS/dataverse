@@ -787,7 +787,7 @@ public class IndexServiceBean {
                 solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, IN_REVIEW_STRING);
             }
 
-            Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf();
+            Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(false);
             for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
 
                 DatasetFieldType dsfType = dsf.getDatasetFieldType();

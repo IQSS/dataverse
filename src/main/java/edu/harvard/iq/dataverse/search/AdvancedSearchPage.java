@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
+import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.MetadataBlock;
 import edu.harvard.iq.dataverse.WidgetWrapper;
 import static edu.harvard.iq.dataverse.search.SearchUtil.constructQuery;
@@ -13,16 +14,21 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.json.JsonObject;
+
 import org.apache.commons.lang.StringUtils;
 
 @ViewScoped
@@ -38,6 +44,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
     DatasetFieldServiceBean datasetFieldService;
     
     @Inject WidgetWrapper widgetWrapper;
+    @Inject DataverseSession session;
 
     private Dataverse dataverse;
     private String dataverseIdentifier;
@@ -330,6 +337,43 @@ public class AdvancedSearchPage implements java.io.Serializable {
 
     public void setFileFieldFileTags(String fileFieldFileTags) {
         this.fileFieldFileTags = fileFieldFileTags;
+    }
+    
+    
+    //External Vocabulary Support - cut/pasted from DatasetPage for testing
+    //Todo: move to common location
+    
+    Map<Long, JsonObject> cachedCvocMap=null;
+    public Map<Long, JsonObject> getCVocConf() {
+        //Cache this in the view
+        if(cachedCvocMap==null) {
+        cachedCvocMap = datasetFieldService.getCVocConf(true);
+        }
+        return cachedCvocMap;
+    }
+    
+    public List<String> getVocabScripts() {
+        //ToDo - only return scripts that are needed (those fields are set on display pages, those blocks/fields are allowed in the Dataverse collection for create/edit)?
+        Set<String> scripts = new HashSet<String>();
+        for(JsonObject jo: getCVocConf().values()) {
+            scripts.add(jo.getString("js-url"));
+        }
+        return Arrays.asList(scripts.toArray(new String[0]));
+    }
+
+    public String getFieldLanguage(String languages) {
+        // If the fields list of supported languages contains the current locale (e.g.
+        // the lang of the UI, or the current metadata input/display lang (tbd)), use
+        // that. Otherwise, return the first in the list
+        String[] langStrings = languages.split("\\s*,\\s*");
+        if (langStrings.length > 0) {
+            if (Arrays.asList(langStrings).contains(session.getLocaleCode())) {
+                return session.getLocaleCode();
+            } else {
+                return langStrings[0];
+            }
+        }
+        return null;
     }
 
 }

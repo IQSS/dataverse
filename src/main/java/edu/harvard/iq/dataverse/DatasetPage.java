@@ -3446,7 +3446,7 @@ public class DatasetPage implements java.io.Serializable {
             dataset = commandEngine.submit(cmd);
             for (DatasetField df : dataset.getLatestVersion().getDatasetFields()) {
                 logger.info("Found id: " + df.getDatasetFieldType().getId());
-                if (fieldService.getCVocConf().containsKey(df.getDatasetFieldType().getId())) {
+                if (fieldService.getCVocConf(false).containsKey(df.getDatasetFieldType().getId())) {
                     fieldService.registerExternalVocabValues(df);
                 }
             }
@@ -5494,7 +5494,7 @@ public class DatasetPage implements java.io.Serializable {
     public Map<Long, JsonObject> getCVocConf() {
         //Cache this in the view
         if(cachedCvocMap==null) {
-        cachedCvocMap = fieldService.getCVocConf();
+        cachedCvocMap = fieldService.getCVocConf(false);
         }
         return cachedCvocMap;
     }
@@ -5509,7 +5509,7 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public String getFieldLanguage(String languages) {
-        // If the fields list of supported langauges contains the current locale (e.g.
+        // If the fields list of supported languages contains the current locale (e.g.
         // the lang of the UI, or the current metadata input/display lang (tbd)), use
         // that. Otherwise, return the first in the list
         String[] langStrings = languages.split("\\s*,\\s*");

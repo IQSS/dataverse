@@ -39,7 +39,7 @@
     <field name="coverage.Temporal" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="coverage.Temporal.StartTime" type="text_en" multiValued="true" stored="true" indexed="true"/>
     <field name="coverage.Temporal.StopTime" type="text_en" multiValued="true" stored="true" indexed="true"/>
-    <field name="creator" type="text_en" multiValued="true" stored="true" indexed="true"/>
+    <field name="creator" type="text_ws" multiValued="true" stored="true" indexed="true"/>
     <field name="dataCollectionSituation" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="dataCollector" type="text_en" multiValued="false" stored="true" indexed="true"/>
     <field name="dataSources" type="text_en" multiValued="true" stored="true" indexed="true"/>

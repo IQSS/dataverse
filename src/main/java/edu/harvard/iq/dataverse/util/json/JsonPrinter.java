@@ -483,7 +483,7 @@ public class JsonPrinter {
 
         blockBld.add("displayName", block.getDisplayName());
         final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
-        Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(); 
+        Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(false); 
         DatasetFieldWalker.walk(fields, settingsService, cvocMap, new DatasetFieldsToJson(fieldsArray));
 
         blockBld.add("fields", fieldsArray);
@@ -505,7 +505,7 @@ public class JsonPrinter {
             return null;
         } else {
             JsonArrayBuilder fieldArray = Json.createArrayBuilder();
-            Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf();
+            Map<Long, JsonObject> cvocMap = (datasetFieldService==null) ? new HashMap<Long, JsonObject>() :datasetFieldService.getCVocConf(false);
             DatasetFieldWalker.walk(dfv, new DatasetFieldsToJson(fieldArray), cvocMap);
             JsonArray out = fieldArray.build();
             return out.getJsonObject(0);
