@@ -7,6 +7,7 @@ This experimental migration API offers an additional option with some potential 
 
 * metadata can be specified using the json-ld format used in the OAI-ORE metadata export
 * existing publication dates and PIDs are maintained (currently limited to the case where the PID can be managed by the Dataverse software, e.g. where the authority and shoulder match those the software is configured for)
+* updating the PID at the provider can be done immediately or later (with other existing APIs)
 * adding files can be done via the standard APIs, including using direct-upload to S3
 
 This API consists of 2 calls: one to create an initial Dataset version, and one to 'republish' the dataset through Dataverse with a specified publication date.
@@ -44,6 +45,14 @@ The call above creates a Dataset. Once it is created, other APIs can be used to 
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
  
-  curl -H 'Content-Type: application/jsonld' -H X-Dataverse-key:$API_TOKEN -X POST -d '{"schema:datePublished": "2020-10-26","@context":{ "schema":"http://schema.org/"}}' "$SERVER_URL/api/datasets/{id}/actions/:releasemigrated"
+  curl -H 'Content-Type: application/ld+json' -H X-Dataverse-key:$API_TOKEN -X POST -d '{"schema:datePublished": "2020-10-26","@context":{ "schema":"http://schema.org/"}}' "$SERVER_URL/api/datasets/{id}/actions/:releasemigrated"
 
 datePublished is the only metadata supported in this call.
+
+An optional query parameter: updatepidatprovider (default is false) can be set to true to automatically update the metadata and targetUrl of the PID at the provider. With this set true, the result of this call will be that the PID redirects to this dataset rather than the dataset in the source repository.
+
+.. code-block:: bash
+
+  curl -H 'Content-Type: application/ld+json' -H X-Dataverse-key:$API_TOKEN -X POST -d '{"schema:datePublished": "2020-10-26","@context":{ "schema":"http://schema.org/"}}' "$SERVER_URL/api/datasets/{id}/actions/:releasemigrated?updatepidatprovider=true"
+
+If the parameter is not added and set to true, other existing APIs can be used to update the PID at the provider later, e.g. :ref:`send-metadata-to-pid-provider`

@@ -26,7 +26,7 @@
         <skipUnitTests>false</skipUnitTests>
     
         <jakartaee-api.version>8.0.0</jakartaee-api.version>
-        <payara.version>5.2021.4</payara.version>
+        <payara.version>5.2021.5</payara.version>
         <postgresql.version>42.2.19</postgresql.version>
         <aws.version>1.11.762</aws.version>
         <commons.logging.version>1.2</commons.logging.version>

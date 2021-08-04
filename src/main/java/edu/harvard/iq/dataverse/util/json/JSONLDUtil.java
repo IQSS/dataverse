@@ -104,12 +104,6 @@ public class JSONLDUtil {
                 LocalDateTime dateTime = getDateTimeFrom(dateString);
                 ds.setModificationTime(Timestamp.valueOf(dateTime));
             }
-            try {
-                logger.fine("Output dsv: " + new OREMap(dsv, false).getOREMap().toString());
-            } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
         }
         return ds;
     }
