@@ -40,19 +40,15 @@ import edu.harvard.iq.dataverse.harvest.server.xoai.XlistRecords;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayOutputStream;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.logging.Logger;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.GZIPOutputStream;
 import javax.ejb.EJB;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.ServletConfig;
