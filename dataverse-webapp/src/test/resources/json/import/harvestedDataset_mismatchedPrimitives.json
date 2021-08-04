@@ -1,0 +1,78 @@
+{
+  "id": 34,
+  "identifier": "FK2/C09YQ7",
+  "persistentUrl": "https://doi.org/10.1815022/FK2/C09YQ7",
+  "protocol": "doi",
+  "authority": "10.1815022",
+  "publisher": "Root",
+  "publicationDate": "2021-07-20",
+  "storageIdentifier": "s3://10.1815022/FK2/C09YQ7",
+  "hasActiveGuestbook": false,
+  "embargoActive": false,
+  "datasetVersion": {
+    "id": 33,
+    "storageIdentifier": "s3://10.1815022/FK2/C09YQ7",
+    "versionNumber": 1,
+    "versionMinorNumber": 0,
+    "versionState": "RELEASED",
+    "productionDate": "Production Date",
+    "lastUpdateTime": "2021-07-20T14:07:02Z",
+    "releaseTime": "2021-07-20T14:07:02Z",
+    "createTime": "2021-07-20T13:35:17Z",
+    "fileAccessRequest": false,
+    "metadataBlocks": {
+      "citation": {
+        "displayName": "Citation Metadata",
+        "fields": [
+          {
+            "typeName": "title",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": "geo"
+          },
+          {
+            "typeName": "otherReferences",
+            "multiple": true,
+            "typeClass": "primitive",
+            "value": [
+              "value 1",
+              "value 2",
+              "value 3"
+            ]
+          },
+          {
+            "typeName": "dataSources",
+            "multiple": true,
+            "typeClass": "primitive",
+            "value": "multi value field passed as single value"
+          },
+          {
+            "typeName": "geographicUnit",
+            "multiple": true,
+            "typeClass": "primitive"
+          },
+          {
+            "typeName": "collectorTraining",
+            "multiple": false,
+            "typeClass": "primitive",
+            "value": [
+              "collectorTraining single value passed as multi"
+            ]
+          },
+          {
+            "typeName": "frequencyOfDataCollection",
+            "multiple": false,
+            "typeClass": "primitive"
+          },
+          {
+            "typeName": "notExistingDatasetField",
+            "multiple": false,
+            "typeClass": "primitive,",
+            "value": "someValue"
+          }
+        ]
+      }
+    },
+    "citation": "Admin, Dataverse, 2021, \"geo\", https://doi.org/10.1815022/FK2/C09YQ7, Root, V1"
+  }
+}

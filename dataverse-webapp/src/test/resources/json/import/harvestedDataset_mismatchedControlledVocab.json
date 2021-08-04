@@ -1,0 +1,139 @@
+{
+  "id": 34,
+  "identifier": "FK2/C09YQ7",
+  "persistentUrl": "https://doi.org/10.1815022/FK2/C09YQ7",
+  "protocol": "doi",
+  "authority": "10.1815022",
+  "publisher": "Root",
+  "publicationDate": "2021-07-20",
+  "storageIdentifier": "s3://10.1815022/FK2/C09YQ7",
+  "hasActiveGuestbook": false,
+  "embargoActive": false,
+  "datasetVersion": {
+    "id": 33,
+    "storageIdentifier": "s3://10.1815022/FK2/C09YQ7",
+    "versionNumber": 1,
+    "versionMinorNumber": 0,
+    "versionState": "RELEASED",
+    "productionDate": "Production Date",
+    "lastUpdateTime": "2021-07-20T14:07:02Z",
+    "releaseTime": "2021-07-20T14:07:02Z",
+    "createTime": "2021-07-20T13:35:17Z",
+    "fileAccessRequest": false,
+    "metadataBlocks": {
+      "citation": {
+        "displayName": "Citation Metadata",
+        "fields": [
+          {
+            "typeName": "subject",
+            "multiple": true,
+            "typeClass": "controlledVocabulary",
+            "value": [
+              "Agricultural Sciences",
+              "Non-existing value",
+              "Other",
+              "Engineering"
+            ]
+          },
+          {
+            "typeName": "language",
+            "multiple": true,
+            "typeClass": "controlledVocabulary"
+          },
+          {
+            "typeName": "kindOfData",
+            "multiple": true,
+            "typeClass": "controlledVocabulary",
+            "value": "StillImage"
+          },
+          {
+            "typeName": "unitOfAnalysis",
+            "multiple": true,
+            "typeClass": "controlledVocabulary",
+            "value": "Non-existing value"
+          },
+          {
+            "typeName": "timeMethod",
+            "multiple": true,
+            "typeClass": "controlledVocabulary",
+            "value": [
+              "Non-existing value 1",
+              "Non-existing value 2"
+            ]
+          },
+          {
+            "typeName": "journalArticleType",
+            "multiple": false,
+            "typeClass": "controlledVocabulary",
+            "value": "correction"
+          },
+          {
+            "typeName": "author",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "authorIdentifierScheme": {
+                  "typeName": "authorIdentifierScheme",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "ORCID"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "publication",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "publicationIDType": {
+                  "typeName": "publicationIDType",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": [
+                    "non-existing value",
+                    "eissn",
+                    "lissn",
+                    "arXiv"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "contributor",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "contributorType": {
+                  "typeName": "contributorType",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary",
+                  "value": "non-existing value"
+                }
+              }
+            ]
+          },
+          {
+            "typeName": "geographicCoverage",
+            "multiple": true,
+            "typeClass": "compound",
+            "value": [
+              {
+                "country": {
+                  "typeName": "country",
+                  "multiple": false,
+                  "typeClass": "controlledVocabulary"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "citation": "Admin, Dataverse, 2021, \"geo\", https://doi.org/10.1815022/FK2/C09YQ7, Root, V1"
+  }
+}
