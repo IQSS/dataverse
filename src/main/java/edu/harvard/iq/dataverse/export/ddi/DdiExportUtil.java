@@ -1442,10 +1442,10 @@ public class DdiExportUtil {
              * included for restricted files but that meant that summary
              * statistics were exposed. (To get at these statistics, API users
              * should instead use the "Data Variable Metadata Access" endpoint.)
-             * These days we return early to avoid this exposure.
+             * These days we skip restricted files to avoid this exposure.
              */
             if (dataFile.isRestricted()) {
-                return;
+                continue;
             }
 
             if (dataFile != null && dataFile.isTabularData()) {
