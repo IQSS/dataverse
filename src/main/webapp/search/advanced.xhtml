@@ -2,6 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf">
@@ -21,6 +22,13 @@
                     <f:viewParam name="dataverseIdentifier" value="#{AdvancedSearchPage.dataverseIdentifier}"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(AdvancedSearchPage.dataverse, bundle['dataverse.search.advancedSearch'])}"/>
                 </f:metadata>
+                <p:fragment>
+                    <p:autoUpdate/>
+                    <ui:repeat value="#{AdvancedSearchPage.vocabScripts}" var="vocabScriptUrl">
+                        <script src="#{vocabScriptUrl}?version=#{systemConfig.getVersion()}"/>
+                    </ui:repeat>
+                </p:fragment>
+                <c:set var="cvocConf" value="#{AdvancedSearchPage.getCVocConf()}"/>
                 <!-- Search Panel -->
                 <div class="panel-group">
                     <h:form id="advancedSearchForm">
@@ -94,9 +102,9 @@
                         <ui:repeat value="#{AdvancedSearchPage.metadataBlocks}" var="mdb" varStatus="status">
                             <div class="panel panel-default" jsf:rendered="#{not empty AdvancedSearchPage.metadataFieldMap.get(mdb.getId())}">
                                 <div data-toggle="collapse" data-target="#panelCollapseCitationFieldList#{mdb.id}" class="panel-heading">
-                                    <h:outputText value="#{bundle['advanced.search.header.datasets']}: #{mdb.localeDisplayName}"/> &#160;<span class="glyphicon #{status.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}"/>
+                                    <h:outputText value="#{bundle['advanced.search.header.datasets']}: #{mdb.localeDisplayName}"/> &#160;<span class="glyphicon glyphicon-chevron-down"/>
                                 </div>
-                                <div id="panelCollapseCitationFieldList#{mdb.id}" class="collapse #{status.first?'in':''} panel-body form-horizontal">
+                                <div id="panelCollapseCitationFieldList#{mdb.id}" class="collapse in panel-body form-horizontal">
                                     <ui:repeat value="#{AdvancedSearchPage.metadataFieldMap.get(mdb.getId())}" var="item">
                                         <div class="form-group">
                                             <label class="col-sm-4 control-label">
@@ -105,7 +113,21 @@
                                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{item.localeDescription}"></span>
                                             </label>
                                             <div class="col-sm-6">
-                                                <p:inputText id="searchValue" styleClass="form-control" value="#{item.searchValue}" rendered="#{empty item.controlledVocabularyValues}"/>
+                                                <ui:param name="cvoc" value="#{cvocConf.containsKey(item.id)? cvocConf.get(item.id): null}"/>
+                                                <ui:fragment rendered="#{cvoc==null}">
+                                                    <p:inputText id="searchValue" styleClass="form-control" value="#{item.searchValue}" rendered="#{empty item.controlledVocabularyValues}"/>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{cvoc!=null and cvoc.getString('term-uri-field').equals(item.name)}">
+                                                    <p:inputText id="searchValue2" styleClass="form-control" value="#{item.searchValue}" rendered="#{empty item.controlledVocabularyValues}">
+                                                        <f:passThroughAttribute name="lang" value="#{AdvancedSearchPage.getFieldLanguage(cvoc.getString('languages'))}"/>
+                                                        <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvoc.getString('cvoc-url','')}"/>
+                                                        <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvoc.getString('protocol','')}"/>
+                                                        <f:passThroughAttribute name="data-cvoc-filter" value="#{cvoc.getString('term-parent-uri','')}"/>
+                                                        <f:passThroughAttribute name="data-cvoc-vocabs" value="#{cvoc.get('vocabs').toString()}"/>
+                                                        <f:passThroughAttribute name="data-cvoc-parent" value="#{cvoc.getString('field-name','')}"/>
+                                                        <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvoc.get('managed-fields').toString()}"/>
+                                                    </p:inputText>
+                                                </ui:fragment>
                                                 <div class="ui-inputfield form-control select-scroll-block" jsf:rendered="#{!empty item.controlledVocabularyValues}">
                                                     <p:selectManyCheckbox value="#{item.listValues}" layout="pageDirection">
                                                         <f:selectItems value="#{item.controlledVocabularyValues}" var="cvs"
@@ -224,6 +246,18 @@
                         </div>
                     </h:form>
                 </div>
+                <script>
+                    //<![CDATA[
+                    $(document).ready(function() {
+                        //The select2 widget used in external vocab scripts has trouble determining the width of an input field if it is initially hidden
+                        //Starting with the metadatablocks displayed and collapsing them here is a work-around to fix that.
+                        //Note - putting defer='defer' on the included ext vocab scripts (~line 28) would make them run after this which doesn't work.
+                        if(#{!cvocConf.isEmpty()}) {
+                            $("div[id^='panelCollapseCitationFieldList']").collapse('hide');
+                        }
+                    });
+                    //]]>
+                </script>
             </ui:define>
         </ui:composition>
     </h:body>
