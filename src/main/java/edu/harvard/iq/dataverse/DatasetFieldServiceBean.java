@@ -315,7 +315,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         JsonObject cvocEntry = getCVocConf(false).get(dft.getId());
         if(dft.isPrimitive()) {
             for(DatasetFieldValue dfv: df.getDatasetFieldValues()) {
-                registerExternalTerm(cvocEntry, dfv.getValue(), cvocEntry.getString("retrieval-uri"), cvocEntry.getString("prefix", null));
+                registerExternalTerm(cvocEntry, dfv.getValue());
             }
             } else {
                 if (df.getDatasetFieldType().isCompound()) {
@@ -324,7 +324,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                         for (DatasetField cdf : cv.getChildDatasetFields()) {
                             logger.info("Found term uri field type id: " + cdf.getDatasetFieldType().getId());
                             if(cdf.getDatasetFieldType().equals(termdft)) {
-                                registerExternalTerm(cvocEntry, cdf.getValue(), cvocEntry.getString("retrieval-uri"), cvocEntry.getString("prefix", null));
+                                registerExternalTerm(cvocEntry, cdf.getValue());
                             }
                         }
                     }
@@ -388,7 +388,9 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         return null;
     }
 
-    private void registerExternalTerm(JsonObject cvocEntry, String term, String retrievalUri, String prefix) {
+    public void registerExternalTerm(JsonObject cvocEntry, String term) {
+        String retrievalUri = cvocEntry.getString("retrieval-uri");
+        String prefix = cvocEntry.getString("prefix", null);
         if(term.isBlank()) {
             logger.fine("Ingoring blank term");
             return;
@@ -565,6 +567,33 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         } else {
             return filteredResponse;
         }
+    }
+
+    public boolean isValidCVocValue(DatasetFieldType dft, String value) {
+        JsonObject jo = getCVocConf(true).get(dft.getId());
+        JsonArray vocabs = jo.getJsonArray("vocabs");
+        boolean valid = false;
+        boolean couldBeFreeText = true;
+        boolean freeTextAllowed = jo.getBoolean("allow-free-text", false);
+        for (JsonObject vocab : vocabs.getValuesAs(JsonObject.class)) {
+            String baseUri = vocab.getString("uriSpace");
+            if (value.startsWith(baseUri)) {
+                valid = true;
+                break;
+            } else {
+                String protocol = baseUri.substring(baseUri.indexOf("://") + 3);
+                if (value.startsWith(protocol)) {
+                    couldBeFreeText = false;
+                    // No break because we need to check for conflicts with all vocabs
+                }
+            }
+        }
+        if (!valid) {
+            if (freeTextAllowed && couldBeFreeText) {
+                valid = true;
+            }
+        }
+        return valid;
     }
     
     /*

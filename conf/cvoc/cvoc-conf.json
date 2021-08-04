@@ -56,6 +56,11 @@
         "prefix": "https://orcid.org/",
         "managed-fields": {},
         "languages":"",
+        "vocabs": {
+            "orcid": {
+                "uriSpace": "https://orcid.org/"
+            }
+        },
         "retrieval-filtering": {
             "@context": {
                 "personName": "https://schema.org/name",
