@@ -164,6 +164,16 @@ public class DdiExportUtil {
         DatasetVersionDTO version = datasetDto.getDatasetVersion();
         String persistentProtocol = datasetDto.getProtocol();
         String persistentAgency = persistentProtocol;
+
+        String persistentAuthority = datasetDto.getAuthority();
+        String persistentId = datasetDto.getIdentifier();
+
+        String pid = persistentProtocol + ":" + persistentAuthority + "/" + persistentId;
+        String pidUri = pid;
+        //Some tests don't send real PIDs - don't try to get their URL form
+        if(!pidUri.equals("null:null/null")) {
+            pidUri= new GlobalId(persistentProtocol + ":" + persistentAuthority + "/" + persistentId).toURL().toString();
+        }
         // The "persistentAgency" tag is used for the "agency" attribute of the 
         // <IDNo> ddi section; back in the DVN3 days we used "handle" and "DOI" 
         // for the 2 supported protocols, respectively. For the sake of backward
@@ -174,8 +184,6 @@ public class DdiExportUtil {
             persistentAgency = "DOI";
         }
         
-        String persistentAuthority = datasetDto.getAuthority();
-        String persistentId = datasetDto.getIdentifier();       
         //docDesc Block
         writeDocDescElement (xmlw, datasetDto);
         //stdyDesc Block
@@ -189,7 +197,9 @@ public class DdiExportUtil {
         
         xmlw.writeStartElement("IDNo");
         writeAttribute(xmlw, "agency", persistentAgency);
-        xmlw.writeCharacters(persistentProtocol + ":" + persistentAuthority + "/" + persistentId);
+        
+        
+        xmlw.writeCharacters(pid);
         xmlw.writeEndElement(); // IDNo
         writeOtherIdElement(xmlw, version);
         xmlw.writeEndElement(); // titlStmt
@@ -225,7 +235,10 @@ public class DdiExportUtil {
         xmlw.writeEndElement(); // diststmt
 
         writeSeriesElement(xmlw, version);
-
+        xmlw.writeStartElement("holdings");
+        writeAttribute(xmlw, "URI", pidUri);
+        xmlw.writeEndElement(); //holdings
+        
         xmlw.writeEndElement(); // citation
         //End Citation Block
         
@@ -1409,10 +1422,10 @@ public class DdiExportUtil {
              * included for restricted files but that meant that summary
              * statistics were exposed. (To get at these statistics, API users
              * should instead use the "Data Variable Metadata Access" endpoint.)
-             * These days we return early to avoid this exposure.
+             * These days we skip restricted files to avoid this exposure.
              */
             if (dataFile.isRestricted()) {
-                return;
+                continue;
             }
 
             if (dataFile != null && dataFile.isTabularData()) {

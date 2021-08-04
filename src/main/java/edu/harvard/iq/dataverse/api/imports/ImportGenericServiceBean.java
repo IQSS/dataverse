@@ -407,7 +407,12 @@ public class ImportGenericServiceBean {
         return null;
     }
     
-    private String reassignIdentifierAsGlobalId(String identifierString, DatasetDTO datasetDTO) {
+    /* This is a general parser that can take DOI and Handle Ids, in their local or
+     * URL forms (e.g. doi:... or https://doi.org/...) and parse them into
+     * protocol/authority/identifier parts that are assigned to the datasetDTO.
+     * The name reflects the original purpose but it is now used in ImportDDIServiceBean as well.
+     */
+    public String reassignIdentifierAsGlobalId(String identifierString, DatasetDTO datasetDTO) {
 
         int index1 = identifierString.indexOf(':');
         int index2 = identifierString.indexOf('/');

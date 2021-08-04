@@ -100,7 +100,7 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
 import java.util.Arrays;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * a 4.0 implementation of the DVN FileUtil;

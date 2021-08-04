@@ -60,7 +60,7 @@
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                         </th>
-                                        <td>
+                                          <td jsf:rendered="#{!anonymized or !settingsWrapper.shouldBeAnonymized(dsf)}">
                                             <!-- Primitive datasetFields -->
                                             <ui:fragment rendered="#{dsf.datasetFieldType.primitive}">
                                                 <h:outputText value="#{dsf.value}"
@@ -115,6 +115,9 @@
                                                 </ui:repeat>
                                             </ui:fragment>
                                         </td>
+                                          <td jsf:rendered="#{anonymized and settingsWrapper.shouldBeAnonymized(dsf)}">
+                                            <h:outputText value="#{bundle['dataset.anonymized.withheld']}"/>
+                                          </td>
                                     </tr>
                                 </ui:repeat>
                             </tbody>
