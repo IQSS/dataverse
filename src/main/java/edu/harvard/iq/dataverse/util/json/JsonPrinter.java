@@ -712,12 +712,12 @@ public class JsonPrinter {
                 jsonField.add("value",
                         f.getDatasetFieldType().isAllowMultiples() ? jsonValues
                                 : jsonValues.get(0));
-                valueArrStack.peek().add(jsonField);
-            }
-            if (!expandedValues.isEmpty()) {
-                jsonField.add("expandedvalue",
-                        f.getDatasetFieldType().isAllowMultiples() ? expandedValues
-                                : expandedValues.get(0));
+                if (!expandedValues.isEmpty()) {
+                    jsonField.add("expandedvalue",
+                            f.getDatasetFieldType().isAllowMultiples() ? expandedValues
+                                    : expandedValues.get(0));
+                }
+                
                 valueArrStack.peek().add(jsonField);
             }
         }
