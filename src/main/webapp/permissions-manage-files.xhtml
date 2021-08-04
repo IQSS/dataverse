@@ -50,7 +50,7 @@
                                             </p:commandLink>
                                         </div>
                                         <div class="panel-group">
-                                            <p:selectBooleanCheckbox value="#{manageFilePermissionsPage.showDeleted}" itemLabel="#{bundle['dataverse.permissionsFiles.files.includeDeleted']}" onchange="#{manageFilePermissionsPage.init()}">
+                                            <p:selectBooleanCheckbox value="#{manageFilePermissionsPage.showDeleted}" itemLabel="#{bundle['dataverse.permissionsFiles.files.includeDeleted']}"  onchange="#{manageFilePermissionsPage.showDeletedCheckboxChange()}">
                                                 <p:ajax update="filesFragment, usersGroups"/>
                                             </p:selectBooleanCheckbox>
                                         </div>
@@ -156,7 +156,7 @@
                                     </p:fragment>
                                     <p:fragment id="filesFragment">
                                         <div class="panel-group">
-                                            <p:selectBooleanCheckbox value="#{manageFilePermissionsPage.showDeleted}" itemLabel="#{bundle['dataverse.permissionsFiles.files.includeDeleted']}" onchange="#{manageFilePermissionsPage.init()}">
+                                            <p:selectBooleanCheckbox value="#{manageFilePermissionsPage.showDeleted}" itemLabel="#{bundle['dataverse.permissionsFiles.files.includeDeleted']}" onchange="#{manageFilePermissionsPage.showDeletedCheckboxChange()}">
                                                 <p:ajax update="filesFragment, usersGroups"/>
                                             </p:selectBooleanCheckbox>
                                         </div>

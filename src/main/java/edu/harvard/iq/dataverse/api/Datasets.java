@@ -1175,7 +1175,7 @@ public class Datasets extends AbstractApiBean {
     @POST
     @Path("{id}/actions/:releasemigrated")
     @Consumes("application/ld+json, application/json-ld")
-    public Response publishMigratedDataset(String jsonldBody, @PathParam("id") String id) {
+    public Response publishMigratedDataset(String jsonldBody, @PathParam("id") String id, @DefaultValue("false") @QueryParam ("updatepidatprovider") boolean contactPIDProvider) {
         try {
             AuthenticatedUser user = findAuthenticatedUserOrDie();
             if (!user.isSuperuser()) {
@@ -1239,11 +1239,11 @@ public class Datasets extends AbstractApiBean {
                 if (prePubWf.isPresent()) {
                     // Start the workflow, the workflow will call FinalizeDatasetPublication later
                     wfService.start(prePubWf.get(),
-                            new WorkflowContext(createDataverseRequest(user), ds, TriggerType.PrePublishDataset, false),
+                            new WorkflowContext(createDataverseRequest(user), ds, TriggerType.PrePublishDataset, !contactPIDProvider),
                             false);
                 } else {
                     FinalizeDatasetPublicationCommand cmd = new FinalizeDatasetPublicationCommand(ds,
-                            createDataverseRequest(user), false);
+                            createDataverseRequest(user), !contactPIDProvider);
                     ds = commandEngine.submit(cmd);
                 }
             } catch (CommandException ex) {

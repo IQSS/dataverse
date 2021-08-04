@@ -2782,13 +2782,21 @@ public class DatasetPage implements java.io.Serializable {
 
     public String deleteDatasetVersion() {
         DeleteDatasetVersionCommand cmd;
+        
+        Map<Long, String> deleteStorageLocations = datafileService.getPhysicalFilesToDelete(dataset.getLatestVersion());
+        boolean deleteCommandSuccess = false;
         try {
             cmd = new DeleteDatasetVersionCommand(dvRequestService.getDataverseRequest(), dataset);
             commandEngine.submit(cmd);
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("datasetVersion.message.deleteSuccess"));
+            deleteCommandSuccess = true;
         } catch (CommandException ex) {
             JH.addMessage(FacesMessage.SEVERITY_FATAL, BundleUtil.getStringFromBundle("dataset.message.deleteFailure"));
             logger.severe(ex.getMessage());
+        }
+        
+        if (deleteCommandSuccess && !deleteStorageLocations.isEmpty()) {
+            datafileService.finalizeFileDeletes(deleteStorageLocations);
         }
 
         return returnToDatasetOnly();
