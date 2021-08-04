@@ -112,6 +112,7 @@ function updateSkosmosInputs() {
             let managedFields = JSON.parse($(skosmosInput).attr('data-cvoc-managedfields'));
             let parentField = $(skosmosInput).attr('data-cvoc-parent');
             let termParentUri = $(skosmosInput).attr('data-cvoc-filter');
+            let allowFreeText = $(skosmosInput).attr('data-cvoc-allowfreetext');
             let selectId = "skosmosAddSelect_" + num;
             //Pick the first entry as the default to start with when there is more than one vocab
             let vocab = Object.keys(vocabs)[0];
@@ -148,7 +149,7 @@ function updateSkosmosInputs() {
             //Setup select2 - this allows users to find a vocab by typing a few letters in it to filter the list
             $("#" + vocabId).select2({
                 theme: "bootstrap",
-                tags: false,
+                tags: allowFreeText,
                 delay: 500,
                 templateResult: function(item) {
                     // No need to template the searching text

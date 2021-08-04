@@ -124,6 +124,7 @@
                                                         <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvoc.getString('protocol','')}"/>
                                                         <f:passThroughAttribute name="data-cvoc-filter" value="#{cvoc.getString('term-parent-uri','')}"/>
                                                         <f:passThroughAttribute name="data-cvoc-vocabs" value="#{cvoc.get('vocabs').toString()}"/>
+                                                        <f:passThroughAttribute name="data-cvoc-allowfreetext" value="#{cvoc.getBoolean('allow-free-text', false)}"/>
                                                         <f:passThroughAttribute name="data-cvoc-parent" value="#{cvoc.getString('field-name','')}"/>
                                                         <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvoc.get('managed-fields').toString()}"/>
                                                     </p:inputText>
