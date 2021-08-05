@@ -11,7 +11,7 @@ import edu.harvard.iq.dataverse.license.dto.LicenseMapper;
 import edu.harvard.iq.dataverse.license.dto.LocaleTextDto;
 import edu.harvard.iq.dataverse.persistence.config.URLValidator;
 import edu.harvard.iq.dataverse.persistence.datafile.license.License;
-import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
+import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseRepository;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang.StringUtils;
@@ -53,10 +53,7 @@ public class LicenseListingPage implements Serializable {
     private PermissionsWrapper permissionsWrapper;
 
     @Inject
-    private LicenseDAO licenseDAO;
-
-    @Inject
-    private GenericDao genericDao;
+    private LicenseRepository licenseRepository;
 
     @Inject
     private LicenseMapper licenseMapper;
@@ -102,7 +99,7 @@ public class LicenseListingPage implements Serializable {
             return permissionsWrapper.notAuthorized();
         }
 
-        licenses = licenseMapper.mapToDtos(licenseDAO.findAll());
+        licenses = licenseMapper.mapToDtos(licenseRepository.findAllOrderedByPosition());
         removeLicenseLanguagesNotPresentInDataverse(licenses);
 
         freshLicense = prepareFreshLicense();
@@ -145,15 +142,15 @@ public class LicenseListingPage implements Serializable {
      */
     public void saveLicenseActiveStatus(LicenseDto licenseDto) {
 
-        if (licenseDAO.countActiveLicenses() <= 1 && !licenseDto.isActive()) {
+        if (licenseRepository.countActiveLicenses() <= 1 && !licenseDto.isActive()) {
             licenseDto.setActive(true);
             displayNoLicensesActiveWarningMessage();
             return;
         }
 
-        License license = licenseDAO.find(licenseDto.getId());
+        License license = licenseRepository.getById(licenseDto.getId());
         license.setActive(licenseDto.isActive());
-        licenseDAO.saveChanges(license);
+        licenseRepository.save(license);
     }
 
     /**
@@ -163,9 +160,9 @@ public class LicenseListingPage implements Serializable {
      */
     public String saveNewLicense() {
 
-        freshLicense.setPosition(licenseDAO.findMaxLicensePosition() + 1);
+        freshLicense.setPosition(licenseRepository.findMaxLicensePosition() + 1);
         License license = licenseMapper.mapToLicense(freshLicense);
-        licenseDAO.save(license);
+        licenseRepository.save(license);
 
         freshLicense = prepareFreshLicense();
 
@@ -174,9 +171,9 @@ public class LicenseListingPage implements Serializable {
 
     public String saveEditedLicense(LicenseDto licenseDto) {
 
-        License license = licenseDAO.find(licenseDto.getId());
+        License license = licenseRepository.getById(licenseDto.getId());
         license = licenseMapper.editLicense(licenseDto, license);
-        licenseDAO.saveChanges(license);
+        licenseRepository.save(license);
 
         return "/dashboard-licenses.xhtml?&faces-redirect=true";
     }

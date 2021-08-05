@@ -1,7 +1,7 @@
 package edu.harvard.iq.dataverse.license;
 
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
-import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
+import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseRepository;
 import edu.harvard.iq.dataverse.persistence.datafile.license.TermsOfUseForm;
 import javax.faces.view.ViewScoped;
 
@@ -20,7 +20,7 @@ import java.util.List;
 public class EditTermsOfUseDialog implements Serializable {
 
     @EJB
-    private LicenseDAO licenseDao;
+    private LicenseRepository licenseRepository;
 
     @EJB
     private TermsOfUseFactory termsOfUseFactory;

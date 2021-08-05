@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import io.vavr.control.Option;
+import org.apache.commons.lang3.EnumUtils;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -111,16 +112,15 @@ public class HarvestedJsonParser {
 
             dsv.setDatasetFields(parseMetadataBlocks(obj.getJsonObject("metadataBlocks")));
 
+
+            FileTermsOfUse oldLicense = parseLicense(obj.getString("license", null))
+                    .getOrElse(termsOfUseFactory.createUnknownTermsOfUse());
+
             JsonArray filesJson = obj.getJsonArray("files");
 
-            Option<FileTermsOfUse> oldLicense = parseLicense(obj.getString("license", null));
-
-            if (filesJson == null) {
-                filesJson = obj.getJsonArray("fileMetadatas");
-            }
             if (filesJson != null) {
                 List<FileMetadata> parsedMetadataFiles = parseFiles(filesJson, dsv, oldLicense);
-                dsv.setFileMetadatas(new LinkedList<>());
+
                 for (FileMetadata parsedMetadataFile : parsedMetadataFiles) {
                     dsv.addFileMetadata(parsedMetadataFile);
                 }
@@ -145,10 +145,6 @@ public class HarvestedJsonParser {
     private Option<FileTermsOfUse> parseLicense(String inString) {
         if (inString != null && inString.equalsIgnoreCase("CC0")) {
             return Option.of(termsOfUseFactory.createTermsOfUseFromCC0License());
-        }
-
-        if (inString != null && inString.equalsIgnoreCase("NONE")) {
-            return Option.of(termsOfUseFactory.createUnknownTermsOfUse());
         }
 
         return Option.none();
@@ -376,7 +372,7 @@ public class HarvestedJsonParser {
         return datasetFieldValue;
     }
 
-    private List<FileMetadata> parseFiles(JsonArray metadatasJson, DatasetVersion dsv, Option<FileTermsOfUse> license) throws JsonParseException {
+    private List<FileMetadata> parseFiles(JsonArray metadatasJson, DatasetVersion dsv, FileTermsOfUse termsOfUseFallback) throws JsonParseException {
         List<FileMetadata> fileMetadatas = new LinkedList<>();
 
         if (metadatasJson != null) {
@@ -391,11 +387,7 @@ public class HarvestedJsonParser {
                 fileMetadata.setDescription(description);
                 fileMetadata.setDatasetVersion(dsv);
 
-                boolean isLicenseAvailableAndSet = setDatasetBasedLicense(license, fileMetadata);
-
-                if (!isLicenseAvailableAndSet) {
-                    setFileBasedLicense(filemetadataJson, fileMetadata);
-                }
+                fileMetadata.setTermsOfUse(parseFileTermsOfUse(filemetadataJson).getOrElse(termsOfUseFallback));
 
                 if (filemetadataJson.containsKey("dataFile")) {
                     DataFile dataFile = parseDataFile(filemetadataJson.getJsonObject("dataFile"));
@@ -417,32 +409,37 @@ public class HarvestedJsonParser {
         return fileMetadatas;
     }
 
-    private Boolean setDatasetBasedLicense(Option<FileTermsOfUse> license, FileMetadata fileMetadata) {
-        return license.toStream()
-                .map(datasetLicense -> {
-                    fileMetadata.setTermsOfUse(datasetLicense);
-                    return true;
-                }).getOrElse(false);
-    }
+    private Option<FileTermsOfUse> parseFileTermsOfUse(JsonObject filemetadataJson) {
 
-    private void setFileBasedLicense(JsonObject filemetadataJson, FileMetadata fileMetadata) {
-        String termsOfUseType = filemetadataJson.getString("termsOfUseType");
+        String termsOfUseType = filemetadataJson.getString("termsOfUseType", FileTermsOfUse.TermsOfUseType.TERMS_UNKNOWN.name());
 
         if (FileTermsOfUse.TermsOfUseType.LICENSE_BASED.name().equals(termsOfUseType)) {
-            fileMetadata.setTermsOfUse(termsOfUseFactory.createTermsOfUseWithExistingLicense(filemetadataJson.getString("licenseName")));
+            String licenseName = filemetadataJson.getString("licenseName");
+            return Option.ofOptional(termsOfUseFactory.createTermsOfUseWithExistingLicense(licenseName));
         }
-        if (FileTermsOfUse.TermsOfUseType.ALL_RIGHTS_RESERVED.name().equals(termsOfUseType)) {
-            fileMetadata.setTermsOfUse(termsOfUseFactory.createAllRightsReservedTermsOfUse());
-        }
-        if (FileTermsOfUse.TermsOfUseType.RESTRICTED.name().equals(termsOfUseType)) {
-            final String accessConditions = filemetadataJson.getString("accessConditions");
 
-            if (FileTermsOfUse.RestrictType.CUSTOM.name().equals(accessConditions)) {
-                fileMetadata.setTermsOfUse(termsOfUseFactory.createRestrictedCustomTermsOfUse(filemetadataJson.getString("accessConditionsCustomText")));
-            } else {
-                fileMetadata.setTermsOfUse(termsOfUseFactory.createRestrictedTermsOfUse(FileTermsOfUse.RestrictType.valueOf(accessConditions)));
-            }
+        if (FileTermsOfUse.TermsOfUseType.ALL_RIGHTS_RESERVED.name().equals(termsOfUseType)) {
+            return Option.some(termsOfUseFactory.createAllRightsReservedTermsOfUse());
         }
+
+        if (FileTermsOfUse.TermsOfUseType.RESTRICTED.name().equals(termsOfUseType)){
+            String accessConditions = filemetadataJson.getString("accessConditions");
+
+            if (!EnumUtils.isValidEnum(FileTermsOfUse.RestrictType.class, accessConditions)) {
+                return Option.none();
+            }
+            FileTermsOfUse.RestrictType restrictType = FileTermsOfUse.RestrictType.valueOf(accessConditions);
+                
+            if (FileTermsOfUse.RestrictType.CUSTOM == restrictType){
+                String accessConditionsCustomText = filemetadataJson.getString("accessConditionsCustomText");
+                return Option.some(termsOfUseFactory.createRestrictedCustomTermsOfUse(accessConditionsCustomText));
+            } else {
+                return Option.some(termsOfUseFactory.createRestrictedTermsOfUse(restrictType));
+            }
+
+        }
+        
+        return Option.none();
     }
 
     private List<DataFileCategory> getCategories(JsonObject filemetadataJson, Dataset dataset) {

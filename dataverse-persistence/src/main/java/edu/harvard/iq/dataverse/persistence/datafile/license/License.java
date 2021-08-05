@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.persistence.datafile.license;
 
 import com.google.common.base.Preconditions;
+import edu.harvard.iq.dataverse.persistence.JpaEntity;
 
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
@@ -26,10 +27,11 @@ import java.util.Locale;
  * @author madryk
  */
 @Entity
-public class License implements Serializable {
+public class License implements Serializable, JpaEntity<Long> {
 
     private static final long serialVersionUID = 1L;
     public static final long CC0_LICENSE_ID = 1;
+    public static final String CCO_LICENSE_NAME = "CC0 Creative Commons Zero 1.0 Waiver";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

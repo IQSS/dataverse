@@ -43,7 +43,6 @@ public class DatasetVersionDTO {
     boolean inReview;
 
     Map<String, MetadataBlockDTO> metadataBlocks;
-    List<FileMetadataDTO> fileMetadatas;
     List<FileDTO> files;
 
     public boolean isInReview() {
@@ -190,14 +189,6 @@ public class DatasetVersionDTO {
         this.UNF = UNF;
     }
 
-    public List<FileMetadataDTO> getFileMetadatas() {
-        return fileMetadatas;
-    }
-
-    public void setFileMetadatas(List<FileMetadataDTO> fileMetadatas) {
-        this.fileMetadatas = fileMetadatas;
-    }
-
     public List<FileDTO> getFiles() {
         return files;
     }
@@ -322,7 +313,7 @@ public class DatasetVersionDTO {
 
     @Override
     public String toString() {
-        return "DatasetVersionDTO{" + "archiveNote=" + archiveNote + ", deacessionLink=" + deacessionLink + ", versionNumber=" + versionNumber + ", versionMinorNumber=" + versionMinorNumber + ", id=" + id + ", versionState=" + versionState + ", releaseDate=" + releaseDate + ", lastUpdateTime=" + lastUpdateTime + ", createTime=" + createTime + ", archiveTime=" + archiveTime + ", UNF=" + UNF + ", metadataBlocks=" + metadataBlocks + ", fileMetadatas=" + fileMetadatas + '}';
+        return "DatasetVersionDTO{" + "archiveNote=" + archiveNote + ", deacessionLink=" + deacessionLink + ", versionNumber=" + versionNumber + ", versionMinorNumber=" + versionMinorNumber + ", id=" + id + ", versionState=" + versionState + ", releaseDate=" + releaseDate + ", lastUpdateTime=" + lastUpdateTime + ", createTime=" + createTime + ", archiveTime=" + archiveTime + ", UNF=" + UNF + ", metadataBlocks=" + metadataBlocks + ", files=" + files + '}';
     }
 
 

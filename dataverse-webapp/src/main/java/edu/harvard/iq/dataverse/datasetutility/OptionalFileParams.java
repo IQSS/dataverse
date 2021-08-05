@@ -28,7 +28,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataFileTag;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.datafile.license.License;
-import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
+import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseRepository;
 
 /**
  * This is used in conjunction with the AddReplaceFileHelper
@@ -51,7 +51,7 @@ public class OptionalFileParams implements Serializable {
 
     private static final Logger logger = Logger.getLogger(OptionalFileParams.class.getName());
 
-    private LicenseDAO licenseDAO;
+    private LicenseRepository licenseRespository;
     private TermsOfUseFactory termsOfUseFactory;
 
     private String description;
@@ -72,8 +72,8 @@ public class OptionalFileParams implements Serializable {
     }
 
     @Inject
-    public OptionalFileParams(LicenseDAO licenseDAO, TermsOfUseFactory termsOfUseFactory) {
-        this.licenseDAO = licenseDAO;
+    public OptionalFileParams(LicenseRepository licenseRepository, TermsOfUseFactory termsOfUseFactory) {
+        this.licenseRespository = licenseRepository;
         this.termsOfUseFactory = termsOfUseFactory;
     }
 
@@ -317,7 +317,7 @@ public class OptionalFileParams implements Serializable {
         }
 
         if(this.getFileTermsOfUseDTO().getTermsType().equals(FileTermsOfUse.TermsOfUseType.LICENSE_BASED.toString())) {
-            License license = licenseDAO.findActive()
+            License license = licenseRespository.findActiveOrderedByPosition()
                     .stream()
                     .filter(l -> l.getName().equals(this.getFileTermsOfUseDTO().getLicense()))
                     .findFirst()

@@ -2,61 +2,42 @@ package edu.harvard.iq.dataverse.api.dto;
 
 public class FileDTO {
 
-    String label;
-    boolean restricted;
-    DataFileDTO dataFile;
+    private String label;
+    private String description;
+    private boolean restricted;
+    private DataFileDTO dataFile;
     private String termsOfUseType;
     private String licenseName;
     private String licenseUrl;
     private String accessConditions;
     private String accessConditionsCustomText;
 
-    public String getLicenseUrl() {
-        return licenseUrl;
-    }
-
-    public void setLicenseUrl(String licenseUrl) {
-        this.licenseUrl = licenseUrl;
-    }
-
-    public String getLicenseName() {
-        return licenseName;
-    }
-
-    public void setLicenseName(String licenseName) {
-        this.licenseName = licenseName;
-    }
-
-    public String getTermsOfUseType() {
-        return termsOfUseType;
-    }
-
-    public void setTermsOfUseType(String termsOfUseType) {
-        this.termsOfUseType = termsOfUseType;
-    }
-
-    public DataFileDTO getDataFile() {
-        return dataFile;
-    }
-
-    public void setDataFile(DataFileDTO datafile) {
-        this.dataFile = datafile;
-    }
-
     public String getLabel() {
         return label;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public String getDescription() {
+        return description;
     }
 
     public boolean isRestricted() {
         return restricted;
     }
 
-    public void setRestricted(boolean restricted) {
-        this.restricted = restricted;
+    public DataFileDTO getDataFile() {
+        return dataFile;
+    }
+
+    public String getTermsOfUseType() {
+        return termsOfUseType;
+    }
+
+    public String getLicenseName() {
+        return licenseName;
+    }
+
+    public String getLicenseUrl() {
+        return licenseUrl;
     }
 
     public String getAccessConditions() {
@@ -65,6 +46,35 @@ public class FileDTO {
 
     public String getAccessConditionsCustomText() {
         return accessConditionsCustomText;
+    }
+
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setRestricted(boolean restricted) {
+        this.restricted = restricted;
+    }
+
+    public void setDataFile(DataFileDTO dataFile) {
+        this.dataFile = dataFile;
+    }
+
+    public void setTermsOfUseType(String termsOfUseType) {
+        this.termsOfUseType = termsOfUseType;
+    }
+
+    public void setLicenseName(String licenseName) {
+        this.licenseName = licenseName;
+    }
+
+    public void setLicenseUrl(String licenseUrl) {
+        this.licenseUrl = licenseUrl;
     }
 
     public void setAccessConditions(String accessConditions) {

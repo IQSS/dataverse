@@ -34,6 +34,7 @@ import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
 import javax.ejb.EJB;
@@ -201,7 +202,7 @@ public class ImportServiceBean {
         }
     }
 
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @TransactionAttribute(REQUIRES_NEW)
     public Dataset doImportHarvestedDataset(DataverseRequest dataverseRequest, HarvestingClient harvestingClient, String harvestIdentifier, String metadataFormat, File metadataFile, PrintWriter cleanupLog) throws ImportException, IOException {
         if (harvestingClient == null || harvestingClient.getDataverse() == null) {
             throw new ImportException("importHarvestedDataset called wiht a null harvestingClient, or an invalid harvestingClient.");
@@ -369,17 +370,10 @@ public class ImportServiceBean {
 
         } catch (JsonParseException | ImportException | CommandException ex) {
             logger.fine("Failed to import harvested dataset: " + ex.getClass() + ": " + ex.getMessage());
-            FileOutputStream savedJsonFileStream = new FileOutputStream(new File(metadataFile.getAbsolutePath() + ".json"));
-            byte[] jsonBytes = json.getBytes();
-            int i = 0;
-            while (i < jsonBytes.length) {
-                int chunkSize = i + 8192 <= jsonBytes.length ? 8192 : jsonBytes.length - i;
-                savedJsonFileStream.write(jsonBytes, i, chunkSize);
-                i += chunkSize;
-                savedJsonFileStream.flush();
-            }
-            savedJsonFileStream.close();
-            logger.info("JSON produced saved in " + metadataFile.getAbsolutePath() + ".json");
+            File jsonDumpFile = new File(metadataFile.getAbsolutePath() + ".json");
+            FileUtils.writeByteArrayToFile(jsonDumpFile, json.getBytes());
+
+            logger.info("JSON produced saved in " + jsonDumpFile.getAbsolutePath() + ".json");
             throw new ImportException("Failed to import harvested dataset: " + ex.getClass() + " (" + ex.getMessage() + ")", ex);
         }
         return importedDataset;
@@ -692,27 +686,5 @@ public class ImportServiceBean {
         return null;
     }
 
-
-    private static class MyCustomFormatter extends Formatter {
-
-        @Override
-
-        public String format(LogRecord record) {
-
-            StringBuffer sb = new StringBuffer();
-
-            sb.append("Prefixn");
-
-            sb.append(record.getMessage());
-
-            sb.append("Suffixn");
-
-            sb.append("n");
-
-            return sb.toString();
-
-        }
-
-    }
 
 }

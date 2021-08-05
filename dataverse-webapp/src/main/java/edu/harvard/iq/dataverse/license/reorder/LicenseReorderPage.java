@@ -6,7 +6,7 @@ import edu.harvard.iq.dataverse.PermissionsWrapper;
 import edu.harvard.iq.dataverse.license.dto.LicenseMapper;
 import edu.harvard.iq.dataverse.license.dto.LicenseSimpleDto;
 import edu.harvard.iq.dataverse.persistence.datafile.license.License;
-import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
+import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseRepository;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
@@ -33,7 +33,7 @@ public class LicenseReorderPage implements Serializable {
     private PermissionsWrapper permissionsWrapper;
 
     @Inject
-    private LicenseDAO licenseDAO;
+    private LicenseRepository licenseRepository;
 
     @Inject
     private LicenseMapper licenseMapper;
@@ -68,7 +68,7 @@ public class LicenseReorderPage implements Serializable {
             return permissionsWrapper.notAuthorized();
         }
 
-        licenses = licenseMapper.mapToSimpleDtos(licenseDAO.findAll(), Locale.forLanguageTag(session.getLocaleCode()));
+        licenses = licenseMapper.mapToSimpleDtos(licenseRepository.findAllOrderedByPosition(), Locale.forLanguageTag(session.getLocaleCode()));
 
         return StringUtils.EMPTY;
     }
@@ -111,9 +111,9 @@ public class LicenseReorderPage implements Serializable {
 
         licenses.forEach(licenseDto ->
                          {
-                             License license = licenseDAO.find(licenseDto.getLicenseId());
+                             License license = licenseRepository.getById(licenseDto.getLicenseId());
                              license.setPosition(licenses.indexOf(licenseDto) + 1L);
-                             licenseDAO.saveChanges(license);
+                             licenseRepository.save(license);
                          });
 
         return "/dashboard-licenses.xhtml?&faces-redirect=true";

@@ -14,10 +14,11 @@ import org.apache.commons.lang.StringUtils;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.*;
-import org.junit.runner.*;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import javax.inject.Inject;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -25,7 +26,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
@@ -48,6 +49,7 @@ public class HarvestedJsonParserIT extends WebappArquillianDeployment {
         final FileTermsOfUse repodFile = retrieveDatafileByName(dataset.getFiles(), "repod-resized.png").getTermsOfUse();
         final FileTermsOfUse rorDataFile = retrieveDatafileByName(dataset.getFiles(), "rorData.json").getTermsOfUse();
         final FileTermsOfUse sampleFile = retrieveDatafileByName(dataset.getFiles(), "sample.pdf").getTermsOfUse();
+        final FileTermsOfUse txtFile = retrieveDatafileByName(dataset.getFiles(), "file.txt").getTermsOfUse();
 
         assertThat(mxrdrFile).extracting(FileTermsOfUse::isAllRightsReserved).isEqualTo(true);
 
@@ -62,6 +64,7 @@ public class HarvestedJsonParserIT extends WebappArquillianDeployment {
         assertThat(sampleFile).extracting(FileTermsOfUse::getTermsOfUseType).isEqualTo(FileTermsOfUse.TermsOfUseType.RESTRICTED);
         assertThat(sampleFile).extracting(FileTermsOfUse::getRestrictType).isEqualTo(FileTermsOfUse.RestrictType.ACADEMIC_PURPOSE);
 
+        assertThat(txtFile).extracting(FileTermsOfUse::getTermsOfUseType).isEqualTo(FileTermsOfUse.TermsOfUseType.TERMS_UNKNOWN);
     }
 
     @Test

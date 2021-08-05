@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse.license;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.RestrictType;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
-import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
+import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseRepository;
 import edu.harvard.iq.dataverse.persistence.datafile.license.TermsOfUseForm;
 import org.apache.commons.lang3.StringUtils;
 
@@ -18,7 +18,7 @@ import javax.inject.Inject;
 @Stateless
 public class TermsOfUseFormMapper {
 
-    private LicenseDAO licenseDao;
+    private LicenseRepository licenseRepository;
 
 
     // -------------------- CONSTRUCTORS --------------------
@@ -28,8 +28,8 @@ public class TermsOfUseFormMapper {
     }
 
     @Inject
-    public TermsOfUseFormMapper(LicenseDAO licenseDao) {
-        this.licenseDao = licenseDao;
+    public TermsOfUseFormMapper(LicenseRepository licenseRepository) {
+        this.licenseRepository = licenseRepository;
     }
 
     // -------------------- LOGIC --------------------
@@ -48,7 +48,7 @@ public class TermsOfUseFormMapper {
             termsOfUse.setRestrictCustomText(termsOfUseForm.getCustomRestrictText());
         } else if (termsOfUseForm.getTypeWithLicenseId().startsWith(TermsOfUseType.LICENSE_BASED.toString())) {
             String licenseId = termsOfUseForm.getTypeWithLicenseId().split(":")[1];
-            termsOfUse.setLicense(licenseDao.find(Long.parseLong(licenseId)));
+            termsOfUse.setLicense(licenseRepository.getById(Long.parseLong(licenseId)));
         }
 
         return termsOfUse;

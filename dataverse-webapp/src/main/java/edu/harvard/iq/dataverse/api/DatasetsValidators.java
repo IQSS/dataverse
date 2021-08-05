@@ -4,7 +4,7 @@ import com.amazonaws.services.pi.model.InvalidArgumentException;
 import edu.harvard.iq.dataverse.api.dto.FileTermsOfUseDTO;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
-import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
+import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseRepository;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import org.apache.commons.cli.MissingArgumentException;
 import org.apache.commons.lang.StringUtils;
@@ -19,7 +19,7 @@ import java.util.Date;
 
 @Stateless
 public class DatasetsValidators {
-    private LicenseDAO licenseDAO;
+    private LicenseRepository licenseRepository;
     private SettingsServiceBean settingsService;
 
     // -------------------- CONSTRUCTORS --------------------
@@ -28,8 +28,8 @@ public class DatasetsValidators {
     }
 
     @Inject
-    public DatasetsValidators(LicenseDAO licenseDAO, SettingsServiceBean settingsService) {
-        this.licenseDAO = licenseDAO;
+    public DatasetsValidators(LicenseRepository licenseRepository, SettingsServiceBean settingsService) {
+        this.licenseRepository = licenseRepository;
         this.settingsService = settingsService;
     }
 
@@ -103,7 +103,7 @@ public class DatasetsValidators {
                     FileTermsOfUse.TermsOfUseType.LICENSE_BASED.toString()));
         }
 
-        licenseDAO.findActive()
+        licenseRepository.findActiveOrderedByPosition()
                 .stream()
                 .filter(license -> license.getName().equals(fileTermsOfUseDTO.getLicense()))
                 .findAny()

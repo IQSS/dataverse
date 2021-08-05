@@ -63,8 +63,8 @@
         <topcClas vocab="dict" vocabURI="http://dict.com">topic 1</topcClas>
         <topcClas vocab="dict 2" vocabURI="http://dict2.com">topic 2</topcClas>
       </subject>
-      <abstract>&lt;p&gt;some description&lt;/p&gt;</abstract>
-      <abstract>&lt;p&gt;second description&lt;/p&gt;</abstract>
+      <abstract date="1999">&lt;p&gt;some description&lt;/p&gt;</abstract>
+      <abstract date="2000-08">&lt;p&gt;second description&lt;/p&gt;</abstract>
       <sumDscr>
         <timePrd cycle="P1" event="start" date="1001">1001</timePrd>
         <timePrd cycle="P1" event="end" date="1002">1002</timePrd>

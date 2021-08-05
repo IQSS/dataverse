@@ -3,7 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientDao;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
-import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
+import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseRepository;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseRepository;
@@ -53,7 +53,7 @@ public class DashboardPage implements java.io.Serializable {
     @Inject
     NavigationWrapper navigationWrapper;
     @Inject
-    private LicenseDAO licenseDAO;
+    private LicenseRepository licenseRepository;
 
     /*
      in breadcrumbs the dashboard page always appears as if it belongs to the 
@@ -196,7 +196,7 @@ public class DashboardPage implements java.io.Serializable {
      * @return active and inactive licenses count
      */
     public Tuple2<Long, Long> getActiveAndInactiveLicensesCount() {
-        return Tuple.of(licenseDAO.countActiveLicenses(), licenseDAO.countInactiveLicenses());
+        return Tuple.of(licenseRepository.countActiveLicenses(), licenseRepository.countInactiveLicenses());
     }
 
     public Long getTotalNumberOfDatasets() {

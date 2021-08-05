@@ -5,7 +5,7 @@ import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.RestrictType;
 import edu.harvard.iq.dataverse.persistence.datafile.license.License;
-import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
+import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseRepository;
 import edu.harvard.iq.dataverse.persistence.datafile.license.TermsOfUseForm;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
@@ -26,7 +26,7 @@ import java.util.Optional;
 public class TermsOfUseSelectItemsFactory implements Serializable {
 
     @EJB
-    private LicenseDAO licenseDao;
+    private LicenseRepository licenseRepository;
 
     @EJB
     private TermsOfUseFactory termsOfUseFactory;
@@ -46,7 +46,7 @@ public class TermsOfUseSelectItemsFactory implements Serializable {
     public List<SelectItem> buildLicenseSelectItems() {
         List<SelectItem> selectItems = new ArrayList<>();
 
-        for (License license : licenseDao.findActive()) {
+        for (License license : licenseRepository.findActiveOrderedByPosition()) {
             FileTermsOfUse termsOfUse = termsOfUseFactory.createTermsOfUseFromLicense(license);
 
             selectItems.add(buildSelectItem(termsOfUse, license.getLocalizedName(session.getLocale())));

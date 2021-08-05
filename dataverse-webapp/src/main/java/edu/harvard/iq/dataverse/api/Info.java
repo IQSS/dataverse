@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.api;
 
 import com.google.api.client.util.Lists;
 import edu.harvard.iq.dataverse.license.dto.ActiveLicenseDto;
-import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
+import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseRepository;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
@@ -23,7 +23,7 @@ public class Info extends AbstractApiBean {
     SettingsServiceBean settingsService;
 
     @Inject
-    private LicenseDAO licenseDAO;
+    private LicenseRepository licenseRepository;
 
     @EJB
     SystemConfig systemConfig;
@@ -67,7 +67,7 @@ public class Info extends AbstractApiBean {
     @Path("activeLicenses")
     public Response getActiveLicenses() {
         List<ActiveLicenseDto> activeLicenses = Lists.newArrayList();
-        licenseDAO.findActive()
+        licenseRepository.findActiveOrderedByPosition()
                 .forEach(license -> activeLicenses.add(new ActiveLicenseDto(license.getName())));
 
         return allowCors(response(req -> ok(

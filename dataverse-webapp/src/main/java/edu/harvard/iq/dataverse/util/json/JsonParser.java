@@ -317,9 +317,6 @@ public class JsonParser {
             dsv.setDatasetFields(parseMetadataBlocks(obj.getJsonObject("metadataBlocks")));
 
             JsonArray filesJson = obj.getJsonArray("files");
-            if (filesJson == null) {
-                filesJson = obj.getJsonArray("fileMetadatas");
-            }
             if (filesJson != null) {
                 List<FileMetadata> parsedMetadataFiles = parseFiles(filesJson, dsv);
                 dsv.setFileMetadatas(new LinkedList<>());

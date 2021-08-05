@@ -240,6 +240,33 @@
             "value": "4b41a3475132bd861b30a878e30aa56a"
           }
         }
+      },
+      {
+        "label": "file.txt",
+        "restricted": false,
+        "termsOfUseType": "LICENSE_BASED",
+        "licenseName": "Some unknown license",
+        "licenseUrl": "https://unknown.com",
+        "accessConditions": "",
+        "version": 1,
+        "datasetVersionId": 33,
+        "dataFile":
+        {
+          "id": 39,
+          "persistentId": "",
+          "pidURL": "",
+          "filename": "sample.pdf",
+          "contentType": "text/plain",
+          "filesize": 2,
+          "storageIdentifier": "s3://dataverse:17ac43d914e-e8dd494aa833",
+          "rootDataFileId": -1,
+          "md5": "b026324c6904b2a9cb4b88d6d61c81d1",
+          "checksum":
+          {
+            "type": "MD5",
+            "value": "b026324c6904b2a9cb4b88d6d61c81d1"
+          }
+        }
       }
     ],
     "citation": "Admin, Dataverse, 2021, \"geo\", https://doi.org/10.1815022/FK2/C09YQ7, Root, V1"

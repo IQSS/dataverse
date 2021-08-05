@@ -11,7 +11,7 @@ import edu.harvard.iq.dataverse.datafile.file.ReplaceFileHandler;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
-import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
+import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseRepository;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -61,7 +61,7 @@ public class ReplaceFileHandlerIT extends WebappArquillianDeployment {
     private DataverseDao dataverseDao;
 
     @EJB
-    private LicenseDAO licenseDAO;
+    private LicenseRepository licenseRepository;
 
     @Inject
     private DataverseSession dataverseSession;
@@ -157,7 +157,7 @@ public class ReplaceFileHandlerIT extends WebappArquillianDeployment {
         fmd.setLabel(filename);
 
         FileTermsOfUse termsOfUse = new FileTermsOfUse();
-        termsOfUse.setLicense(licenseDAO.findFirstActive());
+        termsOfUse.setLicense(licenseRepository.findFirstActive());
         fmd.setTermsOfUse(termsOfUse);
         fmd.setDataFile(savedFile);
         savedFile.getFileMetadatas().add(fmd);

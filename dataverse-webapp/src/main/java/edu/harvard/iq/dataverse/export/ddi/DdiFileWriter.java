@@ -2,15 +2,12 @@ package edu.harvard.iq.dataverse.export.ddi;
 
 import edu.harvard.iq.dataverse.api.dto.DataFileDTO;
 import edu.harvard.iq.dataverse.api.dto.FileDTO;
-import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFileTag;
 import edu.harvard.iq.dataverse.persistence.datafile.DataTable;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
-import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.xml.XmlAttribute;
-import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -18,13 +15,10 @@ import javax.inject.Inject;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import java.util.List;
-
 import static edu.harvard.iq.dataverse.export.ddi.DdiConstants.*;
 import static edu.harvard.iq.dataverse.util.xml.XmlStreamWriterUtils.writeAttribute;
 import static edu.harvard.iq.dataverse.util.xml.XmlStreamWriterUtils.writeFullElement;
 import static edu.harvard.iq.dataverse.util.xml.XmlStreamWriterUtils.writeFullElementWithAttributes;
-import static java.util.stream.Collectors.toList;
 
 @ApplicationScoped
 public class DdiFileWriter {

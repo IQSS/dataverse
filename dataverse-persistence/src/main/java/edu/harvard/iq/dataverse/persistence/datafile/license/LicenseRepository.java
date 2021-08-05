@@ -1,22 +1,25 @@
 package edu.harvard.iq.dataverse.persistence.datafile.license;
 
+import edu.harvard.iq.dataverse.persistence.JpaRepository;
+
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.List;
+import java.util.Optional;
 
 @Stateless
-public class LicenseDAO {
+public class LicenseRepository extends JpaRepository<Long, License> {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
 
-    //-------------------- LOGIC --------------------
-
-    public License find(long id) {
-        return em.find(License.class, id);
+    public LicenseRepository() {
+        super(License.class);
     }
+
+    //-------------------- LOGIC --------------------
 
     public License findFirstActive() {
         return em.createQuery("SELECT l FROM License l WHERE l.active = true ORDER BY l.position ASC", License.class)
@@ -24,27 +27,19 @@ public class LicenseDAO {
                  .getSingleResult();
     }
 
-    public License findLicenseByName(String licenseName) {
-        return em.createQuery("SELECT l FROM License l WHERE l.name=:licenseName", License.class)
-                 .setParameter("licenseName", licenseName)
-                 .getSingleResult();
+    public Optional<License> findLicenseByName(String licenseName) {
+        return JpaRepository.getSingleResult(
+                em.createQuery("SELECT l FROM License l WHERE l.name=:licenseName", License.class)
+                    .setParameter("licenseName", licenseName));
     }
 
-    public List<License> findAll() {
+    public List<License> findAllOrderedByPosition() {
         return em.createQuery("SELECT l FROM License l ORDER BY l.position ASC", License.class).getResultList();
     }
 
-    public List<License> findActive() {
+    public List<License> findActiveOrderedByPosition() {
         return em.createQuery("SELECT l FROM License l WHERE l.active = true ORDER BY l.position ASC", License.class)
                  .getResultList();
-    }
-
-    public License saveChanges(License license) {
-        return em.merge(license);
-    }
-
-    public void save(License license) {
-        em.persist(license);
     }
 
     public Long countActiveLicenses() {

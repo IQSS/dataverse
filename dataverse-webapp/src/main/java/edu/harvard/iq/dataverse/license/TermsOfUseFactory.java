@@ -3,10 +3,12 @@ package edu.harvard.iq.dataverse.license;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.RestrictType;
 import edu.harvard.iq.dataverse.persistence.datafile.license.License;
-import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseDAO;
+import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseRepository;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+
+import java.util.Optional;
 
 
 /**
@@ -17,7 +19,7 @@ import javax.inject.Inject;
 @Stateless
 public class TermsOfUseFactory {
 
-    private LicenseDAO licenseDao;
+    private LicenseRepository licenseRepository;
 
 
     // -------------------- CONSTRUCTORS --------------------
@@ -27,8 +29,8 @@ public class TermsOfUseFactory {
     }
 
     @Inject
-    public TermsOfUseFactory(LicenseDAO licenseDao) {
-        this.licenseDao = licenseDao;
+    public TermsOfUseFactory(LicenseRepository licenseRepository) {
+        this.licenseRepository = licenseRepository;
     }
 
     // -------------------- LOGIC --------------------
@@ -39,7 +41,7 @@ public class TermsOfUseFactory {
      */
     public FileTermsOfUse createTermsOfUse() {
 
-        License defaultLicense = licenseDao.findFirstActive();
+        License defaultLicense = licenseRepository.findFirstActive();
 
         return createTermsOfUseFromLicense(defaultLicense);
     }
@@ -56,20 +58,23 @@ public class TermsOfUseFactory {
      */
     public FileTermsOfUse createTermsOfUseFromCC0License() {
         final FileTermsOfUse fileTermsOfUse = new FileTermsOfUse();
-        fileTermsOfUse.setLicense(licenseDao.find(License.CC0_LICENSE_ID));
+        fileTermsOfUse.setLicense(licenseRepository.getById(License.CC0_LICENSE_ID));
 
         return fileTermsOfUse;
     }
 
     /**
      * Return new instance of existing license based {@link FileTermsOfUse}, with provided license name.
+     * If license does not exist then {@link Optional#empty()} will be returned.
      */
-    public FileTermsOfUse createTermsOfUseWithExistingLicense(String licenseName) {
-        FileTermsOfUse termsOfUse = new FileTermsOfUse();
-        License foundLicense = licenseDao.findLicenseByName(licenseName);
-        termsOfUse.setLicense(foundLicense);
-
-        return termsOfUse;
+    public Optional<FileTermsOfUse> createTermsOfUseWithExistingLicense(String licenseName) {
+        
+        return licenseRepository.findLicenseByName(licenseName)
+                .map((License license) -> {
+                    FileTermsOfUse termsOfUse = new FileTermsOfUse();
+                    termsOfUse.setLicense(license);
+                    return termsOfUse;
+                });
     }
 
     /**
