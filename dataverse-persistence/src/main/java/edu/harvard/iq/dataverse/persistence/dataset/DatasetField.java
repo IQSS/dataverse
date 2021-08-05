@@ -430,14 +430,15 @@ public class DatasetField implements Serializable {
             if (StringUtils.isBlank(format)) {
                 format = "#VALUE";
             }
-            String sanitizedValue = !fieldType.isSanitizeHtml() ?
-                    value :
-                    MarkupChecker.sanitizeBasicHTML(value);
+            if (FieldType.TEXTBOX.equals(fieldType.getFieldType())) {
+                value = value.replaceAll("\\n", "<br>");
+            }
+            String sanitizedValue = !fieldType.isSanitizeHtml()
+                    ? value : MarkupChecker.sanitizeBasicHTML(value);
 
             if (!fieldType.isSanitizeHtml() && fieldType.isEscapeOutputText()) {
                 sanitizedValue = MarkupChecker.stripAllTags(sanitizedValue);
             }
-
             // replace the special values in the format (note: we replace #VALUE last since we don't
             // want any issues if the value itself has #NAME in it)
             retVal = format
