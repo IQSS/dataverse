@@ -22,8 +22,6 @@ import edu.harvard.iq.dataverse.persistence.user.ApiToken;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.util.FileUtil;
-import edu.harvard.iq.dataverse.util.FileUtil.ApiBatchDownloadType;
-import edu.harvard.iq.dataverse.util.FileUtil.ApiDownloadType;
 import edu.harvard.iq.dataverse.util.FileUtil.FileCitationExtension;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -37,7 +35,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -103,7 +100,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         // Back when we only had TwoRavens, the downloadType was always "Explore".
         // Now we persist the name of the tool (i.e. "TwoRavens", "Data Explorer", etc.)
         String toolUrl = externalToolHandler.buildToolUrlWithQueryParams(externalTool, dataFile, apiToken);
-        logger.fine("Exploring with " + toolUrl);
+        logger.finest(() -> "Exploring with " + toolUrl);
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(toolUrl);
         } catch (IOException ex) {

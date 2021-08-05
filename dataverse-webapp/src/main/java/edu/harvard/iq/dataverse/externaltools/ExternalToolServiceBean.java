@@ -1,11 +1,12 @@
 package edu.harvard.iq.dataverse.externaltools;
 
-import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.common.files.mime.TextMimeType;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool;
 import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool.ReservedWord;
 import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool.Type;
+import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
+import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 
 import javax.ejb.Stateless;
 import javax.json.Json;
@@ -22,8 +23,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
-import static edu.harvard.iq.dataverse.persistence.datafile.ExternalTool.*;
+import static edu.harvard.iq.dataverse.persistence.datafile.ExternalTool.CONTENT_TYPE;
+import static edu.harvard.iq.dataverse.persistence.datafile.ExternalTool.DESCRIPTION;
+import static edu.harvard.iq.dataverse.persistence.datafile.ExternalTool.DISPLAY_NAME;
+import static edu.harvard.iq.dataverse.persistence.datafile.ExternalTool.TOOL_PARAMETERS;
+import static edu.harvard.iq.dataverse.persistence.datafile.ExternalTool.TOOL_URL;
+import static edu.harvard.iq.dataverse.persistence.datafile.ExternalTool.TYPE;
 
 @Stateless
 public class ExternalToolServiceBean {
@@ -32,6 +39,8 @@ public class ExternalToolServiceBean {
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
+
+    // -------------------- LOGIC --------------------
 
     public List<ExternalTool> findAll() {
         TypedQuery<ExternalTool> typedQuery = em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o ORDER BY o.id", ExternalTool.class);
@@ -56,7 +65,7 @@ public class ExternalToolServiceBean {
 
         List<ExternalTool> externalTools = new ArrayList<>();
 
-        //If contentType==null, get all tools of the given ExternalTool.Type 
+        //If contentType==null, get all tools of the given ExternalTool.Type
         TypedQuery<ExternalTool> typedQuery = contentType != null ? em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type AND o.contentType = :contentType", ExternalTool.class) :
                 em.createQuery("SELECT OBJECT(o) FROM ExternalTool AS o WHERE o.type = :type", ExternalTool.class);
         typedQuery.setParameter("type", type);
@@ -99,21 +108,35 @@ public class ExternalToolServiceBean {
     }
 
     /**
-     * This method takes a list of tools and a file and returns which tools that file supports
-     * The list of tools is passed in so it doesn't hit the database each time
+     * Should be used only in REST (ie. where it's currently used). For the other
+     * cases use the method {@link ExternalToolServiceBean#findExternalToolsByFileAndVersion(List, DataFile, DatasetVersion)}
      */
     public static List<ExternalTool> findExternalToolsByFile(List<ExternalTool> allExternalTools, DataFile file) {
-        List<ExternalTool> externalTools = new ArrayList<>();
-        //Map tabular data to it's mimetype (the isTabularData() check assures that this code works the same as before, but it may need to change if tabular data is split into subtypes with differing mimetypes)
+        // Map tabular data to it's mimetype (the isTabularData() check assures that this code works the same as before,
+        // but it may need to change if tabular data is split into subtypes with differing mimetypes)
         final String contentType = file.isTabularData() ? TextMimeType.TSV_ALT.getMimeValue() : file.getContentType();
-        allExternalTools.forEach((externalTool) -> {
-            //Match tool and file type 
-            if (contentType.equals(externalTool.getContentType())) {
-                externalTools.add(externalTool);
-            }
-        });
 
-        return externalTools;
+        return allExternalTools.stream()
+                .filter(t -> t.getContentType().equals(contentType))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * This method takes a list of tools, a file and a dataset version and
+     * returns which tools that file supports. The list of tools is passed in
+     * so it doesn't hit the database each time
+     */
+    public List<ExternalTool> findExternalToolsByFileAndVersion(
+            List<ExternalTool> allExternalTools, DataFile file, DatasetVersion datasetVersion) {
+
+        // Map tabular data to it's mimetype (the isTabularData() check assures that this code works the same as before,
+        // but it may need to change if tabular data is split into subtypes with differing mimetypes)
+        final String contentType = file.isTabularData() ? TextMimeType.TSV_ALT.getMimeValue() : file.getContentType();
+
+        return allExternalTools.stream()
+                .filter(t -> t.getContentType().equals(contentType))
+                .filter(t -> !isNonPublicOrNotIngestedTsvFile(file, datasetVersion))
+                .collect(Collectors.toList());
     }
 
     public static ExternalTool parseAddExternalToolManifest(String manifest) {
@@ -154,6 +177,23 @@ public class ExternalToolServiceBean {
         }
         String toolParameters = toolParametersObj.toString();
         return new ExternalTool(displayName, description, type, toolUrl, toolParameters, contentType);
+    }
+
+    // -------------------- PRIVATE --------------------
+
+    private boolean isNonPublicOrNotIngestedTsvFile(DataFile file, DatasetVersion datasetVersion) {
+        boolean isTsvAltContentType = TextMimeType.TSV_ALT.getMimeValue()
+                .equals(file.isTabularData() ? TextMimeType.TSV_ALT.getMimeValue() : file.getContentType());
+
+        return isTsvAltContentType && (!isFilePublic(file, datasetVersion) || !file.isTabularData());
+    }
+
+    private boolean isFilePublic(DataFile file, DatasetVersion datasetVersion) {
+        boolean released = datasetVersion.isReleased();
+        boolean embargoed = file.getOwner().hasActiveEmbargo();
+        boolean restricted = file.getFileMetadata().getTermsOfUse().getTermsOfUseType() == FileTermsOfUse.TermsOfUseType.RESTRICTED;
+
+        return released && !embargoed && !restricted;
     }
 
     private static String getRequiredTopLevelField(JsonObject jsonObject, String key) {

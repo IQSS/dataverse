@@ -157,8 +157,8 @@ public class FilePage implements java.io.Serializable {
                 return permissionsWrapper.notAuthorized();
             }
 
-            RetrieveDatasetVersionResponse retrieveDatasetVersionResponse;
-            retrieveDatasetVersionResponse = datasetVersionService.selectRequestedVersion(file.getOwner().getVersions(), version);
+            RetrieveDatasetVersionResponse retrieveDatasetVersionResponse
+                    = datasetVersionService.selectRequestedVersion(file.getOwner().getVersions(), version);
             Long getDatasetVersionID = retrieveDatasetVersionResponse.getDatasetVersion().getId();
             fileMetadata = datafileService.findFileMetadataByDatasetVersionIdAndDataFileId(getDatasetVersionID, fileId);
 
@@ -198,7 +198,9 @@ public class FilePage implements java.io.Serializable {
                 contentType = TextMimeType.TSV_ALT.getMimeValue();
             }
             configureTools = externalToolService.findByType(ExternalTool.Type.CONFIGURE, contentType);
-            exploreTools = externalToolService.findByType(ExternalTool.Type.EXPLORE, contentType);
+            List<ExternalTool> availableTools = externalToolService.findByType(ExternalTool.Type.EXPLORE, contentType);
+            exploreTools = externalToolService.findExternalToolsByFileAndVersion(availableTools, file,
+                    retrieveDatasetVersionResponse.getDatasetVersion());
 
         } else {
 
