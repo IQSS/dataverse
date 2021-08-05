@@ -116,7 +116,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     public S3AccessIO(String storageLocation, String driverId) {
         this(null, null, driverId);
         // TODO: validate the storage location supplied
-		logger.fine("Instantiating with location: " + storageLocation);
+        logger.fine("Instantiating with location: " + storageLocation);
         bucketName = storageLocation.substring(0,storageLocation.indexOf('/'));
         minPartSize = getMinPartSize(driverId);
         key = storageLocation.substring(storageLocation.indexOf('/')+1);
