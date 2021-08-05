@@ -198,7 +198,7 @@ public class PasswordValidatorTest {
             new Params(0, "potat1", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, 6, dictionary, numberOfCharactersDefault, characterRulesDefault, numConsecutiveDigitsAllowed), // Good enough for Dataverse 4.0.
             new Params(0, "potat000000000000000", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, 6, dictionary, numberOfCharactersDefault, characterRulesDefault, numConsecutiveDigitsAllowed), // Has repeating chars exceeding limit, but goodstrength waives it
             new Params(2, "ma02138", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, 6, dictionary, numberOfCharactersDefault, characterRulesDefault, numConsecutiveDigitsAllowed), // 5 or more numbers in a row
-            new Params(2, "ma8312002138", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, 6, dictionary, numberOfCharactersDefault, characterRulesDefault, numConsecutiveDigitsAllowed), // 5 or more numbers in a row
+            new Params(3, "ma8312002138", notExpired, expirationDays, expirationMinLength, goodStrength20, maxLength, 6, dictionary, numberOfCharactersDefault, characterRulesDefault, numConsecutiveDigitsAllowed), // 5 or more numbers in a row
         }
         );
 
