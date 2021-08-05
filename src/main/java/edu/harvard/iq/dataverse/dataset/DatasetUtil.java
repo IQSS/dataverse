@@ -111,7 +111,7 @@ public class DatasetUtil {
      * @return
      */
     public static DatasetThumbnail getThumbnail(Dataset dataset, DatasetVersion datasetVersion, int size) {
-        if (dataset == null) {
+        if (dataset == null || dataset.getStorageIdentifier()==null) {
             return null;
         }
 
