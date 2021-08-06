@@ -675,16 +675,7 @@ The presence of the :ref:`:Languages` database setting adds a dropdown in the he
 
 ``curl http://localhost:8080/api/admin/settings/:Languages -X PUT -d '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]'``
 
-When a user selects one of the available choices, the Dataverse user interfaces will be translated into that language (assuming you also configure the "lang" directory and populate it with translations as described below).
-
-Allowing the Language Used for Dataset Metadata to be Specified
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-Since users only enter dataset metadata in one language, Dataverse also offers a separate setting that indicates the language used to enter that metadata. 
-The presence of the :ref:`:MetadataLanguages` database setting identifies the available options (which can be different from those in the :Languages setting above). 
-Dataverse collection admins can select from these options to indicate which language should be used for new Datasets created with that collection. When creating or editing a dataset, users will be asked to enter the metadata in that langauge. :
-
-``curl http://localhost:8080/api/admin/settings/:MetadataLanguages -X PUT -d '{"English":"en","Français":"fr"}'``
+Note that metadata selected from Controlled Vocabularies will still display in the language selected by the viewer (via the Languages dropdown in the header). In metadata export files, controlled vocabulary values will be included in the Dataverse installations default language and in the metadata language of the dataset (if specified).
 
 Configuring the "lang" Directory
 ++++++++++++++++++++++++++++++++
