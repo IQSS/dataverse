@@ -102,7 +102,7 @@
         <o:importFunctions type="java.util.Collections" />
         <div class="panel-group">
             <p>
-                <h:outputFormat rendered="#{(editMode == 'CREATE') or (editMode == 'METADATA')}" value="#{bundle['dataset.metadatalanguage.create.guidance']}" escape="false">
+                <h:outputFormat rendered="#{(not empty mdLangCode) and ((editMode == 'CREATE') or (editMode == 'METADATA'))}" value="#{bundle['dataset.metadatalanguage.create.guidance']}" escape="false">
                     <f:param value="#{mdLang}"/>
                 </h:outputFormat>
             </p>

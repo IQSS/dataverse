@@ -697,8 +697,8 @@
                             <ui:param name="metadataBlocks" value="#{!empty DatasetPage.editMode ? DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray(): DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()}"/>
                             <ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDateFormattedYYYYMMDD}"/>
                             <ui:param name="globalId" value="#{DatasetPage.dataset.globalIdString}"/>
-                            <ui:param name="mdLang" value="#{systemConfig.getBaseMetadataLanguageMap(false).get(DatasetPage.dataset.effectiveMetadataLanguage)}"/>
-                            <ui:param name="mdLangCode" value="#{DatasetPage.dataset.effectiveMetadataLanguage}"/>
+                            <ui:param name="mdLang" value="#{DatasetPage.getLocaleDisplayName(DatasetPage.effectiveMetadataLanguage)}"/>
+                            <ui:param name="mdLangCode" value="#{DatasetPage.effectiveMetadataLanguage}"/>
                         </ui:include>
                     </ui:fragment>
                     <!-- Create/Save Dataset Button Panel TOP editMode -->
@@ -829,8 +829,8 @@
                                     <ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDate != null ? DatasetPage.dataset.publicationDateFormattedYYYYMMDD : ''}"/>
                                     <ui:param name="globalId" value="#{DatasetPage.dataset.globalIdString}"/>
                                     <ui:param name="altPID" value="#{DatasetPage.dataset.alternativePersistentIdentifier}"/>
-                                    <ui:param name="mdLang" value="#{systemConfig.getBaseMetadataLanguageMap(false).get(DatasetPage.dataset.effectiveMetadataLanguage)}"/>
-                                    <ui:param name="mdLangCode" value="#{DatasetPage.dataset.effectiveMetadataLanguage}"/>
+                                    <ui:param name="mdLang" value="#{DatasetPage.getLocaleDisplayName(DatasetPage.effectiveMetadataLanguage)}"/>
+                                    <ui:param name="mdLangCode" value="#{DatasetPage.effectiveMetadataLanguage}"/>
                                     <ui:param name="anonymized" value="#{DatasetPage.anonymizedAccess}"/>
                                 </ui:include>
                             </p:tab>

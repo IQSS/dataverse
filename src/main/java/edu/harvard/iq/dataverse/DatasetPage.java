@@ -68,6 +68,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -3412,7 +3413,7 @@ public class DatasetPage implements java.io.Serializable {
         try {
             if (editMode == EditMode.CREATE) {
                 //Lock the metadataLanguage once created
-                dataset.setMetadataLanguage(dataset.getOwner().getEffectiveMetadataLanguage());
+                dataset.setMetadataLanguage(getEffectiveMetadataLanguage());
                 if ( selectedTemplate != null ) {
                     if ( isSessionUserAuthenticated() ) {
                         cmd = new CreateNewDatasetCommand(dataset, dvRequestService.getDataverseRequest(), false, selectedTemplate);
@@ -5496,5 +5497,22 @@ public class DatasetPage implements java.io.Serializable {
         }
 
         return dataFile.getDeleted();
+    }
+    
+    public String getEffectiveMetadataLanguage() {
+        String mdLang = dataset.getEffectiveMetadataLanguage();
+        if (mdLang.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+            mdLang = systemConfig.getDefaultMetadataLanguage();
+        }
+        return mdLang;
+    }
+    
+    public String getLocaleDisplayName(String code) {
+        String displayName = systemConfig.getBaseMetadataLanguageMap(false).get(code);
+        if(displayName==null) {
+            //Default (for cases such as :when a Dataset has a metadatalanguage code but :MetadataLanguages is no longer defined).
+            displayName = new Locale(code).getDisplayName(); 
+        }
+        return displayName; 
     }
 }
