@@ -118,6 +118,10 @@ public class ControlledVocabularyValue implements Serializable  {
         return getLocaleStrValue(null);
     }
     
+    public String getLocaleStrValue(String preferredLang, String altLang) {
+        return (preferredLang==null) ? getLocaleStrValue(altLang): getLocaleStrValue(preferredLang); 
+    }
+    
     public String getLocaleStrValue(String language) {
         //Sword input uses a special controlled vacab value ("N/A" that does not have a datasetFieldType / is not part of any metadata block, so handle it specially
         if(strValue.equals(DatasetField.NA_VALUE) && this.datasetFieldType == null) {
