@@ -1135,7 +1135,7 @@ public class SystemConfig {
             }
         }
         if(mlLabel.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
-            mlLabel = getDefaultMetadataLanguage();
+            mlLabel = getBaseMetadataLanguageMap(false).get(getDefaultMetadataLanguage());
         }
         if(fromAncestor) {
             mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
