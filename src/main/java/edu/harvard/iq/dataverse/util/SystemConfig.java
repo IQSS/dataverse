@@ -1134,6 +1134,9 @@ public class SystemConfig {
                 parent=parent.getOwner();
             }
         }
+        if(mlLabel.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+            mlLabel = getDefaultMetadataLanguage();
+        }
         if(fromAncestor) {
             mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
         } else {
