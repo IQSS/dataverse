@@ -2224,6 +2224,16 @@ in the header.
 
 See :ref:`i18n` for a curl example and related settings.
 
+.. _:MetadataLanguages:
+
+:MetadataLanguages
+++++++++++++++++++
+
+Sets which languages can be used when entering dataset metadata. 
+
+See :ref:`i18n` for further discussion, a curl example, and related settings.
+
+
 :InheritParentRoleAssignments
 +++++++++++++++++++++++++++++
 
