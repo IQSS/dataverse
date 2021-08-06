@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -32,9 +33,11 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonString;
+import javax.json.JsonValue;
 
 import org.passay.CharacterRule;
 import org.apache.commons.io.IOUtils;
@@ -1093,15 +1096,18 @@ public class SystemConfig {
             
             if(mlString.isEmpty()) {
                 if(settingsService.get(SettingsServiceBean.Key.Languages.toString(),"").isEmpty()) {
-                    mlString="{\"" + BundleUtil.getCurrentLocale().getDisplayLanguage() + "\":\""
-                            + BundleUtil.getCurrentLocale().getLanguage() + "\"}";
+                    mlString="[{\"locale\':\"" + BundleUtil.getCurrentLocale().getLanguage()  + "\"},{\"title\":\""
+                            + BundleUtil.getCurrentLocale().getDisplayLanguage() + "\"}]";
                 } else {
-                    mlString="{}";
+                    mlString="[]";
                 }
             }
             JsonReader jsonReader = Json.createReader(new StringReader(mlString));
-            JsonObject languages = jsonReader.readObject();
-            languages.forEach((lang, langCode) -> languageMap.put(((JsonString)langCode).getString(), lang));
+            JsonArray languages = jsonReader.readArray();
+            for(JsonValue jv: languages) {
+                JsonObject lang = (JsonObject) jv;
+                languageMap.put(lang.getString("locale"), lang.getString("title"));
+            }
         }
         return languageMap;
     }
@@ -1138,9 +1144,16 @@ public class SystemConfig {
     
     public String getDefaultMetadataLanguage() {
         Map<String, String> mdMap = getBaseMetadataLanguageMap(false);
-        if(mdMap.size()==1) {
+        if(mdMap.size()>=1) {
+            if(mdMap.size()==1) {
+                //One entry - it's the default
             return (String) mdMap.keySet().toArray()[0];
+            } else {
+                //More than one - :MetadataLanguages is set so we use the default
+                return DvObjectContainer.DEFAULT_METADATA_LANGUAGE_CODE;
+            }
         } else {
+            // None - :MetadataLanguages is not set so return null to turn off the display (backward compatibility)
             return null;
         }
     }
