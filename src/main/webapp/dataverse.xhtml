@@ -226,7 +226,7 @@
                                             </div>
                                         </p:fragment>
                                     </div>
-                                    <div class="col-md-6 form-group">
+                                    <div class="col-md-6 form-group" jsf:rendered="#{DataversePage.getMetadataLanguages().size()>1}">
                                         <h:outputLabel for="dsMetadataLanguage" styleClass="control-label">
                                             #{bundle.metadataLanguage} 
                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"

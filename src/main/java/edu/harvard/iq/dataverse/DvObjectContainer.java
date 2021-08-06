@@ -74,7 +74,7 @@ public abstract class DvObjectContainer extends DvObject {
             if (this.getOwner() != null) {
                 ml = this.getOwner().getEffectiveMetadataLanguage();
             } else {
-                ml = DEFAULT_METADATA_LANGUAGE_CODE;
+                ml = UNDEFINED_METADATA_LANGUAGE_CODE;
             }
         }
         return ml;

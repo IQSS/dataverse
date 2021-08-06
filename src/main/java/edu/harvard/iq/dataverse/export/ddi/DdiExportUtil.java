@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
@@ -126,10 +127,9 @@ public class DdiExportUtil {
         xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
         xmlw.writeAttribute("xsi:schemaLocation", DDIExporter.DEFAULT_XML_NAMESPACE + " " + DDIExporter.DEFAULT_XML_SCHEMALOCATION);
         writeAttribute(xmlw, "version", DDIExporter.DEFAULT_XML_VERSION);
-        if(datasetDto.getMetadataLanguage()==null) {
-            datasetDto.setMetadataLanguage(Locale.getDefault().getLanguage());
+        if(isMetadataLanguageSet(datasetDto.getMetadataLanguage())) {
+            writeAttribute(xmlw, "xml:lang", datasetDto.getMetadataLanguage());
         }
-        writeAttribute(xmlw, "xml:lang", datasetDto.getMetadataLanguage());
         createStdyDscr(xmlw, datasetDto);
         createOtherMats(xmlw, datasetDto.getDatasetVersion().getFiles());
         xmlw.writeEndElement(); // codeBook
@@ -149,10 +149,9 @@ public class DdiExportUtil {
         xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
         xmlw.writeAttribute("xsi:schemaLocation", DDIExporter.DEFAULT_XML_NAMESPACE + " " + DDIExporter.DEFAULT_XML_SCHEMALOCATION);
         writeAttribute(xmlw, "version", DDIExporter.DEFAULT_XML_VERSION);
-        if(datasetDto.getMetadataLanguage()==null) {
-            datasetDto.setMetadataLanguage(Locale.getDefault().getLanguage());
+        if(isMetadataLanguageSet(datasetDto.getMetadataLanguage())) {
+            writeAttribute(xmlw, "xml:lang", datasetDto.getMetadataLanguage());
         }
-        writeAttribute(xmlw, "xml:lang", datasetDto.getMetadataLanguage());
         createStdyDscr(xmlw, datasetDto);
         createFileDscr(xmlw, version);
         createDataDscr(xmlw, version);
@@ -162,6 +161,13 @@ public class DdiExportUtil {
     }
     
     
+    private static boolean isMetadataLanguageSet(String mdLang) {
+       if(mdLang!=null && mdLang!=DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE) {
+           return true;
+       }
+        return false;
+    }
+
     /**
      * @todo This is just a stub, copied from DDIExportServiceBean. It should
      * produce valid DDI based on
@@ -855,7 +861,7 @@ public class DdiExportUtil {
                             }
                             if (!distributorName.isEmpty()) {
                                 xmlw.writeStartElement("distrbtr");
-                                if(lang!=null) {
+                                if(isMetadataLanguageSet(lang)) {
                                     writeAttribute(xmlw, "xml:lang", lang);
                                 }
                                 if (!distributorAffiliation.isEmpty()) {
@@ -975,7 +981,7 @@ public class DdiExportUtil {
                                 if(!descriptionDate.isEmpty()){
                                    writeAttribute(xmlw,"date",descriptionDate); 
                                 } 
-                                if(lang!=null) {
+                                if(isMetadataLanguageSet(lang)) {
                                     writeAttribute(xmlw, "xml:lang", lang);
                                 }
                                 xmlw.writeCharacters(descriptionText);
@@ -1436,7 +1442,7 @@ public class DdiExportUtil {
         //For the simplest Elements we can 
         if (!StringUtilisEmpty(value)) {
             xmlw.writeStartElement(name);
-            if(lang!=null) {
+            if(isMetadataLanguageSet(lang)) {
                 writeAttribute(xmlw, "xml:lang", lang);
             }
             xmlw.writeCharacters(value);
@@ -1521,10 +1527,10 @@ public class DdiExportUtil {
              * included for restricted files but that meant that summary
              * statistics were exposed. (To get at these statistics, API users
              * should instead use the "Data Variable Metadata Access" endpoint.)
-             * These days we return early to avoid this exposure.
+             * These days we skip restricted files to avoid this exposure.
              */
             if (dataFile.isRestricted()) {
-                return;
+                continue;
             }
 
             if (dataFile != null && dataFile.isTabularData()) {

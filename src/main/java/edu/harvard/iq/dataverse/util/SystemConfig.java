@@ -1085,9 +1085,20 @@ public class SystemConfig {
         if (languageMap == null || refresh) {
             languageMap = new HashMap<String, String>();
 
-            String mlString = settingsService.get(SettingsServiceBean.Key.MetadataLanguages.toString(),
-                    "{\"" + BundleUtil.getCurrentLocale().getDisplayLanguage() + "\":\""
-                            + BundleUtil.getCurrentLocale().getLanguage() + "\"}");
+            /* If MetadataLanaguages is set, use it.
+             * If not, if there is no Langauages setting, which means the instance is single language, assume that language is also used for metadata
+             * If not and there is a Language setting, we can't assume anything and should avoid assuming a metadata language
+             */
+            String mlString = settingsService.get(SettingsServiceBean.Key.MetadataLanguages.toString(),"");
+            
+            if(mlString.isEmpty()) {
+                if(settingsService.get(SettingsServiceBean.Key.Languages.toString(),"").isEmpty()) {
+                    mlString="{\"" + BundleUtil.getCurrentLocale().getDisplayLanguage() + "\":\""
+                            + BundleUtil.getCurrentLocale().getLanguage() + "\"}";
+                } else {
+                    mlString="{}";
+                }
+            }
             JsonReader jsonReader = Json.createReader(new StringReader(mlString));
             JsonObject languages = jsonReader.readObject();
             languages.forEach((lang, langCode) -> languageMap.put(((JsonString)langCode).getString(), lang));
@@ -1123,6 +1134,15 @@ public class SystemConfig {
             mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.default");
         }
         return mlLabel;
+    }
+    
+    public String getDefaultMetadataLanguage() {
+        Map<String, String> mdMap = getBaseMetadataLanguageMap(false);
+        if(mdMap.size()==1) {
+            return (String) mdMap.keySet().toArray()[0];
+        } else {
+            return null;
+        }
     }
 
 }
