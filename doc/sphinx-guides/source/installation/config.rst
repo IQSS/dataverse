@@ -688,7 +688,7 @@ When creating or editing a dataset, users will be asked to enter the metadata in
 
 ``curl http://localhost:8080/api/admin/settings/:MetadataLanguages -X PUT -d '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]'``
 
-Note that metadata selected from Controlled Vocabularies will still display in the language selected by the viewer (via the Languages dropdown in the header). In metadata export files, controlled vocabulary values will be included in the Dataverse installations default language and in the metadata language of the dataset (if specified).
+Note that metadata selected from Controlled Vocabularies will also display in the metadata language of the dataset, but only if translations have been configured, i.e. you configure the "lang" directory and populate it with translations as described below). In metadata export files, controlled vocabulary values will be included in the Dataverse installations default language and in the metadata language of the dataset (if specified).
 
 Configuring the "lang" Directory
 ++++++++++++++++++++++++++++++++
