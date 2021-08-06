@@ -661,11 +661,11 @@
                                 </div>
                                 <div class="form-group" jsf:rendered="#{DataverseUserPage.editMode == 'CREATE' or DataverseUserPage.editMode == 'EDIT'}">
                                     <!-- Email -->
-                                    <label class="col-sm-3 control-label">
+                                    <div class="col-sm-3 control-label">
                                        <p:outputLabel value="#{bundle['email']}" for="email"/>   <span class="glyphicon glyphicon-asterisk text-danger"/>
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['user.email.tip']}"></span>
-                                    </label>
+                                    </div>
                                     <div class="col-sm-4">
                                         <p:inputText id="email" styleClass="form-control"
                                                      validator="#{DataverseUserPage.validateUserEmail}"
