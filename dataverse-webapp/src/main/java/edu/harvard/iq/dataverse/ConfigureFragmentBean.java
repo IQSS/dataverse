@@ -74,8 +74,8 @@ public class ConfigureFragmentBean implements java.io.Serializable {
         if (user instanceof AuthenticatedUser) {
             apiToken = authService.findApiTokenByUser((AuthenticatedUser) user);
         }
-        
-        return externalToolHandler.buildToolUrlWithQueryParams(tool, dataFile, apiToken);
+
+        return externalToolHandler.buildToolUrlWithQueryParams(tool, dataFile, apiToken, session.getLocaleCode());
     }
 
     public void setConfigureFileId(Long setFileId) {

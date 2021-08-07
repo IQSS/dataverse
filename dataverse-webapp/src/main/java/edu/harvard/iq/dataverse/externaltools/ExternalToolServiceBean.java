@@ -25,13 +25,6 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static edu.harvard.iq.dataverse.persistence.datafile.ExternalTool.CONTENT_TYPE;
-import static edu.harvard.iq.dataverse.persistence.datafile.ExternalTool.DESCRIPTION;
-import static edu.harvard.iq.dataverse.persistence.datafile.ExternalTool.DISPLAY_NAME;
-import static edu.harvard.iq.dataverse.persistence.datafile.ExternalTool.TOOL_PARAMETERS;
-import static edu.harvard.iq.dataverse.persistence.datafile.ExternalTool.TOOL_URL;
-import static edu.harvard.iq.dataverse.persistence.datafile.ExternalTool.TYPE;
-
 @Stateless
 public class ExternalToolServiceBean {
 
@@ -146,10 +139,10 @@ public class ExternalToolServiceBean {
         JsonReader jsonReader = Json.createReader(new StringReader(manifest));
         JsonObject jsonObject = jsonReader.readObject();
         //Note: ExternalToolServiceBeanTest tests are dependent on the order of these retrievals
-        String displayName = getRequiredTopLevelField(jsonObject, DISPLAY_NAME);
-        String description = getRequiredTopLevelField(jsonObject, DESCRIPTION);
-        String typeUserInput = getRequiredTopLevelField(jsonObject, TYPE);
-        String contentType = getOptionalTopLevelField(jsonObject, CONTENT_TYPE);
+        String displayName = getRequiredTopLevelField(jsonObject, ExternalTool.DISPLAY_NAME);
+        String description = getRequiredTopLevelField(jsonObject, ExternalTool.DESCRIPTION);
+        String typeUserInput = getRequiredTopLevelField(jsonObject, ExternalTool.TYPE);
+        String contentType = getOptionalTopLevelField(jsonObject, ExternalTool.CONTENT_TYPE);
         //Legacy support - assume tool manifests without any mimetype are for tabular data
         if (contentType == null) {
             contentType = TextMimeType.TSV_ALT.getMimeValue();
@@ -157,8 +150,8 @@ public class ExternalToolServiceBean {
 
         // Allow IllegalArgumentException to bubble up from ExternalTool.Type.fromString
         ExternalTool.Type type = ExternalTool.Type.fromString(typeUserInput);
-        String toolUrl = getRequiredTopLevelField(jsonObject, TOOL_URL);
-        JsonObject toolParametersObj = jsonObject.getJsonObject(TOOL_PARAMETERS);
+        String toolUrl = getRequiredTopLevelField(jsonObject, ExternalTool.TOOL_URL);
+        JsonObject toolParametersObj = jsonObject.getJsonObject(ExternalTool.TOOL_PARAMETERS);
         JsonArray queryParams = toolParametersObj.getJsonArray("queryParameters");
         boolean allRequiredReservedWordsFound = false;
         for (JsonObject queryParam : queryParams.getValuesAs(JsonObject.class)) {

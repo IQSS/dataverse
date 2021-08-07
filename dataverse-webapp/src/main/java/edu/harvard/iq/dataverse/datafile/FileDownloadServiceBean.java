@@ -99,7 +99,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
         // Back when we only had TwoRavens, the downloadType was always "Explore".
         // Now we persist the name of the tool (i.e. "TwoRavens", "Data Explorer", etc.)
-        String toolUrl = externalToolHandler.buildToolUrlWithQueryParams(externalTool, dataFile, apiToken);
+        String toolUrl = externalToolHandler.buildToolUrlWithQueryParams(externalTool, dataFile, apiToken, session.getLocaleCode());
         logger.finest(() -> "Exploring with " + toolUrl);
         try {
             FacesContext.getCurrentInstance().getExternalContext().redirect(toolUrl);
