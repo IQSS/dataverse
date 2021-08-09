@@ -26,6 +26,7 @@ This guide documents the functionality only available to superusers (such as "da
    solr-search-index
    ip-groups
    mail-groups
+   ror
    monitoring
    reporting-tools
    maintenance

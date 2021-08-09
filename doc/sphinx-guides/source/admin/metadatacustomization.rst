@@ -507,7 +507,6 @@ You have several options for setting up a dev environment for testing metadata b
 - Vagrant: See the :doc:`/developers/tools` section of the Dev Guide.
 - docker-aio: See https://github.com/IQSS/dataverse/tree/develop/conf/docker-aio
 - AWS deployment: See the :doc:`/developers/deployment` section of the Dev Guide.
-- Full dev environment: See the :doc:`/developers/dev-environment` section of the Dev Guide.
 
 To get a clean environment in Vagrant, you'll be running ``vagrant destroy``. In Docker, you'll use ``docker rm``. For a full dev environment or AWS installation, you might find ``rebuild`` and related scripts at ``scripts/deploy/phoenix.dataverse.org`` useful.
 
@@ -589,17 +588,6 @@ Enabling a Metadata Block
 Running a curl command like "load" example above should make the new custom metadata block available within the system but in order to start using the fields you must either enable it from the GUI (see "General Information" in the :doc:`/user/dataverse-management` section of the User Guide) or by running a curl command like the one below using a superuser API token. In the example below we are enabling the "journal" and "geospatial" metadata blocks for the root dataverse:
 
 ``curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-type:application/json" -d "[\"journal\",\"geospatial\"]" http://localhost:8080/api/dataverses/:root/metadatablocks``
-
-Updating the Solr Schema
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-Once you have enabled a new metadata block you should be able to see the new fields in the GUI but before you can save the dataset, you must add additional fields to your Solr schema. You should run the following curl command to have Dataverse output the "field name" and "copyField" elements for all the metadata fields that have been loaded into Dataverse:
-
-``curl http://localhost:8080/api/admin/index/solr/schema``
-
-See the :doc:`/installation/prerequisites/` section of the Installation Guide for a suggested location on disk for the Solr schema file.
-
-Please note that if you are going to make a pull request updating ``conf/solr/7.3.1/schema.xml`` with fields you have added, you should first load all the custom metadata blocks in ``scripts/api/data/metadatablocks`` (including ones you don't care about) to create a complete list of fields.
 
 Reloading a Metadata Block
 --------------------------

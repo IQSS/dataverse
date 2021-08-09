@@ -110,15 +110,12 @@
          If you don't need it, consider removing it and the corresponding copyField directive.
     -->
 
+    <!-- function of id field is moved to rorId field -->
     <!--<field name="id" type="string" indexed="true" stored="true" required="true" multiValued="false" />-->
     <!-- docValues are enabled by default for long type so we don't need to index the version field  -->
     <field name="_version_" type="plong" indexed="false" stored="false"/>
 
-    <!-- If you don't use child/nested documents, then you should remove the next two fields:  -->
-    <!-- for nested documents (minimal; points to root document) -->
-    <field name="_root_" type="string" indexed="true" stored="false" docValues="false" uninvertible="false" />
-    <!-- for nested documents (relationship tracking) -->
-    <field name="_nest_path_" type="_nest_path_" /><fieldType name="_nest_path_" class="solr.NestPathField" />
+    <field name="_root_" type="string" indexed="true" stored="false" docValues="false" />
 
     <field name="_text_" type="text_general" indexed="true" stored="false" multiValued="true"/>
 
@@ -692,17 +689,6 @@
       </analyzer>
     </fieldType>
 
-    <!-- Estonian -->
-    <dynamicField name="*_txt_et" type="text_et"  indexed="true"  stored="true"/>
-    <fieldType name="text_et" class="solr.TextField" positionIncrementGap="100">
-      <analyzer>
-        <tokenizer class="solr.StandardTokenizerFactory"/>
-        <filter class="solr.LowerCaseFilterFactory"/>
-        <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_et.txt" />
-        <filter class="solr.SnowballPorterFilterFactory" language="Estonian"/>
-      </analyzer>
-    </fieldType>
-
     <!-- Basque -->
     <dynamicField name="*_txt_eu" type="text_eu"  indexed="true"  stored="true"/>
     <fieldType name="text_eu" class="solr.TextField" positionIncrementGap="100">
@@ -894,40 +880,6 @@
         <filter class="solr.JapaneseKatakanaStemFilterFactory" minimumLength="4"/>
         <!-- Lower-cases romaji characters -->
         <filter class="solr.LowerCaseFilterFactory"/>
-      </analyzer>
-    </fieldType>
-    
-    <!-- Korean morphological analysis -->
-    <dynamicField name="*_txt_ko" type="text_ko"  indexed="true"  stored="true"/>
-    <fieldType name="text_ko" class="solr.TextField" positionIncrementGap="100">
-      <analyzer>
-        <!-- Nori Korean morphological analyzer/tokenizer (KoreanTokenizer)
-          The Korean (nori) analyzer integrates Lucene nori analysis module into Solr.
-          It uses the mecab-ko-dic dictionary to perform morphological analysis of Korean texts.
-
-          This dictionary was built with MeCab, it defines a format for the features adapted
-          for the Korean language.
-          
-          Nori also has a convenient user dictionary feature that allows overriding the statistical
-          model with your own entries for segmentation, part-of-speech tags and readings without a need
-          to specify weights. Notice that user dictionaries have not been subject to extensive testing.
-
-          The tokenizer supports multiple schema attributes:
-            * userDictionary: User dictionary path.
-            * userDictionaryEncoding: User dictionary encoding.
-            * decompoundMode: Decompound mode. Either 'none', 'discard', 'mixed'. Default is 'discard'.
-            * outputUnknownUnigrams: If true outputs unigrams for unknown words.
-        -->
-        <tokenizer class="solr.KoreanTokenizerFactory" decompoundMode="discard" outputUnknownUnigrams="false"/>
-        <!-- Removes some part of speech stuff like EOMI (Pos.E), you can add a parameter 'tags',
-          listing the tags to remove. By default it removes: 
-          E, IC, J, MAG, MAJ, MM, SP, SSC, SSO, SC, SE, XPN, XSA, XSN, XSV, UNA, NA, VSV
-          This is basically an equivalent to stemming.
-        -->
-        <filter class="solr.KoreanPartOfSpeechStopFilterFactory" />
-        <!-- Replaces term text with the Hangul transcription of Hanja characters, if applicable: -->
-        <filter class="solr.KoreanReadingFormFilterFactory" />
-        <filter class="solr.LowerCaseFilterFactory" />
       </analyzer>
     </fieldType>
 

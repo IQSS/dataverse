@@ -187,15 +187,16 @@ Become the ``solr`` user and then download and configure Solr::
         tar xvzf solr-7.3.1.tgz
         cd solr-7.3.1
         cp -r server/solr/configsets/_default server/solr/collection1
+        cp -r server/solr/configsets/_default server/solr/rorSuggestions
 
 You should already have a "dvinstall.zip" file that you downloaded from https://github.com/IQSS/dataverse/releases . Unzip it into ``/tmp``. Then copy the files into place::
 
         cp /tmp/dvinstall/schema.xml /usr/local/solr/solr-7.3.1/server/solr/collection1/conf
         cp /tmp/dvinstall/solrconfig.xml /usr/local/solr/solr-7.3.1/server/solr/collection1/conf
+        cp /tmp/dvinstall/rorSuggestions/schema.xml /usr/local/solr/solr-7.3.1/server/solr/rorSuggestions/conf
+        cp /tmp/dvinstall/rorSuggestions/solrconfig.xml /usr/local/solr/solr-7.3.1/server/solr/rorSuggestions/conf
 
 Note: Dataverse has customized Solr to boost results that come from certain indexed elements inside Dataverse, for example prioritizing results from Dataverses over Datasets. If you would like to remove this, edit your ``solrconfig.xml`` and remove the ``<str name="qf">`` element and its contents. If you have ideas about how this boosting could be improved, feel free to contact us through our Google Group https://groups.google.com/forum/#!forum/dataverse-dev .
-
-Dataverse requires a change to the ``jetty.xml`` file that ships with Solr. Edit ``/usr/local/solr/solr-7.3.1/server/etc/jetty.xml`` , increasing ``requestHeaderSize`` from ``8192`` to ``102400``
 
 Solr will warn about needing to increase the number of file descriptors and max processes in a production environment but will still run with defaults. We have increased these values to the recommended levels by adding ulimit -n 65000 to the init script, and the following to ``/etc/security/limits.conf``::
 
@@ -210,11 +211,15 @@ On operating systems which use systemd such as RHEL or CentOS 7, you may then ad
 
 Solr launches asynchronously and attempts to use the ``lsof`` binary to watch for its own availability. Installation of this package isn't required but will prevent a warning in the log at startup.
 
-Finally, you may start Solr and create the core that will be used to manage search information::
+Next, you need to tell Solr to create the core ``collection1`` and ``rorSuggestions`` on startup::
+
+        echo "name=collection1" > /usr/local/solr/solr-7.3.1/server/solr/collection1/core.properties
+        echo "name=rorSuggestions" > /usr/local/solr/solr-7.3.1/server/solr/rorSuggestions/core.properties
+
+Finally, you may start Solr::
 
         cd /usr/local/solr/solr-7.3.1
         bin/solr start
-        bin/solr create_core -c collection1 -d server/solr/collection1/conf/
 	
 
 Solr Init Script
