@@ -160,7 +160,7 @@ public class DdiExportUtil {
     
     
     private static boolean isMetadataLanguageSet(String mdLang) {
-       if(mdLang!=null && mdLang!=DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE) {
+       if(mdLang!=null && !mdLang.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
            return true;
        }
         return false;
