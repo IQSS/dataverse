@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.makedatacount.DatasetExternalCitations;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -654,6 +655,26 @@ public class Dataset extends DvObjectContainer {
                    return new SimpleDateFormat("yyyy-MM-dd").format(getPublicationDate()); 
         }
         return null;
+    }
+    
+    public Timestamp getPublicationDate() {
+        List<DatasetVersion> versions = this.versions;
+        // TODo - is this ever not version 1.0 (or draft if not published yet)
+        DatasetVersion oldest = versions.get(versions.size() - 1);
+        Timestamp pubDate = ((DvObject) this).getPublicationDate();
+        if (oldest.isPublished()) {
+            List<FileMetadata> fms = oldest.getFileMetadatas();
+            for (FileMetadata fm : fms) {
+                Embargo embargo = fm.getDataFile().getEmbargo();
+                if (embargo != null) {
+                    Timestamp embDate = Timestamp.valueOf(embargo.getDateAvailable().atStartOfDay());
+                    if (pubDate.compareTo(embDate) < 0) {
+                        pubDate = embDate;
+                    }
+                }
+            }
+        }
+        return pubDate;
     }
 
     public DataFile getThumbnailFile() {
