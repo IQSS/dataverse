@@ -898,6 +898,10 @@ public class IngestServiceBean {
                     // Reset the file size:
                     dataFile.setFilesize(tabularStorageIO.getSize());
 
+                    // additional save prevents optimistic locking exception
+                    dataFile = fileService.save(dataFile);
+                    logger.fine("saved data file after updating the size");
+
                     // delete the temp tab-file:
                     tabFile.delete();
                     /*end of save as backup */
