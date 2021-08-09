@@ -77,20 +77,13 @@ import io.vavr.control.Option;
 import org.dataverse.unf.UNFUtil;
 import org.dataverse.unf.UnfException;
 
-import javax.annotation.Resource;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.enterprise.event.Event;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.inject.Inject;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Queue;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.QueueSender;
-import javax.jms.QueueSession;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -140,12 +133,10 @@ public class IngestServiceBean {
     @Inject
     private SettingsServiceBean settingsService;
 
-    private DataAccess dataAccess = DataAccess.dataAccess();
+    @Inject
+    private Event<IngestMessageSendEvent> ingestMessageSendEventEvent;
 
-    @Resource(mappedName = "jms/DataverseIngest")
-    Queue queue;
-    @Resource(mappedName = "jms/IngestQueueConnectionFactory")
-    QueueConnectionFactory factory;
+    private DataAccess dataAccess = DataAccess.dataAccess();
 
 
     private static String timeFormat_hmsS = "HH:mm:ss.SSS";
@@ -442,44 +433,7 @@ public class IngestServiceBean {
                 ingestMessage.addFileId(scheduledFilesArray[i].getId());
             }
 
-            QueueConnection conn = null;
-            QueueSession session = null;
-            QueueSender sender = null;
-
-            try {
-                conn = factory.createQueueConnection();
-                session = conn.createQueueSession(false, 0);
-                sender = session.createSender(queue);
-
-                Message queueMessage = session.createObjectMessage(ingestMessage);
-
-                sender.send(queueMessage);
-
-            } catch (JMSException ex) {
-                ex.printStackTrace();
-                logger.warning(
-                        "Caught exception trying to close connections after starting a (re)ingest job in the JMS queue! Stack trace below.");
-                sb.append("Failed to queue the (re)ingest job for DataFile (JMS Exception)" + (ex.getMessage() != null ?
-                        ex.getMessage() :
-                        ""));
-            } finally {
-                try {
-
-                    if (sender != null) {
-                        sender.close();
-                    }
-                    if (session != null) {
-                        session.close();
-                    }
-                    if (conn != null) {
-                        conn.close();
-                    }
-                } catch (Exception ex) {
-                    logger.warning(
-                            "Caught exception trying to close connections after starting a (re)ingest job in the JMS queue! Stack trace below.");
-                    ex.printStackTrace();
-                }
-            }
+            ingestMessageSendEventEvent.fire(new IngestMessageSendEvent(ingestMessage));
         }
 
         return sb.toString();

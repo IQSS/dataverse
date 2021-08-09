@@ -108,6 +108,7 @@ function preliminary_setup()
     --poolresize 2 \
     --maxwait 60000 \
     --raname jmsra \
+    --transactionsupport "NoTransaction" \
     --connectiondefinition javax.jms.QueueConnectionFactory \
     jms/IngestQueueConnectionFactoryPool
 
