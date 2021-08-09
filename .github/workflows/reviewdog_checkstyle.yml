@@ -1,0 +1,21 @@
+name: Maven CheckStyle Task
+on:
+   pull_request:
+       paths:
+           - "**.java"
+
+jobs:
+    checkstyle_job:
+        runs-on: ubuntu-latest
+        name: Checkstyle job
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+            - name: Run check style
+              uses: nikitasavinov/checkstyle-action@master
+              with:
+                  fail_on_error: true
+                  reporter: github-pr-review
+                  checkstyle_config: checkstyle.xml
+                  github_token: ${{ secrets.GITHUB_TOKEN }}
+

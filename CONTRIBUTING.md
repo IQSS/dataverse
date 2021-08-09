@@ -6,12 +6,11 @@ We aren't just looking for developers. There are many ways to contribute to Data
 
 ## Ideas/Feature Requests
 
-Your idea or feature request might already be captured in the Dataverse [issue tracker] on GitHub but if not, the best way to bring it to the community's attention is by posting on the [dataverse-community Google Group][] or bringing it up on a [Community Call][]. You're also welcome make some noise in the [#dataverse IRC channel][] (which is [logged][]) or cram your idea into 280 characters and mention [@dataverseorg][] on Twitter. To discuss your idea privately, please email it to support@dataverse.org
+Your idea or feature request might already be captured in the Dataverse [issue tracker] on GitHub but if not, the best way to bring it to the community's attention is by posting on the [dataverse-community Google Group][] or bringing it up on a [Community Call][]. You're also welcome to make some noise in [chat.dataverse.org][] or cram your idea into 280 characters and mention [@dataverseorg][] on Twitter. To discuss your idea privately, please email it to support@dataverse.org
 
 There's a chance your idea is already on our roadmap, which is available at https://www.iq.harvard.edu/roadmap-dataverse-project
 
-[#dataverse IRC channel]: http://chat.dataverse.org
-[logged]: http://irclog.iq.harvard.edu/dataverse/today
+[chat.dataverse.org]: http://chat.dataverse.org
 [issue tracker]: https://github.com/IQSS/dataverse/issues
 [@dataverseorg]: https://twitter.com/dataverseorg
 
@@ -55,7 +54,7 @@ We love code contributions. Developers are not limited to the main Dataverse cod
 [API Guide]: http://guides.dataverse.org/en/latest/api
 [Installation Guide]: http://guides.dataverse.org/en/latest/installation
 
-If you are interested in working on the main Dataverse code, great! Before you start coding, please reach out to us either on the [dataverse-community Google Group][], the [dataverse-dev Google Group][], [IRC][] (#dataverse on freenode), or via support@dataverse.org to make sure the effort is well coordinated and we avoid merge conflicts. We maintain a list of [community contributors][] and [dev efforts][] the community is working on so please let us know if you'd like to be added or removed from either list.
+If you are interested in working on the main Dataverse code, great! Before you start coding, please reach out to us either on the [dataverse-community Google Group][], the [dataverse-dev Google Group][], [chat.dataverse.org][], or via support@dataverse.org to make sure the effort is well coordinated and we avoid merge conflicts. We maintain a list of [community contributors][] and [dev efforts][] the community is working on so please let us know if you'd like to be added or removed from either list.
 
 Please read http://guides.dataverse.org/en/latest/developers/version-control.html to understand how we use the "git flow" model of development and how we will encourage you to create a GitHub issue (if it doesn't exist already) to associate with your pull request. That page also includes tips on making a pull request.
 
@@ -66,6 +65,5 @@ Thanks for your contribution!
 [dataverse-community Google Group]: https://groups.google.com/group/dataverse-community
 [Community Call]: https://dataverse.org/community-calls
 [dataverse-dev Google Group]: https://groups.google.com/group/dataverse-dev
-[IRC]: http://chat.dataverse.org
 [community contributors]: https://docs.google.com/spreadsheets/d/1o9DD-MQ0WkrYaEFTD5rF_NtyL8aUISgURsAXSL7Budk/edit?usp=sharing
 [dev efforts]: https://github.com/orgs/IQSS/projects/2#column-5298405

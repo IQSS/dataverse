@@ -65,7 +65,9 @@ public class StorageIOTest {
         Dataset d= new Dataset();
         instance.setDvObject(d);
         //assertSame uses == rather than the .equals() method which would (currently) be true for any two Datasets 
-        assertSame(d, instance.getDataset());        try {
+        assertSame(d, instance.getDataset());
+
+        try {
             instance.getDataFile();
             fail("This should have thrown");
         } catch (ClassCastException ex) {

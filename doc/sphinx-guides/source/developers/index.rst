@@ -35,4 +35,6 @@ Developer Guide
    big-data-support
    aux-file-support
    s3-direct-upload-api
+   dataset-semantic-metadata-api
+   dataset-migration-api 
    workflows
