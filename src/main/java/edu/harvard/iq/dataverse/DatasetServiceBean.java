@@ -273,8 +273,8 @@ public class DatasetServiceBean implements java.io.Serializable {
         switch (identifierType) {
             case "randomString":
                 return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
-            case "sequentialNumber":
-                return generateIdentifierAsSequentialNumber(dataset, idServiceBean, shoulder);
+            case "storedProcGenerated":
+                return generateIdentifierFromStoredProcedure(dataset, idServiceBean, shoulder);
             default:
                 /* Should we throw an exception instead?? -- L.A. 4.6.2 */
                 return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
@@ -290,19 +290,19 @@ public class DatasetServiceBean implements java.io.Serializable {
         return identifier;
     }
 
-    private String generateIdentifierAsSequentialNumber(Dataset dataset, GlobalIdServiceBean idServiceBean, String shoulder) {
+    private String generateIdentifierFromStoredProcedure(Dataset dataset, GlobalIdServiceBean idServiceBean, String shoulder) {
         
         String identifier; 
         do {
-            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierAsSequentialNumber");
+            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierFromStoredProcedure");
             query.execute();
-            Integer identifierNumeric = (Integer) query.getOutputParameterValue(1); 
+            String identifierFromStoredProcedure = (String) query.getOutputParameterValue(1);
             // some diagnostics here maybe - is it possible to determine that it's failing 
             // because the stored procedure hasn't been created in the database?
-            if (identifierNumeric == null) {
+            if (identifierFromStoredProcedure == null) {
                 return null; 
             }
-            identifier = shoulder + identifierNumeric.toString();
+            identifier = shoulder + identifierFromStoredProcedure;
         } while (!isIdentifierLocallyUnique(identifier, dataset));
         
         return identifier;

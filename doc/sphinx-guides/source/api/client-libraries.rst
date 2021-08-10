@@ -27,9 +27,10 @@ It was created and is maintained by `The Agile Monkeys <https://www.theagilemonk
 R
 -
 
-https://github.com/IQSS/dataverse-client-r is the official R package for Dataverse Software APIs. The latest release can be installed from `CRAN <https://cran.r-project.org/package=dataverse>`_.
+https://github.com/IQSS/dataverse-client-r is the official R package for Dataverse Software APIs. The latest release can be installed from `CRAN <https://cran.r-project.org/package=dataverse>`_. 
+The R client can search and download datasets. It is useful when automatically (instead of manually) downloading data files as part of a script. For bulk edit and upload operations, we currently recommend pyDataverse.
 
-The package is currently maintained by `Will Beasley <https://github.com/wibeasley>`_. It was created by `Thomas Leeper <http://thomasleeper.com>`_ whose Dataverse collection can be found at https://dataverse.harvard.edu/dataverse/leeper
+The package is currently maintained by  `Shiro Kuriwaki <https://github.com/kuriwaki>`_. It was originally created by `Thomas Leeper <http://thomasleeper.com>`_ and then formerly maintained by `Will Beasley <https://github.com/wibeasley>`_.
 
 Java
 ----
