@@ -18,9 +18,11 @@ import edu.harvard.iq.dataverse.search.query.SearchForTypes;
 import edu.harvard.iq.dataverse.search.query.SearchObjectType;
 import edu.harvard.iq.dataverse.search.response.DvObjectCounts;
 import edu.harvard.iq.dataverse.search.response.FacetCategory;
+import edu.harvard.iq.dataverse.search.response.FilterQuery;
 import edu.harvard.iq.dataverse.search.response.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 import org.apache.commons.lang.StringUtils;
+import org.apache.pdfbox.filter.FilterFactory;
 import org.omnifaces.cdi.Param;
 
 import javax.annotation.PostConstruct;
@@ -35,10 +37,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @RequestScoped
 @Named("SearchIncludeFragment")
@@ -127,6 +132,7 @@ public class SearchIncludeFragment {
     private int paginationGuiEnd = 10;
     private boolean solrIsDown = false;
 
+    private List<FilterQuery> responseFilterQueries = new ArrayList<>();
     private List<String> filterQueriesDebug = new ArrayList<>();
     private String errorFromSolr;
     private SearchException searchException;
@@ -253,14 +259,11 @@ public class SearchIncludeFragment {
         List<String> filterQueriesFinal = new ArrayList<>();
         String dataversePath = null;
 
-        if (!dataverse.isRoot()) {
-            /**
-             * @todo centralize this into SearchServiceBean
-             */
-            dataversePath = dataverseDao.determineDataversePath(dataverse);
-            String filterDownToSubtree = SearchFields.SUBTREE + ":\"" + dataversePath + "\"";
-            filterQueriesFinal.add(filterDownToSubtree);
-        }
+        /**
+         * @todo centralize this into SearchServiceBean
+         */
+        Optional<String> filterDownToSubtree = buildSubtreeFilterIfNeeded(dataverse);
+        filterDownToSubtree.ifPresent(filterQueriesFinal::add);
 
         filterQueriesFinal.addAll(filterQueries);
 
@@ -316,9 +319,21 @@ public class SearchIncludeFragment {
         }
 
 
-        this.facetCategoryList = solrQueryResponse.getFacetCategoryList();
+        for (FacetCategory facetCategory: solrQueryResponse.getFacetCategoryList()) {
+            if (facetCategory.getName().equals(SearchFields.PUBLICATION_STATUS) && facetCategory.getFacetLabels().size() < 2) {
+                continue;
+            }
+            facetCategoryList.add(facetCategory);
+        }
         this.searchResultsList = solrQueryResponse.getSolrSearchResults();
         this.searchResultsCount = solrQueryResponse.getNumResultsFound().intValue();
+        if (filterDownToSubtree.isPresent()) {
+            this.responseFilterQueries = solrQueryResponse.getFilterQueries().stream()
+                    .filter(filter -> !filterDownToSubtree.get().equals(filter.getQuery()))
+                    .collect(toList());
+        } else {
+            this.responseFilterQueries = solrQueryResponse.getFilterQueries();
+        }
         this.filterQueriesDebug = solrQueryResponse.getFilterQueriesActual();
 
         paginationGuiStart = paginationStart + 1;
@@ -515,6 +530,10 @@ public class SearchIncludeFragment {
         return dataverse.isRoot();
     }
 
+    public List<FilterQuery> getResponseFilterQueries() {
+        return responseFilterQueries;
+    }
+
     public List<String> getFilterQueriesDebug() {
         return filterQueriesDebug;
     }
@@ -539,35 +558,12 @@ public class SearchIncludeFragment {
             return true;        // empty is valid!
         }
 
-        for (String fq : this.filterQueries) {
-            if (this.getFriendlyNamesFromFilterQuery(fq) == null) {
+        for (FilterQuery fq : responseFilterQueries) {
+            if (!fq.hasFriendlyNameAndValue()) {
                 return false;   // not parseable is bad!
             }
         }
         return true;
-    }
-
-    public List<String> getFriendlyNamesFromFilterQuery(String filterQuery) {
-
-
-        if (filterQuery == null) {
-            return null;
-        }
-
-        String[] parts = filterQuery.split(":");
-        if (parts.length != 2) {
-            return null;
-        }
-        String key = parts[0];
-        String value = parts[1].replaceAll("^\"", "").replaceAll("\"$", "");
-
-        List<String> friendlyNames = new ArrayList<>();
-
-        friendlyNames.add(searchService.getLocaleFacetCategoryName(key));
-
-        String localizedFacetName = searchService.getLocaleFacetLabelName(value, key);
-        friendlyNames.add(localizedFacetName);
-        return friendlyNames;
     }
 
     public Map<SearchObjectType, Boolean> getSelectedTypesMap() {
@@ -706,7 +702,7 @@ public class SearchIncludeFragment {
                 if (dataverse.getId().equals(result.getParentIdAsLong())) {
                     // definitely NOT linked:
                     result.setIsInTree(true);
-                } else if (result.getParentIdAsLong() == dataverseDao.findRootDataverse().getId()) {
+                } else if (result.getParentIdAsLong().equals(dataverseDao.findRootDataverse().getId())) {
                     // the object's parent is the root Dv; and the current
                     // Dv is NOT root... definitely linked:
                     result.setIsInTree(false);
@@ -722,7 +718,7 @@ public class SearchIncludeFragment {
                         Long objectId = result.getParentIdAsLong();
                         if (treePathMap.containsKey(objectId)) {
                             String objectPath = treePathMap.get(objectId);
-                            if (!objectPath.startsWith(dataversePath)) {
+                            if (!StringUtils.startsWith(objectPath, dataversePath)) {
                                 result.setIsInTree(false);
                             }
                         }
@@ -738,5 +734,13 @@ public class SearchIncludeFragment {
     public boolean couldCreateDatasetOrDataverseIfWasAuthenticated() throws ClassNotFoundException {
         return permissionService.userOn(AuthenticatedUsers.get(), dataverse).has(Permission.AddDataverse)
                 || permissionService.userOn(AuthenticatedUsers.get(), dataverse).has(Permission.AddDataset);
+    }
+
+    private Optional<String> buildSubtreeFilterIfNeeded(Dataverse dataverse) {
+        if (!dataverse.isRoot()) {
+            String dataversePath = dataverseDao.determineDataversePath(dataverse);
+            return Optional.of(SearchFields.SUBTREE + ":\"" + dataversePath + "\"");
+        }
+        return Optional.empty();
     }
 }

@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.WidgetWrapper;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
+import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
@@ -29,6 +30,8 @@ import edu.harvard.iq.dataverse.search.SearchServiceBean.SortOrder;
 import edu.harvard.iq.dataverse.search.query.SearchForTypes;
 import edu.harvard.iq.dataverse.search.query.SearchObjectType;
 import edu.harvard.iq.dataverse.search.response.FacetCategory;
+import edu.harvard.iq.dataverse.search.response.FacetLabel;
+import edu.harvard.iq.dataverse.search.response.FilterQuery;
 import edu.harvard.iq.dataverse.search.response.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -48,6 +51,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import static java.lang.String.format;
 
 @ViewScoped
 @Named("MyDataSearchFragment")
@@ -93,8 +98,8 @@ public class MyDataSearchFragment implements java.io.Serializable {
     private String mode;
     private String query;
     private String searchUserId;
-    private List<String> filterQueries = new ArrayList<>();
-    private List<FacetCategory> facetCategoryList = new ArrayList<>();
+    private List<String> publicationStatusFilters = new ArrayList<>();
+    private FacetCategory publicationStatusFacetCategory;
     private List<SolrSearchResult> searchResultsList = new ArrayList<>();
     private int searchResultsCount;
     private String fq0;
@@ -124,12 +129,10 @@ public class MyDataSearchFragment implements java.io.Serializable {
     private int paginationGuiStart = 1;
     private int paginationGuiEnd = 10;
     private int paginationGuiRows = 10;
-    private Map<String, String> datasetfieldFriendlyNamesBySolrField = new HashMap<>();
-    private Map<String, String> staticSolrFieldFriendlyNamesBySolrField = new HashMap<>();
     private boolean solrIsDown = false;
-    private Map<String, Integer> numberOfFacets = new HashMap<>();
     private boolean debug = false;
 
+    private List<FilterQuery> selectedFilterQueries = new ArrayList<>();
     private List<String> filterQueriesDebug = new ArrayList<>();
 
     private boolean rootDv = false;
@@ -164,12 +167,8 @@ public class MyDataSearchFragment implements java.io.Serializable {
         return mode;
     }
 
-    public List<String> getFilterQueries() {
-        return filterQueries;
-    }
-
-    public List<FacetCategory> getFacetCategoryList() {
-        return facetCategoryList;
+    public List<String> getPublicationStatusFilters() {
+        return publicationStatusFilters;
     }
 
     public List<SolrSearchResult> getSearchResultsList() {
@@ -293,6 +292,14 @@ public class MyDataSearchFragment implements java.io.Serializable {
         return paginationGuiRows;
     }
 
+    public FacetCategory getPublicationStatusFacetCategory() {
+        return publicationStatusFacetCategory;
+    }
+
+    public List<FilterQuery> getSelectedFilterQueries() {
+        return selectedFilterQueries;
+    }
+
     public List<String> getFilterQueriesDebug() {
         return filterQueriesDebug;
     }
@@ -302,14 +309,6 @@ public class MyDataSearchFragment implements java.io.Serializable {
     }
 
     // -------------------- LOGIC --------------------
-    public int getNumberOfFacets(String name, int defaultValue) {
-        Integer numFacets = numberOfFacets.get(name);
-        if (numFacets == null) {
-            numberOfFacets.put(name, defaultValue);
-            numFacets = defaultValue;
-        }
-        return numFacets;
-    }
 
     /**
      * Used for capturing errors that happen during solr query
@@ -363,30 +362,16 @@ public class MyDataSearchFragment implements java.io.Serializable {
      */
     public boolean hasValidFilterQueries() {
 
-        if (this.filterQueries.isEmpty()) {
+        if (this.publicationStatusFilters.isEmpty()) {
             return true;        // empty is valid!
         }
 
-        for (String fq : this.filterQueries) {
-            if (this.getFriendlyNamesFromFilterQuery(fq) == null) {
+        for (FilterQuery fq : selectedFilterQueries) {
+            if (!fq.hasFriendlyNameAndValue()) {
                 return false;   // not parseable is bad!
             }
         }
         return true;
-    }
-
-    public List<String> getFriendlyNamesFromFilterQuery(String filterQuery) {
-        String[] parts = filterQuery.split(":");
-        if (parts.length != 2) {
-            return null;
-        }
-
-        String formattedValue = parts[1].replaceAll("^\"", "").replaceAll("\"$", "");
-
-        List<String> friendlyNames = new ArrayList<>();
-        friendlyNames.add(searchService.getLocaleFacetCategoryName(parts[0]));
-        friendlyNames.add(searchService.getLocaleFacetLabelName(formattedValue, parts[0]));
-        return friendlyNames;
     }
 
     public String getNewSelectedTypes(SearchObjectType typeClicked) {
@@ -594,10 +579,10 @@ public class MyDataSearchFragment implements java.io.Serializable {
             }
         }
 
-        filterQueries = new ArrayList<>();
+        publicationStatusFilters = new ArrayList<>();
         for (String fq : Arrays.asList(fq0, fq1, fq2, fq3, fq4, fq5, fq6, fq7, fq8, fq9)) {
-            if (fq != null) {
-                filterQueries.add(fq);
+            if (MyDataFilterParams.allPublishedStates.contains(fq)) {
+                publicationStatusFilters.add(fq);
             }
         }
 
@@ -613,10 +598,8 @@ public class MyDataSearchFragment implements java.io.Serializable {
         DataverseRolePermissionHelper rolePermissionHelper = new DataverseRolePermissionHelper(roleList);
 
         List<String> pub_states = new ArrayList<>();
-        for(String filter : filterQueries) {
-            if(filter.contains(SearchFields.PUBLICATION_STATUS)) {
-                pub_states.add(filter.split(":")[1].replace("\"",""));
-            }
+        for(String filter : publicationStatusFilters) {
+            pub_states.add(filter.replace("\"",""));
         }
         if(pub_states.isEmpty()) {
             pub_states = MyDataFilterParams.defaultPublishedStates;
@@ -727,14 +710,22 @@ public class MyDataSearchFragment implements java.io.Serializable {
             roleTagRetriever.loadRoles(requestWithSearchedUser, solrQueryResponse);
             for(FacetCategory facetCat : solrQueryResponse.getFacetCategoryList()) {
                 if(facetCat.getName().equals("publicationStatus")) {
-                    this.facetCategoryList.add(facetCat);
+                    publicationStatusFacetCategory = new FacetCategory();
+                    publicationStatusFacetCategory.setName(facetCat.getName());
+                    publicationStatusFacetCategory.setFriendlyName(facetCat.getFriendlyName());
+                    for (FacetLabel facetLabel: facetCat.getFacetLabels()) {
+                        FacetLabel convertedFacetLabel = new FacetLabel(
+                                facetLabel.getName(),
+                                facetLabel.getDisplayName(),
+                                facetLabel.getCount()); 
+                        convertedFacetLabel.setFilterQuery(facetLabel.getName());
+                        publicationStatusFacetCategory.addFacetLabel(convertedFacetLabel);
+                    }
                     break;
                 }
             }
             this.searchResultsList = solrQueryResponse.getSolrSearchResults();
             this.searchResultsCount = solrQueryResponse.getNumResultsFound().intValue();
-            this.datasetfieldFriendlyNamesBySolrField = solrQueryResponse.getDatasetfieldFriendlyNamesBySolrField();
-            this.staticSolrFieldFriendlyNamesBySolrField = solrQueryResponse.getStaticSolrFieldFriendlyNamesBySolrField();
             this.filterQueriesDebug = solrQueryResponse.getFilterQueriesActual();
             paginationGuiStart = paginationStart + 1;
             paginationGuiEnd = Math.min(page * paginationGuiRows, searchResultsCount);
@@ -770,6 +761,15 @@ public class MyDataSearchFragment implements java.io.Serializable {
                     results.getOrDefault(SearchObjectType.DATASETS, Collections.emptyList()));
             solrSearchResultsService.populateDatafileSearchCard(
                     results.getOrDefault(SearchObjectType.FILES, Collections.emptyList()));
+            
+            for (String publicationStatusFilter: publicationStatusFilters) {
+                String key = format(SearchServiceBean.FACETBUNDLE_MASK_VALUE, "publicationStatus");
+                String value = format(SearchServiceBean.FACETBUNDLE_MASK_GROUP_AND_VALUE, "publicationStatus", publicationStatusFilter.toLowerCase().replace(" ", "_"));
+                
+                selectedFilterQueries.add(
+                        new FilterQuery(publicationStatusFilter,
+                                BundleUtil.getStringFromBundle(key), BundleUtil.getStringFromBundle(value)));
+            }
         }
 
         return StringUtils.EMPTY;
@@ -817,12 +817,8 @@ public class MyDataSearchFragment implements java.io.Serializable {
         this.searchUserId = searchUserId;
     }
 
-    public void setFilterQueries(List<String> filterQueries) {
-        this.filterQueries = filterQueries;
-    }
-
-    public void setFacetCategoryList(List<FacetCategory> facetCategoryList) {
-        this.facetCategoryList = facetCategoryList;
+    public void setPublicationStatusFilters(List<String> filterQueries) {
+        this.publicationStatusFilters = filterQueries;
     }
 
     public void setQuery(String query) {

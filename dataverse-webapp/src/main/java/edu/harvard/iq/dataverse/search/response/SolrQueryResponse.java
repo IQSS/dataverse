@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.search.response;
 import org.apache.solr.client.solrj.SolrQuery;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,13 +13,12 @@ public class SolrQueryResponse {
     private Long resultsStart;
     private Map<String, List<String>> spellingSuggestionsByToken;
     private List<FacetCategory> facetCategoryList;
-    private Map<String, String> datasetfieldFriendlyNamesBySolrField = new HashMap<>();
-    private Map<String, String> staticSolrFieldFriendlyNamesBySolrField = new HashMap<>();
-    private List<String> filterQueriesActual = new ArrayList<String>();
+    private List<FilterQuery> filterQueries = new ArrayList<>();
+    private List<String> filterQueriesActual = new ArrayList<>();
     private DvObjectCounts dvObjectCounts = DvObjectCounts.emptyDvObjectCounts();
     private PublicationStatusCounts publicationStatusCounts = PublicationStatusCounts.emptyPublicationStatusCounts();
 
-    SolrQuery solrQuery;
+    private SolrQuery solrQuery;
 
     public SolrQueryResponse(SolrQuery solrQuery) {
         this.solrQuery = solrQuery;
@@ -85,20 +83,16 @@ public class SolrQueryResponse {
         this.facetCategoryList = facetCategoryList;
     }
 
-    public Map<String, String> getDatasetfieldFriendlyNamesBySolrField() {
-        return datasetfieldFriendlyNamesBySolrField;
+    public List<FilterQuery> getFilterQueries() {
+        return filterQueries;
     }
 
-    void setDatasetfieldFriendlyNamesBySolrField(Map<String, String> datasetfieldFriendlyNamesBySolrField) {
-        this.datasetfieldFriendlyNamesBySolrField = datasetfieldFriendlyNamesBySolrField;
+    public void addFilterQuery(FilterQuery filterQuery) {
+        filterQueries.add(filterQuery);
     }
 
-    public Map<String, String> getStaticSolrFieldFriendlyNamesBySolrField() {
-        return staticSolrFieldFriendlyNamesBySolrField;
-    }
-
-    void setStaticSolrFieldFriendlyNamesBySolrField(Map<String, String> staticSolrFieldFriendlyNamesBySolrField) {
-        this.staticSolrFieldFriendlyNamesBySolrField = staticSolrFieldFriendlyNamesBySolrField;
+    public void setFilterQueries(List<FilterQuery> filterQueries) {
+        this.filterQueries = filterQueries;
     }
 
     public List<String> getFilterQueriesActual() {

@@ -20,6 +20,7 @@ import edu.harvard.iq.dataverse.search.query.SolrQuerySanitizer;
 import edu.harvard.iq.dataverse.search.response.DvObjectCounts;
 import edu.harvard.iq.dataverse.search.response.FacetCategory;
 import edu.harvard.iq.dataverse.search.response.FacetLabel;
+import edu.harvard.iq.dataverse.search.response.FilterQuery;
 import edu.harvard.iq.dataverse.search.response.Highlight;
 import edu.harvard.iq.dataverse.search.response.PublicationStatusCounts;
 import edu.harvard.iq.dataverse.search.response.SolrQueryResponse;
@@ -37,32 +38,25 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient.RemoteSolrException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
 import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.client.solrj.response.RangeFacet;
 import org.apache.solr.client.solrj.response.SpellCheckResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
 import javax.ejb.EJB;
-import javax.ejb.EJBTransactionRolledbackException;
 import javax.ejb.Stateless;
-import javax.ejb.TransactionRolledbackLocalException;
 import javax.inject.Inject;
-import javax.persistence.NoResultException;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.logging.Level;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -73,8 +67,8 @@ public class SearchServiceBean {
 
     private static final Logger logger = Logger.getLogger(SearchServiceBean.class.getCanonicalName());
 
-    private static final String FACETBUNDLE_MASK_GROUP_AND_VALUE = "facets.search.fieldtype.%s.%s.label";
-    private static final String FACETBUNDLE_MASK_VALUE = "facets.search.fieldtype.%s.label";
+    public static final String FACETBUNDLE_MASK_GROUP_AND_VALUE = "facets.search.fieldtype.%s.%s.label";
+    public static final String FACETBUNDLE_MASK_VALUE = "facets.search.fieldtype.%s.label";
     private static final String FACETBUNDLE_MASK_DVCATEGORY_VALUE = "dataverse.type.selectTab.%s";
 
     public enum SortOrder {
@@ -103,13 +97,13 @@ public class SearchServiceBean {
      * @todo Can we do without the DatasetFieldServiceBean?
      */
     @EJB
-    DvObjectServiceBean dvObjectService;
+    private DvObjectServiceBean dvObjectService;
     @EJB
-    DatasetFieldServiceBean datasetFieldService;
+    private DatasetFieldServiceBean datasetFieldService;
     @Inject
-    SettingsServiceBean settingsService;
+    private SettingsServiceBean settingsService;
     @EJB
-    SystemConfig systemConfig;
+    private SystemConfig systemConfig;
     @EJB
     private PermissionFilterQueryBuilder permissionQueryBuilder;
     @Inject
@@ -144,8 +138,8 @@ public class SearchServiceBean {
         SolrQuery solrQuery = new SolrQuery();
 
         List<DatasetFieldType> datasetFields = datasetFieldService.findAllOrderedById();
-        Map<String, List<DatasetFieldType>> fieldIndex = datasetFields.stream()
-                .collect(Collectors.groupingBy(DatasetFieldType::getName, Collectors.toList()));
+        Map<String, DatasetFieldType> fieldIndex = datasetFields.stream()
+                .collect(Collectors.toMap(DatasetFieldType::getName, Function.identity()));
 
         query = querySanitizer.sanitizeQuery(query, datasetFields);
         solrQuery.setQuery(query);
@@ -200,6 +194,7 @@ public class SearchServiceBean {
         solrQuery.setParam("fl", "*,score");
         solrQuery.setParam("qt", "/select");
         solrQuery.setParam("facet", "true");
+        solrQuery.setParam("facet.mincount", "1");
         //  @todo: do we need facet.query?
         solrQuery.setParam("facet.query", "*");
 
@@ -247,7 +242,7 @@ public class SearchServiceBean {
                             datasetField.isThisOrParentAllowsMultipleValues(), datasetField.isFacetable());
                     solrQuery.addFacetField(dsfSolrField.getNameFacetable());
                 }
-            }
+            };
         }
 
         solrQuery.addFacetField(SearchFields.FILE_TYPE);
@@ -259,16 +254,6 @@ public class SearchServiceBean {
         }
         // @todo: do sanity checking... throw error if negative
         solrQuery.setStart(paginationStart);
-        // @todo: decide if year CITATION_YEAR is good enough or if we should support CITATION_DATE
-
-//        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"), Locale.UK);
-//        calendar.set(2010, 1, 1);
-//        Date start = calendar.getTime();
-//        calendar.set(2013, 1, 1);
-//        Date end = calendar.getTime();
-//        solrQuery.addDateRangeFacet(SearchFields.CITATION_DATE, start, end, "+1MONTH");
-        //  @todo make this configurable
-        int thisYear = Calendar.getInstance().get(Calendar.YEAR);
         solrQuery.setRows(numResultsPerPage);
         logger.fine("Solr query:" + solrQuery);
 
@@ -289,33 +274,19 @@ public class SearchServiceBean {
         if (countsOnly) {
             return solrQueryResponse;
         }
-        /*
-          @todo refactor SearchFields to a hashmap (or something? put in
-         * database? internationalize?) to avoid the crazy reflection and string
-         * manipulation below
-         */
-        Object searchFieldsObject = new SearchFields();
-        Field[] staticSearchFields = searchFieldsObject.getClass().getDeclaredFields();
+
         String titleSolrField = null;
-        try {
-            DatasetFieldType titleDatasetField = datasetFieldService.findByName(DatasetFieldConstant.title);
+        if (fieldIndex.containsKey(DatasetFieldConstant.title)) {
+            DatasetFieldType titleDatasetField = fieldIndex.get(DatasetFieldConstant.title);
             titleSolrField = SolrField.of(titleDatasetField.getName(), titleDatasetField.getFieldType(),
                     titleDatasetField.isThisOrParentAllowsMultipleValues(), titleDatasetField.isFacetable())
                     .getNameSearchable();
-        } catch (EJBTransactionRolledbackException ex) {
+        } else {
             logger.info("Couldn't find " + DatasetFieldConstant.title);
-            if (ex.getCause() instanceof TransactionRolledbackLocalException) {
-                if (ex.getCause().getCause() instanceof NoResultException) {
-                    logger.info("Caught NoResultException");
-                }
-            }
         }
-        Map<String, String> datasetfieldFriendlyNamesBySolrField = new HashMap<>();
-        Map<String, String> staticSolrFieldFriendlyNamesBySolrField = new HashMap<>();
         String baseUrl = systemConfig.getDataverseSiteUrl();
 
         //Going through the results
-        long result_t = System.currentTimeMillis();
         for (SolrDocument solrDocument : docs) {
             String id = (String) solrDocument.getFieldValue(SearchFields.ID);
             Long entityid = (Long) solrDocument.getFieldValue(SearchFields.ENTITY_ID);
@@ -330,7 +301,7 @@ public class SearchServiceBean {
             String persistentUrl = (String) solrDocument.getFieldValue(SearchFields.PERSISTENT_URL);
             String name = (String) solrDocument.getFieldValue(SearchFields.NAME);
             String nameSort = (String) solrDocument.getFieldValue(SearchFields.NAME_SORT);
-            ArrayList titles = (ArrayList) solrDocument.getFieldValues(titleSolrField);
+            String title = (String) solrDocument.getFirstValue(titleSolrField);
             Long datasetVersionId = (Long) solrDocument.getFieldValue(SearchFields.DATASET_VERSION_ID);
             String deaccessionReason = (String) solrDocument.getFieldValue(SearchFields.DATASET_DEACCESSION_REASON);
             String fileContentType = (String) solrDocument.getFieldValue(SearchFields.FILE_CONTENT_TYPE);
@@ -433,13 +404,9 @@ public class SearchServiceBean {
                 //}
 
                 // @todo Could use getFieldValues (plural) here.
-                List<String> datasetDescriptions = (List) solrDocument.getFieldValues(SearchFields.DATASET_DESCRIPTION);
-                if (datasetDescriptions != null) {
-                    String firstDatasetDescription = datasetDescriptions.get(0);
-                    if (firstDatasetDescription != null) {
-                        solrSearchResult.setDescriptionNoSnippet(firstDatasetDescription);
-                    }
-                }
+                String firstDatasetDescription = (String) solrDocument.getFirstValue(SearchFields.DATASET_DESCRIPTION);
+                solrSearchResult.setDescriptionNoSnippet(firstDatasetDescription);
+
                 solrSearchResult.setDatasetVersionId(datasetVersionId);
 
                 solrSearchResult.setCitation(citation);
@@ -448,8 +415,8 @@ public class SearchServiceBean {
                 solrSearchResult.setIdentifierOfDataverse(identifierOfDataverse);
                 solrSearchResult.setNameOfDataverse(nameOfDataverse);
 
-                if (titles != null) {
-                    solrSearchResult.setTitle((String) titles.get(0));
+                if (title != null) {
+                    solrSearchResult.setTitle(title);
                 } else {
                     logger.fine("No title indexed. Setting to empty string to prevent NPE. Dataset id " + entityid + " and version id " + datasetVersionId);
                     solrSearchResult.setTitle("");
@@ -532,132 +499,30 @@ public class SearchServiceBean {
         }
 
         List<FacetCategory> facetCategoryList = new ArrayList<>();
-        boolean hidePublicationStatusFacet = false;
-        boolean draftsAvailable = false;
-        boolean unpublishedAvailable = false;
-        boolean deaccessionedAvailable = false;
-        boolean hideMetadataSourceFacet = true;
+
         for (FacetField facetField : queryResponse.getFacetFields()) {
+            if (!shouldIncludeFacetInResults(facetField)) {
+                continue;
+            }
+            
             FacetCategory facetCategory = new FacetCategory();
+            facetCategory.setName(facetField.getName());
+            facetCategory.setFriendlyName(getLocaleFacetCategoryName(facetField.getName(), fieldIndex));
+
             List<FacetLabel> facetLabelList = new ArrayList<>();
-            int numMetadataSources = 0;
+
             for (FacetField.Count facetFieldCount : facetField.getValues()) {
                 // @todo we do want to show the count for each facet
-                if (facetFieldCount.getCount() > 0) {
-                    FacetLabel facetLabel = new FacetLabel(facetFieldCount.getName(),
-                            getLocaleFacetLabelName(facetFieldCount.getName(), facetField.getName(), fieldIndex),
-                            facetFieldCount.getCount());
-                    // quote field facets
-                    facetLabel.setFilterQuery(facetField.getName() + ":\"" + facetFieldCount.getName() + "\"");
-                    facetLabelList.add(facetLabel);
-                    if (facetField.getName().equals(SearchFields.PUBLICATION_STATUS)) {
-                        if (facetLabel.getName().equals(SearchPublicationStatus.UNPUBLISHED.getSolrValue())) {
-                            unpublishedAvailable = true;
-                        } else if (facetLabel.getName().equals(SearchPublicationStatus.DRAFT.getSolrValue())) {
-                            draftsAvailable = true;
-                        } else if (facetLabel.getName().equals(SearchPublicationStatus.DEACCESSIONED.getSolrValue())) {
-                            deaccessionedAvailable = true;
-                        }
-                    }
-                    if (facetField.getName().equals(SearchFields.METADATA_SOURCE)) {
-                        numMetadataSources++;
-                    }
-                }
+                FacetLabel facetLabel = new FacetLabel(facetFieldCount.getName(),
+                        getLocaleFacetLabelName(facetFieldCount.getName(), facetField.getName(), fieldIndex),
+                        facetFieldCount.getCount());
+                // quote field facets
+                facetLabel.setFilterQuery(facetField.getName() + ":\"" + facetFieldCount.getName() + "\"");
+                facetLabelList.add(facetLabel);
             }
-            if (numMetadataSources > 1) {
-                hideMetadataSourceFacet = false;
-            }
-            facetCategory.setName(facetField.getName());
-            // hopefully people will never see the raw facetField.getName() because it may well have an _s at the end
-            facetCategory.setFriendlyName(facetField.getName());
-            // try to find a friendlier name to display as a facet
-            /*
-              @todo hmm, we thought we wanted the datasetFields array to go
-             * away once we have more granularity than findAll() available per
-             * the todo above but we need a way to lookup by Solr field, so
-             * we'll build a hashmap
-             */
-            for (DatasetFieldType datasetField : datasetFields) {
-                SolrField dsfSolrField = SolrField.of(datasetField.getName(), datasetField.getFieldType(),
-                        datasetField.isThisOrParentAllowsMultipleValues(), datasetField.isFacetable());
 
-                String solrFieldNameForDataset = dsfSolrField.getNameFacetable();
-                String friendlyName = datasetField.getDisplayName();
-                if (solrFieldNameForDataset != null && facetField.getName().equals(solrFieldNameForDataset)) {
-                    if (friendlyName != null && !friendlyName.isEmpty()) {
-                        facetCategory.setFriendlyName(friendlyName);
-                        // stop examining available dataset fields. we found a match
-                        break;
-                    }
-                }
-                datasetfieldFriendlyNamesBySolrField.put(dsfSolrField.getNameFacetable(), friendlyName);
-            }
-            /*
-              @todo get rid of this crazy reflection, per todo above... or
-             * should we... let's put into a hash the friendly names of facet
-             * categories, indexed by Solr field
-             */
-            for (Field fieldObject : staticSearchFields) {
-                String staticSearchField = null;
-                try {
-                    staticSearchField = (String) fieldObject.get(searchFieldsObject);
-                } catch (IllegalArgumentException | IllegalAccessException ex) {
-                    Logger.getLogger(SearchServiceBean.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                if (staticSearchField != null && facetField.getName().equals(staticSearchField)) {
-                    String friendlyName = getLocaleFacetCategoryName(facetField.getName(), fieldIndex);
-                    facetCategory.setFriendlyName(friendlyName);
-                    staticSolrFieldFriendlyNamesBySolrField.put(staticSearchField, friendlyName);
-                    break;
-                }
-            }
-            facetCategory.setFacetLabel(facetLabelList);
-            if (!facetLabelList.isEmpty()) {
-                if (facetCategory.getName().equals(SearchFields.TYPE)) {
-                    // the "type" facet is special, these are not
-                } else if (facetCategory.getName().equals(SearchFields.PUBLICATION_STATUS)) {
-                    if (unpublishedAvailable || draftsAvailable || deaccessionedAvailable) {
-                        hidePublicationStatusFacet = false;
-                    }
-                    if (!hidePublicationStatusFacet) {
-                        facetCategoryList.add(facetCategory);
-                    }
-                } else if (facetCategory.getName().equals(SearchFields.METADATA_SOURCE)) {
-                    if (!hideMetadataSourceFacet) {
-                        facetCategoryList.add(facetCategory);
-                    }
-                } else {
-                    facetCategoryList.add(facetCategory);
-                }
-            }
-        }
-        // for now the only range facet is citation year
-        for (RangeFacet<String, String> rangeFacet : queryResponse.getFacetRanges()) {
-            FacetCategory facetCategory = new FacetCategory();
-            List<FacetLabel> facetLabelList = new ArrayList<>();
-            for (Object rfObj : rangeFacet.getCounts()) {
-                RangeFacet.Count rangeFacetCount = (RangeFacet.Count) rfObj;
-                String valueString = rangeFacetCount.getValue();
-                Integer start = Integer.parseInt(valueString);
-                Integer end = start + Integer.parseInt(rangeFacet.getGap());
-                // to avoid overlapping dates
-                end = end - 1;
-                if (rangeFacetCount.getCount() > 0) {
-                    FacetLabel facetLabel = new FacetLabel(start + "-" + end,start + "-" + end, (long) rangeFacetCount.getCount());
-                    // special [12 TO 34] syntax for range facets
-                    facetLabel.setFilterQuery(rangeFacet.getName() + ":" + "[" + start + " TO " + end + "]");
-                    facetLabelList.add(facetLabel);
-                }
-            }
-            facetCategory.setName(rangeFacet.getName());
-            facetCategory.setFacetLabel(facetLabelList);
-            // reverse to show the newest citation year range at the top
-            List<FacetLabel> facetLabelListReversed = new ArrayList<>();
-            ListIterator<FacetLabel> li = facetLabelList.listIterator(facetLabelList.size());
-            while (li.hasPrevious()) {
-                facetLabelListReversed.add(li.previous());
-            }
-            facetCategory.setFacetLabel(facetLabelListReversed);
+            facetCategory.setFacetLabels(facetLabelList);
+
             if (!facetLabelList.isEmpty()) {
                 facetCategoryList.add(facetCategory);
             }
@@ -679,58 +544,52 @@ public class SearchServiceBean {
             logger.info("solrQuery.getFilterQueries() was null");
         }
 
+        for (String filterQuery: filterQueries) {
+
+            String[] parts = filterQuery.split(":");
+            if (parts.length != 2) {
+                solrQueryResponse.addFilterQuery(new FilterQuery(filterQuery));
+            } else {
+                String key = parts[0];
+                String value = parts[1].replaceAll("^\"", "").replaceAll("\"$", "");
+                
+                solrQueryResponse.addFilterQuery(new FilterQuery(
+                        filterQuery,
+                        getLocaleFacetCategoryName(key, fieldIndex),
+                        getLocaleFacetLabelName(value, key, fieldIndex)));
+            }
+
+        }
+
         solrQueryResponse.setPublicationStatusCounts(convertFacetToPublicationStatusCounts(queryResponse.getFacetField(SearchFields.PUBLICATION_STATUS)));
 
         return solrQueryResponse;
     }
 
-    public String getLocaleFacetCategoryName(String facetCategoryName) {
-        return getLocaleFacetCategoryName(facetCategoryName, null);
-    }
+    // -------------------- PRIVATE --------------------
 
-    public String getLocaleFacetCategoryName(String facetCategoryName, Map<String, List<DatasetFieldType>> index) {
+    private String getLocaleFacetCategoryName(String facetCategoryName, Map<String, DatasetFieldType> index) {
         final String formattedFacetFieldName = removeSolrFieldSuffix(facetCategoryName);
-        List<DatasetFieldType> matchingFields = index != null
-                ? index.getOrDefault(formattedFacetFieldName, Collections.emptyList())
-                : datasetFieldService.findAllOrderedByName().stream()
-                .filter(dsField -> dsField.getName().equals(formattedFacetFieldName))
-                .collect(Collectors.toList());
 
-        if (matchingFields.size() > 1) {
-            throw new IllegalStateException("DatasetFieldType.name should be unique");
-        } else if (matchingFields.size() == 0) {
-            return getNonDatasetFieldFacetCategoryName(facetCategoryName);
+        if (index.containsKey(formattedFacetFieldName)) {
+            return getDatasetFieldFacetCategoryName(index.get(formattedFacetFieldName));
         } else {
-            DatasetFieldType matchedDatasetField = matchingFields.get(0);
-            return getDatasetFieldFacetCategoryName(matchedDatasetField);
+            return getNonDatasetFieldFacetCategoryName(facetCategoryName);
         }
     }
 
-    public String getLocaleFacetLabelName(String facetLabelName, String facetCategoryName) {
-        return getLocaleFacetLabelName(facetLabelName, facetCategoryName, null);
-    }
-
-    public String getLocaleFacetLabelName(String facetLabelName, String facetCategoryName,
-                                          Map<String, List<DatasetFieldType>> index) {
+    private String getLocaleFacetLabelName(String facetLabelName, String facetCategoryName,
+                                          Map<String, DatasetFieldType> index) {
         String formattedFacetCategoryName = removeSolrFieldSuffix(facetCategoryName);
         String formattedFacetLabelName = toBundleNameFormat(facetLabelName);
-        List<DatasetFieldType> matchingFields = index != null
-                ? index.getOrDefault(formattedFacetCategoryName, Collections.emptyList())
-                : datasetFieldService.findAllOrderedByName().stream()
-                    .filter(dsField -> dsField.getName().equals(formattedFacetCategoryName))
-                    .collect(Collectors.toList());
-        if (matchingFields.size() > 1) {
-            throw new IllegalStateException("DatasetFieldType.name should be unique");
-        } else if (matchingFields.size() == 0) {
-            return getNonDatasetFieldFacetLabelName(facetLabelName, formattedFacetCategoryName);
-        } else {
-            DatasetFieldType matchedDatasetField = matchingFields.get(0);
 
-            return getDatasetFieldFacetLabelName(facetLabelName, formattedFacetLabelName, matchedDatasetField);
+        if (index.containsKey(formattedFacetCategoryName)) {
+            return getDatasetFieldFacetLabelName(facetLabelName, formattedFacetLabelName, index.get(formattedFacetCategoryName));
+            
+        } else {
+            return getNonDatasetFieldFacetLabelName(facetLabelName, formattedFacetCategoryName);
         }
     }
-
-    // -------------------- PRIVATE --------------------
 
     private String getDatasetFieldFacetCategoryName(DatasetFieldType matchedDatasetField) {
         if (matchedDatasetField.isFacetable() && !matchedDatasetField.isHasParent()) {
@@ -863,5 +722,16 @@ public class SearchServiceBean {
         return (String) (document.containsKey(fieldName + suffix)
                 ? document.getFieldValue(fieldName + suffix)
                 : document.getFieldValue(fieldName + "_en"));
+    }
+
+    private boolean shouldIncludeFacetInResults(FacetField facetField) {
+        if (facetField.getName().equals(SearchFields.TYPE)) {
+            // the "type" facet is special
+            return false;
+        }
+        if (facetField.getName().equals(SearchFields.METADATA_SOURCE) && facetField.getValueCount() < 2) {
+            return false;
+        }
+        return true;
     }
 }

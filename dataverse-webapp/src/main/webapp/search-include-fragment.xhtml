@@ -154,7 +154,7 @@
                     <div class="ui-datalist ui-widget">
                         <div class="ui-datalist-content ui-widget-content">
                             <ul class="ui-datalist-data">
-                                <ui:repeat var="facetLabel" value="#{facetCategory.facetLabel}" varStatus="facetLabelStatus">
+                                <ui:repeat var="facetLabel" value="#{facetCategory.facetLabels}" varStatus="facetLabelStatus">
                                     <li class="ui-datalist-item facet-item #{facetLabelStatus.index ge 5 ? 'hidden-content' : ''}">
                                         <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{!SearchIncludeFragment.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink">
                                             <h:outputFormat value="#{facetLabel.displayName} &#40;{0}&#41; ">
@@ -195,14 +195,14 @@
                     
                     <ui:fragment rendered="#{facetCategory.name != searchConstants.SEARCH_FIELD_TYPE and facetCategory.name != searchConstants.SEARCH_FIELD_SUBTREE}">
                         <div class="clearfix">
-                            <div class="pull-left hidden-content" jsf:rendered="#{facetCategory.facetLabel.size() gt 5}">
+                            <div class="pull-left hidden-content" jsf:rendered="#{facetCategory.facetLabels.size() gt 5}">
                                 <a href="#" data-facet-link="show-less">
                                     <h:outputText styleClass="sr-only" value="#{bundle['dataverse.search.filters.showMoreLess.screenReaderPrefix']} " />
                                     #{bundle.less}
                                     <h:outputText styleClass="sr-only" value=" #{bundle['dataverse.search.filters.showMoreLess.screenReaderPostfix']} #{facetCategory.displayName}" />
                                 </a>
                             </div>
-                            <div class="pull-right" jsf:rendered="#{facetCategory.facetLabel.size() gt 5}">
+                            <div class="pull-right" jsf:rendered="#{facetCategory.facetLabels.size() gt 5}">
                                 <a href="#" data-facet-link="show-more">
                                     <h:outputText styleClass="sr-only" value="#{bundle['dataverse.search.filters.showMoreLess.screenReaderPrefix']}" />
                                     #{bundle.more}
@@ -314,16 +314,16 @@
                     </div>   
                 </ui:fragment>
 
-                <ui:repeat value="#{SearchIncludeFragment.filterQueries}" var="filterQuery" rendered="#{!SearchIncludeFragment.wasSolrErrorEncountered()}">
-                    <ui:param name="friendlyNames" value="#{SearchIncludeFragment.getFriendlyNamesFromFilterQuery(filterQuery)}"/>
-                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetLink facetSelected" rendered="#{not empty friendlyNames}">
-                        <h:outputText value="#{friendlyNames.get(0)}: " escape="false"/>
-                        <h:outputText value="#{friendlyNames.get(1)} " />
+                <ui:repeat value="#{SearchIncludeFragment.responseFilterQueries}" var="filterQuery" rendered="#{!SearchIncludeFragment.wasSolrErrorEncountered()}">
+
+                    <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetLink facetSelected" rendered="#{filterQuery.hasFriendlyNameAndValue()}">
+                        <h:outputText value="#{filterQuery.friendlyFieldName}: " escape="false"/>
+                        <h:outputText value="#{filterQuery.friendlyFieldValue} " />
                         <h:outputText styleClass="sr-only" value=" #{bundle['dataverse.search.filters.remove.screenReaderPostfix']}" />
                         <span class="glyphicon glyphicon-remove"></span>
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
-                        <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
-                            <f:param name="fq#{status.index}" value='#{clickedFilterQuery}' disable="#{clickedFilterQuery == filterQuery}"/>
+                        <c:forEach items="#{SearchIncludeFragment.responseFilterQueries}" var="clickedFilterQuery" varStatus="status">
+                            <f:param name="fq#{status.index}" value='#{clickedFilterQuery.query}' disable="#{clickedFilterQuery.query == filterQuery.query}"/>
                         </c:forEach>
                         <f:param name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
                         <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>

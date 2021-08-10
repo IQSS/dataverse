@@ -1,11 +1,12 @@
 package edu.harvard.iq.dataverse.search.response;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class FacetCategory {
 
     private String name;
-    private List<FacetLabel> facetLabel;
+    private List<FacetLabel> facetLabels = new ArrayList<>();
     private String friendlyName;
 
     public String getName() {
@@ -16,12 +17,16 @@ public class FacetCategory {
         this.name = name;
     }
 
-    public List<FacetLabel> getFacetLabel() {
-        return facetLabel;
+    public void addFacetLabel(FacetLabel facetLabel) {
+        this.facetLabels.add(facetLabel);
     }
 
-    public void setFacetLabel(List<FacetLabel> facetLabel) {
-        this.facetLabel = facetLabel;
+    public List<FacetLabel> getFacetLabels() {
+        return facetLabels;
+    }
+
+    public void setFacetLabels(List<FacetLabel> facetLabel) {
+        this.facetLabels = facetLabel;
     }
 
     public String getFriendlyName() {
@@ -38,7 +43,7 @@ public class FacetCategory {
 
     @Override
     public String toString() {
-        return "FacetCategory [name=" + name + ", facetLabel=" + facetLabel + ", friendlyName=" + friendlyName + "]";
+        return "FacetCategory [name=" + name + ", facetLabels=" + facetLabels + ", friendlyName=" + friendlyName + "]";
     }
     
 }

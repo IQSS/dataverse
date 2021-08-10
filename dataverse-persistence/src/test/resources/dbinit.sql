@@ -21,7 +21,7 @@ INSERT INTO builtinuser (id, encryptedpassword, passwordencryptionversion, usern
 -------------------- HARVESTING CLIENTS --------------------
 
 INSERT INTO harvestingclient(id, archiveurl, deleted, harveststyle, harvesttype, harvestingnow, harvestingset, harvestingurl, metadataprefix, name, scheduledayofweek, schedulehourofday, scheduleperiod, scheduled, dataverse_id)
-VALUES (12, '', false, '', '', false, '', '', '', '', 1, 1, '', false, 1);
+VALUES (12, '', false, '', '', false, '', '', '', 'harvest_client_name', 1, 1, '', false, 1);
 
 -------------------- DATAVERSES --------------------
 
@@ -107,11 +107,7 @@ INSERT INTO datasetversionuser (id, lastupdatedate, authenticateduser_id, datase
 
 INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (668, NULL, 41, 1, 0, 'Draft only dataset');
 
-INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (655, NULL, 41, 29, 0, NULL);
-INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (670, 655, NULL, 31, 0, NULL);
-
 INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (656, NULL, 41, 8, 0, NULL);
-INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (660, 656, NULL, 11, 0, NULL);
 INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (663, 656, NULL, 9, 0, 'Some author name');
 INSERT INTO datasetfield (id, datasetfieldparent_id, datasetversion_id, datasetfieldtype_id, displayorder, fieldvalue) VALUES (665, 656, NULL, 10, 0, 'author affiliation');
 
@@ -137,7 +133,7 @@ VALUES (71, 'Dataset', 1, false, 'doi', '10.18150', 'FK2/QTVQKZ', NULL, false, '
 INSERT INTO dataset (id, fileaccessrequest, harvestidentifier, usegenericthumbnail, citationdatedatasetfieldtype_id, harvestingclient_id, guestbook_id, thumbnailfile_id)
 VALUES (71, NULL, NULL, false, NULL, 12, NULL, NULL);
 INSERT INTO datasetversion (id, version, dataset_id, versionstate, versionnumber, minorversionnumber, unf, termsofuseandaccess_id, archivenote, versionnote, deaccessionlink, createtime, lastupdatetime, releasetime, archivetime, archivalcopylocation)
-VALUES (61, 1, 67, 'DRAFT', 1, 0, NULL, NULL, NULL, NULL, NULL, '2019-09-26 11:43:58.204', '2019-09-26 11:43:58.204', NULL, NULL, NULL);
+VALUES (61, 1, 71, 'DRAFT', 1, 0, NULL, NULL, NULL, NULL, NULL, '2019-09-26 11:43:58.204', '2019-09-26 11:43:58.204', NULL, NULL, NULL);
 
 
 --- DV:unreleased -> Draft with files ---

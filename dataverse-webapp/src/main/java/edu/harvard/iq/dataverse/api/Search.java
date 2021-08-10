@@ -160,7 +160,7 @@ public class Search extends AbstractApiBean {
             for (FacetCategory facetCategory : solrQueryResponse.getFacetCategoryList()) {
                 JsonObjectBuilder facetCategoryBuilderFriendlyPlusData = Json.createObjectBuilder();
                 JsonArrayBuilder facetLabelBuilderData = Json.createArrayBuilder();
-                for (FacetLabel facetLabel : facetCategory.getFacetLabel()) {
+                for (FacetLabel facetLabel : facetCategory.getFacetLabels()) {
                     JsonObjectBuilder countBuilder = Json.createObjectBuilder();
                     countBuilder.add(facetLabel.getName(), facetLabel.getCount());
                     facetLabelBuilderData.add(countBuilder);
