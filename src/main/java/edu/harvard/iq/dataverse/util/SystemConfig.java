@@ -1096,12 +1096,13 @@ public class SystemConfig {
             
             if(mlString.isEmpty()) {
                 if(settingsService.get(SettingsServiceBean.Key.Languages.toString(),"").isEmpty()) {
-                    mlString="[{\"locale\":\"" + BundleUtil.getCurrentLocale().getLanguage()  + "\"},{\"title\":\""
+                    mlString="[{\"locale\":\"" + BundleUtil.getCurrentLocale().getLanguage()  + "\",\"title\":\""
                             + BundleUtil.getCurrentLocale().getDisplayLanguage() + "\"}]";
                 } else {
                     mlString="[]";
                 }
             }
+            logger.fine("mlString is : " + mlString);
             JsonReader jsonReader = Json.createReader(new StringReader(mlString));
             JsonArray languages = jsonReader.readArray();
             for(JsonValue jv: languages) {

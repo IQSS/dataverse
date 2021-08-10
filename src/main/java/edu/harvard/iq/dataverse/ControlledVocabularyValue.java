@@ -118,11 +118,12 @@ public class ControlledVocabularyValue implements Serializable  {
         return getLocaleStrValue(null);
     }
     
-    public String getLocaleStrValue(String preferredLang, String altLang) {
-        return (preferredLang==null) ? getLocaleStrValue(altLang): getLocaleStrValue(preferredLang); 
-    }
-    
     public String getLocaleStrValue(String language) {
+        
+        if(language !=null && language.isBlank()) {
+            //null picks up current UI lang
+            language=null;
+        }
         //Sword input uses a special controlled vacab value ("N/A" that does not have a datasetFieldType / is not part of any metadata block, so handle it specially
         if(strValue.equals(DatasetField.NA_VALUE) && this.datasetFieldType == null) {
             return strValue;
@@ -147,6 +148,7 @@ public class ControlledVocabularyValue implements Serializable  {
                 return sendDefault ? strValue : null;
             }
         } catch (MissingResourceException | NullPointerException e) {
+            logger.warning("Error finding" + "controlledvocabulary." + fieldTypeName + "." + key + " in " + ((locale==null)? "defaultLang" : locale.getLanguage()) + " : " + e.getLocalizedMessage());
             return sendDefault ? strValue : null;
         }
     }

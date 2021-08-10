@@ -251,11 +251,11 @@ public class DatasetField implements Serializable {
         return getDisplayValue(null);
     }
     
-    public String getDisplayValue(String preferredLang, String altLang) {
-        return (preferredLang==null) ? getDisplayValue(altLang): getDisplayValue(preferredLang); 
-    }
-    
     public String getDisplayValue(String lang) {
+        if(lang!=null && lang.isBlank()) {
+            //null will cause the current UI lang to be picked up
+            lang=null;
+        }
         String returnString = "";
         for (String value : getValues(lang)) {
             if(value == null) {
@@ -312,11 +312,11 @@ public class DatasetField implements Serializable {
         return getValues(null);
     }
 
-    public List<String> getValues(String preferredLang, String altLang) {
-        return (preferredLang==null) ? getValues(altLang): getValues(preferredLang); 
-    }
-    
     public List<String> getValues(String langCode) {
+        if(langCode!=null && langCode.isBlank()) {
+            //null picks up current UI lang
+            langCode=null;
+        }
         List<String> returnList = new ArrayList<>();
         if (!datasetFieldValues.isEmpty()) {
             for (DatasetFieldValue dsfv : datasetFieldValues) {
