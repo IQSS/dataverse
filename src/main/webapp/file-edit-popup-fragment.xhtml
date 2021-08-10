@@ -87,6 +87,11 @@
                     }"/>
             </div>
         </div>
+        <div jsf:rendered="#{bean.existingEmbargo}">
+            <p:selectBooleanCheckbox value="#{bean.removeEmbargo}" itemLabel="#{bundle['file.editEmbargoDialog.remove']}">
+                <p:ajax update=":fileEmbargoPopup_content" listener="#{bean.clearSelectionEmbargo}"/>
+            </p:selectBooleanCheckbox>
+        </div>
         <div class="button-block">
             <p:commandButton rendered="#{bean.validEmbargoSelection}" styleClass="btn btn-default" id="fileEmbargoPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('fileEmbargoPopup').hide()" update="#{updateElements}" action="#{bean[saveEmbargoAction]}"/>
             <p:commandButton styleClass="btn btn-link" id="fileEmbargoPopupCancelButton" value="#{bundle.cancel}" onclick="PF('fileEmbargoPopup').hide();

@@ -5534,6 +5534,10 @@ public class DatasetPage implements java.io.Serializable {
         this.selectionEmbargo = selectionEmbargo;
     }
 
+    public void clearSelectionEmbargo() {
+        selectionEmbargo = new Embargo();
+    }
+    
     private Embargo selectionEmbargo = new Embargo();
     
     public boolean isValidEmbargoSelection() {
@@ -5548,6 +5552,18 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
     
+    public boolean isExistingEmbargo() {
+        for(FileMetadata fmd: selectedFiles) {
+            if(!fmd.getDataFile().isReleased()&& (fmd.getDataFile().getEmbargo()!=null)) {
+                return true;
+            }
+        }
+        if(fileMetadataForAction!=null && !fileMetadataForAction.getDataFile().isReleased() && (fileMetadataForAction.getDataFile().getEmbargo()!=null)) {
+            return true;
+        }
+        return false;
+    }
+    
     public boolean isEmbargoForWholeSelection() {
         for (FileMetadata fmd : selectedFiles) {
             if (fmd.getDataFile().isReleased()) {
@@ -5555,6 +5571,16 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         return true;
+    }
+    
+    private boolean removeEmbargo=false;
+
+    public boolean isRemoveEmbargo() {
+        return removeEmbargo;
+    }
+
+    public void setRemoveEmbargo(boolean removeEmbargo) {
+        this.removeEmbargo = removeEmbargo;
     }
     
     public String saveEmbargo() {
@@ -5606,7 +5632,9 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void clearFileMetadataSelectedForEmbargoPopup() {
-        //TBD
+        setRemoveEmbargo(false);
     }
+
+
     
 }
