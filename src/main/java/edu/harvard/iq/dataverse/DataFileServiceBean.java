@@ -1644,4 +1644,8 @@ public class DataFileServiceBean implements java.io.Serializable {
             return false;
         }
     }
+    
+    public boolean isActivelyEmbargoed(FileMetadata fm) {
+        return FileUtil.isActivelyEmbargoed(fm);
+    }
 }
