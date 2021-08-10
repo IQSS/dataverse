@@ -1246,6 +1246,12 @@ ul > li {
   font-weight: bold;
 }
 
+#metadata_dsDescription ul > li {
+        font-weight: normal;
+        font-size: 18px;
+        font-family: 'AntoniaH2';
+}
+
 #dsDescription ul > li {
         font-weight: normal;
         font-size: 18px;
