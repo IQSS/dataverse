@@ -988,6 +988,13 @@ public class FilePage implements java.io.Serializable {
         return false;
     }
     
+    public boolean isExistingEmbargo() {
+        if (!fileMetadata.getDataFile().isReleased() && (fileMetadata.getDataFile().getEmbargo() != null)) {
+            return true;
+        }
+        return false;
+    }
+    
     public boolean isEmbargoForWholeSelection() {
         return isValidEmbargoSelection();
     }
@@ -1001,6 +1008,22 @@ public class FilePage implements java.io.Serializable {
     }
 
     private Embargo selectionEmbargo = new Embargo();
+    
+    private boolean removeEmbargo=false;
+
+    public boolean isRemoveEmbargo() {
+        return removeEmbargo;
+    }
+
+    public void setRemoveEmbargo(boolean removeEmbargo) {
+        this.removeEmbargo = removeEmbargo;
+        if(removeEmbargo) {
+            logger.info("Setting empty embargo");
+            selectionEmbargo= new Embargo(null, null);
+        } else {
+            selectionEmbargo= new Embargo();
+        }
+    }
     
     public String saveEmbargo() {
         // Todo - add validation and.or separate delete from save of a new embargo
@@ -1040,5 +1063,9 @@ public class FilePage implements java.io.Serializable {
             embargoService.deleteById(emb.getId());
         }
         return returnToDraftVersion();
+    }
+    
+    public void clearFileMetadataSelectedForEmbargoPopup() {
+        setRemoveEmbargo(false);
     }
 }
