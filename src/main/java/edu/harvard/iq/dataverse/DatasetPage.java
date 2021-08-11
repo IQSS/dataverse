@@ -5527,6 +5527,7 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public Embargo getSelectionEmbargo() {
+        logger.info("getting: " + selectionEmbargo.getDateAvailable());
         return selectionEmbargo;
     }
 
@@ -5534,9 +5535,6 @@ public class DatasetPage implements java.io.Serializable {
         this.selectionEmbargo = selectionEmbargo;
     }
 
-    public void clearSelectionEmbargo() {
-        selectionEmbargo = new Embargo();
-    }
     
     private Embargo selectionEmbargo = new Embargo();
     
@@ -5582,7 +5580,10 @@ public class DatasetPage implements java.io.Serializable {
     public void setRemoveEmbargo(boolean removeEmbargo) {
         this.removeEmbargo = removeEmbargo;
         if(removeEmbargo) {
+            logger.info("Setting empty embargo");
             selectionEmbargo= new Embargo(null, null);
+        } else {
+            selectionEmbargo= new Embargo();
         }
     }
     
