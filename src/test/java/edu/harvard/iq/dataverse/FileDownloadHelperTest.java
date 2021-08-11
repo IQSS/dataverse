@@ -190,8 +190,7 @@ class FileDownloadHelperTest {
         fileMetadata.setRestricted(false);
         fileMetadata.setDataFile(dataFile);
         fileMetadata.setDatasetVersion(datasetVersion);
-        mockPermissionResponseUserOn(Permission.DownloadFile, false);
-
+        mockPermissionResponseRequestOn(Permission.DownloadFile, false);
         assertFalse(fileDownloadHelper.canDownloadFile(fileMetadata));
     }
 
@@ -262,7 +261,7 @@ class FileDownloadHelperTest {
         fileMetadata.setDataFile(dataFile);
         fileMetadata.setDatasetVersion(datasetVersion);
 
-        mockPermissionResponseUserOn(Permission.DownloadFile, hasPermission);
+        mockPermissionResponseRequestOn(Permission.DownloadFile, hasPermission);
         
         assertEquals(hasPermission, fileDownloadHelper.canDownloadFile(fileMetadata), "Initial response does not match expectation!");
     }
@@ -278,7 +277,7 @@ class FileDownloadHelperTest {
         // so the hasPermission=true case primarily applies to the original dataset
         // creators)
 
-        Embargo emb = new Embargo(LocalDate.now().plusDays(3), "Still embargoed");
+        Embargo emb = new Embargo(LocalDate.now().minusDays(3), "No longer embargoed");
         dataFile.setEmbargo(emb);
         DatasetVersion datasetVersion = new DatasetVersion();
         datasetVersion.setVersionState(DatasetVersion.VersionState.RELEASED);
@@ -289,7 +288,7 @@ class FileDownloadHelperTest {
         fileMetadata.setDataFile(dataFile);
         fileMetadata.setDatasetVersion(datasetVersion);
 
-        mockPermissionResponseUserOn(Permission.DownloadFile, hasPermission);
+        mockPermissionResponseRequestOn(Permission.DownloadFile, hasPermission);
 
         assertEquals(hasPermission, fileDownloadHelper.canDownloadFile(fileMetadata), "Initial response does not match expectation!");
 
