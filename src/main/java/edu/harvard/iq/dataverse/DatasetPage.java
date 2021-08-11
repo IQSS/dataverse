@@ -5581,6 +5581,9 @@ public class DatasetPage implements java.io.Serializable {
 
     public void setRemoveEmbargo(boolean removeEmbargo) {
         this.removeEmbargo = removeEmbargo;
+        if(removeEmbargo) {
+            selectionEmbargo= new Embargo(null, null);
+        }
     }
     
     public String saveEmbargo() {
