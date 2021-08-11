@@ -1207,7 +1207,7 @@ public class DataversePage implements java.io.Serializable {
     }
     
     public Set<Entry<String, String>> getMetadataLanguages() {
-        return systemConfig.getMetadataLanguages(this.dataverse).entrySet();
+        return settingsWrapper.getMetadataLanguages(this.dataverse).entrySet();
     }
     
 }
