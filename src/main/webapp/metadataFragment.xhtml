@@ -60,9 +60,9 @@
                                           <td jsf:rendered="#{!anonymized or !settingsWrapper.shouldBeAnonymized(dsf)}">
                                             <!-- Primitive datasetFields -->
                                             <ui:fragment rendered="#{dsf.datasetFieldType.primitive}">
-                                                <h:outputText value="#{dsf.getDisplayValue(mdLangCode, DataverseSession.getLocaleCode())}" rendered="#{!dsf.datasetFieldType.allowMultiples}"
+                                                <h:outputText value="#{dsf.getDisplayValue(mdLangCode)}" rendered="#{!dsf.datasetFieldType.allowMultiples}"
                                                               escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
-                                                <ui:repeat value="#{dsf.getValues(mdLangCode, DataverseSession.getLocaleCode())}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples}">
+                                                <ui:repeat value="#{dsf.getValues(mdLangCode)}" var="value" varStatus="loop" rendered="#{dsf.datasetFieldType.allowMultiples}">
                                                     <h:outputText value="#{loop.first?'':'; '}#{ value }"
                                                                   escape="#{dsf.datasetFieldType.isEscapeOutputText()}"/>
                                                 </ui:repeat>
@@ -169,7 +169,7 @@
                                                                 <p:selectOneMenu value="#{dsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;" styleClass="form-control primitive"
                                                                                  id="unique1" required="#{dsf.required}" rendered="#{!dsf.datasetFieldType.allowMultiples}">
                                                                     <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
-                                                                    <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.getLocaleStrValue(mdLangCode, DataverseSession.getLocaleCode())}" itemValue="#{cvv}"/>
+                                                                    <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.getLocaleStrValue(mdLangCode)}" itemValue="#{cvv}"/>
                                                                 </p:selectOneMenu>
                                                                 <!--
                                                                 <p:outputPanel id="selectedValsList" style="padding-top:.5em;">
@@ -181,7 +181,7 @@
                                                                 <p:selectCheckboxMenu value="#{dsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter" styleClass="form-control"
                                                                                       filter="true" filterMatchMode="startsWith" label="#{bundle.select}"  multiple="true"
                                                                                       id="unique2" rendered="#{dsf.datasetFieldType.allowMultiples}">
-                                                                    <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.getLocaleStrValue(mdLangCode, DataverseSession.getLocaleCode())}" itemValue="#{cvv}"/>
+                                                                    <f:selectItems value="#{dsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.getLocaleStrValue(mdLangCode)}" itemValue="#{cvv}"/>
                                                                 </p:selectCheckboxMenu>
                                                                 <div class="ui-message ui-message-error ui-widget ui-corner-all" aria-live="polite" jsf:rendered="#{!empty dsf.validationMessage}">
                                                                     <span class="ui-message-error-detail">#{dsf.validationMessage}</span>

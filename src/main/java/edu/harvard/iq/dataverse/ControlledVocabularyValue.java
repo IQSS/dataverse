@@ -118,10 +118,6 @@ public class ControlledVocabularyValue implements Serializable  {
         return getLocaleStrValue(null);
     }
     
-    public String getLocaleStrValue(String preferredLang, String altLang) {
-        return (preferredLang==null) ? getLocaleStrValue(altLang): getLocaleStrValue(preferredLang); 
-    }
-    
     public String getLocaleStrValue(String language) {
         
         if(language !=null && language.isBlank()) {
