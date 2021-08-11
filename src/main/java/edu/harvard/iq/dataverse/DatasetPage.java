@@ -5578,12 +5578,16 @@ public class DatasetPage implements java.io.Serializable {
     }
 
     public void setRemoveEmbargo(boolean removeEmbargo) {
+        boolean existing = this.removeEmbargo;
         this.removeEmbargo = removeEmbargo;
+        //If we flipped the state, update the selectedEmbargo. Otherwise (e.g. when save is hit) don't make changes
+        if(existing != this.removeEmbargo) {
         if(removeEmbargo) {
             logger.info("Setting empty embargo");
             selectionEmbargo= new Embargo(null, null);
         } else {
             selectionEmbargo= new Embargo();
+        }
         }
     }
     
