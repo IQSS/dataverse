@@ -39,16 +39,16 @@ function uploadStarted() {
 	observer.observe(files[0].parentElement,config);
 }
 
-function uploadFinished() {
-    var files = $('.ui-fileupload-files .ui-fileupload-row');
-    if (files.length === 1) {
-        $('button[id$="AllUploadsFinished"]').trigger('click');
-        //stop observer when we're done
-        if(observer !=null) {
-          observer.disconnect();
-          observer=null;
-        }
-    }
+function uploadFinished(fileupload) {
+	setTimeout(function() {
+		if (fileupload.files.length === 0) {
+			$('button[id$="AllUploadsFinished"]').trigger('click');
+			//stop observer when we're done
+			if(observer !=null) {
+				observer.disconnect();
+				observer=null;
+			}
+		}}, 100)
 }
 
 function uploadFailure(fileUpload) {
