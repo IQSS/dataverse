@@ -447,6 +447,16 @@ public class SettingsServiceBean {
          * publication might also need to be included.
          */
         AnonymizedFieldTypeNames,
+        /**
+         * A Json array containing key/values corresponding the the allowed languages
+         * for entering metadata. FOrmat matches that of the Languages setting: e.g.
+         * '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]' with
+         * the locale being an ISO-639 code for that language (2 and 3 letter codes from
+         * the 639-2 and 639-3 standards are allowed. These will be used directly in
+         * metadata exports) and the title containing a human readable string. These
+         * values are selectable at the Dataverse level and apply to Dataset metadata.
+         */
+        MetadataLanguages,
         /** This setting enables Embargo capabilities in Dataverse and sets the maximum Embargo duration allowed.
          * 0 or not set: new embargoes disabled
          * -1: embargo enabled, no time limit

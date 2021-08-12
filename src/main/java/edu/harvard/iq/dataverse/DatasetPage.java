@@ -70,6 +70,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -151,7 +152,7 @@ import org.primefaces.model.TreeNode;
 @Named("DatasetPage")
 public class DatasetPage implements java.io.Serializable {
 
-    static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
+    private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
 
     public enum EditMode {
 
@@ -3441,6 +3442,8 @@ public class DatasetPage implements java.io.Serializable {
 
         try {
             if (editMode == EditMode.CREATE) {
+                //Lock the metadataLanguage once created
+                dataset.setMetadataLanguage(getEffectiveMetadataLanguage());
                 if ( selectedTemplate != null ) {
                     if ( isSessionUserAuthenticated() ) {
                         cmd = new CreateNewDatasetCommand(dataset, dvRequestService.getDataverseRequest(), false, selectedTemplate);
@@ -5645,4 +5648,21 @@ public class DatasetPage implements java.io.Serializable {
 
 
     
+    
+    public String getEffectiveMetadataLanguage() {
+        String mdLang = dataset.getEffectiveMetadataLanguage();
+        if (mdLang.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+            mdLang = settingsWrapper.getDefaultMetadataLanguage();
+        }
+        return mdLang;
+    }
+    
+    public String getLocaleDisplayName(String code) {
+        String displayName = settingsWrapper.getBaseMetadataLanguageMap(false).get(code);
+        if(displayName==null) {
+            //Default (for cases such as :when a Dataset has a metadatalanguage code but :MetadataLanguages is no longer defined).
+            displayName = new Locale(code).getDisplayName(); 
+        }
+        return displayName; 
+    }
 }

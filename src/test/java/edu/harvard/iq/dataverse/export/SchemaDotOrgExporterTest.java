@@ -61,6 +61,7 @@ public class SchemaDotOrgExporterTest {
     @Before
     public void setUp() {
         datasetFieldTypeSvc = new MockDatasetFieldSvc();
+        datasetFieldTypeSvc.setMetadataBlock("citation");
 
         DatasetFieldType titleType = datasetFieldTypeSvc.add(new DatasetFieldType("title", DatasetFieldType.FieldType.TEXTBOX, false));
         DatasetFieldType authorType = datasetFieldTypeSvc.add(new DatasetFieldType("author", DatasetFieldType.FieldType.TEXT, true));
@@ -279,7 +280,15 @@ public class SchemaDotOrgExporterTest {
         version.setFileMetadatas(fileMetadatas);
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        if(json1 == null) System.out.println("Json null");
+        if(version == null) System.out.println("ver null");
+        if(byteArrayOutputStream == null) System.out.println("bytarr null");
+        if(schemaDotOrgExporter == null) System.out.println("sdoe" + " null");
+        try {
         schemaDotOrgExporter.exportDataset(version, json1, byteArrayOutputStream);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         String jsonLd = byteArrayOutputStream.toString();
         String prettyJson = JsonUtil.prettyPrint(jsonLd);
         System.out.println("schema.org JSON-LD: " + prettyJson);

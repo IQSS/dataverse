@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<codeBook xmlns="ddi:codebook:2_5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="ddi:codebook:2_5 https://ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd" version="2.5">
+<codeBook xmlns="ddi:codebook:2_5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="ddi:codebook:2_5 https://ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd" version="2.5" xml:lang="en">
   <docDscr>
     <citation>
       <titlStmt>
-        <titl>Darwin's Finches</titl>
+        <titl xml:lang="en">Darwin's Finches</titl>
         <IDNo agency="DOI">doi:10.5072/FK2/PCA2E3</IDNo>
       </titlStmt>
       <distStmt/>
@@ -16,7 +16,7 @@
   <stdyDscr>
     <citation>
       <titlStmt>
-        <titl>Darwin's Finches</titl>
+        <titl xml:lang="en">Darwin's Finches</titl>
         <IDNo agency="DOI">doi:10.5072/FK2/PCA2E3</IDNo>
       </titlStmt>
       <rspStmt>
@@ -26,7 +26,7 @@
         <producer affiliation="Hawk Institute" abbr="ProdAbb" role="http://www.hawk.edu/logo" URI="http://www.hawk.edu/url">Johnny Hawk</producer>
       </prodStmt>
       <distStmt>
-        <distrbtr affiliation="Valhalla Polytechnic" abbr="Dist-Abb" URI="http://www.valhalla.edu/url" role="http://www.valhalla.edu/logo">Odin Raven</distrbtr>
+        <distrbtr xml:lang="en" affiliation="Valhalla Polytechnic" abbr="Dist-Abb" URI="http://www.valhalla.edu/url" role="http://www.valhalla.edu/logo">Odin Raven</distrbtr>
         <contact affiliation="Finch Academy" email="finch@mailinator.com">Jimmy Finch</contact>
         <depositr>Added, Depositor</depositr>
       </distStmt>
@@ -39,7 +39,7 @@
         <keyword vocab="Keyword Vocabulary" vocabURI="http://www.keyword.com/one">Keyword Value Two</keyword>
         <topcClas vocab="TC Vocabulary" vocabURI="http://www.topicClass.com/one">TC Value 1</topcClas>
       </subject>
-      <abstract>Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.</abstract>
+      <abstract xml:lang="en">Darwin's finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.</abstract>
       <sumDscr>
         <timePrd cycle="P1" event="start" date="20020816">20020816</timePrd>
         <timePrd cycle="P1" event="end" date="20160630">20160630</timePrd>
