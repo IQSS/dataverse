@@ -26,7 +26,6 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -110,7 +109,16 @@ public class HarvestingClientsPage implements java.io.Serializable {
         configuredHarvestingClients = harvestingClientService.getAllHarvestingClients();
 
         pageMode = PageMode.VIEW;
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("harvestclients.title"), BundleUtil.getStringFromBundle("harvestclients.toptip")));
+        FacesContext.getCurrentInstance()
+                .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("harvestclients.title"),
+                        BundleUtil.getStringFromBundle("harvestclients.toptip")));
+
+        if (hasInProgressTasks()) {
+            FacesContext.getCurrentInstance()
+                    .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("harvestclients.title"),
+                            BundleUtil.getStringFromBundle("harvestclients.task.running")));
+        }
+
         return null;
     }
 
@@ -985,14 +993,18 @@ public class HarvestingClientsPage implements java.io.Serializable {
     }
 
     private void handleUpdateHarvestingClientFailure(Throwable throwable) {
-        if(throwable instanceof CommandException) {
+        if (throwable instanceof CommandException) {
             logger.log(Level.WARNING, "Failed to save harvesting client", throwable);
             JsfHelper.addErrorMessage(
                     BundleUtil.getStringFromBundle("harvest.save.failure1"),
                     throwable.getMessage());
-        } else if(throwable instanceof Exception) {
+        } else if (throwable instanceof Exception) {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("harvest.save.failure2"), "");
             logger.log(Level.SEVERE, "Failed to save harvesting client (reason unknown)." + throwable.getMessage(), throwable);
         }
+    }
+
+    private boolean hasInProgressTasks() {
+        return configuredHarvestingClients.stream().anyMatch(client -> client.isHarvestingNow() || client.isDeleteInProgress());
     }
 }
