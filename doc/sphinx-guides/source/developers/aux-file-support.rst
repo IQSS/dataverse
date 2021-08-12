@@ -1,11 +1,11 @@
 Auxiliary File Support
 ======================
 
-Auxiliary file support is experimental. Auxiliary files in the Dataverse Software are being added to support depositing and downloading differentially private metadata, as part of the OpenDP project (OpenDP.io). In future versions, this approach may become more broadly used and supported. 
+Auxiliary file support is experimental and as such, related APIs may be added, changed or removed without standard backward compatibility. Auxiliary files in the Dataverse Software are being added to support depositing and downloading differentially private metadata, as part of the OpenDP project (opendp.org). In future versions, this approach will likely become more broadly used and supported.
 
 Adding an Auxiliary File to a Datafile
 --------------------------------------
-To add an auxiliary file, specify the primary key of the datafile (FILE_ID), and the formatTag and formatVersion (if applicable) associated with the auxiliary file. There are two form parameters. "Origin" specifies the application/entity that created the auxiliary file, an "isPublic" controls access to downloading the file. If "isPublic" is true, any user can download the file, else, access authorization is based on the access rules as defined for the DataFile itself.
+To add an auxiliary file, specify the primary key of the datafile (FILE_ID), and the formatTag and formatVersion (if applicable) associated with the auxiliary file. There are multiple form parameters. "Origin" specifies the application/entity that created the auxiliary file, and "isPublic" controls access to downloading the file. If "isPublic" is true, any user can download the file if the dataset has been published, else, access authorization is based on the access rules as defined for the DataFile itself. The "type" parameter is used to group similar auxiliary files in the UI. Currently, auxiliary files with type "DP" appear under "Differentially Private Statistics", while all other auxiliary files appear under "Other Auxiliary Files".
 
 .. code-block:: bash
 
@@ -14,9 +14,10 @@ To add an auxiliary file, specify the primary key of the datafile (FILE_ID), and
   export FILE_ID='12345'
   export FORMAT_TAG='dpJson'
   export FORMAT_VERSION='v1'
+  export TYPE='DP'
   export SERVER_URL=https://demo.dataverse.org
  
-  curl -H X-Dataverse-key:$API_TOKEN -X POST -F "file=@$FILENAME" -F 'origin=myApp' -F 'isPublic=true' "$SERVER_URL/api/access/datafile/$FILE_ID/metadata/$FORMAT_TAG/$FORMAT_VERSION"
+  curl -H X-Dataverse-key:$API_TOKEN -X POST -F "file=@$FILENAME" -F 'origin=myApp' -F 'isPublic=true' -F "type=$TYPE" "$SERVER_URL/api/access/datafile/$FILE_ID/auxiliary/$FORMAT_TAG/$FORMAT_VERSION"
 
 You should expect a 200 ("OK") response and JSON with information about your newly uploaded auxiliary file.
 
@@ -33,4 +34,4 @@ formatTag and formatVersion (if applicable) associated with the auxiliary file:
   export FORMAT_TAG='dpJson'
   export FORMAT_VERSION='v1'
 
-  curl "$SERVER_URL/api/access/datafile/$FILE_ID/$FORMAT_TAG/$FORMAT_VERSION"
+  curl "$SERVER_URL/api/access/datafile/$FILE_ID/auxiliary/$FORMAT_TAG/$FORMAT_VERSION"

@@ -6,7 +6,6 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.DatasetLock;
@@ -52,6 +51,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetLinkingDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DeletePrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetSpecificPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDraftDatasetVersionCommand;
@@ -78,7 +78,6 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.S3PackageImporter;
-import static edu.harvard.iq.dataverse.api.AbstractApiBean.error;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -95,6 +94,7 @@ import edu.harvard.iq.dataverse.makedatacount.DatasetMetrics;
 import edu.harvard.iq.dataverse.makedatacount.DatasetMetricsServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.MakeDataCountEntry;
+import edu.harvard.iq.dataverse.metrics.MetricsUtil;
 import edu.harvard.iq.dataverse.makedatacount.MakeDataCountUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
@@ -102,16 +102,25 @@ import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.util.bagit.OREMap;
+import edu.harvard.iq.dataverse.util.json.JSONLDUtil;
+import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import edu.harvard.iq.dataverse.workflow.Workflow;
+import edu.harvard.iq.dataverse.workflow.WorkflowContext;
+import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
+import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -121,6 +130,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -134,11 +145,15 @@ import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
+import javax.json.stream.JsonParsingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -152,14 +167,14 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import javax.ws.rs.core.UriInfo;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import com.amazonaws.services.s3.model.PartETag;
-import edu.harvard.iq.dataverse.FileMetadata;
-import java.util.Map.Entry;
 
 @Path("datasets")
 public class Datasets extends AbstractApiBean {
@@ -186,9 +201,6 @@ public class Datasets extends AbstractApiBean {
     @EJB
     DDIExportServiceBean ddiExportService;
     
-    @EJB
-    DatasetFieldServiceBean datasetfieldService;
-
     @EJB
     MetadataBlockServiceBean metadataBlockService;
     
@@ -222,6 +234,9 @@ public class Datasets extends AbstractApiBean {
     
     @Inject
     DataverseRequestServiceBean dvRequestService;
+    
+    @Inject
+    WorkflowServiceBean wfService;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -496,7 +511,7 @@ public class Datasets extends AbstractApiBean {
         
         String indexFileName = folderName.equals("") ? ".index.html"
                 : ".index-" + folderName.replace('/', '_') + ".html";
-        response.setHeader("Content-disposition", "attachment; filename=\"" + indexFileName + "\"");
+        response.setHeader("Content-disposition", "filename=\"" + indexFileName + "\"");
 
         
         return Response.ok()
@@ -596,6 +611,7 @@ public class Datasets extends AbstractApiBean {
   
     @PUT
     @Path("{id}/versions/{versionId}")
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response updateDraftVersion( String jsonBody, @PathParam("id") String id,  @PathParam("versionId") String versionId ){
         
         if ( ! ":draft".equals(versionId) ) {
@@ -646,6 +662,94 @@ public class Datasets extends AbstractApiBean {
         } catch (WrappedResponse ex) {
             return ex.getResponse();
             
+        }
+    }
+  
+    @GET
+    @Path("{id}/versions/{versionId}/metadata")
+    @Produces("application/ld+json, application/json-ld")
+    public Response getVersionJsonLDMetadata(@PathParam("id") String id, @PathParam("versionId") String versionId, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        try {
+            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DatasetVersion dsv = getDatasetVersionOrDie(req, versionId, findDatasetOrDie(id), uriInfo, headers);
+            OREMap ore = new OREMap(dsv,
+                    settingsService.isTrueForKey(SettingsServiceBean.Key.ExcludeEmailFromExport, false));
+            return ok(ore.getOREMapBuilder(true));
+
+        } catch (WrappedResponse ex) {
+            ex.printStackTrace();
+            return ex.getResponse();
+        } catch (Exception jpe) {
+            logger.log(Level.SEVERE, "Error getting jsonld metadata for dsv: ", jpe.getLocalizedMessage());
+            jpe.printStackTrace();
+            return error(Response.Status.INTERNAL_SERVER_ERROR, jpe.getLocalizedMessage());
+        }
+    }
+
+    @GET
+    @Path("{id}/metadata")
+    @Produces("application/ld+json, application/json-ld")
+    public Response getVersionJsonLDMetadata(@PathParam("id") String id, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        return getVersionJsonLDMetadata(id, ":draft", uriInfo, headers);
+    }
+            
+    @PUT
+    @Path("{id}/metadata")
+    @Consumes("application/ld+json, application/json-ld")
+    public Response updateVersionMetadata(String jsonLDBody, @PathParam("id") String id, @DefaultValue("false") @QueryParam("replace") boolean replaceTerms) {
+
+        try {
+            Dataset ds = findDatasetOrDie(id);
+            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DatasetVersion dsv = ds.getEditVersion();
+            boolean updateDraft = ds.getLatestVersion().isDraft();
+            dsv = JSONLDUtil.updateDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc, !replaceTerms, false);
+            
+            DatasetVersion managedVersion;
+            if (updateDraft) {
+                Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
+                managedVersion = managedDataset.getEditVersion();
+            } else {
+                managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
+            }
+            String info = updateDraft ? "Version Updated" : "Version Created";
+            return ok(Json.createObjectBuilder().add(info, managedVersion.getVersionDate()));
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        } catch (JsonParsingException jpe) {
+            logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}", jsonLDBody);
+            return error(Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage());
+        }
+    }
+    
+    @PUT
+    @Path("{id}/metadata/delete")
+    @Consumes("application/ld+json, application/json-ld")
+    public Response deleteMetadata(String jsonLDBody, @PathParam("id") String id) {
+        try {
+            Dataset ds = findDatasetOrDie(id);
+            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DatasetVersion dsv = ds.getEditVersion();
+            boolean updateDraft = ds.getLatestVersion().isDraft();
+            dsv = JSONLDUtil.deleteDatasetVersionMDFromJsonLD(dsv, jsonLDBody, metadataBlockService, datasetFieldSvc);
+            DatasetVersion managedVersion;
+            if (updateDraft) {
+                Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
+                managedVersion = managedDataset.getEditVersion();
+            } else {
+                managedVersion = execCommand(new CreateDatasetVersionCommand(req, ds, dsv));
+            }
+            String info = updateDraft ? "Version Updated" : "Version Created";
+            return ok(Json.createObjectBuilder().add(info, managedVersion.getVersionDate()));
+
+        } catch (WrappedResponse ex) {
+            ex.printStackTrace();
+            return ex.getResponse();
+        } catch (JsonParsingException jpe) {
+            logger.log(Level.SEVERE, "Error parsing dataset json. Json: {0}", jsonLDBody);
+            jpe.printStackTrace();
+            return error(Status.BAD_REQUEST, "Error parsing Json: " + jpe.getMessage());
         }
     }
     
@@ -1100,6 +1204,96 @@ public class Datasets extends AbstractApiBean {
     }
     
     @POST
+    @Path("{id}/actions/:releasemigrated")
+    @Consumes("application/ld+json, application/json-ld")
+    public Response publishMigratedDataset(String jsonldBody, @PathParam("id") String id, @DefaultValue("false") @QueryParam ("updatepidatprovider") boolean contactPIDProvider) {
+        try {
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Only superusers can release migrated datasets");
+            }
+
+            Dataset ds = findDatasetOrDie(id);
+            try {
+                JsonObject metadata = JSONLDUtil.decontextualizeJsonLD(jsonldBody);
+                String pubDate = metadata.getString(JsonLDTerm.schemaOrg("datePublished").getUrl());
+                logger.fine("Submitted date: " + pubDate);
+                LocalDateTime dateTime = null;
+                if(!StringUtils.isEmpty(pubDate)) {
+                    dateTime = JSONLDUtil.getDateTimeFrom(pubDate);
+                    final Timestamp time = Timestamp.valueOf(dateTime);
+                    //Set version release date
+                    ds.getLatestVersion().setReleaseTime(new Date(time.getTime()));
+                }
+                // dataset.getPublicationDateFormattedYYYYMMDD())
+                // Assign a version number if not set
+                if (ds.getLatestVersion().getVersionNumber() == null) {
+
+                    if (ds.getVersions().size() == 1) {
+                        // First Release
+                        ds.getLatestVersion().setVersionNumber(Long.valueOf(1));
+                        ds.getLatestVersion().setMinorVersionNumber(Long.valueOf(0));
+                    } else if (ds.getLatestVersion().isMinorUpdate()) {
+                        ds.getLatestVersion().setVersionNumber(Long.valueOf(ds.getVersionNumber()));
+                        ds.getLatestVersion().setMinorVersionNumber(Long.valueOf(ds.getMinorVersionNumber() + 1));
+                    } else {
+                        // major, non-first release
+                        ds.getLatestVersion().setVersionNumber(Long.valueOf(ds.getVersionNumber() + 1));
+                        ds.getLatestVersion().setMinorVersionNumber(Long.valueOf(0));
+                    }
+                }
+                if(ds.getLatestVersion().getVersionNumber()==1 && ds.getLatestVersion().getMinorVersionNumber()==0) {
+                    //Also set publication date if this is the first 
+                    if(dateTime != null) {
+                      ds.setPublicationDate(Timestamp.valueOf(dateTime));
+                    }
+                    // Release User is only set in FinalizeDatasetPublicationCommand if the pub date
+                    // is null, so set it here.
+                    ds.setReleaseUser((AuthenticatedUser) user);
+                }
+            } catch (Exception e) {
+                logger.fine(e.getMessage());
+                throw new BadRequestException("Unable to set publication date ("
+                        + JsonLDTerm.schemaOrg("datePublished").getUrl() + "): " + e.getMessage());
+            }
+            /*
+             * Note: The code here mirrors that in the
+             * edu.harvard.iq.dataverse.DatasetPage:updateCurrentVersion method. Any changes
+             * to the core logic (i.e. beyond updating the messaging about results) should
+             * be applied to the code there as well.
+             */
+            String errorMsg = null;
+            Optional<Workflow> prePubWf = wfService.getDefaultWorkflow(TriggerType.PrePublishDataset);
+
+            try {
+                // ToDo - should this be in onSuccess()? May relate to todo above
+                if (prePubWf.isPresent()) {
+                    // Start the workflow, the workflow will call FinalizeDatasetPublication later
+                    wfService.start(prePubWf.get(),
+                            new WorkflowContext(createDataverseRequest(user), ds, TriggerType.PrePublishDataset, !contactPIDProvider),
+                            false);
+                } else {
+                    FinalizeDatasetPublicationCommand cmd = new FinalizeDatasetPublicationCommand(ds,
+                            createDataverseRequest(user), !contactPIDProvider);
+                    ds = commandEngine.submit(cmd);
+                }
+            } catch (CommandException ex) {
+                errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.failure") + " - " + ex.toString();
+                logger.severe(ex.getMessage());
+            }
+            
+            if (errorMsg != null) {
+                return error(Response.Status.INTERNAL_SERVER_ERROR, errorMsg);
+            } else {
+                return prePubWf.isPresent() ? accepted(json(ds)) : ok(json(ds));
+            }
+
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    
+    @POST
     @Path("{id}/move/{targetDataverseAlias}")
     public Response moveDataset(@PathParam("id") String id, @PathParam("targetDataverseAlias") String targetDataverseAlias, @QueryParam("forceMove") Boolean force) {
         try {
@@ -1254,10 +1448,13 @@ public class Datasets extends AbstractApiBean {
 
     @POST
     @Path("{id}/privateUrl")
-    public Response createPrivateUrl(@PathParam("id") String idSupplied) {
+    public Response createPrivateUrl(@PathParam("id") String idSupplied,@DefaultValue("false") @QueryParam ("anonymizedAccess") boolean anonymizedAccess) {
+        if(anonymizedAccess && settingsSvc.getValueForKey(SettingsServiceBean.Key.AnonymizedFieldTypeNames)==null) {
+            throw new NotAcceptableException("Anonymized Access not enabled");
+        }
         return response( req -> 
                 ok(json(execCommand(
-                        new CreatePrivateUrlCommand(req, findDatasetOrDie(idSupplied))))));
+                new CreatePrivateUrlCommand(req, findDatasetOrDie(idSupplied), anonymizedAccess)))));
     }
 
     @DELETE
@@ -1380,7 +1577,7 @@ public class Datasets extends AbstractApiBean {
                 logger.log(Level.WARNING, "Failed to lock the dataset (dataset id={0})", dataset.getId());
                 return error(Response.Status.FORBIDDEN, "Failed to lock the dataset (dataset id="+dataset.getId()+")");
             }
-            return ok(scriptRequestResponse.getScript(), MediaType.valueOf(MediaType.TEXT_PLAIN));
+            return ok(scriptRequestResponse.getScript(), MediaType.valueOf(MediaType.TEXT_PLAIN), null);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         } catch (EJBException ex) {
@@ -2192,7 +2389,13 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             if (yyyymm != null) {
                 // We add "-01" because we store "2018-05-01" rather than "2018-05" in the "monthyear" column.
                 // Dates come to us as "2018-05-01" in the SUSHI JSON ("begin-date") and we decided to store them as-is.
-                monthYear = yyyymm + "-01";
+                monthYear = MetricsUtil.sanitizeYearMonthUserInput(yyyymm) + "-01";
+            }
+            if (country != null) {
+                country = country.toLowerCase();
+                if (!MakeDataCountUtil.isValidCountryCode(country)) {
+                    return error(Response.Status.BAD_REQUEST, "Country must be one of the ISO 1366 Country Codes");
+                }
             }
             DatasetMetrics datasetMetrics = datasetMetricsSvc.getDatasetMetricsByDatasetForDisplay(dataset, monthYear, country);
             if (datasetMetrics == null) {
@@ -2273,6 +2476,9 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             return ok(jsonObjectBuilder);
         } catch (WrappedResponse wr) {
             return wr.getResponse();
+        } catch (Exception e) {
+            //bad date - caught in sanitize call
+            return error(BAD_REQUEST, e.getMessage());
         }
     }
     
@@ -2428,5 +2634,74 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
+    }
+
+
+    /**
+     * Add multiple Files to an existing Dataset
+     *
+     * @param idSupplied
+     * @param jsonData
+     * @return
+     */
+    @POST
+    @Path("{id}/addFiles")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response addFilesToDataset(@PathParam("id") String idSupplied,
+                                      @FormDataParam("jsonData") String jsonData) {
+
+        if (!systemConfig.isHTTPUpload()) {
+            return error(Response.Status.SERVICE_UNAVAILABLE, BundleUtil.getStringFromBundle("file.api.httpDisabled"));
+        }
+
+        // -------------------------------------
+        // (1) Get the user from the API key
+        // -------------------------------------
+        User authUser;
+        try {
+            authUser = findUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.FORBIDDEN, BundleUtil.getStringFromBundle("file.addreplace.error.auth")
+            );
+        }
+
+        // -------------------------------------
+        // (2) Get the Dataset Id
+        // -------------------------------------
+        Dataset dataset;
+
+        try {
+            dataset = findDatasetOrDie(idSupplied);
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+
+        //------------------------------------
+        // (2a) Make sure dataset does not have package file
+        // --------------------------------------
+
+        for (DatasetVersion dv : dataset.getVersions()) {
+            if (dv.isHasPackageFile()) {
+                return error(Response.Status.FORBIDDEN,
+                        BundleUtil.getStringFromBundle("file.api.alreadyHasPackageFile")
+                );
+            }
+        }
+
+        DataverseRequest dvRequest = createDataverseRequest(authUser);
+
+        AddReplaceFileHelper addFileHelper = new AddReplaceFileHelper(
+                dvRequest,
+                this.ingestService,
+                this.datasetService,
+                this.fileService,
+                this.permissionSvc,
+                this.commandEngine,
+                this.systemConfig
+        );
+
+        return addFileHelper.addFiles(jsonData, dataset, authUser);
+
     }
 }

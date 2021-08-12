@@ -41,7 +41,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 /**
  *
@@ -516,7 +516,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
             List<String> args = Arrays.asList(
                     r.getName(),
                     ra.getDisplayInfo().getTitle(),
-                    StringEscapeUtils.escapeHtml(dvObject.getDisplayName())
+                    StringEscapeUtils.escapeHtml4(dvObject.getDisplayName())
             );
             JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("permission.roleAssignedToFor", args));
             // don't notify if role = file downloader and object is not released
@@ -530,7 +530,7 @@ public class ManagePermissionsPage implements java.io.Serializable {
             List<String> args = Arrays.asList(
                     r.getName(),
                     ra.getDisplayInfo().getTitle(),
-                    StringEscapeUtils.escapeHtml(dvObject.getDisplayName())
+                    StringEscapeUtils.escapeHtml4(dvObject.getDisplayName())
             );
             String message = BundleUtil.getStringFromBundle("permission.roleNotAssignedFor", args);
             JsfHelper.addErrorMessage(message);

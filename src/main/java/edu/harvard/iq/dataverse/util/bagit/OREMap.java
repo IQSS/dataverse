@@ -39,7 +39,7 @@ public class OREMap {
     private Map<String, String> localContext = new TreeMap<String, String>();
     private DatasetVersion version;
     private Boolean excludeEmail = null;
-    
+
     public OREMap(DatasetVersion version) {
         this.version = version;
     }
@@ -56,6 +56,14 @@ public class OREMap {
     }
 
     public JsonObject getOREMap() throws Exception {
+        return getOREMap(false);
+    }
+    
+    public JsonObject getOREMap(boolean aggregationOnly) throws Exception {
+        return getOREMapBuilder(aggregationOnly).build();
+    }
+    
+    public JsonObjectBuilder getOREMapBuilder(boolean aggregationOnly) throws Exception {
 
         //Set this flag if it wasn't provided
         if(excludeEmail==null) {
@@ -79,7 +87,7 @@ public class OREMap {
         for (DatasetField field : fields) {
             if (!field.isEmpty()) {
                 DatasetFieldType dfType = field.getDatasetFieldType();
-                if(excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dfType.getFieldType())) {
+                if (excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dfType.getFieldType())) {
                     continue;
                 }
                 JsonLDTerm fieldName = getTermFor(dfType);
@@ -101,13 +109,13 @@ public class OREMap {
 
                         for (DatasetField dsf : dscv.getChildDatasetFields()) {
                             DatasetFieldType dsft = dsf.getDatasetFieldType();
-                            if(excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dsft.getFieldType())) {
+                            if (excludeEmail && DatasetFieldType.FieldType.EMAIL.equals(dsft.getFieldType())) {
                                 continue;
                             }
                             // which may have multiple values
                             if (!dsf.isEmpty()) {
-                                // Add context entry 
-                                //ToDo - also needs to recurse here?
+                                // Add context entry
+                                // ToDo - also needs to recurse here?
                                 JsonLDTerm subFieldName = getTermFor(dfType, dsft);
                                 if (subFieldName.inNamespace()) {
                                     localContext.putIfAbsent(subFieldName.getNamespace().getPrefix(),
@@ -143,14 +151,14 @@ public class OREMap {
                         Json.createArrayBuilder().add(JsonLDTerm.ore("Aggregation").getLabel())
                                 .add(JsonLDTerm.schemaOrg("Dataset").getLabel()))
                 .add(JsonLDTerm.schemaOrg("version").getLabel(), version.getFriendlyVersionNumber())
-                .add(JsonLDTerm.schemaOrg("datePublished").getLabel(), dataset.getPublicationDateFormattedYYYYMMDD())
                 .add(JsonLDTerm.schemaOrg("name").getLabel(), version.getTitle())
                 .add(JsonLDTerm.schemaOrg("dateModified").getLabel(), version.getLastUpdateTime().toString());
+        addIfNotNull(aggBuilder, JsonLDTerm.schemaOrg("datePublished"), dataset.getPublicationDateFormattedYYYYMMDD());
 
         TermsOfUseAndAccess terms = version.getTermsOfUseAndAccess();
         if (terms.getLicense() == TermsOfUseAndAccess.License.CC0) {
             aggBuilder.add(JsonLDTerm.schemaOrg("license").getLabel(),
-                    "https://creativecommons.org/publicdomain/zero/1.0/");
+                    TermsOfUseAndAccess.CC0_URI);
         } else {
             addIfNotNull(aggBuilder, JsonLDTerm.termsOfUse, terms.getTermsOfUse());
         }
@@ -183,96 +191,101 @@ public class OREMap {
         // The aggregation aggregates aggregatedresources (Datafiles) which each have
         // their own entry and metadata
         JsonArrayBuilder aggResArrayBuilder = Json.createArrayBuilder();
+        if (!aggregationOnly) {
 
-        for (FileMetadata fmd : version.getFileMetadatas()) {
-            DataFile df = fmd.getDataFile();
-            JsonObjectBuilder aggRes = Json.createObjectBuilder();
+            for (FileMetadata fmd : version.getFileMetadatas()) {
+                DataFile df = fmd.getDataFile();
+                JsonObjectBuilder aggRes = Json.createObjectBuilder();
 
-            if (fmd.getDescription() != null) {
-                aggRes.add(JsonLDTerm.schemaOrg("description").getLabel(), fmd.getDescription());
-            } else {
-                addIfNotNull(aggRes, JsonLDTerm.schemaOrg("description"), df.getDescription());
-            }
-            addIfNotNull(aggRes, JsonLDTerm.schemaOrg("name"), fmd.getLabel()); // "label" is the filename
-            addIfNotNull(aggRes, JsonLDTerm.restricted, fmd.isRestricted());
-            addIfNotNull(aggRes, JsonLDTerm.directoryLabel, fmd.getDirectoryLabel());
-            addIfNotNull(aggRes, JsonLDTerm.schemaOrg("version"), fmd.getVersion());
-            addIfNotNull(aggRes, JsonLDTerm.datasetVersionId, fmd.getDatasetVersion().getId());
-            JsonArray catArray = null;
-            if (fmd != null) {
-                List<String> categories = fmd.getCategoriesByName();
-                if (categories.size() > 0) {
-                    JsonArrayBuilder jab = Json.createArrayBuilder();
-                    for (String s : categories) {
-                        jab.add(s);
-                    }
-                    catArray = jab.build();
+                if (fmd.getDescription() != null) {
+                    aggRes.add(JsonLDTerm.schemaOrg("description").getLabel(), fmd.getDescription());
+                } else {
+                    addIfNotNull(aggRes, JsonLDTerm.schemaOrg("description"), df.getDescription());
                 }
-            }
-            addIfNotNull(aggRes, JsonLDTerm.categories, catArray);
-            // File DOI if it exists
-            String fileId = null;
-            String fileSameAs = null;
-            if (df.getGlobalId().asString().length() != 0) {
-                fileId = df.getGlobalId().asString();
-                fileSameAs = SystemConfig.getDataverseSiteUrlStatic()
-                        + "/api/access/datafile/:persistentId?persistentId=" + fileId;
-            } else {
-                fileId = SystemConfig.getDataverseSiteUrlStatic() + "/file.xhtml?fileId=" + df.getId();
-                fileSameAs = SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/" + df.getId();
-            }
-            aggRes.add("@id", fileId);
-            aggRes.add(JsonLDTerm.schemaOrg("sameAs").getLabel(), fileSameAs);
-            fileArray.add(fileId);
+                addIfNotNull(aggRes, JsonLDTerm.schemaOrg("name"), fmd.getLabel()); // "label" is the filename
+                addIfNotNull(aggRes, JsonLDTerm.restricted, fmd.isRestricted());
+                addIfNotNull(aggRes, JsonLDTerm.directoryLabel, fmd.getDirectoryLabel());
+                addIfNotNull(aggRes, JsonLDTerm.schemaOrg("version"), fmd.getVersion());
+                addIfNotNull(aggRes, JsonLDTerm.datasetVersionId, fmd.getDatasetVersion().getId());
+                JsonArray catArray = null;
+                if (fmd != null) {
+                    List<String> categories = fmd.getCategoriesByName();
+                    if (categories.size() > 0) {
+                        JsonArrayBuilder jab = Json.createArrayBuilder();
+                        for (String s : categories) {
+                            jab.add(s);
+                        }
+                        catArray = jab.build();
+                    }
+                }
+                addIfNotNull(aggRes, JsonLDTerm.categories, catArray);
+                // File DOI if it exists
+                String fileId = null;
+                String fileSameAs = null;
+                if (df.getGlobalId().asString().length() != 0) {
+                    fileId = df.getGlobalId().asString();
+                    fileSameAs = SystemConfig.getDataverseSiteUrlStatic()
+                            + "/api/access/datafile/:persistentId?persistentId=" + fileId;
+                } else {
+                    fileId = SystemConfig.getDataverseSiteUrlStatic() + "/file.xhtml?fileId=" + df.getId();
+                    fileSameAs = SystemConfig.getDataverseSiteUrlStatic() + "/api/access/datafile/" + df.getId();
+                }
+                aggRes.add("@id", fileId);
+                aggRes.add(JsonLDTerm.schemaOrg("sameAs").getLabel(), fileSameAs);
+                fileArray.add(fileId);
 
-            aggRes.add("@type", JsonLDTerm.ore("AggregatedResource").getLabel());
-            addIfNotNull(aggRes, JsonLDTerm.schemaOrg("fileFormat"), df.getContentType());
-            addIfNotNull(aggRes, JsonLDTerm.filesize, df.getFilesize());
-            addIfNotNull(aggRes, JsonLDTerm.storageIdentifier, df.getStorageIdentifier());
-            addIfNotNull(aggRes, JsonLDTerm.originalFileFormat, df.getOriginalFileFormat());
-            addIfNotNull(aggRes, JsonLDTerm.originalFormatLabel, df.getOriginalFormatLabel());
-            addIfNotNull(aggRes, JsonLDTerm.UNF, df.getUnf());
-            addIfNotNull(aggRes, JsonLDTerm.rootDataFileId, df.getRootDataFileId());
-            addIfNotNull(aggRes, JsonLDTerm.previousDataFileId, df.getPreviousDataFileId());
-            JsonObject checksum = null;
-            // Add checksum. RDA recommends SHA-512
-            if (df.getChecksumType() != null && df.getChecksumValue() != null) {
-                checksum = Json.createObjectBuilder().add("@type", df.getChecksumType().toString())
-                        .add("@value", df.getChecksumValue()).build();
-                aggRes.add(JsonLDTerm.checksum.getLabel(), checksum);
+                aggRes.add("@type", JsonLDTerm.ore("AggregatedResource").getLabel());
+                addIfNotNull(aggRes, JsonLDTerm.schemaOrg("fileFormat"), df.getContentType());
+                addIfNotNull(aggRes, JsonLDTerm.filesize, df.getFilesize());
+                addIfNotNull(aggRes, JsonLDTerm.storageIdentifier, df.getStorageIdentifier());
+                addIfNotNull(aggRes, JsonLDTerm.originalFileFormat, df.getOriginalFileFormat());
+                addIfNotNull(aggRes, JsonLDTerm.originalFormatLabel, df.getOriginalFormatLabel());
+                addIfNotNull(aggRes, JsonLDTerm.UNF, df.getUnf());
+                addIfNotNull(aggRes, JsonLDTerm.rootDataFileId, df.getRootDataFileId());
+                addIfNotNull(aggRes, JsonLDTerm.previousDataFileId, df.getPreviousDataFileId());
+                JsonObject checksum = null;
+                // Add checksum. RDA recommends SHA-512
+                if (df.getChecksumType() != null && df.getChecksumValue() != null) {
+                    checksum = Json.createObjectBuilder().add("@type", df.getChecksumType().toString())
+                            .add("@value", df.getChecksumValue()).build();
+                    aggRes.add(JsonLDTerm.checksum.getLabel(), checksum);
+                }
+                JsonArray tabTags = null;
+                JsonArrayBuilder jab = JsonPrinter.getTabularFileTags(df);
+                if (jab != null) {
+                    tabTags = jab.build();
+                }
+                addIfNotNull(aggRes, JsonLDTerm.tabularTags, tabTags);
+                // Add latest resource to the array
+                aggResArrayBuilder.add(aggRes.build());
             }
-            JsonArray tabTags = null;
-            JsonArrayBuilder jab = JsonPrinter.getTabularFileTags(df);
-            if (jab != null) {
-                tabTags = jab.build();
-            }
-            addIfNotNull(aggRes, JsonLDTerm.tabularTags, tabTags);
-            //Add latest resource to the array
-            aggResArrayBuilder.add(aggRes.build());
         }
         // Build the '@context' object for json-ld based on the localContext entries
         JsonObjectBuilder contextBuilder = Json.createObjectBuilder();
         for (Entry<String, String> e : localContext.entrySet()) {
             contextBuilder.add(e.getKey(), e.getValue());
         }
-        // Now create the overall map object with it's metadata
-        JsonObject oremap = Json.createObjectBuilder()
-                .add(JsonLDTerm.dcTerms("modified").getLabel(), LocalDate.now().toString())
-                .add(JsonLDTerm.dcTerms("creator").getLabel(),
-                        BrandingUtil.getInstallationBrandName())
-                .add("@type", JsonLDTerm.ore("ResourceMap").getLabel())
-                // Define an id for the map itself (separate from the @id of the dataset being
-                // described
-                .add("@id",
-                        SystemConfig.getDataverseSiteUrlStatic() + "/api/datasets/export?exporter="
-                                + OAI_OREExporter.NAME + "&persistentId=" + id)
-                // Add the aggregation (Dataset) itself to the map.
-                .add(JsonLDTerm.ore("describes").getLabel(),
-                        aggBuilder.add(JsonLDTerm.ore("aggregates").getLabel(), aggResArrayBuilder.build())
-                                .add(JsonLDTerm.schemaOrg("hasPart").getLabel(), fileArray.build()).build())
-                // and finally add the context
-                .add("@context", contextBuilder.build()).build();
-        return oremap;
+        if (aggregationOnly) {
+            return aggBuilder.add("@context", contextBuilder.build());
+        } else {
+            // Now create the overall map object with it's metadata
+            JsonObjectBuilder oremapBuilder = Json.createObjectBuilder()
+                    .add(JsonLDTerm.dcTerms("modified").getLabel(), LocalDate.now().toString())
+                    .add(JsonLDTerm.dcTerms("creator").getLabel(), BrandingUtil.getInstallationBrandName())
+                    .add("@type", JsonLDTerm.ore("ResourceMap").getLabel())
+                    // Define an id for the map itself (separate from the @id of the dataset being
+                    // described
+                    .add("@id",
+                            SystemConfig.getDataverseSiteUrlStatic() + "/api/datasets/export?exporter="
+                                    + OAI_OREExporter.NAME + "&persistentId=" + id)
+                    // Add the aggregation (Dataset) itself to the map.
+                    .add(JsonLDTerm.ore("describes").getLabel(),
+                            aggBuilder.add(JsonLDTerm.ore("aggregates").getLabel(), aggResArrayBuilder.build())
+                                    .add(JsonLDTerm.schemaOrg("hasPart").getLabel(), fileArray.build()).build())
+                    // and finally add the context
+                    .add("@context", contextBuilder.build());
+            return oremapBuilder;
+        }
     }
 
     /*
@@ -353,7 +366,7 @@ public class OREMap {
                 namespaceUri = SystemConfig.getDataverseSiteUrlStatic() + "/schema/" + dsft.getMetadataBlock().getName()
                         + "#";
             }
-            JsonLDNamespace blockNamespace = new JsonLDNamespace(dsft.getMetadataBlock().getName(), namespaceUri);
+            JsonLDNamespace blockNamespace = JsonLDNamespace.defineNamespace(dsft.getMetadataBlock().getName(), namespaceUri);
             return new JsonLDTerm(blockNamespace, dsft.getTitle());
         }
     }
@@ -369,7 +382,7 @@ public class OREMap {
                         + dfType.getMetadataBlock().getName() + "/";
             }
             subFieldNamespaceUri = subFieldNamespaceUri + dfType.getName() + "#";
-            JsonLDNamespace fieldNamespace = new JsonLDNamespace(dfType.getName(), subFieldNamespaceUri);
+            JsonLDNamespace fieldNamespace = JsonLDNamespace.defineNamespace(dfType.getName(), subFieldNamespaceUri);
             return new JsonLDTerm(fieldNamespace, dsft.getTitle());
         }
     }

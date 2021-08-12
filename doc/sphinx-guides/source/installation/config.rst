@@ -205,6 +205,7 @@ Here are the configuration options for handles:
 - :ref:`:IdentifierGenerationStyle <:IdentifierGenerationStyle>` (optional)
 - :ref:`:DataFilePIDFormat <:DataFilePIDFormat>` (optional)
 - :ref:`:IndependentHandleService <:IndependentHandleService>` (optional)
+- :ref:`:HandleAuthHandle <:HandleAuthHandle>` (optional)
 
 Note: If you are **minting your own handles** and plan to set up your own handle service, please refer to `Handle.Net documentation <http://handle.net/hnr_documentation.html>`_.
 
@@ -242,7 +243,7 @@ As for the "Remote only" authentication mode, it means that:
 File Storage: Using a Local Filesystem and/or Swift and/or S3 object stores
 ---------------------------------------------------------------------------
 
-By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara5/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.directory`` JVM option described below.
+By default, a Dataverse installation stores all data files (files uploaded by end users) on the filesystem at ``/usr/local/payara5/glassfish/domains/domain1/files``. This path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.\<id\>.directory`` JVM option described below.
 
 A Dataverse installation can alternately store files in a Swift or S3-compatible object store, and can now be configured to support multiple stores at once. With a multi-store configuration, the location for new files can be controlled on a per-Dataverse collection basis.
 
@@ -528,24 +529,25 @@ Lastly, go ahead and restart your Payara server. With Dataverse deployed and the
 S3 Storage Options
 ##################
 
-===========================================  ==================  =========================================================================  =============
-JVM Option                                   Value               Description                                                                Default value
-===========================================  ==================  =========================================================================  =============
-dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                                 ``file``
-dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                                (none)
-dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                         ``false``
-dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.         ``false``
-dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested                 (none)
-dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.            60
-dataverse.files.<id>.min-part-size           <?>                 Multipart direct uploads will occur for files larger than this. Optional.  ``1024**3``
-dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.         (none)
-dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                            ``dataverse``
-dataverse.files.<id>.proxy-url               <?>                 URL of a proxy protecting the S3 store. Optional.                          (none)
-dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                    ``false``
-dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                           ``false``
-dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                         ``true``
-dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                    ``256``
-===========================================  ==================  =========================================================================  =============
+===========================================  ==================  ==========================================================================  =============
+JVM Option                                   Value               Description                                                                 Default value
+===========================================  ==================  ==========================================================================  =============
+dataverse.files.storage-driver-id            <id>                Enable <id> as the default storage driver.                                  ``file``
+dataverse.files.<id>.bucket-name             <?>                 The bucket name. See above.                                                 (none)
+dataverse.files.<id>.download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                          ``false``
+dataverse.files.<id>.upload-redirect         ``true``/``false``  Enable direct upload of files added to a dataset  to the S3 store.          ``false``
+dataverse.files.<id>.ingestsizelimit         <size in bytes>     Maximum size of directupload files that should be ingested                  (none)
+dataverse.files.<id>.url-expiration-minutes  <?>                 If direct uploads/downloads: time until links expire. Optional.             60
+dataverse.files.<id>.min-part-size           <?>                 Multipart direct uploads will occur for files larger than this. Optional.   ``1024**3``
+dataverse.files.<id>.custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.          (none)
+dataverse.files.<id>.custom-endpoint-region  <?>                 Only used when using custom endpoint. Optional.                             ``dataverse``
+dataverse.files.<id>.profile                 <?>                 Allows the use of AWS profiles for storage spanning multiple AWS accounts.  (none)
+dataverse.files.<id>.proxy-url               <?>                 URL of a proxy protecting the S3 store. Optional.                           (none)
+dataverse.files.<id>.path-style-access       ``true``/``false``  Use path style buckets instead of subdomains. Optional.                     ``false``
+dataverse.files.<id>.payload-signing         ``true``/``false``  Enable payload signing. Optional                                            ``false``
+dataverse.files.<id>.chunked-encoding        ``true``/``false``  Disable chunked encoding. Optional                                          ``true``
+dataverse.files.<id>.connection-pool-size    <?>                 The maximum number of open connections to the S3 server                     ``256``
+===========================================  ==================  ==========================================================================  =============
 
 Reported Working S3-Compatible Storage
 ######################################
@@ -604,9 +606,9 @@ Once you have the location of your custom homepage HTML file, run this curl comm
 
 ``curl -X PUT -d '/var/www/dataverse/branding/custom-homepage.html' http://localhost:8080/api/admin/settings/:HomePageCustomizationFile``
 
-If you prefer to start with less of a blank slate, you can download the :download:`custom-homepage-dynamic.html </_static/installation/files/var/www/dataverse/branding/custom-homepage-dynamic.html>` template which was built for the Harvard Dataverse Repository, and includes branding messaging, action buttons, search input, subject links, and recent dataset links. This page was built to utilize the :doc:`/api/metrics` to deliver dynamic content to the page via javascript.
+If you prefer to start with less of a blank slate, you can review the custom homepage used by the Harvard Dataverse Repository, which includes branding messaging, action buttons, search input, subject links, and recent dataset links. This page was built to utilize the :doc:`/api/metrics` to deliver dynamic content to the page via Javascript. The files can be found at https://github.com/IQSS/dataverse.harvard.edu
 
-Note that the ``custom-homepage.html`` and ``custom-homepage-dynamic.html`` files provided have multiple elements that assume your root Dataverse collection still has an alias of "root". While you were branding your root Dataverse collection, you may have changed the alias to "harvard" or "librascholar" or whatever and you should adjust the custom homepage code as needed.
+Note that the ``custom-homepage.html`` file provided has multiple elements that assume your root Dataverse collection still has an alias of "root". While you were branding your root Dataverse collection, you may have changed the alias to "harvard" or "librascholar" or whatever and you should adjust the custom homepage code as needed.
 
 For more background on what this curl command above is doing, see the "Database Settings" section below. If you decide you'd like to remove this setting, use the following curl command:
 
@@ -672,6 +674,21 @@ Adding Multiple Languages to the Dropdown in the Header
 The presence of the :ref:`:Languages` database setting adds a dropdown in the header for multiple languages. For example to add English and French to the dropdown:
 
 ``curl http://localhost:8080/api/admin/settings/:Languages -X PUT -d '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]'``
+
+When a user selects one of the available choices, the Dataverse user interfaces will be translated into that language (assuming you also configure the "lang" directory and populate it with translations as described below).
+
+Allowing the Language Used for Dataset Metadata to be Specified
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Since dataset metadata can only be entered in one language, and administrators may wish to limit which languages metadata can be entered in, Dataverse also offers a separate setting defining allowed metadata languages. 
+The presence of the :ref:`:MetadataLanguages` database setting identifies the available options (which can be different from those in the :Languages setting above, with fewer or more options). 
+Dataverse collection admins can select from these options to indicate which language should be used for new Datasets created with that specific collection.
+
+When creating or editing a dataset, users will be asked to enter the metadata in that language. The metadata language selected will also be shown when dataset metadata is viewed and will be included in metadata exports (as appropriate for each format) for published datasets:
+
+``curl http://localhost:8080/api/admin/settings/:MetadataLanguages -X PUT -d '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]'``
+
+Note that metadata selected from Controlled Vocabularies will also display in the metadata language of the dataset, but only if translations have been configured, i.e. you configure the "lang" directory and populate it with translations as described below).
 
 Configuring the "lang" Directory
 ++++++++++++++++++++++++++++++++
@@ -1042,7 +1059,7 @@ dataverse.siteUrl
 dataverse.files.directory
 +++++++++++++++++++++++++
 
-This is how you configure the path to which files uploaded by users are stored.
+This is how you configure the path Dataverse uses for temporary files. (File store specific dataverse.files.\<id\>.directory options set the permanent data storage locations.)
 
 dataverse.auth.password-reset-timeout-in-minutes
 ++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1488,49 +1505,96 @@ Out of the box, the DOI shoulder is set to "FK2/" but this is for testing only! 
 :IdentifierGenerationStyle
 ++++++++++++++++++++++++++
 
-By default, the Dataverse Software generates a random 6 character string, pre-pended by the Shoulder if set, to use as the identifier
-for a Dataset. Set this to ``sequentialNumber`` to use sequential numeric values
-instead (again pre-pended by the Shoulder if set). (the assumed default setting is ``randomString``).
-In addition to this setting, a database sequence must be created in the database.
-We provide the script below (downloadable :download:`here </_static/util/createsequence.sql>`).
-You may need to make some changes to suit your system setup, see the comments for more information:
+By default, the Dataverse Software generates a random 6 character string,
+pre-pended by the Shoulder if set, to use as the identifier for a Dataset.
+Set this to ``storedProcGenerated`` to generate instead a custom *unique*
+identifier (again pre-pended by the Shoulder if set) through a database
+stored procedure or function (the assumed default setting is ``randomString``).
+In addition to this setting, a stored procedure or function must be created in
+the database.
+
+As a first example, the script below (downloadable
+:download:`here </_static/util/createsequence.sql>`) produces
+sequential numerical values. You may need to make some changes to suit your
+system setup, see the comments for more information:
 
 .. literalinclude:: ../_static/util/createsequence.sql
+   :language: plpgsql
 
-Note that the SQL above is Postgres-specific. If necessary, it can be reimplemented
-in any other SQL flavor - the standard JPA code in the application simply expects
-the database to have a saved function ("stored procedure") named ``generateIdentifierAsSequentialNumber``
-with the single return argument ``identifier``.
+As a second example, the script below (downloadable
+:download:`here </_static/util/identifier_from_timestamp.sql>`) produces
+sequential 8 character identifiers from a base36 representation of current
+timestamp.
 
-Please note that ``:IdentifierGenerationStyle`` also plays a role for the "identifier" for files. See the section on ``:DataFilePIDFormat`` below for more details.
+.. literalinclude:: ../_static/util/identifier_from_timestamp.sql
+   :language: plpgsql
+
+Note that the SQL in these examples scripts is Postgres-specific.
+If necessary, it can be reimplemented in any other SQL flavor - the standard
+JPA code in the application simply expects the database to have a saved
+function ("stored procedure") named ``generateIdentifierFromStoredProcedure()``
+returning a single ``varchar`` argument.
+
+Please note that ``:IdentifierGenerationStyle`` also plays a role for the
+"identifier" for files. See the section on :ref:`:DataFilePIDFormat` below for
+more details.
 
 .. _:DataFilePIDFormat:
 
 :DataFilePIDFormat
 ++++++++++++++++++
 
-This setting controls the way that the "identifier" component of a file's persistent identifier (PID) relates to the PID of its "parent" dataset.
+This setting controls the way that the "identifier" component of a file's
+persistent identifier (PID) relates to the PID of its "parent" dataset.
 
-By default the identifier for a file is dependent on its parent dataset. For example, if the identifier of a dataset is "TJCLKP", the identifier for a file within that dataset will consist of the parent dataset's identifier followed by a slash ("/"), followed by a random 6 character string, yielding "TJCLKP/MLGWJO". Identifiers in this format are what you should expect if you leave ``:DataFilePIDFormat`` undefined or set it to ``DEPENDENT`` and have not changed the ``:IdentifierGenerationStyle`` setting from its default.
+By default the identifier for a file is dependent on its parent dataset.
+For example, if the identifier of a dataset is "TJCLKP", the identifier for
+a file within that dataset will consist of the parent dataset's identifier
+followed by a slash ("/"), followed by a random 6 character string,
+yielding "TJCLKP/MLGWJO". Identifiers in this format are what you should
+expect if you leave ``:DataFilePIDFormat`` undefined or set it to
+``DEPENDENT`` and have not changed the ``:IdentifierGenerationStyle``
+setting from its default.
 
-Alternatively, the identifier for File PIDs can be configured to be independent of Dataset PIDs using the setting "``INDEPENDENT``". In this case, file PIDs will not contain the PIDs of their parent datasets, and their PIDs will be generated the exact same way that datasets' PIDs are, based on the ``:IdentifierGenerationStyle`` setting described above (random 6 character strings or sequential numbers, pre-pended by any shoulder).
+Alternatively, the identifier for File PIDs can be configured to be
+independent of Dataset PIDs using the setting ``INDEPENDENT``.
+In this case, file PIDs will not contain the PIDs of their parent datasets,
+and their PIDs will be generated the exact same way that datasets' PIDs are,
+based on the ``:IdentifierGenerationStyle`` setting described above
+(random 6 character strings or custom unique identifiers through a stored
+procedure, pre-pended by any shoulder).
 
-The chart below shows examples from each possible combination of parameters from the two settings. ``:IdentifierGenerationStyle`` can be either ``randomString`` (the default) or ``sequentialNumber`` and ``:DataFilePIDFormat`` can be either ``DEPENDENT`` (the default) or ``INDEPENDENT``. In the examples below the "identifier" for the dataset is "TJCLKP" for "randomString" and "100001" for "sequentialNumber".
+The chart below shows examples from each possible combination of parameters
+from the two settings. ``:IdentifierGenerationStyle`` can be either
+``randomString`` (the default) or ``storedProcGenerated`` and
+``:DataFilePIDFormat`` can be either ``DEPENDENT`` (the default) or
+``INDEPENDENT``. In the examples below the "identifier" for the dataset is
+"TJCLKP" for ``randomString`` and "100001" for ``storedProcGenerated`` (when
+using sequential numerical values, as described in
+:ref:`:IdentifierGenerationStyle` above), or "krby26qt" for
+``storedProcGenerated`` (when using base36 timestamps, as described in
+:ref:`:IdentifierGenerationStyle` above).
 
-+-----------------+---------------+------------------+
-|                 | randomString  | sequentialNumber |
-|                 |               |                  |
-+=================+===============+==================+
-| **DEPENDENT**   | TJCLKP/MLGWJO | 100001/1         |
-+-----------------+---------------+------------------+
-| **INDEPENDENT** | MLGWJO        | 100002           |
-+-----------------+---------------+------------------+
++-----------------+---------------+----------------------+---------------------+
+|                 | randomString  | storedProcGenerated  | storedProcGenerated |
+|                 |               |                      |                     |
+|                 |               | (sequential numbers) | (base36 timestamps) |
++=================+===============+======================+=====================+
+| **DEPENDENT**   | TJCLKP/MLGWJO | 100001/1             | krby26qt/1          |
++-----------------+---------------+----------------------+---------------------+
+| **INDEPENDENT** | MLGWJO        | 100002               | krby27pz            |
++-----------------+---------------+----------------------+---------------------+
 
-As seen above, in cases where ``:IdentifierGenerationStyle`` is set to *sequentialNumber* and ``:DataFilePIDFormat`` is set to *DEPENDENT*, each file within a dataset will be assigned a number *within* that dataset starting with "1".
+As seen above, in cases where ``:IdentifierGenerationStyle`` is set to
+``storedProcGenerated`` and ``:DataFilePIDFormat`` is set to ``DEPENDENT``,
+each file within a dataset will be assigned a number *within* that dataset
+starting with "1".
 
-Otherwise, if ``:DataFilePIDFormat`` is set to *INDEPENDENT*, then each file will be assigned a PID with the next number in the overall sequence, regardless of what dataset it is in. If the file is created after a dataset with the PID 100001, then the file will be assigned the PID 100002. This option is functional, but it is not a recommended use case.
-
-Note that in either case, when using the ``sequentialNumber`` option, datasets and files share the same database sequence that was created as part of the setup described in ``:IdentifierGenerationStyle`` above.
+Otherwise, if ``:DataFilePIDFormat`` is set to ``INDEPENDENT``, each file
+within the dataset is assigned with a new PID which is the next available
+identifier provided from the database stored procedure. In our example:
+"100002" when using sequential numbers or "krby27pz" when using base36
+timestamps.
 
 .. _:FilePIDsEnabled:
 
@@ -1554,6 +1618,17 @@ Specific for Handle PIDs. Set this setting to true if you want to use a Handle s
 By default this setting is absent and the Dataverse Software assumes it to be false.
 
 ``curl -X PUT -d 'true' http://localhost:8080/api/admin/settings/:IndependentHandleService``
+
+.. _:HandleAuthHandle:
+
+:HandleAuthHandle
++++++++++++++++++
+
+Specific for Handle PIDs. Set this setting to <prefix>/<suffix> to be used on a global handle service when the public key is NOT stored in the default handle.
+By default this setting is absent and the Dataverse Software assumes it to be not set. If the public key for instance is stored in handle: 21.T12996/USER01.
+For this handle the prefix is '21.T12996' and the suffix is 'USER01'. The command to execute is then:
+
+``curl -X PUT -d '21.T12996/USER01' http://localhost:8080/api/admin/settings/:HandleAuthHandle``
 
 .. _:FileValidationOnPublishEnabled:
 
@@ -1689,9 +1764,11 @@ Notes:
 :ZipDownloadLimit
 +++++++++++++++++
 
-For performance reasons, your Dataverse installation will only create zip files on the fly up to 100 MB but the limit can be increased. Here's an example of raising the limit to 1 GB:
+For performance reasons, your Dataverse installation will only allow creation of zip files up to 100 MB, but the limit can be increased. Here's an example of raising the limit to 1 GB:
 
 ``curl -X PUT -d 1000000000 http://localhost:8080/api/admin/settings/:ZipDownloadLimit``
+
+In the UI, users trying to download a zip file larger than the Dataverse installation's :ZipDownloadLimit will receive messaging that the zip file is too large, and the user will be presented with alternate access options. 
 
 :TabularIngestSizeLimit
 +++++++++++++++++++++++
@@ -2159,6 +2236,16 @@ in the header.
 
 See :ref:`i18n` for a curl example and related settings.
 
+.. _:MetadataLanguages:
+
+:MetadataLanguages
+++++++++++++++++++
+
+Sets which languages can be used when entering dataset metadata. 
+
+See :ref:`i18n` for further discussion, a curl example, and related settings.
+
+
 :InheritParentRoleAssignments
 +++++++++++++++++++++++++++++
 
@@ -2248,3 +2335,13 @@ By default, the name of the root Dataverse collection is used as the 'brandname'
 ++++++++++++++++++++++++++++++++++++++++++++++
 
 In the DDI metadata exports, the default behavior is to always add the repository (using its brandname - the root collection name or the value of :ref:`:InstallationName <:InstallationName>`) to the stdyDscr/distStmt/distrbtr element. If this setting is true, this will only be done when a Distributor is not already defined in the Dataset metadata. (Note that, since metadata export files are cached, they will have to be reexported (see :doc:`/admin/metadataexport`) before they incorporate a change in this setting.) 
+
+.. _:AnonymizedFieldTypeNames:
+
+:AnonymizedFieldTypeNames
++++++++++++++++++++++++++
+
+A comma-separated list of field type names that should be 'withheld' when dataset access occurs via a Private Url with Anonymized Access (e.g. to support anonymized review). 
+A suggested minimum includes author, datasetContact, and contributor, but additional fields such as depositor, grantNumber, and publication might also need to be included.
+
+``curl -X PUT -d 'author, datasetContact, contributor, depositor, grantNumber, publication' http://localhost:8080/api/admin/settings/:AnonymizedFieldTypeNames``

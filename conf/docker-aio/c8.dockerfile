@@ -1,9 +1,15 @@
-FROM centos:8
+FROM rockylinux/rockylinux:latest
 # OS dependencies
-# PG 10 is the default in centos8; keep the repo comment for when we bump to 11+
-#RUN yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
-RUN yum install -y java-11-openjdk-devel postgresql-server sudo epel-release unzip curl httpd
+# IQSS now recommends Postgres 13.
+RUN dnf -qy module disable postgresql
+RUN yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+
+RUN echo "fastestmirror=true" >> /etc/dnf/dnf.conf
+RUN yum install -y java-11-openjdk-devel postgresql13-server sudo epel-release unzip curl httpd python2 diffutils
 RUN yum install -y jq lsof awscli
+
+# for older search scripts
+RUN ln -s /usr/bin/python2 /usr/bin/python
 
 # copy and unpack dependencies (solr, payara)
 COPY dv /tmp/dv
@@ -18,16 +24,16 @@ COPY disableipv6.conf /etc/sysctl.d/
 RUN rm /etc/httpd/conf/*
 COPY httpd.conf /etc/httpd/conf 
 RUN cd /opt ; tar zxf /tmp/dv/deps/solr-8.8.1dv.tgz 
-RUN cd /opt ; unzip /tmp/dv/deps/payara-5.2020.6.zip ; ln -s /opt/payara5 /opt/glassfish4
+RUN cd /opt ; unzip /tmp/dv/deps/payara-5.2021.5.zip ; ln -s /opt/payara5 /opt/glassfish4
 
 # this copy of domain.xml is the result of running `asadmin set server.monitoring-service.module-monitoring-levels.jvm=LOW` on a default glassfish installation (aka - enable the glassfish REST monitir endpoint for the jvm`
 # this dies under Java 11, do we keep it?
 #COPY domain-restmonitor.xml /opt/payara5/glassfish/domains/domain1/config/domain.xml
 
-RUN sudo -u postgres /usr/bin/initdb /var/lib/pgsql/data
+RUN sudo -u postgres /usr/pgsql-13/bin/initdb -D /var/lib/pgsql/13/data
 
 # copy configuration related files
-RUN cp /tmp/dv/pg_hba.conf /var/lib/pgsql/data/
+RUN cp /tmp/dv/pg_hba.conf /var/lib/pgsql/13/data/
 RUN cp -r /opt/solr-8.8.1/server/solr/configsets/_default /opt/solr-8.8.1/server/solr/collection1
 RUN cp /tmp/dv/schema*.xml /opt/solr-8.8.1/server/solr/collection1/conf/
 RUN cp /tmp/dv/solrconfig.xml /opt/solr-8.8.1/server/solr/collection1/conf/solrconfig.xml

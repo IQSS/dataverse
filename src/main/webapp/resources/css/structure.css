@@ -375,6 +375,9 @@ form.btn-form {display:inline-block;}
 .button-block span.ui-state-disabled:last-child, .button-block.pull-right .btn:last-child, 
 .button-block .btn:only-child, .button-block div.btn-group:only-child {margin-right:0;}
 
+.disabledTitle {
+  pointer-events: auto;
+}
 /* DIASABLED LINK-BTN TITLE PF COMMANDLINK HACK */
 /* TODO - REVIEW DISABLED CLASS LINKS WHICH 
           ARE NOW FUNCTIONAL DUE TO HACK?? 
@@ -655,7 +658,7 @@ div.edit-field div.ui-message {margin:6px 0;}
 /* TRUNCATION */
 div.more-block {text-align:center; padding-top:250px; width:100%; position:absolute; bottom:0; background:linear-gradient(180deg,hsla(0,0%,100%,0),#fff 80%);}
 button.desc-more-link {margin:0; padding:0;}
-div.less-block {text-align:center;};
+div.less-block {text-align:center;}
 
 /* Primefaces vs Bootstrap selectOneMenu fix */
 div.ui-selectonemenu.form-control {padding:0px;}
@@ -756,6 +759,23 @@ div[id$="filesTable"] thead[id$="filesTable_head"] th.ui-selection-column .ui-ch
     /* Non standard for webkit */
     word-break: break-word;
 }
+
+/* REQUEST ACCESS DOWNLOAD OPTION LINK */
+div[id$="requestPanel"].iq-dropdown-list-item {display:list-item !important;}
+div[id$="requestPanel"].iq-dropdown-list-item>a.ui-commandlink{display:block;padding:3px 20px;clear:both;font-weight:400;line-height:1.42857143;color:#333;white-space:nowrap}
+div[id$="requestPanel"].iq-dropdown-list-item>a.ui-commandlink:focus,
+div[id$="requestPanel"].iq-dropdown-list-item>a.ui-commandlink:hover{color:#262626;text-decoration:none;background-color:#f5f5f5}
+div[id$="requestPanel"].iq-dropdown-list-item>a.ui-commandlink.active,
+div[id$="requestPanel"].iq-dropdown-list-item>a.ui-commandlink.active:focus,
+div[id$="requestPanel"].iq-dropdown-list-item>a.ui-commandlink.active:hover{color:#fff;text-decoration:none;background-color:#337ab7;outline:0}
+div[id$="requestPanel"].iq-dropdown-list-item.disabled>span.ui-commandlink.ui-state-disabled{display:block;padding:3px 20px;clear:both;font-weight:400;line-height:1.42857143;white-space:nowrap}
+div[id$="requestPanel"].iq-dropdown-list-item.disabled>span.ui-commandlink.ui-state-disabled,
+div[id$="requestPanel"].iq-dropdown-list-item.disabled>span.ui-commandlink.ui-state-disabled:focus,
+div[id$="requestPanel"].iq-dropdown-list-item.disabled>span.ui-commandlink.ui-state-disabled:hover{background-color:transparent;color:#777;}
+div[id$="requestPanel"].iq-dropdown-list-item.disabled>span.ui-commandlink.ui-state-disabled:focus,
+div[id$="requestPanel"].iq-dropdown-list-item.disabled>span.ui-commandlink.ui-state-disabled:hover{text-decoration:none;background-color:transparent;background-image:none;filter:progid:DXImageTransform.Microsoft.gradient(enabled=false)}
+div[id$="requestPanel"].iq-dropdown-list-item.disabled{cursor:not-allowed;}
+div[id$="requestPanel"].iq-dropdown-list-item.disabled>span.ui-commandlink.ui-state-disabled{pointer-events:none;}
 
 /* PAGINATION */
 div[id$="filesTable"] .ui-paginator {
@@ -899,6 +919,7 @@ span.ui-autocomplete input.ui-autocomplete-input {width:100%;}
 
 /* Overwrite Bootstrap */
 .btn, .input-group-btn {white-space: normal !important;}
+.dropdown-item-text {display: block;padding: 3px 20px;color: #212529;}
 
 @media print {
     a[href]:after {

@@ -20,6 +20,7 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.Assert;
 import static org.junit.Assert.assertTrue;
@@ -92,10 +93,12 @@ public class DownloadFilesIT {
         Assert.assertEquals(expectedFiles1, filenamesFound1);
 
         // A guest user can't download unpublished files.
+        // (a guest user cannot even see that the draft version actually exists;
+        // so they are going to get a "BAD REQUEST", not "UNAUTHORIZED":)
         Response downloadFiles2 = UtilIT.downloadFiles(datasetPid, null);
         downloadFiles2.prettyPrint();
         downloadFiles2.then().assertThat()
-                .statusCode(UNAUTHORIZED.getStatusCode())
+                .statusCode(BAD_REQUEST.getStatusCode())
                 .body("status", equalTo("ERROR"));
 
         UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken)
