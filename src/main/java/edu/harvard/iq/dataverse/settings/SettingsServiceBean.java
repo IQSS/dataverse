@@ -448,7 +448,17 @@ public class SettingsServiceBean {
          */
         AnonymizedFieldTypeNames,
         /**
-         * A comma separated list of the allowed labels. These should correspond to the states in an organizations curation process. 
+         * A Json array containing key/values corresponding the the allowed languages
+         * for entering metadata. FOrmat matches that of the Languages setting: e.g.
+         * '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]' with
+         * the locale being an ISO-639 code for that language (2 and 3 letter codes from
+         * the 639-2 and 639-3 standards are allowed. These will be used directly in
+         * metadata exports) and the title containing a human readable string. These
+         * values are selectable at the Dataverse level and apply to Dataset metadata.
+         */
+        MetadataLanguages,
+        /**
+         * A comma separated list of allowed labels (up to 32 characters, spaces allowed) that can be set, via API or UI by users with the permission to publish a dataset. These should correspond to the states in an organizations curation process and are intended to help users/curators track the progress of a dataset through an externally defined curation process. A dataset may only have one label at a time and if a label is set, it will be removed at publication time. This functionality is disabled when this setting is empty/not set. 
          */
         AllowedCurationLabels
         ;
