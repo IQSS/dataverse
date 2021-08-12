@@ -657,24 +657,31 @@ public class Dataset extends DvObjectContainer {
         return null;
     }
     
-    public Timestamp getPublicationDate() {
+    public Timestamp getCitationDate() {
         List<DatasetVersion> versions = this.versions;
         // TODo - is this ever not version 1.0 (or draft if not published yet)
         DatasetVersion oldest = versions.get(versions.size() - 1);
-        Timestamp pubDate = super.getPublicationDate();
+        Timestamp citationDate = super.getPublicationDate();
         if (oldest.isPublished()) {
             List<FileMetadata> fms = oldest.getFileMetadatas();
             for (FileMetadata fm : fms) {
                 Embargo embargo = fm.getDataFile().getEmbargo();
                 if (embargo != null) {
                     Timestamp embDate = Timestamp.valueOf(embargo.getDateAvailable().atStartOfDay());
-                    if (pubDate.compareTo(embDate) < 0) {
-                        pubDate = embDate;
+                    if (citationDate.compareTo(embDate) < 0) {
+                        citationDate = embDate;
                     }
                 }
             }
         }
-        return pubDate;
+        return citationDate;
+    }
+    
+    public String getCitationDateFormattedYYYYMMDD() {
+        if (getCitationDate() != null){
+                   return new SimpleDateFormat("yyyy-MM-dd").format(getCitationDate()); 
+        }
+        return null;
     }
 
     public DataFile getThumbnailFile() {

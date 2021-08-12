@@ -44,6 +44,14 @@
                                         </th>
                                         <td>#{publicationDate}</td>
                                     </tr>
+                                    <tr id="metadata_citationDate" jsf:rendered="#{!empty publicationDate and (publicationDate ne citationDate)}">
+                                        <th scope="row">
+                                            #{bundle['dataset.metadata.citationDate']}
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.metadata.citationDate.tip']}"></span>
+                                        </th>
+                                        <td>#{citationDate}</td>
+                                    </tr>
                                 </ui:fragment>
                                 <ui:repeat value="#{metadataBlockVal.value}" var="dsf">
                                     <tr id="metadata_#{dsf.datasetFieldType.name}">

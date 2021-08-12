@@ -510,19 +510,18 @@
                                                         </th>
                                                         <td class="checksum-block">#{FilePage.file.checksumValue}</td>
                                                     </tr>
-                                                    <tr id="filePublicationDateBlock" jsf:rendered="#{FilePage.file.released}">
+                                                    <tr id="filePublicationDateBlock">
                                                         <th scope="row">
                                                             #{bundle['file.metadataTab.fileMetadata.publicationDate.label']}
                                                         </th>
-                                                        <td>#{FilePage.file.publicationDateFormattedYYYYMMDD}
-                                                            <h:outputText class="embargo" value="#{bundle['embargoed.until']} #{FilePage.file.embargo.dateAvailable} (#{FilePage.file.embargo.reason})" rendered="#{!(empty FilePage.fileMetadata.dataFile.embargo)}"/>
+                                                        <td>#{FilePage.file.released ? FilePage.file.publicationDateFormattedYYYYMMDD : bundle['file.metadataTab.fileMetadata.publicationDate.unreleased']}
                                                         </td>
                                                     </tr>
-                                                    <tr id="fileEmbargoBlock" jsf:rendered="#{!FilePage.file.released and !(empty FilePage.fileMetadata.dataFile.embargo)}">
+                                                    <tr id="fileEmbargoBlock" jsf:rendered="#{!(empty FilePage.fileMetadata.dataFile.embargo)}">
                                                         <th scope="row">
                                                             #{bundle['file.metadataTab.fileMetadata.plannedEmbargo.label']}
                                                         </th>
-                                                        <td  class="embargo">#{bundle['embargoed.until']} #{FilePage.file.embargo.dateAvailable} (#{FilePage.file.embargo.reason})
+                                                        <td  class="embargo">#{FilePage.file.released ? bundle['embargoed.until']: bundle['embargoed.willbeuntil']} #{FilePage.file.embargo.dateAvailable} (#{FilePage.file.embargo.reason})
                                                         </td>
                                                     </tr>
                                                     
