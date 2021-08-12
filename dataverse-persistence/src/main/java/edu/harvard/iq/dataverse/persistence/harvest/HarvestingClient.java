@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.persistence.harvest;
 
+import edu.harvard.iq.dataverse.persistence.JpaEntity;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import org.hibernate.validator.constraints.NotBlank;
@@ -42,7 +43,7 @@ import java.util.Map;
 @NamedQueries({
         @NamedQuery(name = "HarvestingClient.findByNickname", query = "SELECT hc FROM HarvestingClient hc WHERE LOWER(hc.name)=:nickName")
 })
-public class HarvestingClient implements Serializable {
+public class HarvestingClient implements Serializable, JpaEntity<Long> {
     private static final long serialVersionUID = 1L;
 
     @Id

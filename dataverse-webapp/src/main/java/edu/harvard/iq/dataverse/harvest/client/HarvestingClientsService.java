@@ -1,20 +1,19 @@
 package edu.harvard.iq.dataverse.harvest.client;
 
-import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateHarvestingClientCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateHarvestingClientCommand;
-import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
+import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClientRepository;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import edu.harvard.iq.dataverse.timer.DataverseTimerServiceBean;
 
 import javax.ejb.Asynchronous;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.logging.Logger;
 
 @Stateless
@@ -23,12 +22,11 @@ public class HarvestingClientsService {
 
     private EjbDataverseEngine commandEngine;
     private DataverseRequestServiceBean dvRequestService;
-    private DataFileServiceBean dataFileService;
     private IndexServiceBean indexService;
     private DataverseTimerServiceBean dataverseTimerService;
-
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    private EntityManager em;
+    private DeleteHarvestedDatasetsService deleteHarvestedDatasetsService;
+    private DeleteHarvestingClientService deleteHarvestingClientService;
+    private HarvestingClientRepository harvestingClientRepository;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -38,13 +36,17 @@ public class HarvestingClientsService {
 
     @Inject
     public HarvestingClientsService(EjbDataverseEngine commandEngine, DataverseRequestServiceBean dvRequestService,
-                                    DataFileServiceBean dataFileService,
-                                    IndexServiceBean indexService, DataverseTimerServiceBean dataverseTimerService) {
+                                    IndexServiceBean indexService, DataverseTimerServiceBean dataverseTimerService,
+                                    DeleteHarvestedDatasetsService deleteHarvestedDatasetsService,
+                                    DeleteHarvestingClientService deleteHarvestingClientService,
+                                    HarvestingClientRepository harvestingClientRepository) {
         this.commandEngine = commandEngine;
         this.dvRequestService = dvRequestService;
-        this.dataFileService = dataFileService;
         this.indexService = indexService;
         this.dataverseTimerService = dataverseTimerService;
+        this.deleteHarvestedDatasetsService = deleteHarvestedDatasetsService;
+        this.deleteHarvestingClientService = deleteHarvestingClientService;
+        this.harvestingClientRepository = harvestingClientRepository;
     }
 
     // -------------------- LOGIC --------------------
@@ -66,46 +68,22 @@ public class HarvestingClientsService {
      * @param clientForDeletion - client to be deleted
      */
     @Asynchronous
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void deleteClient(HarvestingClient clientForDeletion) {
-        String errorMessage = null;
 
         if (clientForDeletion == null) {
             return;
         }
 
         try {
-            HarvestingClient merged = em.merge(clientForDeletion);
-
             dataverseTimerService.removeHarvestTimer(clientForDeletion);
             indexService.deleteHarvestedDocuments(clientForDeletion);
-            removeHarvestedFiles(merged);
-
-            em.remove(merged);
+            clientForDeletion.getHarvestedDatasets()
+                    .forEach(dataset -> deleteHarvestedDatasetsService.removeHarvestedDatasetInNewTransaction(dataset));
+            deleteHarvestingClientService.removeHarvestingClientInNewTransaction(clientForDeletion);
         } catch (Exception e) {
-            errorMessage = "Failed to delete cleint. Unknown exception: " + e.getMessage();
+            deleteHarvestingClientService.updateDeleteInProgress(clientForDeletion);
+            logger.warning("Failed to delete client. Unknown exception: " + e.getMessage());
         }
-
-        if (errorMessage != null) {
-            logger.warning(errorMessage);
-        }
-    }
-
-    // -------------------- PRIVATE ---------------------
-
-    /***
-     * All the datasets harvested by this client will be cleanly deleted
-     * through the defined cascade. Cascaded delete does not work for harvested
-     * files, however. So they need to be removed explicitly; before we
-     * proceed removing the client itself.
-     * @param merged
-     */
-    private void removeHarvestedFiles(HarvestingClient merged) {
-        dataFileService.findHarvestedFilesByClient(merged)
-                .forEach(this::removeHarvestedFile);
-    }
-
-    private void removeHarvestedFile(DataFile harvestedFile) {
-        DataFile mergedFile = em.merge(harvestedFile);
-        em.remove(mergedFile);
     }
 }

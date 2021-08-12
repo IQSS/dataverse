@@ -8,9 +8,8 @@ import edu.harvard.iq.dataverse.persistence.harvest.HarvestingClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.*;
+import org.junit.runner.*;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -20,6 +19,7 @@ import javax.persistence.PersistenceContext;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
@@ -94,6 +94,23 @@ public class HarvestingClientsServiceIT extends WebappArquillianDeployment {
         assertEquals(HarvestingClient.SCHEDULE_PERIOD_DAILY, dbHarvestingClient.getSchedulePeriod());
         assertEquals(7, dbHarvestingClient.getScheduleDayOfWeek().intValue());
         assertEquals(12, dbHarvestingClient.getScheduleHourOfDay().intValue());
+    }
+
+    @Test
+    public void shouldDeleteHarvestingClient() {
+        // given
+        HarvestingClient newHarvestingClient = createHarvestingClient();
+        em.persist(newHarvestingClient);
+        newHarvestingClient = harvestingClientService.findByNickname("newNickname");
+        assertNotNull(newHarvestingClient);
+
+        // when
+        harvestingClientsService.deleteClient(newHarvestingClient);
+        em.flush();
+
+        // then
+        HarvestingClient dbHarvestingClient = harvestingClientService.findByNickname("newNickname");
+        assertNull(dbHarvestingClient);
     }
 
     // -------------------- PRIVATE ---------------------
