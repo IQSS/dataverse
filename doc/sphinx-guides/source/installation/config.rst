@@ -2333,3 +2333,14 @@ A comma-separated list of field type names that should be 'withheld' when datase
 A suggested minimum includes author, datasetContact, and contributor, but additional fields such as depositor, grantNumber, and publication might also need to be included.
 
 ``curl -X PUT -d 'author, datasetContact, contributor, depositor, grantNumber, publication' http://localhost:8080/api/admin/settings/:AnonymizedFieldTypeNames``
+
+:AllowedCurationLabels
+ 
+A comma separated list of allowed labels (up to 32 characters, spaces allowed) that can be set, via API or UI by users with the permission to publish a dataset. 
+These should correspond to the states in an organizations curation process and are intended to help users/curators track the progress of a dataset through an externally defined curation process. 
+A dataset may only have one label at a time and if a label is set, it will be removed at publication time. 
+This functionality is disabled when this setting is empty/not set.
+
+Dataverse can now be configured, via the :AllowedCurationLabels setting, to support arbitrary short labels (e.g. "Author contacted", "Privacy Review", "Awaiting paper publication") on draft datasets that indicate the status/state of the dataset with respect to some externally defined curation process. Anyone who can publish the dataset (e.g. curators) can set/change/remove labels from the defined set via the user interface or via an API. The API also would allow external tools to search for, read and set labels on Datasets, providing an integration mechanism. Labels are visible on the Dataset page and in Dataverse collection listings/search results. Internally, the labels have no effect, and at publication, any existing label will be removed. 
+
+``curl -X PUT -d 'Author contacted, Privacy Review, Awaiting paper publication, Final Approval' http://localhost:8080/api/admin/settings/:AllowedCurationLabels``
