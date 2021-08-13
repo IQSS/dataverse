@@ -517,7 +517,7 @@
                                                         <td>#{FilePage.file.released ? FilePage.file.publicationDateFormattedYYYYMMDD : bundle['file.metadataTab.fileMetadata.publicationDate.unreleased']}
                                                         </td>
                                                     </tr>
-                                                    <tr id="fileEmbargoBlock" jsf:rendered="#{!(empty FilePage.fileMetadata.dataFile.embargo)}">
+                                                    <tr id="fileEmbargoBlock" jsf:rendered="#{!(empty fileMetadata.dataFile.embargo) and (dataFileServiceBean.isActivelyEmbargoed(fileMetadata) or !fileMetadata.dataFile.released)}">
                                                         <th scope="row">
                                                             #{bundle['file.metadataTab.fileMetadata.plannedEmbargo.label']}
                                                         </th>
