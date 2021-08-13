@@ -658,18 +658,22 @@ public class Dataset extends DvObjectContainer {
     }
     
     public Timestamp getCitationDate() {
-        List<DatasetVersion> versions = this.versions;
-        // TODo - is this ever not version 1.0 (or draft if not published yet)
-        DatasetVersion oldest = versions.get(versions.size() - 1);
-        Timestamp citationDate = super.getPublicationDate();
-        if (oldest.isPublished()) {
-            List<FileMetadata> fms = oldest.getFileMetadatas();
-            for (FileMetadata fm : fms) {
-                Embargo embargo = fm.getDataFile().getEmbargo();
-                if (embargo != null) {
-                    Timestamp embDate = Timestamp.valueOf(embargo.getDateAvailable().atStartOfDay());
-                    if (citationDate.compareTo(embDate) < 0) {
-                        citationDate = embDate;
+        Timestamp citationDate = null;
+        //Only calculate if this dataset doesn't use an alternate date field for publication date
+        if (citationDateDatasetFieldType != null) {
+            List<DatasetVersion> versions = this.versions;
+            // TODo - is this ever not version 1.0 (or draft if not published yet)
+            DatasetVersion oldest = versions.get(versions.size() - 1);
+            citationDate = super.getPublicationDate();
+            if (oldest.isPublished()) {
+                List<FileMetadata> fms = oldest.getFileMetadatas();
+                for (FileMetadata fm : fms) {
+                    Embargo embargo = fm.getDataFile().getEmbargo();
+                    if (embargo != null) {
+                        Timestamp embDate = Timestamp.valueOf(embargo.getDateAvailable().atStartOfDay());
+                        if (citationDate.compareTo(embDate) < 0) {
+                            citationDate = embDate;
+                        }
                     }
                 }
             }
