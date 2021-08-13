@@ -1463,7 +1463,7 @@
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                         <ui:include src="file-request-access-popup-fragment.xhtml">
                             <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
-                            <ui:param name="someActivelyEmbargoedFiles" value="#{DatasetPage.cantDownloadDueToEmbargo}"/>
+                            <ui:param name="someActivelyEmbargoedFiles" value="#{DatasetPage.cantRequestDueToEmbargo}"/>
                             <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                         </ui:include>
                     </p:dialog>

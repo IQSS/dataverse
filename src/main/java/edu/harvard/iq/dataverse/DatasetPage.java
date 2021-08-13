@@ -5669,22 +5669,35 @@ public class DatasetPage implements java.io.Serializable {
         setRemoveEmbargo(false);
     }
 
-public boolean isCantDownloadDueToEmbargo() {
-    for (FileMetadata fmd : getSelectedNonDownloadableFiles()) {
-        if(FileUtil.isActivelyEmbargoed(fmd)) {
-            return true;
+    public boolean isCantDownloadDueToEmbargo() {
+        if (getSelectedNonDownloadableFiles() != null) {
+            for (FileMetadata fmd : getSelectedNonDownloadableFiles()) {
+                if (FileUtil.isActivelyEmbargoed(fmd)) {
+                    return true;
+                }
+            }
         }
+        return false;
     }
-    return false;
-}
+    
+    public boolean isCantRequestDueToEmbargo() {
+        if (fileDownloadHelper.getFilesForRequestAccess() != null) {
+            for (DataFile df : fileDownloadHelper.getFilesForRequestAccess()) {
+                if (FileUtil.isActivelyEmbargoed(df)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
-private boolean containsOnlyActivelyEmbargoedFiles(List<FileMetadata> selectedFiles) {
-    for (FileMetadata fmd : selectedFiles) {
-        if (!FileUtil.isActivelyEmbargoed(fmd)) {
-            return false;
+    private boolean containsOnlyActivelyEmbargoedFiles(List<FileMetadata> selectedFiles) {
+        for (FileMetadata fmd : selectedFiles) {
+            if (!FileUtil.isActivelyEmbargoed(fmd)) {
+                return false;
+            }
         }
+        return true;
     }
-    return true;
-}
 
 }

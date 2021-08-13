@@ -517,7 +517,7 @@
                                                         <td>#{FilePage.file.released ? FilePage.file.publicationDateFormattedYYYYMMDD : bundle['file.metadataTab.fileMetadata.publicationDate.unreleased']}
                                                         </td>
                                                     </tr>
-                                                    <tr id="fileEmbargoBlock" jsf:rendered="#{!(empty fileMetadata.dataFile.embargo) and (dataFileServiceBean.isActivelyEmbargoed(fileMetadata) or !fileMetadata.dataFile.released)}">
+                                                    <tr id="fileEmbargoBlock" jsf:rendered="#{!(empty FilePage.file.embargo) and (dataFileServiceBean.isActivelyEmbargoed(FilePage.fileMetadata) or !FilePage.file.released)}">
                                                         <th scope="row">
                                                             #{bundle['file.metadataTab.fileMetadata.plannedEmbargo.label']}
                                                         </th>
@@ -625,7 +625,7 @@
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                         <ui:include src="file-request-access-popup-fragment.xhtml">
                             <ui:param name="workingVersion" value="#{FilePage.fileMetadata.datasetVersion}"/>
-                            <ui:param name="someActivelyEmbargoedFiles" value="#{FilePage.cantDownloadDueToEmbargo}"/>
+                            <ui:param name="someActivelyEmbargoedFiles" value="#{FilePage.cantRequestDueToEmbargo}"/>
                             <ui:param name="fileDownloadService" value="#{FilePage.fileDownloadService}"/>
                         </ui:include>
                     </p:dialog>                    
