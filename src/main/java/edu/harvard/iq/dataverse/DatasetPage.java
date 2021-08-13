@@ -4934,7 +4934,7 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
         for (FileMetadata fmd : workingVersion.getFileMetadatas()){
-            if (!this.fileDownloadHelper.canDownloadFile(fmd)){
+            if (!this.fileDownloadHelper.canDownloadFile(fmd) && !FileUtil.isActivelyEmbargoed(fmd)){
                 return true;
             }
         }
@@ -4953,7 +4953,7 @@ public class DatasetPage implements java.io.Serializable {
             return false;
         }
         for (FileMetadata fmd : this.selectedRestrictedFiles){
-            if (!this.fileDownloadHelper.canDownloadFile(fmd)){
+            if (!this.fileDownloadHelper.canDownloadFile(fmd)&& !FileUtil.isActivelyEmbargoed(fmd)){
                 return true;
             }
         }
@@ -4974,7 +4974,11 @@ public class DatasetPage implements java.io.Serializable {
             //RequestContext requestContext = RequestContext.getCurrentInstance();
             PrimeFaces.current().executeScript("PF('selectFilesForRequestAccess').show()");
             return "";
+        } else if (containsOnlyActivelyEmbargoedFiles(selectedFiles)){
+            PrimeFaces.current().executeScript("PF('selectEmbargoedFilesForRequestAccess').show()");
+            return "";
         } else {
+        
             fileDownloadHelper.clearRequestAccessFiles();
             for (FileMetadata fmd : selectedFiles){
                  fileDownloadHelper.addMultipleFilesForRequestAccess(fmd.getDataFile());
@@ -4990,6 +4994,8 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
     }
+
+
 
     public boolean isSortButtonEnabled() {
         /**
@@ -5529,6 +5535,23 @@ public class DatasetPage implements java.io.Serializable {
         return dataFile.getDeleted();
     }
     
+    public String getEffectiveMetadataLanguage() {
+        String mdLang = dataset.getEffectiveMetadataLanguage();
+        if (mdLang.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+            mdLang = settingsWrapper.getDefaultMetadataLanguage();
+        }
+        return mdLang;
+    }
+    
+    public String getLocaleDisplayName(String code) {
+        String displayName = settingsWrapper.getBaseMetadataLanguageMap(false).get(code);
+        if(displayName==null) {
+            //Default (for cases such as :when a Dataset has a metadatalanguage code but :MetadataLanguages is no longer defined).
+            displayName = new Locale(code).getDisplayName(); 
+        }
+        return displayName; 
+    }
+    
     public Embargo getSelectionEmbargo() {
         logger.info("getting: " + selectionEmbargo.getDateAvailable());
         return selectionEmbargo;
@@ -5646,23 +5669,22 @@ public class DatasetPage implements java.io.Serializable {
         setRemoveEmbargo(false);
     }
 
+public boolean isCantDownloadDueToEmbargo() {
+    for (FileMetadata fmd : getSelectedNonDownloadableFiles()) {
+        if(FileUtil.isActivelyEmbargoed(fmd)) {
+            return true;
+        }
+    }
+    return false;
+}
 
-    
-    
-    public String getEffectiveMetadataLanguage() {
-        String mdLang = dataset.getEffectiveMetadataLanguage();
-        if (mdLang.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
-            mdLang = settingsWrapper.getDefaultMetadataLanguage();
+private boolean containsOnlyActivelyEmbargoedFiles(List<FileMetadata> selectedFiles) {
+    for (FileMetadata fmd : selectedFiles) {
+        if (!FileUtil.isActivelyEmbargoed(fmd)) {
+            return false;
         }
-        return mdLang;
     }
-    
-    public String getLocaleDisplayName(String code) {
-        String displayName = settingsWrapper.getBaseMetadataLanguageMap(false).get(code);
-        if(displayName==null) {
-            //Default (for cases such as :when a Dataset has a metadatalanguage code but :MetadataLanguages is no longer defined).
-            displayName = new Locale(code).getDisplayName(); 
-        }
-        return displayName; 
-    }
+    return true;
+}
+
 }

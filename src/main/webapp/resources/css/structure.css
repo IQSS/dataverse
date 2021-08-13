@@ -1009,7 +1009,10 @@ progress::-webkit-progress-value {
   margin-left:10px;
 }
 .embargodatepicker {
-	margin-left:10px;
+  margin-left:10px;
 }
+.embargocheckbox {
+  margin-top: 20px;
+  margin-bottom: 5px;
 }
 

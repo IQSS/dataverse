@@ -1068,4 +1068,8 @@ public class FilePage implements java.io.Serializable {
     public void clearFileMetadataSelectedForEmbargoPopup() {
         setRemoveEmbargo(false);
     }
+    
+    public boolean isCantDownloadDueToEmbargo() {
+        return FileUtil.isActivelyEmbargoed(fileMetadata);
+    }
 }

@@ -918,10 +918,10 @@
                             </button>
                         </div>
                     </p:dialog>
-                    <p:dialog id="downloadInvalid" styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadInvalid" modal="true">
+                    <p:dialog id="downloadInvalid" styleClass="smallPopUp" header="#{DatasetPage.cantDownloadDueToEmbargo ? bundle['dataset.inValidSelectedFilesForDownloadWithEmbargo'] : bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadInvalid" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noValidSelectedFilesForDownload']}</p>
                         <ui:fragment rendered="#{DatasetPage.dataset.fileAccessRequest}">
-                            <p class="help-block">#{bundle['dataset.requestAccessToRestrictedFiles']}</p>
+                            <p class="help-block">#{DatasetPage.cantDownloadDueToEmbargo ? bundle['dataset.requestAccessToRestrictedFilesWithEmbargo'] : bundle['dataset.requestAccessToRestrictedFiles']}</p>
                         </ui:fragment>
                         <div class="button-block">
                             <button class="btn btn-default" onclick="PF('downloadInvalid').hide();" type="button">
@@ -950,8 +950,8 @@
                             </button>
                         </div>
                     </p:dialog>
-                    <p:dialog id="downloadMixed" styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadMixed" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.mixedSelectedFilesForDownload']}</p>
+                    <p:dialog id="downloadMixed" styleClass="smallPopUp" header="#{DatasetPage.cantDownloadDueToEmbargo ? bundle['dataset.inValidSelectedFilesForDownloadWithEmbargo'] : bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadMixed" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{DatasetPage.cantDownloadDueToEmbargo ? bundle['dataset.mixedSelectedFilesForDownloadWithEmbargo'] : bundle['dataset.mixedSelectedFilesForDownload']}</p>
                         <table>
                             <ui:repeat var="resFile" value="#{DatasetPage.selectedNonDownloadableFiles}" >
                                 <tr>
@@ -1294,6 +1294,15 @@
                             </button>
                         </div>
                     </p:dialog>
+                    <p:dialog id="selectEmbargoedFilesForRequestAccess" styleClass="smallPopUp"
+                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectEmbargoedFilesForRequestAccess" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.embargoedSelectedFilesForRequestAccess']}</p>
+                        <div class="button-block">
+                            <button class="btn btn-default" onclick="PF('selectEmbargoedFilesForRequestAccess').hide();PF('blockDatasetForm').hide();" type="button">
+                                #{bundle.close}
+                            </button>
+                        </div>
+                    </p:dialog>
                     <p:dialog id="fileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}" widgetVar="fileTagsPopup" modal="true">
                         <p:focus for="fileTagsMenuDS"/>
                         <p class="help-block">#{bundle['file.editTagsDialog.tip']}</p>
@@ -1454,6 +1463,7 @@
                         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                         <ui:include src="file-request-access-popup-fragment.xhtml">
                             <ui:param name="workingVersion" value="#{DatasetPage.workingVersion}"/>
+                            <ui:param name="someActivelyEmbargoedFiles" value="#{DatasetPage.cantDownloadDueToEmbargo}"/>
                             <ui:param name="fileDownloadService" value="#{DatasetPage.fileDownloadService}"/>
                         </ui:include>
                     </p:dialog>

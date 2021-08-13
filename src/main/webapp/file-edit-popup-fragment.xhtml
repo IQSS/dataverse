@@ -90,7 +90,7 @@
             </div>
           </div>
         
-        <div jsf:rendered="#{bean.existingEmbargo}">
+        <div jsf:rendered="#{bean.existingEmbargo}" class="embargocheckbox">
             <p:selectBooleanCheckbox value="#{bean.removeEmbargo}" itemLabel="#{bundle['file.editEmbargoDialog.remove']}">
                 <p:ajax process="@this:@parent:@parent" update="@this:@parent:@parent"/>
             </p:selectBooleanCheckbox>
