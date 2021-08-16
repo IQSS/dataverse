@@ -675,6 +675,21 @@ The presence of the :ref:`:Languages` database setting adds a dropdown in the he
 
 ``curl http://localhost:8080/api/admin/settings/:Languages -X PUT -d '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]'``
 
+When a user selects one of the available choices, the Dataverse user interfaces will be translated into that language (assuming you also configure the "lang" directory and populate it with translations as described below).
+
+Allowing the Language Used for Dataset Metadata to be Specified
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Since dataset metadata can only be entered in one language, and administrators may wish to limit which languages metadata can be entered in, Dataverse also offers a separate setting defining allowed metadata languages. 
+The presence of the :ref:`:MetadataLanguages` database setting identifies the available options (which can be different from those in the :Languages setting above, with fewer or more options). 
+Dataverse collection admins can select from these options to indicate which language should be used for new Datasets created with that specific collection.
+
+When creating or editing a dataset, users will be asked to enter the metadata in that language. The metadata language selected will also be shown when dataset metadata is viewed and will be included in metadata exports (as appropriate for each format) for published datasets:
+
+``curl http://localhost:8080/api/admin/settings/:MetadataLanguages -X PUT -d '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]'``
+
+Note that metadata selected from Controlled Vocabularies will also display in the metadata language of the dataset, but only if translations have been configured, i.e. you configure the "lang" directory and populate it with translations as described below).
+
 Configuring the "lang" Directory
 ++++++++++++++++++++++++++++++++
 
@@ -1595,7 +1610,7 @@ By default this setting is absent and the Dataverse Software assumes it to be fa
 .. _:HandleAuthHandle:
 
 :HandleAuthHandle
-+++++++++++++++++++++++++
++++++++++++++++++
 
 Specific for Handle PIDs. Set this setting to <prefix>/<suffix> to be used on a global handle service when the public key is NOT stored in the default handle.
 By default this setting is absent and the Dataverse Software assumes it to be not set. If the public key for instance is stored in handle: 21.T12996/USER01.
@@ -1737,9 +1752,11 @@ Notes:
 :ZipDownloadLimit
 +++++++++++++++++
 
-For performance reasons, your Dataverse installation will only create zip files on the fly up to 100 MB but the limit can be increased. Here's an example of raising the limit to 1 GB:
+For performance reasons, your Dataverse installation will only allow creation of zip files up to 100 MB, but the limit can be increased. Here's an example of raising the limit to 1 GB:
 
 ``curl -X PUT -d 1000000000 http://localhost:8080/api/admin/settings/:ZipDownloadLimit``
+
+In the UI, users trying to download a zip file larger than the Dataverse installation's :ZipDownloadLimit will receive messaging that the zip file is too large, and the user will be presented with alternate access options. 
 
 :TabularIngestSizeLimit
 +++++++++++++++++++++++
@@ -2206,6 +2223,16 @@ Sets which languages should be available. If there is more than one, a dropdown 
 in the header.
 
 See :ref:`i18n` for a curl example and related settings.
+
+.. _:MetadataLanguages:
+
+:MetadataLanguages
+++++++++++++++++++
+
+Sets which languages can be used when entering dataset metadata. 
+
+See :ref:`i18n` for further discussion, a curl example, and related settings.
+
 
 :InheritParentRoleAssignments
 +++++++++++++++++++++++++++++

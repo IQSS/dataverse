@@ -115,12 +115,16 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         } 
 
         // update metadata
-        theDataset.getLatestVersion().setReleaseTime(getTimestamp());
+        if (theDataset.getLatestVersion().getReleaseTime() == null) {
+            // Allow migrated versions to keep original release dates
+            theDataset.getLatestVersion().setReleaseTime(getTimestamp());
+        }
         theDataset.getLatestVersion().setLastUpdateTime(getTimestamp());
         theDataset.setModificationTime(getTimestamp());
         theDataset.setFileAccessRequest(theDataset.getLatestVersion().getTermsOfUseAndAccess().isFileAccessRequest());
         
-        updateFiles(getTimestamp(), ctxt);
+        //Use dataset pub date (which may not be the current date for migrated datasets)
+        updateFiles(new Timestamp(theDataset.getLatestVersion().getReleaseTime().getTime()), ctxt);
         
         // 
         // TODO: Not sure if this .merge() is necessary here - ? 
