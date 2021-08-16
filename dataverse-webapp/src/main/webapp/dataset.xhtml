@@ -459,7 +459,7 @@
                                     <span class="icon-dataset" jsf:rendered="#{empty DatasetPage.thumbnailString}"/>
                                 </div>
                                 <div class="col-xs-11 vcenter">
-                                    <h:outputText id="title" escape="false" value="#{DatasetPage.title}" />
+                                    <h2 class="header-inline dataset-title-label"><h:outputText escape="false" value="#{DatasetPage.title}" /></h2>
                                     <h:outputText value="#{bundle['dataset.versionUI.draft']}"
                                                   styleClass="label label-primary"
                                                   rendered="#{DatasetPage.workingVersion.draft}"/>
