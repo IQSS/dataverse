@@ -13,16 +13,12 @@ import edu.harvard.iq.dataverse.persistence.group.IpAddress;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
-import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
-import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import org.assertj.core.util.Arrays;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -30,16 +26,18 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.mockito.Mockito.*;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -262,31 +260,32 @@ public class PermissionServiceBeanTest {
     }
 
     @Test
-    public void verifyIfDataverseAdminIsVerifiedAsSuch() {
+    @DisplayName("Should have edit dataverse permission")
+    public void permissionsFor_user_with_editDataverse_permission() {
         //given
         User user = new AuthenticatedUser();
         Dataverse dataverse = new Dataverse();
 
         //when
-        when(roleService.directRoleAssignments(user, dataverse))
-                .thenReturn(assignRoleForUserInDataverse(user, BuiltInRole.ADMIN.getAlias()));
-        boolean isUserAdminForDataverse = permissionServiceBean.isUserAdminForDataverse(user, dataverse);
+        when(roleService.directRoleAssignmentsByAssigneesAndDvObjects(any(), any()))
+                .thenReturn(Lists.newArrayList(buildRoleAssignmentForRoleWithPermissions(
+                        Permission.EditDataverse)));
+        boolean isUserAllowedToEditDataverse = permissionServiceBean.isUserAbleToEditDataverse(user, dataverse);
         //then
-        assertTrue(isUserAdminForDataverse);
+        assertTrue(isUserAllowedToEditDataverse);
     }
 
     @Test
-    public void verifyIfDataverseMemberIsVerifiedAsSuch() {
+    @DisplayName("Shouldn't have edit dataverse permission")
+    public void permissionsFor_user_without_editDataverse_permission() {
         //given
         User user = new AuthenticatedUser();
         Dataverse dataverse = new Dataverse();
 
         //when
-        when(roleService.directRoleAssignments(user, dataverse))
-                .thenReturn(assignRoleForUserInDataverse(user, BuiltInRole.MEMBER.getAlias()));
-        boolean isUserAdminForDataverse = permissionServiceBean.isUserAdminForDataverse(user, dataverse);
+        boolean isUserAllowedToEditDataverse = permissionServiceBean.isUserAbleToEditDataverse(user, dataverse);
         //then
-        assertFalse(isUserAdminForDataverse);
+        assertFalse(isUserAllowedToEditDataverse);
     }
 
     // -------------------- PRIVATE --------------------

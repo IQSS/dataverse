@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import com.google.common.collect.Sets;
 import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.GroupUtil;
 import edu.harvard.iq.dataverse.common.BundleUtil;
@@ -20,7 +21,6 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.group.Group;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
-import edu.harvard.iq.dataverse.persistence.user.DataverseRole.BuiltInRole;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
@@ -36,7 +36,6 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -45,7 +44,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -597,15 +595,8 @@ public class PermissionServiceBean {
     }
 
 
-    public boolean isUserAdminForDataverse(User user, Dataverse dataverse) {
-
-        List<RoleAssignment> userRolesForDataverse = roleService.directRoleAssignments(user, dataverse);
-
-        Optional<RoleAssignment> userAdminRole = userRolesForDataverse.stream()
-                .filter(roleAssignment -> roleAssignment.getRole().getAlias().equals(BuiltInRole.ADMIN.getAlias()))
-                .findAny();
-
-        return userAdminRole.isPresent();
+    public boolean isUserAbleToEditDataverse(User user, Dataverse dataverse) {
+        return hasPermissionsFor(user, dataverse, Sets.newHashSet(Permission.EditDataverse));
     }
 
     public boolean isUserCanEditDataverseTextMessagesAndBanners(User user, Long dataverseId) {
@@ -622,7 +613,7 @@ public class PermissionServiceBean {
             return false;
         }
 
-        return (isUserAdminForDataverse(user, dataverse) || user.isSuperuser()) && dataverse.isAllowMessagesBanners();
+        return (isUserAbleToEditDataverse(user, dataverse) || user.isSuperuser()) && dataverse.isAllowMessagesBanners();
     }
 
     /**

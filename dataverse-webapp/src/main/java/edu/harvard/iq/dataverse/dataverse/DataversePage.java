@@ -20,7 +20,6 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -152,7 +151,7 @@ public class DataversePage {
     }
 
     public boolean isUserCanChangeAllowMessageAndBanners() {
-        return dataverse.isAllowMessagesBanners() && (session.getUser().isSuperuser() || permissionService.isUserAdminForDataverse(session.getUser(), this.dataverse));
+        return dataverse.isAllowMessagesBanners() && (session.getUser().isSuperuser() || permissionService.isUserAbleToEditDataverse(session.getUser(), this.dataverse));
     }
 
     public String redirectToMetrics() {
