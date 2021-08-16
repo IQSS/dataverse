@@ -114,7 +114,15 @@ public class SchemaDotOrgExporterTest {
         version.setFileMetadatas(fileMetadatas);
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        if(json1 == null) logger.fine("Json null");
+        if(version == null) logger.fine("ver null");
+        if(byteArrayOutputStream == null) logger.fine("bytarr null");
+        if(schemaDotOrgExporter == null) logger.fine("sdoe" + " null");
+        try {
         schemaDotOrgExporter.exportDataset(version, json1, byteArrayOutputStream);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         String jsonLd = byteArrayOutputStream.toString();
         String prettyJson = JsonUtil.prettyPrint(jsonLd);
         logger.fine("schema.org JSON-LD: " + prettyJson);
@@ -278,6 +286,8 @@ public class SchemaDotOrgExporterTest {
     }
     
     private static void mockDatasetFieldSvc() {
+        datasetFieldTypeSvc.setMetadataBlock("citation");
+    
         DatasetFieldType titleType = datasetFieldTypeSvc.add(new DatasetFieldType("title", DatasetFieldType.FieldType.TEXTBOX, false));
         DatasetFieldType authorType = datasetFieldTypeSvc.add(new DatasetFieldType("author", DatasetFieldType.FieldType.TEXT, true));
         Set<DatasetFieldType> authorChildTypes = new HashSet<>();
