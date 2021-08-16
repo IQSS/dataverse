@@ -232,6 +232,7 @@ public class DdiExportUtil {
                 distributorSet=true;
             }
         }
+        
         boolean excludeRepository = settingsService.isTrueForKey(SettingsServiceBean.Key.ExportInstallationAsDistributorOnlyWhenNotSet, false);
         if (!StringUtils.isEmpty(datasetDto.getPublisher()) && !(excludeRepository && distributorSet)) {
             xmlw.writeStartElement("distrbtr");
@@ -1845,7 +1846,7 @@ public class DdiExportUtil {
             logger.severe("Parser configuration error " + pce.getMessage());
         } catch (IOException ioe) {
             // I/O error
-            logger.info("I/O error " + ioe.getMessage());
+            logger.warning("I/O error " + ioe.getMessage());
         }
 
     }

@@ -5,7 +5,9 @@ import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.datadeposit.SwordConfigurationImpl;
+
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -25,6 +27,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -44,6 +47,9 @@ public class SwordIT {
     private static String superuser;
     private static final String rootDataverseAlias = "root";
     private static String apiTokenSuperuser;
+    
+    private static final String rootDvNotPublished = "Many of these SWORD tests require that the root dataverse collection has been published. Publish the root dataverse and then re-run these tests.";
+    private static final String rootDvLackPermissions = "Many of these SWORD tests require you set permissions for the root dataverse collection: \"Anyone with a Dataverse account can add sub dataverses and datasets\" + curator role for new datasets. Please set and re-run these tests.";
 
     @BeforeClass
     public static void setUpClass() {
@@ -53,20 +59,32 @@ public class SwordIT {
             RestAssured.baseURI = "https://dev1.dataverse.org";
         }
         Response createUser = UtilIT.createRandomUser();
-        createUser.prettyPrint();
+        //createUser.prettyPrint();
         superuser = UtilIT.getUsernameFromResponse(createUser);
         apiTokenSuperuser = UtilIT.getApiTokenFromResponse(createUser);
         String apitoken = UtilIT.getApiTokenFromResponse(createUser);
         UtilIT.makeSuperUser(superuser).then().assertThat().statusCode(OK.getStatusCode());
+        
+        // check that root dataverse has been released
         Response checkRootDataverse = UtilIT.listDatasetsViaSword(rootDataverseAlias, apitoken);
-        checkRootDataverse.prettyPrint();
-        checkRootDataverse.then().assertThat()
-                .statusCode(OK.getStatusCode());
-        boolean rootDataverseHasBeenReleased = checkRootDataverse.getBody().xmlPath().getBoolean("feed.dataverseHasBeenReleased");
-        if (!rootDataverseHasBeenReleased) {
-            logger.info("Many of these SWORD tests require that the root dataverse has been published. Publish the root dataverse and then re-run these tests.");
-            System.exit(666);
+        //checkRootDataverse.prettyPrint();
+        checkRootDataverse.then().assertThat().statusCode(OK.getStatusCode());
+        assumeTrue(rootDvNotPublished,  checkRootDataverse.getBody().xmlPath().getBoolean("feed.dataverseHasBeenReleased"));
+        
+        // check that root dataverse has permissions for any user set to dataverse + dataset creator (not admin, not curator!)
+        checkRootDataverse = UtilIT.getRoleAssignmentsOnDataverse(rootDataverseAlias, apiTokenSuperuser);
+        //checkRootDataverse.prettyPrint();
+        checkRootDataverse.then().assertThat().statusCode(OK.getStatusCode());
+        List<Map<String, String>> rootDatavereRoles = checkRootDataverse.getBody().jsonPath().getList("data");
+        boolean properPermissionsSet = false;
+        for (Map assignment : rootDatavereRoles) {
+            if (assignment.get("assignee").equals(":authenticated-users") &&
+                assignment.get("_roleAlias").equals("fullContributor")) {
+                properPermissionsSet = true;
+                break;
+            }
         }
+        assumeTrue(rootDvLackPermissions, properPermissionsSet);
 
     }
 
