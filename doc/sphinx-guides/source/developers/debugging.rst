@@ -34,8 +34,8 @@ to maintain your settings more easily for different environments.
    * - javax.faces.PROJECT_STAGE
      - dataverse.jsf.project-stage
      - Switch to different levels to make JSF more verbose, disable caches etc.
-       Read more `here <https://www.ibm.com/support/pages/changes-xhtml-and-java-sources-jsf-20-web-project-not-refreshed-publish-was-v8-server>`_,
-       `here <https://docs.oracle.com/javaee/6/tutorial/doc/bnaxj.html#giqxl>`_ and `here <https://javaee.github.io/tutorial/jsf-facelets003.html>`_
+       Read more `at <https://www.ibm.com/support/pages/changes-xhtml-and-java-sources-jsf-20-web-project-not-refreshed-publish-was-v8-server>`_
+       `various <https://docs.oracle.com/javaee/6/tutorial/doc/bnaxj.html#giqxl>`_ `places <https://javaee.github.io/tutorial/jsf-facelets003.html>`_.
      - ``Production``
    * - javax.faces.INTERPRET_EMPTY
        _STRING_SUBMITTED_VALUES_AS_NULL
