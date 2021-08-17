@@ -10,13 +10,15 @@ Logging
 
 By default, the app server logs at the "INFO" level but logging can be increased to "FINE" on the fly with (for example) ``./asadmin set-log-levels edu.harvard.iq.dataverse.api.Datasets=FINE``. Running ``./asadmin list-log-levels`` will show the current logging levels.
 
+.. _jsf-config:
+
 Java Server Faces (JSF) Configuration Options
 ---------------------------------------------
 
-Some JSF options can be easily changed via MicroProfile Config (using env vars, system properties, etc)
+Some JSF options can be easily changed via MicroProfile Config (using environment variables, system properties, etc.)
 during development without recompiling. Changing the options will require at least a redeployment, obviously depending
 how you get these options in. (Variable substitution only happens during deployment and when using system properties
-or env vars, you'll need to pass these into the domain, which usually will require a app server restart.)
+or environment variables, you'll need to pass these into the domain, which usually will require an app server restart.)
 
 Please note that since Payara 5.2021.1 supporting MicroProfile Config 2.0, you can
 `use profiles <https://download.eclipse.org/microprofile/microprofile-config-2.0/microprofile-config-spec-2.0.html#configprofile>`_
