@@ -1,0 +1,42 @@
+name: Maven Unit Tests
+
+on:
+    push:
+        paths:
+            - "**.java"
+    pull_request:
+        paths:
+            - "**.java"
+
+jobs:
+    unittest:
+        name: (JDK ${{ matrix.jdk }} / ${{ matrix.os }}) Unit Tests
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ ubuntu-latest ]
+                jdk: [ '11' ]
+                #include:
+                #    -   os: ubuntu-latest
+                #        jdk: '16'
+        runs-on: ${{ matrix.os }}
+        steps:
+          - uses: actions/checkout@v2
+          - name: Set up JDK ${{ matrix.jdk }}
+            uses: actions/setup-java@v2
+            with:
+                java-version: ${{ matrix.jdk }}
+                distribution: 'adopt'
+          - name: Cache Maven packages
+            uses: actions/cache@v2
+            with:
+                path: ~/.m2
+                key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+                restore-keys: ${{ runner.os }}-m2
+          - name: Build with Maven
+            run: mvn -DcompilerArgument=-Xlint:unchecked -P all-unit-tests clean test
+          - name: Maven Code Coverage
+            env:
+                CI_NAME: github
+                COVERALLS_SECRET: ${{ secrets.GITHUB_TOKEN }}
+            run: mvn -V -B jacoco:report coveralls:report -DrepoToken=${COVERALLS_SECRET} -DpullRequest=${{ github.event.number }}

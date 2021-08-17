@@ -85,9 +85,9 @@ To install Payara, run the following commands:
 
 ``cd /usr/local``
 
-``sudo curl -O -L https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2020.6/payara-5.2020.6.zip``
+``sudo curl -O -L https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2021.5/payara-5.2021.5.zip``
 
-``sudo unzip payara-5.2020.6.zip``
+``sudo unzip payara-5.2021.5.zip``
 
 ``sudo chown -R $USER /usr/local/payara5``
 

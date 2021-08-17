@@ -20,6 +20,8 @@ import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
+
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -28,13 +30,17 @@ import javax.json.JsonObjectBuilder;
 @RequiredPermissions({})
 public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
 
+    private static final Logger logger = Logger.getLogger(GetUserTracesCommand.class.getCanonicalName());
+    
     private DataverseRequest request;
     private AuthenticatedUser user;
+    private String element;
 
-    public GetUserTracesCommand(DataverseRequest request, AuthenticatedUser user) {
+    public GetUserTracesCommand(DataverseRequest request, AuthenticatedUser user, String element) {
         super(request, (DvObject) null);
         this.request = request;
         this.user = user;
+        this.element = element;
     }
 
     @Override
@@ -47,180 +53,206 @@ public class GetUserTracesCommand extends AbstractCommand<JsonObjectBuilder> {
         }
         Long userId = user.getId();
         JsonObjectBuilder traces = Json.createObjectBuilder();
-//        List<Long> roleAssignments = ctxt.permissions().getDvObjectsUserHasRoleOn(user);
-        List<RoleAssignment> roleAssignments = ctxt.roleAssignees().getAssignmentsFor(user.getIdentifier());
-        if (roleAssignments != null && !roleAssignments.isEmpty()) {
-            JsonObjectBuilder job = Json.createObjectBuilder();
-            JsonArrayBuilder jab = Json.createArrayBuilder();
-            for (RoleAssignment roleAssignment : roleAssignments) {
-                jab.add(NullSafeJsonBuilder.jsonObjectBuilder()
-                        .add("id", roleAssignment.getId())
-                        .add("definitionPointName", roleAssignment.getDefinitionPoint().getCurrentName())
-                        .add("definitionPointIdentifier", roleAssignment.getDefinitionPoint().getIdentifier())
-                        .add("definitionPointId", roleAssignment.getDefinitionPoint().getId())
-                        .add("roleAlias", roleAssignment.getRole().getAlias())
-                        .add("roleName", roleAssignment.getRole().getName())
-                );
+        if (element == null || element.equals("roleAssignments")) {
+            // List<Long> roleAssignments =
+            // ctxt.permissions().getDvObjectsUserHasRoleOn(user);
+            List<RoleAssignment> roleAssignments = ctxt.roleAssignees().getAssignmentsFor(user.getIdentifier());
+            if (roleAssignments != null && !roleAssignments.isEmpty()) {
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                JsonArrayBuilder jab = Json.createArrayBuilder();
+                for (RoleAssignment roleAssignment : roleAssignments) {
+                    jab.add(NullSafeJsonBuilder.jsonObjectBuilder()
+                            .add("id", roleAssignment.getId())
+                            .add("definitionPointName", roleAssignment.getDefinitionPoint().getCurrentName())
+                            .add("definitionPointIdentifier", roleAssignment.getDefinitionPoint().getIdentifier())
+                            .add("definitionPointId", roleAssignment.getDefinitionPoint().getId())
+                            .add("roleAlias", roleAssignment.getRole().getAlias())
+                            .add("roleName", roleAssignment.getRole().getName()));
+                }
+                job.add("count", roleAssignments.size());
+                job.add("items", jab);
+                traces.add("roleAssignments", job);
             }
-            job.add("count", roleAssignments.size());
-            job.add("items", jab);
-            traces.add("roleAssignments", job);
         }
-        List<Dataverse> dataversesCreated = ctxt.dataverses().findByCreatorId(userId);
-        if (dataversesCreated != null && !dataversesCreated.isEmpty()) {
-            JsonObjectBuilder job = Json.createObjectBuilder();
-            JsonArrayBuilder jab = Json.createArrayBuilder();
-            for (Dataverse dataverse : dataversesCreated) {
-                jab.add(Json.createObjectBuilder()
-                        .add("id", dataverse.getId())
-                        .add("alias", dataverse.getAlias())
-                );
+        if (element == null || element.equals("dataverseCreator")) {
+            List<Dataverse> dataversesCreated = ctxt.dataverses().findByCreatorId(userId);
+            if (dataversesCreated != null && !dataversesCreated.isEmpty()) {
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                JsonArrayBuilder jab = Json.createArrayBuilder();
+                for (Dataverse dataverse : dataversesCreated) {
+                    jab.add(Json.createObjectBuilder()
+                            .add("id", dataverse.getId())
+                            .add("alias", dataverse.getAlias()));
+                }
+                job.add("count", dataversesCreated.size());
+                job.add("items", jab);
+                traces.add("dataverseCreator", job);
             }
-            job.add("count", dataversesCreated.size());
-            job.add("items", jab);
-            traces.add("dataverseCreator", job);
         }
-        List<Dataverse> dataversesPublished = ctxt.dataverses().findByReleaseUserId(userId);
-        if (dataversesPublished != null && !dataversesPublished.isEmpty()) {
-            JsonObjectBuilder job = Json.createObjectBuilder();
-            JsonArrayBuilder jab = Json.createArrayBuilder();
-            for (Dataverse dataverse : dataversesPublished) {
-                jab.add(Json.createObjectBuilder()
-                        .add("id", dataverse.getId())
-                        .add("alias", dataverse.getAlias())
-                );
+        if (element == null || element.equals("dataversePublisher")) {
+            List<Dataverse> dataversesPublished = ctxt.dataverses().findByReleaseUserId(userId);
+            if (dataversesPublished != null && !dataversesPublished.isEmpty()) {
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                JsonArrayBuilder jab = Json.createArrayBuilder();
+                for (Dataverse dataverse : dataversesPublished) {
+                    jab.add(Json.createObjectBuilder()
+                            .add("id", dataverse.getId())
+                            .add("alias", dataverse.getAlias()));
+                }
+                job.add("count", dataversesPublished.size());
+                job.add("items", jab);
+                traces.add("dataversePublisher", job);
             }
-            job.add("count", dataversesPublished.size());
-            job.add("items", jab);
-            traces.add("dataversePublisher", job);
         }
-        List<Dataset> datasetsCreated = ctxt.datasets().findByCreatorId(userId);
-        if (datasetsCreated != null && !datasetsCreated.isEmpty()) {
-            JsonObjectBuilder job = Json.createObjectBuilder();
-            JsonArrayBuilder jab = Json.createArrayBuilder();
-            for (Dataset dataset : datasetsCreated) {
-                jab.add(Json.createObjectBuilder()
-                        .add("id", dataset.getId())
-                        .add("pid", dataset.getGlobalId().asString())
-                );
+        if (element == null || element.equals("datasetCreator")) {
+            List<Dataset> datasetsCreated = ctxt.datasets().findByCreatorId(userId);
+            if (datasetsCreated != null && !datasetsCreated.isEmpty()) {
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                JsonArrayBuilder jab = Json.createArrayBuilder();
+                for (Dataset dataset : datasetsCreated) {
+                    jab.add(Json.createObjectBuilder()
+                            .add("id", dataset.getId())
+                            .add("pid", dataset.getGlobalId().asString()));
+                }
+                job.add("count", datasetsCreated.size());
+                job.add("items", jab);
+                traces.add("datasetCreator", job);
             }
-            job.add("count", datasetsCreated.size());
-            job.add("items", jab);
-            traces.add("datasetCreator", job);
         }
-        List<Dataset> datasetsPublished = ctxt.datasets().findByReleaseUserId(userId);
-        if (datasetsPublished != null && !datasetsPublished.isEmpty()) {
-            JsonObjectBuilder job = Json.createObjectBuilder();
-            JsonArrayBuilder jab = Json.createArrayBuilder();
-            for (Dataset dataset : datasetsPublished) {
-                jab.add(Json.createObjectBuilder()
-                        .add("id", dataset.getId())
-                        .add("pid", dataset.getGlobalId().asString())
-                );
+        if (element == null || element.equals("datasetPublisher")) {
+            List<Dataset> datasetsPublished = ctxt.datasets().findByReleaseUserId(userId);
+            if (datasetsPublished != null && !datasetsPublished.isEmpty()) {
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                JsonArrayBuilder jab = Json.createArrayBuilder();
+                for (Dataset dataset : datasetsPublished) {
+                    jab.add(Json.createObjectBuilder()
+                            .add("id", dataset.getId())
+                            .add("pid", dataset.getGlobalId().asString()));
+                }
+                job.add("count", datasetsPublished.size());
+                job.add("items", jab);
+                traces.add("datasetPublisher", job);
             }
-            job.add("count", datasetsPublished.size());
-            job.add("items", jab);
-            traces.add("datasetPublisher", job);
         }
-        List<DataFile> dataFilesCreated = ctxt.files().findByCreatorId(userId);
-        if (dataFilesCreated != null && !dataFilesCreated.isEmpty()) {
-            JsonObjectBuilder job = Json.createObjectBuilder();
-            JsonArrayBuilder jab = Json.createArrayBuilder();
-            for (DataFile dataFile : dataFilesCreated) {
-                jab.add(Json.createObjectBuilder()
-                        .add("id", dataFile.getId())
-                        .add("filename", dataFile.getCurrentName())
-                        .add("datasetPid", dataFile.getOwner().getGlobalId().asString())
-                );
+        if (element == null || element.equals("dataFileCreator")) {
+            List<DataFile> dataFilesCreated = ctxt.files().findByCreatorId(userId);
+            if (dataFilesCreated != null && !dataFilesCreated.isEmpty()) {
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                JsonArrayBuilder jab = Json.createArrayBuilder();
+                for (DataFile dataFile : dataFilesCreated) {
+                    jab.add(Json.createObjectBuilder()
+                            .add("id", dataFile.getId())
+                            .add("filename", dataFile.getCurrentName())
+                            .add("datasetPid", dataFile.getOwner().getGlobalId().asString()));
+                }
+                job.add("count", dataFilesCreated.size());
+                job.add("items", jab);
+                traces.add("dataFileCreator", job);
             }
-            job.add("count", dataFilesCreated.size());
-            job.add("items", jab);
-            traces.add("dataFileCreator", job);
         }
-        // TODO: Consider removing this because we don't seem to populate releaseuser_id for files.
-        List<DataFile> dataFilesPublished = ctxt.files().findByReleaseUserId(userId);
-        if (dataFilesPublished != null && !dataFilesPublished.isEmpty()) {
-            JsonObjectBuilder job = Json.createObjectBuilder();
-            JsonArrayBuilder jab = Json.createArrayBuilder();
-            for (DataFile dataFile : dataFilesPublished) {
-                jab.add(Json.createObjectBuilder()
-                        .add("id", dataFile.getId())
-                        .add("filename", dataFile.getCurrentName())
-                        .add("datasetPid", dataFile.getOwner().getGlobalId().asString())
-                );
+        if (element == null || element.equals("dataFilePublisher")) {
+            // TODO: Consider removing this because we don't seem to populate releaseuser_id
+            // for files.
+            List<DataFile> dataFilesPublished = ctxt.files().findByReleaseUserId(userId);
+            if (dataFilesPublished != null && !dataFilesPublished.isEmpty()) {
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                JsonArrayBuilder jab = Json.createArrayBuilder();
+                for (DataFile dataFile : dataFilesPublished) {
+                    jab.add(Json.createObjectBuilder()
+                            .add("id", dataFile.getId())
+                            .add("filename", dataFile.getCurrentName())
+                            .add("datasetPid", dataFile.getOwner().getGlobalId().asString()));
+                }
+                job.add("count", dataFilesPublished.size());
+                job.add("items", jab);
+                traces.add("dataFilePublisher", job);
             }
-            job.add("count", dataFilesPublished.size());
-            job.add("items", jab);
-            traces.add("dataFileCreator", job);
         }
-        // These are the users who have published a version (or created a draft).
-        List<DatasetVersionUser> datasetVersionUsers = ctxt.datasetVersion().getDatasetVersionUsersByAuthenticatedUser(user);
-        if (datasetVersionUsers != null && !datasetVersionUsers.isEmpty()) {
-            JsonObjectBuilder job = Json.createObjectBuilder();
-            JsonArrayBuilder jab = Json.createArrayBuilder();
-            for (DatasetVersionUser datasetVersionUser : datasetVersionUsers) {
-                jab.add(Json.createObjectBuilder()
-                        .add("id", datasetVersionUser.getId())
-                        .add("dataset", datasetVersionUser.getDatasetVersion().getDataset().getGlobalId().asString())
-                        .add("version", datasetVersionUser.getDatasetVersion().getSemanticVersion())
-                );
+        if (element == null || element.equals("datasetVersionUsers")) {
+            // These are the users who have published a version (or created a draft).
+            List<DatasetVersionUser> datasetVersionUsers = ctxt.datasetVersion().getDatasetVersionUsersByAuthenticatedUser(user);
+            if (datasetVersionUsers != null && !datasetVersionUsers.isEmpty()) {
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                JsonArrayBuilder jab = Json.createArrayBuilder();
+                for (DatasetVersionUser datasetVersionUser : datasetVersionUsers) {
+                    jab.add(Json.createObjectBuilder()
+                            .add("id", datasetVersionUser.getId())
+                            .add("dataset", datasetVersionUser.getDatasetVersion().getDataset().getGlobalId().asString())
+                            .add("version", datasetVersionUser.getDatasetVersion().getSemanticVersion()));
+                }
+                job.add("count", datasetVersionUsers.size());
+                job.add("items", jab);
+                traces.add("datasetVersionUsers", job);
             }
-            job.add("count", datasetVersionUsers.size());
-            job.add("items", jab);
-            traces.add("datasetVersionUsers", job);
         }
-        Set<ExplicitGroup> explicitGroups = ctxt.explicitGroups().findDirectlyContainingGroups(user);
-        if (explicitGroups != null && !explicitGroups.isEmpty()) {
-            JsonObjectBuilder job = Json.createObjectBuilder();
-            JsonArrayBuilder jab = Json.createArrayBuilder();
-            for (ExplicitGroup explicitGroup : explicitGroups) {
-                jab.add(Json.createObjectBuilder()
-                        .add("id", explicitGroup.getId())
-                        .add("name", explicitGroup.getDisplayName())
-                );
+        if (element == null || element.equals("explicitGroups")) {
+            Set<ExplicitGroup> explicitGroups = ctxt.explicitGroups().findDirectlyContainingGroups(user);
+            if (explicitGroups != null && !explicitGroups.isEmpty()) {
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                JsonArrayBuilder jab = Json.createArrayBuilder();
+                for (ExplicitGroup explicitGroup : explicitGroups) {
+                    jab.add(Json.createObjectBuilder()
+                            .add("id", explicitGroup.getId())
+                            .add("name", explicitGroup.getDisplayName()));
+                }
+                job.add("count", explicitGroups.size());
+                job.add("items", jab);
+                traces.add("explicitGroups", job);
             }
-            job.add("count", explicitGroups.size());
-            job.add("items", jab);
-            traces.add("explicitGroups", job);
         }
-        List<GuestbookResponse> guestbookResponses = ctxt.responses().findByAuthenticatedUserId(user);
-        if (guestbookResponses != null && !guestbookResponses.isEmpty()) {
-            JsonObjectBuilder job = Json.createObjectBuilder();
-            // The feeling is that this is too much detail for now so we only show a count.
-//            JsonArrayBuilder jab = Json.createArrayBuilder();
-//            for (GuestbookResponse guestbookResponse : guestbookResponses) {
-//                jab.add(Json.createObjectBuilder()
-//                        .add("id", guestbookResponse.getId())
-//                        .add("downloadType", guestbookResponse.getDownloadtype())
-//                        .add("filename", guestbookResponse.getDataFile().getCurrentName())
-//                        .add("date", guestbookResponse.getResponseDate())
-//                        .add("guestbookName", guestbookResponse.getGuestbook().getName())
-//                        .add("dataset", guestbookResponse.getDatasetVersion().getDataset().getGlobalId().asString())
-//                        .add("version", guestbookResponse.getDatasetVersion().getSemanticVersion())
-//                );
-//            }
-            job.add("count", guestbookResponses.size());
-//            job.add("items", jab);
-            traces.add("guestbookEntries", job);
-        }
-        List<SavedSearch> savedSearchs = ctxt.savedSearches().findByAuthenticatedUser(user);
-        if (savedSearchs != null && !savedSearchs.isEmpty()) {
-            JsonObjectBuilder job = Json.createObjectBuilder();
-            JsonArrayBuilder jab = Json.createArrayBuilder();
-            for (SavedSearch savedSearch : savedSearchs) {
-                jab.add(Json.createObjectBuilder()
-                        .add("id", savedSearch.getId())
-                );
+        if (element == null || element.equals("guestbookEntries")) {
+            List<GuestbookResponse> guestbookResponses = ctxt.responses().findByAuthenticatedUserId(user);
+            if (guestbookResponses != null && !guestbookResponses.isEmpty()) {
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                // The feeling is that this is too much detail for the call for all elements so
+                // we only show a count in that case.
+                if (element != null) {
+                    JsonArrayBuilder jab = Json.createArrayBuilder();
+                    for (GuestbookResponse guestbookResponse : guestbookResponses) {
+                        try {
+                            JsonObjectBuilder gbe = Json.createObjectBuilder()
+                                    .add("id", guestbookResponse.getId())
+                                    .add("downloadType", guestbookResponse.getDownloadtype())
+                                    .add("filename", guestbookResponse.getDataFile().getCurrentName())
+                                    .add("date", guestbookResponse.getResponseDate())
+                                    .add("guestbookName", guestbookResponse.getGuestbook().getName());
+                            if(guestbookResponse.getDataset().getGlobalId()!=null) {
+                                gbe.add("dataset", guestbookResponse.getDataset().getGlobalId().asString());
+                            }
+                            if (guestbookResponse.getDatasetVersion() != null) {
+                                gbe.add("version", guestbookResponse.getDatasetVersion().getSemanticVersion());
+                            }
+                            jab.add(gbe);
+                        } catch (NullPointerException npe) {
+                            //Legacy/bad db entries
+                            logger.warning("Guestbook id:" + guestbookResponse.getId() + " does not have required info.");
+                        }
+                    }
+                    job.add("items", jab);
+                }
+                job.add("count", guestbookResponses.size());
+                // job.add("items", jab);
+                traces.add("guestbookEntries", job);
             }
-            job.add("count", savedSearchs.size());
-            job.add("items", jab);
-            traces.add("savedSearches", job);
+        }
+        if (element == null || element.equals("savedSearches")) {
+            List<SavedSearch> savedSearchs = ctxt.savedSearches().findByAuthenticatedUser(user);
+            if (savedSearchs != null && !savedSearchs.isEmpty()) {
+                JsonObjectBuilder job = Json.createObjectBuilder();
+                JsonArrayBuilder jab = Json.createArrayBuilder();
+                for (SavedSearch savedSearch : savedSearchs) {
+                    jab.add(Json.createObjectBuilder()
+                            .add("id", savedSearch.getId()));
+                }
+                job.add("count", savedSearchs.size());
+                job.add("items", jab);
+                traces.add("savedSearches", job);
+            }
         }
         JsonObjectBuilder result = Json.createObjectBuilder();
         result.add("user", Json.createObjectBuilder()
                 .add("identifier", user.getIdentifier())
-                .add("name", user.getName())
-        );
+                .add("name", user.getName()));
         result.add("traces", traces);
         return result;
     }

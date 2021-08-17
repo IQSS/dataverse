@@ -146,11 +146,9 @@ public class PasswordValidatorServiceBean implements java.io.Serializable {
      * @return A List with error messages. Empty when the password is valid.
      */
     public List<String> validate(String password, Date passwordModificationTime, boolean isHumanReadable) {
-//    public List<String> validate(String password, boolean isHumanReadable) {
 
         init();
-        final PasswordData passwordData = PasswordData.newInstance(password, String.valueOf(passwordModificationTime.getTime()), null);
-//        final PasswordData passwordData = PasswordData.newInstance(password, "username", null);
+        final PasswordData passwordData = new PasswordData(password);
         final RuleResult result = new RuleResult();
 
         for (PasswordValidator currentUser : validators.values()) {

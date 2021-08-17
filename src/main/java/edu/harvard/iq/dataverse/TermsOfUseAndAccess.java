@@ -280,7 +280,7 @@ public class TermsOfUseAndAccess implements Serializable {
      * API use? See also https://github.com/IQSS/dataverse/issues/1385
      */
     public static TermsOfUseAndAccess.License defaultLicense = TermsOfUseAndAccess.License.CC0;
-
+    public static String CC0_URI = "https://creativecommons.org/publicdomain/zero/1.0/";
     @Override
     public int hashCode() {
         int hash = 0;

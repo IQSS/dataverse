@@ -7,7 +7,7 @@ Direct upload involves a series of three activities, each involving interacting 
 
 * Requesting initiation of a transfer from the server
 * Use of the pre-signed URL(s) returned in that call to perform an upload/multipart-upload of the file to S3
-* A call to the server to register the file as part of the dataset/replace a file in the dataset or to cancel the transfer
+* A call to the server to register the file/files as part of the dataset/replace a file in the dataset or to cancel the transfer
 
 This API is only enabled when a Dataset is configured with a data store supporting direct S3 upload.
 Administrators should be aware that partial transfers, where a client starts uploading the file/parts of the file and does not contact the server to complete/cancel the transfer, will result in data stored in S3 that is not referenced in the Dataverse installation (e.g. should be considered temporary and deleted.)
@@ -115,6 +115,38 @@ The allowed checksum algorithms are defined by the edu.harvard.iq.dataverse.Data
   
 Note that this API call can be used independently of the others, e.g. supporting use cases in which the file already exists in S3/has been uploaded via some out-of-band method. 
 With current S3 stores the object identifier must be in the correct bucket for the store, include the PID authority/identifier of the parent dataset, and be guaranteed unique, and the supplied storage identifer must be prefaced with the store identifier used in the Dataverse installation, as with the internally generated examples above.
+
+To add multiple Uploaded Files to the Dataset
+-------------------------------------------------
+
+Once the files exists in the s3 bucket, a final API call is needed to add all the files to the Dataset. In this API call, additional metadata is added using the "jsonData" parameter.
+jsonData normally includes information such as a file description, tags, provenance, whether the file is restricted, etc. For direct uploads, the jsonData object must also include values for:
+
+* "description" - A description of the file
+* "directoryLabel" - The "File Path" of the file, indicating which folder the file should be uploaded to within the dataset
+* "storageIdentifier" - String
+* "fileName" - String
+* "mimeType" - String
+* "fixity/checksum" either:
+
+  * "md5Hash" - String with MD5 hash value, or
+  * "checksum" - Json Object with "@type" field specifying the algorithm used and "@value" field with the value from that algorithm, both Strings
+
+The allowed checksum algorithms are defined by the edu.harvard.iq.dataverse.DataFile.CheckSumType class and currently include MD5, SHA-1, SHA-256, and SHA-512
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export PERSISTENT_IDENTIFIER=doi:10.5072/FK2/7U7YBV
+  export JSON_DATA="[{'description':'My description.','directoryLabel':'data/subdir1','categories':['Data'], 'restrict':'false', 'storageIdentifier':'s3://demo-dataverse-bucket:176e28068b0-1c3f80357c42', 'fileName':'file1.txt', 'mimeType':'text/plain', 'checksum': {'@type': 'SHA-1', '@value': '123456'}}, \
+                      {'description':'My description.','directoryLabel':'data/subdir1','categories':['Data'], 'restrict':'false', 'storageIdentifier':'s3://demo-dataverse-bucket:176e28068b0-1c3f80357d53', 'fileName':'file2.txt', 'mimeType':'text/plain', 'checksum': {'@type': 'SHA-1', '@value': '123789'}}]"
+
+  curl -X POST -H "X-Dataverse-key: $API_TOKEN" "$SERVER_URL/api/datasets/:persistentId/addFiles?persistentId=$PERSISTENT_IDENTIFIER" -F "jsonData=$JSON_DATA"
+
+Note that this API call can be used independently of the others, e.g. supporting use cases in which the files already exists in S3/has been uploaded via some out-of-band method.
+With current S3 stores the object identifier must be in the correct bucket for the store, include the PID authority/identifier of the parent dataset, and be guaranteed unique, and the supplied storage identifer must be prefaced with the store identifier used in the Dataverse installation, as with the internally generated examples above.
+
 
 Replacing an existing file in the Dataset
 -----------------------------------------
