@@ -323,7 +323,7 @@
                                                                 #{bundle['dataset.rejectBtn']}
                                                             </p:commandLink>
                                                         </li>
-                                                        <ui:fragment rendered="#{not empty settingsWrapper.allowedExternalStatuses}">
+                                                        <ui:fragment rendered="#{(not empty settingsWrapper.allowedExternalStatuses) and DatasetPage.canPublishDataset()}">
                                                             <li class="dropdown-submenu pull-left">
                                                                 <a tabindex="-1" href="#">#{bundle['dataset.changestatus']}</a>
                                                                 <ul class="dropdown-menu">
