@@ -1,16 +1,4 @@
-"allow-free-text": "true",
-        "languages":"en, uk, es, zh, ar, tr, lo, sk, th, pt, hu, pl, de, cs, it, fr, hi, ja, ro, fa",
-        "vocabs":{
-            "unesco": {
-                "vocabularyUri": "http://skos.um.es/unescothes/CS000",
-                "uriSpace": "http://skos.um.es/unescothes/"
-            },
-            "agrovoc" : {
-            	   "vocabularyUri": "http://aims.fao.org/vest-registry/kos/agrovoc",
-                   "uriSpace": "http://aims.fao.org/aos/agrovoc/"
-               }
-            }
-        },Structure of the :CVocConf setting
+Structure of the :CVocConf setting
 * An array of objects, one per field that specify required parameter
 
 Each object associates a Javascript/external vocabulary service source with a given metadata field, as defined in a Dataverse metadata block.
