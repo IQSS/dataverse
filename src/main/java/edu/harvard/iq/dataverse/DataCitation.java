@@ -52,7 +52,6 @@ public class DataCitation {
     private Date date;
     private GlobalId persistentId;
     private String version;
-    private String UNF = null;
     private String publisher;
     private boolean direct;
     private List<String> funders;
@@ -79,9 +78,6 @@ public class DataCitation {
         // It is always part of the citation for the local datasets; 
         // And for *some* harvested datasets. 
         persistentId = getPIDFrom(dsv, dsv.getDataset());
-
-        // UNF
-        UNF = dsv.getUNF();
 
         // optional values
         for (DatasetFieldType dsfType : dsv.getDataset().getOwner().getCitationDatasetFieldTypes()) {
@@ -113,10 +109,6 @@ public class DataCitation {
         // The Global Identifier of the Datafile (if published and isDirect==true) or Dataset as appropriate
         persistentId = getPIDFrom(dsv, df);
 
-        // UNF
-        if (df.isTabularData() && df.getUnf() != null && !df.getUnf().isEmpty()) {
-            UNF = df.getUnf();
-        }
     }
 
     private void getCommonValuesFrom(DatasetVersion dsv) {
@@ -167,10 +159,6 @@ public class DataCitation {
         return version;
     }
 
-    public String getUNF() {
-        return UNF;
-    }
-
     public String getPublisher() {
         return publisher;
     }
@@ -216,10 +204,6 @@ public class DataCitation {
 
         if ((fileTitle != null) && !isDirect()) {
             citation.append("; " + formatString(fileTitle, html, "") + " [fileName]");
-        }
-        // append UNF
-        if (!StringUtils.isEmpty(UNF)) {
-            citation.append(separator).append(UNF).append(" [fileUNF]");
         }
 
         for (DatasetField dsf : optionalValues) {
@@ -279,11 +263,6 @@ public class DataCitation {
             String doubleAp = "''";
             out.write(title.replaceFirst(doubleQ, doubleTick).replaceFirst(doubleQ, doubleAp));
             out.write("}},\r\n");
-        }
-        if(UNF != null){
-            out.write("UNF = {");
-            out.write(UNF);
-            out.write("},\r\n");
         }
         out.write("year = {");
         out.write(year);
@@ -389,13 +368,10 @@ public class DataCitation {
         out.write("UR  - " + persistentId.toURL().toString() + "\r\n");
         out.write("PB  - " + publisher + "\r\n");
 
-        // a DataFile citation also includes filename und UNF, if applicable:
+        // a DataFile citation also includes filename, if applicable:
         if (getFileTitle() != null) {
             if(!isDirect()) {
                 out.write("C1  - " + getFileTitle() + "\r\n");
-            }
-            if (getUNF() != null) {
-                out.write("C2  - " + getUNF() + "\r\n");
             }
         }
         // closing element:
@@ -596,12 +572,6 @@ public class DataCitation {
             xmlw.writeStartElement("custom1");
             xmlw.writeCharacters(fileTitle);
             xmlw.writeEndElement(); // custom1
-            
-                if (getUNF() != null) {
-                    xmlw.writeStartElement("custom2");
-                    xmlw.writeCharacters(getUNF());
-                    xmlw.writeEndElement(); // custom2
-            }
         }
         if (persistentId != null) {
             xmlw.writeStartElement("electronic-resource-num");
