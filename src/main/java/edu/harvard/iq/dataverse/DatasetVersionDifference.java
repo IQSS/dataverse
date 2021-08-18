@@ -14,6 +14,8 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.FileUtil;
+
 import java.util.Arrays;
 import java.util.Date;
 
@@ -1080,7 +1082,7 @@ public final class DatasetVersionDifference {
             }
 
             fdi.setFileProvFree1(fm1.getProvFreeForm());
-            fdi.setFileRest1(fm1.isRestricted() ? BundleUtil.getStringFromBundle("restricted") : BundleUtil.getStringFromBundle("public"));
+            fdi.setFileRest1(BundleUtil.getStringFromBundle(getAccessLabel(fm1)));
             fdi.setFile2Empty(true);
 
         } else if (fm1 == null) {
@@ -1096,7 +1098,7 @@ public final class DatasetVersionDifference {
                 fdi.setFileCat2(fm2.getCategoriesByName().toString());
             }
             fdi.setFileProvFree2(fm2.getProvFreeForm());
-            fdi.setFileRest2(fm2.isRestricted() ? BundleUtil.getStringFromBundle("restricted") : BundleUtil.getStringFromBundle("public"));
+            fdi.setFileRest2(BundleUtil.getStringFromBundle(getAccessLabel(fm2)));
         } else {
             // Both are non-null metadata objects.
             // We simply go through the 5 metadata fields, if any are
@@ -1177,14 +1179,23 @@ public final class DatasetVersionDifference {
             }
             
             // file restricted:
-            if (fm1.isRestricted() != fm2.isRestricted() ) {
-                fdi.setFileRest1(fm1.isRestricted() ? BundleUtil.getStringFromBundle("restricted") : BundleUtil.getStringFromBundle("public"));
-                fdi.setFileRest2(fm2.isRestricted() ? BundleUtil.getStringFromBundle("restricted") : BundleUtil.getStringFromBundle("public"));
+            if (fm1.isRestricted() != fm2.isRestricted() || fm1.getDataFile().getEmbargo() != fm2.getDataFile().getEmbargo()) {
+                fdi.setFileRest1(BundleUtil.getStringFromBundle(getAccessLabel(fm1)));
+                fdi.setFileRest2(BundleUtil.getStringFromBundle(getAccessLabel(fm2)));
             }
         }
         return fdi;
     }
     
+    private String getAccessLabel(FileMetadata fm) {
+        boolean embargoed = fm.getDataFile().getEmbargo()!=null;
+        boolean restricted = fm.isRestricted();
+        if (embargoed && restricted) return "embargoedandrestricted";
+        if(embargoed) return "embargoed";
+        if(restricted) return "restricted";
+        return "public";
+    }
+
     public String getEditSummaryForLog() {
         
         String retVal = "";        

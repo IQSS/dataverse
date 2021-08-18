@@ -65,6 +65,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -94,6 +95,8 @@ import org.apache.commons.httpclient.HttpClient;
 import java.util.Arrays;
 import java.util.HashSet;
 import javax.faces.model.SelectItem;
+import javax.faces.validator.ValidatorException;
+
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
@@ -119,6 +122,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.io.IOUtils;
 
@@ -5625,6 +5629,14 @@ public class DatasetPage implements java.io.Serializable {
         if(selectionEmbargo.getDateAvailable()==null && selectionEmbargo.getReason()==null) {
             selectionEmbargo=null;
         }
+        logger.info("emb is null: " + (selectionEmbargo==null));
+        logger.info("emb date: " + selectionEmbargo.getFormattedDateAvailable());
+        
+        if(!(selectionEmbargo==null || (selectionEmbargo!=null && settingsWrapper.isValidEmbargoDate(selectionEmbargo)))) {
+            logger.info("Validation error: " + selectionEmbargo.getFormattedDateAvailable());
+            FacesContext.getCurrentInstance().validationFailed();
+            return "";
+        }
         List<Embargo> orphanedEmbargoes = new ArrayList<Embargo>();
         List<FileMetadata> embargoFMs = null;
         if (selectedFiles != null && selectedFiles.size() > 0) {
@@ -5699,5 +5711,20 @@ public class DatasetPage implements java.io.Serializable {
         }
         return true;
     }
-
+    
+    public void validateEmbargoDate(FacesContext context, UIComponent component, Object value)
+            throws ValidatorException {
+        if (!removeEmbargo) {
+            if (!settingsWrapper.isValidEmbargoDate(selectionEmbargo)) {
+                String minDate = settingsWrapper.getMinEmbargoDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                String maxDate= settingsWrapper.getMaxEmbargoDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                String msgString = BundleUtil.getStringFromBundle("embargo.date.invalid", Arrays.asList(minDate, maxDate));
+                //It is not clear that this message ever appears, but the value could be sent by adding validatorMessage="#{bundle['embargo.date.invalid']}"  to the datepicker element in file-edit-popup-fragment.html
+                FacesMessage msg = new FacesMessage(msgString);
+                msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+                throw new ValidatorException(msg);
+            }
+        }
+    }
+    
 }

@@ -39,7 +39,9 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -48,7 +50,9 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
+import javax.faces.validator.ValidatorException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -124,6 +128,8 @@ public class FilePage implements java.io.Serializable {
     FileDownloadHelper fileDownloadHelper;
     @Inject
     MakeDataCountLoggingServiceBean mdcLogService;
+    @Inject
+    SettingsWrapper settingsWrapper;
     @Inject
     EmbargoServiceBean embargoService;
 
@@ -1072,4 +1078,33 @@ public class FilePage implements java.io.Serializable {
     public boolean isCantRequestDueToEmbargo() {
         return FileUtil.isActivelyEmbargoed(fileMetadata);
     }
+    
+    public String getEmbargoPhrase() {
+        //Should only be getting called when there is an embargo
+        if(file.isReleased()) {
+            if(FileUtil.isActivelyEmbargoed(file)) {
+                return BundleUtil.getStringFromBundle("embargoed.until");
+            } else {
+                return BundleUtil.getStringFromBundle("embargoed.wasthrough");
+            }
+        } else {
+            return BundleUtil.getStringFromBundle("embargoed.willbeuntil");
+        }
+    }
+    
+    
+    public void validateEmbargoDate(FacesContext context, UIComponent component, Object value)
+            throws ValidatorException {
+        if (!removeEmbargo) {
+            if (!settingsWrapper.isValidEmbargoDate(selectionEmbargo)) {
+                String minDate = settingsWrapper.getMinEmbargoDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                String maxDate= settingsWrapper.getMaxEmbargoDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                FacesMessage msg = new FacesMessage(BundleUtil.getStringFromBundle("embargo.date.invalid", Arrays.asList(minDate, maxDate)));
+                msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+                throw new ValidatorException(msg);
+            }
+        }
+    }
+    
+
 }

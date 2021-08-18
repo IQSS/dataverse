@@ -660,7 +660,7 @@ public class Dataset extends DvObjectContainer {
     public Timestamp getCitationDate() {
         Timestamp citationDate = null;
         //Only calculate if this dataset doesn't use an alternate date field for publication date
-        if (citationDateDatasetFieldType != null) {
+        if (citationDateDatasetFieldType == null) {
             List<DatasetVersion> versions = this.versions;
             // TODo - is this ever not version 1.0 (or draft if not published yet)
             DatasetVersion oldest = versions.get(versions.size() - 1);

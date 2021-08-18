@@ -60,9 +60,14 @@
                                     </p>
 
                                     <div id="title-label-block" class="margin-top-half">
+                                        <!-- Embargoed File Icon -->
+                                        <span class="glyphicon glyphicon-time text-danger" title="#{bundle['embargoed']}" data-toggle="tooltip" jsf:rendered="#{!(empty FilePage.fileMetadata.dataFile.embargo) and dataFileServiceBean.isActivelyEmbargoed(FilePage.fileMetadata) and !fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}"/>
+                                        <span class="glyphicon glyphicon-time text-success" title="#{bundle['embargoedaccess']}" data-toggle="tooltip" jsf:rendered="#{!(empty FilePage.fileMetadata.dataFile.embargo) and dataFileServiceBean.isActivelyEmbargoed(FilePage.fileMetadata) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}"/>
+                                    
                                         <!-- Restricted File Icon -->
                                         <span class="glyphicon glyphicon-lock text-danger" title="#{bundle['restricted']}" data-toggle="tooltip" jsf:rendered="#{FilePage.fileMetadata.restricted and !(fileDownloadHelper.canDownloadFile(FilePage.fileMetadata))}"/>
                                         <span class="icon-unlock text-success" title="#{bundle['restrictedaccess']}" data-toggle="tooltip" jsf:rendered="#{FilePage.fileMetadata.restricted  and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata) }"/>
+                                        
                                         <!-- DATASET Publication Status -->
                                         <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{FilePage.fileMetadata.datasetVersion.draft}"/>
                                         <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{FilePage.fileMetadata.datasetVersion.inReview}"/>
@@ -510,21 +515,33 @@
                                                         </th>
                                                         <td class="checksum-block">#{FilePage.file.checksumValue}</td>
                                                     </tr>
-                                                    <tr id="filePublicationDateBlock">
+                                                    <tr id="fileDepositDateBlock">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.depositDate.label']}
+                                                        </th>
+                                                        <td>#{FilePage.file.createDateFormattedYYYYMMDD}</td>
+                                                    </tr>
+                                                    <tr id="metadataReleaseDateBlock" jsf:rendered="#{FilePage.file.released}">
+                                                        <th scope="row">
+                                                            #{bundle['file.metadataTab.fileMetadata.metadataReleaseDate.label']}
+                                                        </th>
+                                                        <td>#{FilePage.file.publicationDateFormattedYYYYMMDD}
+                                                        </td>
+                                                    </tr>
+                                                    <tr id="fileEPublicationDateBlock" jsf:rendered="#{FilePage.file.released or !(empty FilePage.file.embargo)}">
                                                         <th scope="row">
                                                             #{bundle['file.metadataTab.fileMetadata.publicationDate.label']}
                                                         </th>
-                                                        <td>#{FilePage.file.released ? FilePage.file.publicationDateFormattedYYYYMMDD : bundle['file.metadataTab.fileMetadata.publicationDate.unreleased']}
+                                                        <td>#{FilePage.embargoPhrase} #{FilePage.file.embargo.dateAvailable}
                                                         </td>
                                                     </tr>
-                                                    <tr id="fileEmbargoBlock" jsf:rendered="#{!(empty FilePage.file.embargo) and (dataFileServiceBean.isActivelyEmbargoed(FilePage.fileMetadata) or !FilePage.file.released)}">
+                                                    <tr id="fileEmbargoBlock" jsf:rendered="#{!(empty FilePage.file.embargo) and dataFileServiceBean.isActivelyEmbargoed(FilePage.fileMetadata) and ! (empty FilePage.file.embargo.reason)}">
                                                         <th scope="row">
-                                                            #{bundle['file.metadataTab.fileMetadata.plannedEmbargo.label']}
+                                                            #{bundle['file.metadataTab.fileMetadata.embargoReason.label']}
                                                         </th>
-                                                        <td  class="embargo">#{FilePage.file.released ? bundle['embargoed.until']: bundle['embargoed.willbeuntil']} #{FilePage.file.embargo.dateAvailable} (#{FilePage.file.embargo.reason})
+                                                        <td>#{FilePage.file.embargo.reason}
                                                         </td>
                                                     </tr>
-                                                    
                                                     <tr id="fileSizeBlock" jsf:rendered="#{!(empty FilePage.file.friendlySize)}">
                                                         <th scope="row">
                                                             #{bundle['file.metadataTab.fileMetadata.size.label']}
@@ -561,12 +578,6 @@
                                                         </th>
                                                         <td>#{FilePage.fileMetadata.description}</td>
                                                     </tr>
-                                                    <tr id="fileDepositDateBlock">
-                                                        <th scope="row">
-                                                            #{bundle['file.metadataTab.fileMetadata.depositDate.label']}
-                                                        </th>
-                                                        <td>#{FilePage.file.createDateFormattedYYYYMMDD}</td>
-                                                    </tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -588,7 +599,7 @@
                         <ui:param name="restrictFileAction" value="restrictFile"/>
                         <ui:param name="deleteFileAction" value="deleteFile"/>
                         <ui:param name="saveEmbargoAction" value="saveEmbargo"/>
-                        <ui:param name="updateElements" value=":fileForm, :messagePanel"/>
+                        <ui:param name="updateElements" value=":fileForm:embargoInputs"/>
                         
                     </ui:include> 
                     <p:dialog id="shareDialog" header="#{bundle['file.share.title']}" widgetVar="shareDialog" modal="true" rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">

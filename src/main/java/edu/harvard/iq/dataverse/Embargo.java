@@ -3,10 +3,11 @@ package edu.harvard.iq.dataverse;
 
 import javax.persistence.*;
 
-import edu.harvard.iq.dataverse.util.DateUtil;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 
-import java.sql.Timestamp;
+import java.time.format.DateTimeFormatter;
 import java.time.LocalDate;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -66,7 +67,7 @@ public class Embargo {
     }
 
     public String getFormattedDateAvailable() {
-        return DateUtil.formatDate(Timestamp.valueOf(getDateAvailable().atStartOfDay()));
+        return getDateAvailable().format(DateTimeFormatter.ISO_LOCAL_DATE.withLocale(BundleUtil.getCurrentLocale()));
     }
     
     public String getReason() {

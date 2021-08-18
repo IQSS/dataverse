@@ -881,7 +881,7 @@
                               <ui:param name="restrictFileAction" value="restrictFiles"/>
                               <ui:param name="deleteFileAction" value="deleteFiles"/>
                               <ui:param name="saveEmbargoAction" value="saveEmbargo"/> 
-                              <ui:param name="updateElements" value=":datasetForm:tabView:filesTable, :datasetForm"/>
+                              <ui:param name="updateElements" value=":datasetForm:embargoInputs"/>
                         </ui:include>
                     </ui:fragment>
                     <p:dialog id="shareDialog" header="#{bundle['dataset.share.datasetShare']}" widgetVar="shareDialog" modal="true" rendered="#{!DatasetPage.workingVersion.deaccessioned}">

@@ -55,5 +55,4 @@ public class EmbargoServiceBean {
                 .setParameter("id", id)
                 .executeUpdate();
     }
-
 }

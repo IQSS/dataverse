@@ -328,6 +328,16 @@ public class SettingsWrapper implements java.io.Serializable {
             return LocalDate.now().plusDays(1);
     }
     
+    
+    public boolean isValidEmbargoDate(Embargo e) {
+        if (e.getDateAvailable().isAfter(LocalDate.now())
+                && e.getDateAvailable().isBefore(getMaxEmbargoDate().plusDays(1))) {
+            return true;
+        }
+        
+        return false;
+    }
+    
     public boolean isEmbargoAllowed() {
         //Need a valid :MaxEmbargoDurationInMonths setting to allow embargoes
         return getMaxEmbargoDate()!=null;

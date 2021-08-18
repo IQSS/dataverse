@@ -881,7 +881,7 @@ thead.ui-datatable-scrollable-theadclone {display:none}
 
 #file-title-block span.file-title-label {font-size:36px !important;line-height:1.1;font-weight:bold;margin-right:.5em;}
 #file-title-block span.label {vertical-align: text-top;}
-#file-title-block span.label, #file-title-block span.glyphicon-lock, #file-title-block span.icon-unlock {margin-right:.5em;}
+#file-title-block span.label, #file-title-block span.glyphicon-lock, #file-title-block span.icon-unlock, #file-title-block span.glyphicon-time {margin-right:.5em;}
 #file-title-block span.glyphicon-lock, #file-title-block span.icon-unlock {top:1px;}
 #file-title-block span.ingest-warning {vertical-align:text-bottom;font-size:30px;}
 #fileCategoriesBlock span.label {margin-right: 0.5em;}
@@ -1005,7 +1005,6 @@ progress::-webkit-progress-value {
   z-index: 100001!important;
 }
 .embargo {
-  color: green;
   margin-left:10px;
 }
 .embargodatepicker {
@@ -1014,5 +1013,8 @@ progress::-webkit-progress-value {
 .embargocheckbox {
   margin-top: 20px;
   margin-bottom: 5px;
+}
+.embargomsg {
+  display:block;
 }
 
