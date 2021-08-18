@@ -69,6 +69,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -3417,6 +3418,8 @@ public class DatasetPage implements java.io.Serializable {
 
         try {
             if (editMode == EditMode.CREATE) {
+                //Lock the metadataLanguage once created
+                dataset.setMetadataLanguage(getEffectiveMetadataLanguage());
                 if ( selectedTemplate != null ) {
                     if ( isSessionUserAuthenticated() ) {
                         cmd = new CreateNewDatasetCommand(dataset, dvRequestService.getDataverseRequest(), false, selectedTemplate);
@@ -3447,7 +3450,7 @@ public class DatasetPage implements java.io.Serializable {
             }
             dataset = commandEngine.submit(cmd);
             for (DatasetField df : dataset.getLatestVersion().getDatasetFields()) {
-                logger.info("Found id: " + df.getDatasetFieldType().getId());
+                logger.fine("Found id: " + df.getDatasetFieldType().getId());
                 if (fieldService.getCVocConf(false).containsKey(df.getDatasetFieldType().getId())) {
                     fieldService.registerExternalVocabValues(df);
                 }
@@ -5508,6 +5511,23 @@ public class DatasetPage implements java.io.Serializable {
         return dataFile.getDeleted();
     }
     
+    public String getEffectiveMetadataLanguage() {
+        String mdLang = dataset.getEffectiveMetadataLanguage();
+        if (mdLang.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+            mdLang = settingsWrapper.getDefaultMetadataLanguage();
+        }
+        return mdLang;
+    }
+    
+    public String getLocaleDisplayName(String code) {
+        String displayName = settingsWrapper.getBaseMetadataLanguageMap(false).get(code);
+        if(displayName==null) {
+            //Default (for cases such as :when a Dataset has a metadatalanguage code but :MetadataLanguages is no longer defined).
+            displayName = new Locale(code).getDisplayName(); 
+        }
+        return displayName; 
+    }
+    
     Map<Long, JsonObject> cachedCvocMap=null;
     public Map<Long, JsonObject> getCVocConf() {
         //Cache this in the view
@@ -5540,5 +5560,4 @@ public class DatasetPage implements java.io.Serializable {
         }
         return null;
     }
-    
 }

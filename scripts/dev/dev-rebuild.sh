@@ -57,6 +57,10 @@ psql -U $DB_USER $DB_NAME -f doc/sphinx-guides/source/_static/util/createsequenc
 
 echo "Setting DOI provider to \"FAKE\"..." 
 curl http://localhost:8080/api/admin/settings/:DoiProvider -X PUT -d FAKE
+
+echo "Allowing GUI edits to be visible without redeploy..."
+$PAYARA_DIR/glassfish/bin/asadmin create-system-properties "dataverse.jsf.refresh-period=1"
+
 export API_TOKEN=`cat /tmp/setup-all.sh.out | grep apiToken| jq .data.apiToken | tr -d \"`
 
 echo "Publishing root dataverse..."
