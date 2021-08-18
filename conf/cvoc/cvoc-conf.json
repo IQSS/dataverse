@@ -97,9 +97,8 @@
                 "uriSpace": "http://skos.um.es/unescothes/"
             },
             "agrovoc" : {
-            	   "vocabularyUri": "http://aims.fao.org/vest-registry/kos/agrovoc",
+                   "vocabularyUri": "http://aims.fao.org/vest-registry/kos/agrovoc",
                    "uriSpace": "http://aims.fao.org/aos/agrovoc/"
-               }
             }
         },
         "managed-fields": {},
