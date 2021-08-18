@@ -31,7 +31,6 @@ public class DataCitationTest {
         assertEquals("doi:10.5072/FK2/LK0D1H", dataCitation.getPersistentId().asString());
         assertEquals("LibraScholar", dataCitation.getPublisher());
         assertEquals("Dataset Title", dataCitation.getTitle());
-        assertNull(dataCitation.getUNF());
         assertEquals("V1", dataCitation.getVersion());
         assertEquals("1955", dataCitation.getYear());
     }
@@ -328,7 +327,6 @@ public class DataCitationTest {
         assertEquals("doi:10.5072/FK2/LK0D1H", dataCitation.getPersistentId().asString());
         assertEquals("LibraScholar", dataCitation.getPublisher());
         assertEquals("This Title \"Has Quotes\" In It", dataCitation.getTitle());
-        assertNull(dataCitation.getUNF());
         assertEquals("V1", dataCitation.getVersion());
         assertEquals("1955", dataCitation.getYear());
         assertEquals(
