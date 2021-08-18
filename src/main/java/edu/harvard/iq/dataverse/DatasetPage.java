@@ -5531,7 +5531,6 @@ public class DatasetPage implements java.io.Serializable {
         } catch (CommandException ex) {
             String msg = BundleUtil.getStringFromBundle("dataset.externalstatus.cantchange");
             logger.warning("Unable to change external status to " + status + " for dataset id " + dataset.getId() + ". Message to user: " + msg + " Exception: " + ex);
-            ex.printStackTrace();
             JsfHelper.addErrorMessage(msg);
         }
     }
