@@ -49,14 +49,6 @@ Make a Small Change to the Code
 
 Let's make a tiny change to the code, compile the war file, deploy it, and verify that that we can see the change.
 
-One of the smallest changes we can make is adjusting the build number.
-
-From the root of the git repo, run the following command to set the build number to the word "hello" (or whatever you want):
-
-``scripts/installer/custom-build-number hello``
-
-This should update or place a file at ``src/main/java/BuildNumber.properties``.
-
 Then, from Netbeans, click "Run" and then "Clean and Build Project (dataverse)". After this completes successfully, click "Run" and then "Run Project (dataverse)"
 
 Confirm the Change Was Deployed

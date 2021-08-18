@@ -4,6 +4,8 @@ import edu.harvard.iq.dataverse.authorization.providers.oauth2.DevOAuthAccountTy
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -19,9 +21,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.Properties;
-import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
 /**
@@ -35,6 +35,7 @@ public class SystemConfig {
 
     private static final String VERSION_PROPERTIES_CLASSPATH = "/config/version.properties";
     private static final String VERSION_PROPERTIES_KEY = "dataverse.version";
+    private static final String VERSION_COMMIT_ID = "git.commit.id.full";
     private static final String VERSION_PLACEHOLDER = "${project.version}";
     private static final String VERSION_FALLBACK = "4.0";
 
@@ -50,55 +51,33 @@ public class SystemConfig {
 
 
     private static String appVersionString = null;
-    private static String buildNumberString = null;
 
     public String getVersion() {
-        return getVersion(false);
-    }
-
-    public String getVersion(boolean withBuildNumber) {
 
         if (appVersionString == null) {
 
             // We'll rely on Maven placing the version number into the
             // version.properties file using resource filtering
 
-            Try<String> appVersionTry = Try.withResources(() -> getClass().getResourceAsStream(VERSION_PROPERTIES_CLASSPATH))
+            Try<Tuple2<String, String>> appVersionTry = Try
+                    .withResources(() -> getClass().getResourceAsStream(VERSION_PROPERTIES_CLASSPATH))
                     .of(is -> {
                         Properties properties = new Properties();
                         properties.load(is);
                         return properties;
                     })
-                    .map(p -> p.getProperty(VERSION_PROPERTIES_KEY));
+                    .map(p -> Tuple.of(p.getProperty(VERSION_PROPERTIES_KEY), p.getProperty(VERSION_COMMIT_ID)));
 
             if (appVersionTry.isFailure()) {
                 appVersionString = VERSION_FALLBACK;
                 logger.warning("Failed to read the " + VERSION_PROPERTIES_CLASSPATH + " file");
 
-            } else if (StringUtils.equals(appVersionTry.get(), VERSION_PLACEHOLDER)) {
+            } else if (StringUtils.equals(appVersionTry.get()._1(), VERSION_PLACEHOLDER)) {
                 appVersionString = VERSION_FALLBACK;
                 logger.warning(VERSION_PROPERTIES_CLASSPATH + " was not filtered by maven (check your pom.xml configuration)");
 
             } else {
-                appVersionString = appVersionTry.get();
-            }
-        }
-
-        if (withBuildNumber) {
-            if (buildNumberString == null) {
-                // (build number is still in a .properties file in the source tree; it only
-                // contains a real build number if this war file was built by
-                // Jenkins)
-
-                try {
-                    buildNumberString = ResourceBundle.getBundle("BuildNumber").getString("build.number");
-                } catch (MissingResourceException ex) {
-                    buildNumberString = null;
-                }
-            }
-
-            if (buildNumberString != null && !buildNumberString.equals("")) {
-                return appVersionString + " build " + buildNumberString;
+                appVersionString = appVersionTry.get()._1() + "-" + appVersionTry.get()._2();
             }
         }
 
@@ -130,7 +109,7 @@ public class SystemConfig {
 
     public String getFilesDirectory() {
         String filesDirectory = System.getProperty(SystemConfig.FILES_DIRECTORY);
-        if(StringUtils.isEmpty(filesDirectory)) {
+        if (StringUtils.isEmpty(filesDirectory)) {
             filesDirectory = "/tmp/files";
         }
         return filesDirectory;
@@ -138,11 +117,12 @@ public class SystemConfig {
 
     public static String getFilesDirectoryStatic() {
         String filesDirectory = System.getProperty(SystemConfig.FILES_DIRECTORY);
-        if(StringUtils.isEmpty(filesDirectory)) {
+        if (StringUtils.isEmpty(filesDirectory)) {
             filesDirectory = "/tmp/files";
         }
         return filesDirectory;
     }
+
     /**
      * The "official" server's fully-qualified domain name:
      */
@@ -338,7 +318,8 @@ public class SystemConfig {
                     }
                 }
             }
-            throw new IllegalArgumentException("FileUploadMethods must be one of these values: " + Arrays.asList(FileUploadMethods.values()) + ".");
+            throw new IllegalArgumentException("FileUploadMethods must be one of these values: " + Arrays.asList(FileUploadMethods
+                                                                                                                         .values()) + ".");
         }
 
         @Override
@@ -376,7 +357,8 @@ public class SystemConfig {
                     }
                 }
             }
-            throw new IllegalArgumentException("FileDownloadMethods must be one of these values: " + Arrays.asList(FileDownloadMethods.values()) + ".");
+            throw new IllegalArgumentException("FileDownloadMethods must be one of these values: " + Arrays.asList(FileDownloadMethods
+                                                                                                                           .values()) + ".");
         }
 
         @Override
@@ -433,7 +415,8 @@ public class SystemConfig {
                     }
                 }
             }
-            throw new IllegalArgumentException("TransferProtocols must be one of these values: " + Arrays.asList(TransferProtocols.values()) + ".");
+            throw new IllegalArgumentException("TransferProtocols must be one of these values: " + Arrays.asList(TransferProtocols
+                                                                                                                         .values()) + ".");
         }
 
         @Override
@@ -464,19 +447,25 @@ public class SystemConfig {
         if (StringUtils.isEmpty(uploadMethods)) {
             return false;
         } else {
-            return Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
+            return Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods
+                    .toLowerCase()
+                    .equals(SystemConfig.FileUploadMethods.RSYNC.toString());
         }
     }
 
     public boolean isRsyncDownload() {
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
-        return downloadMethods != null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.RSYNC.toString());
+        return downloadMethods != null && downloadMethods
+                .toLowerCase()
+                .contains(SystemConfig.FileDownloadMethods.RSYNC.toString());
     }
 
     public boolean isHTTPDownload() {
         String downloadMethods = settingsService.getValueForKey(SettingsServiceBean.Key.DownloadMethods);
         logger.fine("Download Methods:" + downloadMethods);
-        return downloadMethods != null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.NATIVE.toString());
+        return downloadMethods != null && downloadMethods
+                .toLowerCase()
+                .contains(SystemConfig.FileDownloadMethods.NATIVE.toString());
     }
 
     private Boolean getUploadMethodAvailable(String method) {

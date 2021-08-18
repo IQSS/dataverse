@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.json.Json;
-import javax.json.JsonValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
@@ -42,13 +41,9 @@ public class Info extends AbstractApiBean {
     @GET
     @Path("version")
     public Response getInfo() {
-        String versionStr = systemConfig.getVersion(true);
-        String[] comps = versionStr.split("build", 2);
-        String version = comps[0].trim();
-        JsonValue build = comps.length > 1 ? Json.createArrayBuilder().add(comps[1].trim()).build().get(0) : JsonValue.NULL;
+        String versionStr = systemConfig.getVersion();
 
-        return allowCors(response(req -> ok(Json.createObjectBuilder().add("version", version)
-                                                    .add("build", build))));
+        return allowCors(response(req -> ok(Json.createObjectBuilder().add("version", versionStr))));
     }
 
     @GET

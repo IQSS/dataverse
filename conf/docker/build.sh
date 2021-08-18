@@ -66,7 +66,6 @@ fi
 # TODO: Think about if we really need dataverse.war because it's in dvinstall.zip.
 cd ../..
 mvn clean
-scripts/installer/custom-build-number
 mvn package
 cd conf/docker
 cp ../../target/dataverse*.war dataverse-glassfish/dataverse.war
