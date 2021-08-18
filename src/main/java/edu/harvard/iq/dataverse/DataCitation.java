@@ -57,7 +57,6 @@ public class DataCitation {
     private boolean direct;
     private List<String> funders;
     private String seriesTitle;
-    private String description;
     private List<String> datesOfCollection;
     private List<String> keywords;
     private List<String> kindsOfData;
@@ -110,9 +109,6 @@ public class DataCitation {
         // file Title for direct File citation
         fileTitle = fm.getLabel();
         DataFile df = fm.getDataFile();
-
-        // File description
-        description = fm.getDescription();
 
         // The Global Identifier of the Datafile (if published and isDirect==true) or Dataset as appropriate
         persistentId = getPIDFrom(dsv, df);
