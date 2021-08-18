@@ -532,7 +532,7 @@
                                                         <th scope="row">
                                                             #{bundle['file.metadataTab.fileMetadata.publicationDate.label']}
                                                         </th>
-                                                        <td>#{FilePage.embargoPhrase} #{FilePage.file.embargo.dateAvailable}
+                                                        <td>#{!(empty FilePage.file.embargo) ? FilePage.embargoPhrase: ''} #{!(empty FilePage.file.embargo) ? FilePage.file.embargo.dateAvailable : FilePage.file.publicationDateFormattedYYYYMMDD}
                                                         </td>
                                                     </tr>
                                                     <tr id="fileEmbargoBlock" jsf:rendered="#{!(empty FilePage.file.embargo) and dataFileServiceBean.isActivelyEmbargoed(FilePage.fileMetadata) and ! (empty FilePage.file.embargo.reason)}">
