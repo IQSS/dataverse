@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<codeBook xmlns="ddi:codebook:2_5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="ddi:codebook:2_5 https://ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd"
+          version="2.5">
+    <docDscr>
+        <citation>
+            <titlStmt>
+                <titl>Test</titl>
+                <IDNo agency="DOI">doi:10.70122/FK2/HCC7RU</IDNo>
+            </titlStmt>
+            <distStmt>
+                <distrbtr source="archive">Demo Dataverse</distrbtr>
+                <distDate>2021-08-12</distDate>
+            </distStmt>
+            <verStmt source="archive">
+                <version date="2021-08-12" type="RELEASED">1</version>
+            </verStmt>
+            <biblCit>Karol, MrK, 2021, "Test", https://doi.org/10.70122/FK2/HCC7RU, Demo Dataverse, V1</biblCit>
+        </citation>
+    </docDscr>
+    <stdyDscr>
+        <citation>
+            <titlStmt>
+                <titl>Test</titl>
+                <IDNo agency="DOI">doi:10.70122/FK2/HCC7RU</IDNo>
+            </titlStmt>
+            <rspStmt>
+                <AuthEnty>Karol, MrK</AuthEnty>
+            </rspStmt>
+            <prodStmt/>
+            <distStmt>
+                <distrbtr source="archive">Demo Dataverse</distrbtr>
+                <contact email="kkulik@icm.edu.pl">Karol, MrK</contact>
+                <depositr>Karol, MrK</depositr>
+                <depDate>2021-08-12</depDate>
+            </distStmt>
+            <holdings URI="https://doi.org/10.70122/FK2/HCC7RU"/>
+        </citation>
+        <stdyInfo>
+            <subject>
+                <keyword>Agricultural Sciences</keyword>
+            </subject>
+            <abstract>test</abstract>
+            <sumDscr/>
+        </stdyInfo>
+        <method>
+            <dataColl>
+                <sources/>
+            </dataColl>
+            <anlyInfo/>
+        </method>
+        <dataAccs>
+            <notes type="DVN:TOU" level="dv">CC0 Waiver</notes>
+            <setAvail/>
+            <useStmt/>
+        </dataAccs>
+        <othrStdyMat>
+            <relMat>related mat</relMat>
+            <relMat>related mat2</relMat>
+            <relStdy>related dataset</relStdy>
+            <relStdy>related dataset2</relStdy>
+        </othrStdyMat>
+    </stdyDscr>
+    <otherMat ID="f1909773" URI="https://doi.org/10.70122/FK2/HCC7RU/M5HK2Y" level="datafile">
+        <labl>The_Phantom_Troupe_Logo.webp</labl>
+        <notes level="file" type="DATAVERSE:CONTENTTYPE" subject="Content/MIME Type">image/webp</notes>
+    </otherMat>
+</codeBook>

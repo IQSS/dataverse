@@ -1,0 +1,103 @@
+<codeBook xmlns="ddi:codebook:2_5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="ddi:codebook:2_5 https://www.ddialliance.org/Specification/DDI-Codebook/2.5/XMLSchema/codebook.xsd"
+          version="2.5">
+    <docDscr>
+        <citation>
+            <titlStmt>
+                <titl>geo</titl>
+                <IDNo agency="DOI">doi:10.32/FK2/C09YQ7</IDNo>
+            </titlStmt>
+            <distStmt>
+                <distrbtr>Root</distrbtr>
+                <distDate>2021-07-20</distDate>
+            </distStmt>
+            <verStmt source="archive">
+                <version date="2021-07-20" type="RELEASED">1</version>
+            </verStmt>
+            <biblCit>Admin, Dataverse, 2021, "geo", https://doi.org/10.32/FK2/C09YQ7, Root, V1</biblCit>
+        </citation>
+    </docDscr>
+    <stdyDscr>
+        <citation>
+            <titlStmt>
+                <titl>geo</titl>
+                <IDNo agency="DOI">doi:10.32/FK2/C09YQ7</IDNo>
+            </titlStmt>
+            <rspStmt>
+                <AuthEnty affiliation="Dataverse.org">Admin, Dataverse</AuthEnty>
+            </rspStmt>
+            <prodStmt/>
+            <distStmt>
+                <distrbtr source="archive">Root</distrbtr>
+                <contact affiliation="Dataverse.org" email="dataverse@mailinator.com">Admin, Dataverse</contact>
+                <depositr>Admin, Dataverse</depositr>
+                <depDate>2021-07-20</depDate>
+            </distStmt>
+        </citation>
+        <stdyInfo>
+            <subject>
+                <keyword>Agricultural Sciences</keyword>
+            </subject>
+            <abstract>&lt;p>tete&lt;/p></abstract>
+            <sumDscr/>
+        </stdyInfo>
+        <method>
+            <dataColl>
+                <sources/>
+            </dataColl>
+            <anlyInfo/>
+        </method>
+        <dataAccs>
+            <notes type="DVN:TOU" level="dv">Different licenses or terms for individual files.</notes>
+            <notes type="DVN:TOA" level="dv">Access to some files in this dataset is restricted.</notes>
+        </dataAccs>
+        <othrStdyMat>
+            <relMat>
+                <citation>
+                    <titlStmt>
+                        <titl/>
+                        <IDNo agency="doi">12</IDNo>
+                    </titlStmt>
+                    <biblCit>RELATED MAT</biblCit>
+                </citation>
+                <ExtLink URI="http://www.google.pl"/>
+            </relMat>
+            <relStdy>
+                <citation>
+                    <titlStmt>
+                        <titl/>
+                        <IDNo agency="doi">12</IDNo>
+                    </titlStmt>
+                    <biblCit>RELATED D</biblCit>
+                </citation>
+                <ExtLink URI="http://www.google.pl"/>
+            </relStdy>
+            <relPubl>
+                <citation>
+                    <titlStmt>
+                        <titl/>
+                        <IDNo agency="doi">12</IDNo>
+                    </titlStmt>
+                    <biblCit>REL PUBL</biblCit>
+                </citation>
+                <ExtLink URI="http://www.google.pl"/>
+            </relPubl>
+        </othrStdyMat>
+    </stdyDscr>
+    <otherMat ID="f37" URI="http://localhost:8080/api/access/datafile/37" level="datafile">
+        <labl>mxrdr-resized.png</labl>
+        <notes level="file" type="DATAVERSE:CONTENTTYPE" subject="Content/MIME Type">image/png</notes>
+    </otherMat>
+    <otherMat ID="f38" URI="http://localhost:8080/api/access/datafile/38" level="datafile">
+        <labl>rorData.json</labl>
+        <notes level="file" type="DATAVERSE:CONTENTTYPE" subject="Content/MIME Type">application/json</notes>
+    </otherMat>
+    <otherMat ID="f36" URI="http://localhost:8080/api/access/datafile/36" level="datafile">
+        <labl>sample.pdf</labl>
+        <notes level="file" type="DATAVERSE:CONTENTTYPE" subject="Content/MIME Type">application/pdf</notes>
+    </otherMat>
+    <otherMat ID="f35" URI="http://localhost:8080/api/access/datafile/35" level="datafile">
+        <labl>zażółć gęślą jaźń.png</labl>
+        <notes level="file" type="DATAVERSE:CONTENTTYPE" subject="Content/MIME Type">image/png</notes>
+    </otherMat>
+</codeBook>
