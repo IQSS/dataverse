@@ -142,6 +142,24 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
         }
     }
     
+    /* Emails those able to publish the dataset (except the creator themselves who already gets an email)
+     * that a new dataset exists. 
+     * NB: Needs dataset id so has to be postDBFlush (vs postPersist())
+     */
+    protected void postDBFlush( Dataset theDataset, CommandContext ctxt ){
+        //QDR - alert curators that a dataset has been created
+        //Should this create a notification too? (which would let us use the notification mailcapbilities to generate the subject/body.
+        AuthenticatedUser requestor = getUser().isAuthenticated() ? (AuthenticatedUser) getUser() : null;
+        List<AuthenticatedUser> authUsers = ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, theDataset);
+        for (AuthenticatedUser au : authUsers) {
+            if(!au.equals(requestor)) {
+                String subject = BrandingUtil.getInstallationBrandName() + ": Data Project Created: " + theDataset.getDisplayName();
+                String body = "<a href = \"" + ctxt.mail().getDatasetLink(theDataset) + "\">" + theDataset.getDisplayName() + "</a> was just created.";
+                ctxt.mail().sendSystemEmail(au.getEmail(), subject, body, true);
+            }
+        }
+    }
+    
     // Re-enabling the method below will change the permission setup to dynamic.
     // This will make it so that in an unpublished dataverse only users with the 
     // permission to view it will be allowed to create child datasets. 
