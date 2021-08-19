@@ -196,7 +196,7 @@ public class BagGenerator {
      * @return success true/false
      */
     public boolean generateBag(OutputStream outputStream) throws Exception {
-        logger.info("Generating: Bag to the Future!");
+        
 
         File tmp = File.createTempFile("qdr-scatter-dirs", "tmp");
         dirs = ScatterZipOutputStream.fileBased(tmp);
@@ -205,6 +205,8 @@ public class BagGenerator {
 
         bagID = aggregation.get("@id").getAsString() + "v."
                 + aggregation.get(JsonLDTerm.schemaOrg("version").getLabel()).getAsString();
+        
+        logger.info("Generating Bag: " + bagID);
         try {
             // Create valid filename from identifier and extend path with
             // two levels of hash-based subdirs to help distribute files
@@ -522,7 +524,7 @@ public class BagGenerator {
                 String childTitle = child.get(JsonLDTerm.schemaOrg("name").getLabel()).getAsString();
                 if (titles.contains(childTitle)) {
                     logger.warning("**** Multiple items with the same title in: " + currentPath);
-                    logger.warning("**** Will cause failure in hash and size validation.");
+                    logger.warning("**** Will cause failure in hash and size validation in: " + bagID);
                 } else {
                     titles.add(childTitle);
                 }
@@ -549,7 +551,7 @@ public class BagGenerator {
                         if (checksumMap.containsValue(childHash)) {
                             // Something else has this hash
                             logger.warning("Duplicate/Collision: " + child.get("@id").getAsString() + " has SHA1 Hash: "
-                                + childHash);
+                                + childHash + " in: " + bagID);
                         }
                         checksumMap.put(childPath, childHash);
                     }
