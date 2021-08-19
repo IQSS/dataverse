@@ -2800,8 +2800,8 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                 String name = dataset.getCurrentName().replace("\"","\"\"");
                 String status = dataset.getLatestVersion().getExternalStatusLabel();
                 String url = systemConfig.getDataverseSiteUrl() + dataset.getTargetUrl() + dataset.getGlobalId().asString();
-                String date = new SimpleDateFormat("yyyy-MM").format(dataset.getCreateDate());
-                String modDate = new SimpleDateFormat("yyyy-MM").format(dataset.getModificationTime());
+                String date = new SimpleDateFormat("yyyy-MM-dd").format(dataset.getCreateDate());
+                String modDate = new SimpleDateFormat("yyyy-MM-dd").format(dataset.getModificationTime());
                 String hyperlink = "\"=HYPERLINK(\"\"" + url + "\"\",\"\"" + name + "\"\")\"";
                 csvSB.append("\n").append(String.join(",", hyperlink, date, modDate, assignee==null ? "":assignee, status==null ? "": status));
         }
