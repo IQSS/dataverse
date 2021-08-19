@@ -473,7 +473,13 @@ public class SettingsServiceBean {
         /**
          * A comma separated list of the allowed labels. These should correspond to the states in an organizations curation process. 
          */
-        AllowedCurationLabels
+        AllowedCurationLabels,
+        /**
+         * A boolean setting that, if true will send an email and notification to users
+         * when a Dataset is created. Messages go to those who have the
+         * ability/permission necessary to publish the dataset
+         */
+        SendNotificationOnDatasetCreation
         ;
 
         @Override
