@@ -456,7 +456,13 @@ public class SettingsServiceBean {
          * metadata exports) and the title containing a human readable string. These
          * values are selectable at the Dataverse level and apply to Dataset metadata.
          */
-        MetadataLanguages
+        MetadataLanguages,
+        /**
+         * A boolean setting that, if true will send an email and notification to users
+         * when a Dataset is created. Messages go to those who have the
+         * ability/permission necessary to publish the dataset
+         */
+        SendNotificationOnDatasetCreation
         ;
 
         @Override

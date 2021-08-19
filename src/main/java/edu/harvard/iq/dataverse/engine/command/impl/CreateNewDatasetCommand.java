@@ -13,7 +13,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
-import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 import java.util.logging.Logger;
@@ -25,12 +25,15 @@ import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+
 import java.util.List;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import java.time.Instant;
 
 /**
  * Creates a new {@link Dataset}, used to store unpublished data. This is as opposed to 
@@ -147,16 +150,26 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
      * NB: Needs dataset id so has to be postDBFlush (vs postPersist())
      */
     protected void postDBFlush( Dataset theDataset, CommandContext ctxt ){
+        if(ctxt.settings().isTrueForKey(SettingsServiceBean.Key.SendNotificationOnDatasetCreation, false)) {
         //QDR - alert curators that a dataset has been created
         //Should this create a notification too? (which would let us use the notification mailcapbilities to generate the subject/body.
         AuthenticatedUser requestor = getUser().isAuthenticated() ? (AuthenticatedUser) getUser() : null;
         List<AuthenticatedUser> authUsers = ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, theDataset);
         for (AuthenticatedUser au : authUsers) {
             if(!au.equals(requestor)) {
+                ctxt.notifications().sendNotification(
+                        au,
+                        Timestamp.from(Instant.now()),
+                        UserNotification.Type.DATASETCREATED,
+                        theDataset.getId(),
+                        null,
+                        true
+                );
                 String subject = BrandingUtil.getInstallationBrandName() + ": Data Project Created: " + theDataset.getDisplayName();
                 String body = "<a href = \"" + ctxt.mail().getDatasetLink(theDataset) + "\">" + theDataset.getDisplayName() + "</a> was just created.";
                 ctxt.mail().sendSystemEmail(au.getEmail(), subject, body, true);
             }
+        }
         }
     }
     
