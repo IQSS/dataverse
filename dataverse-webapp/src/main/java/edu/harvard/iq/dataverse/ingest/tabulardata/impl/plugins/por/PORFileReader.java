@@ -169,7 +169,6 @@ public class PORFileReader extends TabularDataFileReader {
         super(originator);
     }
 
-
     private void init() throws IOException {
 
         sdf_ymd.setTimeZone(TimeZone.getTimeZone("GMT"));

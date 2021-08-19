@@ -675,24 +675,24 @@ public class IngestServiceBean {
 
             dataFile.SetIngestProblem();
             dataFile.setIngestReport(IngestReport.createIngestFailureReport(dataFile,
-                                                   IngestError.NOPLUGIN,
-                                                   dataFile.getContentType()));
+                    IngestError.NOPLUGIN,
+                    dataFile.getContentType()));
             dataFile = fileService.save(dataFile);
             logger.warning("Ingest failure.");
             return false;
         }
 
         File additionalData = null;
-        File localFile = null;
-
+        Optional<File> localFile;
+        StorageIO<DataFile> storageIO;
         try {
-            StorageIO<DataFile> storageIO = dataAccess.getStorageIO(dataFile);
-            localFile = StorageIOUtils.obtainAsLocalFile(storageIO, storageIO.isRemoteFile()); // TODO: remove this file IF it is temporary
+            storageIO = dataAccess.getStorageIO(dataFile);
+            localFile = Optional.of(StorageIOUtils.obtainAsLocalFile(storageIO, storageIO.isRemoteFile()));
         } catch (IOException ioEx) {
             dataFile.SetIngestProblem();
 
             dataFile.setIngestReport(IngestReport.createIngestFailureReport(dataFile,
-                                                   IngestError.UNKNOWN_ERROR));
+                    IngestError.UNKNOWN_ERROR));
             dataFile = fileService.save(dataFile);
 
             logger.warning("Ingest failure (No file produced).");
@@ -711,7 +711,7 @@ public class IngestServiceBean {
         }
 
         if (forceTypeCheck) {
-            String newType = FileUtil.retestIngestableFileType(localFile, dataFile.getContentType());
+            String newType = FileUtil.retestIngestableFileType(localFile.get(), dataFile.getContentType());
 
             ingestPlugin = getTabDataReaderByMimeType(newType);
             logger.fine("Re-tested file type: " + newType + "; Using ingest plugin " + ingestPlugin.getClass());
@@ -733,8 +733,7 @@ public class IngestServiceBean {
         }
 
         TabularDataIngest tabDataIngest = null;
-
-        try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(localFile))) {
+        try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(localFile.get()))) {
 
             if (additionalData != null) {
                 tabDataIngest = ingestPlugin.read(inputStream, additionalData);
@@ -757,6 +756,10 @@ public class IngestServiceBean {
 
             logger.log(Level.WARNING, "Ingest failure.", ingestEx);
             return false;
+        } finally {
+            if (storageIO.isRemoteFile()) {
+                localFile.ifPresent(File::delete);
+            }
         }
 
         String originalContentType = dataFile.getContentType();
@@ -902,8 +905,6 @@ public class IngestServiceBean {
                     dataFile = fileService.save(dataFile);
                     logger.fine("saved data file after updating the size");
 
-                    // delete the temp tab-file:
-                    tabFile.delete();
                     /*end of save as backup */
 
                 } catch (Exception e) {
@@ -917,16 +918,19 @@ public class IngestServiceBean {
                     if (dataFile != null) {
                         dataFile.SetIngestProblem();
                         dataFile.setIngestReport(IngestReport.createIngestFailureReport(dataFile,
-                                                               IngestError.DB_FAIL));
+                                IngestError.DB_FAIL));
 
                         restoreIngestedDataFile(dataFile,
-                                                tabDataIngest,
-                                                originalFileSize,
-                                                originalFileName,
-                                                originalContentType);
+                                tabDataIngest,
+                                originalFileSize,
+                                originalFileName,
+                                originalContentType);
 
                         dataFile = fileService.save(dataFile);
                     }
+                } finally {
+                    // delete the temp tab-file:
+                    tabFile.delete();
                 }
 
                 return true;

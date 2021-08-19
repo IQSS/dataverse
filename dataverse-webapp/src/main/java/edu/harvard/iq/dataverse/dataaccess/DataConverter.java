@@ -31,17 +31,13 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.file.Path;
+import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -101,22 +97,26 @@ public class DataConverter {
 
         // If not cached, run the conversion:
         if (convertedFileStream == null) {
-
+            Optional<File> tabFile = Optional.empty();
             try {
-                File tabFile = StorageIOUtils.obtainAsLocalFile(storageIO, !storageIO.isLocalFile()); // TODO: remove this file IF it is temporary
-                
-                File formatConvertedFile = runFormatConversion(file, tabFile, formatRequested);
-                
+                tabFile = Optional.of(StorageIOUtils.obtainAsLocalFile(storageIO, storageIO.isRemoteFile()));
+
+                File formatConvertedFile = runFormatConversion(file, tabFile.get(), formatRequested);
+
                 if (formatConvertedFile != null && formatConvertedFile.exists()) {
-                    
+
                     storageIO.savePathAsAux(Paths.get(formatConvertedFile.getAbsolutePath()), formatRequested);
-                    
+
                     convertedFileSize = formatConvertedFile.length();
-                    convertedFileStream = new FileInputStream(formatConvertedFile);
+                    convertedFileStream = Files.newInputStream(formatConvertedFile.toPath(), StandardOpenOption.DELETE_ON_CLOSE);
                 }
-            } catch(IOException e) {
+            } catch (IOException e) {
                 logger.log(Level.WARNING, "Unable to perform format conversion for file with storageId: " + file.getStorageIdentifier(), e);
                 return null;
+            } finally {
+                if (storageIO.isRemoteFile()) {
+                    tabFile.ifPresent(File::delete);
+                }
             }
         }
 

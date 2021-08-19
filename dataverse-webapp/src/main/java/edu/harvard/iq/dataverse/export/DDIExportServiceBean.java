@@ -459,16 +459,16 @@ public class DDIExportServiceBean {
         try {
             StorageIO<DataFile> storageIO = DataAccess.dataAccess().getStorageIO(df);
 
-            File tabFile = StorageIOUtils.obtainAsLocalFile(storageIO, storageIO.isRemoteFile());
-            tmpFile = storageIO.isRemoteFile() ? Optional.of(tabFile) : Optional.empty();
+            Optional<File> tabFile = Optional.of(StorageIOUtils.obtainAsLocalFile(storageIO, storageIO.isRemoteFile()));
+            tmpFile = storageIO.isRemoteFile() ? tabFile : Optional.empty();
 
-            IngestServiceBean.produceFrequencies(tabFile, vars);
+            IngestServiceBean.produceFrequencies(tabFile.get(), vars);
 
         } catch (Exception ex) {
             logger.warning(ex.getMessage());
             return;
         } finally {
-            tmpFile.ifPresent(file -> file.delete());
+            tmpFile.ifPresent(File::delete);
         }
     }
 

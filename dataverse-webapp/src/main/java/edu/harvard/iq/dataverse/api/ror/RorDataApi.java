@@ -62,7 +62,7 @@ public class RorDataApi extends AbstractApiBean{
             return wrappedResponse.getResponse();
         }
 
-        File file;
+        File file = null;
         RorDataService.UpdateResult result;
         try {
             file = FileUtil.inputStreamToFile(inputStream, 8192);
@@ -75,6 +75,7 @@ public class RorDataApi extends AbstractApiBean{
                     .build();
         } finally {
             close(inputStream);
+            file.delete();
         }
 
         rorIndexingService.indexRorRecordsAsync(result.getSavedRorData());

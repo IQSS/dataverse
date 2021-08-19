@@ -30,9 +30,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import javax.inject.Inject;
-
-import java.awt.Graphics2D;
-import java.awt.Image;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -173,12 +171,13 @@ public class ImageThumbConverter {
 
         Optional<File> tempPdfFile = Optional.empty();
         File tempThumbnailFile = new File(FileUtils.getTempDirectory(), UUID.randomUUID().toString());
+        Optional<File> sourcePdfFile = Optional.empty();
         try {
-            File sourcePdfFile = StorageIOUtils.obtainAsLocalFile(storageIO, storageIO.isRemoteFile());
+            sourcePdfFile = Optional.of(StorageIOUtils.obtainAsLocalFile(storageIO, storageIO.isRemoteFile()));
 
-            tempPdfFile = storageIO.isRemoteFile() ? Optional.of(sourcePdfFile) : Optional.empty();
+            tempPdfFile = storageIO.isRemoteFile() ? sourcePdfFile : Optional.empty();
 
-            generatePDFThumbnailFromFile(sourcePdfFile.getAbsolutePath(), size, tempThumbnailFile.getAbsolutePath());
+            generatePDFThumbnailFromFile(sourcePdfFile.get().getAbsolutePath(), size, tempThumbnailFile.getAbsolutePath());
 
             if (!tempThumbnailFile.exists()) {
                 return false;
@@ -191,7 +190,7 @@ public class ImageThumbConverter {
             return false;
         } finally {
             tempThumbnailFile.delete();
-            tempPdfFile.ifPresent(file -> file.delete());
+            tempPdfFile.ifPresent(File::delete);
         }
 
         return true;
@@ -332,6 +331,7 @@ public class ImageThumbConverter {
 
             if (tempFileRequired) {
                 storageIO.savePathAsAux(Paths.get(tempFile.getAbsolutePath()), THUMBNAIL_SUFFIX + size);
+                tempFile.delete();
             }
 
         } catch (Exception ioex) {

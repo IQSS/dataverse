@@ -14,18 +14,12 @@ import org.apache.commons.io.IOUtils;
 import javax.ejb.Stateless;
 import javax.imageio.ImageIO;
 import javax.inject.Inject;
-
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -241,57 +235,58 @@ public class DatasetThumbnailService {
         File tmpFile = null;
         try {
             tmpFile = FileUtil.inputStreamToFile(inputStream);
+
+            StorageIO<Dataset> storageIO = null;
+
+            try {
+                storageIO = dataAccess.getStorageIO(dataset);
+            } catch (IOException ioex) {
+                //TODO: Add a suitable waing message
+                logger.warning("Failed to save the file, storage id " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
+            }
+
+            try {
+                //this goes through Swift API/local storage/s3 to write the dataset thumbnail into a container
+                storageIO.savePathAsAux(tmpFile.toPath(), datasetLogoFilenameFinal);
+            } catch (IOException ex) {
+                logger.severe("Failed to move original file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
+            }
+
+            BufferedImage fullSizeImage = null;
+            try {
+                fullSizeImage = ImageIO.read(tmpFile);
+            } catch (IOException ex) {
+                logger.severe(ex.getMessage());
+                return null;
+            }
+            if (fullSizeImage == null) {
+                logger.fine("fullSizeImage was null!");
+                return null;
+            }
+            int width = fullSizeImage.getWidth();
+            int height = fullSizeImage.getHeight();
+
+            String thumbFileLocation = tmpFile.getAbsolutePath() + ".thumb";
+            imageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE, thumbFileLocation);
+            logger.fine("thumbFileLocation = " + thumbFileLocation);
+            logger.fine("tmpFileLocation=" + tmpFile.getAbsolutePath());
+
+            //now we must save the updated thumbnail
+            try {
+                storageIO.savePathAsAux(Paths.get(thumbFileLocation), datasetLogoThumbnail48);
+            } catch (IOException ex) {
+                logger.severe("Failed to move updated thumbnail file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
+            } finally {
+                new File(thumbFileLocation).delete();
+            }
+            return dataset;
         } catch (IOException ex) {
             logger.severe(ex.getMessage());
+        } finally {
+            tmpFile.delete();
         }
 
-        StorageIO<Dataset> storageIO = null;
-
-        try {
-            storageIO = dataAccess.getStorageIO(dataset);
-        } catch (IOException ioex) {
-            //TODO: Add a suitable waing message
-            logger.warning("Failed to save the file, storage id " + dataset.getStorageIdentifier() + " (" + ioex.getMessage() + ")");
-        }
-
-        try {
-            //this goes through Swift API/local storage/s3 to write the dataset thumbnail into a container
-            storageIO.savePathAsAux(tmpFile.toPath(), datasetLogoFilenameFinal);
-        } catch (IOException ex) {
-            logger.severe("Failed to move original file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
-        }
-
-        BufferedImage fullSizeImage = null;
-        try {
-            fullSizeImage = ImageIO.read(tmpFile);
-        } catch (IOException ex) {
-            logger.severe(ex.getMessage());
-            return null;
-        }
-        if (fullSizeImage == null) {
-            logger.fine("fullSizeImage was null!");
-            return null;
-        }
-        int width = fullSizeImage.getWidth();
-        int height = fullSizeImage.getHeight();
-
-        String thumbFileLocation = tmpFile.getAbsolutePath() + ".thumb";
-        imageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE, thumbFileLocation);
-        logger.fine("thumbFileLocation = " + thumbFileLocation);
-        logger.fine("tmpFileLocation=" + tmpFile.getAbsolutePath());
-
-        //now we must save the updated thumbnail 
-        try {
-            storageIO.savePathAsAux(Paths.get(thumbFileLocation), datasetLogoThumbnail48);
-        } catch (IOException ex) {
-            logger.severe("Failed to move updated thumbnail file from " + tmpFile.getAbsolutePath() + " to its DataAccess location" + ": " + ex);
-        }
-        //This deletes the tempfiles created for rescaling and encoding
-        tmpFile.delete();
-        new File(thumbFileLocation).delete();
-
-        
-        return dataset;
+        return null;
     }
 
     public InputStream getThumbnailAsInputStream(Dataset dataset) {

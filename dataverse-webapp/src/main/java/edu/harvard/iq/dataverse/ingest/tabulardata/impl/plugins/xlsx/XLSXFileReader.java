@@ -90,10 +90,20 @@ public class XLSXFileReader extends TabularDataFileReader {
     public TabularDataIngest read(BufferedInputStream stream, File dataFile) throws IOException {
         init();
 
+        File firstPassTempFile = null;
+        try {
+            firstPassTempFile = File.createTempFile("firstpass-", ".tab");
+            return getTabularDataIngest(stream, firstPassTempFile);
+        } finally {
+            firstPassTempFile.delete();
+        }
+
+    }
+
+    private TabularDataIngest getTabularDataIngest(BufferedInputStream stream, File firstPassTempFile) throws IOException {
+
         TabularDataIngest ingesteddata = new TabularDataIngest();
         DataTable dataTable = new DataTable();
-
-        File firstPassTempFile = File.createTempFile("firstpass-", ".tab");
         PrintWriter firstPassWriter = new PrintWriter(firstPassTempFile.getAbsolutePath());
         try {
             processSheet(stream, dataTable, firstPassWriter);
@@ -113,124 +123,121 @@ public class XLSXFileReader extends TabularDataFileReader {
 
         // 2nd pass:
 
+
         File tabFileDestination = File.createTempFile("data-", ".tab");
-        PrintWriter finalWriter = new PrintWriter(tabFileDestination.getAbsolutePath());
+        try (BufferedReader secondPassReader = new BufferedReader(new FileReader(firstPassTempFile));
+             PrintWriter finalWriter = new PrintWriter(tabFileDestination.getAbsolutePath());) {
 
-        BufferedReader secondPassReader = new BufferedReader(new FileReader(firstPassTempFile));
-
-        int varQnty = dataTable.getVarQuantity().intValue();
-        int lineCounter = 0;
-        String line = null;
-        String[] caseRow = new String[varQnty];
-        String[] valueTokens;
+            int varQnty = dataTable.getVarQuantity().intValue();
+            int lineCounter = 0;
+            String line = null;
+            String[] caseRow = new String[varQnty];
+            String[] valueTokens;
 
 
-        while ((line = secondPassReader.readLine()) != null) {
-            // chop the line:
-            line = line.replaceFirst("[\r\n]*$", "");
-            valueTokens = line.split("" + delimiterChar, -2);
+            while ((line = secondPassReader.readLine()) != null) {
+                // chop the line:
+                line = line.replaceFirst("[\r\n]*$", "");
+                valueTokens = line.split("" + delimiterChar, -2);
 
-            if (valueTokens == null) {
+                if (valueTokens == null) {
 
-                throw new IngestException(IngestError.EXCEL_READ_FAIL,
-                                          Integer.toString(lineCounter + 1));
-            }
+                    throw new IngestException(IngestError.EXCEL_READ_FAIL,
+                            Integer.toString(lineCounter + 1));
+                }
 
-            if (valueTokens.length != varQnty) {
+                if (valueTokens.length != varQnty) {
 
-                throw new IngestException(IngestError.EXCEL_MISMATCH,
-                                          Arrays.asList(Integer.toString(lineCounter + 1),
-                                                        Integer.toString(varQnty),
-                                                        Integer.toString(valueTokens.length)));
-            }
+                    throw new IngestException(IngestError.EXCEL_MISMATCH,
+                            Arrays.asList(Integer.toString(lineCounter + 1),
+                                    Integer.toString(varQnty),
+                                    Integer.toString(valueTokens.length)));
+                }
 
-            for (int i = 0; i < varQnty; i++) {
-                if (dataTable.getDataVariables().get(i).isTypeNumeric()) {
-                    if (valueTokens[i] == null || valueTokens[i].equals(".") || valueTokens[i].equals("") || valueTokens[i].equalsIgnoreCase(
-                            "NA")) {
-                        // Missing value - represented as an empty string in 
-                        // the final tab file
-                        caseRow[i] = "";
-                    } else if (valueTokens[i].equalsIgnoreCase("NaN")) {
-                        // "Not a Number" special value: 
-                        caseRow[i] = "NaN";
-                    } else if (valueTokens[i].equalsIgnoreCase("Inf")
-                            || valueTokens[i].equalsIgnoreCase("+Inf")) {
-                        // Positive infinity:
-                        caseRow[i] = "Inf";
-                    } else if (valueTokens[i].equalsIgnoreCase("-Inf")) {
-                        // Negative infinity: 
-                        caseRow[i] = "-Inf";
-                    } else if (valueTokens[i].equalsIgnoreCase("null")) {
-                        // By request from Gus - "NULL" is recognized as a 
-                        // numeric zero: 
-                        caseRow[i] = "0";
+                for (int i = 0; i < varQnty; i++) {
+                    if (dataTable.getDataVariables().get(i).isTypeNumeric()) {
+                        if (valueTokens[i] == null || valueTokens[i].equals(".") || valueTokens[i].equals("") || valueTokens[i].equalsIgnoreCase(
+                                "NA")) {
+                            // Missing value - represented as an empty string in
+                            // the final tab file
+                            caseRow[i] = "";
+                        } else if (valueTokens[i].equalsIgnoreCase("NaN")) {
+                            // "Not a Number" special value:
+                            caseRow[i] = "NaN";
+                        } else if (valueTokens[i].equalsIgnoreCase("Inf")
+                                || valueTokens[i].equalsIgnoreCase("+Inf")) {
+                            // Positive infinity:
+                            caseRow[i] = "Inf";
+                        } else if (valueTokens[i].equalsIgnoreCase("-Inf")) {
+                            // Negative infinity:
+                            caseRow[i] = "-Inf";
+                        } else if (valueTokens[i].equalsIgnoreCase("null")) {
+                            // By request from Gus - "NULL" is recognized as a
+                            // numeric zero:
+                            caseRow[i] = "0";
+                        } else {
+                            try {
+                                Double testDoubleValue = new Double(valueTokens[i]);
+                                caseRow[i] = testDoubleValue.toString();
+                            } catch (Exception ex) {
+                                throw new IngestException(IngestError.EXCEL_NUMERIC_PARSE, String.valueOf(i), valueTokens[i]);
+                            }
+                        }
                     } else {
-                        try {
-                            Double testDoubleValue = new Double(valueTokens[i]);
-                            caseRow[i] = testDoubleValue.toString();
-                        } catch (Exception ex) {
-                            throw new IngestException(IngestError.EXCEL_NUMERIC_PARSE, String.valueOf(i), valueTokens[i]);
+                        // Treat as a String:
+                        // Strings are stored in tab files quoted;
+                        // Missing values are stored as tab-delimited nothing -
+                        // i.e., an empty string between two tabs (or one tab and
+                        // the new line);
+                        // Empty strings stored as "" (quoted empty string).
+
+                        if (valueTokens[i] != null && !valueTokens[i].equals(".")) {
+                            String charToken = valueTokens[i];
+                            // Dealing with quotes:
+                            // remove the leading and trailing quotes, if present:
+                            charToken = charToken.replaceFirst("^\"", "");
+                            charToken = charToken.replaceFirst("\"$", "");
+                            // escape the remaining ones:
+                            charToken = charToken.replace("\"", "\\\"");
+                            // final pair of quotes:
+                            charToken = "\"" + charToken + "\"";
+                            caseRow[i] = charToken;
+                        } else {
+                            caseRow[i] = "";
                         }
                     }
-                } else {
-                    // Treat as a String:
-                    // Strings are stored in tab files quoted;                                                                                   
-                    // Missing values are stored as tab-delimited nothing - 
-                    // i.e., an empty string between two tabs (or one tab and 
-                    // the new line);                                                                       
-                    // Empty strings stored as "" (quoted empty string).
+                }
 
-                    if (valueTokens[i] != null && !valueTokens[i].equals(".")) {
-                        String charToken = valueTokens[i];
-                        // Dealing with quotes: 
-                        // remove the leading and trailing quotes, if present:
-                        charToken = charToken.replaceFirst("^\"", "");
-                        charToken = charToken.replaceFirst("\"$", "");
-                        // escape the remaining ones:
-                        charToken = charToken.replace("\"", "\\\"");
-                        // final pair of quotes:
-                        charToken = "\"" + charToken + "\"";
-                        caseRow[i] = charToken;
-                    } else {
-                        caseRow[i] = "";
-                    }
+                finalWriter.println(StringUtils.join(caseRow, "\t"));
+                lineCounter++;
+
+
+            }
+
+            if (dataTable.getCaseQuantity().intValue() != lineCounter) {
+                throw new IngestException(IngestError.EXCEL_LINE_COUNT);
+            }
+
+            dataTable.setUnf("UNF:6:NOTCALCULATED");
+
+            ingesteddata.setTabDelimitedFile(tabFileDestination);
+            ingesteddata.setDataTable(dataTable);
+
+            dbglog.fine("Produced temporary file " + ingesteddata.getTabDelimitedFile().getAbsolutePath());
+            dbglog.fine("Found " + dataTable.getVarQuantity() + " variables, " + dataTable.getCaseQuantity() + " observations.");
+            String varNames = null;
+            for (int i = 0; i < dataTable.getVarQuantity().intValue(); i++) {
+                if (varNames == null) {
+                    varNames = dataTable.getDataVariables().get(i).getName();
+                } else {
+                    varNames = varNames + ", " + dataTable.getDataVariables().get(i).getName();
                 }
             }
-
-            finalWriter.println(StringUtils.join(caseRow, "\t"));
-            lineCounter++;
+            dbglog.fine("Variable names: " + varNames);
 
 
+            return ingesteddata;
         }
-
-        secondPassReader.close();
-        finalWriter.close();
-
-        if (dataTable.getCaseQuantity().intValue() != lineCounter) {
-            throw new IngestException(IngestError.EXCEL_LINE_COUNT);
-        }
-
-        dataTable.setUnf("UNF:6:NOTCALCULATED");
-
-        ingesteddata.setTabDelimitedFile(tabFileDestination);
-        ingesteddata.setDataTable(dataTable);
-
-        dbglog.fine("Produced temporary file " + ingesteddata.getTabDelimitedFile().getAbsolutePath());
-        dbglog.fine("Found " + dataTable.getVarQuantity() + " variables, " + dataTable.getCaseQuantity() + " observations.");
-        String varNames = null;
-        for (int i = 0; i < dataTable.getVarQuantity().intValue(); i++) {
-            if (varNames == null) {
-                varNames = dataTable.getDataVariables().get(i).getName();
-            } else {
-                varNames = varNames + ", " + dataTable.getDataVariables().get(i).getName();
-            }
-        }
-        dbglog.fine("Variable names: " + varNames);
-
-
-        return ingesteddata;
-
     }
 
     public void processSheet(String filename, DataTable dataTable, PrintWriter tempOut) throws Exception {

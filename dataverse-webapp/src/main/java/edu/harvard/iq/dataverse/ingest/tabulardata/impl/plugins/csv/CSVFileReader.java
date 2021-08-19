@@ -122,7 +122,12 @@ public class CSVFileReader extends TabularDataFileReader {
         File tabFileDestination = File.createTempFile("data-", ".tab");
         PrintWriter tabFileWriter = new PrintWriter(tabFileDestination.getAbsolutePath());
 
-        int lineCount = readFile(localBufferedReader, dataTable, tabFileWriter);
+        File firstPassTempFile = File.createTempFile("firstpass-", ".csv");
+        try {
+            int lineCount = readFile(localBufferedReader, dataTable, tabFileWriter, firstPassTempFile);
+        } finally {
+            firstPassTempFile.delete();
+        }
 
         logger.fine("Tab file produced: " + tabFileDestination.getAbsolutePath());
 
@@ -134,7 +139,7 @@ public class CSVFileReader extends TabularDataFileReader {
 
     }
 
-    public int readFile(BufferedReader csvReader, DataTable dataTable, PrintWriter finalOut) throws IOException {
+    public int readFile(BufferedReader csvReader, DataTable dataTable, PrintWriter finalOut, File firstPassTempFile) throws IOException {
 
         List<DataVariable> variableList = new ArrayList<>();
         CSVParser parser = new CSVParser(csvReader, inFormat.withHeader());
@@ -182,8 +187,6 @@ public class CSVFileReader extends TabularDataFileReader {
         // (we'll save the incoming stream in another temp file:)
         SimpleDateFormat[] selectedDateTimeFormat = new SimpleDateFormat[headers.size()];
         SimpleDateFormat[] selectedDateFormat = new SimpleDateFormat[headers.size()];
-
-        File firstPassTempFile = File.createTempFile("firstpass-", ".csv");
 
         try (CSVPrinter csvFilePrinter = new CSVPrinter(
                 // TODO allow other parsers of tabular data to use this parser by changin inFormat
@@ -447,19 +450,17 @@ public class CSVFileReader extends TabularDataFileReader {
                 }
                 finalOut.println(StringUtils.join(caseRow, "\t"));
             }
+            long linecount = parser.getRecordNumber();
+            if (dataTable.getCaseQuantity().intValue() != linecount) {
+                List<String> args = Arrays.asList("" + dataTable.getCaseQuantity().intValue(),
+                        "" + linecount);
+                throw new IngestException(IngestError.CSV_LINE_MISMATCH, args);
+            }
+            return (int) linecount;
+        } finally {
+            finalOut.close();
+            parser.close();
         }
-        long linecount = parser.getRecordNumber();
-        finalOut.close();
-        parser.close();
-        logger.fine("Tmp File: " + firstPassTempFile);
-        // Firstpass file is deleted to prevent tmp from filling up.
-        firstPassTempFile.delete();
-        if (dataTable.getCaseQuantity().intValue() != linecount) {
-            List<String> args = Arrays.asList("" + dataTable.getCaseQuantity().intValue(),
-                                              "" + linecount);
-            throw new IngestException(IngestError.CSV_LINE_MISMATCH, args);
-        }
-        return (int) linecount;
     }
 
 }

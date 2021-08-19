@@ -155,7 +155,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
 
             // TODO: 
             // If there are parameters on the list that are 
-            // not valid variable ids, or if the do not belong to 
+            // not valid variable ids, or if they do not belong to
             // the datafile referenced - I simply skip them; 
             // perhaps I should throw an invalid argument exception 
             // instead. 
@@ -172,12 +172,13 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
             String subsetVariableHeader = filteredVariables.stream().map(DataVariable::getName).collect(joining("\t"));
             subsetVariableHeader = subsetVariableHeader.concat("\n");
 
+            Optional<File> tempSubsetFile = Optional.empty();
             try {
-                File tempSubsetFile = File.createTempFile("tempSubsetFile", ".tmp");
+                tempSubsetFile = Optional.of(File.createTempFile("tempSubsetFile", ".tmp"));
                 TabularSubsetGenerator tabularSubsetGenerator = new TabularSubsetGenerator();
-                tabularSubsetGenerator.subsetFile(storageIO.getInputStream(), tempSubsetFile.getAbsolutePath(), variablePositionIndex, dataFile.getDataTable().getCaseQuantity(), "\t");
+                tabularSubsetGenerator.subsetFile(storageIO.getInputStream(), tempSubsetFile.get().getAbsolutePath(), variablePositionIndex, dataFile.getDataTable().getCaseQuantity(), "\t");
 
-                long subsetSize = tempSubsetFile.length();
+                long subsetSize = tempSubsetFile.get().length();
 
                 String tabularFileName = storageIO.getFileName();
 
@@ -189,7 +190,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                     tabularFileName = "subset.tab";
                 }
 
-                InputStreamIO subsetStreamIO = new InputStreamIO(new FileInputStream(tempSubsetFile), subsetSize, tabularFileName, storageIO.getMimeType());
+                InputStreamIO subsetStreamIO = new InputStreamIO(new FileInputStream(tempSubsetFile.get()), subsetSize, tabularFileName, storageIO.getMimeType());
                 logger.debug("successfully created subset output stream.");
 
                 subsetStreamIO.setVarHeader(subsetVariableHeader);
@@ -197,9 +198,12 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                 storageIO = subsetStreamIO;
                 writeStorageIOToOutputStream(storageIO, outstream, httpHeaders);
                 writeGuestbookResponse(di);
+
                 return;
             } catch (IOException ioex) {
                 throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
+            } finally {
+                tempSubsetFile.ifPresent(File::delete);
             }
         }
 

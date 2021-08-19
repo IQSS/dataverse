@@ -313,7 +313,6 @@ public class NewDTAFileReader extends TabularDataFileReader {
         CONSTANT_TABLE.put(DTAVersion, releaseconstant);
     }
 
-
     /*
      * This method configures Stata's release-specific parameters:
      */

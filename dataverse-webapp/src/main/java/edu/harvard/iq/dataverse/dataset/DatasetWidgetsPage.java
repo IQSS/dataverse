@@ -159,17 +159,19 @@ public class DatasetWidgetsPage implements java.io.Serializable {
         File file = null;
         try {
             file = FileUtil.inputStreamToFile(uploadedFile.getInputStream());
+
+            String base64image = imageThumbConverter.generateImageThumbnailFromFileAsBase64(file, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
+            if (base64image != null) {
+                datasetThumbnail = new DatasetThumbnail(base64image, datasetFileThumbnailToSwitchTo);
+            } else {
+                Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, "Failed to produce a thumbnail from the uploaded dataset logo.");
+            }
         } catch (IOException ex) {
             Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, null, ex);
             return;
+        } finally {
+            file.delete();
         }
-        String base64image = imageThumbConverter.generateImageThumbnailFromFileAsBase64(file, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
-        if (base64image != null) {
-            datasetThumbnail = new DatasetThumbnail(base64image, datasetFileThumbnailToSwitchTo);
-        } else {
-            Logger.getLogger(DatasetWidgetsPage.class.getName()).log(Level.SEVERE, "Failed to produce a thumbnail from the uploaded dataset logo.");
-        }
-
     }
 
     public String save() {

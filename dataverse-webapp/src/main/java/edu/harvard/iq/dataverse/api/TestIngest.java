@@ -63,7 +63,7 @@ public class TestIngest {
     @Path("test/file")
     @GET
     @Produces({"text/plain"})
-    public String datafile(@QueryParam("fileName") String fileName, @QueryParam("fileType") String fileType, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
+    public String datafile(@QueryParam("fileName") String fileName, @QueryParam("fileType") String fileType, @Context UriInfo uriInfo, @Context HttpHeaders headers, @Context HttpServletResponse response) throws IOException /*throws NotFoundException, ServiceUnavailableException, PermissionDeniedException, AuthorizationRequiredException*/ {
         String output = "";
 
         if (StringUtil.isEmpty(fileName) || StringUtil.isEmpty(fileType)) {
@@ -93,7 +93,6 @@ public class TestIngest {
         }
 
         TabularDataIngest tabDataIngest = null;
-
         try {
             tabDataIngest = ingestPlugin.read(fileInputStream, null);
         } catch (IOException ingestEx) {
