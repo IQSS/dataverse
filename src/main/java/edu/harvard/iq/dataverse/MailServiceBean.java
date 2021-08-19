@@ -435,7 +435,7 @@ public class MailServiceBean implements java.io.Serializable {
             case DATASETCREATED:
                 dataset = (Dataset) targetObject;
                 pattern = BundleUtil.getStringFromBundle("notification.email.datasetWasCreated");
-                String[] paramArrayDatasetCreated = {dataset.getDisplayName(), getDatasetLink(dataset), userNotification.getUser().getName(), dataset.getOwner().getDisplayName()};
+                String[] paramArrayDatasetCreated = {getDatasetLink(dataset), dataset.getDisplayName(), userNotification.getUser().getName(), dataset.getOwner().getDisplayName()};
                 messageText += MessageFormat.format(pattern, paramArrayDatasetCreated);
                 return messageText;
             case CREATEDS:

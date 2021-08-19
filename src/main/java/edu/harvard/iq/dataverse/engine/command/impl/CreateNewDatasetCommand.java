@@ -143,9 +143,6 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
                         null,
                         true
                 );
-                String subject = BrandingUtil.getInstallationBrandName() + ": Data Project Created: " + theDataset.getDisplayName();
-                String body = "<a href = \"" + ctxt.mail().getDatasetLink(theDataset) + "\">" + theDataset.getDisplayName() + "</a> was just created.";
-                ctxt.mail().sendSystemEmail(au.getEmail(), subject, body, true);
             }
         }
         }
