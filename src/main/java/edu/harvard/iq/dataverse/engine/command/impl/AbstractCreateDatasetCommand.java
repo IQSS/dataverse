@@ -61,7 +61,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
     }
     
     //QDR
-    protected void notifyPublishers( Dataset theDataset, CommandContext ctxt ) throws CommandException {
+    protected void postDBFlush( Dataset theDataset, CommandContext ctxt ) throws CommandException {
         // base class - default to nothing.
     }
     
@@ -129,7 +129,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         ctxt.em().flush();
         
         //QDR
-        notifyPublishers(theDataset, ctxt);
+        postDBFlush(theDataset, ctxt);
         
         // TODO: this needs to be moved in to an onSuccess method; not adding to this PR as its out of scope
         // TODO: switch to asynchronous version when JPA sync works

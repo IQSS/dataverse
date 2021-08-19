@@ -119,9 +119,9 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
     
     /* Emails those able to publish the dataset (except the creator themselves who already gets an email)
      * that a new dataset exists. 
-     * NB: Needs dataset id
+     * NB: Needs dataset id so has to be postDBFlush (vs postPersist())
      */
-    protected void notifyPublishers( Dataset theDataset, CommandContext ctxt ){
+    protected void postDBFlush( Dataset theDataset, CommandContext ctxt ){
         //QDR - alert curators that a dataset has been created
         //Should this create a notification too? (which would let us use the notification mailcapbilities to generate the subject/body.
         AuthenticatedUser requestor = getUser().isAuthenticated() ? (AuthenticatedUser) getUser() : null;
