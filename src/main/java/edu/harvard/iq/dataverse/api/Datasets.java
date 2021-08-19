@@ -122,6 +122,7 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -2733,5 +2734,53 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
         return addFileHelper.addFiles(jsonData, dataset, authUser);
 
+    }
+    
+    
+    /** QDR
+     * 
+     * API to find curation assignements and statuses
+     * 
+     * @return
+     * @throws WrappedResponse
+     */
+    @GET
+    @Path("/listCurationStatuses")
+    @Produces("text/csv")
+    public Response getCurationStatuses() throws WrappedResponse {
+
+        try {
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        
+        StringBuilder csvSB = new StringBuilder(String.join(",", 
+                BundleUtil.getStringFromBundle("dataset"), 
+                BundleUtil.getStringFromBundle("datasets.api.creationdate"), 
+                BundleUtil.getStringFromBundle("datasets.api.modificationdate"), 
+                BundleUtil.getStringFromBundle("datasets.api.curationstatus")));
+        for (Dataset dataset : datasetSvc.findAllUnpublished()) {
+                List<RoleAssignment> ras = permissionService.assignmentsOn(dataset);
+                String assignee = null;
+                for (RoleAssignment ra : ras) {
+                    if (ra.getRole().getName().equals("Assignee")) {
+                        assignee = ra.getAssigneeIdentifier();
+                        break;
+                    }
+                }
+                String name = dataset.getCurrentName().replace("\"","\"\"");
+                String status = dataset.getLatestVersion().getExternalStatusLabel();
+                String url = systemConfig.getDataverseSiteUrl() + dataset.getTargetUrl() + dataset.getGlobalId().asString();
+                String date = new SimpleDateFormat("yyyy-MM-dd").format(dataset.getCreateDate());
+                String modDate = new SimpleDateFormat("yyyy-MM-dd").format(dataset.getModificationTime());
+                String hyperlink = "\"=HYPERLINK(\"\"" + url + "\"\",\"\"" + name + "\"\")\"";
+                csvSB.append("\n").append(String.join(",", hyperlink, date, modDate, assignee==null ? "":assignee, status==null ? "": status));
+        }
+        csvSB.append("\n");
+    return ok(csvSB.toString(), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "datasets.status.csv");
     }
 }
