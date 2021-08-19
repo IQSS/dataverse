@@ -125,19 +125,6 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
             // two commands. But it may be a good idea to make sure they are properly
             // linked here (?)
             theDataset.setPermissionModificationTime(getTimestamp());
-            
-            //QDR - alert curators that a dataset has been created
-            //Should this create a notification too? (which would let us use the notification mailcapbilities to generate the subject/body.
-            AuthenticatedUser requestor = getUser().isAuthenticated() ? (AuthenticatedUser) getUser() : null;
-            List<AuthenticatedUser> authUsers = ctxt.permissions().getUsersWithPermissionOn(Permission.PublishDataset, theDataset);
-            for (AuthenticatedUser au : authUsers) {
-                if(!au.equals(requestor)) {
-                    String subject = "Dataset Created: " + theDataset.getDisplayName();
-                    InternetAddress systemAddress = ctxt.mail().getSystemAddress();
-                    String body = "<a href = \"" + ctxt.mail().getDatasetLink(theDataset) + "\">" + theDataset.getDisplayName() + "</a> was just created.\n\n" + BundleUtil.getStringFromBundle("notification.email.closing.html", Arrays.asList(BrandingUtil.getSupportTeamEmailAddress(systemAddress), BrandingUtil.getSupportTeamName(systemAddress)));
-                    ctxt.mail().sendSystemEmail(au.getEmail(), subject, body, true);
-                }
-            }
         }
         
         if ( template != null ) {
