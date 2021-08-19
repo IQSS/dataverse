@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Map.Entry;
@@ -46,7 +45,6 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.parallel.InputStreamSupplier;
 import org.apache.commons.compress.utils.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
@@ -530,6 +528,11 @@ public class BagGenerator {
                     titles.add(childTitle);
                 }
                 String childPath = currentPath + childTitle;
+                JsonElement directoryLabel = child.get(JsonLDTerm.DVCore("directoryLabel").getLabel());
+                if(directoryLabel!=null) {
+                    childPath=currentPath + directoryLabel.getAsString() + "/" + childTitle;
+                }
+                
 
                 String childHash = null;
                 if (child.has(JsonLDTerm.checksum.getLabel())) {
@@ -538,19 +541,19 @@ public class BagGenerator {
                     if (hashtype == null) {
                     	//If one wasn't set as a default, pick up what the first child with one uses
                         hashtype = childHashType;
-					}
-					if (hashtype != null && !hashtype.equals(childHashType)) {
-						logger.warning("Multiple hash values in use - will calculate " + hashtype.toString()
-								+ " hashes for " + childTitle);
-					} else {
-						childHash = child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@value").getAsString();
-						if (checksumMap.containsValue(childHash)) {
-							// Something else has this hash
-							logger.warning("Duplicate/Collision: " + child.get("@id").getAsString() + " has SHA1 Hash: "
-									+ childHash);
-						}
-						checksumMap.put(childPath, childHash);
-					}
+                    }
+                    if (hashtype != null && !hashtype.equals(childHashType)) {
+                        logger.warning("Multiple hash values in use - will calculate " + hashtype.toString()
+                            + " hashes for " + childTitle);
+                    } else {
+                        childHash = child.getAsJsonObject(JsonLDTerm.checksum.getLabel()).get("@value").getAsString();
+                        if (checksumMap.containsValue(childHash)) {
+                            // Something else has this hash
+                            logger.warning("Duplicate/Collision: " + child.get("@id").getAsString() + " has SHA1 Hash: "
+                                + childHash);
+                        }
+                        checksumMap.put(childPath, childHash);
+                    }
                 }
                 if ((hashtype == null) | ignorehashes) {
                     // Pick sha512 when ignoring hashes or none exist
@@ -860,11 +863,12 @@ public class BagGenerator {
     }
 
     /**
-     * Kludge - handle when a single string is sent as an array of 1 string and, for
-     * cases where multiple values are sent when only one is expected, create a
-     * concatenated string so that information is not lost.
+     * Kludge - compound values (e.g. for descriptions) are sent as an array of
+     * objects containing key/values whereas a single value is sent as one object.
+     * For cases where multiple values are sent, create a concatenated string so
+     * that information is not lost.
      * 
-     * @param jsonObject
+     * @param jsonElement
      *            - the root json object
      * @param key
      *            - the key to find a value(s) for
@@ -883,7 +887,7 @@ public class BagGenerator {
                 stringArray.add(iter.next().getAsJsonObject().getAsJsonPrimitive(key).getAsString());
             }
             if (stringArray.size() > 1) {
-                val = StringUtils.join(stringArray.toArray(), ",");
+                val = String.join(",", stringArray);
             } else {
                 val = stringArray.get(0);
             }
