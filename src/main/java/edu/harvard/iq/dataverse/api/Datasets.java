@@ -2794,12 +2794,13 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                 Set<String> curators = new HashSet<String>();
                 for (RoleAssignment ra : ras) {
                     if (ra.getRole().getName().equals("Assignee")) {
+                        if(assignee!=null) {
+                            logger.warning("Dataset: " + dataset.getGlobalId().toString() + "has multiple 'Assignees': " + ra.getAssigneeIdentifier());
+                        }
                         assignee = ra.getAssigneeIdentifier();
-                        break;
                     }
                     if (ra.getRole().getName().equals("Curator") && ra.getDefinitionPoint().equals(dataset)) {
                         curators.add(ra.getAssigneeIdentifier());
-                        break;
                     }
                 }
                 String name = dataset.getCurrentName().replace("\"","\"\"");
