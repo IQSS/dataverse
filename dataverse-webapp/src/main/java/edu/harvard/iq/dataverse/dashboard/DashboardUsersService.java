@@ -10,7 +10,6 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-
 import java.util.logging.Logger;
 
 @Stateless
@@ -37,12 +36,10 @@ public class DashboardUsersService {
 
     // -------------------- LOGIC --------------------
 
-    public AuthenticatedUser changeSuperuserStatus(AuthenticatedUser user) {
-        logger.fine("Toggling user's " + user.getIdentifier() + " superuser status; (current status: " + user.isSuperuser() + ")");
-        logger.fine("Attempting to save user " + user.getIdentifier());
-        logger.fine("selectedUserPersistent info: " + user.getId() + " set to: " + user.isSuperuser());
+    public AuthenticatedUser changeSuperuserStatus(Long userId) {
+        AuthenticatedUser dbUser = userServiceBean.find(userId);
 
-        AuthenticatedUser dbUser = userServiceBean.find(user.getId());
+        logger.fine("Toggling superuser status for user with id: " + userId + " superuser status; (current status: " + dbUser.isSuperuser() + ")");
 
         if (dbUser.isSuperuser()) {
             return revokeSuperuserStatus(dbUser);
@@ -51,8 +48,12 @@ public class DashboardUsersService {
         }
     }
 
-    public AuthenticatedUser revokeAllRolesForUser(AuthenticatedUser user) {
-        return commandEngine.submit(new RevokeAllRolesCommand(user, dvRequestService.getDataverseRequest()));
+    public AuthenticatedUser revokeAllRolesForUser(Long userId) {
+        AuthenticatedUser dbUser = userServiceBean.find(userId);
+
+        logger.fine("Revoking all roles for user: " + dbUser.getIdentifier());
+
+        return commandEngine.submit(new RevokeAllRolesCommand(dbUser, dvRequestService.getDataverseRequest()));
     }
 
     // -------------------- PRIVATE ---------------------

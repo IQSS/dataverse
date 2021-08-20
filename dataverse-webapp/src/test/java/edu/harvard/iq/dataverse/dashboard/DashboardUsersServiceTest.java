@@ -8,9 +8,8 @@ import edu.harvard.iq.dataverse.engine.command.impl.GrantSuperuserStatusCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeAllRolesCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeSuperuserStatusCommand;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -52,7 +51,7 @@ public class DashboardUsersServiceTest {
         AuthenticatedUser user = createTestUser();
 
         // when
-        dashboardUsersService.revokeAllRolesForUser(user);
+        dashboardUsersService.revokeAllRolesForUser(user.getId());
 
         // then
         verify(engineService, times(1)).submit(any(RevokeAllRolesCommand.class));
@@ -66,7 +65,7 @@ public class DashboardUsersServiceTest {
         this.testUser.setSuperuser(false);
 
         // when
-        dashboardUsersService.changeSuperuserStatus(user);
+        dashboardUsersService.changeSuperuserStatus(user.getId());
 
         // then
         verify(engineService, times(1)).submit(any(GrantSuperuserStatusCommand.class));
@@ -80,7 +79,7 @@ public class DashboardUsersServiceTest {
         this.testUser.setSuperuser(true);
 
         // when
-        dashboardUsersService.changeSuperuserStatus(user);
+        dashboardUsersService.changeSuperuserStatus(user.getId());
 
         // then
         verify(engineService, times(1)).submit(any(RevokeSuperuserStatusCommand.class));

@@ -10,27 +10,18 @@ package edu.harvard.iq.dataverse.userdata;
  */
 public class OffsetPageValues {
 
-    private int offset;
-    private int pageNumber;
+    private final int offset;
+    private final int pageNumber;
 
 
-    /*
-     * Constructor
-     */
+    // -------------------- CONSTRUCTORS --------------------
+
     public OffsetPageValues(int offset, int pageNumber) {
         this.pageNumber = pageNumber;
         this.offset = offset;
     }
 
-
-    /**
-     * Set offset
-     *
-     * @param offset
-     */
-    public void setOffset(int offset) {
-        this.offset = offset;
-    }
+    // -------------------- GETTERS --------------------
 
     /**
      * Get for offset
@@ -39,16 +30,6 @@ public class OffsetPageValues {
      */
     public int getOffset() {
         return this.offset;
-    }
-
-
-    /**
-     * Set pageNumber
-     *
-     * @param pageNumber
-     */
-    public void setPageNumber(int pageNumber) {
-        this.pageNumber = pageNumber;
     }
 
     /**

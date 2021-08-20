@@ -132,28 +132,6 @@ public interface AuthenticationProvider {
         throw new UnsupportedOperationException(this.toString() + " does not implement account deletions");
     }
 
-
-    /**
-     * Given the AuthenticationProvider id, return the friendly name
-     * of the AuthenticationProvider as defined in the bundle
-     * <p>
-     * If no name is defined, return the id itself
-     *
-     * @param authProviderId
-     * @return
-     */
-    static String getFriendlyName(String authProviderId) {
-        if (authProviderId == null) {
-            return BundleUtil.getStringFromBundle("authenticationProvider.name.null");
-        }
-
-        String friendlyName = BundleUtil.getStringFromBundle("authenticationProvider.name." + authProviderId);
-        if (friendlyName.isEmpty()) {
-            return authProviderId;
-        }
-        return friendlyName;
-    }
-
     /**
      * Given the AuthenticationProvider id,
      * return the friendly name using the static method

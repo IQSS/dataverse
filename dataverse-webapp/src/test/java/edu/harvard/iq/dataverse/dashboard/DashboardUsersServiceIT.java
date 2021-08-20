@@ -10,18 +10,14 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
 import org.jboss.arquillian.transaction.api.annotation.Transactional;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.*;
+import org.junit.rules.*;
+import org.junit.runner.*;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(Arquillian.class)
 @Transactional(TransactionMode.ROLLBACK)
@@ -50,7 +46,7 @@ public class DashboardUsersServiceIT extends WebappArquillianDeployment {
         AuthenticatedUser user = authenticationServiceBean.findByID(2L);
 
         // when
-        dashboardUsersService.revokeAllRolesForUser(user);
+        dashboardUsersService.revokeAllRolesForUser(user.getId());
 
         // then
         AuthenticatedUser dbUser = authenticationServiceBean.findByID(2L);
@@ -68,7 +64,7 @@ public class DashboardUsersServiceIT extends WebappArquillianDeployment {
 
         // when & then
         thrown.expect(PermissionException.class);
-        dashboardUsersService.revokeAllRolesForUser(user);
+        dashboardUsersService.revokeAllRolesForUser(user.getId());
     }
 
     @Test
@@ -77,7 +73,7 @@ public class DashboardUsersServiceIT extends WebappArquillianDeployment {
         AuthenticatedUser user = authenticationServiceBean.findByID(2L);
 
         // when
-        AuthenticatedUser dbUser =  dashboardUsersService.changeSuperuserStatus(user);
+        AuthenticatedUser dbUser = dashboardUsersService.changeSuperuserStatus(user.getId());
 
         // then
         assertNotNull(dbUser);
@@ -90,7 +86,7 @@ public class DashboardUsersServiceIT extends WebappArquillianDeployment {
         AuthenticatedUser user = authenticationServiceBean.findByID(3L);
 
         // when
-        AuthenticatedUser dbUser =  dashboardUsersService.changeSuperuserStatus(user);
+        AuthenticatedUser dbUser = dashboardUsersService.changeSuperuserStatus(user.getId());
 
         // then
         assertNotNull(dbUser);
@@ -105,7 +101,7 @@ public class DashboardUsersServiceIT extends WebappArquillianDeployment {
 
         // when & then
         thrown.expect(PermissionException.class);
-        dashboardUsersService.changeSuperuserStatus(user);
+        dashboardUsersService.changeSuperuserStatus(user.getId());
     }
 
     @Test
@@ -116,6 +112,6 @@ public class DashboardUsersServiceIT extends WebappArquillianDeployment {
 
         // when & then
         thrown.expect(PermissionException.class);
-        dashboardUsersService.changeSuperuserStatus(user);
+        dashboardUsersService.changeSuperuserStatus(user.getId());
     }
 }

@@ -11,82 +11,25 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * @author rmp553
  */
 public class UserListResult {
 
-    private static final Logger logger = Logger.getLogger(UserListResult.class.getName());
-
-    private String searchTerm;
-
-    private Pager pager;
-    private List<AuthenticatedUser> userList;
-
-    private boolean success;
-
-    private String errorMessage;
+    private final Pager pager;
+    private final List<AuthenticatedUser> userList;
 
 
-    public UserListResult(String searchTerm, Pager pager, List<AuthenticatedUser> userList) {
+    // -------------------- CONSTRUCTORS --------------------
 
-
-        if (searchTerm == null) {
-            searchTerm = "";
-        }
-        this.searchTerm = searchTerm;
-
+    public UserListResult(Pager pager, List<AuthenticatedUser> userList) {
         this.pager = pager;
-        if (this.pager == null) {
-            logger.severe("Pager should never be null!");
-        }
-
         this.userList = userList;
-        if (this.userList == null) {
-            this.userList = new ArrayList<>();  // new empty list
-        }
-
     }
 
-    public Integer getSelectedPageNumber() {
-
-        if (pager == null) {
-            return 1;
-        }
-        return pager.getSelectedPageNumber();
-    }
-
-    /**
-     * Set searchTerm
-     *
-     * @param searchTerm
-     */
-    public void setSearchTerm(String searchTerm) {
-        this.searchTerm = searchTerm;
-    }
-
-    /**
-     * Get for searchTerm
-     *
-     * @return String
-     */
-    public String getSearchTerm() {
-        return this.searchTerm;
-    }
-
-
-    /**
-     * Set pager
-     *
-     * @param pager
-     */
-    public void setPager(Pager pager) {
-        this.pager = pager;
-    }
+    // -------------------- GETTERS --------------------
 
     /**
      * Get for pager
@@ -94,17 +37,7 @@ public class UserListResult {
      * @return Pager
      */
     public Pager getPager() {
-        return this.pager;
-    }
-
-
-    /**
-     * Set userList
-     *
-     * @param userList
-     */
-    public void setUserList(List<AuthenticatedUser> userList) {
-        this.userList = userList;
+        return pager;
     }
 
     /**
@@ -116,44 +49,7 @@ public class UserListResult {
         return this.userList;
     }
 
-
-    /**
-     * Set success
-     *
-     * @param success
-     */
-    public void setSuccess(boolean success) {
-        this.success = success;
-    }
-
-    /**
-     * Get for success
-     *
-     * @return boolean
-     */
-    public boolean getSuccess() {
-        return this.success;
-    }
-
-
-    /**
-     * Set errorMessage
-     *
-     * @param errorMessage
-     */
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
-
-    /**
-     * Get for errorMessage
-     *
-     * @return String
-     */
-    public String getErrorMessage() {
-        return this.errorMessage;
-    }
-
+    // -------------------- LOGIC --------------------
 
     /**
      * TO DO!
@@ -162,15 +58,6 @@ public class UserListResult {
      * @return
      */
     public JsonObjectBuilder toJSON() {
-
-        if (userList.isEmpty()) {
-            return getNoResultsJSON();
-        }
-        if (pager == null) {
-            logger.severe("Pager should never be null!");
-            return getNoResultsJSON();
-
-        }
 
         JsonObjectBuilder jsonOverallData = Json.createObjectBuilder();
         jsonOverallData.add("userCount", pager.getNumResults())
@@ -182,19 +69,10 @@ public class UserListResult {
         return jsonOverallData;
     }
 
+    // -------------------- PRIVATE --------------------
 
     private JsonArrayBuilder getUsersAsJSONArray() {
 
-        // -------------------------------------------------
-        // No results..... Return count of 0 and empty array
-        // -------------------------------------------------
-        if ((userList == null) || (userList.isEmpty())) {
-            return Json.createArrayBuilder(); // return an empty array
-        }
-
-        // -------------------------------------------------
-        // We have results, format them into a JSON object
-        // -------------------------------------------------
         JsonArrayBuilder jsonUserListArray = Json.createArrayBuilder();
 
         for (AuthenticatedUser oneUser : userList) {
@@ -202,16 +80,4 @@ public class UserListResult {
         }
         return jsonUserListArray;
     }
-
-
-    private JsonObjectBuilder getNoResultsJSON() {
-
-        return Json.createObjectBuilder()
-                .add("userCount", 0)
-                .add("selectedPage", 1)
-                .add("bundleStrings", AuthenticatedUser.getBundleStrings())
-                .add("users", Json.createArrayBuilder()); // empty array
-    }
-
-
 }

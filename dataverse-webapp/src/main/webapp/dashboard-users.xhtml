@@ -24,54 +24,72 @@
             <ui:param name="showDataverseHeader" value="false"/>
             <ui:define name="body">
                 <h:form id="dashboardUsersForm">
-                    <div jsf:id="userssHeaderBlock" class="row">
-                        <div class="col-sm-6">
-                            <div class="input-group">
-                                <p:inputText type="hidden" id="selectedPage" value="#{DashboardUsersPage.selectedPage}" />
-                                <p:inputText id="searchFiles" styleClass="form-control" value="#{DashboardUsersPage.searchTerm}" widgetVar="inputSearchTerm"
-                                             onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
-                                <p:watermark for="searchFiles" value="#{bundle['dashboard.list_users.searchTerm.watermark']}"/>
-                                <p:remoteCommand name="submitsearch" action="#{DashboardUsersPage.runUserSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true"/>
-                                <span class="input-group-btn">
-                                    <p:commandLink styleClass="btn btn-default" action="#{DashboardUsersPage.runUserSearch()}" process="@this @widgetVar(inputSearchTerm)" update="@form" partialSubmit="true">
-                                        <span class="glyphicon glyphicon-search"></span> #{bundle['dataverse.search.btn.find']}
-                                    </p:commandLink>
-                                </span>
+                    <!-- users table-->
+                    <p:dataTable id="userInfoTable"
+                                 widgetVar="userInfoTable"
+                                 var="user"
+                                 value="#{DashboardUsersPage.users}"
+                                 emptyMessage="#{bundle['dashboard.list_users.emptyList.message']}"
+                                 paginator="true" paginatorAlwaysVisible="false" paginatorPosition="top"
+                                 paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} #{bundle['dashboard.list_users.usersPerPage.title']} {RowsPerPageDropdown}"
+                                 rowsPerPageTemplate="10, 25, 50, 100"
+                                 rows="10"
+                                 lazy="true">
+
+                        <p:ajax event="page" listener="#{DashboardUsersPage.setSelectedUserInfo(null)}"/>
+
+                        <f:facet name="header">
+                            <div jsf:id="usersHeaderBlock" class="row">
+                                <p:outputPanel id="searchPanel">
+                                    <div class="col-sm-6">
+                                        <!-- users search -->
+                                        <div class="input-group">
+                                            <p:inputText id="globalFilter" styleClass="form-control"
+                                                         widgetVar="inputSearchTerm"
+                                                         value="#{DashboardUsersPage.searchTerm}"
+                                                         onkeypress="if (event.keyCode == 13) { PF('searchButton').getJQ().click(); return false; }"
+                                            />
+                                            <p:watermark for="globalFilter"
+                                                         value="#{bundle['dashboard.list_users.searchTerm.watermark']}"/>
+
+                                            <span class="input-group-btn">
+                                        <p:commandButton id="searchButton" styleClass="btn btn-default"
+                                                         widgetVar="searchButton"
+                                                         onclick="PF('userInfoTable').filter();"
+                                                         process="@this @widgetVar(inputSearchTerm)"
+                                                         update="@form"
+                                                         value="#{bundle['dataverse.search.btn.find']}"
+                                                         partialSubmit="true">
+                                        </p:commandButton>
+                                        </span>
+                                        </div>
+                                    </div>
+                                </p:outputPanel>
                             </div>
-                        </div>
-                    </div>
+                        </f:facet>
 
-                    <ui:include src="dashboard-users-pager.xhtml">
-                        <ui:param name="listPager" value="#{DashboardUsersPage.pager}" />
-                    </ui:include>
-
-                    <p:dataTable id="userTable" value="#{DashboardUsersPage.userList}"
-                                 var="user" widgetVar="userTable"
-                                 sortMode="single"
-                                 >
-
-                        <p:ajax event="sort" listener="#{DashboardUsersPage.onSort}"></p:ajax>
-
-                        <p:column sortBy="#{user.id}" style="width:60px" class="text-center"
+                        <p:column sortBy="#{user.id}"
+                                  style="width:60px" class="text-center"
                                   field="id"
                                   headerText="#{bundle['dashboard.list_users.tbl_header.userId']}">
-                            <h:outputText value="#{user.id}"  />
+                            <h:outputText value="#{user.id}"/>
                         </p:column>
                         <p:column sortBy="#{user.identifier}"
-                                  field="useridentifier"
+                                  field="userIdentifier"
                                   headerText="#{bundle['dashboard.list_users.tbl_header.userIdentifier']}">
-                            <span class="glyphicon glyphicon-user text-danger" jsf:rendered="#{user.superuser}" style="margin-right:6px;"></span>
-                            <h:outputText value="#{user.userIdentifier}" class="#{user.superuser ? 'text-danger' : ''}" />
+                            <span class="glyphicon glyphicon-user text-danger" jsf:rendered="#{user.superuser}"
+                                  style="margin-right:6px;"></span>
+                            <h:outputText value="#{user.identifier}" class="#{user.superuser ? 'text-danger' : ''}"/>
                         </p:column>
-                        <p:column sortBy="#{user.firstName.concat(' ').concat(user.lastName)}"
-                                  field="firstNameLastName"
+                        <p:column sortBy="#{user.name}"
+                                  field="lastName"
                                   headerText="#{bundle['dashboard.list_users.tbl_header.name']}">
-                            <h:outputText value="#{user.firstName} #{user.lastName}" />
+                            <h:outputText value="#{user.name}"/>
                         </p:column>
                         <p:column sortBy="#{user.email}" width="20%"
                                   field="email"
                                   headerText="#{bundle['dashboard.list_users.tbl_header.email']}">
-                            <h:outputText value="#{user.email}" />
+                            <h:outputText value="#{user.email}"/>
                         </p:column>
                         <p:column sortBy="#{user.affiliation}"
                                   field="affiliation"
@@ -79,16 +97,16 @@
                             <h:outputText value="#{user.affiliation}" />
                         </p:column>
                         <p:column headerText="#{bundle['dashboard.list_users.tbl_header.roles']}">
-                            <h:outputText value="#{user.roles}" />
-                            <p:commandButton id="removeRolesButton" 
-                                            rendered="#{!empty user.roles}" 
-                                            value="#{bundle['dashboard.list_users.tbl_header.roles.removeAll']}" 
-                                            styleClass="btn btn-default" 
-                                            type="button">
-                                <p:ajax event="click" 
+                            <h:outputText value="#{user.roles}"/>
+                            <p:commandButton id="removeRolesButton"
+                                             rendered="#{!empty user.roles}"
+                                             value="#{bundle['dashboard.list_users.tbl_header.roles.removeAll']}"
+                                             styleClass="btn btn-default"
+                                             type="button">
+                                <p:ajax event="click"
                                         oncomplete="PF('removeRolesConfirm').show();"
-                                        process="@this" 
-                                        listener="#{DashboardUsersPage.setSelectedUser(user)}"
+                                        process="@this"
+                                        listener="#{DashboardUsersPage.setSelectedUserInfo(user)}"
                                         update=":dashboardUsersForm:removeRolesConfirm"/>
                             </p:commandButton>
                         </p:column>
@@ -99,63 +117,111 @@
                             <!-- Uses our standard approach, of showing a confirmation popup ("are you sure you want to toggle this? ...") first,  -->
                             <!-- before saving the toggled value. -->
                             <!-- The current user, the admin user viewing the dashboard, should not be allowed to toggle the superuser status on him- or herself: -->
-                            <p:selectBooleanCheckbox id="superUserCheckbox" value="#{user.superuser}" valueChangeListener="#{DashboardUsersPage.setSelectedUser(user)}" disabled="#{user.id == dataverseSession.user.id}">
-                                <p:ajax event="change" process="@this" oncomplete="PF('toggleSuperuserConfirmation').show();"  update=":dashboardUsersForm:toggleSuperuserConfirmation"/>
+                            <p:selectBooleanCheckbox id="superUserCheckbox"
+                                                     value="#{user.superuser}"
+                                                     valueChangeListener="#{DashboardUsersPage.setSelectedUserInfo(user)}"
+                                                     disabled="#{user.id == dataverseSession.user.id}">
+                                <p:ajax event="change"
+                                        process="@this"
+                                        oncomplete="PF('toggleSuperuserConfirmation').show();"
+                                        update=":dashboardUsersForm:toggleSuperuserConfirmation"
+                                />
                             </p:selectBooleanCheckbox>
                         </p:column>
                         <p:column width="8%" headerText="#{bundle['dashboard.list_users.tbl_header.action']}" class="text-center align-middle">
                             <p:commandLink type="button"
                                            styleClass="btn btn-default bootstrap-button-tooltip"
                                            title="#{bundle['dashboard.list_users.tbl_header.action.button']}"
-                                           update=":dashboardUsersForm:moreUserInfoDialog"
-                                           actionListener="#{DashboardUsersPage.setSelectedUser(user)}"
-                                           oncomplete="PF('moreUserInfoDialog').show();">
+                                           update=":dashboardUsersForm:userMoreInfoDialog"
+                                           actionListener="#{DashboardUsersPage.setSelectedUserInfo(user)}"
+                                           oncomplete="PF('userMoreInfoDialog').show();">
                                 <span style="text-align: center" class="glyphicon glyphicon-eye-open"/>
                             </p:commandLink>
                         </p:column>
+
                     </p:dataTable>
-                    <p:dialog styleClass="smallPopUp" id="toggleSuperuserConfirmation" header="#{bundle['dashboard.list_users.toggleSuperuser']}" widgetVar="toggleSuperuserConfirmation" modal="true" closable="false">
+
+                    <p:dialog styleClass="smallPopUp"
+                              id="toggleSuperuserConfirmation"
+                              header="#{bundle['dashboard.list_users.toggleSuperuser']}"
+                              widgetVar="toggleSuperuserConfirmation"
+                              modal="true"
+                              dynamic="true"
+                              closable="false">
                         <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/>
-                            <h:outputFormat value=" #{bundle['dashboard.list_users.toggleSuperuser.confirmationText.add']} " rendered="#{DashboardUsersPage.selectedUser.superuser}">
-                                <f:param value="#{DashboardUsersPage.selectedUser.userIdentifier}"/>
+                            <h:outputFormat
+                                    value=" #{bundle['dashboard.list_users.toggleSuperuser.confirmationText.add']} "
+                                    rendered="#{DashboardUsersPage.selectedUserInfo.superuser}">
+                                <f:param value="#{DashboardUsersPage.selectedUserInfo.identifier}"/>
                             </h:outputFormat>
-                            <h:outputFormat value=" #{bundle['dashboard.list_users.toggleSuperuser.confirmationText.remove']} " rendered="#{!DashboardUsersPage.selectedUser.superuser}">
-                                <f:param value="#{DashboardUsersPage.selectedUser.userIdentifier}"/>
+                            <h:outputFormat
+                                    value=" #{bundle['dashboard.list_users.toggleSuperuser.confirmationText.remove']} "
+                                    rendered="#{!DashboardUsersPage.selectedUserInfo.superuser}">
+                                <f:param value="#{DashboardUsersPage.selectedUserInfo.identifier}"/>
                             </h:outputFormat>
                         </p>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle['dashboard.list_users.toggleSuperuser.confirm']}" action="#{DashboardUsersPage.saveSuperuserStatus()}" update="userTable,:messagePanel" onclick="PF('toggleSuperuserConfirmation').hide();"/>
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle['cancel']}" action="#{DashboardUsersPage.cancelSuperuserStatusChange()}"  update=":dashboardUsersForm:userTable,:messagePanel" onclick="PF('toggleSuperuserConfirmation').hide();"/>
+                            <p:commandButton styleClass="btn btn-default"
+                                             value="#{bundle['dashboard.list_users.toggleSuperuser.confirm']}">
+                                <p:ajax event="click"
+                                        listener="#{DashboardUsersPage.saveSuperuserStatus()}"
+                                        process="@this"
+                                        oncomplete="PF('toggleSuperuserConfirmation').hide();"
+                                        update="userInfoTable,:messagePanel"
+                                />
+                            </p:commandButton>
+                            <p:commandButton styleClass="btn btn-default"
+                                             value="#{bundle['cancel']}"
+                                             actionListener="#{DashboardUsersPage.cancelSuperuserStatusChange()}"
+                                             update=":dashboardUsersForm:userInfoTable,:messagePanel"
+                                             onclick="PF('toggleSuperuserConfirmation').hide();"/>
                         </div>
                     </p:dialog>
-                    <p:dialog id="removeRolesConfirm" header="#{bundle['dashboard.list_users.tbl_header.roles.removeAll.header']}" widgetVar="removeRolesConfirm">
-                        <p class="text-warning"><span class="glyphicon glyphicon-warning-sign"/> #{DashboardUsersPage.confirmRemoveRolesMessage}</p>
+                    <p:dialog id="removeRolesConfirm"
+                              header="#{bundle['dashboard.list_users.tbl_header.roles.removeAll.header']}"
+                              widgetVar="removeRolesConfirm">
+                        <p class="text-warning"><span
+                                class="glyphicon glyphicon-warning-sign"/> #{DashboardUsersPage.confirmRemoveRolesMessage}
+                        </p>
                         <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.yes}" update="userTable,:messagePanel" oncomplete="PF('removeRolesConfirm').hide();" action="#{DashboardUsersPage.removeUserRoles()}" />
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.no}" onclick="PF('removeRolesConfirm').hide();" type="button" />
+                            <p:commandButton styleClass="btn btn-default"
+                                             value="#{bundle.yes}">
+                                <p:ajax event="click"
+                                        process="@this"
+                                        listener="#{DashboardUsersPage.removeUserRoles()}"
+                                        oncomplete="PF('removeRolesConfirm').hide();"
+                                        update="userInfoTable,:messagePanel"
+                                />
+                            </p:commandButton>
+                            <p:commandButton styleClass="btn btn-default"
+                                             value="#{bundle.no}"
+                                             onclick="PF('removeRolesConfirm').hide();"
+                                             type="button"/>
                         </div>
                     </p:dialog>
-                    <p:dialog id="moreUserInfoDialog" styleClass="largePopUp disable-scroll" closable="false" draggable="false" resizable="false"
-                              header="#{bundle['dashboard.list_users.moreDialog.title']} #{DashboardUsersPage.selectedUser.userIdentifier}"
-                              widgetVar="moreUserInfoDialog" modal="true" dynamic="true">
-                        <p:outputPanel id="moreUserInfoDialogContent">
+
+                    <p:dialog
+                            header="#{bundle['dashboard.list_users.moreDialog.title']} #{DashboardUsersPage.selectedUserInfo.identifier}"
+                            widgetVar="userMoreInfoDialog" modal="true" draggable="false" resizable="false"
+                            id="userMoreInfoDialog">
+                        <p:outputPanel id="userDetail">
                             <div style="display: grid; grid-template-columns: repeat(2, 45%); grid-row-gap: 10%;">
                                 <div style="grid-column: 1;">
                                     <b>#{bundle['dashboard.list_users.tbl_header.authProviderFactoryAlias']}</b>:
                                 </div>
                                 <div style="grid-column: 2; width: 200%">
-                                    <h:outputText value="#{DashboardUsersPage.getAuthProviderFriendlyName()}" />
+                                    <h:outputText value="#{DashboardUsersPage.selectedUserInfo.authenticator}"/>
                                 </div>
 
                                 <div style="grid-column: 1;">
                                     <b>#{bundle['dashboard.list_users.moreDialog.emailStatus']}</b>:
                                 </div>
                                 <div style="grid-column: 2; width: 200%">
-                                    <p class="form-control-static #{DashboardUsersPage.hasSelectedConfirmedEmail() ? 'text-success' : 'text-danger'}">
+                                    <p class="form-control-static #{DashboardUsersPage.selectedUserInfo.isEmailVerified() ? 'text-success' : 'text-danger'}">
                                         <h:outputText
-                                                styleClass="glyphicon #{DashboardUsersPage.hasSelectedConfirmedEmail() ?
-                                                'glyphicon-ok' : 'glyphicon-ban-circle'}" />
-                                        #{DashboardUsersPage.hasSelectedConfirmedEmail() ?
+                                                styleClass="glyphicon #{DashboardUsersPage.selectedUserInfo.isEmailVerified() ?
+                                            'glyphicon-ok' : 'glyphicon-ban-circle'}"/>
+                                        #{DashboardUsersPage.selectedUserInfo.isEmailVerified() ?
                                                 bundle['confirmEmail.verified'] : bundle['confirmEmail.notVerified']}
                                     </p>
                                 </div>
@@ -164,20 +230,19 @@
                                     <b>#{bundle['dashboard.list_users.moreDialog.emailNotificationsLanguage']}</b>:
                                 </div>
                                 <div style="grid-column: 2; width: 200%">
-                                    <h:outputText value="#{DashboardUsersPage.getUserNotificationLanguageDisplayName()}" />
+                                    <h:outputText value="#{DashboardUsersPage.selectedUserInfo.notificationsLanguage}"/>
                                 </div>
                             </div>
 
                             <div class="button-block">
                                 <p:commandButton value="#{bundle.close}"
-                                                 actionListener="#{DashboardUsersPage.setSelectedUser(null)}"
-                                                 onclick="PF('moreUserInfoDialog').hide();" type="button"/>
+                                                 actionListener="#{DashboardUsersPage.setSelectedUserInfo(null)}"
+                                                 onclick="PF('userMoreInfoDialog').hide();" type="button"/>
                             </div>
                         </p:outputPanel>
                     </p:dialog>
                 </h:form>
             </ui:define>
         </ui:composition>
-
     </h:body>
 </html>
