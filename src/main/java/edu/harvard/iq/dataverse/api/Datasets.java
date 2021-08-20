@@ -2768,7 +2768,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     
     /** QDR
      * 
-     * API to find curation assignements and statuses
+     * API to find/list curation assignments and statuses
      * 
      * @return
      * @throws WrappedResponse
