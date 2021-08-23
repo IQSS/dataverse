@@ -2335,7 +2335,7 @@ A suggested minimum includes author, datasetContact, and contributor, but additi
 ``curl -X PUT -d 'author, datasetContact, contributor, depositor, grantNumber, publication' http://localhost:8080/api/admin/settings/:AnonymizedFieldTypeNames``
 
 :SendNotificationOnDatasetCreation
-+++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++
 
 A boolean setting that, if true will send an email and notification to users when a Dataset is created. Messages go to those, other than the dataset creator,
  who have the ability/permission necessary to publish the dataset. The intent of this functionality is to simplify tracking activity and planning to follow-up contact.
