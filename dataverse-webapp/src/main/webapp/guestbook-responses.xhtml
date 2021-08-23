@@ -64,13 +64,18 @@
                         </div>
                         <div class="col-sm-6">
                             <p class="button-block text-right">
-                                <button class="btn btn-default btn-access" jsf:id="downloadResponsesLink" jsf:action="#{guestbookResponsesPage.streamResponsesByDataverseAndGuestbook()}">
-                                     <span class="glyphicon glyphicon-download-alt"/> #{bundle['dataset.manageGuestbooks.download.responses']}
+                                <button class="btn btn-default btn-access" jsf:id="downloadResponsesLink"
+                                        jsf:action="#{guestbookResponsesPage.streamResponsesByDataverseAndGuestbook()}">
+                                    <span class="glyphicon glyphicon-download-alt"/> #{bundle['dataset.manageGuestbooks.download.responses']}
                                 </button>
                             </p>
                         </div>
                     </div>
-                    <p:dataTable id="responsesGuestbook" value="#{guestbookResponsesPage.responsesAsArray}" var="response">
+                    <p:dataTable id="responsesGuestbook"
+                                 value="#{guestbookResponsesPage.responsesAsArray}"
+                                 var="response"
+                                 emptyMessage="#{bundle['dataset.guestbooksResponses.count.responses.empty']}"
+                    >
                         <p:column sortBy="#{response[0]}" headerText="#{bundle['dataset.guestbooksResponses.dataset']}">
                             <h:outputText value="#{response[0]}"/>
                         </p:column>
