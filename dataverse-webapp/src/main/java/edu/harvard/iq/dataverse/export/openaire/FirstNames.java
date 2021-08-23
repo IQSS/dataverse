@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.export.openaire;
 
+import edu.harvard.iq.dataverse.export.ExportUtil;
 import io.vavr.Tuple2;
 import org.apache.commons.lang3.StringUtils;
 
@@ -169,14 +170,7 @@ public class FirstNames {
                     while ((pos = name.indexOf("+")) >= 0) {
                         name.replace(pos, pos + 1, " ");
                     }
-                    if (logger.isLoggable(Level.FINEST)) {
-                        logger.log(Level.FINEST, "Name: {0}", name);
-                    }
-
-                    String old = map.put(name.toString().toLowerCase(), name.toString());
-                    if (old != null) {
-                        duplicates++;
-                    }
+                    addName(name);
                 }
             }
             br.close();
@@ -207,17 +201,22 @@ public class FirstNames {
                     name.setLength(0);
                     name.ensureCapacity(end);
                     name.append(s.substring(0, end));
-                    if (logger.isLoggable(Level.FINEST)) {
-                        logger.log(Level.FINEST, "Name: {0}", name);
-                    }
-
-                    String old = map.put(name.toString().toLowerCase(), name.toString());
-                    if (old != null) {
-                        duplicates++;
-                    }
+                    addName(name);
                 }
             }
             br.close();
+        }
+    }
+
+    private void addName(StringBuilder name) {
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.log(Level.FINEST, "Name: {0}", name);
+        }
+
+        String normalizedName = ExportUtil.normalizeAccents(name.toString());
+        String old = map.put(normalizedName.toLowerCase(), normalizedName);
+        if (old != null) {
+            duplicates++;
         }
     }
 

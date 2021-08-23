@@ -52,10 +52,16 @@ public class ExportUtil {
         return false;
     }
 
+    public static String normalizeAccents(String text) {
+        return StringUtils.stripAccents(text)
+                .replaceAll("Ł", "L")
+                .replaceAll("ł", "l");
+    }
+
     // -------------------- PRIVATE --------------------
 
     private static boolean isName(String word) {
-        return FirstNames.getInstance().isFirstName(word);
+        return FirstNames.getInstance().isFirstName(normalizeAccents(word));
     }
 
     private static boolean isWordBlacklisted(String word) {
