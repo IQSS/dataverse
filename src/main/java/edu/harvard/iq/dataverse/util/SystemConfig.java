@@ -1081,5 +1081,34 @@ public class SystemConfig {
 		//As of 5.0 the 'doi.dataciterestapiurlstring' is the documented jvm option. Prior versions used 'doi.mdcbaseurlstring' or were hardcoded to api.datacite.org, so the defaults are for backward compatibility.
         return System.getProperty("doi.dataciterestapiurlstring", System.getProperty("doi.mdcbaseurlstring", "https://api.datacite.org"));
 	}
-	
+
+    public long getDatasetValidationSizeLimit() {
+        String limitEntry = settingsService.getValueForKey(SettingsServiceBean.Key.DatasetChecksumValidationSizeLimit);
+
+        if (limitEntry != null) {
+            try {
+                Long sizeOption = new Long(limitEntry);
+                return sizeOption;
+            } catch (NumberFormatException nfe) {
+                logger.warning("Invalid value for DatasetValidationSizeLimit option? - " + limitEntry);
+            }
+        }
+        // -1 means no limit is set;
+        return -1;
+    }
+
+    public long getFileValidationSizeLimit() {
+        String limitEntry = settingsService.getValueForKey(SettingsServiceBean.Key.DataFileChecksumValidationSizeLimit);
+
+        if (limitEntry != null) {
+            try {
+                Long sizeOption = new Long(limitEntry);
+                return sizeOption;
+            } catch (NumberFormatException nfe) {
+                logger.warning("Invalid value for FileValidationSizeLimit option? - " + limitEntry);
+            }
+        }
+        // -1 means no limit is set;
+        return -1;
+    }
 }
