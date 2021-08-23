@@ -6,8 +6,14 @@
         <jta-data-source>jdbc/VDCNetDS</jta-data-source>
         <properties>
             <!--property name="toplink.logging.level" value="FINE"/-->
-        <!-- disabling weaving, as an experiment: - L.A. -->
-        <property name="eclipselink.weaving" value="false"/>
+
+            <!-- NOTE: Enabling changetracking weaving will cause issues with dataset creation -->
+            <property name="eclipselink.weaving.changetracking" value="false"/>
+            <property name="eclipselink.weaving.lazy" value="true"/>
+            <property name="eclipselink.weaving.eager" value="true"/>
+            <property name="eclipselink.weaving.fetchgroups" value="true"/>
+            <property name="eclipselink.weaving.internal" value="true"/>
+
 
             <property name="eclipselink.ddl-generation" value="none"/>
             <property name="eclipselink.cache.shared.default" value="false"/>
@@ -19,8 +25,8 @@
             <property name="eclipselink.logging.parameters" value="true"/>-->
         </properties>
     </persistence-unit>
-    <!-- the persistence unit below is no longer necessary; needs to be removed 
-     from gnrs/TestNRS and from here: - L.A. 
+    <!-- the persistence unit below is no longer necessary; needs to be removed
+     from gnrs/TestNRS and from here: - L.A.
     <persistence-unit name="VDCNet-test" transaction-type="RESOURCE_LOCAL">
         <provider>oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider</provider>
         <properties>
