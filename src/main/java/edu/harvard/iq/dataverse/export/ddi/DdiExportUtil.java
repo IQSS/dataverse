@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
@@ -31,6 +32,8 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import static edu.harvard.iq.dataverse.util.SystemConfig.FQDN;
 import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;
+
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import edu.harvard.iq.dataverse.util.xml.XmlPrinter;
 import java.io.ByteArrayOutputStream;
@@ -122,6 +125,9 @@ public class DdiExportUtil {
         xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
         xmlw.writeAttribute("xsi:schemaLocation", DDIExporter.DEFAULT_XML_NAMESPACE + " " + DDIExporter.DEFAULT_XML_SCHEMALOCATION);
         writeAttribute(xmlw, "version", DDIExporter.DEFAULT_XML_VERSION);
+        if(isMetadataLanguageSet(datasetDto.getMetadataLanguage())) {
+            writeAttribute(xmlw, "xml:lang", datasetDto.getMetadataLanguage());
+        }
         createStdyDscr(xmlw, datasetDto);
         createOtherMats(xmlw, datasetDto.getDatasetVersion().getFiles());
         xmlw.writeEndElement(); // codeBook
@@ -141,6 +147,9 @@ public class DdiExportUtil {
         xmlw.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
         xmlw.writeAttribute("xsi:schemaLocation", DDIExporter.DEFAULT_XML_NAMESPACE + " " + DDIExporter.DEFAULT_XML_SCHEMALOCATION);
         writeAttribute(xmlw, "version", DDIExporter.DEFAULT_XML_VERSION);
+        if(isMetadataLanguageSet(datasetDto.getMetadataLanguage())) {
+            writeAttribute(xmlw, "xml:lang", datasetDto.getMetadataLanguage());
+        }
         createStdyDscr(xmlw, datasetDto);
         createFileDscr(xmlw, version);
         createDataDscr(xmlw, version);
@@ -150,6 +159,13 @@ public class DdiExportUtil {
     }
     
     
+    private static boolean isMetadataLanguageSet(String mdLang) {
+       if(mdLang!=null && !mdLang.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+           return true;
+       }
+        return false;
+    }
+
     /**
      * @todo This is just a stub, copied from DDIExportServiceBean. It should
      * produce valid DDI based on
@@ -191,7 +207,7 @@ public class DdiExportUtil {
         xmlw.writeStartElement("citation");
         xmlw.writeStartElement("titlStmt");
        
-        writeFullElement(xmlw, "titl", dto2Primitive(version, DatasetFieldConstant.title));
+        writeFullElement(xmlw, "titl", dto2Primitive(version, DatasetFieldConstant.title), datasetDto.getMetadataLanguage());
         writeFullElement(xmlw, "subTitl", dto2Primitive(version, DatasetFieldConstant.subTitle));
         writeFullElement(xmlw, "altTitl", dto2Primitive(version, DatasetFieldConstant.alternativeTitle));
         
@@ -216,17 +232,15 @@ public class DdiExportUtil {
                 distributorSet=true;
             }
         }
-        logger.info("Dsitr set?: " + distributorSet);
-        logger.info("Pub?: " + datasetDto.getPublisher());
+        
         boolean excludeRepository = settingsService.isTrueForKey(SettingsServiceBean.Key.ExportInstallationAsDistributorOnlyWhenNotSet, false);
-        logger.info("Exclude: " + excludeRepository);
         if (!StringUtils.isEmpty(datasetDto.getPublisher()) && !(excludeRepository && distributorSet)) {
             xmlw.writeStartElement("distrbtr");
             writeAttribute(xmlw, "source", "archive");
             xmlw.writeCharacters(datasetDto.getPublisher());
             xmlw.writeEndElement(); //distrbtr
         }
-        writeDistributorsElement(xmlw, version);
+        writeDistributorsElement(xmlw, version, datasetDto.getMetadataLanguage());
         writeContactsElement(xmlw, version);
         writeFullElement(xmlw, "distDate", dto2Primitive(version, DatasetFieldConstant.distributionDate));
         writeFullElement(xmlw, "depositr", dto2Primitive(version, DatasetFieldConstant.depositor));
@@ -247,7 +261,7 @@ public class DdiExportUtil {
         xmlw.writeStartElement("stdyInfo");
         
         writeSubjectElement(xmlw, version); //Subject and Keywords
-        writeAbstractElement(xmlw, version); // Description
+        writeAbstractElement(xmlw, version, datasetDto.getMetadataLanguage()); // Description
         writeSummaryDescriptionElement(xmlw, version);
         writeFullElement(xmlw, "notes", dto2Primitive(version, DatasetFieldConstant.notesText));
         ////////
@@ -329,7 +343,7 @@ public class DdiExportUtil {
         xmlw.writeStartElement("docDscr");
         xmlw.writeStartElement("citation");
         xmlw.writeStartElement("titlStmt");
-        writeFullElement(xmlw, "titl", dto2Primitive(version, DatasetFieldConstant.title));
+        writeFullElement(xmlw, "titl", dto2Primitive(version, DatasetFieldConstant.title), datasetDto.getMetadataLanguage());
         xmlw.writeStartElement("IDNo");
         writeAttribute(xmlw, "agency", persistentAgency);
         xmlw.writeCharacters(persistentProtocol + ":" + persistentAuthority + "/" + persistentId);
@@ -816,7 +830,7 @@ public class DdiExportUtil {
         xmlw.writeEndElement(); //prodStmt
     }
     
-    private static void writeDistributorsElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
+    private static void writeDistributorsElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String lang) throws XMLStreamException {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
@@ -850,6 +864,9 @@ public class DdiExportUtil {
                             }
                             if (!distributorName.isEmpty()) {
                                 xmlw.writeStartElement("distrbtr");
+                                if(isMetadataLanguageSet(lang)) {
+                                    writeAttribute(xmlw, "xml:lang", lang);
+                                }
                                 if (!distributorAffiliation.isEmpty()) {
                                     writeAttribute(xmlw, "affiliation", distributorAffiliation);
                                 }
@@ -943,7 +960,7 @@ public class DdiExportUtil {
         return inVal;
     }
     
-    private static void writeAbstractElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO) throws XMLStreamException {
+    private static void writeAbstractElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String lang) throws XMLStreamException {
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
             String key = entry.getKey();
             MetadataBlockDTO value = entry.getValue();
@@ -967,6 +984,9 @@ public class DdiExportUtil {
                                 if(!descriptionDate.isEmpty()){
                                    writeAttribute(xmlw,"date",descriptionDate); 
                                 } 
+                                if(isMetadataLanguageSet(lang)) {
+                                    writeAttribute(xmlw, "xml:lang", lang);
+                                }
                                 xmlw.writeCharacters(descriptionText);
                                 xmlw.writeEndElement(); //abstract
                             }
@@ -1335,11 +1355,18 @@ public class DdiExportUtil {
             }
         }
     }
-    
-    private static void writeFullElement (XMLStreamWriter xmlw, String name, String value) throws XMLStreamException {
+
+    private static void writeFullElement(XMLStreamWriter xmlw, String name, String value) throws XMLStreamException {
+        writeFullElement(xmlw, name, value, null);
+    }
+        
+    private static void writeFullElement (XMLStreamWriter xmlw, String name, String value, String lang) throws XMLStreamException {
         //For the simplest Elements we can 
         if (!StringUtilisEmpty(value)) {
             xmlw.writeStartElement(name);
+            if(isMetadataLanguageSet(lang)) {
+                writeAttribute(xmlw, "xml:lang", lang);
+            }
             xmlw.writeCharacters(value);
             xmlw.writeEndElement(); // labl
         }
@@ -1819,7 +1846,7 @@ public class DdiExportUtil {
             logger.severe("Parser configuration error " + pce.getMessage());
         } catch (IOException ioe) {
             // I/O error
-            logger.info("I/O error " + ioe.getMessage());
+            logger.warning("I/O error " + ioe.getMessage());
         }
 
     }
