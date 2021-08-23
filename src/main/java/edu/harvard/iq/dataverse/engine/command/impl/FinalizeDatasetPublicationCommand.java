@@ -314,8 +314,8 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
     private void validateDataFiles(Dataset dataset, CommandContext ctxt) throws CommandException {
         try {
-            long maxDatasetSize = 0l;
-            maxDatasetSize = ctxt.systemConfig().getDatasetValidationSizeLimit();
+            long maxDatasetSize = ctxt.systemConfig().getDatasetValidationSizeLimit();
+            long maxFileSize = ctxt.systemConfig().getFileValidationSizeLimit();
 
             long datasetSize = DatasetUtil.getDownloadSizeNumeric(dataset.getLatestVersion(), false);
             if (maxDatasetSize == -1 || datasetSize < maxDatasetSize) {
@@ -325,7 +325,6 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                     // (the decision was made to validate all the files on every
                     // major release; we can revisit the decision if there's any
                     // indication that this makes publishing take significantly longer.
-                    long maxFileSize = ctxt.systemConfig().getFileValidationSizeLimit();
                     if (maxFileSize == -1 || dataFile.getFilesize() < maxFileSize) {
                         FileUtil.validateDataFileChecksum(dataFile);
                     }
