@@ -82,7 +82,6 @@ public class XLSXFileReader extends TabularDataFileReader {
      * Reads an XLSX file, converts it into a dataverse DataTable.
      *
      * @param stream  a <code>BufferedInputStream</code>.
-     * @param ignored
      * @return an <code>TabularDataIngest</code> object
      * @throws java.io.IOException if a reading error occurs.
      */
@@ -107,6 +106,9 @@ public class XLSXFileReader extends TabularDataFileReader {
         PrintWriter firstPassWriter = new PrintWriter(firstPassTempFile.getAbsolutePath());
         try {
             processSheet(stream, dataTable, firstPassWriter);
+        } catch (IngestException ie) {
+            dbglog.log(Level.FINE, "Could not parse Excel/XLSX spreadsheet.", ie);
+            throw ie;
         } catch (Exception ex) {
             dbglog.log(Level.FINE, "Could not parse Excel/XLSX spreadsheet.", ex);
             throw new IngestException(IngestError.EXCEL_PARSE);
@@ -262,16 +264,16 @@ public class XLSXFileReader extends TabularDataFileReader {
     }
 
     public XMLReader fetchSheetParser(SharedStringsTable sst, DataTable dataTable, PrintWriter tempOut) throws SAXException {
-        // An attempt to use org.apache.xerces.parsers.SAXParser resulted 
-        // in some weird conflict in the app; the default XMLReader obtained 
+        // An attempt to use org.apache.xerces.parsers.SAXParser resulted
+        // in some weird conflict in the app; the default XMLReader obtained
         // from the XMLReaderFactory (from xml-apis.jar) appears to be working
-        // just fine. however, 
-        // TODO: verify why the app gets built with xml-apis-1.0.b2.jar; it's 
+        // just fine. however,
+        // TODO: verify why the app gets built with xml-apis-1.0.b2.jar; it's
         // an old version - 1.4 seems to be the current release, and 2.0.2
         // (a new development?) appears to be available. We don't specifically
         // request this 1.0.* version, so another package must have it defined
-        // as a dependency. We need to verify our dependencies, we most likely 
-        // have some hard-coded versions in our pom.xml that are both old and 
+        // as a dependency. We need to verify our dependencies, we most likely
+        // have some hard-coded versions in our pom.xml that are both old and
         // unnecessary.
         // -- L.A. 4.0 alpha 1
 
@@ -289,7 +291,6 @@ public class XLSXFileReader extends TabularDataFileReader {
         private String cellContents;
         private boolean nextIsString;
         private boolean variableHeader;
-        //private List<String> variableNames;
         private String[] variableNames;
         private int caseCount;
         private int columnCount;
@@ -306,18 +307,16 @@ public class XLSXFileReader extends TabularDataFileReader {
             this.dataTable = dataTable;
             this.tempOut = tempOut;
             variableHeader = true;
-            //variableNames = new ArrayList<String>(); 
             caseCount = 0;
             columnCount = 0;
         }
 
-        public void startElement(String uri, String localName, String name,
-                                 Attributes attributes) throws SAXException {
+        public void startElement(String uri, String localName, String name, Attributes attributes) {
             dbglog.fine("entering startElement (" + name + ")");
 
-            // first raw encountered: 
-            if (variableHeader && name.equals("row")) {
-                Long varCount = null;
+            // first raw encountered:
+            if (variableHeader && "row".equals(name)) {
+                Long varCount;
                 String rAttribute = attributes.getValue("t");
                 if (rAttribute == null) {
                     dbglog.warning("Null r attribute in the first row element!");
@@ -340,7 +339,7 @@ public class XLSXFileReader extends TabularDataFileReader {
                 }
 
                 if (varCount == null || varCount.intValue() < 1) {
-                    throw new SAXException("Could not establish column count, or invalid column count encountered.");
+                    throw new IngestException(IngestError.EXCEL_UNKNOWN_OR_INVALID_COLUMN_COUNT);
                 }
 
                 dbglog.info("Established variable (column) count: " + varCount);
@@ -350,9 +349,9 @@ public class XLSXFileReader extends TabularDataFileReader {
             }
 
             // c => cell
-            if (name.equals("c")) {
+            if ("c".equals(name)) {
                 // try and establish the location index (column number) of this
-                // cell, from the "r" attribute: 
+                // cell, from the "r" attribute:
 
                 String indexAttribute = attributes.getValue("r");
 
@@ -365,7 +364,7 @@ public class XLSXFileReader extends TabularDataFileReader {
                 columnCount = getColumnCount(indexAttribute.replaceFirst("[0-9].*$", ""));
 
                 if (columnCount < 0) {
-                    throw new SAXException("Could not establish position index of a cell element unambiguously!");
+                    throw new IngestException(IngestError.EXCEL_AMBIGUOUS_INDEX_POSITION);
                 }
 
                 String cellType = attributes.getValue("t");
@@ -397,8 +396,7 @@ public class XLSXFileReader extends TabularDataFileReader {
             return new String(letterTag);
         }
 
-        public void endElement(String uri, String localName, String name)
-                throws SAXException {
+        public void endElement(String uri, String localName, String name) {
             dbglog.fine("entering endElement (" + name + ")");
             // Process the content cache as required.
             // Do it now, as characters() may be called more than once
@@ -410,7 +408,7 @@ public class XLSXFileReader extends TabularDataFileReader {
 
             // v => contents of a cell
             // Output after we've seen the string contents
-            if (name.equals("v")) {
+            if ("v".equals(name)) {
                 if (variableHeader) {
                     dbglog.fine("variable header mode; cell " + columnCount + ", cell contents: " + cellContents);
 
@@ -422,7 +420,7 @@ public class XLSXFileReader extends TabularDataFileReader {
                 }
             }
 
-            if (name.equals("row")) {
+            if ("row".equals(name)) {
                 if (variableHeader) {
                     // Initialize variables:
                     dbglog.fine("variableHeader mode; ");
@@ -436,14 +434,14 @@ public class XLSXFileReader extends TabularDataFileReader {
 
                         if (varName == null || varName.equals("")) {
                             varName = getColumnLetterTag(i);
-                            // TODO: 
+                            // TODO:
                             // Add a sensible variable name validation algorithm.
                             // -- L.A. 4.0 alpha 1
                             //throw new IOException ("Invalid variable names in the first line!");
                         }
 
                         if (varName == null) {
-                            throw new SAXException("Could not establish variable name for column " + i);
+                            throw new IngestException(IngestError.EXCEL_UNKNOWN_VARIABLE_NAME, String.valueOf(i));
                         }
 
                         varName = varName.replaceAll("[ _\t\n\r]", "");
@@ -461,22 +459,22 @@ public class XLSXFileReader extends TabularDataFileReader {
                     isNumericVariable = new boolean[columnCount];
 
                     for (int i = 0; i < columnCount; i++) {
-                        // OK, let's assume that every variable is numeric; 
-                        // but we'll go through the file and examine every value; the 
-                        // moment we find a value that's not a legit numeric one, we'll 
-                        // assume that it is in fact a String. 
+                        // OK, let's assume that every variable is numeric;
+                        // but we'll go through the file and examine every value; the
+                        // moment we find a value that's not a legit numeric one, we'll
+                        // assume that it is in fact a String.
                         isNumericVariable[i] = true;
                     }
                     variableHeader = false;
                 } else {
                     dbglog.fine("row mode;");
-                    // go through the values and make an educated guess about the 
+                    // go through the values and make an educated guess about the
                     // data types:
 
                     for (int i = 0; i < dataTable.getVarQuantity().intValue(); i++) {
                         if (isNumericVariable[i]) {
-                            // If we haven't given up on the "numeric" status of this 
-                            // variable, let's perform some tests on it, and see if 
+                            // If we haven't given up on the "numeric" status of this
+                            // variable, let's perform some tests on it, and see if
                             // this value is still a parsable number:
                             if (dataRow[i] != null && (!dataRow[i].equals(""))) {
 
@@ -514,7 +512,7 @@ public class XLSXFileReader extends TabularDataFileReader {
                 dataRow = new String[dataTable.getVarQuantity().intValue()];
             }
 
-            if (name.equals("sheetData")) {
+            if ("sheetData".equals(name)) {
                 dataTable.setCaseQuantity(new Long(caseCount));
 
                 // Re-type the variables that we've determined are numerics:
