@@ -141,6 +141,7 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
                         UserNotification.Type.DATASETCREATED,
                         theDataset.getId(),
                         null,
+                        requestor,
                         true
                 );
             }

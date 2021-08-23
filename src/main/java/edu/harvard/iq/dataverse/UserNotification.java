@@ -43,6 +43,10 @@ public class UserNotification implements Serializable {
     @JoinColumn( nullable = false )
     private AuthenticatedUser user;
     @ManyToOne
+    /** Requestor now has a more general meaning of 'actor' - the person who's action is causing the emails.
+     * The original use of that was for people requesting dataset access
+     * This is also now used for DATASETCREATED messages where it indicates who created the dataset
+    */
     @JoinColumn( nullable = true )
     private AuthenticatedUser requestor;
     private Timestamp sendDate;
