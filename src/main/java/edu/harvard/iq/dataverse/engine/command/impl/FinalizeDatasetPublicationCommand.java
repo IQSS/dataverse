@@ -1,9 +1,16 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
-import edu.harvard.iq.dataverse.*;
-
+import edu.harvard.iq.dataverse.ControlledVocabularyValue;
+import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.DatasetLock;
 import static edu.harvard.iq.dataverse.DatasetVersion.VersionState.*;
-
+import edu.harvard.iq.dataverse.DatasetVersionUser;
+import edu.harvard.iq.dataverse.Dataverse;
+import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
@@ -22,7 +29,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.util.FileUtil;
@@ -69,7 +76,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
         Dataset theDataset = getDataset();
         
         logger.info("Finalizing publication of the dataset "+theDataset.getGlobalId().asString());
-
+        
         // validate the physical files before we do anything else: 
         // (unless specifically disabled; or a minor version)
         if (theDataset.getLatestVersion().getVersionState() != RELEASED
@@ -79,7 +86,7 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
             // some imported datasets may already be released.
 
             // validate the physical files (verify checksums):
-                validateDataFiles(theDataset, ctxt);
+            validateDataFiles(theDataset, ctxt);
             // (this will throw a CommandException if it fails)
         }
 
@@ -312,12 +319,10 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
 
     private void validateDataFiles(Dataset dataset, CommandContext ctxt) throws CommandException {
         try {
-            long maxDatasetSize = 0l;
-            long maxFileSize = 0l;
-            maxDatasetSize = ctxt.systemConfig().getChecksumDatasetSizeLimit();
-            maxFileSize = ctxt.systemConfig().getChecksumFileSizeLimit();
+            long maxDatasetSize = ctxt.systemConfig().getDatasetValidationSizeLimit();
+            long maxFileSize = ctxt.systemConfig().getFileValidationSizeLimit();
 
-            long datasetSize = DatasetUtil.getDatasetDownloadSize(dataset.getLatestVersion(), false);
+            long datasetSize = DatasetUtil.getDownloadSizeNumeric(dataset.getLatestVersion(), false);
             if (maxDatasetSize == -1 || datasetSize < maxDatasetSize) {
                 for (DataFile dataFile : dataset.getFiles()) {
                     // TODO: Should we validate all the files in the dataset, or only
@@ -325,18 +330,20 @@ public class FinalizeDatasetPublicationCommand extends AbstractPublishDatasetCom
                     // (the decision was made to validate all the files on every
                     // major release; we can revisit the decision if there's any
                     // indication that this makes publishing take significantly longer.
-                    logger.log(Level.FINE, "validating DataFile {0}", dataFile.getId());
-                    if (maxFileSize == -1 || dataFile.getOriginalFileSize() < maxFileSize) {
+                    if (maxFileSize == -1 || dataFile.getFilesize() < maxFileSize) {
                         FileUtil.validateDataFileChecksum(dataFile);
+                    }
+                    else {
+                        String message = "Checksum Validation skipped for this datafile: " + dataFile.getId() + ", because of the size of the datafile limit (set to " + maxFileSize + " ); ";
+                        logger.info(message);
                     }
                 }
             }
             else {
-                String message = "Skipping to validate File Checksum of the dataset " + dataset.getDisplayName() + ", because of the size of the dataset limit (set to " + maxDatasetSize + " ); ";
+                String message = "Checksum Validation skipped for this dataset: " + dataset.getId() + ", because of the size of the dataset limit (set to " + maxDatasetSize + " ); ";
                 logger.info(message);
             }
         } catch (Throwable e) {
-            
             if (dataset.isLockedFor(DatasetLock.Reason.finalizePublication)) {
                 DatasetLock lock = dataset.getLockFor(DatasetLock.Reason.finalizePublication);
                 lock.setReason(DatasetLock.Reason.FileValidationFailed);
