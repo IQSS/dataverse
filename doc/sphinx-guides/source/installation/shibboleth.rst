@@ -446,3 +446,22 @@ To list institution-wide Shibboleth groups: ``curl http://localhost:8080/api/adm
 To delete an institution-wide Shibboleth group (assuming id 1): ``curl -X DELETE http://localhost:8080/api/admin/groups/shib/1``
 
 Support for arbitrary attributes beyond "Shib-Identity-Provider" such as "eduPersonScopedAffiliation", etc. is being tracked at https://github.com/IQSS/dataverse/issues/1515
+
+Multi-Factor Authentication
+---------------------------
+
+Institutions which wish to require MFA for their own accounts may add
+
+.. code-block:: text
+
+    authnContextClassRef="https://refeds.org/profile/mfa"
+
+to the shibboleth2.xml SSO element.
+
+Federated institutions which would like to require MFA for their own account but not require MFA of other federated institutions may add
+
+.. code-block:: text
+
+    <RelyingParty Name="urn:mace:incommon:yourinstitution.edu" authnContextClassRef="https://refeds.org/profile/mfa"/>
+
+to shibboleth2.xml, beneath the Sessions and Errors elements.
