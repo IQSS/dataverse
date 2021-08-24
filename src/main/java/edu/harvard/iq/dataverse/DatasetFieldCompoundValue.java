@@ -75,16 +75,6 @@ public class DatasetFieldCompoundValue implements Serializable {
     private static final Map<String, Pair<String, String>> linkComponents = Map.of(
       "author", new ImmutablePair<>("authorIdentifierScheme", "authorIdentifier")
     );
-    private static final Map<String, String> linkSchemeTemplates = Map.of(
-      "ORCID", "https://orcid.org/%s",
-      "ISNI", "https://isni.org/isni/%s",
-      "LCNA", "http://id.loc.gov/authorities/names/%s",
-      "VIAF", "http://viaf.org/viaf/%s/",
-      "GND", "https://d-nb.info/gnd/%s",
-      // DAI
-      "ResearcherID", "https://publons.com/researcher/%s/",
-      "ScopusID", "https://www.scopus.com/authid/detail.uri?authorId=%s"
-    );
 
     // field for handling links. Annotation '@Transient' prevents these fields to be saved in DB
     @Transient
@@ -214,9 +204,7 @@ public class DatasetFieldCompoundValue implements Serializable {
     }
 
     public String getLink() {
-        if (linkSchemeTemplates.containsKey(linkScheme))
-            return String.format(linkSchemeTemplates.get(linkScheme), linkValue);
-        return null;
+        return DatasetAuthor.getIdentifierAsUrl(linkScheme, linkValue);
     }
 
     public boolean isLink(DatasetField datasetField) {
