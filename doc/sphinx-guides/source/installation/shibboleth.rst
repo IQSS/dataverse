@@ -450,7 +450,7 @@ Support for arbitrary attributes beyond "Shib-Identity-Provider" such as "eduPer
 Multi-Factor Authentication
 ---------------------------
 
-Institutions which wish to require MFA for their own accounts may add
+Institutions that wish to require MFA for their own accounts may add
 
 .. code-block:: text
 
@@ -458,7 +458,7 @@ Institutions which wish to require MFA for their own accounts may add
 
 to the shibboleth2.xml SSO element.
 
-Federated institutions which would like to require MFA for their own account but not require MFA of other federated institutions may add
+Federated institutions that would like to require MFA for their own account but not require MFA of other federated institutions may add
 
 .. code-block:: text
 
