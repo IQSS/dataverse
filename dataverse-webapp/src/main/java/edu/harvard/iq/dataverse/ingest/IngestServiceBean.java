@@ -80,6 +80,8 @@ import org.dataverse.unf.UnfException;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.enterprise.event.Event;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -99,7 +101,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -135,6 +137,9 @@ public class IngestServiceBean {
 
     @Inject
     private Event<IngestMessageSendEvent> ingestMessageSendEventEvent;
+
+    @Inject
+    FinalizeIngestService finalizeIngestService;
 
     private DataAccess dataAccess = DataAccess.dataAccess();
 
@@ -419,14 +424,7 @@ public class IngestServiceBean {
             DataFile[] scheduledFilesArray = scheduledFiles.toArray(new DataFile[count]);
             scheduledFiles = null;
 
-            Arrays.sort(scheduledFilesArray, new Comparator<DataFile>() {
-                @Override
-                public int compare(DataFile d1, DataFile d2) {
-                    long a = d1.getFilesize();
-                    long b = d2.getFilesize();
-                    return Long.valueOf(a).compareTo(b);
-                }
-            });
+            Arrays.sort(scheduledFilesArray, Comparator.comparingLong(DataFile::getFilesize));
 
             ingestMessage = new IngestMessage(IngestMessage.INGEST_MESAGE_LEVEL_INFO);
             for (int i = 0; i < count; i++) {
@@ -579,7 +577,7 @@ public class IngestServiceBean {
                                                                                caseQuantity);
                 }
                 if (variableVector != null) {
-                    Hashtable<Object, Double> freq = calculateFrequency(variableVector);
+                    Map<Object, Double> freq = calculateFrequency(variableVector);
                     for (VariableCategory cat : cats) {
                         Object catValue;
                         if (isNumeric) {
@@ -601,8 +599,8 @@ public class IngestServiceBean {
         }
     }
 
-    public static Hashtable<Object, Double> calculateFrequency(Object[] variableVector) {
-        Hashtable<Object, Double> freq = new Hashtable<Object, Double>();
+    public static Map<Object, Double> calculateFrequency(Object[] variableVector) {
+        Map<Object, Double> freq = new HashMap<>();
 
         for (int j = 0; j < variableVector.length; j++) {
             if (variableVector[j] != null) {
@@ -653,18 +651,18 @@ public class IngestServiceBean {
         */
     }
 
-
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public boolean ingestAsTabular(Long datafile_id) {
         DataFile dataFile = fileService.find(datafile_id);
         IngestRequest ingestRequest = dataFile.getIngestRequest();
 
-        boolean forceTypeCheck = ingestRequest == null ? false : ingestRequest.isForceTypeCheck();
+        boolean forceTypeCheck = ingestRequest != null && ingestRequest.isForceTypeCheck();
 
         // Locate ingest plugin for the file format by looking
         // it up with the Ingest Service Provider Registry:
         String fileName = dataFile.getFileMetadata().getLabel();
         TabularDataFileReader ingestPlugin = getTabDataReaderByMimeType(dataFile.getContentType());
-        logger.fine("Found ingest plugin " + ingestPlugin.getClass());
+        logger.fine("Found ingest plugin: " + (ingestPlugin != null ? ingestPlugin.getClass() : "NONE"));
 
         if (!forceTypeCheck && ingestPlugin == null) {
             // If this is a reingest request, we'll still have a chance
@@ -674,10 +672,9 @@ public class IngestServiceBean {
             // the next step if no ingest plugin is available.
 
             dataFile.SetIngestProblem();
-            dataFile.setIngestReport(IngestReport.createIngestFailureReport(dataFile,
-                    IngestError.NOPLUGIN,
-                    dataFile.getContentType()));
-            dataFile = fileService.save(dataFile);
+            dataFile.setIngestReport(
+                    IngestReport.createIngestFailureReport(dataFile, IngestError.NOPLUGIN, dataFile.getContentType()));
+            fileService.saveInNewTransaction(dataFile);
             logger.warning("Ingest failure.");
             return false;
         }
@@ -691,17 +688,15 @@ public class IngestServiceBean {
         } catch (IOException ioEx) {
             dataFile.SetIngestProblem();
 
-            dataFile.setIngestReport(IngestReport.createIngestFailureReport(dataFile,
-                    IngestError.UNKNOWN_ERROR));
-            dataFile = fileService.save(dataFile);
+            dataFile.setIngestReport(IngestReport.createIngestFailureReport(dataFile, IngestError.UNKNOWN_ERROR));
+            fileService.saveInNewTransaction(dataFile);
 
             logger.warning("Ingest failure (No file produced).");
             return false;
         }
 
         if (ingestRequest != null) {
-            if (ingestRequest.getTextEncoding() != null
-                    && !ingestRequest.getTextEncoding().equals("")) {
+            if (ingestRequest.getTextEncoding() != null && ingestPlugin != null && !"".equals(ingestRequest.getTextEncoding())) {
                 logger.fine("Setting language encoding to " + ingestRequest.getTextEncoding());
                 ingestPlugin.setDataLanguageEncoding(ingestRequest.getTextEncoding());
             }
@@ -714,17 +709,17 @@ public class IngestServiceBean {
             String newType = FileUtil.retestIngestableFileType(localFile.get(), dataFile.getContentType());
 
             ingestPlugin = getTabDataReaderByMimeType(newType);
-            logger.fine("Re-tested file type: " + newType + "; Using ingest plugin " + ingestPlugin.getClass());
+            logger.fine("Re-tested file type: " + newType +
+                    "; Using ingest plugin " + (ingestPlugin != null ? ingestPlugin.getClass() : "NONE"));
 
             // check again:
             if (ingestPlugin == null) {
                 // If it's still null - give up!
 
                 dataFile.SetIngestProblem();
-                dataFile.setIngestReport(IngestReport.createIngestFailureReport(dataFile,
-                                                       IngestError.NOPLUGIN,
-                                                       dataFile.getContentType()));
-                dataFile = fileService.save(dataFile);
+                dataFile.setIngestReport(IngestReport.createIngestFailureReport(
+                        dataFile, IngestError.NOPLUGIN, dataFile.getContentType()));
+                fileService.saveInNewTransaction(dataFile);
                 logger.warning("Ingest failure: failed to detect ingest plugin (file type check forced)");
                 return false;
             }
@@ -734,25 +729,20 @@ public class IngestServiceBean {
 
         TabularDataIngest tabDataIngest = null;
         try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(localFile.get()))) {
-
-            if (additionalData != null) {
-                tabDataIngest = ingestPlugin.read(inputStream, additionalData);
-            } else {
-                tabDataIngest = ingestPlugin.read(inputStream, null);
-            }
+            tabDataIngest = ingestPlugin.read(inputStream, additionalData);
         } catch (IngestException ex) {
             dataFile.SetIngestProblem();
 
             dataFile.setIngestReport(IngestReport.createIngestFailureReport(dataFile, ex));
             logger.log(Level.WARNING, "Ingest failure.", ex);
-            fileService.save(dataFile);
+            fileService.saveInNewTransaction(dataFile);
             return false;
 
         } catch (Exception ingestEx) {
 
             dataFile.SetIngestProblem();
             dataFile.setIngestReport(IngestReport.createIngestFailureReport(dataFile, IngestError.UNKNOWN_ERROR));
-            fileService.save(dataFile);
+            fileService.saveInNewTransaction(dataFile);
 
             logger.log(Level.WARNING, "Ingest failure.", ingestEx);
             return false;
@@ -765,182 +755,54 @@ public class IngestServiceBean {
         String originalContentType = dataFile.getContentType();
         String originalFileName = dataFile.getFileMetadata().getLabel();
         long originalFileSize = dataFile.getFilesize();
-        boolean postIngestTasksSuccessful = false;
-        boolean databaseSaveSuccessful = false;
 
-        if (tabDataIngest != null) {
-            File tabFile = tabDataIngest.getTabDelimitedFile();
+        File tabFile = tabDataIngest.getTabDelimitedFile();
 
-            if (tabDataIngest.getDataTable() != null
-                    && tabFile != null
-                    && tabFile.exists()) {
-                logger.info("Tabular data successfully ingested; DataTable with "
-                                    + tabDataIngest.getDataTable().getVarQuantity() + " variables produced.");
-                logger.info("Tab-delimited file produced: " + tabFile.getAbsolutePath());
-
-                dataFile.setFilesize(tabFile.length());
-
-                // and change the mime type to "Tabular Data" on the final datafile,
-                // and replace (or add) the extension ".tab" to the filename:
-                dataFile.setContentType(TextMimeType.TSV_ALT.getMimeValue());
-                IngestUtil.modifyExistingFilename(dataFile.getOwner().getLatestVersion(),
-                                                  dataFile.getFileMetadata(),
-                                                  FileUtil.replaceExtension(fileName, "tab"));
-
-                if (TextMimeType.CSV_ALT.getMimeValue().equals(dataFile.getContentType())) {
-                    tabDataIngest.getDataTable().setOriginalFileFormat(TextMimeType.CSV.getMimeValue());
-                } else {
-                    tabDataIngest.getDataTable().setOriginalFileFormat(originalContentType);
-                }
-                tabDataIngest.getDataTable().setOriginalFileSize(originalFileSize);
-
-                dataFile.setDataTable(tabDataIngest.getDataTable());
-                tabDataIngest.getDataTable().setDataFile(dataFile);
-
-                try {
-                    produceSummaryStatistics(dataFile, tabFile);
-                    produceFrequencyStatistics(dataFile, tabFile);
-                    postIngestTasksSuccessful = true;
-                } catch (IOException postIngestEx) {
-
-                    dataFile.SetIngestProblem();
-                    dataFile.setIngestReport(IngestReport.createIngestFailureReport(dataFile,
-                                                           IngestError.STATS_OR_SIGNATURE_FAILURE,
-                                                           postIngestEx.getMessage()));
-
-                    restoreIngestedDataFile(dataFile,
-                                            tabDataIngest,
-                                            originalFileSize,
-                                            originalFileName,
-                                            originalContentType);
-                    dataFile = fileService.save(dataFile);
-
-                    logger.warning("Ingest failure: post-ingest tasks.");
-                }
-
-                if (!postIngestTasksSuccessful) {
-                    logger.warning("Ingest failure (!postIngestTasksSuccessful).");
-                    return false;
-                }
-
-                dataFile.setIngestDone();
-                // delete the ingest request, if exists:
-                if (dataFile.getIngestRequest() != null) {
-                    dataFile.getIngestRequest().setDataFile(null);
-                    dataFile.setIngestRequest(null);
-                }
-
-                try {
-                    /*
-                         In order to test a database save failure, uncomment this:
-
-                        if (true) {
-                            throw new EJBException("Deliberate database save failure");
-                        }
-                     */
-
-                    // We have to start a new transaction in order to save produced
-                    // datafiles, as the processing time is very long and during that time
-                    // our original transaction may have been closed.
-                    // This solution is taken from Harvard's Dataverse.
-                    dataFile = fileService.saveInNewTransaction(dataFile);
-                    databaseSaveSuccessful = true;
-
-                    logger.fine("Ingest (" + dataFile.getFileMetadata().getLabel() + ".");
-
-                    if (additionalData != null) {
-                        // remove the extra tempfile, if there was one:
-                        additionalData.delete();
-                    }
-                } catch (Exception unknownEx) {
-                    // this means that an error occurred while saving the datafile
-                    // in the database.
-                    logger.log(Level.SEVERE, "Ingest Exception: ", unknownEx);
-                    logger.warning(
-                            "Ingest failure: Failed to save tabular metadata (datatable, datavariables, etc.) in the database. Clearing the datafile object.");
-
-                    dataFile = fileService.find(datafile_id);
-
-                    if (dataFile != null) {
-                        dataFile.SetIngestProblem();
-                        dataFile.setIngestReport(IngestReport.createIngestFailureReport(dataFile,
-                                                               IngestError.DB_FAIL));
-
-                        restoreIngestedDataFile(dataFile,
-                                                tabDataIngest,
-                                                originalFileSize,
-                                                originalFileName,
-                                                originalContentType);
-
-                        dataFile = fileService.save(dataFile);
-                    }
-                }
-
-                if (!databaseSaveSuccessful) {
-                    logger.warning("Ingest failure (!databaseSaveSuccessful).");
-                    return false;
-                }
-
-                // Finally, let's swap the original and the tabular files:
-                try {
-                    /* Start of save as backup */
-
-                    StorageIO<DataFile> tabularStorageIO = dataAccess.getStorageIO(dataFile);
-                    tabularStorageIO.open();
-
-                    // and we want to save the original of the ingested file:
-                    try {
-                        tabularStorageIO.backupAsAux(StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION);
-                        logger.fine("Saved the ingested original as a backup aux file: " + StorageIOConstants.SAVED_ORIGINAL_FILENAME_EXTENSION);
-                    } catch (IOException iox) {
-                        logger.warning("Failed to save the ingested original! " + iox.getMessage());
-                    }
-
-                    // Replace contents of the file with the tab-delimited data produced:
-                    tabularStorageIO.savePath(Paths.get(tabFile.getAbsolutePath()));
-                    // Reset the file size:
-                    dataFile.setFilesize(tabularStorageIO.getSize());
-
-                    // additional save prevents optimistic locking exception
-                    dataFile = fileService.save(dataFile);
-                    logger.fine("saved data file after updating the size");
-
-                    /*end of save as backup */
-
-                } catch (Exception e) {
-                    // this probably means that an error occurred while saving the file to the file system
-                    logger.warning(
-                            "Failed to save the tabular file produced by the ingest (resetting the ingested DataFile back to its original state)");
-                    logger.log(Level.WARNING, "Failed to save the tabular file produced by the ingest (resetting the ingested DataFile back to its original state)", e);
-
-                    dataFile = fileService.find(datafile_id);
-
-                    if (dataFile != null) {
-                        dataFile.SetIngestProblem();
-                        dataFile.setIngestReport(IngestReport.createIngestFailureReport(dataFile,
-                                IngestError.DB_FAIL));
-
-                        restoreIngestedDataFile(dataFile,
-                                tabDataIngest,
-                                originalFileSize,
-                                originalFileName,
-                                originalContentType);
-
-                        dataFile = fileService.save(dataFile);
-                    }
-                } finally {
-                    // delete the temp tab-file:
-                    tabFile.delete();
-                }
-
-                return true;
-            }
-        } else {
-            logger.warning("Ingest failed to produce data obect.");
+        if (tabDataIngest.getDataTable() == null || tabFile == null || !tabFile.exists()) {
+            return false;
         }
 
-        return false;
+        logger.info("Tabular data successfully ingested; DataTable with " +
+                tabDataIngest.getDataTable().getVarQuantity() + " variables produced. " +
+                "Tab-delimited file produced: " + tabFile.getAbsolutePath());
+
+        dataFile.setFilesize(tabFile.length());
+
+        // and change the mime type to "Tabular Data" on the final datafile,
+        // and replace (or add) the extension ".tab" to the filename:
+        dataFile.setContentType(TextMimeType.TSV_ALT.getMimeValue());
+        IngestUtil.modifyExistingFilename(
+                dataFile.getOwner().getLatestVersion(), dataFile.getFileMetadata(), FileUtil.replaceExtension(fileName, "tab"));
+
+        tabDataIngest.getDataTable().setOriginalFileFormat(originalContentType);
+        tabDataIngest.getDataTable().setOriginalFileSize(originalFileSize);
+
+        dataFile.setDataTable(tabDataIngest.getDataTable());
+        tabDataIngest.getDataTable().setDataFile(dataFile);
+
+        try {
+            produceSummaryStatistics(dataFile, tabFile);
+            produceFrequencyStatistics(dataFile, tabFile);
+        } catch (IOException postIngestEx) {
+
+            dataFile.SetIngestProblem();
+            dataFile.setIngestReport(
+                    IngestReport.createIngestFailureReport(dataFile, IngestError.STATS_OR_SIGNATURE_FAILURE, postIngestEx.getMessage()));
+
+            restoreIngestedDataFile(dataFile, tabDataIngest, originalFileSize, originalFileName, originalContentType);
+            fileService.saveInNewTransaction(dataFile);
+
+            logger.warning("Ingest failure: post-ingest tasks.");
+            return false;
+        }
+
+        try {
+            return finalizeIngestService.finalizeIngest(dataFile, additionalData, tabDataIngest, tabFile);
+        } finally {
+            tabFile.delete();
+        }
     }
+
 
     private void restoreIngestedDataFile(DataFile dataFile, TabularDataIngest tabDataIngest, long originalSize, String originalFileName, String originalContentType) {
         dataFile.setDataTable(null);
@@ -973,14 +835,12 @@ public class IngestServiceBean {
         */
     /* }*/
 
-    public TabularDataFileReader getTabDataReaderByMimeType(String mimeType) { //DataFile dataFile) {
+    public TabularDataFileReader getTabDataReaderByMimeType(String mimeType) {
         /*
          * Same as the comment above; since we don't have any ingest plugins loadable
          * in real times yet, we can select them by a fixed list of mime types.
          * -- L.A. 4.0 beta.
          */
-
-        //String mimeType = dataFile.getContentType();
 
         if (mimeType == null) {
             return null;
