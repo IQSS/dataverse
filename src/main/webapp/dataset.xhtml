@@ -37,10 +37,10 @@
                                                                    or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))}"/>
             <!-- TO-DO FIX RSYNC LOGIC !fileMetadata.dataFile.filePackage or
                                                     fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload -->
-            <ui:param name="showAccessFileButtonGroup" value="#{fileDownloadHelper.canDownloadFile(fileMetadata)
-                                                                or (!fileDownloadHelper.canDownloadFile(fileMetadata) and DatasetPage.dataset.fileAccessRequest)
-                                                                and (!DatasetPage.workingVersion.deaccessioned
-                                                                or (DatasetPage.workingVersion.deaccessioned and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset)))}"/>
+            <!-- NOTE removed fileAccessRequest logic in order to always display the file access btn -->
+            <ui:param name="showAccessFileButtonGroup" value="#{!DatasetPage.workingVersion.deaccessioned
+                                                                or (DatasetPage.workingVersion.deaccessioned
+                                                                and permissionsWrapper.canIssueUpdateDatasetCommand(FilePage.fileMetadata.datasetVersion.dataset))}"/>
             <ui:param name="publishDataset" value="#{DatasetPage.publishDatasetPopup()}"/>
             <ui:param name="releaseDraft" value="#{DatasetPage.releaseDraftPopup()}"/>
             <ui:param name="releaseBoth" value="#{DatasetPage.publishBothPopup()}"/>
@@ -99,6 +99,7 @@
                     <f:viewAction action="#{EditDatafilesPage.initCreateMode(DatasetPage.editMode, DatasetPage.workingVersion, DatasetPage.uploadInProgress, DatasetPage.newFiles, DatasetPage.uploadedFiles, DatasetPage.selectedFiles)}"/>
                 </f:metadata>
                 <h:form id="datasetForm">
+                    <h:inputHidden id="validateFilesOutcome" value="#{DatasetPage.validateFilesOutcome}" />
                     <!-- View infoMode -->
                     <!-- Top Button/Citation Blocks -->
                     <p:fragment id="topDatasetBlockFragment">
@@ -129,6 +130,7 @@
                                         <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
                                             <ui:include src="dataset-citation.xhtml">
                                                 <ui:param name="datasetPage" value="true"/>
+                                                <ui:param name="anonymized" value="DatasetPage.anonymizedAccess"/>
                                             </ui:include>
                                         </ui:fragment>
                                         <!-- END: CITATION BLOCK -->
@@ -144,41 +146,66 @@
                                                     <button type="button" class="btn btn-primary btn-access-dataset dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                         #{bundle['dataset.accessBtn']} <span class="caret"></span>
                                                     </button>
-                                                    <ul class="dropdown-menu pull-right text-left">
-
+                                                    <ul class="dropdown-menu pull-right text-left" style="padding-left:1em; padding-right:1em;" >
                                                         <!-- DOWNLOAD -->
                                                         <ui:fragment rendered="#{DatasetPage.canDownloadFiles()}">
-                                                            <li class="dropdown-header">#{bundle['dataset.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
-                                                            <!-- NORMAL DOWNLOAD BUTTON (NO TABULAR FILES) -->
-                                                            <li jsf:rendered="#{!DatasetPage.versionHasTabular}">
-                                                                <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadArchival()}" styleClass="btn-download">
+                                                            <ui:fragment rendered="#{!DatasetPage.tooLargeToDownload}">
+                                                                <li class="dropdown-header">#{bundle['dataset.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
+                                                                <!-- NORMAL DOWNLOAD BUTTON (NO TABULAR FILES) -->
+                                                                <li jsf:rendered="#{!DatasetPage.versionHasTabular}">                 
+                                                                    <p:commandLink update="@form" actionListener="#{DatasetPage.startDownloadAllOriginal()}" styleClass="btn-download" 
+                                                                                   oncomplete="bind_bsui_components();showPopup();">
                                                                     #{bundle.download}
-                                                                    <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
-                                                                        <f:param value="#{DatasetPage.sizeOfDataset}" />
-                                                                    </h:outputFormat>
-                                                                </p:commandLink>
-                                                            </li>
-                                                            <!-- DOWNLOAD ORIGINAL BUTTON (TABULAR FILES PRESENT) -->
-                                                            <li jsf:rendered="#{DatasetPage.versionHasTabular and DatasetPage.sizeOfDatasetOrig != '0 B' }">
-                                                                <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadOriginal()}" styleClass="btn-download">
-                                                                    #{bundle.downloadOriginal}
-                                                                    <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
-                                                                        <f:param value="#{DatasetPage.sizeOfDatasetOrig}" />
-                                                                    </h:outputFormat>
-                                                                </p:commandLink>
-                                                            </li>
-                                                            <!-- DOWNLOAD ARCHIVAL FILES (TABULAR FILES PRESENT) -->
-                                                            <li jsf:rendered="#{DatasetPage.versionHasTabular}">
-                                                                <p:commandLink update="@form" actionListener="#{DatasetPage.validateAllFilesForDownloadArchival()}" styleClass="btn-download">
-                                                                    #{bundle.downloadArchival}
-                                                                    <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
-                                                                        <f:param value="#{DatasetPage.sizeOfDataset}" />
-                                                                    </h:outputFormat>
-                                                                </p:commandLink>
-                                                            </li>
-                                                        </ui:fragment>
-                                                        <!-- END: DOWNLOAD -->
+                                                                        <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
+                                                                            <f:param value="#{DatasetPage.sizeOfDataset}" />
+                                                                        </h:outputFormat>
+                                                                    </p:commandLink>
+                                                                </li>
 
+                                                                <!-- DOWNLOAD Options (TABULAR FILES PRESENT) -->
+                                                                <ui:fragment rendered="#{DatasetPage.versionHasTabular}">
+                                                                    <!-- DOWNLOAD ORIGINAL BUTTON (TABULAR FILES PRESENT) -->
+                                                                    <li jsf:rendered="#{ DatasetPage.sizeOfDatasetOrig != '0 B'  and !(DatasetPage.tooLargeToDownloadOriginal) }">
+                                                                        <p:commandLink update="@form" actionListener="#{DatasetPage.startDownloadAllOriginal()}" 
+                                                                                       oncomplete="bind_bsui_components();showPopup();"
+                                                                                       styleClass="btn-download">
+                                                                            #{bundle.downloadOriginal}
+                                                                            <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
+                                                                                <f:param value="#{DatasetPage.sizeOfDatasetOrig}" />
+                                                                            </h:outputFormat>
+                                                                        </p:commandLink>
+                                                                    </li>
+                                                                    <!-- Original Format too big -->
+                                                                    <ui:fragment rendered="#{DatasetPage.tooLargeToDownloadOriginal}">                                                                                                                               
+                                                                        <h:outputText value="#{bundle['dataset.accessBtn.original.too.big']}">                                           
+                                                                        </h:outputText>                                                            
+                                                                    </ui:fragment>
+                                                                    <!-- DOWNLOAD ARCHIVAL FILES (TABULAR FILES PRESENT) -->
+                                                                    <li jsf:rendered="#{!DatasetPage.tooLargeToDownloadArchival}">
+                                                                        <p:commandLink update="@form" oncomplete="bind_bsui_components();showPopup();" 
+                                                                                       actionListener="#{DatasetPage.startDownloadAllArchival()}" styleClass="btn-download">
+                                                                                #{bundle.downloadArchival}
+                                                                            <h:outputFormat value="#{bundle['dataset.accessBtn.download.size']}">
+                                                                                <f:param value="#{DatasetPage.sizeOfDataset}" />
+                                                                            </h:outputFormat>
+                                                                        </p:commandLink>
+                                                                    </li>
+                                                                    <!-- Archival Format too big -->
+                                                                    <ui:fragment rendered="#{DatasetPage.tooLargeToDownloadArchival}">                                                                                                                               
+                                                                        <h:outputText value="#{bundle['dataset.accessBtn.archival.too.big']}">                                           
+                                                                        </h:outputText>                                                            
+                                                                    </ui:fragment>
+                                                                </ui:fragment>
+                                                            </ui:fragment>
+                                                            <!-- Can Download, but Download either format too big-->
+                                                            <ui:fragment rendered="#{DatasetPage.tooLargeToDownload}">                                                                                                                               
+                                                                <h:outputText value="#{bundle['dataset.accessBtn.too.big']}">                                           
+                                                                </h:outputText>                                                            
+                                                            </ui:fragment>
+                                                        </ui:fragment>
+                                                                                                            
+                                                        <!-- END: DOWNLOAD -->
+                                                       
                                                         <!-- EXPLORE -->
                                                         <ui:fragment rendered="#{DatasetPage.datasetExploreTools.size() >= 1}">
                                                             <li class="dropdown-header">#{bundle['dataset.accessBtn.header.explore']} <span class="glyphicon glyphicon-equalizer"/></li>
@@ -522,9 +549,12 @@
                                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{DatasetPage.datasetVersionUI.datasetRelPublications.get(0).description}"></span>
                                                         </th>
-                                                        <td>
+                                                        <td jsf:rendered="#{!DatasetPage.anonymizedAccess or !settingsWrapper.shouldBeAnonymized(dsf)}">
                                                             <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetVersionUI.relPublicationCitation)}" escape="false"/>
                                                             <a href="#{DatasetPage.datasetVersionUI.relPublicationUrl}" title="#{DatasetPage.datasetVersionUI.relPublicationUrl}" target="_blank" rel="noopener">#{DatasetPage.datasetVersionUI.relPublicationId}</a>
+                                                        </td>
+                                                        <td jsf:rendered="#{DatasetPage.anonymizedAccess and settingsWrapper.shouldBeAnonymized(dsf)}">
+                                                            <h:outputText value="#{bundle['dataset.anonymized.withheld']}"/>
                                                         </td>
                                                     </tr>
                                                     <tr id="#{dsf.datasetFieldType.name}" jsf:rendered="#{dsf.datasetFieldType.name!='publication' and dsf.datasetFieldType.name!='keyword'}">
@@ -533,7 +563,7 @@
                                                             <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{dsf.datasetFieldType.localeDescription}"></span>
                                                         </th>
-                                                        <td>
+                                                        <td jsf:rendered="#{!DatasetPage.anonymizedAccess or !settingsWrapper.shouldBeAnonymized(dsf)}">
                                                             <!-- Primitive datasetFields -->
                                                             <ui:fragment rendered="#{dsf.datasetFieldType.primitive}">
                                                                 <h:outputText value="#{dsf.displayValue}" rendered="#{!dsf.datasetFieldType.allowMultiples}"
@@ -560,6 +590,9 @@
                                                                     </div>
                                                                 </ui:repeat>
                                                             </ui:fragment>
+                                                        </td>
+                                                        <td jsf:rendered="#{DatasetPage.anonymizedAccess and settingsWrapper.shouldBeAnonymized(dsf)}">
+                                                            <h:outputText value="#{bundle['dataset.anonymized.withheld']}"/>
                                                         </td>
                                                     </tr>
                                                 </ui:repeat>
@@ -664,6 +697,8 @@
                             <ui:param name="metadataBlocks" value="#{!empty DatasetPage.editMode ? DatasetPage.datasetVersionUI.metadataBlocksForEdit.entrySet().toArray(): DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()}"/>
                             <ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDateFormattedYYYYMMDD}"/>
                             <ui:param name="globalId" value="#{DatasetPage.dataset.globalIdString}"/>
+                            <ui:param name="mdLang" value="#{DatasetPage.getLocaleDisplayName(DatasetPage.effectiveMetadataLanguage)}"/>
+                            <ui:param name="mdLangCode" value="#{DatasetPage.effectiveMetadataLanguage}"/>
                         </ui:include>
                     </ui:fragment>
                     <!-- Create/Save Dataset Button Panel TOP editMode -->
@@ -771,7 +806,8 @@
                                     </p:commandLink>
                                     <div class="btn-group" jsf:rendered="#{DatasetPage.dataset.released 
                                                                            and (!DatasetPage.dataset.deaccessioned
-                                                                           or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))}">
+                                                                           or (DatasetPage.workingVersion.deaccessioned and DatasetPage.canUpdateDataset()))
+                                                                           and !DatasetPage.anonymizedAccess}">
                                         <button class="btn btn-default btn-export dropdown-toggle" type="button" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-export"/> #{bundle['dataset.exportBtn']} <span class="caret"></span>
                                         </button>
@@ -793,6 +829,9 @@
                                     <ui:param name="publicationDate" value="#{DatasetPage.dataset.publicationDate != null ? DatasetPage.dataset.publicationDateFormattedYYYYMMDD : ''}"/>
                                     <ui:param name="globalId" value="#{DatasetPage.dataset.globalIdString}"/>
                                     <ui:param name="altPID" value="#{DatasetPage.dataset.alternativePersistentIdentifier}"/>
+                                    <ui:param name="mdLang" value="#{DatasetPage.getLocaleDisplayName(DatasetPage.effectiveMetadataLanguage)}"/>
+                                    <ui:param name="mdLangCode" value="#{DatasetPage.effectiveMetadataLanguage}"/>
+                                    <ui:param name="anonymized" value="#{DatasetPage.anonymizedAccess}"/>
                                 </ui:include>
                             </p:tab>
                             <!-- 4.2.1: see comment above -->
@@ -806,7 +845,9 @@
                             </p:tab>
                             <!-- 4.2.1: see above -->
                             <p:tab id="versionsTab" title="#{bundle['file.dataFilesTab.versions']}" rendered="#{empty DatasetPage.editMode}">
-                                <ui:include src="dataset-versions.xhtml"></ui:include>
+                                <ui:include src="dataset-versions.xhtml">
+                                    <ui:param name="anonymized" value="#{DatasetPage.anonymizedAccess}"/>
+                                </ui:include>
                             </p:tab>
                         </p:tabView>
                     </div>
@@ -885,6 +926,27 @@
                             </button>
                         </div>
                     </p:dialog>
+                    <p:dialog id="downloadTooLarge" styleClass="smallPopUp" header="#{bundle['file.zip.download.exceeds.limit.header']}" widgetVar="downloadTooLarge" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/>  #{bundle['file.zip.download.exceeds.limit.info']}</p>
+  
+                        <p class="help-block">
+                            <h:outputFormat value="#{bundle['file.zip.download.exceeds.limit.detail']}" escape="false">
+                                <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                <f:param value="#{systemConfig.guidesVersion}"/>
+                                <f:param value="#{DatasetPage.zipDownloadLimitAsString}"/>
+                            </h:outputFormat>
+                        </p>
+
+                    </p:dialog>
+                    <p:dialog id="selectFilesForDownload" styleClass="smallPopUp"
+                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDownload" modal="true">
+                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForDownload']}</p>
+                        <div class="button-block">
+                            <button class="btn btn-default" onclick="PF('selectFilesForDownload').hide();PF('blockDatasetForm').hide();" type="button">
+                                #{bundle.close}
+                            </button>
+                        </div>
+                    </p:dialog>
                     <p:dialog id="downloadMixed" styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadMixed" modal="true">
                         <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.mixedSelectedFilesForDownload']}</p>
                         <table>
@@ -899,32 +961,10 @@
                             <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" 
                                              rendered="#{!DatasetPage.downloadPopupRequired}"
                                              action="#{DatasetPage.startMultipleFileDownload()}"/>
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('downloadMixed').hide()"
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('downloadMixed').hide();"
                                              rendered="#{DatasetPage.downloadPopupRequired and !settingsWrapper.rsyncDownload}"
-                                             action="#{DatasetPage.openDownloadPopupForMultipleFileDownload()}" update="@form"/>
+                                             oncomplete="PF('downloadPopup').show();" />
                             <button class="btn btn-link" onclick="PF('downloadMixed').hide();" type="button">
-                                #{bundle.cancel}
-                            </button>
-                        </div>
-                    </p:dialog>
-                    <p:dialog id="downloadAllMixed" styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadAllMixed" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.mixedSelectedFilesForDownload']}</p>
-                        <table>
-                            <ui:repeat var="resFile" value="#{DatasetPage.selectedNonDownloadallableFiles}" >
-                                <tr>
-                                    <td>#{resFile.label}</td>
-                                </tr>
-                            </ui:repeat>
-                        </table>
-                        <div class="button-block">
-                            <p class="help-block">#{bundle['dataset.downloadUnrestricted']}</p>
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('downloadAllMixed').hide()"
-                                             rendered="#{!DatasetPage.downloadPopupRequired}"
-                                             action="#{DatasetPage.startMultipleFileDownload()}"/>
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.continue}" onclick="PF('downloadAllMixed').hide()"
-                                             rendered="#{DatasetPage.downloadPopupRequired and !settingsWrapper.rsyncDownload}"
-                                             action="#{DatasetPage.openDownloadPopupForDownloadAll()}" update="@form"/>
-                            <button class="btn btn-link" onclick="PF('downloadAllMixed').hide();" type="button">
                                 #{bundle.cancel}
                             </button>
                         </div>
@@ -964,7 +1004,8 @@
                                         } else {
                                             selectText(this);
                                         }">
-                                    <p class="text-success highlightBold" jsf:rendered="#{DatasetPage.privateUrlWasJustCreated}"><span class="glyphicon glyphicon glyphicon-ok"/> #{bundle['dataset.privateurl.createdSuccess']}</p>
+                                    <p class="highlight" jsf:rendered="#{DatasetPage.anonymizedPrivateUrl}">#{bundle['dataset.privateurl.anonymized']}</p>
+                                    <p class="highlight" jsf:rendered="#{!DatasetPage.anonymizedPrivateUrl}">#{bundle['dataset.privateurl.full']}</p>
                                     <ui:param name="privateUrlLink" value="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" />
                                     <p class="no-margin-bottom">
                                         <span>#{privateUrlLink}</span>
@@ -972,7 +1013,8 @@
                                 </div>
                             </div>
                             <div class="button-block">
-                                <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.createPrivateUrl']}" action="#{DatasetPage.createPrivateUrl()}" update="privateUrlPanel,:messagePanel" rendered="#{empty(DatasetPage.privateUrl)}"/>
+                                <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.createPrivateUrl']}" action="#{DatasetPage.createPrivateUrl(false)}" update="privateUrlPanel,:messagePanel" rendered="#{empty(DatasetPage.privateUrl)}"/>
+                                <p:commandButton styleClass="btn btn-default disabledTitle" value="#{bundle['dataset.privateurl.createPrivateUrl.anonymized']}" action="#{DatasetPage.createPrivateUrl(true)}" update="privateUrlPanel,:messagePanel" rendered="#{DatasetPage.anonymizedAccessEnabled and empty(DatasetPage.privateUrl)}" disabled="#{DatasetPage.dataset.released}" title="#{DatasetPage.dataset.released ? bundle['dataset.privateurl.createPrivateUrl.anonymized.unavailable']:'' }"/>
                                 <button class="btn btn-default btn-copy" data-clipboard-text="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" jsf:rendered="#{!empty(DatasetPage.privateUrl)}" type="button">
                                     #{bundle['copyClipboard']}
                                 </button>
@@ -1237,15 +1279,6 @@
                         <div class="button-block margin-bottom">
                             <button class="btn btn-default" onclick="PF('detailsBlocks').hide();PF('blockDatasetForm').hide();" type="button">
                                 #{bundle.done}
-                            </button>
-                        </div>
-                    </p:dialog>
-                    <p:dialog id="selectFilesForDownload" styleClass="smallPopUp"
-                              header="#{bundle['dataset.noSelectedFiles.header']}" widgetVar="selectFilesForDownload" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-exclamation-sign"/> #{bundle['dataset.noSelectedFilesForDownload']}</p>
-                        <div class="button-block">
-                            <button class="btn btn-default" onclick="PF('selectFilesForDownload').hide();PF('blockDatasetForm').hide();" type="button">
-                                #{bundle.close}
                             </button>
                         </div>
                     </p:dialog>
@@ -1702,6 +1735,25 @@
                     function updateOwnerDataverse() {
                         $('button[id$="updateOwnerDataverse"]').trigger('click');
                     }
+                    
+                    function showPopup() {
+                        var outcome = document.getElementById("datasetForm:validateFilesOutcome").value;
+                        if (outcome ==='Mixed'){
+                            PF('downloadMixed').show();
+                        }
+                        if (outcome ==='FailEmpty'){
+                            PF('selectFilesForDownload').show();
+                        }
+                        if (outcome ==='FailSize'){
+                            PF('downloadTooLarge').show();
+                        }
+                        if (outcome ==='FailRestricted'){
+                            PF('downloadInvalid').show();
+                        }
+                        if (outcome ==='GuestbookRequired'){
+                            PF('downloadPopup').show();
+                        }
+                    }    
                     //]]>
                 </script>
             </ui:define>

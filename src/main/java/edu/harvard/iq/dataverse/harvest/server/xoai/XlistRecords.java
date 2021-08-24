@@ -1,4 +1,3 @@
-
 package edu.harvard.iq.dataverse.harvest.server.xoai;
 
 import com.lyncode.xml.exceptions.XmlWriteException;

@@ -97,7 +97,9 @@
             <property name="excludes" value="lombok,java.util,org.springframework.web.bind.annotation"/>
         </module>
         -->
-        <!-- <module name="IllegalImport"/> --> <!-- defaults to sun.* packages -->
+        <module name="IllegalImport">
+            <property name="illegalPkgs" value="org.apache.commons.lang, org.apache.commons.httpclient"/>
+        </module>
         <!-- <module name="RedundantImport"/> -->
         <!-- <module name="UnusedImports">
             <property name="processJavadoc" value="false"/>

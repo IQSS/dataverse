@@ -10,10 +10,48 @@
     xmlns:cc="http://java.sun.com/jsf/composite"
     xmlns:o="http://omnifaces.org/ui"
     xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+    
+    <!-- Access Status -->
+    <li class="dropdown-header">File Access <span class="glyphicon glyphicon-file"/></li>
+    <li><span class="dropdown-item-text">
+            <span class="#{!fileMetadata.restricted ?
+                           'glyphicon glyphicon-globe text-success' : (!fileDownloadHelper.canDownloadFile(fileMetadata) ? 'glyphicon glyphicon-lock text-danger' : 'icon-unlock text-success')}"/>
+            <h:outputText 
+                value=" #{!fileMetadata.restricted ? 'Public' : (!fileDownloadHelper.canDownloadFile(fileMetadata) ? bundle['restricted'] : bundle['restrictedaccess'])}"
+                styleClass="#{!fileMetadata.restricted ? 'text-success' : (!fileDownloadHelper.canDownloadFile(fileMetadata) ? 'text-danger' : 'text-success')}"/>
+        </span></li>
 
-    <!-- Download Options -->
+    <ui:fragment rendered="#{!fileMetadata.datasetVersion.deaccessioned and !fileDownloadHelper.canDownloadFile(fileMetadata)
+                             and fileMetadata.dataFile.owner.fileAccessRequest}">
+        <p:outputPanel id="requestPanel" styleClass="iq-dropdown-list-item #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? 'disabled' : ''}"
+                       rendered="#{fileDownloadHelper.session.user.authenticated}">
+            <p:commandLink styleClass="btn-request #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? 'italic'  : ''}"
+                        actionListener="#{fileDownloadHelper.handleCommandLinkClick(fileMetadata)}"
+                        update="@([id$=requestAccessConsolidated]), @([id$=requestPanel])"
+                        id="requestAccessConsolidated"
+                        disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
+                #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
+            </p:commandLink>
+        </p:outputPanel>
+        <li jsf:rendered="#{!fileDownloadHelper.session.user.authenticated}">
+            <p:commandLink styleClass="btn-request" 
+                        process="@this"
+                        onclick="PF('accessSignUpLogIn_popup').show()">
+                #{bundle['file.requestAccess']}
+            </p:commandLink>
+        </li>
+    </ui:fragment>
+    <ui:fragment rendered="#{!fileMetadata.datasetVersion.deaccessioned and !fileDownloadHelper.canDownloadFile(fileMetadata)
+                             and !fileMetadata.dataFile.owner.fileAccessRequest}">
+        <li><span class="dropdown-item-text">#{bundle['file.dataFilesTab.terms.list.termsOfAccess.requestAccess.notRequest']}</span></li>
+    </ui:fragment>
+    <!-- END: Request Access Options -->
+    
+    <!-- CAN DOWNLOAD ACCESS Options -->
     <ui:fragment rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata)}">
+        <!-- Download Options -->
         <li class="dropdown-header">#{bundle['file.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
+        <!-- NON-TABULAR + PACKAGE DOWNLOAD OPTIONS -->
         <li jsf:rendered="#{!fileMetadata.dataFile.tabularData}">
             <p:commandLink rendered="#{!(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) 
                                     and fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload}"
@@ -24,7 +62,7 @@
                 <f:actionListener binding="#{fileDownloadService.writeGuestbookResponseRecord(guestbookResponse, fileMetadata, 'package')}" />
                 <!-- package data file: -->
                 <!-- no guest book/terms of use/etc. - straight package popup -->
-                #{bundle.download}
+                #{fileMetadata.dataFile.friendlyType == 'Unknown' ? bundle['file.download.filetype.unknown'] : fileMetadata.dataFile.friendlyType}
             </p:commandLink>
             <p:commandLink rendered="#{!(fileMetadata.dataFile.tabularData) and (downloadPopupRequired) 
                                     and fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload}"
@@ -36,7 +74,7 @@
                 <f:actionListener binding="#{packagePopupFragmentBean.setFileMetadata(fileMetadata)}" /> 
                 <!-- package data file: -->
                 <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                #{bundle.download}
+                #{fileMetadata.dataFile.friendlyType == 'Unknown' ? bundle['file.download.filetype.unknown'] : fileMetadata.dataFile.friendlyType}
             </p:commandLink>
             <p:commandLink rendered="#{!(fileMetadata.dataFile.tabularData) and !(downloadPopupRequired) 
                                       and !(fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload)}"
@@ -46,7 +84,7 @@
                          actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'Download')}">
                 <!-- non-tabular data file: -->
                 <!-- no guest book/terms of use/etc. - straight to the download API url: -->
-                #{bundle.download}
+                #{fileMetadata.dataFile.friendlyType == 'Unknown' ? bundle['file.download.filetype.unknown'] : fileMetadata.dataFile.friendlyType}
             </p:commandLink>
             <p:commandLink rendered="#{!(fileMetadata.dataFile.tabularData) and downloadPopupRequired 
                                       and !(fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload)}"
@@ -56,10 +94,10 @@
                          action="#{guestbookResponseService.modifyDatafile(guestbookResponse, fileMetadata)}"
                          update="@widgetVar(downloadPopup)" oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
                 <!-- guest book or terms of use, etc. enabled - open "download popup" first: -->
-                #{bundle.download}
+                #{fileMetadata.dataFile.friendlyType == 'Unknown' ? bundle['file.download.filetype.unknown'] : fileMetadata.dataFile.friendlyType}
             </p:commandLink>
         </li>
-        <!-- SUBMENU LINK -->
+        <!-- TABULAR DOWNLOAD OPTIONS -->
         <ui:fragment rendered="#{fileMetadata.dataFile.tabularData}">
             <ui:remove>
             <li>
@@ -131,93 +169,95 @@
                     </p:commandLink>
                 </li>
             </ui:fragment>
-            <li>
-                <p:commandLink styleClass="btn-download" rendered="#{!downloadPopupRequired}"
-                               process="@this"
-                               disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
-                               actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'var')}">
-                    #{bundle['file.downloadBtn.format.var']}
-                </p:commandLink>
-                <p:commandLink styleClass="btn-download" rendered="#{downloadPopupRequired}"
-                               process="@this"
-                               disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
-                               action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'var' )}"
-                               update="@widgetVar(downloadPopup)"
-                               oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                    #{bundle['file.downloadBtn.format.var']}
-                </p:commandLink>
-            </li>
-            <li class="dropdown-submenu pull-left">
-                <a tabindex="-1" href="javascript:void(0);">#{bundle['file.downloadBtn.format.citation']}</a>
-                <ul class="dropdown-menu">
-                    <li>
-                        <h:commandLink styleClass="btn-download" actionListener="#{fileDownloadService.downloadDatafileCitationRIS(fileMetadata)}">
-                            <h:outputText value="#{bundle['dataset.cite.downloadBtn.ris']}" />
-                        </h:commandLink>
-                    </li>
-                    <li>
-                        <h:commandLink styleClass="btn-download" action="#{fileDownloadService.downloadDatafileCitationXML(fileMetadata)}">
-                            <h:outputText value="#{bundle['dataset.cite.downloadBtn.xml']}" />
-                        </h:commandLink>
-                    </li>
-                    <li>
-                        <h:commandLink styleClass="btn-download" action="#{fileDownloadService.downloadDatafileCitationBibtex(fileMetadata)}">
-                            <h:outputText value="#{bundle['dataset.cite.downloadBtn.bib']}" />
-                        </h:commandLink>
-                    </li>
-                </ul>
-            </li>
         </ui:fragment>
-        <!-- END: SUBMENU LINK -->
-        <!-- UI HACK FIX SUBMENU PULL-FLOAT FIX -->
-        <li role="presentation" class="clearfix"></li>
+        <!-- END: TABULAR DOWNLOAD OPTIONS -->
     </ui:fragment>
-    <!-- Download Options -->
+    <!-- END: CAN DOWNLOAD ACCESS Options -->
     
-    <!-- Request Access Options -->
-    <ui:fragment rendered="#{!fileMetadata.datasetVersion.deaccessioned and !fileDownloadHelper.canDownloadFile(fileMetadata)
-                             and fileMetadata.dataFile.owner.fileAccessRequest}">
-        <li class="dropdown-header">#{bundle['file.accessBtn.header.download']} <span class="glyphicon glyphicon-download-alt"/></li>
-        
-       <style type="text/css">
-            div[id$="requestPanel"].iq-dropdown-list-item {display:list-item !important;}
-            div[id$="requestPanel"].iq-dropdown-list-item>a.ui-commandlink{display:block;padding:3px 20px;clear:both;font-weight:400;line-height:1.42857143;color:#333;white-space:nowrap}
-            div[id$="requestPanel"].iq-dropdown-list-item>a.ui-commandlink:focus,
-            div[id$="requestPanel"].iq-dropdown-list-item>a.ui-commandlink:hover{color:#262626;text-decoration:none;background-color:#f5f5f5}
-            div[id$="requestPanel"].iq-dropdown-list-item>a.ui-commandlink.active,
-            div[id$="requestPanel"].iq-dropdown-list-item>a.ui-commandlink.active:focus,
-            div[id$="requestPanel"].iq-dropdown-list-item>a.ui-commandlink.active:hover{color:#fff;text-decoration:none;background-color:#337ab7;outline:0}
-            
-            div[id$="requestPanel"].iq-dropdown-list-item.disabled>span.ui-commandlink.ui-state-disabled{display:block;padding:3px 20px;clear:both;font-weight:400;line-height:1.42857143;white-space:nowrap}
-            div[id$="requestPanel"].iq-dropdown-list-item.disabled>span.ui-commandlink.ui-state-disabled,
-            div[id$="requestPanel"].iq-dropdown-list-item.disabled>span.ui-commandlink.ui-state-disabled:focus,
-            div[id$="requestPanel"].iq-dropdown-list-item.disabled>span.ui-commandlink.ui-state-disabled:hover{background-color:transparent;color:#777;}
-            div[id$="requestPanel"].iq-dropdown-list-item.disabled>span.ui-commandlink.ui-state-disabled:focus,
-            div[id$="requestPanel"].iq-dropdown-list-item.disabled>span.ui-commandlink.ui-state-disabled:hover{text-decoration:none;background-color:transparent;background-image:none;filter:progid:DXImageTransform.Microsoft.gradient(enabled=false)}
-            div[id$="requestPanel"].iq-dropdown-list-item.disabled{cursor:not-allowed;}
-            div[id$="requestPanel"].iq-dropdown-list-item.disabled>span.ui-commandlink.ui-state-disabled{pointer-events:none;}
-        </style>
+    <!-- Download Metadata -->
+    <li class="dropdown-header">Download Metadata <span class="glyphicon glyphicon-download-alt"/></li>
     
-        <p:outputPanel id="requestPanel" styleClass="iq-dropdown-list-item #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? 'disabled' : ''}"
-                       rendered="#{fileDownloadHelper.session.user.authenticated}">
-            <p:commandLink styleClass="btn-request"
-                        actionListener="#{fileDownloadHelper.handleCommandLinkClick(fileMetadata)}"
-                        update="@([id$=requestAccessConsolidated]), @([id$=requestPanel])"
-                        id="requestAccessConsolidated"
-                        disabled="#{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user)}">
-                #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
+    <ui:fragment rendered="#{fileMetadata.dataFile.tabularData and fileDownloadHelper.canDownloadFile(fileMetadata)}">
+        <li>
+            <p:commandLink styleClass="btn-download" rendered="#{!downloadPopupRequired}"
+                           process="@this"
+                           disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
+                           actionListener="#{fileDownloadService.writeGuestbookAndStartFileDownload(guestbookResponse, fileMetadata, 'var')}">
+                #{bundle['file.downloadBtn.format.var']}
             </p:commandLink>
-        </p:outputPanel>
-    
-        <li jsf:rendered="#{!fileDownloadHelper.session.user.authenticated}">
-            <p:commandLink styleClass="btn-request" 
-                        process="@this"
-                        onclick="PF('accessSignUpLogIn_popup').show()">
-                #{bundle['file.requestAccess']}
+            <p:commandLink styleClass="btn-download" rendered="#{downloadPopupRequired}"
+                           process="@this"
+                           disabled="#{(fileMetadata.dataFile.ingestInProgress or lockedFromDownload) ? 'disabled' : ''}" 
+                           action="#{guestbookResponseService.modifyDatafileAndFormat(guestbookResponse, fileMetadata, 'var' )}"
+                           update="@widgetVar(downloadPopup)"
+                           oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                #{bundle['file.downloadBtn.format.var']}
             </p:commandLink>
         </li>
     </ui:fragment>
-    <!-- END: Request Access Options -->
+    
+    <!-- CITATION FILES DOWNLOAD OPTIONS -->
+    <li class="dropdown-submenu pull-left" jsf:rendered="#{!anonymized}">
+        <a tabindex="-1" href="javascript:void(0);">#{bundle['file.downloadBtn.format.citation']}</a>
+        <ul class="dropdown-menu">
+            <li>
+                <h:commandLink styleClass="btn-download" action="#{fileDownloadService.downloadDatafileCitationXML(fileMetadata)}">
+                    <h:outputText value="#{bundle['dataset.cite.downloadBtn.xml']}" />
+                </h:commandLink>
+            </li>
+            <li>
+                <h:commandLink styleClass="btn-download" actionListener="#{fileDownloadService.downloadDatafileCitationRIS(fileMetadata)}">
+                    <h:outputText value="#{bundle['dataset.cite.downloadBtn.ris']}" />
+                </h:commandLink>
+            </li>
+            <li>
+                <h:commandLink styleClass="btn-download" action="#{fileDownloadService.downloadDatafileCitationBibtex(fileMetadata)}">
+                    <h:outputText value="#{bundle['dataset.cite.downloadBtn.bib']}" />
+                </h:commandLink>
+            </li>
+        </ul>
+    </li>
+    <!-- UI HACK FIX SUBMENU PULL-FLOAT FIX -->
+    <li role="presentation" class="clearfix"></li>
+    <!-- END: CITATION FILES DOWNLOAD OPTIONS -->
+    
+    <!-- AUX FILES DOWNLOAD OPTIONS -->
+    <ui:fragment rendered="#{not empty auxiliaryFileServiceBean.findAuxiliaryFiles(fileMetadata.dataFile)}">
+        <!-- Download Auxiliary Files -->
+        <li class="dropdown-header">#{bundle['file.auxfiles.download.header']} <span class="glyphicon glyphicon-download-alt"/></li>
+        <!-- Aux Files in Bundle (DP, etc.)-->
+        <ui:repeat var="auxFileType" value="#{auxiliaryFileServiceBean.findAuxiliaryFileTypes(fileMetadata.dataFile, true)}">
+            <li class="dropdown-submenu pull-left">
+                <a tabindex="-1" href="javascript:void(0);">#{auxiliaryFileServiceBean.getFriendlyNameForType(auxFileType)}</a>
+                <ul class="dropdown-menu">
+                    <ui:repeat var="auxFile" value="#{auxiliaryFileServiceBean.findAuxiliaryFilesByType(fileMetadata.dataFile, auxFileType)}">
+                        <li>
+                            <p:commandLink styleClass="btn-download" action="#{fileDownloadService.redirectToAuxFileDownloadAPI(fileMetadata.dataFile.id, auxFile.formatTag, auxFile.formatVersion)}">
+                                <h:outputText value="#{auxFile.formatTag} (#{auxFile.formatVersion})"/>
+                            </p:commandLink>
+                        </li>
+                    </ui:repeat>
+                </ul>
+            </li>
+        </ui:repeat>
+        <!--Other Aux Files (not in bundle)-->
+        <li class="dropdown-submenu pull-left" jsf:rendered="#{not empty auxiliaryFileServiceBean.findOtherAuxiliaryFiles(fileMetadata.dataFile)}">
+            <a tabindex="-1" href="javascript:void(0);">#{bundle['file.auxfiles.unspecifiedTypes']}</a>
+            <ul class="dropdown-menu">
+                <ui:repeat var="auxFile" value="#{auxiliaryFileServiceBean.findOtherAuxiliaryFiles(fileMetadata.dataFile)}">
+                    <li>
+                        <p:commandLink styleClass="btn-download" action="#{fileDownloadService.redirectToAuxFileDownloadAPI(fileMetadata.dataFile.id, auxFile.formatTag, auxFile.formatVersion)}">
+                            <h:outputText value="#{auxFile.formatTag} (#{auxFile.formatVersion})"/>
+                        </p:commandLink>
+                    </li>
+                </ui:repeat>
+            </ul>
+        </li>
+        <!-- UI HACK FIX SUBMENU PULL-FLOAT FIX -->
+        <li role="presentation" class="clearfix"></li>
+    </ui:fragment>
+    <!-- END: Download Auxiliary Files -->
+    <!-- END: AUX FILES DOWNLOAD OPTIONS -->
     
     <!-- Explore Options -->
     <ui:fragment rendered="#{fileDownloadHelper.canDownloadFile(fileMetadata) and not empty exploreTools}">

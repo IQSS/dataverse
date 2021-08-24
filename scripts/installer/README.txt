@@ -38,6 +38,5 @@ jhove.conf
 SOLR schema and config files, from conf/solr/8.8.1: 
 
 schema.xml
-schema_dv_cmb_copies.xml
-schema_dv_cmb_fields.xml
+schema_dv_mdb_fields.xml
 solrconfig.xml

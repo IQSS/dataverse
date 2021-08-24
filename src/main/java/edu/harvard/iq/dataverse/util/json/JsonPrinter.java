@@ -330,7 +330,8 @@ public class JsonPrinter {
                 .add("authority", ds.getAuthority())
                 .add("publisher", BrandingUtil.getInstallationBrandName())
                 .add("publicationDate", ds.getPublicationDateFormattedYYYYMMDD())
-                .add("storageIdentifier", ds.getStorageIdentifier());
+                .add("storageIdentifier", ds.getStorageIdentifier())
+                .add("metadataLanguage", ds.getMetadataLanguage());
     }
 
     public static JsonObjectBuilder json(fileDetailsHolder ds) {
@@ -487,6 +488,8 @@ public class JsonPrinter {
         JsonObjectBuilder blockBld = jsonObjectBuilder();
 
         blockBld.add("displayName", block.getDisplayName());
+        blockBld.add("name", block.getName());
+        
         final JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
 
         DatasetFieldWalker.walk(fields, settingsService, new DatasetFieldsToJson(fieldsArray));
@@ -574,6 +577,8 @@ public class JsonPrinter {
                 .add("formatVersion", auxFile.getFormatVersion()) // "label" is the filename
                 .add("origin", auxFile.getOrigin()) 
                 .add("isPublic", auxFile.getIsPublic())
+                .add("type", auxFile.getType())
+                .add("contentType", auxFile.getContentType())
                 .add("fileSize", auxFile.getFileSize())
                 .add("checksum", auxFile.getChecksum())
                 .add("dataFile", JsonPrinter.json(auxFile.getDataFile()));

@@ -361,6 +361,11 @@ public class SettingsServiceBean {
         IndependentHandleService,
 
         /**
+        Handle to use for authentication if the default is not being used
+        */
+        HandleAuthHandle,
+
+        /**
          * Archiving can be configured by providing an Archiver class name (class must extend AstractSubmitToArchiverCommand)
          * and a list of settings that should be passed to the Archiver.
          * Note: 
@@ -427,7 +432,7 @@ public class SettingsServiceBean {
          * Sort Date Facets Chronologically instead or presenting them in order of # of hits as other facets are. Default is true
          */
         ChronologicalDateFacets,
-
+        
         /**
          * Used where BrandingUtil.getInstallationBrandName is called, overides the default use of the root Dataverse collection name
          */
@@ -450,7 +455,25 @@ public class SettingsServiceBean {
         /**Client id for Globus application
          *
          */
-        GlobusClientId
+        GlobusClientId,
+        /**
+         * A comma-separated list of field type names that should be 'withheld' when
+         * dataset access occurs via a Private Url with Anonymized Access (e.g. to
+         * support anonymized review). A suggested minimum includes author,
+         * datasetContact, and contributor, but additional fields such as depositor, grantNumber, and
+         * publication might also need to be included.
+         */
+        AnonymizedFieldTypeNames,
+        /**
+         * A Json array containing key/values corresponding the the allowed languages
+         * for entering metadata. FOrmat matches that of the Languages setting: e.g.
+         * '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]' with
+         * the locale being an ISO-639 code for that language (2 and 3 letter codes from
+         * the 639-2 and 639-3 standards are allowed. These will be used directly in
+         * metadata exports) and the title containing a human readable string. These
+         * values are selectable at the Dataverse level and apply to Dataset metadata.
+         */
+        MetadataLanguages
         ;
 
         @Override

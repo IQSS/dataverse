@@ -379,9 +379,8 @@ public class Admin extends AbstractApiBean {
         authSvc.removeAuthentictedUserItems(au);
         
         authSvc.deleteAuthenticatedUser(au.getId());
-        return ok("AuthenticatedUser " + au.getIdentifier() + " deleted. ");
-
-    }  
+        return ok("AuthenticatedUser " + au.getIdentifier() + " deleted.");
+    }
 
     @POST
     @Path("authenticatedUsers/{identifier}/deactivate")

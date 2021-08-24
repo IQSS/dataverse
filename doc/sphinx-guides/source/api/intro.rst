@@ -204,6 +204,15 @@ Please note that some APIs are only documented in other guides that are more sui
 
   - :doc:`/installation/config`
 
+- Developer Guide
+
+  - :doc:`/developers/aux-file-support`
+  - :doc:`/developers/big-data-support`
+  - :doc:`/developers/dataset-migration-api`
+  - :doc:`/developers/dataset-semantic-metadata-api`
+  - :doc:`/developers/s3-direct-upload-api`
+  - :doc:`/developers/workflows`
+
 Client Libraries
 ~~~~~~~~~~~~~~~~
 
