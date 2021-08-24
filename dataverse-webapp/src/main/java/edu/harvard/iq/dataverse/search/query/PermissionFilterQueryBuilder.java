@@ -11,7 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -72,7 +71,7 @@ public class PermissionFilterQueryBuilder {
     
     private String buildJoinQuery(List<String> discoverableByGroups) {
         String discoverableByQueryPart = SearchFields.DISCOVERABLE_BY + ":(" + StringUtils.join(discoverableByGroups, " OR ") + ")";
-        String discoverableByPublicQueryPart = SearchFields.DISCOVERABLE_BY_PUBLIC_FROM + ":[* TO NOW]";
+        String discoverableByPublicQueryPart = SearchFields.DISCOVERABLE_BY_PUBLIC_FROM + ":[* TO NOW/DAY]";
         
         String experimentalJoin = "{!join from=" + SearchFields.DEFINITION_POINT + " to=id}"
                 + discoverableByQueryPart + " OR "

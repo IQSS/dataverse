@@ -7,8 +7,8 @@ import edu.harvard.iq.dataverse.persistence.group.Group;
 import edu.harvard.iq.dataverse.persistence.group.IpAddress;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -16,7 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 /**
@@ -55,8 +55,8 @@ public class PermissionFilterQueryBuilderTest {
         
         // when & then
         String expectedFilterQuery = "{!join from=definitionPointDocId to=id}"
-                + "discoverableBy:(group_groupContainingGuests)" 
-                + " OR discoverableByPublicFrom:[* TO NOW]";
+                + "discoverableBy:(group_groupContainingGuests)"
+                + " OR discoverableByPublicFrom:[* TO NOW/DAY]";
         
         assertEquals(expectedFilterQuery, permissionFilterQueryBuilder.buildPermissionFilterQuery(request));
     }
@@ -91,8 +91,8 @@ public class PermissionFilterQueryBuilderTest {
         
         // when & then
         String expectedFilterQuery = "{!join from=definitionPointDocId to=id}"
-                + "discoverableBy:(group_user15 OR group_someAlias1 OR group_someAlias2 OR group_someAlias3)" 
-                + " OR discoverableByPublicFrom:[* TO NOW]";
+                + "discoverableBy:(group_user15 OR group_someAlias1 OR group_someAlias2 OR group_someAlias3)"
+                + " OR discoverableByPublicFrom:[* TO NOW/DAY]";
         
         assertEquals(expectedFilterQuery, permissionFilterQueryBuilder.buildPermissionFilterQuery(request));
     }
