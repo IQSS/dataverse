@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.globus;
 
-import org.apache.xpath.operations.Bool;
 
 public class Task {
 

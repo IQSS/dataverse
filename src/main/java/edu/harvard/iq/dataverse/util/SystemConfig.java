@@ -571,36 +571,6 @@ public class SystemConfig {
         return null;
     }
 
-    public long getChecksumDatasetSizeLimit() {
-       String limitEntry = settingsService.getValueForKey(SettingsServiceBean.Key.ChecksumDatasetSizeLimit);
-
-        if (limitEntry != null) {
-            try {
-                Long sizeOption = new Long(limitEntry);
-                return sizeOption;
-            } catch (NumberFormatException nfe) {
-                logger.warning("Invalid value for TabularIngestSizeLimit option? - " + limitEntry);
-            }
-        }
-        // -1 means no limit is set;
-        return -1;
-    }
-
-    public long getChecksumFileSizeLimit() {
-        String limitEntry = settingsService.getValueForKey(SettingsServiceBean.Key.ChecksumFileSizeLimit);
-
-        if (limitEntry != null) {
-            try {
-                Long sizeOption = new Long(limitEntry);
-                return sizeOption;
-            } catch (NumberFormatException nfe) {
-                logger.warning("Invalid value for TabularIngestSizeLimit option? - " + limitEntry);
-            }
-        }
-        // -1 means no limit is set;
-        return -1;
-    }
-
     public long getTabularIngestSizeLimit() {
         // This method will return the blanket ingestable size limit, if 
         // set on the system. I.e., the universal limit that applies to all 
