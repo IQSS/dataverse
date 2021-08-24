@@ -971,5 +971,11 @@ public class FilePage implements java.io.Serializable {
 
     public void setFileAccessRequest(boolean fileAccessRequest) {
         this.fileAccessRequest = fileAccessRequest;
-    }  
+    }
+    public boolean isAnonymizedAccess() {
+        if(session.getUser() instanceof PrivateUrlUser) {
+            return ((PrivateUrlUser)session.getUser()).hasAnonymizedAccess();
+        }
+        return false;
+    }
 }
