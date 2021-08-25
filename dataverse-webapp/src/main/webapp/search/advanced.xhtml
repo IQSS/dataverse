@@ -59,17 +59,18 @@
                                                      searchField.searchFieldType == fieldTypeEnums.DATE}"
                                                      value="#{searchField.fieldValue}"/>
 
-                                        <div class="ui-inputfield form-control select-scroll-block"
-                                             jsf:rendered="#{searchField.searchFieldType == fieldTypeEnums.CHECKBOX}">
-                                            <p:selectManyCheckbox value="#{searchField.checkedFieldValues}"
-                                                                  layout="pageDirection"
-                                            >
-                                                <f:selectItems value="#{searchField.checkboxLabelAndValue}"
-                                                               var="cvs"
-                                                               itemLabel="#{cvs._1()}"
-                                                               itemValue="#{cvs._2()}"/>
-                                            </p:selectManyCheckbox>
-                                        </div>
+                                        <p:selectCheckboxMenu value="#{searchField.checkedFieldValues}"
+                                                              rendered="#{searchField.searchFieldType == fieldTypeEnums.CHECKBOX}"
+                                                              style="width: 100%" panelStyleClass="without-select-all"
+                                                              multiple="true" label="#{bundle.select}"
+                                                              updateLabel="true"
+                                                              filter="true" filterMatchMode="contains"
+                                        >
+                                            <f:selectItems value="#{searchField.checkboxLabelAndValue}"
+                                                           var="cvs"
+                                                           itemLabel="#{cvs._1()}"
+                                                           itemValue="#{cvs._2()}"/>
+                                        </p:selectCheckboxMenu>
                                         <div jsf:rendered="#{searchField.searchFieldType == fieldTypeEnums.SELECT_ONE_VALUE}">
                                             <p:selectOneMenu styleClass="facet-category-default"
                                                              value="#{searchField.checkedFieldValue}"
@@ -182,16 +183,20 @@
                                                                    rendered="#{item.searchFieldType == fieldTypeEnums.NUMBER}"/>
                                                 </div>
                                             </div>
-                                            <div class="ui-inputfield form-control select-scroll-block"
-                                                 jsf:rendered="#{item.searchFieldType == fieldTypeEnums.CHECKBOX}">
-                                                <p:selectManyCheckbox value="#{item.checkedFieldValues}"
-                                                                      layout="pageDirection">
-                                                    <f:selectItems value="#{item.checkboxLabelAndValue}"
-                                                                   var="checkBoxTuple"
-                                                                   itemLabel="#{checkBoxTuple._1()}"
-                                                                   itemValue="#{checkBoxTuple._2()}"/>
-                                                </p:selectManyCheckbox>
-                                            </div>
+
+                                            <p:selectCheckboxMenu value="#{item.checkedFieldValues}"
+                                                                  rendered="#{item.searchFieldType == fieldTypeEnums.CHECKBOX}"
+                                                                  style="width: 100%"
+                                                                  panelStyleClass="without-select-all"
+                                                                  multiple="true" label="#{bundle.select}"
+                                                                  updateLabel="true"
+                                                                  filter="true" filterMatchMode="contains">
+                                                <f:selectItems value="#{item.checkboxLabelAndValue}"
+                                                               var="checkBoxTuple"
+                                                               itemLabel="#{checkBoxTuple._1()}"
+                                                               itemValue="#{checkBoxTuple._2()}"/>
+                                            </p:selectCheckboxMenu>
+
                                             <div jsf:rendered="#{item.searchFieldType == fieldTypeEnums.SELECT_ONE_VALUE}">
                                                 <p:selectOneMenu value="#{item.checkedFieldValue}"
                                                                  styleClass="facet-category-default"
