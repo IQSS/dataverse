@@ -613,6 +613,19 @@ input:disabled {
 	cursor: not-allowed;
 }
 
+// reverting change in primefaces introduced in
+// https://github.com/primefaces/primefaces/issues/4926
+// scale(0) causes problems with NVDA screen reader.
+// It will not read any checkbox labels.
+.ui-helper-hidden-accessible {
+    input, select {
+        -webkit-transform: none; 
+        -moz-transform: none; 
+        -ms-transform: none;
+        transform: none;
+    }
+}
+
 .ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover {
 	background-position: 0;
 }
