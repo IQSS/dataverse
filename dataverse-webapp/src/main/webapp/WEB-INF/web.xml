@@ -243,5 +243,9 @@
         <url-pattern>/dvn/api/data-deposit/v1/swordv2/edit/*</url-pattern>
         <url-pattern>/dvn/api/data-deposit/v1.1/swordv2/edit/*</url-pattern>
     </servlet-mapping>
+    <listener>
+        <display-name>ImageIO service provider loader/unloader</display-name>
+        <listener-class>com.twelvemonkeys.servlet.image.IIOProviderContextListener</listener-class>
+    </listener>
     <!-- END Data Deposit API (SWORD v2) -->
 </web-app>

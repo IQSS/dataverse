@@ -51,6 +51,7 @@
         See https://github.com/jacoco/jacoco/issues/772 for discussion of how the XML changed.
         -->
         <jacoco.version>0.8.1</jacoco.version>
+        <imageIo.version>3.7.0</imageIo.version>
     </properties>
 
     <!--Maven checks for dependendies from these repos in the order shown in the pom.xml
@@ -465,6 +466,11 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-expression</artifactId>
                 <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.twelvemonkeys.imageio</groupId>
+                <artifactId>imageio-jpeg</artifactId>
+                <version>${imageIo.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
