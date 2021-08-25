@@ -1,7 +1,5 @@
 package edu.harvard.iq.dataverse.authorization.providers.builtin;
 
-import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
@@ -11,33 +9,27 @@ import edu.harvard.iq.dataverse.authorization.AuthUtil;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
-import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.shib.ShibAuthenticationProvider;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.consent.ConsentDto;
 import edu.harvard.iq.dataverse.consent.ConsentService;
-import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
 import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailException;
 import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailUtil;
 import edu.harvard.iq.dataverse.mydata.MyDataPage;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.notification.UserNotificationService;
-import edu.harvard.iq.dataverse.persistence.DvObject;
+import edu.harvard.iq.dataverse.notification.dto.UserNotificationDTO;
+import edu.harvard.iq.dataverse.notification.dto.UserNotificationMapper;
 import edu.harvard.iq.dataverse.persistence.config.EMailValidator;
-import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
-import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
-import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.persistence.group.Group;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUserDisplayInfo;
 import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
 import edu.harvard.iq.dataverse.persistence.user.ConfirmEmailData;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
-import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.persistence.user.UserNameValidator;
 import edu.harvard.iq.dataverse.persistence.user.UserNotification;
-import edu.harvard.iq.dataverse.persistence.user.UserNotificationDao;
+import edu.harvard.iq.dataverse.persistence.user.UserNotificationRepository;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import edu.harvard.iq.dataverse.util.JsfHelper;
@@ -65,27 +57,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static edu.harvard.iq.dataverse.persistence.user.NotificationType.ASSIGNROLE;
-import static edu.harvard.iq.dataverse.persistence.user.NotificationType.CHECKSUMFAIL;
-import static edu.harvard.iq.dataverse.persistence.user.NotificationType.CHECKSUMIMPORT;
-import static edu.harvard.iq.dataverse.persistence.user.NotificationType.CREATEACC;
-import static edu.harvard.iq.dataverse.persistence.user.NotificationType.CREATEDS;
-import static edu.harvard.iq.dataverse.persistence.user.NotificationType.CREATEDV;
-import static edu.harvard.iq.dataverse.persistence.user.NotificationType.FILESYSTEMIMPORT;
-import static edu.harvard.iq.dataverse.persistence.user.NotificationType.GRANTFILEACCESS;
-import static edu.harvard.iq.dataverse.persistence.user.NotificationType.MAPLAYERDELETEFAILED;
-import static edu.harvard.iq.dataverse.persistence.user.NotificationType.MAPLAYERUPDATED;
-import static edu.harvard.iq.dataverse.persistence.user.NotificationType.PUBLISHEDDS;
-import static edu.harvard.iq.dataverse.persistence.user.NotificationType.REJECTFILEACCESS;
-import static edu.harvard.iq.dataverse.persistence.user.NotificationType.REQUESTFILEACCESS;
-import static edu.harvard.iq.dataverse.persistence.user.NotificationType.RETURNEDDS;
-import static edu.harvard.iq.dataverse.persistence.user.NotificationType.REVOKEROLE;
-import static edu.harvard.iq.dataverse.persistence.user.NotificationType.SUBMITTEDDS;
 
 /**
  *
@@ -100,7 +73,7 @@ public class DataverseUserPage implements java.io.Serializable {
         CREATE, EDIT, CHANGE_PASSWORD
     }
 
-    private final int ADDITIONAL_MESSAGE_MAX_LENGTH = 512;
+    private static final int ADDITIONAL_MESSAGE_MAX_LENGTH = 512;
 
     @Inject
     DataverseSession session;
@@ -109,15 +82,11 @@ public class DataverseUserPage implements java.io.Serializable {
     @EJB
     private UserNotificationService userNotificationService;
     @EJB
-    private UserNotificationDao userNotificationDao;
+    private UserNotificationRepository userNotificationRepository;
+    @EJB
+    private UserNotificationMapper userNotificationMapper;
     @EJB
     UserServiceBean userService;
-    @EJB
-    DatasetDao datasetDao;
-    @EJB
-    DataFileServiceBean fileService;
-    @EJB
-    DatasetVersionServiceBean datasetVersionService;
     @EJB
     PermissionServiceBean permissionService;
     @EJB
@@ -128,8 +97,6 @@ public class DataverseUserPage implements java.io.Serializable {
     ConfirmEmailServiceBean confirmEmailService;
     @EJB
     SystemConfig systemConfig;
-    @EJB
-    GroupServiceBean groupService;
     @EJB
     PasswordValidatorServiceBean passwordValidatorService;
     @Inject
@@ -145,7 +112,6 @@ public class DataverseUserPage implements java.io.Serializable {
     private ConsentService consentService;
 
     private AuthenticatedUser currentUser;
-    private BuiltinUser builtinUser;
     private AuthenticatedUserDisplayInfo userDisplayInfo;
     private transient AuthenticationProvider userAuthProvider;
     private EditMode editMode;
@@ -157,7 +123,7 @@ public class DataverseUserPage implements java.io.Serializable {
     @NotBlank(message = "{password.current}")
     private String currentPassword;
     private Long dataverseId;
-    private List<UserNotification> notificationsList;
+    private List<UserNotificationDTO> notificationsList = new ArrayList<>();
     private int activeIndex;
     private String selectTab = "somedata";
 
@@ -199,7 +165,6 @@ public class DataverseUserPage implements java.io.Serializable {
 
         setCurrentUser((AuthenticatedUser) session.getUser());
         userAuthProvider = authenticationService.lookupProvider(currentUser);
-        notificationsList = userNotificationDao.findByUser(currentUser.getId());
         preferredNotificationsLanguage = currentUser.getNotificationsLanguage();
 
         if (editMode == EditMode.EDIT && !isAccountDetailsEditable()) {
@@ -469,14 +434,8 @@ public class DataverseUserPage implements java.io.Serializable {
     }
 
     public String remove(Long notificationId) {
-        UserNotification userNotification = userNotificationDao.find(notificationId);
-        userNotificationDao.delete(userNotification);
-        for (UserNotification uNotification : notificationsList) {
-            if (Objects.equals(uNotification.getId(), userNotification.getId())) {
-                notificationsList.remove(uNotification);
-                break;
-            }
-        }
+        userNotificationRepository.deleteById(notificationId);
+        notificationsList.removeIf(notification -> notification.getId().equals(notificationId));
         return null;
     }
 
@@ -489,106 +448,20 @@ public class DataverseUserPage implements java.io.Serializable {
         }
     }
 
-    private String getRoleStringFromUser(AuthenticatedUser au, DvObject dvObj) {
-        // Find user's role(s) for given dataverse/dataset
-        Set<RoleAssignment> roles = permissionService.assignmentsFor(au, dvObj);
-        List<String> roleNames = new ArrayList<>();
+    private void displayNotification() {
 
-        // Include roles derived from a user's groups
-        Set<Group> groupsUserBelongsTo = groupService.groupsFor(au, dvObj);
-        for (Group g : groupsUserBelongsTo) {
-            roles.addAll(permissionService.assignmentsFor(g, dvObj));
-        }
+        notificationsList = new ArrayList<>();
+        
+        for (UserNotification userNotification : userNotificationRepository.findByUser(currentUser.getId())) {
 
-        for (RoleAssignment ra : roles) {
-            roleNames.add(ra.getRole().getName());
-        }
-        if (roleNames.isEmpty()) {
-            return "[Unknown]";
-        }
-        return StringUtils.join(roleNames, "/");
-    }
-
-    public void displayNotification() {
-        for (UserNotification userNotification : notificationsList) {
-            switch (userNotification.getType()) {
-                case ASSIGNROLE:
-                case REVOKEROLE:
-                    // Can either be a dataverse or dataset, so search both
-                    Dataverse dataverse = dataverseDao.find(userNotification.getObjectId());
-                    if (dataverse != null) {
-                        userNotification.setRoleString(this.getRoleStringFromUser(this.getCurrentUser(), dataverse));
-                        userNotification.setTheObject(dataverse);
-                    } else {
-                        Dataset dataset = datasetDao.find(userNotification.getObjectId());
-                        if (dataset != null) {
-                            userNotification.setRoleString(this.getRoleStringFromUser(this.getCurrentUser(), dataset));
-                            userNotification.setTheObject(dataset);
-                        } else {
-                            DataFile datafile = fileService.find(userNotification.getObjectId());
-                            userNotification.setRoleString(this.getRoleStringFromUser(this.getCurrentUser(), datafile));
-                            userNotification.setTheObject(datafile);
-                        }
-                    }
-                    break;
-                case CREATEDV:
-                    userNotification.setTheObject(dataverseDao.find(userNotification.getObjectId()));
-                    break;
-
-                case REQUESTFILEACCESS:
-                    DataFile file = fileService.find(userNotification.getObjectId());
-                    userNotification.setTheObject(file.getOwner());
-                    break;
-                case GRANTFILEACCESS:
-                case REJECTFILEACCESS:
-                    userNotification.setTheObject(datasetDao.find(userNotification.getObjectId()));
-                    break;
-
-                case MAPLAYERUPDATED:
-                case CREATEDS:
-                case SUBMITTEDDS:
-                case PUBLISHEDDS:
-                case RETURNEDDS:
-                    userNotification.setTheObject(datasetVersionService.getById(userNotification.getObjectId()));
-                    break;
-
-                case MAPLAYERDELETEFAILED:
-                    userNotification.setTheObject(fileService.findFileMetadata(userNotification.getObjectId()));
-                    break;
-
-                case CREATEACC:
-                    userNotification.setTheObject(userNotification.getUser());
-                    break;
-
-                case CHECKSUMFAIL:
-                    userNotification.setTheObject(datasetDao.find(userNotification.getObjectId()));
-                    break;
-
-                case FILESYSTEMIMPORT:
-                    userNotification.setTheObject(datasetVersionService.getById(userNotification.getObjectId()));
-                    break;
-
-                case CHECKSUMIMPORT:
-                    userNotification.setTheObject(datasetVersionService.getById(userNotification.getObjectId()));
-                    break;
-
-                default:
-                    if (!isBaseNotification(userNotification)) {
-                        Optional.ofNullable(datasetDao.find(userNotification.getObjectId()))
-                                .ifPresent(userNotification::setTheObject);
-                    }
-                    break;
-            }
-
-            userNotification.setDisplayAsRead(userNotification.isReadNotification());
+            notificationsList.add(userNotificationMapper.toDTO(userNotification));
+            
             if (!userNotification.isReadNotification() && !systemConfig.isReadonlyMode()) {
                 userNotification.setReadNotification(true);
-                userNotificationDao.merge(userNotification);
+                userNotificationRepository.save(userNotification);
             }
         }
     }
-
-
 
     public void sendConfirmEmail() {
         logger.fine("called sendConfirmEmail()");
@@ -741,11 +614,11 @@ public class DataverseUserPage implements java.io.Serializable {
         this.dataverseId = dataverseId;
     }
 
-    public List<UserNotification> getNotificationsList() {
+    public List<UserNotificationDTO> getNotificationsList() {
         return notificationsList;
     }
 
-    public void setNotificationsList(List<UserNotification> notificationsList) {
+    public void setNotificationsList(List<UserNotificationDTO> notificationsList) {
         this.notificationsList = notificationsList;
     }
 
@@ -777,47 +650,18 @@ public class DataverseUserPage implements java.io.Serializable {
         return AuthUtil.isNonLocalLoginEnabled(authenticationService.getAuthenticationProviders());
     }
 
-    public String getAdditionalMessage(UserNotification notification) {
-        return notification.getAdditionalMessage();
-    }
+    public String getLimitedAdditionalMessage(String additionalMessage) {
 
-    public String getLimitedAdditionalMessage(UserNotification notification) {
-        String message = getAdditionalMessage(notification);
-
-        if(message.length() <= ADDITIONAL_MESSAGE_MAX_LENGTH) {
-            return message;
+        if(additionalMessage.length() <= ADDITIONAL_MESSAGE_MAX_LENGTH) {
+            return additionalMessage;
         }
 
         return BundleUtil.getStringFromBundle("notification.limitedAdditionalMessage",
-                truncateToFullWord(message.substring(0, ADDITIONAL_MESSAGE_MAX_LENGTH)));
+                truncateToFullWord(additionalMessage.substring(0, ADDITIONAL_MESSAGE_MAX_LENGTH)));
     }
 
     public String getPasswordRequirements() {
         return passwordValidatorService.getGoodPasswordDescription(passwordErrors);
-    }
-
-    public String getRequestorName(UserNotification notification) {
-        if (notification == null) {
-            return BundleUtil.getStringFromBundle("notification.email.info.unavailable");
-        }
-        if (notification.getRequestor() == null) {
-            return BundleUtil.getStringFromBundle("notification.email.info.unavailable");
-        }
-        return (notification.getRequestor().getLastName() != null && notification.getRequestor().getLastName() != null) ?
-                notification.getRequestor().getFirstName() + " " + notification.getRequestor().getLastName() :
-                BundleUtil.getStringFromBundle("notification.email.info.unavailable");
-    }
-
-    public String getRequestorEmail(UserNotification notification) {
-        if (notification == null) {
-            return BundleUtil.getStringFromBundle("notification.email.info.unavailable");
-        }
-        if (notification.getRequestor() == null) {
-            return BundleUtil.getStringFromBundle("notification.email.info.unavailable");
-        }
-        return notification.getRequestor().getEmail() != null ?
-                notification.getRequestor().getEmail() :
-                BundleUtil.getStringFromBundle("notification.email.info.unavailable");
     }
 
     public List<String> getSupportedLanguages() {
@@ -859,18 +703,6 @@ public class DataverseUserPage implements java.io.Serializable {
             return input.substring(0, 100); // probably not a valid text, shorten it further
         }
         return StringUtils.substringBeforeLast(input, wordSeparator);
-    }
-
-    /**
-     Returns true if notification display is handled by main Dataverse repository.
-     <p>
-     Note that external notifications only works if object associated with notification ({@link #getObjectId()})
-     is a {@link Dataset}
-     <p>
-     Notifications should be redesigned to properly support external notifications.
-     */
-    private boolean isBaseNotification(UserNotification userNotification) {
-        return NotificationType.getTypes().contains(userNotification.getType());
     }
 
     // -------------------- SETTERS --------------------

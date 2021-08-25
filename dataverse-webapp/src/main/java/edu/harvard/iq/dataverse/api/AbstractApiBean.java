@@ -47,7 +47,7 @@ import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.PrivateUrlUser;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 import edu.harvard.iq.dataverse.persistence.user.User;
-import edu.harvard.iq.dataverse.persistence.user.UserNotificationDao;
+import edu.harvard.iq.dataverse.persistence.user.UserNotificationRepository;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -221,9 +221,6 @@ public abstract class AbstractApiBean {
 
     @EJB
     protected ConfirmEmailServiceBean confirmEmailSvc;
-
-    @EJB
-    protected UserNotificationDao userNotificationDao;
 
     @EJB
     protected UserNotificationService userNotificationService;

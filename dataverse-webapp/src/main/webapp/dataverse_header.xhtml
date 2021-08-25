@@ -194,9 +194,9 @@
                                     </ui:fragment>
                                     <h:outputText styleClass="sr-only" value="#{bundle['header.user.loggedAs']} " />
                                     <h:outputText styleClass="#{dataverseSession.user.superuser ? 'text-danger' : ''}" value="#{dataverseSession.user.displayInfo.title}" id="userDisplayInfoTitle"/>
-                                    <h:outputText styleClass="sr-only" value=", #{bundle['header.user.unreadNotifications']} " rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) > 0 }" />
-                                    <h:outputText styleClass="label label-danger" rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) > 0 }"
-                                                    value="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) }" />
+                                    <h:outputText styleClass="sr-only" value=", #{bundle['header.user.unreadNotifications']} " rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount() > 0 }" />
+                                    <h:outputText styleClass="label label-danger" rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount() > 0 }"
+                                                    value="#{ dataverseHeaderFragment.getUnreadNotificationCount() }" />
                                     <b class="caret"></b>
                                 </a>
                                 <ul id="accountHeaderMenu" class="dropdown-menu"
@@ -211,9 +211,9 @@
                                         <h:outputLink value="/dataverseuser.xhtml" role="menuitem">
                                             <f:param name="selectTab" value="notifications" />
                                             <h:outputText value="#{bundle['header.user.selectTab.notifications']}" />
-                                            <h:outputText styleClass="label label-danger" rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) > 0 }"
-                                                            value="#{dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id)}" />
-                                            <h:outputText styleClass="sr-only" value="#{bundle['header.user.selectTab.notifications.unread']}" rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount(dataverseSession.user.id) > 0 }"/>
+                                            <h:outputText styleClass="label label-danger" rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount() > 0 }"
+                                                            value="#{dataverseHeaderFragment.getUnreadNotificationCount()}" />
+                                            <h:outputText styleClass="sr-only" value="#{bundle['header.user.selectTab.notifications.unread']}" rendered="#{ dataverseHeaderFragment.getUnreadNotificationCount() > 0 }"/>
                                         </h:outputLink>
                                     </li>
                                     <li role="none">

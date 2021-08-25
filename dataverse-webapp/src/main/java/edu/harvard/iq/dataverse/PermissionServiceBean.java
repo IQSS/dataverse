@@ -436,7 +436,7 @@ public class PermissionServiceBean {
      * @param d  The dataverse object over which the roles are assigned
      * @return A set of all the role assignments for {@code ra} over {@code d}.
      */
-    public Set<RoleAssignment> assignmentsFor(RoleAssignee ra, DvObject d) {
+    private Set<RoleAssignment> assignmentsFor(RoleAssignee ra, DvObject d) {
         return assignmentsFor(Collections.singleton(ra), d);
     }
 
@@ -627,14 +627,14 @@ public class PermissionServiceBean {
      */
     public Set<RoleAssignment> getRolesOfUser(AuthenticatedUser au, DvObject dvObj) {
 
-        Set<RoleAssignment> roles = assignmentsFor(au, dvObj);
+        Set<RoleAssignment> roleAssignments = assignmentsFor(au, dvObj);
 
         Set<Group> groupsUserBelongsTo = groupService.groupsFor(au, dvObj);
         for (Group g : groupsUserBelongsTo) {
-            roles.addAll(assignmentsFor(g, dvObj));
+            roleAssignments.addAll(assignmentsFor(g, dvObj));
         }
 
-        return roles;
+        return roleAssignments;
     }
 
 }

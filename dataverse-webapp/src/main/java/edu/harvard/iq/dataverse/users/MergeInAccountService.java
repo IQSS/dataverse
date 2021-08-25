@@ -26,7 +26,7 @@ import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
 import edu.harvard.iq.dataverse.persistence.user.ConfirmEmailData;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.persistence.user.UserNotification;
-import edu.harvard.iq.dataverse.persistence.user.UserNotificationDao;
+import edu.harvard.iq.dataverse.persistence.user.UserNotificationRepository;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowComment;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.index.SolrIndexServiceBean;
@@ -47,7 +47,7 @@ public class MergeInAccountService {
     @EJB private DatasetDao datasetDao;
     @EJB private DvObjectServiceBean dvObjectService;
     @EJB private GuestbookResponseServiceBean guestbookResponseService;
-    @EJB private UserNotificationDao userNotificationDao;
+    @EJB private UserNotificationRepository userNotificationRepository;
     @EJB private SavedSearchServiceBean savedSearchService;
     @EJB private ConfirmEmailServiceBean confirmEmailService;
     @EJB private BuiltinUserServiceBean builtinUserService;
@@ -187,16 +187,16 @@ public class MergeInAccountService {
     }
 
     private void updateUserNotification(AuthenticatedUser consumedAU, AuthenticatedUser baseAU) {
-        for (UserNotification note : userNotificationDao.findByUser(consumedAU.getId())) {
+        for (UserNotification note : userNotificationRepository.findByUser(consumedAU.getId())) {
             note.setUser(baseAU);
-            genericDao.merge(note);
+            userNotificationRepository.save(note);
         }
     }
 
     private void updateUserNotificationRequestor(AuthenticatedUser consumedAU, AuthenticatedUser baseAU) {
-        for (UserNotification note : userNotificationDao.findByRequestor(consumedAU.getId())) {
+        for (UserNotification note : userNotificationRepository.findByRequestor(consumedAU.getId())) {
             note.setRequestor(baseAU);
-            genericDao.merge(note);
+            userNotificationRepository.save(note);
         }
     }
 

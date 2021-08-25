@@ -314,39 +314,6 @@ public class UserServiceBean {
     }
 
     /**
-     * @param userId
-     * @return
-     */
-    private String getUserRolesAsString(Integer userId) {
-        String retval = "";
-        String userIdentifier = "";
-        String qstr = "select useridentifier ";
-        qstr += " FROM authenticateduser";
-        qstr += " WHERE id = " + userId.toString();
-        qstr += ";";
-
-        Query nativeQuery = em.createNativeQuery(qstr);
-
-        userIdentifier = '@' + (String) nativeQuery.getSingleResult();
-
-        qstr = " select distinct d.name from roleassignment a, dataverserole d";
-        qstr += " where d.id = a.role_id and a.assigneeidentifier='" + userIdentifier + "'"
-                + " Order by d.name;";
-
-        nativeQuery = em.createNativeQuery(qstr);
-
-        List<Object[]> roleList = nativeQuery.getResultList();
-
-        for (Object o : roleList) {
-            if (!retval.isEmpty()) {
-                retval += ", ";
-            }
-            retval += (String) o;
-        }
-        return retval;
-    }
-
-    /**
      * Run a native query, returning a List<Object[]> containing
      * AuthenticatedUser information as well as information about the
      * Authenticated Provider (e.g. builtin user, etc)

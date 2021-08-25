@@ -311,7 +311,7 @@ public class FileMetadata implements JpaEntity<Long>, Serializable {
         }
     }
 
-    public String getFileDateToDisplay() {
+    public Date getFileDateToDisplay() {
         Date fileDate = null;
         DataFile datafile = this.getDataFile();
         if (datafile != null) {
@@ -328,10 +328,7 @@ public class FileMetadata implements JpaEntity<Long>, Serializable {
                 }
             }
         }
-        if (fileDate != null) {
-            return DateUtil.formatDate(fileDate);
-        }
-        return "";
+        return fileDate;
     }
 
     public DatasetVersion getDatasetVersion() {

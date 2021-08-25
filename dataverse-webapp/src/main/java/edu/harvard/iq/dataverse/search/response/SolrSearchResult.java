@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.search.response;
 
-import edu.harvard.iq.dataverse.common.DateUtil;
 import edu.harvard.iq.dataverse.common.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.common.Util;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
@@ -17,6 +16,9 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -54,7 +56,6 @@ public class SolrSearchResult {
     private String nameSort;
     private String status;
     private Date releaseOrCreateDate;
-    private String dateToDisplayOnCard;
     private List<SearchPublicationStatus> publicationStatuses = new ArrayList<>();
 
     /**
@@ -390,13 +391,15 @@ public class SolrSearchResult {
 
         JsonObjectBuilder myDataJson = json(true, true, true);//boolean showRelevance, boolean showEntityIds, boolean showApiUrls)
 
+        DateFormat inputFormat = new SimpleDateFormat("MMM d, yyyy", Locale.US);
+
         myDataJson.add("publication_statuses", this.getPublicationStatusesAsJSON())
                 .add("is_draft_state", this.isDraftState())
                 .add("is_in_review_state", this.isInReviewState())
                 .add("is_unpublished_state", this.isUnpublishedState())
                 .add("is_published", this.isPublishedState())
                 .add("is_deaccesioned", this.isDeaccessionedState())
-                .add("date_to_display_on_card", this.dateToDisplayOnCard);
+                .add("date_to_display_on_card", inputFormat.format(this.releaseOrCreateDate));
 
         // Add is_deaccessioned attribute, even though MyData currently screens any deaccessioned info out
         //
@@ -877,14 +880,6 @@ public class SolrSearchResult {
 
     public void setReleaseOrCreateDate(Date releaseOrCreateDate) {
         this.releaseOrCreateDate = releaseOrCreateDate;
-    }
-
-    public String getDateToDisplayOnCard() {
-        return DateUtil.formatDate(dateToDisplayOnCard, "MMM dd, yyyy", Locale.US);
-    }
-
-    public void setDateToDisplayOnCard(String dateToDisplayOnCard) {
-        this.dateToDisplayOnCard = dateToDisplayOnCard;
     }
 
     public Long getDatasetVersionId() {

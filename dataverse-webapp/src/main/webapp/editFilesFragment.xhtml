@@ -445,7 +445,7 @@
                                 <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}"
                                               rendered="#{fileMetadata.dataFile.tabularData}"/>
                                 <h:outputText id="fileCreatePublishDate"
-                                              value=" - #{fileMetadata.getFileDateToDisplay()}"
+                                              value=" - #{dv:formatDate(fileMetadata.getFileDateToDisplay())}"
                                               rendered="#{!(empty fileMetadata.id)}"/>
                                 <div class="checksum-block">
                                     <h:outputText id="fileChecksum"

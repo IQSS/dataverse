@@ -88,7 +88,7 @@
                             <p:column width="30%" sortBy="#{template.name}" headerText="#{bundle['dataset.manageTemplates.tab.header.templte']}">
                                 <h:outputText value="#{template.name}" />
                             </p:column>
-                            <p:column width="18%" class="text-center" sortBy="#{template.createDate}" headerText="#{bundle['dataset.manageTemplates.tab.header.date']}">
+                            <p:column width="18%" class="text-center" sortBy="#{template.createTime}" headerText="#{bundle['dataset.manageTemplates.tab.header.date']}">
                                 <h:outputText value="#{of:formatDate(template.createTime, settingsWrapper.getSettingValue(':DefaultDateFormat'))}" />
                             </p:column>
                             <p:column width="17%" class="text-center" sortBy="#{template.usageCount}" headerText="#{bundle['dataset.manageTemplates.tab.header.usage']}">

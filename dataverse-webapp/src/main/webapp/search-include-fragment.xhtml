@@ -6,7 +6,8 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
-                xmlns:jsf="http://xmlns.jcp.org/jsf">
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:dv="http://dataverse.org/facelets">
 
     <o:importConstants type="edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType" var="termsOfUseTypeEnum"/>
     <o:importConstants type="edu.harvard.iq.dataverse.search.query.SearchObjectType" var="searchObjectTypeEnum"/>
@@ -477,7 +478,7 @@
                                 <h:outputText value="(#{result.dataverseAffiliationHighlightSnippet})" styleClass="text-muted" style="margin-left: .5em;" rendered="#{result.dataverseAffiliationHighlightSnippet != null}" escape="false"/>
                             </div>
     
-                            <h:outputText value="#{result.dateToDisplayOnCard}" styleClass="text-muted" style="margin-right:.5em;"/>
+                            <h:outputText value="#{dv:formatDate(result.releaseOrCreateDate)}" styleClass="text-muted" style="margin-right:.5em;"/>
     
                             <h:outputLink value="#{dvParentUrlFinal}" target="#{dvCardUrlsTarget}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
                                 <h:outputText value="#{bundle.dataverse}" styleClass="sr-only" />
@@ -542,7 +543,7 @@
                                 </a>
                             </div>
     
-                            <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard}"/>
+                            <h:outputText styleClass="text-muted" value="#{dv:formatDate(result.releaseOrCreateDate)}"/>
     
                             <h:outputText styleClass="text-muted" value=" - " rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}"/>
                             
@@ -617,7 +618,7 @@
                             </div>
     
                             <div>
-                                <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard} - "/>
+                                <h:outputText styleClass="text-muted" value="#{dv:formatDate(result.releaseOrCreateDate)} - "/>
                                 <a href="#{fileParentUrlFinal}" target="#{fileCardUrlsTarget}">
                                     <h:outputText value="#{bundle.dataset}" styleClass="sr-only" />
                                     <h:outputText value="#{result.parent.get('name')}" escape="false"/></a>

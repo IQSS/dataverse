@@ -6,7 +6,7 @@ import edu.harvard.iq.dataverse.notification.dto.EmailNotificationMapper;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.UserNotification;
-import edu.harvard.iq.dataverse.persistence.user.UserNotificationDao;
+import edu.harvard.iq.dataverse.persistence.user.UserNotificationRepository;
 import org.awaitility.Awaitility;
 
 import javax.ejb.Stateless;
@@ -14,6 +14,7 @@ import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -23,7 +24,7 @@ import java.util.concurrent.Executors;
 @Stateless
 public class UserNotificationService {
 
-    private UserNotificationDao userNotificationDao;
+    private UserNotificationRepository userNotificationRepository;
     private MailService mailService;
     private EmailNotificationMapper mailMapper;
 
@@ -35,8 +36,8 @@ public class UserNotificationService {
     }
 
     @Inject
-    public UserNotificationService(UserNotificationDao userNotificationDao, MailService mailService, EmailNotificationMapper mailMapper) {
-        this.userNotificationDao = userNotificationDao;
+    public UserNotificationService(UserNotificationRepository userNotificationRepository, MailService mailService, EmailNotificationMapper mailMapper) {
+        this.userNotificationRepository = userNotificationRepository;
         this.mailService = mailService;
         this.mailMapper = mailMapper;
 
@@ -51,7 +52,7 @@ public class UserNotificationService {
     public void sendNotification(AuthenticatedUser dataverseUser, Timestamp sendDate, String type) {
         UserNotification userNotification = createUserNotification(dataverseUser, sendDate, type);
 
-        userNotificationDao.save(userNotification);
+        userNotificationRepository.save(userNotification);
     }
 
     /**
@@ -68,8 +69,7 @@ public class UserNotificationService {
 
         UserNotification userNotification = createUserNotification(dataverseUser, sendDate, type, dvObjectId);
 
-        userNotificationDao.save(userNotification);
-        userNotificationDao.flush();
+        userNotificationRepository.saveAndFlush(userNotification);
 
         executorService.submit(() -> sendEmail(userNotification.getId(), notificationObjectType));
     }
@@ -90,8 +90,7 @@ public class UserNotificationService {
 
         UserNotification userNotification = createUserNotification(dataverseUser, sendDate, type, dvObjectId, requestor);
 
-        userNotificationDao.save(userNotification);
-        userNotificationDao.flush();
+        userNotificationRepository.saveAndFlush(userNotification);
 
         executorService.submit(() -> sendEmail(userNotification.getId(), notificationObjectType));
     }
@@ -112,8 +111,7 @@ public class UserNotificationService {
 
         UserNotification userNotification = createUserNotification(dataverseUser, sendDate, type, dvObjectId, requestor, comment);
 
-        userNotificationDao.save(userNotification);
-        userNotificationDao.flush();
+        userNotificationRepository.saveAndFlush(userNotification);
 
         executorService.submit(() -> sendEmail(userNotification.getId(), notificationObjectType));
     }
@@ -133,8 +131,7 @@ public class UserNotificationService {
 
         UserNotification userNotification = createUserNotification(dataverseUser, sendDate, type, dvObjectId, comment);
 
-        userNotificationDao.save(userNotification);
-        userNotificationDao.flush();
+        userNotificationRepository.saveAndFlush(userNotification);
 
         executorService.submit(() -> sendEmail(userNotification.getId(), notificationObjectType));
     }
@@ -146,7 +143,8 @@ public class UserNotificationService {
                 .pollDelay(Duration.ofSeconds(1))
                 .pollInterval(Duration.ofSeconds(1))
                 .atMost(Duration.ofSeconds(5))
-                .until(() -> userNotificationDao.find(emailNotificationid), Objects::nonNull);
+                .until(() -> userNotificationRepository.findById(emailNotificationid), Optional::isPresent)
+                .get();
 
         EmailNotificationDto emailNotificationDto = mailMapper.toDto(notification,
                 notificationObjectType);
@@ -154,7 +152,7 @@ public class UserNotificationService {
         Boolean emailSent = mailService.sendNotificationEmail(emailNotificationDto);
 
         if (emailSent) {
-            userNotificationDao.updateEmailSent(emailNotificationDto.getUserNotificationId());
+            userNotificationRepository.updateEmailSent(emailNotificationDto.getUserNotificationId());
         }
 
         return emailSent;

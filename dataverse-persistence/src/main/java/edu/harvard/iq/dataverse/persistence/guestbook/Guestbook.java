@@ -141,10 +141,6 @@ public class Guestbook implements Serializable {
         this.createTime = createTime;
     }
 
-    public String getCreateDate() {
-        return DateUtil.formatDate(createTime);
-    }
-
     public Guestbook copyGuestbook(Guestbook source, Dataverse dataverse) {
         Guestbook newGuestbook = new Guestbook();
         newGuestbook.setDataverse(dataverse);

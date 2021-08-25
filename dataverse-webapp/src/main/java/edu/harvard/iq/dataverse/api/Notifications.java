@@ -4,8 +4,9 @@ import edu.harvard.iq.dataverse.common.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.persistence.user.UserNotification;
-import edu.harvard.iq.dataverse.workflows.WorkflowUtil;
+import edu.harvard.iq.dataverse.persistence.user.UserNotificationRepository;
 
+import javax.ejb.EJB;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -18,6 +19,9 @@ import static edu.harvard.iq.dataverse.common.NullSafeJsonBuilder.jsonObjectBuil
 
 @Path("notifications")
 public class Notifications extends AbstractApiBean {
+
+    @EJB
+    private UserNotificationRepository userNotificationRepository;
 
     @GET
     @Path("all")
@@ -37,32 +41,18 @@ public class Notifications extends AbstractApiBean {
         }
         AuthenticatedUser authenticatedUser = (AuthenticatedUser) user;
         JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-        List<UserNotification> notifications = userNotificationDao.findByUser(authenticatedUser.getId());
+        List<UserNotification> notifications = userNotificationRepository.findByUser(authenticatedUser.getId());
         for (UserNotification notification : notifications) {
             NullSafeJsonBuilder notificationObjectBuilder = jsonObjectBuilder();
-            JsonArrayBuilder reasonsForReturn = Json.createArrayBuilder();
-            String type = notification.getType();
-            notificationObjectBuilder.add("id", notification.getId());
-            notificationObjectBuilder.add("type", type.toString());
-            /* FIXME - Re-add reasons for return if/when they are added to the notifications page.
-            
-            if (Type.RETURNEDDS.equals(type) || Type.SUBMITTEDDS.equals(type)) {
-                JsonArrayBuilder reasons = getReasonsForReturn(notification);
-                for (JsonValue reason : reasons.build()) {
-                    reasonsForReturn.add(reason);
-                }
-                notificationObjectBuilder.add("reasonsForReturn", reasonsForReturn);
-            }
-            */
+
+            notificationObjectBuilder
+                .add("id", notification.getId())
+                .add("type", notification.getType());
+
             jsonArrayBuilder.add(notificationObjectBuilder);
         }
         JsonObjectBuilder result = Json.createObjectBuilder().add("notifications", jsonArrayBuilder);
         return ok(result);
-    }
-
-    private JsonArrayBuilder getReasonsForReturn(UserNotification notification) {
-        Long objectId = notification.getObjectId();
-        return WorkflowUtil.getAllWorkflowComments(datasetVersionSvc.getById(objectId));
     }
 
 }

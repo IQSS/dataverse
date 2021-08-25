@@ -17,7 +17,7 @@ import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.NotificationType;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.persistence.user.UserNotification;
-import edu.harvard.iq.dataverse.persistence.user.UserNotificationDao;
+import edu.harvard.iq.dataverse.persistence.user.UserNotificationRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.transaction.api.annotation.TransactionMode;
@@ -60,7 +60,7 @@ public class FilePermissionsServiceIT extends WebappArquillianDeployment {
     @Inject
     private RoleAssigneeServiceBean roleAssigneeService;
     @Inject
-    private UserNotificationDao userNotificationDao;
+    private UserNotificationRepository userNotificationRepository;
     
     
     @Before
@@ -77,7 +77,11 @@ public class FilePermissionsServiceIT extends WebappArquillianDeployment {
         DataFile datafile1 = dataFileService.find(53L);
         DataFile datafile2 = dataFileService.find(55L);
         AuthenticatedUser user = authenticationService.getAuthenticatedUser("superuser");
+        int userNotificationsCountBefore = userNotificationRepository.findByUser(user.getId()).size();
+        
         Group group = groupService.getGroup("explicit/1-rootgroup");
+        AuthenticatedUser groupMember = authenticationService.getAuthenticatedUser("rootGroupMember");
+        int groupMemberNotificationsCountBefore = userNotificationRepository.findByUser(groupMember.getId()).size();
         
         datafile1.getFileAccessRequesters().add(user);
         datafile1 = dataFileService.save(datafile1);
@@ -103,17 +107,16 @@ public class FilePermissionsServiceIT extends WebappArquillianDeployment {
         EmailModel userEmail = FakeSmtpServerUtil.waitForEmailSentTo(smtpServer, "superuser@mailinator.com");
         assertEquals("Root: You have been granted access to a restricted file", userEmail.getSubject());
 
-        List<UserNotification> userNotifications = userNotificationDao.findByUser(user.getId());
-        assertEquals(1, userNotifications.size());
+        List<UserNotification> userNotifications = userNotificationRepository.findByUser(user.getId());
+        assertEquals(1 + userNotificationsCountBefore, userNotifications.size());
         assertUserNotification(userNotifications.get(0), NotificationType.GRANTFILEACCESS, 52L, true);
         
         
         EmailModel groupMemberEmail = FakeSmtpServerUtil.waitForEmailSentTo(smtpServer, "groupmember@mailinator.com");
         assertEquals("Root: You have been granted access to a restricted file", groupMemberEmail.getSubject());
 
-        AuthenticatedUser groupMember = authenticationService.getAuthenticatedUser("rootGroupMember");
-        List<UserNotification> groupMemberNotifications = userNotificationDao.findByUser(groupMember.getId());
-        assertEquals(1, groupMemberNotifications.size());
+        List<UserNotification> groupMemberNotifications = userNotificationRepository.findByUser(groupMember.getId());
+        assertEquals(1 + groupMemberNotificationsCountBefore, groupMemberNotifications.size());
         assertUserNotification(groupMemberNotifications.get(0), NotificationType.GRANTFILEACCESS, 52L, true);
         
     }
@@ -179,6 +182,7 @@ public class FilePermissionsServiceIT extends WebappArquillianDeployment {
     public void rejectRequestAccessToFiles() {
         // given
         AuthenticatedUser user = authenticationService.getAuthenticatedUser("superuser");
+        int userNotificationsCountBefore = userNotificationRepository.findByUser(user.getId()).size();
         
         DataFile datafile1 = dataFileService.find(53L);
         datafile1.getFileAccessRequesters().add(user);
@@ -198,8 +202,8 @@ public class FilePermissionsServiceIT extends WebappArquillianDeployment {
         EmailModel userEmail = FakeSmtpServerUtil.waitForEmailSentTo(smtpServer, "superuser@mailinator.com");
         assertEquals("Root: Your request for access to a restricted file has been", userEmail.getSubject());
 
-        List<UserNotification> userNotifications = userNotificationDao.findByUser(user.getId());
-        assertEquals(1, userNotifications.size());
+        List<UserNotification> userNotifications = userNotificationRepository.findByUser(user.getId());
+        assertEquals(1 + userNotificationsCountBefore, userNotifications.size());
         assertUserNotification(userNotifications.get(0), NotificationType.REJECTFILEACCESS, 52L, true);
     }
     

@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.persistence.user;
 
-import edu.harvard.iq.dataverse.common.DateUtil;
+import edu.harvard.iq.dataverse.persistence.JpaEntity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,10 +11,8 @@ import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import java.io.Serializable;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 
 /**
  * @author xyang
@@ -22,7 +20,7 @@ import java.text.SimpleDateFormat;
 @Entity
 @Table(indexes = {@Index(columnList = "user_id")})
 
-public class UserNotification implements Serializable {
+public class UserNotification implements Serializable, JpaEntity<Long> {
 
     private static final long serialVersionUID = 1L;
 
@@ -45,12 +43,6 @@ public class UserNotification implements Serializable {
 
     @Column(nullable = true)
     private String additionalMessage;
-
-    @Transient
-    private boolean displayAsRead;
-
-    @Transient
-    String roleString;
 
     private boolean emailed;
 
@@ -78,8 +70,8 @@ public class UserNotification implements Serializable {
         this.requestor = requestor;
     }
 
-    public String getSendDate() {
-        return new SimpleDateFormat("MMMM d, yyyy h:mm a z").format(sendDate);
+    public Timestamp getSendDate() {
+        return sendDate;
     }
 
     public void setSendDate(Timestamp sendDate) {
@@ -126,43 +118,11 @@ public class UserNotification implements Serializable {
         this.additionalMessage = returnToAuthorReason;
     }
 
-    @Transient
-    private Object theObject;
-
-    public Object getTheObject() {
-        return theObject;
-    }
-
-    public void setTheObject(Object theObject) {
-        this.theObject = theObject;
-    }
-
-
-    public boolean isDisplayAsRead() {
-        return displayAsRead;
-    }
-
-    public void setDisplayAsRead(boolean displayAsRead) {
-        this.displayAsRead = displayAsRead;
-    }
-
     public boolean isEmailed() {
         return emailed;
     }
 
     public void setEmailed(boolean emailed) {
         this.emailed = emailed;
-    }
-
-    public String getRoleString() {
-        return roleString;
-    }
-
-    public void setRoleString(String roleString) {
-        this.roleString = roleString;
-    }
-
-    public String getLocaleSendDate() {
-        return DateUtil.formatDate(sendDate);
     }
 }

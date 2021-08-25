@@ -5,7 +5,8 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:jsf="http://xmlns.jcp.org/jsf"
-      xmlns:o="http://omnifaces.org/ui">
+      xmlns:o="http://omnifaces.org/ui"
+      xmlns:dv="http://dataverse.org/facelets">
     <h:head>
     </h:head>
     <h:body>
@@ -95,8 +96,8 @@
                             <p:column width="25%" sortBy="#{guestbook.name}" headerText="#{bundle['dataset.manageGuestbooks.tab.header.name']}">
                                 <h:outputText value="#{guestbook.name}" />
                             </p:column>
-                            <p:column width="17%" sortBy="#{guestbook.createDate}" headerText="#{bundle['dataset.manageGuestbooks.tab.header.date']}">
-                                <h:outputText value="#{guestbook.createDate}" />
+                            <p:column width="17%" sortBy="#{guestbook.createTime}" headerText="#{bundle['dataset.manageGuestbooks.tab.header.date']}">
+                                <h:outputText value="#{dv:formatDate(guestbook.createTime)}" />
                             </p:column>
                             <p:column width="9%" class="text-center" sortBy="#{guestbook.usageCount}" headerText="#{bundle['dataset.manageGuestbooks.tab.header.usage']}">
                                 <h:outputText value="#{guestbook.usageCount}" />

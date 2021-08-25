@@ -29,7 +29,7 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
 import edu.harvard.iq.dataverse.persistence.user.ConfirmEmailData;
 import edu.harvard.iq.dataverse.persistence.user.PasswordResetData;
-import edu.harvard.iq.dataverse.persistence.user.UserNotificationDao;
+import edu.harvard.iq.dataverse.persistence.user.UserNotificationRepository;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowComment;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -99,7 +99,7 @@ public class AuthenticationServiceBean {
     protected ActionLogServiceBean actionLogSvc;
 
     @EJB
-    UserNotificationDao userNotificationDao;
+    UserNotificationRepository userNotificationRepository;
 
     @EJB
     ConfirmEmailServiceBean confirmEmailService;
@@ -302,7 +302,7 @@ public class AuthenticationServiceBean {
                  */
                 em.remove(confirmEmailData);
             }
-            userNotificationDao.findByUser(user.getId()).forEach(userNotificationDao::delete);
+            userNotificationRepository.findByUser(user.getId()).forEach(userNotificationRepository::mergeAndDelete);
 
             AuthenticationProvider prv = lookupProvider(user);
             if (prv != null && prv.isUserDeletionAllowed()) {

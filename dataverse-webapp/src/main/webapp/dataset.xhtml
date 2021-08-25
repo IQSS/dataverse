@@ -1051,7 +1051,7 @@
                                     <f:facet name="header">
                                         <h:outputText value="#{bundle['dataset.submitForReview.diffTable.version.lastreleased']}: #{DatasetPage.dataset.releasedVersion.semanticVersion}
                                                     &lt;br/&gt;
-                                                    #{bundle['dataset.submitForReview.diffTable.version.lastupdated']}: #{DatasetPage.dataset.releasedVersion.localeLastUpdateTime}"
+                                                    #{bundle['dataset.submitForReview.diffTable.version.lastupdated']}: #{dv:formatDateTime(DatasetPage.dataset.releasedVersion.lastUpdateTime)}"
                                                       escape="false"
                                                       style="white-space:pre-line;"
                                         />
@@ -1062,7 +1062,7 @@
                                     <f:facet name="header">
                                         <h:outputText value="#{bundle['dataset.submitForReview.diffTable.version.draft']}
                                                     &lt;br/&gt;
-                                                    #{bundle['dataset.submitForReview.diffTable.version.lastupdated']}: #{DatasetPage.workingVersion.localeLastUpdateTime}"
+                                                    #{bundle['dataset.submitForReview.diffTable.version.lastupdated']}: #{dv:formatDateTime(DatasetPage.workingVersion.lastUpdateTime)}"
                                                       escape="false"
                                                       style="white-space:pre-line;"
                                         />

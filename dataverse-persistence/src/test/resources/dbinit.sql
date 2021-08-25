@@ -288,6 +288,17 @@ VALUES (1, 'Test english consent', 'en', 1);
 INSERT INTO consentaction (actionoptions, consentactiontype, consent_id)
 VALUES ('{"email": "test@gmail.com"}', 'SEND_NEWSLETTER_EMAIL', 1);
 
+-------------------- USER NOTIFICATIONS ---------------------
+
+INSERT INTO usernotification(id, user_id, requestor_id, type, objectid, emailed, readnotification, senddate, additionalmessage)
+VALUES (1, 2, NULL, 'CREATEACC', NULL, true, true, '2020-09-24 13:01:00', NULL);
+INSERT INTO usernotification(id, user_id, requestor_id, type, objectid, emailed, readnotification, senddate, additionalmessage)
+VALUES (2, 2, NULL, 'CREATEDV', 19, false, true, '2020-09-25 14:00:00', NULL);
+INSERT INTO usernotification(id, user_id, requestor_id, type, objectid, emailed, readnotification, senddate, additionalmessage)
+VALUES (3, 2, 4, 'SUBMITTEDDS', 44, false, false, '2020-09-26 10:00:00', 'message to curator');
+INSERT INTO usernotification(id, user_id, requestor_id, type, objectid, emailed, readnotification, senddate, additionalmessage)
+VALUES (4, 4, 2, 'RETURNEDDS', 44, false, false, '2020-09-26 10:10:00', 'send back to author');
+
 -------------------- SUGGESTIONS ---------------------
 
 INSERT INTO grantsuggestion (grantagency, grantagencyacronym, fundingprogram, suggestionname, suggestionnamelocale)
@@ -342,3 +353,4 @@ SELECT setval('customquestionvalue_id_seq', COALESCE((SELECT MAX(id)+1 FROM cust
 SELECT setval('ingestreport_id_seq', COALESCE((SELECT MAX(id)+1 FROM ingestreport), 1), false);
 SELECT setval('roleassignment_id_seq', COALESCE((SELECT MAX(id)+1 FROM roleassignment), 1), false);
 SELECT setval('rordata_id_seq', COALESCE((SELECT MAX(id)+1 FROM rordata), 1), false);
+SELECT setval('usernotification_id_seq', COALESCE((SELECT MAX(id)+1 FROM usernotification), 1), false);

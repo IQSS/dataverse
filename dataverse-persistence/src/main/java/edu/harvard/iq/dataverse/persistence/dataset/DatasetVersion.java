@@ -1,7 +1,6 @@
 package edu.harvard.iq.dataverse.persistence.dataset;
 
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
-import edu.harvard.iq.dataverse.common.DateUtil;
 import edu.harvard.iq.dataverse.common.MarkupChecker;
 import edu.harvard.iq.dataverse.common.files.mime.PackageMimeType;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
@@ -45,7 +44,6 @@ import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -432,17 +430,6 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
 
     public GlobalId getDeaccessionLinkAsGlobalId() {
         return new GlobalId(deaccessionLink);
-    }
-
-    public String getVersionDate() {
-        if (this.lastUpdateTime == null) {
-            return null;
-        }
-        return DateUtil.formatDate(lastUpdateTime);
-    }
-
-    public String getVersionYear() {
-        return new SimpleDateFormat("yyyy").format(lastUpdateTime);
     }
 
     public List<String> getVersionContributorIdentifiers() {
@@ -1519,10 +1506,6 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
         Date relDate = this.getReleaseTime();
         SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
         return fmt.format(relDate.getTime());
-    }
-
-    public String getLocaleLastUpdateTime() {
-        return DateUtil.formatDate(new Timestamp(lastUpdateTime.getTime()));
     }
 
     public void addFileMetadata(FileMetadata fileMetadata) {

@@ -22,4 +22,14 @@
         </attribute>
     </tag>
 
+    <function>
+        <function-name>formatDate</function-name>
+        <function-class>edu.harvard.iq.dataverse.util.DateUIUtils</function-class>
+        <function-signature>String formatDate(java.util.Date)</function-signature>
+    </function>
+    <function>
+        <function-name>formatDateTime</function-name>
+        <function-class>edu.harvard.iq.dataverse.util.DateUIUtils</function-class>
+        <function-signature>String formatDateTime(java.util.Date)</function-signature>
+    </function>
 </facelet-taglib>

@@ -8,6 +8,7 @@
       xmlns:o="http://omnifaces.org/ui"
       xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
       xmlns:iqbs="http://java.sun.com/jsf/composite/iqbs"
+      xmlns:dv="http://dataverse.org/facelets"
 >
 
     <h:head>
@@ -352,7 +353,7 @@
                                         <h:outputText id="fileTypeOutputRegular" value="#{FilePage.fileMetadata.dataFile.friendlyType}" rendered="#{!(FilePage.fileMetadata.dataFile.tabularData)}"/>
                                         <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{FilePage.fileMetadata.dataFile.tabularData}"/>
                                         <h:outputText id="fileSize" value=" - #{FilePage.fileMetadata.dataFile.friendlySize}" />
-                                        <h:outputText id="fileCreatePublishDate" value=" - #{bundle['file.lastupdated.label']}: #{FilePage.fileMetadata.fileDateToDisplay}" rendered="#{!(empty FilePage.fileMetadata.id)}"/>
+                                        <h:outputText id="fileCreatePublishDate" value=" - #{bundle['file.lastupdated.label']}: #{dv:formatDate(FilePage.fileMetadata.fileDateToDisplay)}" rendered="#{!(empty FilePage.fileMetadata.id)}"/>
                                         <div class="checksum-block" jsf:rendered="#{!FilePage.file.tabularData}">
                                             <h:outputText id="file-checksum" value="#{FilePage.file.tabularData ? FilePage.file.originalChecksumType : FilePage.file.checksumType}: #{FilePage.file.checksumValue}"
                                                           rendered="#{!(empty FilePage.file.checksumValue)}"/>

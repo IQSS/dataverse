@@ -6,7 +6,8 @@
      xmlns:c="http://java.sun.com/jsp/jstl/core"
      xmlns:p="http://primefaces.org/ui"
      xmlns:o="http://omnifaces.org/ui"
-     xmlns:jsf="http://xmlns.jcp.org/jsf">
+     xmlns:jsf="http://xmlns.jcp.org/jsf"
+     xmlns:dv="http://dataverse.org/facelets">
 
 <h:form id="deaccessionForm">
 
@@ -30,7 +31,7 @@
                 <p:selectManyCheckbox id="selectVersionChk" value="#{datasetDeaccessionDialog.selectedDeaccessionVersions}" converter="datasetVersionConverter"
                                       layout="pageDirection" required="true" requiredMessage="#{bundle['file.deaccessionDialog.dialog.selectVersion.error']}">
                     <f:selectItems value="#{datasetDeaccessionDialog.releasedVersions}" var="datasetVersion"
-                            itemLabel="#{bundle['file.deaccessionDialog.version']} #{datasetVersion.versionNumber}.#{datasetVersion.minorVersionNumber}, #{datasetVersion.versionDate}"
+                            itemLabel="#{bundle['file.deaccessionDialog.version']} #{datasetVersion.versionNumber}.#{datasetVersion.minorVersionNumber}, #{dv:formatDate(datasetVersion.lastUpdateTime)}"
                             itemValue="#{versionTab}" />
                 </p:selectManyCheckbox>
                 <p:message for="selectVersionChk" display="text" />

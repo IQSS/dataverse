@@ -7,7 +7,9 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.persistence.user.UserNotificationDao;
+import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.persistence.user.User;
+import edu.harvard.iq.dataverse.persistence.user.UserNotificationRepository;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
@@ -56,7 +58,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     NavigationWrapper navigationWrapper;
 
     @EJB
-    UserNotificationDao userNotificationDao;
+    UserNotificationRepository userNotificationRepository;
 
     @Inject
     ConfirmEmailServiceBean confirmEmailService;
@@ -131,21 +133,18 @@ public class DataverseHeaderFragment implements java.io.Serializable {
 
     }
 
-    public Long getUnreadNotificationCount(Long userId) {
+    public Long getUnreadNotificationCount() {
 
-        if (userId == null) {
-            return 0L;
+        if (unreadNotificationCount != null) {
+            return unreadNotificationCount;
         }
 
-        if (this.unreadNotificationCount != null) {
-            return this.unreadNotificationCount;
-        }
-
-        try {
-            this.unreadNotificationCount = userNotificationDao.getUnreadNotificationCountByUser(userId);
-        } catch (Exception e) {
-            logger.warning("Error trying to retrieve unread notification count for user." + e.getMessage());
-            this.unreadNotificationCount = 0L;
+        User user = dataverseSession.getUser();
+        if (user.isAuthenticated()) {
+            AuthenticatedUser aUser = (AuthenticatedUser) user;
+            unreadNotificationCount = userNotificationRepository.getUnreadNotificationCountByUser(aUser.getId());
+        } else {
+            unreadNotificationCount = 0L;
         }
         return this.unreadNotificationCount;
     }

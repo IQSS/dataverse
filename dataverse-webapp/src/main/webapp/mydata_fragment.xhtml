@@ -5,7 +5,8 @@
                 xmlns:c="http://java.sun.com/jsp/jstl/core"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:o="http://omnifaces.org/ui"
-                xmlns:jsf="http://xmlns.jcp.org/jsf">
+                xmlns:jsf="http://xmlns.jcp.org/jsf"
+                xmlns:dv="http://dataverse.org/facelets">
 
     <o:importConstants type="edu.harvard.iq.dataverse.search.query.SearchObjectType" var="searchObjectTypeEnum"/>
     <c:set var="page" value="/dataverseuser.xhtml?selectTab=dataRelatedToMe"/>
@@ -405,7 +406,7 @@
                                 <h:outputText value="(#{result.dataverseAffiliationHighlightSnippet})" styleClass="text-muted" style="margin-left: .5em;" rendered="#{result.dataverseAffiliationHighlightSnippet != null}" escape="false"/>
                             </div>
     
-                            <h:outputText value="#{result.dateToDisplayOnCard}" styleClass="text-muted" style="margin-right:.5em;"/>
+                            <h:outputText value="#{dv:formatDate(result.releaseOrCreateDate)}" styleClass="text-muted" style="margin-right:.5em;"/>
     
                             <c:set var="dvParentUrl" value="/dataverse/#{result.dataverseParentAlias}"/>
                             <h:outputLink value="#{!MyDataSearchFragment.rootDv and !result.isInTree ? dvParentUrl : widgetWrapper.wrapURL(dvParentUrl)}" target="#{!MyDataSearchFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}" rendered="#{result.parent.id != MyDataSearchFragment.dataverse.id}">
@@ -471,7 +472,7 @@
                                 </a>
                             </div>
                            
-                            <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard}"/>
+                            <h:outputText styleClass="text-muted" value="#{dv:formatDate(result.releaseOrCreateDate)}"/>
     
                             <h:outputText styleClass="text-muted" value=" - " rendered="#{result.parent.id != MyDataSearchFragment.dataverse.id}"/>
     
@@ -549,7 +550,7 @@
                             </div>
     
                             <div>
-                                <h:outputText styleClass="text-muted" value="#{result.dateToDisplayOnCard} - "/>
+                                <h:outputText styleClass="text-muted" value="#{dv:formatDate(result.releaseOrCreateDate)} - "/>
                                 <a href="#{!MyDataSearchFragment.rootDv and !result.isInTree ? result.fileDatasetUrl : widgetWrapper.wrapURL(result.fileDatasetUrl)}" target="#{(!MyDataSearchFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
                                     <h:outputText value="#{result.parent.get('name')}"/></a>
                             </div>
