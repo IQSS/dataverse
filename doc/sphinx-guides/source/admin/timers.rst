@@ -22,9 +22,8 @@ The following JVM option instructs the application to act as the dedicated timer
 
 ``-Ddataverse.timerServer=true``
 
-**IMPORTANT:** Note that this option is automatically set by the Dataverse installer script. That means that when **configuring a multi-server cluster**, it will be the responsibility of the installer to remove the option from the :fixedwidthplain:`domain.xml` of every node except the one intended to be the timer server. We also recommend that the following entry in the :fixedwidthplain:`domain.xml`: ``<ejb-timer-service timer-datasource="jdbc/VDCNetDS">`` is changed back to ``<ejb-timer-service>`` on all the non-timer server nodes. Similarly, this option is automatically set by the installer script. Changing it back to the default setting on a server that doesn't need to run the timer will prevent a potential race condition, where multiple servers try to get a lock on the timer database. 
-
-**Note** that for the timer to work, the version of the PostgreSQL JDBC driver your instance is using must match the version of your PostgreSQL database. See the 'Timer not working' section of the :doc:`/admin/troubleshooting` guide.
+**IMPORTANT:** Note that this option is automatically set by the Dataverse installer script. That means that when
+**configuring a multi-server cluster**, it will be the responsibility of the installer to remove the option from the :fixedwidthplain:`domain.xml` of every node except the one intended to be the timer server.
 
 Harvesting Timers 
 -----------------
@@ -44,9 +43,9 @@ This timer runs a daily job that tries to export all the local, published datase
 
 This daily job will also update all the harvestable OAI sets configured on your server, adding new and/or newly published datasets or marking deaccessioned datasets as "deleted" in the corresponding sets as needed. 
 
-This job is automatically scheduled to run at 2AM local time every night. If really necessary, it is possible (for an advanced user) to change that time by directly editing the EJB timer application table in the database.  
+This job is automatically scheduled to run at 2AM local time every night.
 
 Known Issues
 ------------
- 
+
 We've received several reports of an intermittent issue where the application fails to deploy with the error message "EJB Timer Service is not available." Please see the :doc:`/admin/troubleshooting` section of this guide for a workaround. 

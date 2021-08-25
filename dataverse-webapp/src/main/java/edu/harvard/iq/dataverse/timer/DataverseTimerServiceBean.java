@@ -31,7 +31,6 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -109,7 +108,7 @@ public class DataverseTimerServiceBean implements Serializable {
         } catch (UnknownHostException ex) {
             Logger.getLogger(DataverseTimerServiceBean.class.getName()).log(Level.SEVERE, null, ex);
         }
-        timerService.createTimer(initialExpiration, intervalDuration, info);
+        timerService.createIntervalTimer(initialExpiration, intervalDuration, new TimerConfig(info, false));
     }
 
     /**
@@ -338,6 +337,7 @@ public class DataverseTimerServiceBean implements Serializable {
 
             TimerConfig timerConfig = new TimerConfig();
             timerConfig.setInfo(new FilesIntegrityCheckTimerInfo());
+            timerConfig.setPersistent(false);
             timerService.createCalendarTimer(expression, timerConfig);
         }
     }
@@ -349,6 +349,7 @@ public class DataverseTimerServiceBean implements Serializable {
             ScheduleExpression expression = cronToScheduleExpression(cronExpression);
 
             TimerConfig timerConfig = new TimerConfig();
+            timerConfig.setPersistent(false);
             timerConfig.setInfo(new CitationCountUpdateTimerInfo());
             Timer timer = timerService.createCalendarTimer(expression, timerConfig);
             logger.info("CitationCountUpdateTimerExpression: timer created, initial expiration: " + timer.getNextTimeout());
