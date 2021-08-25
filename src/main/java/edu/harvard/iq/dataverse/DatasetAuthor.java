@@ -101,7 +101,7 @@ public class DatasetAuthor {
         // GND regex from https://www.wikidata.org/wiki/Property:P227
         "GND",
             new LinkTemplate("https://d-nb.info/gnd/%s", "^1[01]?\\d{7}[0-9X]|[47]\\d{6}-\\d|[1-9]\\d{0,7}-[0-9X]|3\\d{7}[0-9X]$"),
-        // DAI is missing from this list
+        // note: DAI is missing from this list, because it doesn't have resolvable URL
         "ResearcherID",
             new LinkTemplate("https://publons.com/researcher/%s/", "^[A-Z\\d][A-Z\\d-]+[A-Z\\d]$"),
         "ScopusID",
