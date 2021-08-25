@@ -31,9 +31,10 @@ public class DatasetAuthorTest {
             { "LCNA", "n82058243", "http://id.loc.gov/authorities/names/n82058243" },
             { "VIAF", "172389567", "https://viaf.org/viaf/172389567" },
             { "GND", "4079154-3", "https://d-nb.info/gnd/4079154-3" },
-            { "ResearcherID", "4079154", "https://publons.com/researcher/4079154/" },
+            { "ResearcherID", "634082", "https://publons.com/researcher/634082/" },
             { "ResearcherID", "AAW-9289-2021", "https://publons.com/researcher/AAW-9289-2021/" },
-            { "ScopusID", "4079154", "https://www.scopus.com/authid/detail.uri?authorId=4079154" },
+            { "ResearcherID", "J-9733-2013", "https://publons.com/researcher/J-9733-2013/" },
+            { "ScopusID", "6602344670", "https://www.scopus.com/authid/detail.uri?authorId=6602344670" },
             { null, null, null, },
         });
     }
