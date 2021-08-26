@@ -4,10 +4,10 @@ import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.BannerDAO;
 import edu.harvard.iq.dataverse.bannersandmessages.banners.dto.ImageWithLinkDto;
 import edu.harvard.iq.dataverse.bannersandmessages.messages.DataverseTextMessageServiceBean;
+import org.omnifaces.cdi.ViewScoped;
 
 import javax.ejb.EJB;
 import javax.faces.context.FacesContext;
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;

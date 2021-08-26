@@ -13,12 +13,11 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
-import javax.faces.view.ViewScoped;
+import org.omnifaces.cdi.ViewScoped;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.logging.Logger;

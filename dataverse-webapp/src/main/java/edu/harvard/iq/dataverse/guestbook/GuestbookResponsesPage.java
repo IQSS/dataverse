@@ -8,7 +8,7 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import javax.faces.view.ViewScoped;
+import org.omnifaces.cdi.ViewScoped;
 
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -17,7 +17,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-
 import java.util.List;
 import java.util.logging.Logger;
 

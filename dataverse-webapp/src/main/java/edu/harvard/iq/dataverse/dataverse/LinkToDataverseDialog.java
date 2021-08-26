@@ -12,15 +12,14 @@ import edu.harvard.iq.dataverse.util.JsfRedirectHelper;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.omnifaces.cdi.ViewScoped;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ejb.EJB;
 import javax.faces.model.SelectItem;
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.util.ArrayList;
 import java.util.List;
 

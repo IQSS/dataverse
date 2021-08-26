@@ -11,8 +11,8 @@ import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
 import org.jsoup.Jsoup;
+import org.omnifaces.cdi.ViewScoped;
 
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.List;

@@ -21,10 +21,10 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
 import org.jsoup.Jsoup;
+import org.omnifaces.cdi.ViewScoped;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.validation.ValidationException;

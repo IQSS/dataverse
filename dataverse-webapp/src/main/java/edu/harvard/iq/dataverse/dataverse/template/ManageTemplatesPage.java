@@ -13,13 +13,12 @@ import edu.harvard.iq.dataverse.persistence.dataset.Template;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import org.apache.commons.lang3.StringUtils;
+import org.omnifaces.cdi.ViewScoped;
 
 import javax.faces.event.AbortProcessingException;
 import javax.faces.event.AjaxBehaviorEvent;
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;

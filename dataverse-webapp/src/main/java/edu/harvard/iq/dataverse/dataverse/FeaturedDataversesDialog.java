@@ -7,12 +7,11 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.JsfRedirectHelper;
 import io.vavr.control.Try;
+import org.omnifaces.cdi.ViewScoped;
 import org.primefaces.model.DualListModel;
 
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;

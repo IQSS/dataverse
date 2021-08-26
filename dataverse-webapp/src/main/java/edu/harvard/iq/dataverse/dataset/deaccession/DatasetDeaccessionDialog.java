@@ -8,7 +8,7 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
-import javax.faces.view.ViewScoped;
+import org.omnifaces.cdi.ViewScoped;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
@@ -17,10 +17,8 @@ import javax.faces.context.FacesContext;
 import javax.faces.validator.ValidatorException;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;

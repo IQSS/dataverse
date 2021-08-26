@@ -7,10 +7,9 @@ import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.OAuth2TokenData;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.omnifaces.cdi.ViewScoped;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.faces.view.ViewScoped;
 
 import javax.ejb.EJB;
 import javax.faces.context.FacesContext;
@@ -18,7 +17,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Serializable;

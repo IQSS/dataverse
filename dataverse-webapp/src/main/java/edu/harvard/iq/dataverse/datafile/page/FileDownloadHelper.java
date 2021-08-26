@@ -18,9 +18,9 @@ import edu.harvard.iq.dataverse.persistence.guestbook.GuestbookResponse;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.PrimefacesUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.omnifaces.cdi.ViewScoped;
 import org.primefaces.PrimeFaces;
 
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.List;

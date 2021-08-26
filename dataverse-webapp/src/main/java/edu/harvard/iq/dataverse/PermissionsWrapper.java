@@ -15,12 +15,11 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
-import javax.faces.view.ViewScoped;
+import org.omnifaces.cdi.ViewScoped;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.util.HashMap;
 import java.util.Map;
 

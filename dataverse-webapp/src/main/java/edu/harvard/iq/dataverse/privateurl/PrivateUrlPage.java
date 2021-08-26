@@ -2,12 +2,11 @@ package edu.harvard.iq.dataverse.privateurl;
 
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.persistence.user.PrivateUrlUser;
-import javax.faces.view.ViewScoped;
+import org.omnifaces.cdi.ViewScoped;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.io.Serializable;
 import java.util.logging.Logger;
 

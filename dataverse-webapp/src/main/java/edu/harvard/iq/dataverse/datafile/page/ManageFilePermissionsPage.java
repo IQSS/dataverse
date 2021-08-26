@@ -22,13 +22,11 @@ import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Try;
 import jersey.repackaged.com.google.common.collect.Sets;
 import org.apache.commons.lang.StringUtils;
-import javax.faces.view.ViewScoped;
+import org.omnifaces.cdi.ViewScoped;
 
-import javax.faces.application.FacesMessage;
 import javax.faces.event.ActionEvent;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

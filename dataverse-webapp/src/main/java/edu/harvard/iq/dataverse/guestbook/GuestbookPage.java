@@ -12,7 +12,7 @@ import edu.harvard.iq.dataverse.persistence.guestbook.Guestbook;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
-import javax.faces.view.ViewScoped;
+import org.omnifaces.cdi.ViewScoped;
 
 import javax.ejb.EJBException;
 import javax.faces.component.UIComponent;
@@ -24,7 +24,6 @@ import javax.faces.component.visit.VisitResult;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;

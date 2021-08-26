@@ -20,9 +20,9 @@ import edu.harvard.iq.dataverse.search.advanced.SolrQueryCreator;
 import edu.harvard.iq.dataverse.search.advanced.TextSearchField;
 import io.vavr.Tuple;
 import org.apache.commons.lang.StringUtils;
+import org.omnifaces.cdi.ViewScoped;
 
 import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;

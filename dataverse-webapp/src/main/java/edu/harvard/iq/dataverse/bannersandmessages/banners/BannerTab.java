@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.bannersandmessages.banners.dto.DataverseLocalize
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import org.apache.commons.lang.StringUtils;
+import org.omnifaces.cdi.ViewScoped;
 import org.omnifaces.util.Components;
 import org.primefaces.component.datalist.DataList;
 import org.primefaces.component.tabview.Tab;
@@ -12,11 +13,8 @@ import org.primefaces.component.tabview.TabView;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
-import javax.faces.view.ViewScoped;
-
 import javax.ejb.EJB;
 import javax.inject.Named;
-
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 

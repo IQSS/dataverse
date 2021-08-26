@@ -4,11 +4,10 @@ import edu.harvard.iq.dataverse.datafile.FilePermissionsService;
 import edu.harvard.iq.dataverse.license.dto.RestrictedTermsOfUseDTO;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
-import javax.faces.view.ViewScoped;
+import org.omnifaces.cdi.ViewScoped;
 
 import javax.ejb.EJB;
 import javax.inject.Named;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;

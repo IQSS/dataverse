@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse.metrics;
 
+import org.omnifaces.cdi.ViewScoped;
 import org.primefaces.model.chart.BarChartModel;
 
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;

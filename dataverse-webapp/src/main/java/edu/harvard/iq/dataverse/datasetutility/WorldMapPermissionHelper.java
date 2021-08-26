@@ -14,12 +14,10 @@ import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsWrapper;
-import javax.faces.view.ViewScoped;
+import org.omnifaces.cdi.ViewScoped;
 
-import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.inject.Named;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

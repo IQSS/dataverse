@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.dashboard;
 
-import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
@@ -22,9 +21,9 @@ import edu.harvard.iq.dataverse.settings.SettingsWrapper;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.lang.StringUtils;
+import org.omnifaces.cdi.ViewScoped;
 
 import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;

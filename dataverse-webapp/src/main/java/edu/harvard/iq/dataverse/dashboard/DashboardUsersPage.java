@@ -7,9 +7,9 @@ import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.control.Try;
+import org.omnifaces.cdi.ViewScoped;
 import org.primefaces.model.LazyDataModel;
 
-import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.text.NumberFormat;

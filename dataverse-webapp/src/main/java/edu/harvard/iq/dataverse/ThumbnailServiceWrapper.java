@@ -15,11 +15,10 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import javax.faces.view.ViewScoped;
+import org.omnifaces.cdi.ViewScoped;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
