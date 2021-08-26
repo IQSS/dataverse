@@ -257,6 +257,9 @@
                     <!-- id:#{fileMetadata.dataFile.id} -->
                     <h:outputText id="fileTypeOutputRegular" value="#{fileMetadata.dataFile.friendlyType}" rendered="#{!(fileMetadata.dataFile.tabularData)}"/>
                     <h:outputText id="fileTypeOutputTabular" value="#{bundle['file.type.tabularData']}" rendered="#{fileMetadata.dataFile.tabularData}"/>
+                    <h:outputText id="originalFileTypeOutputTabular"
+                                  value=" - #{bundle['file.type.tabularData.original']} #{fileMetadata.dataFile.originalFormatLabel}"
+                                  rendered="#{fileMetadata.dataFile.tabularData}"/>
                     <h:outputText id="fileSize" value=" - #{fileMetadata.dataFile.friendlySize}" />
 
                     <h:outputText id="fileCreatePublishDate" value=" - #{dv:formatDate(fileMetadata.getFileDateToDisplay())}" rendered="#{!(empty fileMetadata.id)}"/>
