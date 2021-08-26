@@ -13,7 +13,6 @@ import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Locale;
@@ -39,6 +38,7 @@ public class DataverseSession implements Serializable {
     private User user;
     private boolean statusDismissed = false;
     private String localeCode;
+    private int filesPerPage;
 
     // -------------------- GETTERS --------------------
 
@@ -75,6 +75,10 @@ public class DataverseSession implements Serializable {
             logger.fine("init: locale set to " + localeCode);
         }
         return systemConfig.getConfiguredLocales().get(localeCode);
+    }
+
+    public int getFilesPerPage() {
+        return filesPerPage;
     }
 
     // -------------------- LOGIC --------------------
@@ -133,5 +137,10 @@ public class DataverseSession implements Serializable {
 
     public void setStatusDismissed(boolean status) {
         statusDismissed = status; //MAD: Set to true to enable code!
+    }
+
+    public DataverseSession setFilesPerPage(int filesPerPage) {
+        this.filesPerPage = filesPerPage;
+        return this;
     }
 }

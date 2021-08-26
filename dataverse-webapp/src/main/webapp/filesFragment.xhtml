@@ -1,7 +1,7 @@
 <ui:composition
         xmlns="http://www.w3.org/1999/xhtml"
         xmlns:h="http://java.sun.com/jsf/html"
-        xmlns:f="http://java.sun.com/jsf/core"
+        xmlns:f="http://xmlns.jcp.org/jsf/core"
         xmlns:ui="http://java.sun.com/jsf/facelets"
         xmlns:p="http://primefaces.org/ui"
         xmlns:jsf="http://xmlns.jcp.org/jsf"
@@ -39,7 +39,7 @@
         <p:remoteCommand name="refreshPaginator" action="#{datasetFilesTab.refreshPaginator()}" process="@this" update="filesTable" />
         <!-- Files Table -->
         <p:dataTable id="filesTable"
-                     rows="10" paginator="#{datasetFilesTab.getFileSize() gt 10}" paginatorPosition="bottom"
+                     rows="#{datasetFilesTab.getFileRows(10)}" paginator="#{datasetFilesTab.getFileSize() gt 10}" paginatorPosition="bottom"
                      paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} #{bundle['file.dynamicCounter.filesPerPage']} {RowsPerPageDropdown}"
                      rowsPerPageTemplate="10,25,50,100"
                      style="margin-right:1px;"

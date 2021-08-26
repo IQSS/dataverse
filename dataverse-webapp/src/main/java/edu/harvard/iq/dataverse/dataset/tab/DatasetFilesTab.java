@@ -335,6 +335,7 @@ public class DatasetFilesTab implements Serializable {
                 .findComponent("datasetForm:tabView:filesTable");
         filePaginatorPage = dt.getPage();
         rowsPerPage = dt.getRowsToRender();
+        session.setFilesPerPage(dt.getRowsToRender());
     }
 
     public void fileListingPaginatorListener(PageEvent event) {
@@ -754,6 +755,10 @@ public class DatasetFilesTab implements Serializable {
         fileSize = fileSize == null ? datasetFilesTabFacade.fileSize(workingVersion.getId()) : fileSize;
 
         return fileSize;
+    }
+
+    public int getFileRows(int defaultValue) {
+        return session.getFilesPerPage() == 0 ? defaultValue : session.getFilesPerPage();
     }
 
     // -------------------- PRIVATE --------------------
