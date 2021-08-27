@@ -63,6 +63,23 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     SettingsServiceBean settingsService;
 
     private static final String NAME_QUERY = "SELECT dsfType from DatasetFieldType dsfType where dsfType.name= :fieldName";
+    
+    /*
+     * External vocabulary support: These fields cache information from the CVocConf
+     * setting which controls how Dataverse connects specific metadata block fields
+     * to third-party Javascripts and external vocabulary services to allow users to
+     * input values from a vocabulary(ies) those services manage.
+     */
+    
+    //Configuration json keyed by the id of the 'parent' DatasetFieldType 
+    Map <Long, JsonObject> cvocMap = null;
+    
+    //Configuration json keyed by the id of the child DatasetFieldType specified as the 'term-uri-field'
+    //Note that for primitive fields, the prent and term-uri-field are the same and these maps have the same entry
+    Map <Long, JsonObject> cvocMapByTermUri = null;
+    
+    //The hash of the existing CVocConf setting. Used to determine when the setting has changed and it needs to be re-parsed to recreate the cvocMaps
+    String oldHash = null;
 
     public List<DatasetFieldType> findAllAdvancedSearchFieldTypes() {
         return em.createQuery("select object(o) from DatasetFieldType as o where o.advancedSearchFieldType = true and o.title != '' order by o.id", DatasetFieldType.class).getResultList();
@@ -238,11 +255,21 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         return em.merge(alt);
     } 
     
-    Map <Long, JsonObject> cvocMap = null;
-    Map <Long, JsonObject> cvocMapByTermUri = null;
 
-    String oldHash = null;
-    
+    /**
+     * This method returns a Map relating DatasetFieldTypes with any external
+     * vocabulary configuration information associated with them via the CVocConf
+     * setting. THe mapping is keyed by the DatasetFieldType id for primitive fields
+     * and, for a compound field, by the id of either the 'parent' DatasetFieldType
+     * id or of the child field specified as the 'term-uri-field' (the field where
+     * the URI of the term is stored (and not one of the child fields where the term
+     * name, vocabulary URI, vocabulary Name or other managed information may go.)
+     * 
+     * The map only contains values for DatasetFieldTypes that are configured to use external vocabulary services.
+     * 
+     * @param byTermUriField - false: the id of the parent DatasetFieldType is the key, true: the 'term-uri-field' DatasetFieldType id is used as the key
+     * @return - a map of JsonObjects containing configuration information keyed by the DatasetFieldType id (Long)
+     */
     public Map<Long, JsonObject> getCVocConf(boolean byTermUriField){
         
         //ToDo - change to an API call to be able to provide feedback if the json is invalid?
@@ -309,9 +336,13 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         return byTermUriField ? cvocMapByTermUri : cvocMap;
     }
 
+    /**
+     * Adds information about the external vocabulary term being used in this DatasetField to the ExternalVocabularyValue table if it doesn't already exist.
+     * @param df - the primitive/parent compound field containing a newly saved value
+     */
     public void registerExternalVocabValues(DatasetField df) {
         DatasetFieldType dft =df.getDatasetFieldType(); 
-        logger.info("Registering for field: " + dft.getName());
+        logger.fine("Registering for field: " + dft.getName());
         JsonObject cvocEntry = getCVocConf(false).get(dft.getId());
         if(dft.isPrimitive()) {
             for(DatasetFieldValue dfv: df.getDatasetFieldValues()) {
@@ -322,7 +353,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                     DatasetFieldType termdft = findByNameOpt(cvocEntry.getString("term-uri-field"));
                     for (DatasetFieldCompoundValue cv : df.getDatasetFieldCompoundValues()) {
                         for (DatasetField cdf : cv.getChildDatasetFields()) {
-                            logger.info("Found term uri field type id: " + cdf.getDatasetFieldType().getId());
+                            logger.fine("Found term uri field type id: " + cdf.getDatasetFieldType().getId());
                             if(cdf.getDatasetFieldType().equals(termdft)) {
                                 registerExternalTerm(cvocEntry, cdf.getValue());
                             }
@@ -332,13 +363,21 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             }
     }
     
-    // This method assumes externalvocabularyvalue entries have been filtered and
-    // contain a single JsonObject whose values are either Strings or an array of
-    // objects with "lang" and "value" keys. The string, or the "value"s for each
-    // language are added to the set.
-    // Any parsing error results in no entries (there can be unfiltered entries with
-    // unknown structure - getting some strings from such an entry could give fairly
-    // random info that would be bad to addd for searches, etc.)
+    /**
+     * Retrieves indexable strings from a cached externalvocabularyvalue entry.
+     * 
+     * This method assumes externalvocabularyvalue entries have been filtered and
+     * the externalvocabularyvalue entry contain a single JsonObject whose values
+     * are either Strings or an array of objects with "lang" and "value" keys. The
+     * string, or the "value"s for each language are added to the set.
+     * 
+     * Any parsing error results in no entries (there can be unfiltered entries with
+     * unknown structure - getting some strings from such an entry could give fairly
+     * random info that would be bad to addd for searches, etc.)
+     * 
+     * @param termUri
+     * @return - a set of indexable strings
+     */
     public Set<String> getStringsFor(String termUri) {
         Set<String> strings = new HashSet<String>();
         JsonObject jo = getExternalVocabularyValue(termUri);
@@ -348,13 +387,13 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 for (String key : jo.keySet()) {
                     JsonValue jv = jo.get(key);
                     if (jv.getValueType().equals(JsonValue.ValueType.STRING)) {
-                        logger.info("adding " + jo.getString(key) + " for " + termUri);
+                        logger.fine("adding " + jo.getString(key) + " for " + termUri);
                         strings.add(jo.getString(key));
                     } else {
                         if (jv.getValueType().equals(JsonValue.ValueType.ARRAY)) {
                             JsonArray jarr = jv.asJsonArray();
                             for (int i = 0; i < jarr.size(); i++) {
-                                logger.info("adding " + jarr.getJsonObject(i).getString("value") + " for " + termUri);
+                                logger.fine("adding " + jarr.getJsonObject(i).getString("value") + " for " + termUri);
                                 strings.add(jarr.getJsonObject(i).getString("value"));
                             }
                         }
@@ -366,10 +405,15 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
                 return new HashSet<String>();
             }
         }
-        logger.info("Returning " + String.join(",", strings) + " for " + termUri);
+        logger.fine("Returning " + String.join(",", strings) + " for " + termUri);
         return strings;
     }    
 
+    /**
+     * Perform a query to retrieve a cached valie from the externalvocabularvalue table
+     * @param termUri
+     * @return - the entry's value as a JsonObject
+     */
     public JsonObject getExternalVocabularyValue(String termUri) {
         try {
             ExternalVocabularyValue evv = em
@@ -388,6 +432,11 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         return null;
     }
 
+    /**
+     * Perform a call to the external service to retrieve information about the term URI
+     * @param cvocEntry - the configuration for the DatasetFieldType associated with this term 
+     * @param term - the term uri as a string
+     */
     public void registerExternalTerm(JsonObject cvocEntry, String term) {
         String retrievalUri = cvocEntry.getString("retrieval-uri");
         String prefix = cvocEntry.getString("prefix", null);
@@ -457,6 +506,16 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
 
     }
 
+    /**
+     * Parse the raw value returned by an external service for a give term uri and
+     * filter it according to the 'retrieval-filtering' configuration for this
+     * DatasetFieldType, creating a Json value with the specified structure
+     * 
+     * @param cvocEntry - the config for this DatasetFieldType
+     * @param readObject - the raw response from the service
+     * @param termUri - the term uri
+     * @return - a JsonObject with the structure defined by the filtering configuration
+     */
     private JsonObject filterResponse(JsonObject cvocEntry, JsonObject readObject, String termUri) {
 
         JsonObjectBuilder job = Json.createObjectBuilder();
@@ -569,6 +628,16 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         }
     }
 
+    /**
+     * Supports validation of externally controlled values. If the value is a URI it
+     * must be in the namespace (start with) one of the uriSpace values of an
+     * allowed vocabulary. If free text entries are allowed for this field (per the
+     * configuration), non-uri entries are also assumed valid.
+     * 
+     * @param dft
+     * @param value
+     * @return - true: valid
+     */
     public boolean isValidCVocValue(DatasetFieldType dft, String value) {
         JsonObject jo = getCVocConf(true).get(dft.getId());
         JsonArray vocabs = jo.getJsonArray("vocabs");
@@ -595,77 +664,4 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
         }
         return valid;
     }
-    
-    /*
-    public class CVoc {
-        String cvocUrl;
-        String language;
-        String protocol;
-        String vocabUri;
-        String termParentUri;
-        String jsUrl;
-        String mapId;
-        String mapQuery;
-        boolean readonly;
-        boolean hideReadonlyUrls;
-        int minChars;
-        List<String> vocabs;
-        List<String> keys;
-        public CVoc(String cvocUrl, String language, String protocol, String vocabUri, String termParentUri, boolean readonly, boolean hideReadonlyUrls, int minChars,
-                    List<String> vocabs, List<String> keys, String jsUrl, String mapId, String mapQuery){
-            this.cvocUrl = cvocUrl;
-            this.language = language;
-            this.protocol = protocol;
-            this.readonly = readonly;
-            this.hideReadonlyUrls = hideReadonlyUrls;
-            this.minChars = minChars;
-            this.vocabs = vocabs;
-            this.vocabUri = vocabUri;
-            this.termParentUri = termParentUri;
-            this.keys = keys;
-            this.jsUrl = jsUrl;
-            this.mapId = mapId;
-            this.mapQuery = mapQuery;
-        }
-
-        public String getCVocUrl() {
-            return cvocUrl;
-        }
-        public String getLanguage() {
-            return language;
-        }
-        public String getProtocol() { return protocol; }
-        public String getVocabUri() {
-            return vocabUri;
-        }
-        public String getTermParentUri() {
-            return termParentUri;
-        }
-        public boolean isReadonly() {
-            return readonly;
-        }
-        public boolean isHideReadonlyUrls() {
-            return hideReadonlyUrls;
-        }
-        public int getMinChars() { return minChars; }
-        public List<String> getVocabs() {
-            return vocabs;
-        }
-        public List<String> getKeys() {
-            return keys;
-        }
-
-        public String getJsUrl() {
-            return jsUrl;
-        }
-
-        public String getMapId() {
-            return mapId;
-        }
-
-        public String getMapQuery() {
-            return mapQuery;
-        }
-    }
-*/
 }
