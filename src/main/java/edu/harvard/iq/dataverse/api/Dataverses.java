@@ -946,10 +946,9 @@ public class Dataverses extends AbstractApiBean {
     
     @GET
     @Path("{identifier}/guestbookResponses/")
-    @Produces({"application/download"})
     public Response getGuestbookResponsesByDataverse(@PathParam("identifier") String dvIdtf,
             @QueryParam("guestbookId") Long gbId, @Context HttpServletResponse response) {
-        
+
         try {
             Dataverse dv = findDataverseOrDie(dvIdtf);
             User u = findUserOrDie();
@@ -960,13 +959,8 @@ public class Dataverses extends AbstractApiBean {
             } else {
                 return error(Status.FORBIDDEN, "Not authorized");
             }
-            
-            String fileTimestamp = dateFormatter.format(new Date());
-            String filename = dv.getAlias() + "_GBResponses_" + fileTimestamp + ".csv";
-            
-            response.setHeader("Content-Disposition", "attachment; filename="
-                + filename);
-               ServletOutputStream outputStream = response.getOutputStream();
+
+            ServletOutputStream outputStream = response.getOutputStream();
 
             Map<Integer, Object> customQandAs = guestbookResponseService.mapCustomQuestionAnswersAsStrings(dv.getId(), gbId);
 
