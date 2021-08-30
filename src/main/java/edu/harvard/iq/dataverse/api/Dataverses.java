@@ -973,7 +973,7 @@ public class Dataverses extends AbstractApiBean {
             }
             return Response.ok().build();
         } catch (IOException io) {
-            return error(Status.BAD_REQUEST, "Failed to produce response file. Exception: " + io.getMessage());
+            return error(Status.BAD_REQUEST, "Failed to produce response. Exception: " + io.getMessage());
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
