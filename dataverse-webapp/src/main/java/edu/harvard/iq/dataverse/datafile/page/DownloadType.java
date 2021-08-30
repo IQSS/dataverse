@@ -19,7 +19,6 @@ public enum DownloadType {
     TAB(ApiDownloadType.TAB, null),
     RDATA(ApiDownloadType.RDATA, null),
     VAR(ApiDownloadType.VAR, null),
-    SUBSET(null, null),
     WORLDMAP(null, null),
     EXTERNALTOOL(null, null),
     PACKAGE(null, null);

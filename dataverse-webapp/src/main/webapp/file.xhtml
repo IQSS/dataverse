@@ -192,7 +192,7 @@
                                         lockedFromDownload="#{FilePage.isLockedFromDownload()}"
                                         exploreTools="#{FilePage.exploreTools}"
                                         downloadRequestFunction="#{fileDownloadHelper.requestDownload}"
-                                        updateOnDownloadRequest="@widgetVar(downloadPackagePopup) @widgetVar(downloadDataSubsetPopup)"
+                                        updateOnDownloadRequest="@widgetVar(downloadPackagePopup)"
                                         updateOnRequestAccess="@widgetVar(requestAccessPopup)"
                                     />
                                 </div>
@@ -577,15 +577,6 @@
 
                     <o:importConstants type="edu.harvard.iq.dataverse.datafile.page.DownloadType" var="downloadType"/>
 
-                    <p:dialog id="downloadDataSubsetPopup" styleClass="smallPopUp" header="#{bundle['file.download.subset.header']}" widgetVar="downloadDataSubsetPopup"
-                               modal="true">
-                        <div class="form-inline clearfix"
-                             jsf:rendered="#{RequestedDownloadType.fileFormat eq downloadType.SUBSET and RequestedDownloadType.isSingleFileRequested()}">>
-                            <ui:include src="/subset/gui_subset.xhtml">
-                                <ui:param name="dataFile" value="#{RequestedDownloadType.singleFileMetadata.dataFile}"/>
-                             </ui:include>
-                        </div>
-                    </p:dialog>
                     <p:dialog id="downloadPackagePopup" styleClass="smallPopUp" header="#{bundle['packageDownload.title']}" widgetVar="downloadPackagePopup" modal="true">
                         <div jsf:rendered="#{RequestedDownloadType.fileFormat eq downloadType.PACKAGE and RequestedDownloadType.isSingleFileRequested()}">
                             <ui:include src="package-download-popup-fragment.xhtml">

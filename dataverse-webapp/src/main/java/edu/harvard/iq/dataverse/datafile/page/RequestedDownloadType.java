@@ -74,10 +74,6 @@ public class RequestedDownloadType implements Serializable {
         this.fileMetadatas = Lists.newArrayList(fileMetadata);
         this.fileFormat = DownloadType.VAR;
     }
-    public void initDownloadTypeForSubset(FileMetadata fileMetadata) {
-        this.fileMetadatas = Lists.newArrayList(fileMetadata);
-        this.fileFormat = DownloadType.SUBSET;
-    }
     
     public void initDownloadTypeForWorldMap(FileMetadata fileMetadata) {
         this.fileMetadatas = Lists.newArrayList(fileMetadata);

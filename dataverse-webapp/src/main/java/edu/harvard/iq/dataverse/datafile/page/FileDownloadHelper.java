@@ -34,7 +34,6 @@ import static java.util.stream.Collectors.toList;
  * Note that following dialogs must be defined on page for proper functioning:
  * <ul>
  * <li>downloadPopup</li>
- * <li>downloadDataSubsetPopup</li>
  * <li>downloadPackagePopup</li>
  * </ul>
  * 
@@ -200,10 +199,6 @@ public class FileDownloadHelper implements java.io.Serializable {
                         guestbookRecordsAlreadyWritten);
             PrimeFaces.current().ajax().addCallbackParam("apiDownloadLink", fileDownloadUrl);
 
-        } else if (fileFormat == DownloadType.SUBSET) {
-            writeGuestbookResponseIfReleased(dataFile, DownloadType.SUBSET, null, guestbookRecordsAlreadyWritten);
-            PrimefacesUtil.showDialog("downloadDataSubsetPopup");
-
         } else if (fileFormat == DownloadType.WORLDMAP) {
             writeGuestbookResponseIfReleased(dataFile, DownloadType.WORLDMAP, null, guestbookRecordsAlreadyWritten);
             fileDownloadService.startWorldMapDownloadLink(dataFile);
@@ -229,10 +224,7 @@ public class FileDownloadHelper implements java.io.Serializable {
     }
     
     private String buildGuestbookResponseDownloadType(DownloadType fileFormat, ExternalTool tool) {
-        
-        if (fileFormat == DownloadType.SUBSET) {
-            return "Subset";
-        }
+
         if (fileFormat == DownloadType.WORLDMAP) {
             return "WorldMap";
         }

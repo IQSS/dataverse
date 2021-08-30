@@ -179,16 +179,6 @@
                     #{bundle['file.downloadBtn.format.var']}
                 </p:commandLink>
             </li>
-            <li>
-                <p:commandLink id="tabularSubsetDownloadPopupButton" rendered="#{systemConfig.rserveConfigured}"
-                               pt:role="menuitem"
-                               process="@this"
-                               value="#{bundle['file.downloadBtn.format.datasubset']}"
-                               actionListener="#{RequestedDownloadType.initDownloadTypeForSubset(cc.attrs.fileMetadata)}"
-                               action="#{cc.attrs.downloadRequestFunction}"
-                               update="#{cc.attrs.updateOnDownloadRequest}"
-                               />
-            </li>
             <li class="dropdown-submenu pull-left">
                 <a tabindex="-1" class="no-focus">#{bundle['file.downloadBtn.format.citation']}</a>
                 <ul class="dropdown-menu" role="menu">

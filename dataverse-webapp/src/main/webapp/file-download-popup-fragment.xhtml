@@ -2,12 +2,11 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
-                xmlns:c="http://java.sun.com/jsp/jstl/core"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:jsf="http://xmlns.jcp.org/jsf"
                 xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
-                xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+>
 
         <p class="help-block">
             #{bundle['file.downloadDialog.tip']}
@@ -138,7 +137,7 @@
             <p:commandButton styleClass="btn btn-default" value="#{bundle.acceptTerms}"
                            actionListener="#{GuestbookResponseDialog.saveAndStartDownload()}"
                            process="@widgetVar(downloadPopup)"
-                           update="guestbookUIFragment @widgetVar(downloadPackagePopup) @widgetVar(downloadDataSubsetPopup)"
+                           update="guestbookUIFragment @widgetVar(downloadPackagePopup)"
                            oncomplete="if (args &amp;&amp; !args.validationFailed) { PF('downloadPopup').hide(); }
                                        if (args &amp;&amp; args.apiDownloadLink) { $('#currentDownloadRequestLink').attr('href', args.apiDownloadLink); $('#currentDownloadRequestLink')[0].click(); }"
                            >
