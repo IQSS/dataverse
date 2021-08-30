@@ -5,7 +5,6 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:o="http://omnifaces.org/ui"
-      xmlns:jsf="http://xmlns.jcp.org/jsf"
       lang="#{dataverseSession.localeCode}"
       xml:lang="#{dataverseSession.localeCode}">
 
@@ -29,15 +28,15 @@
         </f:facet>
         <link type="image/png" rel="icon" href="#{resource['images/favicondataverse.png']}" />
         <link type="image/png" rel="image_src" href="#{resource['images/dataverseproject.png']}" />
-        <link type="text/css" rel="stylesheet" href="#{resource['bs/css/bootstrap.min.css']}?version=#{systemConfig.getVersion()}" />
-        <link type="text/css" rel="stylesheet" href="#{resource['bs/css/bootstrap-theme.min.css']}?version=#{systemConfig.getVersion()}" />
-        <link type="text/css" rel="stylesheet" href="#{resource['css/ie-compat.css']}?version=#{systemConfig.getVersion()}" />
-        <link type="text/css" rel="stylesheet" href="#{resource['css/owl.carousel.css']}?version=#{systemConfig.getVersion()}" />
-        <link type="text/css" rel="stylesheet" href="#{resource['css/fontcustom.css']}?version=#{systemConfig.getVersion()}" />
-        <link type="text/css" rel="stylesheet" href="#{resource['css/socicon.css']}?version=#{systemConfig.getVersion()}" />
-        <link type="text/css" rel="stylesheet" href="#{resource['css/structure.css']}?version=#{systemConfig.getVersion()}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['bs/css/bootstrap.min.css']}?version=#{systemConfig.getVersionWithBuild()}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['bs/css/bootstrap-theme.min.css']}?version=#{systemConfig.getVersionWithBuild()}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['css/ie-compat.css']}?version=#{systemConfig.getVersionWithBuild()}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['css/owl.carousel.css']}?version=#{systemConfig.getVersionWithBuild()}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['css/fontcustom.css']}?version=#{systemConfig.getVersionWithBuild()}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['css/socicon.css']}?version=#{systemConfig.getVersionWithBuild()}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['css/structure.css']}?version=#{systemConfig.getVersionWithBuild()}" />
 
-        <link type="text/css" rel="stylesheet" href="#{resource['vecler/theme.css']}?version=#{systemConfig.getVersion()}" />
+        <link type="text/css" rel="stylesheet" href="#{resource['vecler/theme.css']}?version=#{systemConfig.getVersionWithBuild()}" />
 
         <link type="text/css" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700&amp;display=swap" />
         <link type="text/css" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700&amp;display=swap" /> 
@@ -56,7 +55,7 @@
         </ui:fragment>
     </h:head>
     <h:body styleClass="#{widgetWrapper.widgetView ? 'widget-view' : ''}">
-        <script src="#{resource['js/dv_accessibility.js']}?version=#{systemConfig.getVersion()}"></script>
+        <script src="#{resource['js/dv_accessibility.js']}?version=#{systemConfig.getVersionWithBuild()}"></script>
         <div id="body-wrapper">
             <f:loadBundle basename="Bundle" var="bundle"/>
         <a href="#content" class="sr-only impaired-navigation">#{bundle['body.skip']}</a>
@@ -94,14 +93,14 @@
                     </button>
                 </div>
             </p:dialog>
-            <script defer="defer" src="#{resource['js/primefaces_locales.js']}?version=#{systemConfig.getVersion()}"></script>
-            <script defer="defer" src="#{resource['bs/js/bootstrap.min.js']}?version=#{systemConfig.getVersion()}"></script>
-            <script defer="defer" src="#{resource['js/ie-compat.js']}?version=#{systemConfig.getVersion()}"></script>
-            <script defer="defer" src="#{resource['js/dv_rebind_bootstrap_ui.js']}?version=#{systemConfig.getVersion()}"></script>
-            <script defer="defer" src="#{resource['js/owl.carousel.js']}?version=#{systemConfig.getVersion()}"></script>
-            <script defer="defer" src="#{resource['js/jquery.matchHeight.js']}?version=#{systemConfig.getVersion()}"></script>
-            <script defer="defer" src="#{resource['js/jquery.sharrre.js']}?version=#{systemConfig.getVersion()}"></script>
-            <script defer="defer" src="#{resource['js/clipboard.min.js']}?version=#{systemConfig.getVersion()}"></script>
+            <script defer="defer" src="#{resource['js/primefaces_locales.js']}?version=#{systemConfig.getVersionWithBuild()}"></script>
+            <script defer="defer" src="#{resource['bs/js/bootstrap.min.js']}?version=#{systemConfig.getVersionWithBuild()}"></script>
+            <script defer="defer" src="#{resource['js/ie-compat.js']}?version=#{systemConfig.getVersionWithBuild()}"></script>
+            <script defer="defer" src="#{resource['js/dv_rebind_bootstrap_ui.js']}?version=#{systemConfig.getVersionWithBuild()}"></script>
+            <script defer="defer" src="#{resource['js/owl.carousel.js']}?version=#{systemConfig.getVersionWithBuild()}"></script>
+            <script defer="defer" src="#{resource['js/jquery.matchHeight.js']}?version=#{systemConfig.getVersionWithBuild()}"></script>
+            <script defer="defer" src="#{resource['js/jquery.sharrre.js']}?version=#{systemConfig.getVersionWithBuild()}"></script>
+            <script defer="defer" src="#{resource['js/clipboard.min.js']}?version=#{systemConfig.getVersionWithBuild()}"></script>
             <ui:fragment rendered="#{settingsWrapper.shibPassiveLoginEnabled}">
                 <script src="#{resource['js/shib/isPassive.js']}"></script>
             </ui:fragment>

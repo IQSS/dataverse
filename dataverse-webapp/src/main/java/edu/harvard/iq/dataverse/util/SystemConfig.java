@@ -50,11 +50,12 @@ public class SystemConfig {
     private SettingsServiceBean settingsService;
 
 
-    private static String appVersionString = null;
+    private static String appVersionWithBuild = null;
+    private static String appVersion = null;
 
-    public String getVersion() {
+    public String getVersionWithBuild() {
 
-        if (appVersionString == null) {
+        if (appVersionWithBuild == null) {
 
             // We'll rely on Maven placing the version number into the
             // version.properties file using resource filtering
@@ -69,19 +70,47 @@ public class SystemConfig {
                     .map(p -> Tuple.of(p.getProperty(VERSION_PROPERTIES_KEY), p.getProperty(VERSION_COMMIT_ID)));
 
             if (appVersionTry.isFailure()) {
-                appVersionString = VERSION_FALLBACK;
+                appVersionWithBuild = VERSION_FALLBACK;
                 logger.warning("Failed to read the " + VERSION_PROPERTIES_CLASSPATH + " file");
 
             } else if (StringUtils.equals(appVersionTry.get()._1(), VERSION_PLACEHOLDER)) {
-                appVersionString = VERSION_FALLBACK;
+                appVersionWithBuild = VERSION_FALLBACK;
                 logger.warning(VERSION_PROPERTIES_CLASSPATH + " was not filtered by maven (check your pom.xml configuration)");
 
             } else {
-                appVersionString = appVersionTry.get()._1() + "-" + appVersionTry.get()._2();
+                appVersionWithBuild = appVersionTry.get()._1() + "-" + appVersionTry.get()._2();
             }
         }
 
-        return appVersionString;
+        return appVersionWithBuild;
+    }
+
+    public String getVersion() {
+
+        if (appVersion == null) {
+            Try<String> appVersionTry = Try
+                    .withResources(() -> getClass().getResourceAsStream(VERSION_PROPERTIES_CLASSPATH))
+                    .of(is -> {
+                        Properties properties = new Properties();
+                        properties.load(is);
+                        return properties;
+                    })
+                    .map(p -> p.getProperty(VERSION_PROPERTIES_KEY));
+
+            if (appVersionTry.isFailure()) {
+                appVersion = VERSION_FALLBACK;
+                logger.warning("Failed to read the " + VERSION_PROPERTIES_CLASSPATH + " file");
+
+            } else if (StringUtils.equals(appVersionTry.get(), VERSION_PLACEHOLDER)) {
+                appVersion = VERSION_FALLBACK;
+                logger.warning(VERSION_PROPERTIES_CLASSPATH + " was not filtered by maven (check your pom.xml configuration)");
+
+            } else {
+                appVersion = appVersionTry.get();
+            }
+        }
+
+        return appVersion;
     }
 
     public int getMinutesUntilPasswordResetTokenExpires() {

@@ -41,7 +41,7 @@ public class Info extends AbstractApiBean {
     @GET
     @Path("version")
     public Response getInfo() {
-        String versionStr = systemConfig.getVersion();
+        String versionStr = systemConfig.getVersionWithBuild();
 
         return allowCors(response(req -> ok(Json.createObjectBuilder().add("version", versionStr))));
     }
