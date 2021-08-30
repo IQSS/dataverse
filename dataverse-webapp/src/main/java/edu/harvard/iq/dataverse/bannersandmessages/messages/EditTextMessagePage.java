@@ -82,7 +82,7 @@ public class EditTextMessagePage implements Serializable {
 
     public void validateEndDateTime(FacesContext context, UIComponent toValidate, Object rawValue) throws ValidatorException {
         Date toDate = (Date) rawValue;
-        Date fromDate = (Date)fromTimeInput.getValue();
+        Date fromDate = (Date) fromTimeInput.getValue();
 
         try {
             DataverseTextMessageValidator.validateEndDate(fromDate, toDate);
@@ -92,7 +92,11 @@ public class EditTextMessagePage implements Serializable {
             throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, "", BundleUtil.getStringFromBundle("textmessages.endDateTime.future")));
         }
     }
-    
+
+    public String getTextMessageTip(String language) {
+        return BundleUtil.getStringFromBundle("edittextmessages.message.tip", language);
+    }
+
     private String redirectToTextMessages() {
         return "/dataverse-textMessages.xhtml?dataverseId=" + dataverseId + "&faces-redirect=true";
     }

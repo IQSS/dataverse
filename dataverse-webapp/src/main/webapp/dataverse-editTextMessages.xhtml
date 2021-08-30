@@ -45,11 +45,23 @@
                                     #{lm.language} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                                 </h:outputLabel>
                                 <div class="col-sm-6 form-col-container">
-                                    <p:inputTextarea id="message-locale" styleClass="form-control" value="#{lm.message}"
-                                            required="true"
-                                            requiredMessage="#{validationMessages['field.required']}"/>
-                                    <p:message for="message-locale" display="text"/>
+                                    <p class="help-block">#{EditTextMessagePage.getTextMessageTip(lm.language)}</p>
+                                    <p:inputTextarea id="message-locale" styleClass="form-control"
+                                                     value="#{lm.message}"
+                                                     maxlength="1000"
+                                                     cols="60"
+                                                     counter="textMessageCounter"
+                                                     counterTemplate="#{bundle['edittextmessages.message.counter']}"
+                                                     required="true"
+                                                     requiredMessage="#{validationMessages['field.required']}"/>
+                                    <p:message for="message-locale" styleClass="bg-danger text-danger" display="text"/>
+                                    <p>
+                                        <h:outputText id="textMessageCounter"/>
+                                    </p>
                                 </div>
+                                <p:watermark for="message-locale"
+                                             value="#{bundle['edittextmessages.message.watermark']}"
+                                             id="message-localeWatermark"/>
                             </div>
                         </div>
                     </ui:repeat>
@@ -60,6 +72,7 @@
                                 #{bundle['edittextmessages.startDateTime']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                             </p:outputLabel>
                             <div class="col-sm-6 form-col-container">
+                                <p class="help-block">#{bundle['edittextmessages.startDateTime.format.tip']}</p>
                                 <p:calendar id="message-fromtime"
                                             value="#{EditTextMessagePage.dto.fromTime}"
                                             locale="#{dataverseSession.localeCode}"
@@ -74,6 +87,9 @@
                                 />
                                 <p:message for="message-fromtime" display="text"/>
                             </div>
+                            <p:watermark for="message-fromtime"
+                                         value="#{bundle['edittextmessages.startDateTime.format.watermark']}"
+                                         id="message-fromtimeWatermark"/>
                         </div>
                     </div>
 
@@ -83,6 +99,7 @@
                             #{bundle['edittextmessages.endDateTime']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                         </p:outputLabel>
                         <div class="col-sm-6 form-col-container">
+                            <p class="help-block">#{bundle['edittextmessages.endDateTime.format.tip']}</p>
                             <p:calendar id="message-totime"
                                         value="#{EditTextMessagePage.dto.toTime}"
                                         locale="#{dataverseSession.localeCode}"
@@ -97,6 +114,9 @@
                             />
                             <p:message for="message-totime" display="text"/>
                         </div>
+                        <p:watermark for="message-totime"
+                                     value="#{bundle['edittextmessages.endDateTime.format.watermark']}"
+                                     id="message-totimeWatermark"/>
                     </div>
                 </div>
 

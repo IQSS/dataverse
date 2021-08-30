@@ -96,6 +96,7 @@
                             <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                         </p:outputLabel>
                         <div class="col-sm-6">
+                            <p class="help-block">#{bundle['edittextmessages.startDateTime.format.tip']}</p>
                             <p:calendar id="message-fromtime"
                                         value="#{EditBannerPage.dto.fromTime}"
                                         binding="#{EditBannerPage.fromTimeInput}"
@@ -110,6 +111,9 @@
                             />
                             <p:message id="error-message-fromtime" for="message-fromtime" display="text"/>
                         </div>
+                        <p:watermark for="message-fromtime"
+                                     value="#{bundle['edittextmessages.startDateTime.format.watermark']}"
+                                     id="message-fromtimeWatermark"/>
                     </div>
 
                     <div class="form-group form-col-container">
@@ -117,6 +121,7 @@
                             #{bundle['edittextmessages.endDateTime']} <span class="glyphicon glyphicon-asterisk text-danger" title="#{bundle.requiredField}"/>
                         </p:outputLabel>
                         <div class="col-sm-6">
+                            <p class="help-block">#{bundle['edittextmessages.endDateTime.format.tip']}</p>
                             <p:calendar id="message-totime"
                                         value="#{EditBannerPage.dto.toTime}"
                                         locale="#{dataverseSession.localeCode}"
@@ -129,8 +134,11 @@
                                         requiredMessage="#{validationMessages['field.required']}"
                                         validator="#{EditBannerPage.validateEndDateTime}"
                             />
-                            <p:message id="error-message-totime" for="message-totime" display="text" />
+                            <p:message id="error-message-totime" for="message-totime" display="text"/>
                         </div>
+                        <p:watermark for="message-totime"
+                                     value="#{bundle['edittextmessages.endDateTime.format.watermark']}"
+                                     id="message-totimeWatermark"/>
                     </div>
 
                     <div class="form-group form-col-container">
