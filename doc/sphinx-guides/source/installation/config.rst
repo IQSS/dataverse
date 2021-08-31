@@ -2345,9 +2345,9 @@ For example, if you want your Dataverse installation to skip validation for any 
 
 When this option is used to disable the checksum validation, it's strongly recommended to perform periodic asynchronous checks via the integrity API
 
-Refer to "Physical Files Validation in a Dataset" API :ref:`physical-files-validation-in-a-dataset` section of our :doc:`/api/native-api` documentation.
+Refer to "Physical Files Validation in a Dataset" API :ref:`dataset-files-validation-api` section of our :doc:`/api/native-api` documentation.
 
-Also refer to the "Datafile Integrity" API  :doc:`/api/native-api#id20`
+Also refer to the "Datafile Integrity" API  :ref:`datafile-integrity`
 
 :DataFileChecksumValidationSizeLimit
 ++++++++++++++++++++++++++++++++++++
@@ -2360,6 +2360,6 @@ For example, if you want your Dataverse installation to skip validation for any 
 
 When this option is used to disable the checksum validation, it's strongly recommended to perform periodic asynchronous checks via the integrity API
 
-Refer to "Physical Files Validation in a Dataset" API :ref:`physical-files-validation-in-a-dataset` section of our :doc:`/api/native-api` documentation.
+Refer to "Physical Files Validation in a Dataset" API :ref:`dataset-files-validation-api` section of our :doc:`/api/native-api` documentation.
 
-Also refer to the "Datafile Integrity" API  :doc:`/api/native-api#id20`
+Also refer to the "Datafile Integrity" API  :ref:`datafile-integrity`
