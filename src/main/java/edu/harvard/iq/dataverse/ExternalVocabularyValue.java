@@ -6,28 +6,13 @@
 
 package edu.harvard.iq.dataverse;
 
-import edu.harvard.iq.dataverse.util.BundleUtil;
-import org.apache.commons.lang3.StringUtils;
-
 import java.io.Serializable;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
 import java.util.Objects;
-import java.util.MissingResourceException;
-
-import javax.json.JsonObject;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 /**
@@ -35,7 +20,7 @@ import javax.persistence.Table;
  * @author qqmyers
  */
 @Entity
-@Table(indexes = { @Index(columnList = "datasetfieldtype_id"), @Index(columnList = "displayorder") })
+@Table(indexes = { @Index(columnList = "uri")})
 public class ExternalVocabularyValue implements Serializable {
 
     public ExternalVocabularyValue() {
