@@ -9,6 +9,7 @@ import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -663,5 +664,29 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
             }
         }
         return valid;
+    }
+    
+    public List<String> getVocabScripts( Map<Long, JsonObject> cvocConf) {
+        //ToDo - only return scripts that are needed (those fields are set on display pages, those blocks/fields are allowed in the Dataverse collection for create/edit)?
+        Set<String> scripts = new HashSet<String>();
+        for(JsonObject jo: cvocConf.values()) {
+            scripts.add(jo.getString("js-url"));
+        }
+        return Arrays.asList(scripts.toArray(new String[0]));
+    }
+
+    public String getFieldLanguage(String languages, String localeCode) {
+        // If the fields list of supported languages contains the current locale (e.g.
+        // the lang of the UI, or the current metadata input/display lang (tbd)), use
+        // that. Otherwise, return the first in the list
+        String[] langStrings = languages.split("\\s*,\\s*");
+        if (langStrings.length > 0) {
+            if (Arrays.asList(langStrings).contains(localeCode)) {
+                return localeCode;
+            } else {
+                return langStrings[0];
+            }
+        }
+        return null;
     }
 }

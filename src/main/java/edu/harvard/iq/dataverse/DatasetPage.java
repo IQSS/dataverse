@@ -322,6 +322,9 @@ public class DatasetPage implements java.io.Serializable {
     private Boolean hasRsyncScript = false;
 
     private Boolean hasTabular = false;
+    
+    //External Vocabulary support
+    Map<Long, JsonObject> cachedCvocMap=null;
 
     /**
      * If the dataset version has at least one tabular file. The "hasTabular"
@@ -5528,7 +5531,6 @@ public class DatasetPage implements java.io.Serializable {
         return displayName; 
     }
     
-    Map<Long, JsonObject> cachedCvocMap=null;
     public Map<Long, JsonObject> getCVocConf() {
         //Cache this in the view
         if(cachedCvocMap==null) {
@@ -5538,26 +5540,10 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public List<String> getVocabScripts() {
-        //ToDo - only return scripts that are needed (those fields are set on display pages, those blocks/fields are allowed in the Dataverse collection for create/edit)?
-        Set<String> scripts = new HashSet<String>();
-        for(JsonObject jo: getCVocConf().values()) {
-            scripts.add(jo.getString("js-url"));
-        }
-        return Arrays.asList(scripts.toArray(new String[0]));
+        return fieldService.getVocabScripts(getCVocConf());
     }
 
     public String getFieldLanguage(String languages) {
-        // If the fields list of supported languages contains the current locale (e.g.
-        // the lang of the UI, or the current metadata input/display lang (tbd)), use
-        // that. Otherwise, return the first in the list
-        String[] langStrings = languages.split("\\s*,\\s*");
-        if (langStrings.length > 0) {
-            if (Arrays.asList(langStrings).contains(session.getLocaleCode())) {
-                return session.getLocaleCode();
-            } else {
-                return langStrings[0];
-            }
-        }
-        return null;
+        return fieldService.getFieldLanguage(languages,session.getLocaleCode());
     }
 }
