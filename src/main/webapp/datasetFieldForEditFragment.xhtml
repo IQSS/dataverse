@@ -43,7 +43,7 @@
             <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvoc.get('managed-fields').toString()}"/>
         </p:inputText>
     </ui:fragment>
-        <ui:fragment rendered="#{cvoc!=null and !cvoc.getString('term-uri-field').equals(dsfv.datasetField.datasetFieldType.name)}">
+    <ui:fragment rendered="#{cvoc!=null and !cvoc.getString('term-uri-field').equals(dsfv.datasetField.datasetFieldType.name)}">
         <p:inputText value="#{dsfv.valueForEdit}" id="cvocInputText2" pt:aria-required="#{dsf.required}"
                  styleClass="form-control #{dsfv.datasetField.datasetFieldType.name == 'title' and DatasetPage.editMode == 'CREATE'  ? 'datasetfield-title' : ''}"
                  rendered="#{!dsfv.datasetField.datasetFieldType.controlledVocabulary
