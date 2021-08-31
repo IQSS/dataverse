@@ -1,9 +1,11 @@
 {
   "displayName": "TwoRavens",
   "description": "A system of interlocking statistical tools for data exploration, analysis, and meta-analysis.",
+  "toolName": "TwoRavens",
   "scope": "file",
-  "type": "explore",
+  "types": "explore",
   "toolUrl": "https://tworavens.dataverse.example.edu/dataexplore/gui.html",
+  "contentType": "text/tab-separated-values",
   "toolParameters": {
     "queryParameters": [
       {
