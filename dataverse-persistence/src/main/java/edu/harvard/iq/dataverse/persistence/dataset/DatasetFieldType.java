@@ -47,9 +47,12 @@ import java.util.TreeMap;
         @NamedQuery(name = "DatasetFieldType.findAllFacetable",
                 query = "select dsfType from DatasetFieldType dsfType WHERE dsfType.facetable = true " +
                         "and dsfType.title != '' order by dsfType.id"),
-        @NamedQuery(name = "DatasetFieldType.findFacetableByMetadaBlock",
+        @NamedQuery(name = "DatasetFieldType.findFacetableByMetadataBlock",
                 query = "select dsfType from DatasetFieldType dsfType WHERE dsfType.facetable = true " +
-                        "and dsfType.title != '' and dsfType.metadataBlock.id = :metadataBlockId order by dsfType.id")
+                        "and dsfType.title != '' and dsfType.metadataBlock.id = :metadataBlockId order by dsfType.id"),
+        @NamedQuery(name = "DatasetFieldType.findAdvancedSearchFieldsByMetadataBlocks",
+                query = "select dsfType from DatasetFieldType dsfType WHERE dsfType.advancedSearchFieldType = true " +
+                        "and dsfType.title != '' and dsfType.metadataBlock.id IN :metadataBlockIds order by dsfType.metadataBlock.id, dsfType.displayOrder")
 })
 @Entity
 @Table(indexes = {@Index(columnList = "metadatablock_id"), @Index(columnList = "parentdatasetfieldtype_id")})

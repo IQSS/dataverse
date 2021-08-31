@@ -26,8 +26,10 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
 
     private static final String NAME_QUERY = "SELECT dsfType from DatasetFieldType dsfType where dsfType.name= :fieldName";
 
-    public List<DatasetFieldType> findAllAdvancedSearchFieldTypes() {
-        return em.createQuery("select object(o) from DatasetFieldType as o where o.advancedSearchFieldType = true and o.title != '' order by o.id", DatasetFieldType.class).getResultList();
+    public List<DatasetFieldType> findAllAdvancedSearchFieldTypesByMetadataBlockIds(List<Long> metadataBlockIds) {
+        return em.createNamedQuery("DatasetFieldType.findAdvancedSearchFieldsByMetadataBlocks", DatasetFieldType.class)
+                .setParameter("metadataBlockIds", metadataBlockIds)
+                .getResultList();
     }
 
     public List<DatasetFieldType> findAllFacetableFieldTypes() {
@@ -36,7 +38,7 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
     }
 
     public List<DatasetFieldType> findFacetableFieldTypesByMetadataBlock(Long metadataBlockId) {
-        return em.createNamedQuery("DatasetFieldType.findFacetableByMetadaBlock", DatasetFieldType.class)
+        return em.createNamedQuery("DatasetFieldType.findFacetableByMetadataBlock", DatasetFieldType.class)
                 .setParameter("metadataBlockId", metadataBlockId)
                 .getResultList();
     }

@@ -68,7 +68,7 @@ public class AdvancedSearchPage implements java.io.Serializable {
      * Initalizes all components required to view the the page correctly.
      */
     public void init() {
-        
+
         if (dataverseIdentifier != null) {
             dataverse = dataverseDao.findByAlias(dataverseIdentifier);
         }
@@ -76,7 +76,8 @@ public class AdvancedSearchPage implements java.io.Serializable {
             dataverse = dataverseDao.findRootDataverse();
         }
         List<MetadataBlock> metadataBlocks = dataverse.getRootMetadataBlocks();
-        List<DatasetFieldType> metadataFieldList = datasetFieldService.findAllAdvancedSearchFieldTypes();
+        List<Long> metadataBlockIds = metadataBlocks.stream().map(MetadataBlock::getId).collect(toList());
+        List<DatasetFieldType> metadataFieldList = datasetFieldService.findAllAdvancedSearchFieldTypesByMetadataBlockIds(metadataBlockIds);
 
         mapAllMetadataBlocks(metadataFieldList, metadataBlocks);
 
@@ -123,14 +124,14 @@ public class AdvancedSearchPage implements java.io.Serializable {
                     .filter(datasetFieldType -> datasetFieldType.getMetadataBlock().getId().equals(mdb.getId()))
                     .collect(toList());
 
-            List<SearchField> searchFields = mapMetadataBlockFieldsToSearchFields(filteredDatasetFields, mdb);
+            List<SearchField> searchFields = mapMetadataBlockFieldsToSearchFields(filteredDatasetFields);
 
             metadataSearchBlocks.add(new SearchBlock(mdb.getName(), mdb.getLocaleDisplayName(), searchFields));
         }
         addExtraFieldsToCitationMetadataBlock();
     }
 
-    private List<SearchField> mapMetadataBlockFieldsToSearchFields(List<DatasetFieldType> metadataFieldList, MetadataBlock mdb) {
+    private List<SearchField> mapMetadataBlockFieldsToSearchFields(List<DatasetFieldType> metadataFieldList) {
         return metadataFieldList.stream()
                 .map(this::mapDatasetField)
                 .filter(searchField -> !searchField.getName().isEmpty())
