@@ -682,7 +682,7 @@ List Versions of a Dataset
   export SERVER_URL=https://demo.dataverse.org
   export ID=24
 
-  curl $SERVER_URL/api/dataverses/$ID/versions
+  curl $SERVER_URL/api/datasets/$ID/versions
 
 The fully expanded example above (without environment variables) looks like this:
 
