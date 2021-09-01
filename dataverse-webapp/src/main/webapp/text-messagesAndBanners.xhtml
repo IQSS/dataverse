@@ -11,10 +11,10 @@
     <h:form class="top-messages">
         <div class="alert alert-info p-grid" jsf:rendered="#{messages.size() > 0 or banners.size() > 0}">
             <ui:repeat value="#{messages}" var="message">
-                <div class="p-col" style="text-align: center;">
+                <p class="p-col text-block" style="margin-left: auto; margin-right: auto; text-align: center">
                     <span class="glyphicon glyphicon-info-sign"></span>&#160;
                     <h:outputText value="#{message}"/>
-                </div>
+                </p>
             </ui:repeat>
 
             <ui:repeat value="#{banners}" var="banner">
