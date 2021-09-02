@@ -32,6 +32,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.StoredProcedureQuery;
+import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -501,5 +502,13 @@ public class DatasetDao implements java.io.Serializable {
             }
         }
         return false;
+    }
+
+    public void updateAllLastChangeForExporterTime() {
+        Date date = new Date();
+        Query query = em.createQuery(
+                "UPDATE Dataset ds SET ds.lastChangeForExporterTime=:date WHERE ds.harvestedFrom IS NULL");
+        query.setParameter("date", date, TemporalType.TIMESTAMP);
+        query.executeUpdate();
     }
 }

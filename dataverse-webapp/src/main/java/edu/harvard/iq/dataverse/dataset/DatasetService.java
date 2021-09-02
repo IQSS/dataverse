@@ -17,6 +17,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.interceptors.LoggedCall;
 import edu.harvard.iq.dataverse.interceptors.Restricted;
+import edu.harvard.iq.dataverse.interceptors.SuperuserRequired;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
 import edu.harvard.iq.dataverse.notification.UserNotificationService;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
@@ -118,7 +119,7 @@ public class DatasetService {
 
 
         // Call Ingest Service one more time, to
-        // queue the data ingest jobs for asynchronous execution: 
+        // queue the data ingest jobs for asynchronous execution:
         ingestService.startIngestJobsForDataset(dataset, user);
 
         //After dataset saved, then persist prov json data
@@ -201,6 +202,18 @@ public class DatasetService {
     String getDatasetInWrongStateMessage() {
         return DATASET_IN_WRONG_STATE_MESSAGE;
     }
+
+    @SuperuserRequired
+    public void updateAllLastChangeForExporterTime() {
+        datasetDao.updateAllLastChangeForExporterTime();
+    }
+
+    @SuperuserRequired
+    public void updateLastChangeForExporterTime(Dataset dataset) {
+        dataset.setLastChangeForExporterTime(new Date());
+        datasetDao.merge(dataset);
+    }
+
     // -------------------- PRIVATE --------------------
 
     private AuthenticatedUser retrieveAuthenticatedUser() {
@@ -219,9 +232,9 @@ public class DatasetService {
         dataset.setEmbargoDate(embargoDate);
         dataset.setLastChangeForExporterTime(Date.from(Instant.now(Clock.systemDefaultZone())));
         dataset = datasetDao.mergeAndFlush(dataset);
-      
+
         solrIndexService.indexPermissionsOnSelfAndChildren(dataset);
-        
+
         return dataset;
     }
 
