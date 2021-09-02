@@ -160,11 +160,13 @@
                                 <ul class="dropdown-menu language-select">
                                     <ui:repeat value="#{settingsWrapper.configuredLocales.entrySet().toArray()}" var="language">
                                         <li jsf:rendered="#{language.value ne dataverseSession.localeTitle}">
-                                            <h:commandLink value="#{language.value}"
-                                                            actionListener="#{dataverseSession.updateLocaleInViewRootAndRedirect(language.key)}"
-                                                            lang="#{language.key}"
-                                                            style="#{'background: url(/resources/images/flags/'.concat(language.key).concat('.svg) no-repeat 90% center; background-size: 35px 35px')}">
-                                            </h:commandLink>
+                                            <p:commandLink value="#{language.value}"
+                                                           pt:lang="#{language.key}"
+                                                           style="#{'background: url(/resources/images/flags/'.concat(language.key).concat('.svg) no-repeat 90% center; background-size: 35px 35px')}">
+                                                <p:ajax event="click"
+                                                        onsuccess="location.reload()"
+                                                        listener="#{dataverseSession.updateLocaleInViewRootForReload(language.key)}"/>
+                                            </p:commandLink>
                                         </li>
                                     </ui:repeat>
                                 </ul>

@@ -5,15 +5,12 @@ import edu.harvard.iq.dataverse.persistence.ActionLogRecord;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.util.SystemConfig;
-import org.omnifaces.util.Faces;
 
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.Set;
@@ -89,16 +86,9 @@ public class DataverseSession implements Serializable {
         return dataverseLanguages.contains(getBrowserLanguage()) ? getBrowserLanguage() : "en";
     }
 
-    public void updateLocaleInViewRootAndRedirect(String code) {
-
+    public void updateLocaleInViewRootForReload(String code) {
         localeCode = code;
-        FacesContext.getCurrentInstance().getViewRoot().setLocale(new Locale(code));
-        try {
-            String url = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getHeader("referer");
-            FacesContext.getCurrentInstance().getExternalContext().redirect(url);
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
+        FacesContext.getCurrentInstance().getViewRoot().setLocale(new Locale(localeCode));
     }
 
     public void updateLocaleInViewRoot() {
@@ -125,9 +115,6 @@ public class DataverseSession implements Serializable {
         logSvc.log(
                 new ActionLogRecord(ActionLogRecord.ActionType.SessionManagement, (aUser == null) ? "logout" : "login")
                         .setUserIdentifier((aUser != null) ? aUser.getIdentifier() : (user != null ? user.getIdentifier() : "")));
-        if (aUser == null) {
-            Faces.invalidateSession();
-        }
         this.user = aUser;
     }
 
