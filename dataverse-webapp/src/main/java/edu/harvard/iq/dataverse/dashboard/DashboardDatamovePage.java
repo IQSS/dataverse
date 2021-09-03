@@ -62,7 +62,7 @@ public class DashboardDatamovePage implements Serializable {
 
     @Inject
     private SettingsWrapper settings;
-    
+
     @Inject
     private SystemConfig systemConfig;
 
@@ -137,8 +137,9 @@ public class DashboardDatamovePage implements Serializable {
 
         try {
             DataverseRequest dataverseRequest = requestService.getDataverseRequest();
+            String previousSourceAlias = extractSourceAlias();
             commandEngine.submit(new MoveDatasetCommand(dataverseRequest, sourceDataset, targetDataverse, forceMove));
-            logger.info(createMessageWithDatasetMoveInfo("Moved"));
+            logger.info(createMessageWithDatasetMoveInfo("Moved", previousSourceAlias));
             resetDatasetMoveFields();
             summary.showSuccessMessage();
         } catch (MoveException me) {
@@ -205,17 +206,18 @@ public class DashboardDatamovePage implements Serializable {
                 .orElse(StringUtils.EMPTY);
     }
 
+    private String createMessageWithDatasetMoveInfo(String message, String source) {
+        return String.format("%s %s from %s to %s",
+                message, extractSourcePersistentId(), source, extractDataverseAlias(targetDataverse));
+    }
+
     private String createMessageWithDatasetMoveInfo(String message) {
-        return message + " " +
-                extractSourcePersistentId() +
-                " from " + extractSourceAlias() +
-                " to " + extractDataverseAlias(targetDataverse);
+        return createMessageWithDatasetMoveInfo(message, extractSourceAlias());
     }
 
     private String createMessageWithDataverseMoveInfo(String message) {
-        return message + " " +
-                extractDataverseAlias(source) +
-                " to " + extractDataverseAlias(target);
+        return String.format("%s %s to %s",
+                message, extractDataverseAlias(source), extractDataverseAlias(target));
     }
 
     private String createForceInfoIfApplicable(MoveException mde) {
@@ -311,7 +313,7 @@ public class DashboardDatamovePage implements Serializable {
 
         public void showFailureMessage() {
             JsfHelper.addErrorMessage(
-                    getStringFromBundle(buildKey("message.failure.summary")), 
+                    getStringFromBundle(buildKey("message.failure.summary")),
                     getStringFromBundle(buildKey("message.failure.details"), summaryParameters.toArray()));
         }
 
