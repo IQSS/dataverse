@@ -270,6 +270,30 @@ public class FileAccessIOTest {
     }
 
     /**
+     * Test of openLocalFileAsInputStream (with an offset) and
+     * openLocalFileAsOutputStream method, of class FileAccessIO.
+     *
+     * @throws java.io.IOException if test is broken
+     */
+    @Test
+    public void testOpenLocalFileAsInputStreamWithOffset() throws IOException {
+        // Start reading a few bytes in.
+        datasetAccess.setOffset(11);
+        BufferedReader br = new BufferedReader(new InputStreamReader(datasetAccess.openLocalFileAsInputStream()));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = br.readLine()) != null) {
+            sb.append(line);
+            sb.append('\n');
+        }
+        // Put offset back.
+        datasetAccess.setOffset(0);
+        // Instead of "This is a test string"
+        assertEquals("est string\n", sb.toString());
+        assertNotNull(datasetAccess.openLocalFileAsOutputStream());
+    }
+
+    /**
      * Test of getAuxFileAsInputStream method, of class FileAccessIO.
      *
      * @throws java.io.IOException if test is broken

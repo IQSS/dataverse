@@ -191,6 +191,12 @@ public abstract class StorageIO<T extends DvObject> {
 
     /*private int status;*/
     private long size;
+
+    /**
+     * Where in the file to seek to when reading (default is zero bytes, the
+     * start of the file).
+     */
+    private long offset;
     
     private String mimeType;
     private String fileName;
@@ -270,6 +276,10 @@ public abstract class StorageIO<T extends DvObject> {
 
     public long getSize() {
         return size;
+    }
+
+    public long getOffset() {
+        return offset;
     }
 
     public InputStream getInputStream() throws IOException {
@@ -379,6 +389,10 @@ public abstract class StorageIO<T extends DvObject> {
 
     public void setSize(long s) {
         size = s;
+    }
+
+    public void setOffset(long offset) {
+        this.offset = offset;
     }
 
     public void setInputStream(InputStream is) {

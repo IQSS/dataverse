@@ -80,7 +80,24 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
             StorageIO<DataFile> storageIO = DataAccess.getStorageIO(dataFile, daReq);
 
             if (storageIO != null) {
+                List<Range> ranges = new ArrayList<>();
+                long fileSize = storageIO.getDataFile().getFilesize();
                 try {
+                    String range = di.getRequestHttpHeaders().getHeaderString("Range");
+                    long offset = 0;
+                    try {
+                        ranges = getRanges(range, fileSize);
+                    } catch (Exception ex) {
+                        logger.fine("Exception caught processing Range header: " + ex.getLocalizedMessage());
+                        // The message starts with "Datafile" because otherwise the message is not passed
+                        // to the user due to how WebApplicationExceptionHandler works.
+                        throw new NotFoundException("Datafile download error due to Range header: " + ex.getLocalizedMessage());
+                    }
+                    if (!ranges.isEmpty()) {
+                        // For now we only support a single range.
+                        offset = ranges.get(0).getStart();
+                    }
+                    storageIO.setOffset(offset);
                     storageIO.open();
                 } catch (IOException ioex) {
                     //throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
@@ -403,9 +420,14 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         long contentSize;
                         boolean useChunkedTransfer = false;
                         //if ((contentSize = getFileSize(di, storageIO.getVarHeader())) > 0) {
-                        if ((contentSize = getContentSize(storageIO)) > 0) {
+                        if ((contentSize = getContentSize(storageIO)) > 0 && ranges.isEmpty()) {
                             logger.fine("Content size (retrieved from the AccessObject): " + contentSize);
                             httpHeaders.add("Content-Length", contentSize);
+                        } else if (ranges.isEmpty()) {
+                            // For now we only support a single range.
+                            long rangeContentSize = ranges.get(0).getLength();
+                            logger.fine("Content size (Range header in use): " + rangeContentSize);
+                            httpHeaders.add("Content-Length", rangeContentSize);
                         } else {
                             //httpHeaders.add("Transfer-encoding", "chunked");
                             //useChunkedTransfer = true;
@@ -433,12 +455,26 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             }
                         }
 
+                        // Default to reading the whole file. We'll count down as we write.
+                        long leftToRead = fileSize;
+                        if (!ranges.isEmpty()) {
+                            // Read a range of bytes instead of the whole file.
+                            // For now we only support a single range.
+                            leftToRead = ranges.get(0).getLength();
+                        }
                         while ((bufsize = instream.read(bffr)) != -1) {
                             if (useChunkedTransfer) {
                                 String chunkSizeLine = String.format("%x\r\n", bufsize);
                                 outstream.write(chunkSizeLine.getBytes());
                             }
-                            outstream.write(bffr, 0, bufsize);
+                            if ((leftToRead -= bufsize) > 0) {
+                                // Just do a normal write. Potentially lots to go. Don't break.
+                                outstream.write(bffr, 0, bufsize);
+                            } else {
+                                // Get those last bytes or bytes equal to bufsize. Last one. Then break.
+                                outstream.write(bffr, 0, (int) leftToRead + bufsize);
+                                break;
+                            }
                             if (useChunkedTransfer) {
                                 outstream.write(chunkClose);
                             }
@@ -585,4 +621,78 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
         }
         return -1;
     }
+
+    /**
+     * @param range "bytes 0-10" for example. Found in the "Range" HTTP header.
+     * @param fileSize File size in bytes.
+     * @throws RunTimeException on any problems processing the Range header.
+     */
+    public List<Range> getRanges(String range, long fileSize) {
+        // Inspired by https://gist.github.com/davinkevin/b97e39d7ce89198774b4
+        // via https://stackoverflow.com/questions/28427339/how-to-implement-http-byte-range-requests-in-spring-mvc/28479001#28479001
+        List<Range> ranges = new ArrayList<>();
+
+        if (range != null) {
+            logger.fine("Range header supplied: " + range);
+
+            // Technically this regex supports multiple ranges.
+            // Below we have a check to enforce a single range.
+            if (!range.matches("^bytes=\\d*-\\d*(,\\d*-\\d*)*$")) {
+                throw new RuntimeException("The format is bytes=<range-start>-<range-end> where start and end are optional.");
+            }
+
+            if (ranges.isEmpty()) {
+                // The 6 is to remove "bytes="
+
+                for (String part : range.substring(6).split(",")) {
+
+                    long start = getRangeStart(part);
+                    long end = getRangeEnd(part);
+
+                    if (start == -1) {
+                        // start does not exist. Base start off of how many bytes from end.
+                        start = fileSize - end;
+                        end = fileSize - 1;
+                    } else if (end == -1 || end > fileSize - 1) {
+                        // Set end when it doesn't exist.
+                        // Also, automatically set end to size of file if end is beyond
+                        // the file size (rather than throwing an error).
+                        end = fileSize - 1;
+                    }
+
+                    if (start > end) {
+                        throw new RuntimeException("Start is larger than end.");
+                    }
+
+                    if (ranges.size() < 1) {
+                        ranges.add(new Range(start, end));
+                    } else {
+                        throw new RuntimeException("Only one range is allowed.");
+                    }
+
+                }
+            }
+        }
+
+        return ranges;
+    }
+
+    /**
+     * @return Return a positive long or -1 if start does not exist.
+     */
+    public static long getRangeStart(String part) {
+        // Get everything before the "-".
+        String start = part.substring(0, part.indexOf("-"));
+        return (start.length() > 0) ? Long.parseLong(start) : -1;
+    }
+
+    /**
+     * @return Return a positive long or -1 if end does not exist.
+     */
+    public static long getRangeEnd(String part) {
+        // Get everything after the "-".
+        String end = part.substring(part.indexOf("-") + 1, part.length());
+        return (end.length() > 0) ? Long.parseLong(end) : -1;
+    }
+
 }

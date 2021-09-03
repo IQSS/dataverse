@@ -509,6 +509,7 @@ public class FileAccessIO<T extends DvObject> extends StorageIO<T> {
 
         try {
             in = new FileInputStream(getFileSystemPath().toFile());
+            in.skip(this.getOffset());
         } catch (IOException ex) {
             // We don't particularly care what the reason why we have
             // failed to access the file was.

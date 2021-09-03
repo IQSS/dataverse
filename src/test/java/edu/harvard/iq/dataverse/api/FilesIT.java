@@ -38,6 +38,7 @@ import org.junit.AfterClass;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import org.junit.Ignore;
 
 public class FilesIT {
 
@@ -1579,5 +1580,51 @@ public class FilesIT {
     private void msgt(String m){
         dashes(); msg(m); dashes();
     }
-    
+
+    @Ignore
+    @Test
+    public void test2toNull() {
+        Integer localFile = 15;
+        Integer s3file = 16;
+        Integer fileId = 0;
+        fileId = localFile;
+        String nullApiToken = null;
+        String byteRange = null;
+        byteRange = "2-";
+        // java.lang.IndexOutOfBoundsException: Range [0, 0 + -2) out of bounds for length 32768
+        Response downloadFile = UtilIT.downloadFile(fileId, byteRange, nullApiToken);
+        downloadFile.prettyPrint();
+    }
+
+    @Ignore
+    @Test
+    public void test0to100() {
+        Integer localFile = 16;
+        Integer s3file = 11;
+        Integer fileId = 0;
+        fileId = localFile;
+        fileId = s3file;
+        String nullApiToken = null;
+        String byteRange = null;
+        byteRange = "0-9"; // first ten
+        byteRange = "-9"; // last ten
+        byteRange = "9-"; // last ten
+        Response downloadFile = UtilIT.downloadFile(fileId, byteRange, nullApiToken);
+        downloadFile.prettyPrint();
+    }
+
+    @Ignore
+    @Test
+    public void testMultipleRanges() {
+        Integer localFile = 16;
+        Integer s3file = 11;
+        Integer fileId = 0;
+        fileId = localFile;
+//        fileId = s3file;
+        String nullApiToken = null;
+        String byteRange = null;
+        byteRange = "0-9,90-99";
+        Response downloadFile = UtilIT.downloadFile(fileId, byteRange, nullApiToken);
+        downloadFile.prettyPrint();
+    }    
 }
