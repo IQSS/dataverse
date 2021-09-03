@@ -1,9 +1,11 @@
 package edu.harvard.iq.dataverse.engine.command.impl;
 
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.api.UtilIT;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.*;
@@ -11,9 +13,11 @@ import edu.harvard.iq.dataverse.engine.TestCommandContext;
 import edu.harvard.iq.dataverse.engine.TestDataverseEngine;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.junit.Test;
@@ -42,10 +46,16 @@ public class CreateDatasetVersionCommandTest {
         dsvInitial.setMinorVersionNumber(0l);
         dsvInitial.setVersionNumber(1l);
         
+        List<DatasetField> fields = new ArrayList<>(); 
+        //adding title to pass new validation - fields required
+        fields.add(UtilIT.createTitleField("Title"));
+        dsvInitial.setDatasetFields(fields);
+        
         // Create version to be added
         DatasetVersion dsvNew = new DatasetVersion();
         dsvNew.setVersionState(DatasetVersion.VersionState.DRAFT);
-        
+        dsvNew.setDatasetFields(fields);
+
         // Execute
         CreateDatasetVersionCommand sut = new CreateDatasetVersionCommand( makeRequest(), ds, dsvNew );
         
@@ -89,6 +99,8 @@ public class CreateDatasetVersionCommandTest {
         
         testEngine.submit(sut);
     }
+
+
     
     
     static class MockDatasetServiceBean extends DatasetServiceBean {
@@ -103,5 +115,5 @@ public class CreateDatasetVersionCommandTest {
         }
         
     }
-    
+
 }

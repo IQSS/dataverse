@@ -3,8 +3,10 @@ package edu.harvard.iq.dataverse.ingest;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataTable;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
+import edu.harvard.iq.dataverse.api.UtilIT;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import static edu.harvard.iq.dataverse.mocks.MocksFactory.makeDataset;
 import java.io.IOException;
@@ -565,7 +567,11 @@ public class IngestUtilTest {
         fileMetadata.setLabel("foo.png");
         fileMetadata.setDirectoryLabel("/has/leading/slash");
         datasetVersion.getFileMetadatas().add(fileMetadata);
-
+        List<DatasetField> fields = new ArrayList<>();  
+        //adding fields for validation
+        fields.add(UtilIT.createTitleField("Title"));
+        datasetVersion.setDatasetFields(fields);
+        
         //We are programmatically stripping of leading and trailing slashes
         Set<ConstraintViolation> violations1 = datasetVersion.validate();
         assertEquals(0, violations1.size());

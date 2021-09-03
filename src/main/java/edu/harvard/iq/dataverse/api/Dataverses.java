@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.DatasetVersionValidator;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseContact;
@@ -241,11 +242,11 @@ public class Dataverses extends AbstractApiBean {
             ds.setOwner(owner);
 
             if (ds.getVersions().isEmpty()) {
-                return badRequest("Please provide initial version in the dataset json");
+                return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.mustIncludeVersion"));
             }
             
             if (!ds.getFiles().isEmpty() && !u.isSuperuser()){
-                return badRequest("Only a superuser may add files via this api");
+                return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.superuserFiles"));
             }
 
             // clean possible version metadata
@@ -253,6 +254,10 @@ public class Dataverses extends AbstractApiBean {
             version.setMinorVersionNumber(null);
             version.setVersionNumber(null);
             version.setVersionState(DatasetVersion.VersionState.DRAFT);
+            
+            if (!DatasetVersionValidator.isHasDatasetFields(version, null)){
+                return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.mustIncludeFields"));
+            }
 
             ds.setAuthority(null);
             ds.setIdentifier(null);
