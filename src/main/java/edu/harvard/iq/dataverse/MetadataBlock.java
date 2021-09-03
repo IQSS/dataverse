@@ -1,11 +1,16 @@
 package edu.harvard.iq.dataverse;
 
+import com.univocity.parsers.annotations.Parsed;
+import com.univocity.parsers.annotations.Validate;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.metadata.Placeholder;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -26,14 +31,45 @@ import javax.persistence.Transient;
  *
  * @author skraffmiller
  */
-@Table(indexes = {@Index(columnList="name")
-		, @Index(columnList="owner_id")})
+@Table(indexes = {@Index(columnList="name"),
+                  @Index(columnList="owner_id")})
 @NamedQueries({
     @NamedQuery( name="MetadataBlock.listAll", query = "SELECT mdb FROM MetadataBlock mdb"),
     @NamedQuery( name="MetadataBlock.findByName", query = "SELECT mdb FROM MetadataBlock mdb WHERE mdb.name=:name")
 })
 @Entity
 public class MetadataBlock implements Serializable {
+    
+    /**
+     * Reusable definition of headers used for parsing this model class from data (TSV, JSON, manual, ...)
+     * Using the Headers.Constants class to work around annotations not able to use enum values (a Java limitation).
+     */
+    public enum Headers {
+        // Order matters: this must be the same order as we define rules for the TSV format!
+        NAME(Constants.NAME),
+        OWNER(Constants.OWNER),
+        DISPLAY_NAME(Constants.DISPLAY_NAME),
+        NAMESPACE_URI(Constants.NAMESPACE_URI);
+    
+        public static final class Constants {
+            public final static String NAME = "name";
+            public final static String OWNER = "dataverseAlias";
+            public final static String DISPLAY_NAME = "displayName";
+            public final static String NAMESPACE_URI = "blockURI";
+        }
+        
+        private final String key;
+        Headers(String key) {
+            this.key = key;
+        }
+        public String key() {
+            return this.key;
+        }
+        
+        public static String[] keys() {
+            return Arrays.stream(values()).map(v -> v.key()).collect(Collectors.toUnmodifiableList()).toArray(new String[]{});
+        }
+    }
 
     private static final long serialVersionUID = 1L;
     
@@ -59,6 +95,10 @@ public class MetadataBlock implements Serializable {
     public String getName() {
         return name;
     }
+    
+    @Parsed(field = Headers.Constants.NAME)
+    // Docs: No spaces or punctuation, except underscore. By convention, should start with a letter, and use lower camel case
+    @Validate(matches = "^[a-z][\\w]+$")
     public void setName(String name) {
         this.name = name;
     }
@@ -66,6 +106,9 @@ public class MetadataBlock implements Serializable {
     public String getNamespaceUri() {
         return namespaceUri;
     }
+    
+    @Parsed(field = Headers.Constants.NAMESPACE_URI)
+    @Validate(nullable = true, matches = "^https?://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]")
     public void setNamespaceUri(String namespaceUri) {
         this.namespaceUri = namespaceUri;
     }
@@ -93,6 +136,9 @@ public class MetadataBlock implements Serializable {
     public String getDisplayName() {
         return displayName;
     }
+    
+    @Parsed(field = Headers.Constants.DISPLAY_NAME)
+    @Validate(matches = "^\\S.{0,255}$") // docs: match all but not blank strings, at least 1 character needed, not nullable, max 256 chars
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
@@ -109,9 +155,32 @@ public class MetadataBlock implements Serializable {
     public Dataverse getOwner() {
         return owner;
     }
-
+    
     public void setOwner(Dataverse owner) {
         this.owner = owner;
+    }
+    
+    /**
+     * Set the (optional) owning Dataverse collection of this metadata block. This and children of the collection
+     * will be able to use the metadata block.
+     *
+     * When this block is parsed by {@link edu.harvard.iq.dataverse.util.metadata.TsvMetadataBlockParser},
+     * the alias given in the TSV will be validated. For valid values see the docs
+     * ("Special characters (~,`, !, @, #, $, %, ^, &, and *) and spaces are not allowed")
+     * and {@link edu.harvard.iq.dataverse.Dataverse#alias} validation patterns.
+     * (The possessive matcher "+*" below achieves in 1 regex where the other validator needs 2)
+     *
+     * During parsing, a placeholder will be injected here, needing replacement and more validation.
+     *
+     * @param dataverseAlias The alias/identifier of the owning Dataverse collection
+     */
+    @Parsed(field = Headers.Constants.OWNER)
+    @Validate(nullable = true, matches = "^[\\d]*+[\\w\\-]+$")
+    protected void setOwner(String dataverseAlias) {
+        if (dataverseAlias == null)
+            return;
+        this.owner = new Placeholder.Dataverse();
+        this.owner.setAlias(dataverseAlias);
     }
  
     @Transient
@@ -176,15 +245,25 @@ public class MetadataBlock implements Serializable {
         }
         MetadataBlock other = (MetadataBlock) object;
         return !(!Objects.equals(this.id, other.id) && (this.id == null || !this.id.equals(other.id)));
-    }    
+    }
     
     @Override
     public String toString() {
-        return "edu.harvard.iq.dataverse.MetadataBlock[ id=" + id + " ]";
+        return "MetadataBlock{" +
+            "id=" + id +
+            ", name='" + name + '\'' +
+            ", displayName='" + displayName + '\'' +
+            ", namespaceUri='" + namespaceUri + '\'' +
+            ", datasetFieldTypes=" + datasetFieldTypes +
+            ", owner=" + owner +
+            ", empty=" + empty +
+            ", selected=" + selected +
+            ", hasRequired=" + hasRequired +
+            ", showDatasetFieldTypes=" + showDatasetFieldTypes +
+            '}';
     }
-
-    public String getLocaleDisplayName()
-    {
+    
+    public String getLocaleDisplayName() {
         try {
             return BundleUtil.getStringFromPropertyFile("metadatablock.displayName", getName());
         } catch (MissingResourceException e) {
