@@ -76,7 +76,7 @@
           <div class="form-horizontal" jsf:rendered="#{bean.validEmbargoSelection}">
             <div class="p-field p-col-12 p-md-4">
                 <p:outputLabel for="fileEmbargoMenuDS" value="#{bundle['file.editEmbargoDialog.newDate']}"/>
-                <p:datePicker id="fileEmbargoMenuDS" class="embargodatepicker" value="#{bean.selectionEmbargo.dateAvailable}" locale="#{dataverseSession.localeCode}" mindate="#{settingsWrapper.minEmbargoDate}" pattern="yyyy-MM-dd"
+                <p:datePicker id="fileEmbargoMenuDS" class="embargoright" value="#{bean.selectionEmbargo.dateAvailable}" locale="#{dataverseSession.localeCode}" mindate="#{settingsWrapper.minEmbargoDate}" pattern="yyyy-MM-dd"
                     maxdate="#{settingsWrapper.maxEmbargoDate}" disabled="#{bean.removeEmbargo}" validator="#{bean.validateEmbargoDate}"/>
                     <div><h:message for="fileEmbargoMenuDS" styleClass="bg-danger text-danger"/></div>
             </div>

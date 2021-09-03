@@ -48,7 +48,7 @@
     </ui:fragment>
     <ui:fragment rendered="#{!fileMetadata.datasetVersion.deaccessioned and !fileDownloadHelper.canDownloadFile(fileMetadata)
                              and dataFileServiceBean.isActivelyEmbargoed(fileMetadata)}">
-        <li><span class="dropdown-item-text">#{bundle['file.dataFilesTab.terms.list.termsOfAccess.embargoed']}</span></li>
+        <li><span class="dropdown-item-text">#{fileMetadata.restricted ? bundle['file.dataFilesTab.terms.list.termsOfAccess.embargoedthenrestricted'] : bundle['file.dataFilesTab.terms.list.termsOfAccess.embargoed']}</span></li>
     </ui:fragment>
     <!-- END: Request Access Options -->
     
