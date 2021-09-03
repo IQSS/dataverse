@@ -688,7 +688,7 @@ When creating or editing a dataset, users will be asked to enter the metadata in
 
 ``curl http://localhost:8080/api/admin/settings/:MetadataLanguages -X PUT -d '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]'``
 
-Note that metadata selected from Controlled Vocabularies will also display in the metadata language of the dataset, but only if translations have been configured, i.e. you configure the "lang" directory and populate it with translations as described below).
+Note that metadata selected from Controlled Vocabularies will also display in the metadata language of the dataset, but only if translations have been configured, i.e. you configure the "lang" directory and populate it with translations as described below). In metadata export files, controlled vocabulary values will be included in the Dataverse installations default language and in the metadata language of the dataset (if specified).
 
 Configuring the "lang" Directory
 ++++++++++++++++++++++++++++++++
@@ -2334,6 +2334,35 @@ A suggested minimum includes author, datasetContact, and contributor, but additi
 
 ``curl -X PUT -d 'author, datasetContact, contributor, depositor, grantNumber, publication' http://localhost:8080/api/admin/settings/:AnonymizedFieldTypeNames``
 
+:DatasetChecksumValidationSizeLimit
++++++++++++++++++++++++++++++++++++
+
+Setting ``DatasetChecksumValidationSizeLimit`` to a threshold in bytes, disables the checksum validation while publishing for any dataset size greater than the limit.
+
+For example, if you want your Dataverse installation to skip validation for any dataset larger than 5 GB while publishing, use this setting:
+
+``curl -X PUT -d 5000000000 http://localhost:8080/api/admin/settings/:DatasetChecksumValidationSizeLimit``
+
+When this option is used to disable the checksum validation, it's strongly recommended to perform periodic asynchronous checks via the integrity API
+
+Refer to "Physical Files Validation in a Dataset" API :ref:`dataset-files-validation-api` section of our :doc:`/api/native-api` documentation.
+
+Also refer to the "Datafile Integrity" API  :ref:`datafile-integrity`
+
+:DataFileChecksumValidationSizeLimit
+++++++++++++++++++++++++++++++++++++
+
+Setting ``DataFileChecksumValidationSizeLimit`` to a threshold in bytes, disables the checksum validation while publishing for any datafiles greater than the limit.
+
+For example, if you want your Dataverse installation to skip validation for any data files larger than 2 GB while publishing, use this setting:
+
+``curl -X PUT -d 2000000000 http://localhost:8080/api/admin/settings/:DataFileChecksumValidationSizeLimit``
+
+When this option is used to disable the checksum validation, it's strongly recommended to perform periodic asynchronous checks via the integrity API
+
+Refer to "Physical Files Validation in a Dataset" API :ref:`dataset-files-validation-api` section of our :doc:`/api/native-api` documentation.
+
+Also refer to the "Datafile Integrity" API  :ref:`datafile-integrity`
 
 .. _:CVocConf:
 
@@ -2346,3 +2375,4 @@ Scripts that implement this association for specific service protocols are maint
 
 ``wget https://gdcc.github.io/dataverse-external-vocab-support/examples/config/cvoc-conf.json``
 ``curl -X PUT --upload-file cvoc-conf.json http://localhost:8080/api/admin/settings/:CVocConf``
+

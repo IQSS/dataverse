@@ -34,7 +34,7 @@
     </citation>
     <stdyInfo>
       <subject>
-        <keyword>Medicine, Health and Life Sciences</keyword>
+        <keyword xml:lang="en">Medicine, Health and Life Sciences</keyword>
         <keyword vocab="Keyword Vocabulary" vocabURI="http://www.keyword.com/one">Keyword Value 1</keyword>
         <keyword vocab="Keyword Vocabulary" vocabURI="http://www.keyword.com/one">Keyword Value Two</keyword>
         <topcClas vocab="TC Vocabulary" vocabURI="http://www.topicClass.com/one">TC Value 1</topcClas>
