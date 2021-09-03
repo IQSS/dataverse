@@ -255,14 +255,25 @@ public class SearchIncludeFragment implements java.io.Serializable {
             }
         }
         
+        /*
+        The real issue here (https://github.com/IQSS/dataverse/issues/7304) is caused 
+        by the types query being treated as a filter query.
+        So I'm ignoring it if it comes up in the fq array and setting it via the 
+        selectedTypesString
+        SEK 8/25/2021
+        */
+
         filterQueries = new ArrayList<>();
         for (String fq : Arrays.asList(fq0, fq1, fq2, fq3, fq4, fq5, fq6, fq7, fq8, fq9)) {
             if (fq != null) {
                 if (!isfilterQueryAlreadyInMap(fq)) {
-                    filterQueries.add(fq);
+                    if(!fq.contains(SearchFields.TYPE)){
+                        filterQueries.add(fq);
+                    }                    
                 }
             }
         }
+
 
         SolrQueryResponse solrQueryResponse = null;
 
@@ -295,7 +306,6 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
         selectedTypesList = new ArrayList<>();
         String[] parts = selectedTypesString.split(":");
-//        int count = 0;
         selectedTypesList.addAll(Arrays.asList(parts));
 
         List<String> filterQueriesFinalAllTypes = new ArrayList<>();
@@ -304,14 +314,13 @@ public class SearchIncludeFragment implements java.io.Serializable {
         if (!selectedTypesHumanReadable.isEmpty()) {
             typeFilterQuery = SearchFields.TYPE + ":(" + selectedTypesHumanReadable + ")";
         }
+        
         filterQueriesFinal.addAll(filterQueries);
-        filterQueriesFinalAllTypes.addAll(filterQueriesFinal);       
-        if (!isfilterQueryAlreadyInMap(typeFilterQuery)) {
-            filterQueriesFinal.add(typeFilterQuery);
-        }
+        filterQueriesFinalAllTypes.addAll(filterQueriesFinal); 
 
         String allTypesFilterQuery = SearchFields.TYPE + ":(dataverses OR datasets OR files)";
         filterQueriesFinalAllTypes.add(allTypesFilterQuery);
+        filterQueriesFinal.add(typeFilterQuery);
 
         if (page <= 1) {
             // http://balusc.omnifaces.org/2015/10/the-empty-string-madness.html
@@ -350,6 +359,7 @@ public class SearchIncludeFragment implements java.io.Serializable {
             }
             // This 2nd search() is for populating the "type" ("dataverse", "dataset", "file") facets: -- L.A. 
             // (why exactly do we need it, again?)
+            // To get the counts we display in the types facets particulary for unselected types - SEK 08/25/2021
             solrQueryResponseAllTypes = searchService.search(dataverseRequest, dataverses, queryToPassToSolr, filterQueriesFinalAllTypes, sortField, sortOrder.toString(), paginationStart, onlyDataRelatedToMe, numRows, false);
             if (solrQueryResponse.hasError()){
                 logger.info(solrQueryResponse.getError());
