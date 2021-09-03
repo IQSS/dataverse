@@ -1004,9 +1004,6 @@ progress::-webkit-progress-value {
 .ui-datepicker {
   z-index: 100001!important;
 }
-.embargo {
-  margin-left:10px;
-}
 .embargodatepicker {
   margin-left:10px;
 }
@@ -1017,4 +1014,9 @@ progress::-webkit-progress-value {
 .embargomsg {
   display:block;
 }
-
+.embargo {
+        display:flex;
+}
+.embargo span {
+        margin-right: 10px;
+}

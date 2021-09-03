@@ -5581,13 +5581,21 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean isExistingEmbargo() {
-        for(FileMetadata fmd: selectedFiles) {
-            if(!fmd.getDataFile().isReleased()&& (fmd.getDataFile().getEmbargo()!=null)) {
-                return true;
-            }
+        boolean selectionHasEmbargo = isExistingEmbargo(selectedFiles, true);
+        if(selectionHasEmbargo) {
+            return true;
         }
         if(fileMetadataForAction!=null && !fileMetadataForAction.getDataFile().isReleased() && (fileMetadataForAction.getDataFile().getEmbargo()!=null)) {
             return true;
+        }
+        return false;
+    }
+    
+    public boolean isExistingEmbargo(List<FileMetadata> fmdList, boolean unReleased) {
+        for(FileMetadata fmd: fmdList) {
+            if((unReleased != fmd.getDataFile().isReleased())&& (fmd.getDataFile().getEmbargo()!=null)) {
+                return true;
+            }
         }
         return false;
     }

@@ -60,9 +60,6 @@
                                     </p>
 
                                     <div id="title-label-block" class="margin-top-half">
-                                        <!-- Embargoed File Icon -->
-                                        <span class="glyphicon glyphicon-time text-danger" title="#{bundle['embargoed']}" data-toggle="tooltip" jsf:rendered="#{!(empty FilePage.fileMetadata.dataFile.embargo) and dataFileServiceBean.isActivelyEmbargoed(FilePage.fileMetadata) and !fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}"/>
-                                        <span class="glyphicon glyphicon-time text-success" title="#{bundle['embargoedaccess']}" data-toggle="tooltip" jsf:rendered="#{!(empty FilePage.fileMetadata.dataFile.embargo) and dataFileServiceBean.isActivelyEmbargoed(FilePage.fileMetadata) and fileDownloadHelper.canDownloadFile(FilePage.fileMetadata)}"/>
                                     
                                         <!-- Restricted File Icon -->
                                         <span class="glyphicon glyphicon-lock text-danger" title="#{bundle['restricted']}" data-toggle="tooltip" jsf:rendered="#{FilePage.fileMetadata.restricted and !(fileDownloadHelper.canDownloadFile(FilePage.fileMetadata))}"/>
@@ -70,6 +67,7 @@
                                         
                                         <!-- DATASET Publication Status -->
                                         <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{FilePage.fileMetadata.datasetVersion.draft}"/>
+                                        <h:outputText value="#{FilePage.fileMetadata.datasetVersion.draft ? bundle['embargoed.future'] : bundle['embargoed']}" styleClass="label label-primary" rendered="#{!(empty FilePage.file.embargo)}"/>
                                         <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{FilePage.fileMetadata.datasetVersion.inReview}"/>
                                         <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}"/>   
                                         <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}"/>

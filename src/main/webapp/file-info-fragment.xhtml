@@ -35,19 +35,12 @@
                     <p:graphicImage value="/api/access/datafile/#{fileMetadata.dataFile.id}?imageThumb=true" alt="#{fileMetadata.label}"/>
                 </span>
                 <!-- Restricted File Icon -->
-                <div class="file-icon-restricted-block" title="#{bundle['file.metaData.fileAccess']}#{bundle['restricted']}" data-toggle="tooltip" jsf:rendered="#{((empty fileMetadata.dataFile.embargo) or !dataFileServiceBean.isActivelyEmbargoed(fileMetadata)) and (fileMetadata.restricted and !fileDownloadHelper.canDownloadFile(fileMetadata))}">
+                <div class="file-icon-restricted-block" title="#{bundle['file.metaData.fileAccess']}#{bundle['restricted']}" data-toggle="tooltip" jsf:rendered="#{fileMetadata.restricted and !fileDownloadHelper.canDownloadFile(fileMetadata)}">
                     <span class="glyphicon glyphicon-lock text-danger"/>
                 </div>
-                <div class="file-icon-restricted-block" title="#{bundle['file.metaData.fileAccess']}#{bundle['restrictedaccess']}" data-toggle="tooltip" jsf:rendered="#{((empty fileMetadata.dataFile.embargo) or !dataFileServiceBean.isActivelyEmbargoed(fileMetadata)) and (fileMetadata.restricted and fileDownloadHelper.canDownloadFile(fileMetadata))}">
+                <div class="file-icon-restricted-block" title="#{bundle['file.metaData.fileAccess']}#{bundle['restrictedaccess']}" data-toggle="tooltip" jsf:rendered="#{fileMetadata.restricted and fileDownloadHelper.canDownloadFile(fileMetadata)}">
                     <span class="icon-unlock text-success"/>
-                </div>
-                 <!-- Embargoed File Icon -->
-                <div class="file-icon-restricted-block" title="#{bundle['file.metaData.fileAccess']}#{fileMetadata.restricted ? bundle['embargoedandrestricted'] : bundle['embargoed']}" data-toggle="tooltip" jsf:rendered="#{!(empty fileMetadata.dataFile.embargo) and dataFileServiceBean.isActivelyEmbargoed(fileMetadata) and !fileDownloadHelper.canDownloadFile(fileMetadata)}">
-                    <span class="glyphicon glyphicon-time text-danger"/>
-                </div>
-                <div class="file-icon-restricted-block" title="#{bundle['file.metaData.fileAccess']}#{fileMetadata.restricted ? bundle['embargoedandrestrictedaccess'] : bundle['embargoedaccess']}" data-toggle="tooltip" jsf:rendered="#{!(empty fileMetadata.dataFile.embargo) and dataFileServiceBean.isActivelyEmbargoed(fileMetadata) and fileDownloadHelper.canDownloadFile(fileMetadata)}">
-                    <span class="glyphicon glyphicon-time text-success"/>
-                </div>
+                </div>37G
             </div>
         </div>
         <div class="media-body col-file-metadata">
@@ -70,7 +63,7 @@
                 <h:outputText id="fileSize" value=" - #{fileMetadata.dataFile.friendlySize}"/>
                 <div class="dateCreatePublish-block">
                     <h:outputText id="fileCreatePublishDate" value="#{fileMetadata.dataFile.released ? ((fileMetadata.dataFile.embargo!=null) ? bundle['metadatareleased'] : bundle['published']) : bundle['deposited']} #{fileMetadata.getFileDateToDisplay()}" rendered="#{!(empty fileMetadata.id)}"/>
-                    <h:outputText id="fileEmbargoDate" class="embargo" value="#{fileMetadata.dataFile.released ? ((dataFileServiceBean.isActivelyEmbargoed(fileMetadata)) ? bundle['embargoed.until'] : bundle['embargoed.wasthrough']):bundle['embargoed.willbeuntil']} #{fileMetadata.dataFile.embargo.formattedDateAvailable} (#{fileMetadata.dataFile.embargo.reason})" rendered="#{!(empty fileMetadata.dataFile.embargo)}"/>
+                    <h:outputText id="fileEmbargoDate" class="embargo" value="#{fileMetadata.dataFile.released ? ((dataFileServiceBean.isActivelyEmbargoed(fileMetadata)) ? bundle['embargoed.until'] : bundle['embargoed.wasthrough']):bundle['embargoed.willbeuntil']} #{fileMetadata.dataFile.embargo.formattedDateAvailable}" rendered="#{!(empty fileMetadata.dataFile.embargo)}"/>
                 </div>
                 <div class="downloads-block" jsf:rendered="#{!editDatafilesPage and !(settingsWrapper.rsyncOnly) and fileMetadata.dataFile.released}">
                     <h:outputFormat styleClass="visible-xs-block visible-sm-block visible-md-inline visible-lg-inline" id="fileDownloadCount" value="{0} #{bundle['metrics.downloads']}">
