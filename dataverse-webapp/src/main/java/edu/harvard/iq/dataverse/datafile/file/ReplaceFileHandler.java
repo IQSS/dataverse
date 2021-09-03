@@ -61,20 +61,6 @@ public class ReplaceFileHandler implements Serializable {
      * @return created #{@link DataFile}
      */
     public DataFile createDataFile(Dataset dataset,
-                                   byte[] newFileContent,
-                                   String newFileName,
-                                   String newFileContentType) {
-
-        if (newFileContentType.equals("application/fits-gzipped") || newFileContentType.equals("application/zip")){
-            throw new FileReplaceException(FileReplaceException.Reason.ZIP_NOT_SUPPORTED);
-        }
-
-        DatasetVersion datasetDraft = dataset.getEditVersion();
-
-        return createDataFile(dataset, new ByteArrayInputStream(newFileContent), newFileName, newFileContentType, datasetDraft);
-    }
-
-    public DataFile createDataFile(Dataset dataset,
                                    InputStream newFileContent,
                                    String newFileName,
                                    String newFileContentType) {
@@ -171,8 +157,7 @@ public class ReplaceFileHandler implements Serializable {
      * there is no method for creating single file.
      */
     private DataFile createDataFile(Dataset dataset, InputStream newFileContent, String newFileName, String newFileContentType, DatasetVersion datasetDraft) {
-        List<DataFile> dataFile = Try.of(() -> dataFileCreator.createDataFiles(datasetDraft,
-                                                                               newFileContent,
+        List<DataFile> dataFile = Try.of(() -> dataFileCreator.createDataFiles(newFileContent,
                                                                                newFileName,
                                                                                newFileContentType))
                 .onFailure(throwable -> cleanupTemporaryDatasetFiles(datasetDraft, dataset))

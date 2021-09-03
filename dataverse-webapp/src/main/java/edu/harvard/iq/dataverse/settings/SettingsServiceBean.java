@@ -574,6 +574,7 @@ public class SettingsServiceBean {
          * by antivirus
          */
         AntivirusScannerMaxFileSize,
+        AntivirusScannerMaxFileSizeForExecutables,
         /**
          * Antivirus scanner engine settings
          */

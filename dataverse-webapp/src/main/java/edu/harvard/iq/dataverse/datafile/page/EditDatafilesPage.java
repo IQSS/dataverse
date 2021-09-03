@@ -46,7 +46,9 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -817,10 +819,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         return returnToDatasetOnly();
     }
 
-    private HttpClient getClient() {
-        return new HttpClient();
-    }
-
     public boolean allowMultipleFileUpload() {
         return true;
     }
@@ -838,32 +836,27 @@ public class EditDatafilesPage implements java.io.Serializable {
     /**
      * Download a file from drop box
      *
-     * @param fileLink
+     * @param dropBoxMethod
      * @return
      */
-    private InputStream getDropBoxInputStream(String fileLink, GetMethod dropBoxMethod) {
-
-        if (fileLink == null) {
-            return null;
-        }
-
+    private InputStream getDropBoxContent(GetMethod dropBoxMethod) throws IOException {
         // -----------------------------------------------------------
-        // Make http call, download the file: 
+        // Make http call, download the file:
         // -----------------------------------------------------------
         int status = 0;
 
         try {
-            status = getClient().executeMethod(dropBoxMethod);
-            if (status == 200) {
-                return dropBoxMethod.getResponseBodyAsStream();
+            HttpClient httpclient = new HttpClient();
+            status = httpclient.executeMethod(dropBoxMethod);
+            if (status != 200) {
+                logger.log(Level.WARNING, "Failed to get DropBox InputStream for file: {0}, status code: {1}", new Object[] {dropBoxMethod.getPath(), status});
+                throw new IOException("Non 200 status code returned from dropbox");
             }
+            return dropBoxMethod.getResponseBodyAsStream();
         } catch (IOException ex) {
-            logger.log(Level.WARNING, "Failed to access DropBox url: {0}!", fileLink);
-            return null;
+            logger.log(Level.WARNING, "Failed to access DropBox url: {0}!", dropBoxMethod.getPath());
+            throw ex;
         }
-
-        logger.log(Level.WARNING, "Failed to get DropBox InputStream for file: {0}", fileLink);
-        return null;
     }
 
 
@@ -890,8 +883,6 @@ public class EditDatafilesPage implements java.io.Serializable {
         // -----------------------------------------------------------
         // Iterate through the Dropbox file information (JSON)
         // -----------------------------------------------------------
-        DataFile dFile = null;
-        GetMethod dropBoxMethod = null;
         List<String> localWarningMessages = new ArrayList<>();
         for (int i = 0; i < dbArray.size(); i++) {
             JsonObject dbObject = dbArray.getJsonObject(i);
@@ -918,31 +909,19 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
 
 
-            dFile = null;
-            dropBoxMethod = new GetMethod(fileLink);
 
-            // -----------------------------------------------------------
-            // Download the file
-            // -----------------------------------------------------------
-            InputStream dropBoxStream = this.getDropBoxInputStream(fileLink, dropBoxMethod);
-            if (dropBoxStream == null) {
-                logger.severe("Could not retrieve dropgox input stream for: " + fileLink);
-                continue;  // Error skip this file
-            }
-            // -----------------------------------------------------------
-
+            GetMethod dropBoxMethod = new GetMethod(fileLink);
             List<DataFile> datafiles = new ArrayList<>();
 
             // -----------------------------------------------------------
             // Send it through the ingest service
             // -----------------------------------------------------------
-            try {
+            try (InputStream dropBoxStream = this.getDropBoxContent(dropBoxMethod)) {
 
                 // Note: A single uploaded file may produce multiple datafiles - 
                 // for example, multiple files can be extracted from an uncompressed
                 // zip file.
-                //datafiles = ingestService.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
-                datafiles = dataFileCreator.createDataFiles(workingVersion, dropBoxStream, fileName, "application/octet-stream");
+                datafiles = dataFileCreator.createDataFiles(dropBoxStream, fileName, "application/octet-stream");
 
             } catch (IOException | FileExceedsMaxSizeException ex) {
                 logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
@@ -950,38 +929,16 @@ public class EditDatafilesPage implements java.io.Serializable {
             } catch (VirusFoundException e) {
                 localWarningMessages.add(BundleUtil.getStringFromBundle("dataset.file.uploadScannerWarning"));
                 continue;
-            }/*catch (FileExceedsMaxSizeException ex){
-                this.logger.log(Level.SEVERE, "Error during ingest of DropBox file {0} from link {1}: {2}", new Object[]{fileName, fileLink, ex.getMessage()});
-                continue;
-            }*/ finally {
-                // -----------------------------------------------------------
-                // release connection for dropBoxMethod
-                // -----------------------------------------------------------
-
-                if (dropBoxMethod != null) {
-                    dropBoxMethod.releaseConnection();
-                }
-
-                // -----------------------------------------------------------
-                // close the  dropBoxStream
-                // -----------------------------------------------------------
-                try {
-                    dropBoxStream.close();
-                } catch (IOException ex) {
-                    logger.log(Level.WARNING, "Failed to close the dropBoxStream for file: {0}", fileLink);
-                }
+            } finally {
+                dropBoxMethod.releaseConnection();
             }
 
-            if (datafiles == null) {
-                logger.log(Level.SEVERE, "Failed to create DataFile for DropBox file {0} from link {1}", new Object[]{fileName, fileLink});
-                continue;
-            } else {
-                // -----------------------------------------------------------
-                // Check if there are duplicate files or ingest warnings
-                // -----------------------------------------------------------
-                uploadWarningMessage = processUploadedFileList(datafiles);
-                logger.fine("Warning message during upload: " + uploadWarningMessage);
-            }
+            // -----------------------------------------------------------
+            // Check if there are duplicate files or ingest warnings
+            // -----------------------------------------------------------
+            uploadWarningMessage = processUploadedFileList(datafiles);
+            logger.fine("Warning message during upload: " + uploadWarningMessage);
+
             if (!uploadInProgress) {
                 logger.warning("Upload in progress cancelled");
                 for (DataFile newFile : datafiles) {
@@ -1165,22 +1122,15 @@ public class EditDatafilesPage implements java.io.Serializable {
             uploadInProgress = true;
         }
 
-        if (event == null) {
-            throw new NullPointerException("event cannot be null");
-        }
-
         UploadedFile uFile = event.getFile();
-        if (uFile == null) {
-            throw new NullPointerException("uFile cannot be null");
-        }
 
         List<DataFile> dFileList = null;
 
-        try {
+        try (InputStream inputStream = uFile.getInputStream()) {
             // Note: A single uploaded file may produce multiple datafiles - 
             // for example, multiple files can be extracted from an uncompressed
             // zip file. 
-            dFileList = dataFileCreator.createDataFiles(workingVersion, uFile.getInputStream(), uFile.getFileName(), uFile.getContentType());
+            dFileList = dataFileCreator.createDataFiles(inputStream, uFile.getFileName(), uFile.getContentType());
 
         } catch (IOException | FileExceedsMaxSizeException ex) {
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ex.getMessage());

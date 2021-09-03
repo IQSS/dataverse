@@ -195,8 +195,7 @@ public class ImporterForm {
     }
 
     private Path prepareTempPath(UploadedFile file) throws IOException {
-        String tempDirectory = Optional.ofNullable(FileUtil.getFilesTempDirectory())
-                .orElseThrow(() -> new IllegalStateException("Cannot obtain temp directory path"));
+        String tempDirectory = FileUtil.getFilesTempDirectory();
         return Files.createTempFile(Paths.get(tempDirectory), "import",
                 ImporterConstants.FILE_NAME_SEPARATOR + file.getFileName());
     }

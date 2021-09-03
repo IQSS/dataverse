@@ -29,6 +29,8 @@ import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -81,7 +83,7 @@ public class ReplaceFileHandlerIT extends WebappArquillianDeployment {
         String fileContentType = "json";
 
         //when
-        DataFile savedFile = replaceFileHandler.createDataFile(dataset, new byte[0], fileName, fileContentType);
+        DataFile savedFile = replaceFileHandler.createDataFile(dataset, new ByteArrayInputStream(new byte[0]), fileName, fileContentType);
 
         //then
         assertEquals(fileName, savedFile.getFileMetadata().getLabel());

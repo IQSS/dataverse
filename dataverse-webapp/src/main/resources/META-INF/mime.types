@@ -3,11 +3,12 @@ application/pdf pdf PDF
 application/msword doc DOC
 application/vnd.ms-excel xls XLS xlc XLC xll XLL xlm XLM xlw XLW
 application/vnd.openxmlformats-officedocument.spreadsheetml.sheet xlsx XLSX
-text/comma-separated-values csv CSV
+text/csv csv CSV
 text/plain txt TXT
 text/xml xml XML
 # Common statistical data formats
-text/tab-separated-values tab TAB tsv TSV
+text/tsv tsv TSV
+text/tab-separated-values tab TAB
 text/x-fixed-field dat DAT asc ASC
 application/x-rlang-transport Rdata RData rdata RDATA
 type/x-r-syntax r R
@@ -40,3 +41,5 @@ application/x-gzip gz GZ
 application/x-tar tar TAR
 # Rdata
 application/octet-stream
+# fits
+application/fits fits FITS

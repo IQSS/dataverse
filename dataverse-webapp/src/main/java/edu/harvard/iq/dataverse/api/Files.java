@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -183,20 +184,23 @@ public class Files extends AbstractApiBean {
             // TODO: Some day, return ex.getResponse() instead. Also run FilesIT and updated expected status code and message.
             return error(BAD_REQUEST, error);
         }
-        if (forceReplace) {
-            addFileHelper.runForceReplaceFile(fileToReplaceId,
+        try {
+            if (forceReplace) {
+                addFileHelper.runForceReplaceFile(fileToReplaceId,
                                               newFilename,
                                               newFileContentType,
                                               testFileInputStream,
                                               optionalFileParams);
-        } else {
-            addFileHelper.runReplaceFile(fileToReplaceId,
+            } else {
+                addFileHelper.runReplaceFile(fileToReplaceId,
                                          newFilename,
                                          newFileContentType,
                                          testFileInputStream,
                                          optionalFileParams);
+            }
+        } finally {
+            IOUtils.closeQuietly(testFileInputStream);
         }
-
         msg("we're back.....");
         if (addFileHelper.hasError()) {
             msg("yes, has error");

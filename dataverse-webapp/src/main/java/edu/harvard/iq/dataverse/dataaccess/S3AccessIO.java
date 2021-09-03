@@ -309,7 +309,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         }
         String destinationKey = getDestinationKey(auxItemTag);
         File inputFile = fileSystemPath.toFile();
-        String checksum = FileUtil.calculateChecksum(inputFile.getAbsolutePath(), ChecksumType.MD5);
+        String checksum = FileUtil.calculateChecksum(inputFile.toPath(), ChecksumType.MD5);
         putFileToS3(inputFile, destinationKey, checksum);
     }
 
@@ -694,7 +694,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
         if (checksumSent == null) {
             return true;
         }
-        String checksumLocal = FileUtil.calculateChecksum(putRequest.getFile().getAbsolutePath(), ChecksumType.MD5);
+        String checksumLocal = FileUtil.calculateChecksum(putRequest.getFile().toPath(), ChecksumType.MD5);
         try {
             checksumLocal = Base64.getEncoder().encodeToString(Hex.decodeHex(checksumLocal.toCharArray()));
         } catch (DecoderException e) {

@@ -307,38 +307,15 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
              */
             String guessContentTypeForMe = null;
             List<DataFile> dataFiles;
-            try {
-                try {
-                    dataFiles = dataFileCreator.createDataFiles(editVersion, deposit.getInputStream(), uploadedZipFilename, guessContentTypeForMe);
-                } catch (EJBException | FileExceedsMaxSizeException ex) {
-                    Throwable cause = ex.getCause();
-                    if (cause != null) {
-                        if (cause instanceof IllegalArgumentException) {
-                            /**
-                             * @todo should be safe to remove this catch of
-                             * EJBException and IllegalArgumentException once
-                             * this ticket is resolved:
-                             *
-                             * IllegalArgumentException: MALFORMED when
-                             * uploading certain zip files
-                             * https://github.com/IQSS/dataverse/issues/1021
-                             */
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Exception caught calling ingestService.createDataFiles. Problem with zip file, perhaps: " + cause);
-                        } else {
-                            throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Exception caught calling ingestService.createDataFiles: " + cause);
-                        }
-                    } else {
-                        throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Exception caught calling ingestService.createDataFiles. No cause: " + ex.getMessage());
-                    }
-                } /*TODO: L.A. 4.6! catch (FileExceedsMaxSizeException ex) {
-                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Exception caught calling ingestService.createDataFiles: " + ex.getMessage());
-                    //Logger.getLogger(MediaResourceManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                }*/
-            } catch (IOException ex) {
-                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + ex.getMessage());
+            try (InputStream inputStream = deposit.getInputStream()) {
+                dataFiles = dataFileCreator.createDataFiles(inputStream, uploadedZipFilename, guessContentTypeForMe);
+            } catch (FileExceedsMaxSizeException ex) {
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: File is over max size limit");
             } catch (VirusFoundException ex) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: Virus detected");
-            }
+            } catch (EJBException | IOException ex) {
+                throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: Unknown error");
+            } 
             if (!dataFiles.isEmpty()) {
                 Set<ConstraintViolation> constraintViolations = editVersion.validate();
                 if (constraintViolations.size() > 0) {

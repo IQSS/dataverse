@@ -20,9 +20,7 @@ import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Try;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.lang.StringUtils;
 import org.omnifaces.cdi.ViewScoped;
 import org.primefaces.PrimeFaces;
@@ -150,8 +148,9 @@ public class ReplaceDatafilesPage implements Serializable {
 
         UploadedFile uFile = event.getFile();
 
-        Try<DataFile> dataFile = Try.of(() -> replaceFileHandler.createDataFile(dataset,
-                                                                                uFile.getInputStream(),
+        Try<DataFile> dataFile = Try.withResources(() -> uFile.getInputStream())
+                .of(inputStream -> replaceFileHandler.createDataFile(dataset,
+                                                                                inputStream,
                                                                                 uFile.getFileName(),
                                                                                 uFile.getContentType()));
 
@@ -220,9 +219,6 @@ public class ReplaceDatafilesPage implements Serializable {
         // -----------------------------------------------------------
         // Iterate through the Dropbox file information (JSON)
         // -----------------------------------------------------------
-        DataFile dFile = null;
-        GetMethod dropBoxMethod = null;
-        String localWarningMessage = null;
         for (int i = 0; i < dbArray.size(); i++) {
             JsonObject dbObject = dbArray.getJsonObject(i);
 
@@ -244,33 +240,18 @@ public class ReplaceDatafilesPage implements Serializable {
             Long fileUploadLimit = settingsService.getValueForKeyAsLong(SettingsServiceBean.Key.MaxFileUploadSizeInBytes);
 
             if ((fileUploadLimit != null) && (fileSize > fileUploadLimit)) {
-                String warningMessage = "Dropbox file \"" + fileName + "\" exceeded the limit of " + fileSize + " bytes and was not uploaded.";
-                //msg(warningMessage);
-                //FacesContext.getCurrentInstance().addMessage(event.getComponent().getClientId(), new FacesMessage(FacesMessage.SEVERITY_ERROR, "upload failure", warningMessage));
-                if (localWarningMessage == null) {
-                    localWarningMessage = warningMessage;
-                } else {
-                    localWarningMessage = localWarningMessage.concat("; " + warningMessage);
-                }
-                continue; // skip to next file, and add error mesage
+                // TODO: add error mesage for user
+                continue; // skip to next file
             }
 
+            GetMethod dropBoxMethod = new GetMethod(fileLink);
 
-            dropBoxMethod = new GetMethod(fileLink);
-
-            // -----------------------------------------------------------
-            // Download the file
-            // -----------------------------------------------------------
-            InputStream dropBoxContent = this.getDropBoxContent(fileLink, dropBoxMethod);
-            if (dropBoxContent == null) {
-                logger.severe("Could not retrieve dropgox input stream for: " + fileLink);
-                continue;  // Error skip this file
-            }
-
-            Try<DataFile> dataFile = Try.of(() -> replaceFileHandler.createDataFile(dataset,
-                                                                                    dropBoxContent,
-                                                                                    fileName,
-                                                                                    ApplicationMimeType.UNDETERMINED_DEFAULT.getMimeValue()));
+            Try<DataFile> dataFile = Try.withResources(() -> this.getDropBoxContent(dropBoxMethod))
+               .of(dropBoxContent -> replaceFileHandler.createDataFile(dataset,
+                        dropBoxContent,
+                        fileName,
+                        ApplicationMimeType.UNDETERMINED_DEFAULT.getMimeValue()))
+               .andFinally(() -> dropBoxMethod.releaseConnection());
 
             if (isUploadedFileContainsErrors(dataFile)) {
                 return StringUtils.EMPTY;
@@ -427,12 +408,13 @@ public class ReplaceDatafilesPage implements Serializable {
         return false;
     }
 
-    private InputStream getDropBoxContent(String fileLink, GetMethod dropBoxMethod) {
-
-        if (fileLink == null) {
-            return null;
-        }
-
+    /**
+     * Download a file from drop box
+     *
+     * @param dropBoxMethod
+     * @return
+     */
+    private InputStream getDropBoxContent(GetMethod dropBoxMethod) throws IOException {
         // -----------------------------------------------------------
         // Make http call, download the file:
         // -----------------------------------------------------------
@@ -440,18 +422,16 @@ public class ReplaceDatafilesPage implements Serializable {
 
         try {
             HttpClient httpclient = new HttpClient();
-            httpclient.getParams().setParameter(HttpClientParams.COOKIE_POLICY, CookiePolicy.BROWSER_COMPATIBILITY);
-            status = new HttpClient().executeMethod(dropBoxMethod);
-            if (status == 200) {
-                return dropBoxMethod.getResponseBodyAsStream();
+            status = httpclient.executeMethod(dropBoxMethod);
+            if (status != 200) {
+                logger.log(Level.WARNING, "Failed to get DropBox InputStream for file: {0}, status code: {1}", new Object[] {dropBoxMethod.getPath(), status});
+                throw new IOException("Non 200 status code returned from dropbox");
             }
+            return dropBoxMethod.getResponseBodyAsStream();
         } catch (IOException ex) {
-            logger.log(Level.WARNING, "Failed to access DropBox url: {0}!", fileLink);
-            return null;
+            logger.log(Level.WARNING, "Failed to access DropBox url: {0}!", dropBoxMethod.getPath());
+            throw ex;
         }
-
-        logger.log(Level.WARNING, "Failed to get DropBox InputStream for file: {0}", fileLink);
-        return null;
     }
 
     /**

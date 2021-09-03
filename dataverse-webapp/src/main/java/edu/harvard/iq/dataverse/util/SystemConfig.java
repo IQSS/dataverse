@@ -137,11 +137,7 @@ public class SystemConfig {
     }
 
     public String getFilesDirectory() {
-        String filesDirectory = System.getProperty(SystemConfig.FILES_DIRECTORY);
-        if (StringUtils.isEmpty(filesDirectory)) {
-            filesDirectory = "/tmp/files";
-        }
-        return filesDirectory;
+        return getFilesDirectoryStatic();
     }
 
     public static String getFilesDirectoryStatic() {

@@ -80,21 +80,6 @@ public class IngestableDataCheckerTest {
         return buff;
     }
 
-    /**
-     * Test of getTestFormatSet method, of class IngestableDataChecker.
-     */
-    //@Test
-    /*
-    public void testGetTestFormatSet() {
-        System.out.println("getTestFormatSet");
-        IngestableDataChecker instance = new IngestableDataChecker();
-        String[] expResult = null;
-        String[] result = instance.getTestFormatSet();
-        assertArrayEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-    */
     private void msg(String m) {
         System.out.println(m);
     }
@@ -181,72 +166,5 @@ public class IngestableDataCheckerTest {
         assertEquals(result, null);
 
     }
-
-    /**
-     * Test of testXPTformat method, of class IngestableDataChecker.
-     */
-    /*  @Test
-    public void testTestXPTformat() {
-      
-        System.out.println("testXPTformat");
-        MappedByteBuffer buff = null;
-        IngestableDataChecker instance = new IngestableDataChecker();
-        String expResult = "";
-        String result = instance.testXPTformat(buff);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-        
-    }*/
-
-    /**
-     * Test of testPORformat method, of class IngestableDataChecker.
-     */
-        /*@Test
-    public void testTestPORformat() {
-    
-        System.out.println("testPORformat");
-        MappedByteBuffer buff = null;
-        IngestableDataChecker instance = new IngestableDataChecker();
-        String expResult = "";
-        String result = instance.testPORformat(buff);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-       
-    }
- */
-    /**
-     * Test of testRDAformat method, of class IngestableDataChecker.
-     */
-       /*@Test
-    public void testTestRDAformat() {
-     
-        System.out.println("testRDAformat");
-        MappedByteBuffer buff = null;
-        IngestableDataChecker instance = new IngestableDataChecker();
-        String expResult = "";
-        String result = instance.testRDAformat(buff);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-        
-    }
-*/
-    /**
-     * Test of detectTabularDataFormat method, of class IngestableDataChecker.
-     */
-    /*
-    @Test
-    public void testDetectTabularDataFormat() {
-        System.out.println("detectTabularDataFormat");
-        File fh = null;
-        IngestableDataChecker instance = new IngestableDataChecker();
-        String expResult = "";
-        String result = instance.detectTabularDataFormat(fh);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }*/
 
 }

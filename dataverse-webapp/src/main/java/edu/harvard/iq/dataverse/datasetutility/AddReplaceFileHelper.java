@@ -735,7 +735,7 @@ public class AddReplaceFileHelper {
         workingVersion = dataset.getEditVersion();
         clone = workingVersion.cloneDatasetVersion();
         try {
-            initialFileList = dataFileCreator.createDataFiles(workingVersion,
+            initialFileList = dataFileCreator.createDataFiles(
                                                           this.newFileInputStream,
                                                           this.newFileName,
                                                           this.newFileContentType);

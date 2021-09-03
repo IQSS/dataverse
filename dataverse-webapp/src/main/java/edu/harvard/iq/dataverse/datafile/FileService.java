@@ -45,13 +45,9 @@ public class FileService {
 
     private static final Logger logger = LoggerFactory.getLogger(FileService.class);
 
-    private static final int CHUNK_SIZE = 2048;
-    private static final byte[] INSTREAM = "zINSTREAM\0".getBytes();
-
     private DataverseRequestServiceBean dvRequestService;
     private EjbDataverseEngine commandEngine;
     private DataFileServiceBean dataFileService;
-    private SettingsServiceBean settingsService;
 
 
     // -------------------- CONSTRUCTORS --------------------
@@ -62,11 +58,10 @@ public class FileService {
 
     @Inject
     public FileService(DataverseRequestServiceBean dvRequestService, EjbDataverseEngine commandEngine, 
-                       DataFileServiceBean dataFileServiceBean, SettingsServiceBean settingsService) {
+                       DataFileServiceBean dataFileServiceBean) {
         this.dvRequestService = dvRequestService;
         this.commandEngine = commandEngine;
         this.dataFileService = dataFileServiceBean;
-        this.settingsService = settingsService;
     }
 
     // -------------------- LOGIC --------------------
@@ -163,46 +158,6 @@ public class FileService {
         } else {
             throw new IllegalStateException("DataFile with id: " + fileToDelete.getId() + " doesn't have storage location");
         }
-    }
-    
-    public String scan(File file) throws IOException {
-        Socket socket = new Socket();
-
-        socket.connect(new InetSocketAddress(settingsService.getValueForKey(SettingsServiceBean.Key.AntivirusScannerSocketAddress),
-                                             settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.AntivirusScannerSocketPort)));
-
-        socket.setSoTimeout(settingsService.getValueForKeyAsInt(SettingsServiceBean.Key.AntivirusScannerSocketTimeout));
-
-        DataOutputStream dos = null;
-        try (InputStream fileInput = new FileInputStream(file)) {
-
-            dos = new DataOutputStream(socket.getOutputStream());
-            dos.write(INSTREAM);
- 
-            int read = CHUNK_SIZE;
-            byte[] buffer = new byte[CHUNK_SIZE];
-            while (read == CHUNK_SIZE) {
-                    read = fileInput.read(buffer);
- 
-                if (read > 0) {
-                        dos.writeInt(read);
-                        dos.write(buffer, 0, read);
-                }
-            }
-
-            dos.writeInt(0);
-            dos.flush();
- 
-            read = socket.getInputStream().read(buffer);
-            return new String(buffer, 0, read);
-
-        } finally {
-            if (dos != null) {
-                dos.close();
-            }
-            socket.close();
-        }
-
     }
 
 }

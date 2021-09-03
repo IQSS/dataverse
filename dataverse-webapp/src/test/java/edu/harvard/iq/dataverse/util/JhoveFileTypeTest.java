@@ -39,18 +39,8 @@ public class JhoveFileTypeTest {
         "jhove/empty, "})
     void getFileMimeType(String fileClasspath, String expectedFileType) throws IOException {
         // given
-        File file = copyFileFromClasspath(fileClasspath);
+        File file = UnitTestUtils.copyFileFromClasspath(fileClasspath, tempDir.toPath().resolve("file")).toFile();
         // when & then
         assertThat(jhove.getFileMimeType(file)).isEqualTo(expectedFileType);
-    }
-    
-    // -------------------- PRIVATE --------------------
-
-    private File copyFileFromClasspath(String classpath) throws IOException {
-        byte[] bytes = UnitTestUtils.readFileToByteArray(classpath);
-        Path destinationPath = tempDir.toPath().resolve("file");
-        Files.write(destinationPath, bytes);
-
-        return destinationPath.toFile();
     }
 }

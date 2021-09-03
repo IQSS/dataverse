@@ -31,6 +31,7 @@ import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.dataaccess.StorageIOConstants;
 import edu.harvard.iq.dataverse.dataaccess.StorageIOUtils;
 import edu.harvard.iq.dataverse.dataaccess.TabularSubsetGenerator;
+import edu.harvard.iq.dataverse.datafile.FileTypeDetector;
 import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataExtractor;
 import edu.harvard.iq.dataverse.ingest.metadataextraction.FileMetadataIngest;
@@ -122,11 +123,7 @@ import java.util.logging.Logger;
 public class IngestServiceBean {
     private static final Logger logger = Logger.getLogger(IngestServiceBean.class.getCanonicalName());
     @EJB
-    VariableServiceBean variableService;
-    @EJB
     DatasetDao datasetDao;
-    @EJB
-    DatasetFieldServiceBean fieldService;
     @EJB
     DataFileServiceBean fileService;
     @EJB
@@ -134,6 +131,9 @@ public class IngestServiceBean {
 
     @Inject
     private SettingsServiceBean settingsService;
+
+    @Inject
+    private FileTypeDetector fileTypeDetector;
 
     @Inject
     private Event<IngestMessageSendEvent> ingestMessageSendEventEvent;
@@ -274,7 +274,6 @@ public class IngestServiceBean {
                         try {
                             // FITS is the only type supported for metadata
                             // extraction, as of now. -- L.A. 4.0
-                            dataFile.setContentType("application/fits");
                             metadataExtracted = extractMetadata(tempLocationPath.toString(), dataFile, version);
                         } catch (IOException mex) {
                             logger.severe("Caught exception trying to extract indexable metadata from file " + fileName + ",  " + mex.getMessage());
@@ -706,7 +705,8 @@ public class IngestServiceBean {
         }
 
         if (forceTypeCheck) {
-            String newType = FileUtil.retestIngestableFileType(localFile.get(), dataFile.getContentType());
+            FileTypeDetector fileTypeDetector = new FileTypeDetector();
+            String newType = fileTypeDetector.detectTabularFileType(localFile.get(), dataFile.getContentType());
 
             ingestPlugin = getTabDataReaderByMimeType(newType);
             logger.fine("Re-tested file type: " + newType +
@@ -1481,7 +1481,7 @@ public class IngestServiceBean {
                     tmpFile = storageIO.isRemoteFile() ? Optional.of(savedOriginalFile) : Optional.empty();
 
                     savedOriginalFileSize = savedOriginalFile.length();
-                    fileTypeDetermined = FileUtil.determineFileType(savedOriginalFile, "");
+                    fileTypeDetermined = fileTypeDetector.determineFileType(savedOriginalFile, "");
 
                 } catch (Exception ex) {
                     logger.warning("Exception " + ex.getClass() + " caught trying to determine file type; (datafile id=" + fileId + ", datatable id=" + datatableId + "): " + ex.getMessage());

@@ -149,18 +149,6 @@ public class FileUtilTest {
         assertEquals(".xlsx", FileUtil.generateOriginalExtension("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
     }
 
-    @Test
-    public void testDetermineFileType() throws IOException {
-        // given
-        JhoveConfigurationInitializer jhoveInit = new JhoveConfigurationInitializer();
-        jhoveInit.initializeJhoveConfig();
-        
-        File file = new File("src/main/webapp/resources/images/cc0.png");
-        
-        // when & then
-        assertEquals("image/png", FileUtil.determineFileType(file, "cc0.png"));
-    }
-
     /**
      * Expect that {@code null}, a DataFile without content type and a DataFile
      * with bogus content type are not files that thumbnails can be created for.

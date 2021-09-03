@@ -1,11 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package edu.harvard.iq.dataverse.mydata;
 
-import edu.harvard.iq.dataverse.authorization.DataverseRolePermissionHelper;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.DvObject;
@@ -15,7 +9,6 @@ import edu.harvard.iq.dataverse.search.query.SearchForTypes;
 import edu.harvard.iq.dataverse.search.query.SearchObjectType;
 import edu.harvard.iq.dataverse.search.query.SearchPublicationStatus;
 import edu.harvard.iq.dataverse.search.SearchFields;
-import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import org.apache.commons.lang.StringUtils;
 
 import javax.json.Json;
@@ -90,30 +83,6 @@ public class MyDataFilterParams {
     // -----------------------------------
     private boolean errorFound = false;
     private String errorMessage = null;
-
-
-    /**
-     * Constructor used to get total counts
-     *
-     * @param dataverseRequest
-     * @param roleHelper
-     */
-    public MyDataFilterParams(DataverseRequest dataverseRequest, DataverseRolePermissionHelper roleHelper) {
-        if (dataverseRequest == null) {
-            throw new NullPointerException("MyDataFilterParams constructor: dataverseRequest cannot be null ");
-        }
-        this.dataverseRequest = dataverseRequest;
-        this.setAuthenticatedUserFromDataverseRequest(dataverseRequest);
-        this.userIdentifier = authenticatedUser.getIdentifier();
-
-        if (roleHelper == null) {
-            throw new NullPointerException("MyDataFilterParams constructor: roleHelper cannot be null");
-        }
-        this.dvObjectTypes = MyDataFilterParams.allDvObjectTypes;
-        this.publicationStatuses = MyDataFilterParams.allPublishedStates;
-        this.searchTerm = MyDataFilterParams.defaultSearchTerm;
-        this.roleIds = roleHelper.getRoleIdList();
-    }
 
     /**
      * @param dataverseRequest

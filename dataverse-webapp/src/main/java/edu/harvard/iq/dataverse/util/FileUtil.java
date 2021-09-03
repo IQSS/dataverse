@@ -22,13 +22,12 @@ package edu.harvard.iq.dataverse.util;
 
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Stopwatch;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.files.mime.ApplicationMimeType;
 import edu.harvard.iq.dataverse.common.files.mime.ImageMimeType;
 import edu.harvard.iq.dataverse.common.files.mime.PackageMimeType;
 import edu.harvard.iq.dataverse.common.files.mime.TextMimeType;
-import edu.harvard.iq.dataverse.ingest.IngestableDataChecker;
+import edu.harvard.iq.dataverse.datasetutility.FileExceedsMaxSizeException;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
@@ -37,38 +36,27 @@ import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.Term
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.activation.MimetypesFileTypeMap;
-import javax.ejb.EJBException;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.channels.FileChannel;
-import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.MessageFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.zip.GZIPInputStream;
+
+import static edu.harvard.iq.dataverse.common.FileSizeUtil.bytesToHumanReadable;
 
 
 /**
@@ -79,77 +67,17 @@ import java.util.zip.GZIPInputStream;
  * @author Leonid Andreev
  */
 public class FileUtil implements java.io.Serializable {
-    private static final Logger logger = Logger.getLogger(FileUtil.class.getCanonicalName());
+    private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
 
-    private static final String[] TABULAR_DATA_FORMAT_SET = {"POR", "SAV", "DTA", "RDA"};
-
-    private static Map<String, String> STATISTICAL_FILE_EXTENSION = new HashMap<String, String>();
-
-    /*
-     * The following are Stata, SAS and SPSS syntax/control cards:
-     * These are recognized as text files (because they are!) so
-     * we check all the uploaded "text/plain" files for these extensions, and
-     * assign the following types when they are matched;
-     * Note that these types are only used in the metadata displayed on the
-     * dataset page. We don't support ingest on control cards.
-     * -- L.A. 4.0 Oct. 2014
-     */
-
-    static {
-        STATISTICAL_FILE_EXTENSION.put("do", "application/x-stata-syntax");
-        STATISTICAL_FILE_EXTENSION.put("sas", "application/x-sas-syntax");
-        STATISTICAL_FILE_EXTENSION.put("sps", "application/x-spss-syntax");
-        STATISTICAL_FILE_EXTENSION.put("csv", "text/csv");
-        STATISTICAL_FILE_EXTENSION.put("tsv", "text/tsv");
-    }
-
-    private static MimetypesFileTypeMap MIME_TYPE_MAP = new MimetypesFileTypeMap();
 
     /**
      * This string can be prepended to a Base64-encoded representation of a PNG
      * file in order to imbed an image directly into an HTML page using the
      * "img" tag. See also https://en.wikipedia.org/wiki/Data_URI_scheme
      */
-    public static String DATA_URI_SCHEME = "data:image/png;base64,";
+    public static final String DATA_URI_SCHEME = "data:image/png;base64,";
 
     public FileUtil() {
-    }
-
-    public static void copyFile(File inputFile, File outputFile) throws IOException {
-        FileChannel in = null;
-        WritableByteChannel out = null;
-
-        try {
-            in = new FileInputStream(inputFile).getChannel();
-            out = new FileOutputStream(outputFile).getChannel();
-            long bytesPerIteration = 50000;
-            long start = 0;
-            while (start < in.size()) {
-                in.transferTo(start, bytesPerIteration, out);
-                start += bytesPerIteration;
-            }
-
-        } finally {
-            if (in != null) {
-                in.close();
-            }
-            if (out != null) {
-                out.close();
-            }
-        }
-    }
-
-
-    public static String getFileExtension(String fileName) {
-        String ext = null;
-        if (fileName.lastIndexOf(".") != -1) {
-            ext = (fileName.substring(fileName.lastIndexOf(".") + 1)).toLowerCase();
-        }
-        return ext;
-    }
-
-    public static String replaceExtension(String originalName) {
-        return replaceExtension(originalName, "tab");
     }
 
     public static String replaceExtension(String originalName, String newExtension) {
@@ -176,227 +104,14 @@ public class FileUtil implements java.io.Serializable {
                 .orElse(BundleUtil.getStringFromNonDefaultBundleWithLocale("application/octet-stream", "MimeTypeFacets", locale));
     }
 
-    public static String retestIngestableFileType(File file, String fileType) {
-        IngestableDataChecker tabChecker = new IngestableDataChecker(TABULAR_DATA_FORMAT_SET);
-        String newType = tabChecker.detectTabularDataFormat(file);
-
-        return newType != null ? newType : fileType;
-    }
-
-    public static String determineFileType(File f, String fileName) throws IOException {
-        String fileType = null;
-        String fileExtension = getFileExtension(fileName);
-
-        // step 1:
-        // Apply our custom methods to try and recognize data files that can be
-        // converted to tabular data, or can be parsed for extra metadata
-        // (such as FITS).
-        logger.fine("Attempting to identify potential tabular data files;");
-        IngestableDataChecker tabChk = new IngestableDataChecker(TABULAR_DATA_FORMAT_SET);
-
-        fileType = tabChk.detectTabularDataFormat(f);
-
-        logger.fine("determineFileType: tabular data checker found " + fileType);
-
-        // step 2: If not found, check if graphml or FITS
-        if (fileType == null) {
-            if (isGraphMLFile(f)) {
-                fileType = "text/xml-graphml";
-            } else // Check for FITS:
-                // our check is fairly weak (it appears to be hard to really
-                // really recognize a FITS file without reading the entire
-                // stream...), so in version 3.* we used to nsist on *both*
-                // the ".fits" extension and the header check;
-                // in 4.0, we'll accept either the extension, or the valid
-                // magic header:
-                if (isFITSFile(f) || (fileExtension != null
-                        && fileExtension.equalsIgnoreCase("fits"))) {
-                    fileType = "application/fits";
-                }
-        }
-
-
-        // step 3: check the mime type of this file with Jhove
-        if (fileType == null) {
-            JhoveFileType jw = new JhoveFileType();
-            String mimeType = jw.getFileMimeType(f);
-            if (mimeType != null) {
-                fileType = mimeType;
-            }
-        }
-
-
-        // step 4:
-        // Additional processing; if we haven't gotten much useful information
-        // back from Jhove, we'll try and make an educated guess based on
-        // the file extension:
-
-        if (fileExtension != null) {
-            logger.fine("fileExtension=" + fileExtension);
-
-            if (fileType == null || fileType.startsWith("text/plain") || "application/octet-stream".equals(fileType)) {
-                if (fileType != null && fileType.startsWith("text/plain") && STATISTICAL_FILE_EXTENSION.containsKey(
-                        fileExtension)) {
-                    fileType = STATISTICAL_FILE_EXTENSION.get(fileExtension);
-                } else {
-                    fileType = determineFileTypeByExtension(fileName);
-                }
-
-                logger.fine("mime type recognized by extension: " + fileType);
-            }
-        } else {
-            logger.fine("fileExtension is null");
-        }
-
-
-        // step 5:
-        // if this is a compressed file - zip or gzip - we'll check the
-        // file(s) inside the compressed stream and see if it's one of our
-        // recognized formats that we want to support compressed:
-
-        if ("application/x-gzip".equals(fileType)) {
-            logger.fine("we'll run additional checks on this gzipped file.");
-            // We want to be able to support gzipped FITS files, same way as
-            // if they were just regular FITS files:
-            FileInputStream gzippedIn = new FileInputStream(f);
-            // (new FileInputStream() can throw a "filen not found" exception;
-            // however, if we've made it this far, it really means that the
-            // file does exist and can be opened)
-            InputStream uncompressedIn = null;
-            try {
-                uncompressedIn = new GZIPInputStream(gzippedIn);
-                if (isFITSFile(uncompressedIn)) {
-                    fileType = "application/fits-gzipped";
-                }
-            } catch (IOException ioex) {
-                if (uncompressedIn != null) {
-                    try {
-                        uncompressedIn.close();
-                    } catch (IOException e) {
-                    }
-                }
-            }
-        }
-        if ("application/zip".equals(fileType)) {
-
-            // Is this a zipped Shapefile?
-            // Check for shapefile extensions as described here: http://en.wikipedia.org/wiki/Shapefile
-            //logger.info("Checking for shapefile");
-
-            ShapefileHandler shp_handler = new ShapefileHandler(f);
-            if (shp_handler.containsShapefile()) {
-                //  logger.info("------- shapefile FOUND ----------");
-                fileType = ShapefileHandler.SHAPEFILE_FILE_TYPE; //"application/zipped-shapefile";
-            }
-        }
-
-
-        logger.fine("returning fileType " + fileType);
-        return fileType;
-    }
-
-    public static String determineFileTypeByExtension(String fileName) {
-        logger.fine("Type by extension, for " + fileName + ": " + MIME_TYPE_MAP.getContentType(fileName));
-        return MIME_TYPE_MAP.getContentType(fileName);
-    }
-
-
-    /*
-     * Custom method for identifying FITS files:
-     * TODO:
-     * the existing check for the "magic header" is very weak (see below);
-     * it should probably be replaced by attempting to parse and read at
-     * least the primary HDU, using the NOM fits parser.
-     * -- L.A. 4.0 alpha
-     */
-    private static boolean isFITSFile(File file) {
-        BufferedInputStream ins = null;
-
-        try {
-            ins = new BufferedInputStream(new FileInputStream(file));
-            return isFITSFile(ins);
-        } catch (IOException ex) {
-        }
-
-        return false;
-    }
-
-    private static boolean isFITSFile(InputStream ins) {
-        boolean isFITS = false;
-
-        // number of header bytes read for identification:
-        int magicWordLength = 6;
-        String magicWord = "SIMPLE";
-
-        try {
-            byte[] b = new byte[magicWordLength];
-            logger.fine("attempting to read " + magicWordLength + " bytes from the FITS format candidate stream.");
-            if (ins.read(b, 0, magicWordLength) != magicWordLength) {
-                throw new IOException();
-            }
-
-            if (magicWord.equals(new String(b))) {
-                logger.fine("yes, this is FITS file!");
-                isFITS = true;
-            }
-        } catch (IOException ex) {
-            isFITS = false;
-        } finally {
-            if (ins != null) {
-                try {
-                    ins.close();
-                } catch (Exception e) {
-                }
-            }
-        }
-
-        return isFITS;
-    }
-
-    private static boolean isGraphMLFile(File file) {
-        boolean isGraphML = false;
-        logger.fine("begin isGraphMLFile()");
-        try {
-            FileReader fileReader = new FileReader(file);
-            javax.xml.stream.XMLInputFactory xmlif = javax.xml.stream.XMLInputFactory.newInstance();
-            xmlif.setProperty("javax.xml.stream.isCoalescing", java.lang.Boolean.TRUE);
-
-            XMLStreamReader xmlr = xmlif.createXMLStreamReader(fileReader);
-            for (int event = xmlr.next(); event != XMLStreamConstants.END_DOCUMENT; event = xmlr.next()) {
-                if (event == XMLStreamConstants.START_ELEMENT) {
-                    if (xmlr.getLocalName().equals("graphml")) {
-                        String schema = xmlr.getAttributeValue("http://www.w3.org/2001/XMLSchema-instance",
-                                                               "schemaLocation");
-                        logger.fine("schema = " + schema);
-                        if (schema != null && schema.contains("http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd")) {
-                            logger.fine("graphML is true");
-                            isGraphML = true;
-                        }
-                    }
-                    break;
-                }
-            }
-        } catch (XMLStreamException e) {
-            logger.fine("XML error - this is not a valid graphML file.");
-            isGraphML = false;
-        } catch (IOException e) {
-            throw new EJBException(e);
-        }
-        logger.fine("end isGraphML()");
-        return isGraphML;
-    }
-
     // from MD5Checksum.java
-    public static String calculateChecksum(String datafile, ChecksumType checksumType) {
+    public static String calculateChecksum(Path filePath, ChecksumType checksumType) {
 
-        FileInputStream fis = null;
-        try {
-            fis = new FileInputStream(datafile);
-        } catch (FileNotFoundException ex) {
+        try (InputStream fis = Files.newInputStream(filePath)) {
+            return FileUtil.calculateChecksum(fis, checksumType);
+        } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-
-        return FileUtil.calculateChecksum(fis, checksumType);
     }
 
     // from MD5Checksum.java
@@ -501,10 +216,7 @@ public class FileUtil implements java.io.Serializable {
     }
 
     public static String getFilesTempDirectory() {
-        String filesRootDirectory = System.getProperty("dataverse.files.directory");
-        if (filesRootDirectory == null || filesRootDirectory.equals("")) {
-            filesRootDirectory = "/tmp/files";
-        }
+        String filesRootDirectory = SystemConfig.getFilesDirectoryStatic();
 
         String filesTempDirectory = filesRootDirectory + "/temp";
 
@@ -516,33 +228,81 @@ public class FileUtil implements java.io.Serializable {
             try {
                 Files.createDirectories(Paths.get(filesTempDirectory));
             } catch (IOException ex) {
-                logger.severe("Failed to create filesTempDirectory: " + filesTempDirectory);
-                return null;
+                throw new IllegalStateException("Failed to create files temp directory: " + filesTempDirectory, ex);
             }
         }
 
         return filesTempDirectory;
     }
 
+    public static Path limitedInputStreamToTempFile(InputStream inputStream, Long fileSizeLimit)
+            throws IOException, FileExceedsMaxSizeException {
+        Path tempFile = Files.createTempFile(Paths.get(getFilesTempDirectory()), "tmp", "upload");
+
+        try (OutputStream outStream = Files.newOutputStream(tempFile)) {
+            logger.info("Will attempt to save the file as: " + tempFile.toString());
+
+            byte[] buffer = new byte[8 * 1024];
+            int bytesRead;
+            long totalBytesRead = 0;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                totalBytesRead += bytesRead;
+                if (fileSizeLimit != null && totalBytesRead > fileSizeLimit) {
+                    try {
+                        tempFile.toFile().delete();
+                    } catch (Exception ex) {
+                        logger.error("There was a problem with deleting temporary file");
+                    }
+
+                    throw new FileExceedsMaxSizeException(fileSizeLimit, MessageFormat.format(BundleUtil.getStringFromBundle("file.addreplace.error.file_exceeds_limit"),
+                                                                               bytesToHumanReadable(fileSizeLimit)));
+                }
+                outStream.write(buffer, 0, bytesRead);
+            }
+        }
+
+        return tempFile;
+    }
+
+    public static File inputStreamToFile(InputStream inputStream) throws IOException {
+        return inputStreamToFile(inputStream, 1024);
+    }
+
+    public static File inputStreamToFile(InputStream inputStream, int bufferSize) throws IOException {
+        if (inputStream == null) {
+            logger.info("In inputStreamToFile but inputStream was null! Returning null rather than a File.");
+            return null;
+        }
+        File file = File.createTempFile(UUID.randomUUID().toString(), UUID.randomUUID().toString());
+        try (OutputStream outputStream = new FileOutputStream(file)) {
+            int read = 0;
+            byte[] bytes = new byte[bufferSize];
+            while ((read = inputStream.read(bytes)) != -1) {
+                outputStream.write(bytes, 0, read);
+            }
+            return file;
+        }
+    }
+    
     public static String generateStorageIdentifier() {
 
         UUID uid = UUID.randomUUID();
 
-        logger.log(Level.FINE, "UUID value: {0}", uid.toString());
+        logger.debug("UUID value: {}", uid.toString());
 
         // last 6 bytes, of the random UUID, in hex:
 
         String hexRandom = uid.toString().substring(24);
 
-        logger.log(Level.FINE, "UUID (last 6 bytes, 12 hex digits): {0}", hexRandom);
+        logger.debug("UUID (last 6 bytes, 12 hex digits): {}", hexRandom);
 
         String hexTimestamp = Long.toHexString(new Date().getTime());
 
-        logger.log(Level.FINE, "(not UUID) timestamp in hex: {0}", hexTimestamp);
+        logger.debug("(not UUID) timestamp in hex: {}", hexTimestamp);
 
         String storageIdentifier = hexTimestamp + "-" + hexRandom;
 
-        logger.log(Level.FINE, "timestamp/UUID hybrid: {0}", storageIdentifier);
+        logger.debug("timestamp/UUID hybrid: {}", storageIdentifier);
         return storageIdentifier;
     }
 
@@ -593,22 +353,22 @@ public class FileUtil implements java.io.Serializable {
         // Each of these conditions is sufficient reason to have to
         // present the user with the popup:
         if (datasetVersion == null) {
-            logger.fine("Download popup required because datasetVersion is null.");
+            logger.debug("Download popup required because datasetVersion is null.");
             return false;
         }
         //0. if version is draft then Popup "not required"
         if (!datasetVersion.isReleased()) {
-            logger.fine("Download popup required because datasetVersion has not been released.");
+            logger.debug("Download popup required because datasetVersion has not been released.");
             return false;
         }
 
         // 1. Guest Book:
         if (datasetVersion.getDataset() != null && datasetVersion.getDataset().getGuestbook() != null && datasetVersion.getDataset().getGuestbook().isEnabled() && datasetVersion.getDataset().getGuestbook().getDataverse() != null) {
-            logger.fine("Download popup required because of guestbook.");
+            logger.debug("Download popup required because of guestbook.");
             return true;
         }
 
-        logger.fine("Download popup is not required.");
+        logger.debug("Download popup is not required.");
         return false;
     }
 
@@ -619,19 +379,19 @@ public class FileUtil implements java.io.Serializable {
 
         //0. if version is draft then Popup "not required"
         if (!fileMetadata.getDatasetVersion().isReleased()) {
-            logger.fine("Request access popup not required because datasetVersion has not been released.");
+            logger.debug("Request access popup not required because datasetVersion has not been released.");
             return false;
         }
 
         // 1. Terms of Use:
         FileTermsOfUse termsOfUse = fileMetadata.getTermsOfUse();
         if (termsOfUse.getTermsOfUseType() == TermsOfUseType.RESTRICTED) {
-            logger.fine("Request access popup required because file is restricted.");
+            logger.debug("Request access popup required because file is restricted.");
             return true;
         }
 
 
-        logger.fine("Request access popup is not required.");
+        logger.debug("Request access popup is not required.");
         return false;
     }
 
@@ -645,7 +405,7 @@ public class FileUtil implements java.io.Serializable {
         }
         if (fileMetadata.getTermsOfUse().getTermsOfUseType() == TermsOfUseType.RESTRICTED) {
             String msg = "Not publicly downloadable because the file is restricted.";
-            logger.fine(msg);
+            logger.debug(msg);
             return false;
         }
         return !isDownloadPopupRequired(fileMetadata.getDatasetVersion());
@@ -728,7 +488,7 @@ public class FileUtil implements java.io.Serializable {
                 fileDownloadUrl += "?gbrecs=true";
             }
         }
-        logger.fine("Returning file download url: " + fileDownloadUrl);
+        logger.debug("Returning file download url: " + fileDownloadUrl);
         return fileDownloadUrl;
     }
 
@@ -766,26 +526,6 @@ public class FileUtil implements java.io.Serializable {
         return fileDownloadUrl;
     }
 
-    public static File inputStreamToFile(InputStream inputStream) throws IOException {
-        return inputStreamToFile(inputStream, 1024);
-    }
-
-    public static File inputStreamToFile(InputStream inputStream, int bufferSize) throws IOException {
-        if (inputStream == null) {
-            logger.info("In inputStreamToFile but inputStream was null! Returning null rather than a File.");
-            return null;
-        }
-        File file = File.createTempFile(UUID.randomUUID().toString(), UUID.randomUUID().toString());
-        try (OutputStream outputStream = new FileOutputStream(file)) {
-            int read = 0;
-            byte[] bytes = new byte[bufferSize];
-            while ((read = inputStream.read(bytes)) != -1) {
-                outputStream.write(bytes, 0, read);
-            }
-            return file;
-        }
-    }
-
     /*
      * This method tells you if thumbnail generation is *supported*
      * on this type of file. i.e., if true, it does not guarantee that a thumbnail
@@ -819,33 +559,6 @@ public class FileUtil implements java.io.Serializable {
                         (file.isTabularData() && file.hasGeospatialTag()) ||
                         contentType.equalsIgnoreCase(ApplicationMimeType.GEO_SHAPE.getMimeValue())));
     }
-
-
-    /*
-     * The method below appears to be unnecessary;
-     * it duplicates the method generateImageThumbnailFromFileAsBase64() from ImageThumbConverter;
-     * plus it creates an unnecessary temp file copy of the source file.
-    public static String rescaleImage(File file) throws IOException {
-        if (file == null) {
-            logger.info("file was null!!");
-            return null;
-        }
-        File tmpFile = File.createTempFile("tempFileToRescale", ".tmp");
-        BufferedImage fullSizeImage = ImageIO.read(file);
-        if (fullSizeImage == null) {
-            logger.info("fullSizeImage was null!");
-            return null;
-        }
-        int width = fullSizeImage.getWidth();
-        int height = fullSizeImage.getHeight();
-        FileChannel src = new FileInputStream(file).getChannel();
-        FileChannel dest = new FileOutputStream(tmpFile).getChannel();
-        dest.transferFrom(src, 0, src.size());
-        String pathToResizedFile = ImageThumbConverter.rescaleImage(fullSizeImage, width, height, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE, tmpFile.getAbsolutePath());
-        File resizedFile = new File(pathToResizedFile);
-        return ImageThumbConverter.getImageAsBase64FromFile(resizedFile);
-    }
-    */
 
     public static boolean isPackageFile(DataFile dataFile) {
         return PackageMimeType.DATAVERSE_PACKAGE.getMimeValue().equalsIgnoreCase(dataFile.getContentType());

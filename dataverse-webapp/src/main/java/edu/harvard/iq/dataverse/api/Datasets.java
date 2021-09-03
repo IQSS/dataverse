@@ -97,6 +97,7 @@ import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import io.vavr.control.Either;
 import io.vavr.control.Try;
 import org.apache.commons.cli.MissingArgumentException;
+import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -1720,11 +1721,15 @@ public class Datasets extends AbstractApiBean {
         //-------------------
         // (4) Run "runAddFileByDatasetId"
         //-------------------
-        addFileHelper.runAddFileByDataset(dataset,
+        try {
+            addFileHelper.runAddFileByDataset(dataset,
                                           newFilename,
                                           newFileContentType,
                                           fileInputStream,
                                           optionalFileParams);
+        } finally {
+            IOUtils.closeQuietly(fileInputStream);
+        }
 
 
         if (addFileHelper.hasError()) {

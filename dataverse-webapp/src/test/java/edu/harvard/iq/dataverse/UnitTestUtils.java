@@ -1,7 +1,10 @@
 package edu.harvard.iq.dataverse;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.apache.commons.io.IOUtils;
 
@@ -20,6 +23,12 @@ public class UnitTestUtils {
     public static String readFileToString(String relResourcePath) throws IOException {
         throwExceptionIfPathNotRelative(relResourcePath);
         return IOUtils.resourceToString(relResourcePath, StandardCharsets.UTF_8, UnitTestUtils.class.getClassLoader());
+    }
+
+    public static Path copyFileFromClasspath(String classpath, Path destinationPath) throws IOException {
+        byte[] bytes = UnitTestUtils.readFileToByteArray(classpath);
+        Files.write(destinationPath, bytes);
+        return destinationPath;
     }
 
     /**

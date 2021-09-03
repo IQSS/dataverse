@@ -57,16 +57,11 @@ import static java.lang.System.out;
  */
 public class IngestableDataChecker implements java.io.Serializable {
 
-    /**
-     *
-     */
-
-    // static fields
     private static Logger dbgLog = Logger.getLogger(IngestableDataChecker.class.getPackage().getName());
 
-    // default format set
-    private static String[] defaultFormatSet = {"POR", "SAV", "DTA", "RDA", "XPT"};
-    private String[] testFormatSet;
+    // supported formats
+    private static final String[] TABULAR_DATA_FORMAT_SET = {"POR", "SAV", "DTA", "RDA"};
+
     // Map that returns a Stata Release number
     private static Map<Byte, String> stataReleaseNumber = new HashMap<Byte, String>();
     public static String STATA_13_HEADER = "<stata_dta><header><release>117</release>";
@@ -129,33 +124,10 @@ public class IngestableDataChecker implements java.io.Serializable {
     private boolean windowsNewLine = true;
 
     // constructors
-    // using the default format set
     public IngestableDataChecker() {
-        this.testFormatSet = defaultFormatSet;
-    }
-    // using a user-defined customized format set
-
-    public IngestableDataChecker(String[] requestedFormatSet) {
-        this.testFormatSet = requestedFormatSet;
-        dbgLog.fine("SubsettableFileChecker instance=" + this.toString());
-    }
-
-    // public class methods
-    public static String[] getDefaultTestFormatSet() {
-        return defaultFormatSet;
-    }
-
-    /**
-     * print the usage
-     */
-    public static void printUsage() {
-        out.println("Usage : java subsettableFileChecker <datafileName>");
     }
 
     // instance methods
-    public String[] getTestFormatSet() {
-        return this.testFormatSet;
-    }
 
     // test methods start here ------------------------------------------------
 
@@ -636,7 +608,7 @@ public class IngestableDataChecker implements java.io.Serializable {
             //for (String fmt : defaultFormatSet){
             buff.rewind();
             dbgLog.fine("before the for loop");
-            for (String fmt : this.getTestFormatSet()) {
+            for (String fmt : TABULAR_DATA_FORMAT_SET) {
 
                 // get a test method
                 Method mthd = testMethods.get(fmt);

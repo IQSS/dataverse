@@ -30,6 +30,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.mockito.stubbing.Answer;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -84,7 +85,7 @@ public class ReplaceFileHandlerTest {
         //then
         FileReplaceException thrown;
         thrown = Assertions.assertThrows(FileReplaceException.class,
-                                () -> replaceFileHandler.createDataFile(dataset, new byte[0], fileName, fileContentType));
+                                () -> replaceFileHandler.createDataFile(dataset, new ByteArrayInputStream(new byte[0]), fileName, fileContentType));
         Assertions.assertEquals(FileReplaceException.Reason.ZIP_NOT_SUPPORTED, thrown.getReason());
 
     }
@@ -95,12 +96,12 @@ public class ReplaceFileHandlerTest {
         Dataset dataset = new Dataset();
         String fileName = "testFile.png";
         String fileContentType = "image/png";
-        when(dataFileCreator.createDataFiles(any(), any(), any(), any())).thenThrow(VirusFoundException.class);
+        when(dataFileCreator.createDataFiles(any(), any(), any())).thenThrow(VirusFoundException.class);
 
         //then
         FileReplaceException thrown;
         thrown = Assertions.assertThrows(FileReplaceException.class,
-                                () -> replaceFileHandler.createDataFile(dataset, new byte[0], fileName, fileContentType));
+                                () -> replaceFileHandler.createDataFile(dataset, new ByteArrayInputStream(new byte[0]), fileName, fileContentType));
         Assertions.assertEquals(FileReplaceException.Reason.VIRUS_DETECTED, thrown.getReason());
 
     }

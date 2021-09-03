@@ -13,12 +13,20 @@ import javax.ejb.ApplicationException;
 @ApplicationException(rollback = true)
 public class FileExceedsMaxSizeException extends RuntimeException {
 
-    public FileExceedsMaxSizeException(String message) {
+    private long maxFileSize;
+
+    public FileExceedsMaxSizeException(long maxFileSize, String message) {
         super(message);
+        this.maxFileSize = maxFileSize;
     }
 
-    public FileExceedsMaxSizeException(String message, Throwable cause) {
+    public FileExceedsMaxSizeException(long maxFileSize, String message, Throwable cause) {
         super(message, cause);
+        this.maxFileSize = maxFileSize;
+    }
+
+    public long getMaxFileSize() {
+        return maxFileSize;
     }
 
 }
