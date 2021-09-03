@@ -680,31 +680,33 @@ The ability to reload metadata blocks means that SQL update scripts don't need t
 Using External Vocabulary Services
 ----------------------------------
 
-The Dataverse software now has a mechanism to associate specific fields defined in metadata blocks with a vocabulary(ies) managed by external services. The mechanism relies on trusted third-party Javascripts. The mapping from field type to external vocabulary(ies) is managed via the :CVoCConf setting.
+The Dataverse software has a mechanism to associate specific fields defined in metadata blocks with a vocabulary(ies) managed by external services. The mechanism relies on trusted third-party Javascripts. The mapping from field type to external vocabulary(ies) is managed via the :ref:`:CVocConf <:CVocConf>` setting.
 
 *This functionality is considered 'experimental'. It may require significant effort to configure and is likely to evolve in subsequent Dataverse software releases.*
 
 
 The effect of configuring this mechanism is similar to that of defining a field in a metadata block with 'allowControlledVocabulary=true':
 
-- Users are able to select from a controlled list of values
-- Values can be shown in any language the term has been defined in
+- Users are able to select from a controlled list of values.
+- Values can be shown in any language the term has been defined in.
   
-In general, the external vocabulary support mechanism may be a better choice for large vocabularies, hierarchical/structured vocabularies, and/or vocabularies managed by third-parties. In addition, the external vocabulary mechanism differs from the internal controlled vocabular mechanism in several ways that may make it a preferred option:
+In general, the external vocabulary support mechanism may be a better choice for large vocabularies, hierarchical/structured vocabularies, and/or vocabularies managed by third-parties. In addition, the external vocabulary mechanism differs from the internal controlled vocabulary mechanism in several ways that may make it a preferred option:
 
-- the machine-readable URI form of a vocabulary is stored in the Dataverse database and can be included in exported metadata files
-- vocabulary mappings can be changed without changing the metadata block, making it possible for different Dataverse installations to use different vocabularies in the same field
-- mappings can associate a field with more than one vocabulary
-- mappings can be configured to also allow custom/free-text entries as well as vocabulary values
-- mappings can be configured for compound fields and a user's selection of a given vocabulary value can be used to fill in related child fields (e.g. selection of a keyword could fill in a vocabulary name field as well)
-- removing a mapping does not affect stored values (the field would revert to allowing free text)
+- the machine-readable URI form of a vocabulary is stored in the Dataverse database and can be included in exported metadata files.
+- vocabulary mappings can be changed without changing the metadata block, making it possible for different Dataverse installations to use different vocabularies in the same field.
+- mappings can associate a field with more than one vocabulary.
+- mappings can be configured to also allow custom/free-text entries as well as vocabulary values.
+- mappings can be configured for compound fields and a user's selection of a given vocabulary value can be used to fill in related child fields (e.g. selection of a keyword could fill in a vocabulary name field as well).
+- removing a mapping does not affect stored values (the field would revert to allowing free text).
  
-The specifics of the user interface for entering/selecting a vocabulary term and how that term is then displayed are managed by a third-party Javascript. The initial Javascripts that have been created provide autocompletion, displaying a list of choices that match what the user has typed so far, but other interfaces, such as displaying a tree of options for a hierarchical vocabulary, are possible. 
+The specifics of the user interface for entering/selecting a vocabulary term and how that term is then displayed are managed by third-party Javascripts. The initial Javascripts that have been created provide auto-completion, displaying a list of choices that match what the user has typed so far, but other interfaces, such as displaying a tree of options for a hierarchical vocabulary, are possible. 
 Similarly, existing scripts do relatively simple things for displaying a term - showing the term's name in the appropriate language and providing a link to an external URL with more information, but more sophisticated displays are possible.
+
+Scripts supporting use of vocabularies from services supporting the SKOMOS protocol (see https://skosmos.org) and retrieving ORCIDs (from https:/orcid.org) are available https://github.com/gdcc/dataverse-external-vocab-support. (Custom scripts can also be used and community members are encouraged to share new scripts through the dataverse-external-vocab-support repository.)
 
 Configuration involves specifying which fields are to be mapped, whether free-text entries are allowed, which vocabulary(ies) should be used, what languages those vocabulary(ies) are available in, and several service protocol and service instance specific parameters.
 These are all defined in the :ref:`:CVocConf <:CVocConf>` setting as a JSON array. Details about the required elements as well as example JSON arrays are available at https://github.com/gdcc/dataverse-external-vocab-support, along with an example metadata block that can be used for testing.
-The scripts required can be hosted locally or retrieved dynamically from https://gdcc.github.io/ (similar to how dataverse-previewers work).  
+The scripts required can be hosted locally or retrieved dynamically from https://gdcc.github.io/ (similar to how dataverse-previewers work).
 
 Tips from the Dataverse Community
 ---------------------------------
