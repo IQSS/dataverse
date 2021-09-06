@@ -40,6 +40,8 @@ import javax.persistence.Transient;
 @Entity
 public class MetadataBlock implements Serializable {
     
+    public static final String BLOCK_NAME_REGEX = "^[a-z][\\w]+$";
+    
     /**
      * Reusable definition of headers used for parsing this model class from data (TSV, JSON, manual, ...)
      * Using the Headers.Constants class to work around annotations not able to use enum values (a Java limitation).
@@ -98,7 +100,7 @@ public class MetadataBlock implements Serializable {
     
     @Parsed(field = Headers.Constants.NAME)
     // Docs: No spaces or punctuation, except underscore. By convention, should start with a letter, and use lower camel case
-    @Validate(matches = "^[a-z][\\w]+$")
+    @Validate(matches = BLOCK_NAME_REGEX)
     public void setName(String name) {
         this.name = name;
     }
