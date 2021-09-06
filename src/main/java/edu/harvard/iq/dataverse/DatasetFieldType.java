@@ -21,11 +21,11 @@ import javax.persistence.*;
  */
 @NamedQueries({
         @NamedQuery(name="DatasetFieldType.findByName",
-                            query= "SELECT dsfType FROM DatasetFieldType dsfType WHERE dsfType.name=:name"),
-	@NamedQuery(name = "DatasetFieldType.findAllFacetable",
-			    query= "select dsfType from DatasetFieldType dsfType WHERE dsfType.facetable = true and dsfType.title != '' order by dsfType.id"),
+                    query= "SELECT dsfType FROM DatasetFieldType dsfType WHERE dsfType.name=:name"),
+        @NamedQuery(name = "DatasetFieldType.findAllFacetable",
+                    query= "select dsfType from DatasetFieldType dsfType WHERE dsfType.facetable = true and dsfType.title != '' order by dsfType.id"),
         @NamedQuery(name = "DatasetFieldType.findFacetableByMetadaBlock",
-			    query= "select dsfType from DatasetFieldType dsfType WHERE dsfType.facetable = true and dsfType.title != '' and dsfType.metadataBlock.id = :metadataBlockId order by dsfType.id")
+                    query= "select dsfType from DatasetFieldType dsfType WHERE dsfType.facetable = true and dsfType.title != '' and dsfType.metadataBlock.id = :metadataBlockId order by dsfType.id")
 })
 @Entity
 @Table(indexes = {@Index(columnList="metadatablock_id"),@Index(columnList="parentdatasetfieldtype_id")})
@@ -307,11 +307,11 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     private String uri;
 
     public String getUri() {
-    	return uri;
+        return uri;
     }
 
     public void setUri(String uri) {
-    	this.uri=uri;
+        this.uri=uri;
     }
     
     /**
