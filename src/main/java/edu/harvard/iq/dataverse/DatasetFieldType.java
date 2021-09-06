@@ -1,8 +1,16 @@
 package edu.harvard.iq.dataverse;
 
+import com.univocity.parsers.annotations.BooleanString;
+import com.univocity.parsers.annotations.EnumOptions;
+import com.univocity.parsers.annotations.Parsed;
+import com.univocity.parsers.annotations.UpperCase;
+import com.univocity.parsers.annotations.Validate;
+import com.univocity.parsers.conversions.EnumSelector;
 import edu.harvard.iq.dataverse.search.SolrField;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.metadata.Placeholder;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import java.io.Serializable;
@@ -12,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.MissingResourceException;
+import java.util.stream.Collectors;
 import javax.faces.model.SelectItem;
 import javax.persistence.*;
 
@@ -30,7 +39,71 @@ import javax.persistence.*;
 @Entity
 @Table(indexes = {@Index(columnList="metadatablock_id"),@Index(columnList="parentdatasetfieldtype_id")})
 public class DatasetFieldType implements Serializable, Comparable<DatasetFieldType> {
-
+    
+    /**
+     * Match (1) "[A-Za-z][\w\.]+\w" or (2) [A-Za-z_][\w\.]+?[\w&&[^_]]
+     * (1): Start with a letter, do not end with .
+     * (2): Start with a letter or _, do not end with . or _. (Invalidates _xxx_ which is reserved for Solr internal use)
+     *
+     * Try here: https://regex101.com/r/ULlonz/1
+     */
+    public static final String FIELD_NAME_REGEX = "^([A-Za-z][\\w\\.]+\\w|[A-Za-z_][\\w\\.]+?[\\w&&[^_]])$";
+    
+    public enum Headers {
+        NAME(Constants.NAME),
+        TITLE(Constants.TITLE),
+        DESCRIPTION(Constants.DESCRIPTION),
+        WATERMARK(Constants.WATERMARK),
+        FIELD_TYPE(Constants.FIELD_TYPE),
+        DISPLAY_ORDER(Constants.DISPLAY_ORDER),
+        DISPLAY_FORMAT(Constants.DISPLAY_FORMAT),
+        ADVANCED_SEARCH_FIELD(Constants.ADVANCED_SEARCH_FIELD),
+        ALLOW_CONTROLLED_VOCABULARY(Constants.ALLOW_CONTROLLED_VOCABULARY),
+        ALLOW_MULTIPLES(Constants.ALLOW_MULTIPLES),
+        FACETABLE(Constants.FACETABLE),
+        DISPLAY_ON_CREATE(Constants.DISPLAY_ON_CREATE),
+        REQUIRED(Constants.REQUIRED),
+        PARENT(Constants.PARENT),
+        METADATA_BLOCK(Constants.METADATA_BLOCK),
+        TERM_URI(Constants.TERM_URI);
+        
+        public static final class Constants {
+            public final static String NAME = "name";
+            public final static String TITLE = "dataverseAlias";
+            public final static String DESCRIPTION = "description";
+            public final static String WATERMARK = "watermark";
+            public final static String FIELD_TYPE = "fieldType";
+            public final static String DISPLAY_ORDER = "displayOrder";
+            public final static String DISPLAY_FORMAT = "displayFormat";
+            public final static String ADVANCED_SEARCH_FIELD = "advancedSearchField";
+            public final static String ALLOW_CONTROLLED_VOCABULARY = "allowControlledVocabulary";
+            public final static String ALLOW_MULTIPLES = "allowmultiples";
+            public final static String FACETABLE = "facetable";
+            public final static String DISPLAY_ON_CREATE = "displayoncreate";
+            public final static String REQUIRED = "required";
+            public final static String PARENT = "parent";
+            public final static String METADATA_BLOCK = "metadatablock_id";
+            public final static String TERM_URI = "termURI";
+        }
+    
+        private final String key;
+        Headers(String key) {
+            this.key = key;
+        }
+        public String key() {
+            return this.key;
+        }
+    
+        public static String[] keys() {
+            return Arrays.stream(values()).map(v -> v.key()).collect(Collectors.toUnmodifiableList()).toArray(new String[]{});
+        }
+        
+        public static List<DatasetFieldType.Headers> booleanKeys() {
+            return List.of(ADVANCED_SEARCH_FIELD, ALLOW_CONTROLLED_VOCABULARY, ALLOW_MULTIPLES,
+                FACETABLE, DISPLAY_ON_CREATE, REQUIRED);
+        }
+    }
+    
     /**
      * The set of possible metatypes of the field. Used for validation and layout.
      */
@@ -160,11 +233,23 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setDisplayOrder(int displayOrder) {
         this.displayOrder = displayOrder;
     }
+    
+    /**
+     * Set display order value from String. Allow only positive integers >= 0.
+     * @param displayOrder
+     */
+    @Parsed(field = Headers.Constants.DISPLAY_ORDER)
+    @Validate(matches = "^\\d+$")
+    public void setDisplayOrder(String displayOrder) {
+        this.displayOrder = Integer.parseInt(displayOrder);
+    }
 
     public String getDisplayFormat() {
         return displayFormat;
     }
 
+    @Parsed(field = Headers.Constants.DISPLAY_FORMAT)
+    @Validate(nullable = true)
     public void setDisplayFormat(String displayFormat) {
         this.displayFormat = displayFormat;
     }
@@ -189,7 +274,19 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public String getName() {
         return name;
     }
-
+    
+    /**
+     * Set a fields name. Maps to Solr Field names, thus requires following their naming conventions.
+     * This is a required field!
+     *
+     * 1. Solr: "Field names should consist of alphanumeric or underscore characters only and not start with a digit.
+     *           Names with both leading and trailing underscores (e.g. _version_) are reserved."
+     * 2. Names may contain dots (historically grown...), Solr seems to be OK with that
+     *
+     * @param name
+     */
+    @Parsed(field = Headers.Constants.NAME)
+    @Validate(matches = FIELD_NAME_REGEX)
     public void setName(String name) {
         this.name = name;
     }
@@ -198,6 +295,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         return title;
     }
 
+    @Parsed(field = Headers.Constants.TITLE)
     public void setTitle(String title) {
         this.title = title;
     }
@@ -206,6 +304,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         return description;
     }
 
+    @Parsed(field = Headers.Constants.DESCRIPTION)
+    @Validate(allowBlanks = true, nullable = true)
     public void setDescription(String description) {
         this.description = description;
     }
@@ -213,7 +313,9 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public boolean isAllowControlledVocabulary() {
         return allowControlledVocabulary;
     }
-
+    
+    @Parsed(field = Headers.Constants.ALLOW_CONTROLLED_VOCABULARY)
+    @BooleanString(trueStrings = {"true", "TRUE"}, falseStrings = {"false", "FALSE"})
     public void setAllowControlledVocabulary(boolean allowControlledVocabulary) {
         this.allowControlledVocabulary = allowControlledVocabulary;
     }
@@ -227,7 +329,9 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public boolean isAllowMultiples() {
         return this.allowMultiples;
     }
-
+    
+    @Parsed(field = Headers.Constants.ALLOW_MULTIPLES)
+    @BooleanString(trueStrings = {"true", "TRUE"}, falseStrings = {"false", "FALSE"})
     public void setAllowMultiples(boolean allowMultiples) {
         this.allowMultiples = allowMultiples;
     }
@@ -236,6 +340,9 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         return fieldType;
     }
 
+    @Parsed(field = Headers.Constants.FIELD_TYPE)
+    @UpperCase
+    @EnumOptions(selectors = EnumSelector.NAME)
     public void setFieldType(FieldType fieldType) {
         this.fieldType = fieldType;
     }
@@ -244,6 +351,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         return watermark;
     }
 
+    @Parsed(field = Headers.Constants.WATERMARK)
+    @Validate(allowBlanks = true, nullable = true)
     public void setWatermark(String watermark) {
         this.watermark = watermark;
     }
@@ -255,7 +364,9 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public boolean isFacetable() {
         return facetable;
     }
-
+    
+    @Parsed(field = Headers.Constants.FACETABLE)
+    @BooleanString(trueStrings = {"true", "TRUE"}, falseStrings = {"false", "FALSE"})
     public void setFacetable(boolean facetable) {
         this.facetable = facetable;
     }
@@ -278,6 +389,8 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         return displayOnCreate;
     }
 
+    @Parsed(field = Headers.Constants.DISPLAY_ON_CREATE)
+    @BooleanString(trueStrings = {"true", "TRUE"}, falseStrings = {"false", "FALSE"})
     public void setDisplayOnCreate(boolean displayOnCreate) {
         this.displayOnCreate = displayOnCreate;
     }
@@ -299,6 +412,13 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setMetadataBlock(MetadataBlock metadataBlock) {
         this.metadataBlock = metadataBlock;
     }
+    
+    @Parsed(field = Headers.Constants.METADATA_BLOCK)
+    @Validate(matches = MetadataBlock.BLOCK_NAME_REGEX)
+    private void setMetadataBlock(String metadataBlock) {
+        this.metadataBlock = new Placeholder.MetadataBlock();
+        this.metadataBlock.setName(metadataBlock);
+    }
 
     /**
      * A formal URI for the field used in json-ld exports
@@ -309,7 +429,9 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public String getUri() {
         return uri;
     }
-
+    
+    @Parsed(field = Headers.Constants.TERM_URI)
+    @Validate(nullable = true)
     public void setUri(String uri) {
         this.uri=uri;
     }
@@ -370,6 +492,13 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public void setParentDatasetFieldType(DatasetFieldType parentDatasetFieldType) {
         this.parentDatasetFieldType = parentDatasetFieldType;
     }
+    
+    @Parsed(field = Headers.Constants.PARENT)
+    @Validate(nullable = true, matches = FIELD_NAME_REGEX)
+    private void setParentDatasetFieldType(String parent) {
+        this.parentDatasetFieldType = new Placeholder.DatasetFieldType();
+        this.parentDatasetFieldType.setName(parent);
+    }
 
 
     public Set<DataverseFacet> getDataverseFacets() {
@@ -412,7 +541,9 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public boolean isRequired() {
         return this.required;
     }
-
+    
+    @Parsed(field = Headers.Constants.REQUIRED)
+    @BooleanString(trueStrings = {"true", "TRUE"}, falseStrings = {"false", "FALSE"})
     public void setRequired(boolean required) {
         this.required = required;
     }
@@ -422,7 +553,9 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     public boolean isAdvancedSearchFieldType() {
         return this.advancedSearchFieldType;
     }
-
+    
+    @Parsed(field = Headers.Constants.ADVANCED_SEARCH_FIELD)
+    @BooleanString(trueStrings = {"true", "TRUE"}, falseStrings = {"false", "FALSE"})
     public void setAdvancedSearchFieldType(boolean advancedSearchFieldType) {
         this.advancedSearchFieldType = advancedSearchFieldType;
     }
@@ -606,6 +739,25 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     
     @Override
     public String toString() {
-        return "[DatasetFieldType name:" + getName() + " id:" + getId() + "]";
+        return "DatasetFieldType{" +
+            "id=" + id +
+            ", name='" + name + '\'' +
+            ", title='" + title + '\'' +
+            ", description='" + description + '\'' +
+            ", fieldType=" + fieldType +
+            ", allowControlledVocabulary=" + allowControlledVocabulary +
+            ", watermark='" + watermark + '\'' +
+            ", validationFormat='" + validationFormat + '\'' +
+            ", displayOrder=" + displayOrder +
+            ", displayFormat='" + displayFormat + '\'' +
+            ", allowMultiples=" + allowMultiples +
+            ", facetable=" + facetable +
+            ", displayOnCreate=" + displayOnCreate +
+            ", metadataBlock=" + metadataBlock +
+            ", uri='" + uri + '\'' +
+            ", parentDatasetFieldType=" + parentDatasetFieldType +
+            ", required=" + required +
+            ", advancedSearchFieldType=" + advancedSearchFieldType +
+            '}';
     }
 }
