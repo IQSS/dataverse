@@ -32,7 +32,9 @@ class MetadataBlockParsingTest {
     @BeforeAll
     static void setUp() {
         settings.setProcessor(metadataBlockProcessor);
-        settings.setHeaders(MetadataBlock.Headers.keys());
+        settings.setHeaderExtractionEnabled(true);
+        // TODO: replace this char with a global constant (introduced when creating the parsing bean)
+        settings.getFormat().setComment('\'');
         parser = new TsvParser(settings);
     }
     
@@ -165,6 +167,8 @@ class MetadataBlockParsingTest {
         assertThrows(DataValidationException.class, () -> parser.parse(reader));
     }
     
+    private static final String header = "#metadatablock\t" + String.join("\t", MetadataBlock.Headers.keys());
+    
     /**
      * This method simply inserts all the values from the map into a line, combined by \t and adds a "header" line before it.
      * It does this based on the {@link MetadataBlock.Headers} enum value order, which is the same as in the TSV definition.
@@ -177,6 +181,6 @@ class MetadataBlockParsingTest {
         List<String> fieldValues = Arrays.stream(MetadataBlock.Headers.values())
                                          .map(k -> values.getOrDefault(k, ""))
                                          .collect(Collectors.toList());
-        return "unused header line" + settings.getFormat().getLineSeparatorString() + String.join("\t", fieldValues);
+        return header + settings.getFormat().getLineSeparatorString() + "\t" + String.join("\t", fieldValues);
     }
 }
