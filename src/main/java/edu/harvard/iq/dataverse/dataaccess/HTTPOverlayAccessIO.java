@@ -421,50 +421,54 @@ public class HTTPOverlayAccessIO<T extends DvObject> extends StorageIO<T> {
             String baseDriverId = System.getProperty("dataverse.files." + driverId + ".baseStore");
             String fullStorageLocation = null;
             String baseDriverType = System.getProperty("dataverse.files." + baseDriverId + ".type");
-            if (this.getDvObject() != null) {
-                fullStorageLocation = getStorageLocation();
+            if(dvObject  instanceof Dataset) {
+                baseStore = DataAccess.getStorageIO(dvObject, req, baseDriverId);
+            } else {
+                if (this.getDvObject() != null) {
+                    fullStorageLocation = getStorageLocation();
 
-                // S3 expects <id>://<bucketname>/<key>
-                switch (baseDriverType) {
-                case "s3":
-                    fullStorageLocation = baseDriverId + "://"
-                            + System.getProperty("dataverse.files." + baseDriverId + ".bucket-name") + "/"
-                            + fullStorageLocation;
-                    break;
-                case "file":
-                    fullStorageLocation = baseDriverId + "://"
-                            + System.getProperty("dataverse.files." + baseDriverId + ".directory") + "/"
-                            + fullStorageLocation;
-                    break;
-                default:
-                    logger.warning("Not Implemented: HTTPOverlay store with base store type: "
-                            + System.getProperty("dataverse.files." + baseDriverId + ".type"));
-                    throw new IOException("Not implemented");
+                    // S3 expects <id>://<bucketname>/<key>
+                    switch (baseDriverType) {
+                    case "s3":
+                        fullStorageLocation = baseDriverId + "://"
+                                + System.getProperty("dataverse.files." + baseDriverId + ".bucket-name") + "/"
+                                + fullStorageLocation;
+                        break;
+                    case "file":
+                        fullStorageLocation = baseDriverId + "://"
+                                + System.getProperty("dataverse.files." + baseDriverId + ".directory") + "/"
+                                + fullStorageLocation;
+                        break;
+                    default:
+                        logger.warning("Not Implemented: HTTPOverlay store with base store type: "
+                                + System.getProperty("dataverse.files." + baseDriverId + ".type"));
+                        throw new IOException("Not implemented");
+                    }
+
+                } else if (storageLocation != null) {
+                    // <httpDriverId>://<baseStorageIdentifier>//<baseUrlPath>
+                    String storageId = storageLocation.substring(storageLocation.indexOf("://" + 3));
+                    fullStorageLocation = storageId.substring(0, storageId.indexOf("//"));
+
+                    switch (baseDriverType) {
+                    case "s3":
+                        fullStorageLocation = baseDriverId + "://"
+                                + System.getProperty("dataverse.files." + baseDriverId + ".bucket-name") + "/"
+                                + fullStorageLocation;
+                        break;
+                    case "file":
+                        fullStorageLocation = baseDriverId + "://"
+                                + System.getProperty("dataverse.files." + baseDriverId + ".directory") + "/"
+                                + fullStorageLocation;
+                        break;
+                    default:
+                        logger.warning("Not Implemented: HTTPOverlay store with base store type: "
+                                + System.getProperty("dataverse.files." + baseDriverId + ".type"));
+                        throw new IOException("Not implemented");
+                    }
                 }
-
-            } else if (storageLocation != null) {
-                // <httpDriverId>://<baseStorageIdentifier>//<baseUrlPath>
-                String storageId = storageLocation.substring(storageLocation.indexOf("://" + 3));
-                fullStorageLocation = storageId.substring(0, storageId.indexOf("//"));
-
-                switch (baseDriverType) {
-                case "s3":
-                    fullStorageLocation = baseDriverId + "://"
-                            + System.getProperty("dataverse.files." + baseDriverId + ".bucket-name") + "/"
-                            + fullStorageLocation;
-                    break;
-                case "file":
-                    fullStorageLocation = baseDriverId + "://"
-                            + System.getProperty("dataverse.files." + baseDriverId + ".directory") + "/"
-                            + fullStorageLocation;
-                    break;
-                default:
-                    logger.warning("Not Implemented: HTTPOverlay store with base store type: "
-                            + System.getProperty("dataverse.files." + baseDriverId + ".type"));
-                    throw new IOException("Not implemented");
-                }
+                baseStore = DataAccess.getDirectStorageIO(fullStorageLocation);
             }
-            baseStore = DataAccess.getDirectStorageIO(fullStorageLocation);
             if (baseDriverType.contentEquals("s3")) {
                 ((S3AccessIO<?>) baseStore).setMainDriver(false);
             }
