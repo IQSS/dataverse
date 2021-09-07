@@ -12,10 +12,10 @@ import javax.validation.ConstraintValidatorContext;
  *
  * @author skraffmi
  */
-public class DatasetVersionValidator implements ConstraintValidator<ValidateDatasetVersion, DatasetVersion> {
+public class DatasetVersionFieldsValidator implements ConstraintValidator<ValidateVersionFields, DatasetVersion> {
 
     @Override
-    public void initialize(final ValidateDatasetVersion constraintAnnotation) {
+    public void initialize(final ValidateVersionFields constraintAnnotation) {
 
     }
 

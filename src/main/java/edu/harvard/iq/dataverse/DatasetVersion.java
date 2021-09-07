@@ -59,7 +59,7 @@ import org.apache.commons.lang3.StringUtils;
 @Table(indexes = {@Index(columnList="dataset_id")},
         uniqueConstraints = @UniqueConstraint(columnNames = {"dataset_id,versionnumber,minorversionnumber"}))
 @ValidateVersionNote(versionNote = "versionNote", versionState = "versionState")
-@ValidateDatasetVersion
+@ValidateVersionFields
 public class DatasetVersion implements Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetVersion.class.getCanonicalName());

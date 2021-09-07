@@ -4,7 +4,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.DatasetVersionValidator;
+import edu.harvard.iq.dataverse.DatasetVersionFieldsValidator;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseContact;
@@ -255,7 +255,7 @@ public class Dataverses extends AbstractApiBean {
             version.setVersionNumber(null);
             version.setVersionState(DatasetVersion.VersionState.DRAFT);
             
-            if (!DatasetVersionValidator.isHasDatasetFields(version, null)){
+            if (!DatasetVersionFieldsValidator.isHasDatasetFields(version, null)){
                 return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.mustIncludeFields"));
             }
 
