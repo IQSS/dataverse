@@ -1617,12 +1617,12 @@ public class DatasetVersion implements Serializable {
 
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
-        
+
         Set<ConstraintViolation<DatasetVersion>> constraintViolationsdsv = validator.validate(this);
-        //Validating that the dataset version has fields at all
+        //Validating that the dataset version has fields at all via DatasetVersionFieldsValidator
         //should only be an issue for uploaded datasets 
-        if(!constraintViolationsdsv.isEmpty()){
-            for (ConstraintViolation<DatasetVersion> constraintViolation : constraintViolationsdsv) {               
+        if (!constraintViolationsdsv.isEmpty()) {
+            for (ConstraintViolation<DatasetVersion> constraintViolation : constraintViolationsdsv) {
                 returnSet.add(constraintViolation);
                 break; // currently only support one message, so we can break out of the loop after the first constraint violation
             }
@@ -1667,7 +1667,7 @@ public class DatasetVersion implements Serializable {
                 }
             }
         }
-        
+
         return returnSet;
     }
     
