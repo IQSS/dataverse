@@ -19,12 +19,10 @@ import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.api.Files;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.impl.AbstractCreateDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.DeleteDataFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -41,7 +39,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,7 +54,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.io.IOUtils;
 import org.ocpsoft.common.util.Strings;
 
@@ -2035,6 +2031,7 @@ public class AddReplaceFileHelper{
                         String newStorageIdentifier = null;
                         if (optionalFileParams.hasStorageIdentifier()) {
                             newStorageIdentifier = optionalFileParams.getStorageIdentifier();
+                            newStorageIdentifier = DataAccess.expandStorageIdentifierIfNeeded(newStorageIdentifier);
                             if (optionalFileParams.hasFileName()) {
                                 newFilename = optionalFileParams.getFileName();
                                 if (optionalFileParams.hasMimetype()) {

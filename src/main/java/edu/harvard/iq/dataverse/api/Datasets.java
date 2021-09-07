@@ -2046,34 +2046,24 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         String newFilename = null;
         String newFileContentType = null;
         String newStorageIdentifier = null;
-		if (null == contentDispositionHeader) {
-			if (optionalFileParams.hasStorageIdentifier()) {
-				newStorageIdentifier = optionalFileParams.getStorageIdentifier();
-				logger.fine("found: " + newStorageIdentifier);
-				String driverType = DataAccess.getDriverType(newStorageIdentifier.substring(0, newStorageIdentifier.indexOf(":")));
-				logger.fine("drivertype: " + driverType);
-				if(driverType.equals("http")) {
-					//Add a generated identifier for the aux files
-					logger.fine("in: " + newStorageIdentifier);
-					int lastColon = newStorageIdentifier.lastIndexOf("://");
-					newStorageIdentifier= newStorageIdentifier.substring(0,lastColon +3) + FileUtil.generateStorageIdentifier() + "//" +newStorageIdentifier.substring(lastColon+3);
-					logger.fine("out: " + newStorageIdentifier);
-				}
-				// ToDo - check that storageIdentifier is valid
-				if (optionalFileParams.hasFileName()) {
-					newFilename = optionalFileParams.getFileName();
-					if (optionalFileParams.hasMimetype()) {
-						newFileContentType = optionalFileParams.getMimeType();
-					}
-				}
-			} else {
-				return error(BAD_REQUEST,
-						"You must upload a file or provide a storageidentifier, filename, and mimetype.");
-			}
-		} else {
-			newFilename = contentDispositionHeader.getFileName();
-			newFileContentType = formDataBodyPart.getMediaType().toString();
-		}
+        if (null == contentDispositionHeader) {
+            if (optionalFileParams.hasStorageIdentifier()) {
+                newStorageIdentifier = optionalFileParams.getStorageIdentifier();
+                newStorageIdentifier = DataAccess.expandStorageIdentifierIfNeeded(newStorageIdentifier);
+                if (optionalFileParams.hasFileName()) {
+                    newFilename = optionalFileParams.getFileName();
+                    if (optionalFileParams.hasMimetype()) {
+                        newFileContentType = optionalFileParams.getMimeType();
+                    }
+                }
+            } else {
+                return error(BAD_REQUEST,
+                        "You must upload a file or provide a storageidentifier, filename, and mimetype.");
+            }
+        } else {
+            newFilename = contentDispositionHeader.getFileName();
+            newFileContentType = formDataBodyPart.getMediaType().toString();
+        }
 
         
         //-------------------
@@ -2523,7 +2513,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         }
         if (!user.isSuperuser()) {
             return error(Response.Status.FORBIDDEN, "Superusers only.");
-    	}
+        }
         
         Dataset dataset; 
         
@@ -2541,7 +2531,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                 return ok("Storage driver set to: " + store.getKey() + "/" + store.getValue());
             }
         }
-    	return error(Response.Status.BAD_REQUEST,
+        return error(Response.Status.BAD_REQUEST,
             "No Storage Driver found for : " + storageDriverLabel);
     }
     
@@ -2559,7 +2549,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         }
         if (!user.isSuperuser()) {
             return error(Response.Status.FORBIDDEN, "Superusers only.");
-    	}
+        }
         
         Dataset dataset; 
         
@@ -2571,7 +2561,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         
         dataset.setStorageDriverId(null);
         datasetService.merge(dataset);
-    	return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
+        return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
     }
 
     @GET

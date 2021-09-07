@@ -22,6 +22,8 @@ package edu.harvard.iq.dataverse.dataaccess;
 
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DvObject;
+import edu.harvard.iq.dataverse.util.FileUtil;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
@@ -254,5 +256,31 @@ public class DataAccess {
     		}
     	}
     	return label;
+    }
+    
+    /**
+     * This method checks to see if an overlay store is being used and, if so,
+     * defines a base storage identifier for use with auxiliary files, and adds it
+     * into the returned value
+     * 
+     * @param newStorageIdentifier
+     * @return - the newStorageIdentifier (for file, S3, swift stores) - the
+     *         newStorageIdentifier with a new base store identifier inserted (for
+     *         an overlay store)
+     */
+    public static String expandStorageIdentifierIfNeeded(String newStorageIdentifier) {
+        logger.fine("found: " + newStorageIdentifier);
+        String driverType = DataAccess
+                .getDriverType(newStorageIdentifier.substring(0, newStorageIdentifier.indexOf(":")));
+        logger.fine("drivertype: " + driverType);
+        if (driverType.equals("http")) {
+            // Add a generated identifier for the aux files
+            logger.fine("in: " + newStorageIdentifier);
+            int lastColon = newStorageIdentifier.lastIndexOf("://");
+            newStorageIdentifier = newStorageIdentifier.substring(0, lastColon + 3)
+                    + FileUtil.generateStorageIdentifier() + "//" + newStorageIdentifier.substring(lastColon + 3);
+            logger.fine("out: " + newStorageIdentifier);
+        }
+        return newStorageIdentifier;
     }
 }
