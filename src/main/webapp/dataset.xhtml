@@ -111,8 +111,8 @@
                                         <div id="title-label-block" class="margin-top-half">
                                             <!-- DATASET Publication Status -->
                                             <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{DatasetPage.workingVersion.draft}"/>
-                                            <h:outputText value="#{bundle['embargoed.future']}" styleClass="label label-primary" rendered="#{DatasetPage.existingEmbargo(DatasetPage.workingVersion.fileMetadatas, true)}"/>
-                                            <h:outputText value="#{bundle['embargoed']}" styleClass="label label-primary" rendered="#{DatasetPage.existingEmbargo(DatasetPage.workingVersion.fileMetadatas, false)}"/>
+                                            <h:outputText value="#{bundle['embargoed.future']}" styleClass="label label-primary" rendered="#{DatasetPage.isExistingEmbargo(DatasetPage.workingVersion.fileMetadatas, true)}"/>
+                                            <h:outputText value="#{bundle['embargoed']}" styleClass="label label-primary" rendered="#{DatasetPage.isExistingEmbargo(DatasetPage.workingVersion.fileMetadatas, false)}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{DatasetPage.workingVersion.inReview}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!DatasetPage.dataset.released}"/>
                                             <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
