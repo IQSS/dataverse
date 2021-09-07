@@ -2017,12 +2017,12 @@ public class EditDatafilesPage implements java.io.Serializable {
         
         int lastColon = fullStorageIdentifier.lastIndexOf(':');
         String storageLocation=null;
-        //Should check storage type, not parse name
-        //This works except with s3 stores with ids starting with 'http'
-        if(fullStorageIdentifier.startsWith("http")) {
+        String driverType = DataAccess.getDriverType(fullStorageIdentifier.substring(0, fullStorageIdentifier.indexOf(":")));
+        logger.fine("drivertype: " + driverType);
+        if(driverType.equals("http")) {
           //HTTP external URL case
-        	//ToDo - check for valid URL
-        	storageLocation= fullStorageIdentifier.substring(0,lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + FileUtil.generateStorageIdentifier() + "//" +fullStorageIdentifier.substring(lastColon+1);
+          //ToDo - check for valid URL
+          storageLocation= fullStorageIdentifier.substring(0,lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + FileUtil.generateStorageIdentifier() + "//" +fullStorageIdentifier.substring(lastColon+1);
         } else {
           //S3 direct upload case	
           storageLocation= fullStorageIdentifier.substring(0,lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + fullStorageIdentifier.substring(lastColon+1);
