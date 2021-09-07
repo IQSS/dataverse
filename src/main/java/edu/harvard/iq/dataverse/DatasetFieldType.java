@@ -297,6 +297,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
 
     @Parsed(field = Headers.Constants.TITLE)
+    @Validate
     public void setTitle(String title) {
         this.title = title;
     }
@@ -316,6 +317,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
     
     @Parsed(field = Headers.Constants.ALLOW_CONTROLLED_VOCABULARY)
+    @Validate
     @BooleanString(trueStrings = {"true", "TRUE"}, falseStrings = {"false", "FALSE"})
     public void setAllowControlledVocabulary(boolean allowControlledVocabulary) {
         this.allowControlledVocabulary = allowControlledVocabulary;
@@ -332,6 +334,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
     
     @Parsed(field = Headers.Constants.ALLOW_MULTIPLES)
+    @Validate
     @BooleanString(trueStrings = {"true", "TRUE"}, falseStrings = {"false", "FALSE"})
     public void setAllowMultiples(boolean allowMultiples) {
         this.allowMultiples = allowMultiples;
@@ -342,6 +345,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
 
     @Parsed(field = Headers.Constants.FIELD_TYPE)
+    @Validate
     @UpperCase
     @EnumOptions(selectors = EnumSelector.NAME)
     public void setFieldType(FieldType fieldType) {
@@ -367,6 +371,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
     
     @Parsed(field = Headers.Constants.FACETABLE)
+    @Validate
     @BooleanString(trueStrings = {"true", "TRUE"}, falseStrings = {"false", "FALSE"})
     public void setFacetable(boolean facetable) {
         this.facetable = facetable;
@@ -391,6 +396,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
 
     @Parsed(field = { Headers.Constants.DISPLAY_ON_CREATE, Headers.Constants.DISPLAY_ON_CREATE_V43 })
+    @Validate
     @BooleanString(trueStrings = {"true", "TRUE"}, falseStrings = {"false", "FALSE"})
     public void setDisplayOnCreate(boolean displayOnCreate) {
         this.displayOnCreate = displayOnCreate;
@@ -544,6 +550,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
     
     @Parsed(field = Headers.Constants.REQUIRED)
+    @Validate
     @BooleanString(trueStrings = {"true", "TRUE"}, falseStrings = {"false", "FALSE"})
     public void setRequired(boolean required) {
         this.required = required;
@@ -556,6 +563,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     }
     
     @Parsed(field = Headers.Constants.ADVANCED_SEARCH_FIELD)
+    @Validate
     @BooleanString(trueStrings = {"true", "TRUE"}, falseStrings = {"false", "FALSE"})
     public void setAdvancedSearchFieldType(boolean advancedSearchFieldType) {
         this.advancedSearchFieldType = advancedSearchFieldType;
