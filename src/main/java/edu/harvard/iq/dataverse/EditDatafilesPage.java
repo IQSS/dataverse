@@ -2013,20 +2013,12 @@ public class EditDatafilesPage implements java.io.Serializable {
         if (!checksumTypeString.isBlank()) {
             checksumType = ChecksumType.fromString(checksumTypeString);
         }
-        //ToDo - move this to StorageIO subclasses
-        
+
+        //Should only be one colon with curent design
         int lastColon = fullStorageIdentifier.lastIndexOf(':');
-        String storageLocation=null;
-        String driverType = DataAccess.getDriverType(fullStorageIdentifier.substring(0, fullStorageIdentifier.indexOf(":")));
-        logger.fine("drivertype: " + driverType);
-        if(driverType.equals("http")) {
-          //HTTP external URL case
-          //ToDo - check for valid URL
-          storageLocation= fullStorageIdentifier.substring(0,lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + FileUtil.generateStorageIdentifier() + "//" +fullStorageIdentifier.substring(lastColon+1);
-        } else {
-          //S3 direct upload case	
-          storageLocation= fullStorageIdentifier.substring(0,lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + fullStorageIdentifier.substring(lastColon+1);
-        }
+        String storageLocation = fullStorageIdentifier.substring(0,lastColon) + "/" + dataset.getAuthorityForFileStorage() + "/" + dataset.getIdentifierForFileStorage() + "/" + fullStorageIdentifier.substring(lastColon+1);
+        storageLocation = DataAccess.expandStorageIdentifierIfNeeded(storageLocation);
+
     	if (uploadInProgress.isFalse()) {
     		uploadInProgress.setValue(true);
     	}
