@@ -80,6 +80,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
             public final static String ALLOW_MULTIPLES = "allowmultiples";
             public final static String FACETABLE = "facetable";
             public final static String DISPLAY_ON_CREATE = "displayoncreate";
+            public final static String DISPLAY_ON_CREATE_V43 = "showabovefold";
             public final static String REQUIRED = "required";
             public final static String PARENT = "parent";
             public final static String METADATA_BLOCK = "metadatablock_id";
@@ -389,7 +390,7 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         return displayOnCreate;
     }
 
-    @Parsed(field = Headers.Constants.DISPLAY_ON_CREATE)
+    @Parsed(field = { Headers.Constants.DISPLAY_ON_CREATE, Headers.Constants.DISPLAY_ON_CREATE_V43 })
     @BooleanString(trueStrings = {"true", "TRUE"}, falseStrings = {"false", "FALSE"})
     public void setDisplayOnCreate(boolean displayOnCreate) {
         this.displayOnCreate = displayOnCreate;

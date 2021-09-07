@@ -193,6 +193,29 @@ public class DatasetFieldTypeTest {
         assertTrue(blocks.get(0).getMetadataBlock() instanceof Placeholder.MetadataBlock);
         assertEquals(block, blocks.get(0).getMetadataBlock().getName());
     }
+    
+    @Test
+    void parseBackwardCompatibleDisplayOnCreate() {
+        // given
+        subject.put(DatasetFieldType.Headers.DISPLAY_ON_CREATE, "true");
+        String tsv = generateDatasetFieldTSV(subject);
+        StringReader reader1 = new StringReader(tsv);
+        StringReader reader2 = new StringReader(tsv.replace(DatasetFieldType.Headers.Constants.DISPLAY_ON_CREATE, DatasetFieldType.Headers.Constants.DISPLAY_ON_CREATE_V43));
+    
+        // when
+        parser.parse(reader1);
+        assertEquals(1, datasetFieldTypeProcessor.getBeans().size());
+        DatasetFieldType field1 = datasetFieldTypeProcessor.getBeans().get(0);
+    
+        parser.parse(reader2);
+        assertEquals(1, datasetFieldTypeProcessor.getBeans().size());
+        DatasetFieldType field2 = datasetFieldTypeProcessor.getBeans().get(0);
+    
+        // then
+        assertEquals(field1, field2);
+        assertTrue(field1.isDisplayOnCreate());
+        assertTrue(field2.isDisplayOnCreate());
+    }
 
 
     /**
