@@ -73,28 +73,50 @@
         <p class="text-danger embargo" jsf:rendered="#{!bean.validEmbargoSelection}"><span class="glyphicon glyphicon-exclamation-sign"/>#{bundle['file.editEmbargoDialog.none.tip']}</p>
         
         <h:panelGroup id="embargoInputs">
-          <div class="form-horizontal" jsf:rendered="#{bean.validEmbargoSelection}">
-            <div class="p-field p-col-12 p-md-4">
-                <p:outputLabel for="fileEmbargoMenuDS" value="#{bundle['file.editEmbargoDialog.newDate']}"/>
-                <p:datePicker id="fileEmbargoMenuDS" class="embargoright" value="#{bean.selectionEmbargo.dateAvailable}" locale="#{dataverseSession.localeCode}" mindate="#{settingsWrapper.minEmbargoDate}" pattern="yyyy-MM-dd"
-                    maxdate="#{settingsWrapper.maxEmbargoDate}" disabled="#{bean.removeEmbargo}" validator="#{bean.validateEmbargoDate}"/>
-                    <div><h:message for="fileEmbargoMenuDS" styleClass="bg-danger text-danger"/></div>
+            <div class="embargo">
+
+                <div class="form-horizontal"
+                    jsf:rendered="#{bean.validEmbargoSelection}">
+                    <div class="col-lg-3">
+                        <h:outputText value="#{bundle[ 'file.editEmbargo.add']}"/>
+                    </div>
+                    <div class="col-lg-9">
+                        <div>
+                            <p:outputLabel for="fileEmbargoMenuDS"
+                                value="#{bundle['file.editEmbargoDialog.newDate']}" />
+                            <p:datePicker id="fileEmbargoMenuDS" class="embargoright"
+                                value="#{bean.selectionEmbargo.dateAvailable}"
+                                locale="#{dataverseSession.localeCode}"
+                                mindate="#{settingsWrapper.minEmbargoDate}" pattern="yyyy-MM-dd"
+                                maxdate="#{settingsWrapper.maxEmbargoDate}"
+                                disabled="#{bean.removeEmbargo}"
+                                validator="#{bean.validateEmbargoDate}" />
+                            <div>
+                                <h:message for="fileEmbargoMenuDS"
+                                    styleClass="bg-danger text-danger" />
+                            </div>
+                        </div>
+                        <div class="p-field p-col-12 p-md-4">
+                            <p class="help-block">#{bundle['file.editEmbargoDialog.reason.tip']}</p>
+                            <p:inputText id="fileEmbargoAddReason" styleClass="form-control"
+                                disabled="#{bean.removeEmbargo}" type="text"
+                                value="#{bean.selectionEmbargo.reason}"
+                                placeholder="#{bundle['file.editEmbargoDialog.newReason']}"
+                                onkeypress="if (event.keyCode == 13) { return false;}" />
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="p-field p-col-12 p-md-4">
-                <p class="help-block">#{bundle['file.editEmbargoDialog.reason.tip']}</p>
-                <p:inputText id="fileEmbargoAddReason" styleClass="form-control" disabled="#{bean.removeEmbargo}"
-                    type="text" value="#{bean.selectionEmbargo.reason}"
-                    placeholder="#{bundle['file.editEmbargoDialog.newReason']}"
-                    onkeypress="if (event.keyCode == 13) {
-                        return false;
-                    }"/>
+
+            <div jsf:rendered="#{bean.existingEmbargo}" class="embargocheckbox">
+                <div class="col-lg-3">
+                    <h:outputText value="#{bundle[ 'file.editEmbargo.delete']}"/>
+                </div>
+                <div class="col-lg-9">
+                <p:selectBooleanCheckbox value="#{bean.removeEmbargo}" itemLabel="#{bundle['file.editEmbargoDialog.remove']}">
+                    <p:ajax process="@this:@parent:@parent" update="@this:@parent:@parent"/>
+                </p:selectBooleanCheckbox>
             </div>
-          </div>
-        
-        <div jsf:rendered="#{bean.existingEmbargo}" class="embargocheckbox">
-            <p:selectBooleanCheckbox value="#{bean.removeEmbargo}" itemLabel="#{bundle['file.editEmbargoDialog.remove']}">
-                <p:ajax process="@this:@parent:@parent" update="@this:@parent:@parent"/>
-            </p:selectBooleanCheckbox>
         </div>
         </h:panelGroup>
         <div class="button-block">
