@@ -1009,14 +1009,30 @@ progress::-webkit-progress-value {
 }
 .embargocheckbox {
   margin-top: 20px;
-  margin-bottom: 5px;
+  padding-bottom: 30px;
 }
 .embargomsg {
   display:block;
 }
 .embargo {
         display:flex;
+        flex-direction:column;
+}
+.embargo.text-warning, .embargo.text-danger {
+        flex-direction:row;
 }
 .embargo span {
         margin-right: 10px;
+}
+.embargo span.glyphicon-asterisk {
+            font-size: .5em;
+                vertical-align: top;
+}
+
+.embargo .col-lg-3 {
+    padding-left:0px;
+}
+
+.embargolabel {
+    font-weight: 700;
 }
