@@ -240,7 +240,7 @@ body.widget-view #dataverse-header-block {padding-top:0px;}
 #dataverseHeader .dataverseHeaderTagline {padding-left:2em; font-size:1.3em;}
 #dataverseHeader .dataverseHeaderLink {padding-left:2em;}
 /*QDR*/
-#dataverseHeader .label.status {display:block; float:left; margin-top:16px; margin-bottom: 16px; font-size:14px; font-weight:normal; white-space:normal; text-align:left; line-height:1.2;  border-left:solid 4px #4B74FF;padding:1.0em;background:#E8E8ED; color:black;}
+#dataverseHeader .label.status {display:block; float:left; margin-top:16px; margin-bottom: 16px; font-size:14px; font-weight:normal; white-space:normal; text-align:left; line-height:1.2;  border-left:solid 4px #0039f5;padding:1.0em;background:#E8E8ED; color:black;}
 
 
 /* -------- FOOTER -------- */
@@ -1276,7 +1276,7 @@ th {background: none !important;}
 .panel {box-shadow: none; -webkit-box-shadow: none; background: #f7f7f9;}
 
 .btn-default, .btn-default:active, .btn-default:hover, .btn-default:focus {
-  background: #4b74ff !important;
+  background: #0039f5 !important;
   color: #FFF !important; /* TODO: Find ui-widget CSS rules and take out their color so important is not needed here */
   border-radius: 2px;
   text-shadow: none;
@@ -1359,7 +1359,7 @@ progress::-webkit-progress-value {
   background-color:green;
 }
 #selectTool .dropdown-menu .active a {
-  background-color: #4b74ff;
+  background-color: #0039f5;
   background-image: none;
 }
 
