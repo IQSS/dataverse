@@ -95,6 +95,9 @@
                                                     <p:fragment id="_#{item.viewId}_upl">
                                                         <p:fileUpload id="_#{item.viewId}" mode="advanced" value="#{item.value}" auto="true"
                                                                       listener="#{pageBean.importerForm.handleFileUpload}"
+                                                                      sizeLimit="#{pageBean.importerForm.maxUploadedFileSize > 0 ? pageBean.importerForm.maxUploadedFileSize : null}"
+                                                                      invalidSizeMessage="#{pageBean.importerForm.invalidSizeMessage}"
+                                                                      messageTemplate="#{' '}"
                                                                       label="#{bundle['metadata.import.form.temp.file.upload.button']}"
                                                                       update="@this"/>
                                                     </p:fragment>

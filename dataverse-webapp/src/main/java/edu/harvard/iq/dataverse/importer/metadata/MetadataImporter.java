@@ -59,4 +59,12 @@ public interface MetadataImporter {
     default Map<ImporterFieldKey, String> validate(Map<ImporterFieldKey, Object> importerInput) {
         return Collections.emptyMap();
     }
+
+    /**
+     * Returns the maximal size of uploaded to importer file(s) in bytes.
+     * Zero means that any size is allowed.
+     */
+    default long getMaxUploadedFileSize() {
+        return 0L;
+    }
 }

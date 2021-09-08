@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.primefaces.component.fileupload.FileUpload;
 import org.primefaces.event.CloseEvent;
@@ -57,6 +58,7 @@ public class ImporterForm {
 
     private static final String METADATA_IMPORT_RESULT_ERROR = "metadata.import.result.error";
     private static final String UPLOAD_SUCCESSFUL = "metadata.import.upload.successful";
+    private static final String UPLOAD_EXCEEDS_MAX_SIZE = "metadata.import.upload.exceeds.max.size";
 
     public enum ImportStep {
         FIRST, SECOND;
@@ -100,6 +102,15 @@ public class ImporterForm {
                     : FormConstants.SINGLE_OPTIONS;
      }
 
+    public long getMaxUploadedFileSize() {
+        return importer.getMaxUploadedFileSize();
+    }
+
+    public String getInvalidSizeMessage() {
+        return BundleUtil.getStringFromBundle(UPLOAD_EXCEEDS_MAX_SIZE,
+                FileUtils.byteCountToDisplaySize(getMaxUploadedFileSize()));
+    }
+
     // -------------------- LOGIC --------------------
 
     public static ImporterForm createInitializedForm(MetadataImporter importer, Locale locale,
@@ -131,7 +142,7 @@ public class ImporterForm {
         component.setValue(tempPath.toFile());
         FacesContext.getCurrentInstance().addMessage(component.getClientId(),
                 new FacesMessage(FacesMessage.SEVERITY_INFO,
-                BundleUtil.getStringFromBundle(UPLOAD_SUCCESSFUL, file.getFileName()),
+                    BundleUtil.getStringFromBundle(UPLOAD_SUCCESSFUL, file.getFileName()),
                 StringUtils.EMPTY));
     }
 
