@@ -688,7 +688,7 @@ When creating or editing a dataset, users will be asked to enter the metadata in
 
 ``curl http://localhost:8080/api/admin/settings/:MetadataLanguages -X PUT -d '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]'``
 
-Note that metadata selected from Controlled Vocabularies will also display in the metadata language of the dataset, but only if translations have been configured, i.e. you configure the "lang" directory and populate it with translations as described below).
+Note that metadata selected from Controlled Vocabularies will also display in the metadata language of the dataset, but only if translations have been configured, i.e. you configure the "lang" directory and populate it with translations as described below). In metadata export files, controlled vocabulary values will be included in the Dataverse installations default language and in the metadata language of the dataset (if specified).
 
 Configuring the "lang" Directory
 ++++++++++++++++++++++++++++++++
@@ -2345,9 +2345,9 @@ For example, if you want your Dataverse installation to skip validation for any 
 
 When this option is used to disable the checksum validation, it's strongly recommended to perform periodic asynchronous checks via the integrity API
 
-Refer to "Physical Files Validation in a Dataset" API :ref:`physical-files-validation-in-a-dataset` section of our :doc:`/api/native-api` documentation.
+Refer to "Physical Files Validation in a Dataset" API :ref:`dataset-files-validation-api` section of our :doc:`/api/native-api` documentation.
 
-Also refer to the "Datafile Integrity" API  :doc:`/api/native-api#id20`
+Also refer to the "Datafile Integrity" API  :ref:`datafile-integrity`
 
 :DataFileChecksumValidationSizeLimit
 ++++++++++++++++++++++++++++++++++++
@@ -2360,6 +2360,6 @@ For example, if you want your Dataverse installation to skip validation for any 
 
 When this option is used to disable the checksum validation, it's strongly recommended to perform periodic asynchronous checks via the integrity API
 
-Refer to "Physical Files Validation in a Dataset" API :ref:`physical-files-validation-in-a-dataset` section of our :doc:`/api/native-api` documentation.
+Refer to "Physical Files Validation in a Dataset" API :ref:`dataset-files-validation-api` section of our :doc:`/api/native-api` documentation.
 
-Also refer to the "Datafile Integrity" API  :doc:`/api/native-api#id20`
+Also refer to the "Datafile Integrity" API  :ref:`datafile-integrity`
