@@ -43,6 +43,7 @@ import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.RedirectionException;
 import javax.ws.rs.ServiceUnavailableException;
+import javax.ws.rs.core.HttpHeaders;
 import org.apache.tika.mime.MimeType;
 import org.apache.tika.mime.MimeTypeException;
 import org.apache.tika.mime.MimeTypes;
@@ -83,7 +84,11 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                 List<Range> ranges = new ArrayList<>();
                 long fileSize = storageIO.getDataFile().getFilesize();
                 try {
-                    String range = di.getRequestHttpHeaders().getHeaderString("Range");
+                    String range = null;
+                    HttpHeaders headers = di.getRequestHttpHeaders();
+                    if (headers != null) {
+                        range = headers.getHeaderString("Range");
+                    }
                     long offset = 0;
                     try {
                         ranges = getRanges(range, fileSize);
