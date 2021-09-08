@@ -46,14 +46,13 @@ public class CreateDatasetVersionCommandTest {
         dsvInitial.setMinorVersionNumber(0l);
         dsvInitial.setVersionNumber(1l);
         
-        List<DatasetField> fields = new ArrayList<>(); 
-        //adding title to pass new validation - fields required
-        fields.add(UtilIT.createTitleField("Title"));
-        dsvInitial.setDatasetFields(fields);
-        
+
         // Create version to be added
         DatasetVersion dsvNew = new DatasetVersion();
         dsvNew.setVersionState(DatasetVersion.VersionState.DRAFT);
+        List<DatasetField> fields = new ArrayList<>(); 
+        //adding title to pass new validation - fields required
+        fields.add(UtilIT.createTitleField("Title"));
         dsvNew.setDatasetFields(fields);
 
         // Execute

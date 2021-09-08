@@ -53,6 +53,7 @@ import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static org.junit.Assert.assertEquals;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.CoreMatchers.nullValue;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -339,8 +340,16 @@ public class DatasetsIT {
         createDatasetResponse.prettyPrint();
 
         createDatasetResponse.then().assertThat()
-                .statusCode(BAD_REQUEST.getStatusCode())
-                .body("message", equalTo("Dataset must include fields"));       
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", startsWith("Validation Failed: "));  
+        
+        pathToJsonFile = "scripts/search/tests/data/datasetMissingReqFields.json";        
+        createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+        createDatasetResponse.prettyPrint();
+        
+        createDatasetResponse.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", startsWith("Validation Failed: "));
  
     }
 
