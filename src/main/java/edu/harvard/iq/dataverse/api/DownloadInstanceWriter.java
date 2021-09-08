@@ -293,6 +293,8 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
 
                             if ("original".equals(di.getConversionParamValue())) {
                                 logger.fine("stored original of an ingested file requested");
+                                // Get orginal file size before storageIO is reassigned to prevent an NPE.
+                                fileSize = storageIO.getDataFile().getOriginalFileSize();
                                 storageIO = StoredOriginalFile.retreive(storageIO);
                             } else {
                                 // Other format conversions: 
