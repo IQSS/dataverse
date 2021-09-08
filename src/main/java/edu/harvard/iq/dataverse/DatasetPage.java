@@ -863,6 +863,18 @@ public class DatasetPage implements java.io.Serializable {
             // "!(fileDeleted: true)" - that will find ALL the records, except for
             // the ones where the value is explicitly set to true.
             solrQuery.addFilterQuery("!(" + SearchFields.FILE_DELETED + ":" + true + ")");
+            /*
+             * With a draft version, there may be multiple hits per file: dataverse will
+             * index the file as shown in the draft version if the metadata or restricted
+             * status has changed. Without the filter below, the file will count twice in
+             * the facet counts. The collapse filter here will limit the results to one hit
+             * for value of the specified field (identifier in this case - unique to the
+             * file) and will order the hits by the max field, i.e. it will pick the entry
+             * with the greatest datasetVersionId, which, given our numbering scheme, will
+             * be the draft version.
+             * https://solr.apache.org/guide/6_6/collapse-and-expand-results.html
+             */
+            solrQuery.addFilterQuery("{!collapse field=" + SearchFields.IDENTIFIER + " max=" + SearchFields.DATASET_VERSION_ID + "}");
 
         }
 
