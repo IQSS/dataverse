@@ -430,7 +430,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         if ((contentSize = getContentSize(storageIO)) > 0 && ranges.isEmpty()) {
                             logger.fine("Content size (retrieved from the AccessObject): " + contentSize);
                             httpHeaders.add("Content-Length", contentSize);
-                        } else if (ranges.isEmpty()) {
+                        } else if (!ranges.isEmpty()) {
                             // For now we only support a single range.
                             long rangeContentSize = ranges.get(0).getLength();
                             logger.fine("Content size (Range header in use): " + rangeContentSize);
