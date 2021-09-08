@@ -11,7 +11,7 @@ body {
 body.widget-view {margin-bottom:44px;}
 body .ui-widget {font-size: inherit;}
 body .ui-widget .ui-widget-content:not(.ui-picklist-list, .ui-dialog, .ui-panel-content, .ui-selectcheckboxmenu-items, .ui-dialog-content, .ui-fileupload-content, .ui-progressbar, .ui-tabs, .ui-tabs-panel, .ui-datatable-data, .ui-datatable-even, .ui-datatable-odd, .ui-tree) :not(.ui-dialog-titlebar, .ui-dialog-content, .dropdown-menu, .label-default){background: none;}
-.ui-widget-content a {color: #4b75ff;}
+.ui-widget-content a {color: #0039f5;}
 .ui-datalist-item .ui-widget-content td > a { font-size: 18px !important;}
 .ui-widget-content a:hover, .ui-widget-content a:focus {color: #337ab7;}
 .ui-tabs.ui-widget-content .ui-tabs-nav li a {color: #333;}
@@ -129,7 +129,7 @@ hr {border-color: #ddd;}
 .text-icon-inline {font-size:1.3em;line-height:1.1em;margin-right:4px;}
 span.glyphicon[data-toggle='tooltip'] {cursor: default;}
 span.glyphicon-question-sign.tooltip-icon {color: #99bcdb !important;}
-span.glyphicon-question-sign.tooltip-icon:hover {color: #4b75ff !important;}
+span.glyphicon-question-sign.tooltip-icon:hover {color: #0039f5 !important;}
 a.tooltip-icon {color: #99bcdb !important;}
 a.tooltip-icon:hover, a.tool-tip:focus, a.tool-tip:active {text-decoration: none; color: #337AB7 !important;}
 
@@ -654,14 +654,14 @@ div.alert-info.bg-citation, div.alert-danger.bg-danger {border-radius:0; color:#
 div.citation-block div.alert {padding:10px 10px 0px 10px;}
 div.citation-block div.preview-icon-block {padding-right:10px;padding-bottom:10px; min-height:140px;} /* min-height needed for colorder bootstrap layout hack */
 div.citation-block div.preview-icon-block img {max-width:140px; max-height:140px;}
-div.citation-block div.preview-icon-block span[class^='icon'] {font-size:7.5em; line-height:1.1; color:#4b75ff;}
+div.citation-block div.preview-icon-block span[class^='icon'] {font-size:7.5em; line-height:1.1; color:#0039f5;}
 @media(max-width:767px){
     div.citation-block div.preview-icon-block img {max-width:100px; max-height:100px;}
     div.citation-block div.preview-icon-block span[class^='icon'] {font-size:6em;}
 }
 div.citation-block div.citation span.citation-select a {word-break: break-all;}
 div.citation-block div.citation-download.margin-bottom {margin-bottom:10px;}
-div.citation-block div.citation-download .btn-link {color:#4b75ff}
+div.citation-block div.citation-download .btn-link {color:#0039f5}
 div.citation-block div.citation-standards.margin-bottom {margin-bottom:10px;padding-top:1px;padding-bottom:1px;}
 
 div.panel-body div.form-group:last-child, div.panel-body div.form-group:last-child label {margin-bottom:0 !important;}
@@ -980,7 +980,7 @@ div.ui-dialog.ui-widget-content {z-index:100001 !important;}
 
 /* Overwrite Primefaces */
 .ui-tabs.ui-widget.ui-widget-content {position:relative; z-index:499;}
-.ui-tabs.ui-widget-content .ui-tabs-nav li.ui-tabs-selected a {color: #4b75ff; border-bottom: 3px solid;}
+.ui-tabs.ui-widget-content .ui-tabs-nav li.ui-tabs-selected a {color: #0039f5; border-bottom: 3px solid;}
 button.btn-default.ui-button-text-only .ui-button-text {padding:0; font-size:14px;}
 button.btn-default span.ui-button-text {line-height:inherit !important;}
 div.ui-widget-overlay {background:#ccc; opacity:.6;}
@@ -1203,7 +1203,7 @@ div.container {
 .add-data-plus-wrapper span {
   font-weight: normal;
   margin-top: 11px;
-  color: #4b75ff;
+  color: #0039f5;
   font-size: 15px;
   display: block;
 }
@@ -1213,7 +1213,7 @@ div.container {
   border: none;
   box-shadow: none;
   font-size: 15px;
-  color: #4b75ff;
+  color: #0039f5;
 }
 
 .card-title-icon-block {
@@ -1312,10 +1312,10 @@ body .ui-widget button {
 }
 
 a {
-  color: #4b75ff;
+  color: #0039f5;
 }
 
-span.label-primary { background-color: #4b75ff; }
+span.label-primary { background-color: #0039f5; }
 
 /* Pagination Icon URLs and Styles*/
 
@@ -1326,11 +1326,11 @@ span.label-primary { background-color: #4b75ff; }
 .pagination > li.active > a,
 .pagination > li.active > a:focus,
 .pagination > li.active > a:hover{
-  background-color: #4b75ff;
+  background-color: #0039f5;
 }
 
 .pagination > li > a {
-  color: #4b75ff;
+  color: #0039f5;
   border-color: #b8b8b8 !important;
   padding: 9px 12px 3px 12px;
 }
