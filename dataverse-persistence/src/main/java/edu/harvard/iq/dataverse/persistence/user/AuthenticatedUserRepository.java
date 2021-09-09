@@ -83,7 +83,8 @@ public class AuthenticatedUserRepository extends JpaRepository<Long, Authenticat
         USER_IDENTIFIER("userIdentifier"),
         AFFILIATION("affiliation"),
         LASTNAME("lastName"),
-        EMAIL("email");
+        EMAIL("email"),
+        SUPERUSER("superuser");
 
         private final String text;
 
