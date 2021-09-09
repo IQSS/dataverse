@@ -1,20 +1,14 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.DatasetDao;
-import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
-import edu.harvard.iq.dataverse.DataverseDao;
-import edu.harvard.iq.dataverse.MetadataBlockDao;
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.api.imports.ImportException;
 import edu.harvard.iq.dataverse.api.imports.ImportServiceBean;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil.ImportType;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.inject.Inject;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -24,20 +18,12 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import static org.apache.commons.lang.StringUtils.isNumeric;
+
 @Stateless
 @Path("batch")
 public class BatchImport extends AbstractApiBean {
 
-    @EJB
-    DatasetDao datasetDao;
-    @EJB
-    DataverseDao dataverseDao;
-    @EJB
-    DatasetFieldServiceBean datasetfieldService;
-    @EJB
-    MetadataBlockDao metadataBlockService;
-    @Inject
-    SettingsServiceBean settingsService;
     @EJB
     ImportServiceBean importService;
     @EJB
@@ -136,4 +122,8 @@ public class BatchImport extends AbstractApiBean {
         return this.accepted();
     }
 
+    private Dataverse findDataverse(String idtf) {
+        return isNumeric(idtf) ? dataverseSvc.find(Long.parseLong(idtf))
+                : dataverseSvc.findByAlias(idtf);
+    }
 }

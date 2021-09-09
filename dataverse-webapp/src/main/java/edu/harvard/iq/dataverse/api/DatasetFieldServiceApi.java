@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.ControlledVocabularyValueServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.MetadataBlockDao;
+import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.common.NullSafeJsonBuilder;
@@ -63,6 +64,9 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
 
     @Inject
     private JsonPrinter jsonPrinter;
+
+    @Inject
+    private ActionLogServiceBean actionLogSvc;
 
     private static final Logger logger = Logger.getLogger(DatasetFieldServiceApi.class.getName());
 

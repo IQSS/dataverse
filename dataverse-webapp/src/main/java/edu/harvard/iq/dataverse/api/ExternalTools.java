@@ -1,11 +1,14 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DataFileServiceBean;
+import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
 import edu.harvard.iq.dataverse.persistence.ActionLogRecord;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.ExternalTool;
 
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.ws.rs.DELETE;
@@ -20,6 +23,15 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 @Path("admin/externalTools")
 public class ExternalTools extends AbstractApiBean {
+
+    @Inject
+    private ActionLogServiceBean actionLogSvc;
+
+    @Inject
+    private ExternalToolServiceBean externalToolService;
+
+    @Inject
+    private DataFileServiceBean fileSvc;
 
     @GET
     public Response getExternalTools() {

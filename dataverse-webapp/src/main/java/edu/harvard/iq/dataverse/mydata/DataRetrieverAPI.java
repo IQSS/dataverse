@@ -72,6 +72,8 @@ public class DataRetrieverAPI extends AbstractApiBean {
     DataverseDao dataverseDao;
     @EJB
     GroupServiceBean groupService;
+    @Inject
+    private RoleAssigneeServiceBean roleAssigneeSvc;
 
     private List<DataverseRole> roleList;
     private DataverseRolePermissionHelper rolePermissionHelper;

@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 
 import javax.ejb.EJBException;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -36,6 +37,9 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 public class SavedSearches extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(SavedSearches.class.getCanonicalName());
+
+    @Inject
+    private SavedSearchServiceBean savedSearchSvc;
 
     @GET
     public Response meta() {

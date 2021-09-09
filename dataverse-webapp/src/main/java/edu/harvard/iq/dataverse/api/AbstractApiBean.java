@@ -6,59 +6,36 @@ import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
 import edu.harvard.iq.dataverse.DataverseDao;
-import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
-import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlockDao;
-import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
-import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
-import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.common.Util;
-import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
-import edu.harvard.iq.dataverse.dataset.datasetversion.DatasetVersionServiceBean;
-import edu.harvard.iq.dataverse.datavariable.VariableServiceBean;
 import edu.harvard.iq.dataverse.dataverse.DataverseLinkingService;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
-import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
-import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
-import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailServiceBean;
-import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
-import edu.harvard.iq.dataverse.notification.UserNotificationService;
-import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
-import edu.harvard.iq.dataverse.persistence.datafile.datavariable.DataVariable;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
-import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.link.DatasetLinkingDataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.link.DataverseLinkingDataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.PrivateUrlUser;
-import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
-import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
-import edu.harvard.iq.dataverse.validation.BeanValidationServiceBean;
-import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import io.vavr.control.Try;
 import org.apache.commons.lang.SerializationException;
 
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -89,6 +66,51 @@ import static org.apache.commons.lang.StringUtils.isNumeric;
  * @author michael
  */
 public abstract class AbstractApiBean {
+
+    @EJB
+    protected EjbDataverseEngine engineSvc;
+
+    @EJB
+    protected DatasetDao datasetSvc;
+
+    @EJB
+    protected DataFileServiceBean fileService;
+
+    @EJB
+    protected DataverseDao dataverseSvc;
+
+    @EJB
+    protected AuthenticationServiceBean authSvc;
+
+    @EJB
+    protected DatasetFieldServiceBean datasetFieldSvc;
+
+    @EJB
+    protected MetadataBlockDao metadataBlockSvc;
+
+    @EJB
+    protected UserServiceBean userSvc;
+
+    @Inject
+    protected SettingsServiceBean settingsSvc;
+
+    @EJB
+    protected PrivateUrlServiceBean privateUrlSvc;
+
+    @EJB
+    protected SystemConfig systemConfig;
+
+    @EJB
+    protected DatasetLinkingServiceBean dsLinkingService;
+
+    @EJB
+    protected DataverseLinkingService dvLinkingService;
+
+    @PersistenceContext(unitName = "VDCNet-ejbPU")
+    protected EntityManager em;
+
+    @Context
+    protected HttpServletRequest httpRequest;
 
     private static final Logger logger = Logger.getLogger(AbstractApiBean.class.getName());
     private static final String DATAVERSE_KEY_HEADER_NAME = "X-Dataverse-key";
@@ -164,105 +186,6 @@ public abstract class AbstractApiBean {
         }
     }
 
-    @EJB
-    protected EjbDataverseEngine engineSvc;
-
-    @EJB
-    protected DatasetDao datasetSvc;
-
-    @EJB
-    protected DataFileServiceBean fileService;
-
-    @EJB
-    protected DataverseDao dataverseSvc;
-
-    @EJB
-    protected AuthenticationServiceBean authSvc;
-
-    @EJB
-    protected DatasetFieldServiceBean datasetFieldSvc;
-
-    @EJB
-    protected VariableServiceBean dataVariableSvc;
-
-    @EJB
-    protected MetadataBlockDao metadataBlockSvc;
-
-    @EJB
-    protected UserServiceBean userSvc;
-
-    @EJB
-    protected DataverseRoleServiceBean rolesSvc;
-
-    @Inject
-    protected SettingsServiceBean settingsSvc;
-
-    @EJB
-    protected RoleAssigneeServiceBean roleAssigneeSvc;
-
-    @EJB
-    protected PermissionServiceBean permissionSvc;
-
-    @EJB
-    protected GroupServiceBean groupSvc;
-
-    @EJB
-    protected ActionLogServiceBean actionLogSvc;
-
-    @EJB
-    protected BeanValidationServiceBean beanValidationSvc;
-
-    @EJB
-    protected SavedSearchServiceBean savedSearchSvc;
-
-    @EJB
-    protected PrivateUrlServiceBean privateUrlSvc;
-
-    @EJB
-    protected ConfirmEmailServiceBean confirmEmailSvc;
-
-    @EJB
-    protected UserNotificationService userNotificationService;
-
-    @EJB
-    protected DatasetVersionServiceBean datasetVersionSvc;
-
-    @EJB
-    protected MapLayerMetadataServiceBean mapLayerMetadataSrv;
-
-    @EJB
-    protected SystemConfig systemConfig;
-
-    @EJB
-    protected DataCaptureModuleServiceBean dataCaptureModuleSvc;
-
-    @EJB
-    protected DatasetLinkingServiceBean dsLinkingService;
-
-    @EJB
-    protected DataverseLinkingService dvLinkingService;
-
-    @EJB
-    protected PasswordValidatorServiceBean passwordValidatorService;
-
-    @EJB
-    protected ExternalToolServiceBean externalToolService;
-
-    @EJB
-    DataFileServiceBean fileSvc;
-
-    @EJB
-    StorageSiteServiceBean storageSiteSvc;
-
-    @EJB
-    MetricsServiceBean metricsSvc;
-
-    @PersistenceContext(unitName = "VDCNet-ejbPU")
-    protected EntityManager em;
-
-    @Context
-    protected HttpServletRequest httpRequest;
-
 
     private final LazyRef<JsonParser> jsonParserRef = new LazyRef<>(new Callable<JsonParser>() {
         @Override
@@ -318,23 +241,6 @@ public abstract class AbstractApiBean {
         String queryParamApiKey = httpRequest.getParameter("key");
 
         return headerParamApiKey != null ? headerParamApiKey : queryParamApiKey;
-    }
-
-    /* ========= *\
-     *  Finders  *
-    \* ========= */
-    protected RoleAssignee findAssignee(String identifier) {
-        try {
-            RoleAssignee roleAssignee = roleAssigneeSvc.getRoleAssignee(identifier);
-            return roleAssignee;
-        } catch (EJBException ex) {
-            Throwable cause = ex;
-            while (cause.getCause() != null) {
-                cause = cause.getCause();
-            }
-            logger.log(Level.INFO, "Exception caught looking up RoleAssignee based on identifier ''{0}'': {1}", new Object[]{identifier, cause.getMessage()});
-            return null;
-        }
     }
 
     /**
@@ -401,7 +307,8 @@ public abstract class AbstractApiBean {
     }
 
     protected Dataverse findDataverseOrDie(String dvIdtf) throws WrappedResponse {
-        Dataverse dv = findDataverse(dvIdtf);
+        Dataverse dv = isNumeric(dvIdtf) ? dataverseSvc.find(Long.parseLong(dvIdtf))
+                : dataverseSvc.findByAlias(dvIdtf);
         if (dv == null) {
             throw new WrappedResponse(error(Response.Status.NOT_FOUND, "Can't find dataverse with identifier='" + dvIdtf + "'"));
         }
@@ -510,60 +417,6 @@ public abstract class AbstractApiBean {
 
     protected DataverseRequest createDataverseRequest(User u) {
         return new DataverseRequest(u, httpRequest);
-    }
-
-    protected Dataverse findDataverse(String idtf) {
-        return isNumeric(idtf) ? dataverseSvc.find(Long.parseLong(idtf))
-                : dataverseSvc.findByAlias(idtf);
-    }
-
-    protected DvObject findDvo(Long id) {
-        return em.createNamedQuery("DvObject.findById", DvObject.class)
-                .setParameter("id", id)
-                .getSingleResult();
-    }
-
-    /**
-     * Tries to find a DvObject. If the passed id can be interpreted as a number,
-     * it tries to get the DvObject by its id. Else, it tries to get a {@link Dataverse}
-     * with that alias. If that fails, tries to get a {@link Dataset} with that global id.
-     *
-     * @param id a value identifying the DvObject, either numeric of textual.
-     * @return A DvObject, or {@code null}
-     */
-    protected DvObject findDvo(String id) {
-        if (isNumeric(id)) {
-            return findDvo(Long.valueOf(id));
-        } else {
-            Dataverse d = dataverseSvc.findByAlias(id);
-            return (d != null) ?
-                    d : datasetSvc.findByGlobalId(id);
-
-        }
-    }
-
-    protected <T> T failIfNull(T t, String errorMessage) throws WrappedResponse {
-        if (t != null) {
-            return t;
-        }
-        throw new WrappedResponse(error(Response.Status.BAD_REQUEST, errorMessage));
-    }
-
-    protected MetadataBlock findMetadataBlock(Long id) {
-        return metadataBlockSvc.findById(id);
-    }
-
-    protected MetadataBlock findMetadataBlock(String idtf) throws NumberFormatException {
-        return metadataBlockSvc.findByName(idtf);
-    }
-
-    protected DatasetFieldType findDatasetFieldType(String idtf) throws NumberFormatException {
-        return isNumeric(idtf) ? datasetFieldSvc.find(Long.parseLong(idtf))
-                : datasetFieldSvc.findByNameOpt(idtf);
-    }
-
-    protected DataVariable findDataVariable(Long id) {
-        return dataVariableSvc.find(id);
     }
 
     /* =================== *\

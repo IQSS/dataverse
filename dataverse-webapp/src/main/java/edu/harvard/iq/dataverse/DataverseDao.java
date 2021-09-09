@@ -14,7 +14,6 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.persistence.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.persistence.group.Group;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.DataverseRole;
@@ -22,7 +21,6 @@ import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -77,9 +75,6 @@ public class DataverseDao implements java.io.Serializable {
 
     @EJB
     private PermissionServiceBean permissionService;
-
-    @EJB
-    private SystemConfig systemConfig;
 
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -169,7 +164,7 @@ public class DataverseDao implements java.io.Serializable {
      */
     public Dataverse findByAlias(String anAlias) {
         try {
-            return (anAlias.toLowerCase().equals(":root"))
+            return (anAlias.equalsIgnoreCase(":root"))
                     ? findRootDataverse()
                     : em.createNamedQuery("Dataverse.findByAlias", Dataverse.class)
                     .setParameter("alias", anAlias.toLowerCase())

@@ -3,9 +3,14 @@ package edu.harvard.iq.dataverse.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
+import edu.harvard.iq.dataverse.DvObjectDao;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
+import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
@@ -39,6 +44,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.RegisterDvObjectCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailException;
 import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailInitResponse;
+import edu.harvard.iq.dataverse.mail.confirmemail.ConfirmEmailServiceBean;
 import edu.harvard.iq.dataverse.persistence.ActionLogRecord;
 import edu.harvard.iq.dataverse.persistence.DvObject;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
@@ -62,6 +68,8 @@ import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import edu.harvard.iq.dataverse.validation.BeanValidationServiceBean;
+import edu.harvard.iq.dataverse.validation.PasswordValidatorServiceBean;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.apache.commons.io.IOUtils;
@@ -139,12 +147,39 @@ public class Admin extends AbstractApiBean {
     @Inject
     private JsonPrinter jsonPrinter;
 
+    @Inject
+    private DataverseRoleServiceBean rolesSvc;
+
     // Make the session available
     @Inject
     DataverseSession session;
 
     @EJB
     FileIntegrityChecker fileIntegrityChecker;
+
+    @Inject
+    private RoleAssigneeServiceBean roleAssigneeSvc;
+
+    @Inject
+    private PermissionServiceBean permissionSvc;
+
+    @Inject
+    private ActionLogServiceBean actionLogSvc;
+
+    @Inject
+    private BeanValidationServiceBean beanValidationSvc;
+
+    @Inject
+    private ConfirmEmailServiceBean confirmEmailSvc;
+
+    @Inject
+    private DatasetVersionServiceBean datasetVersionSvc;
+
+    @EJB
+    private PasswordValidatorServiceBean passwordValidatorService;
+
+    @Inject
+    private DvObjectDao dvObjectDao;
 
     public static final String listUsersPartialAPIPath = "list-users";
     public static final String listUsersFullAPIPath = "/api/admin/" + listUsersPartialAPIPath;
@@ -978,7 +1013,7 @@ public class Admin extends AbstractApiBean {
     @Path("permissions/{dvo}")
     public Response findPermissonsOn(@PathParam("dvo") String dvo) {
         try {
-            DvObject dvObj = findDvo(dvo);
+            DvObject dvObj = dvObjectDao.findDvo(dvo);
             if (dvObj == null) {
                 return notFound("DvObject " + dvo + " not found");
             }

@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.api;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.datafile.DataFileCreator;
@@ -62,6 +63,8 @@ public class Files extends AbstractApiBean {
     private OptionalFileParams optionalFileParams;
     @Inject
     private JsonPrinter jsonPrinter;
+    @Inject
+    private PermissionServiceBean permissionSvc;
 
     private static final Logger logger = Logger.getLogger(Files.class.getName());
 

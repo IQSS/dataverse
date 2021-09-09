@@ -3,8 +3,10 @@ package edu.harvard.iq.dataverse.api;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
+import edu.harvard.iq.dataverse.MapLayerMetadataServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.MapLayerMetadata;
 
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
@@ -25,6 +27,9 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 public class Geoconnect extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Geoconnect.class.getCanonicalName());
+
+    @Inject
+    private MapLayerMetadataServiceBean mapLayerMetadataSrv;
 
     @POST
     @Path("mapLayerMetadatas/check")

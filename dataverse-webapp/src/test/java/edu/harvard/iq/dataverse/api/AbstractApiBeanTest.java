@@ -48,11 +48,6 @@ public class AbstractApiBeanTest {
     }
 
     @Test
-    public void testFailIfNull_ok() throws Exception {
-        sut.failIfNull(sut, "");
-    }
-
-    @Test
     public void testAllowCors() {
         Response r = sut.allowCors(new MockResponse(200));
         assertEquals("*", r.getHeaderString("Access-Control-Allow-Origin"));

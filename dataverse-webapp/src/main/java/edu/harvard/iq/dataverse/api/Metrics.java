@@ -1,8 +1,10 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.metrics.MetricsServiceBean;
 import edu.harvard.iq.dataverse.metrics.MetricsUtil;
 import edu.harvard.iq.dataverse.persistence.cache.Metric;
 
+import javax.inject.Inject;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.ws.rs.GET;
@@ -28,6 +30,9 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
  */
 @Path("info/metrics")
 public class Metrics extends AbstractApiBean {
+
+    @Inject
+    private MetricsServiceBean metricsSvc;
 
     /**
      * Dataverses

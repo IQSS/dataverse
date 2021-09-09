@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.MetadataBlockDao;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 
@@ -22,6 +23,9 @@ public class MetadataBlocks extends AbstractApiBean {
     @Inject
     private JsonPrinter jsonPrinter;
 
+    @Inject
+    private MetadataBlockDao metadataBlockDao;
+
     @GET
     public Response list() {
         return allowCors(ok(metadataBlockSvc.listMetadataBlocks().stream()
@@ -32,7 +36,7 @@ public class MetadataBlocks extends AbstractApiBean {
     @GET
     @Path("{identifier}")
     public Response getBlock(@PathParam("identifier") String idtf) {
-        MetadataBlock b = findMetadataBlock(idtf);
+        MetadataBlock b = metadataBlockDao.findByName(idtf);
 
         return allowCors((b != null)
                 ? ok(jsonPrinter.json(b))

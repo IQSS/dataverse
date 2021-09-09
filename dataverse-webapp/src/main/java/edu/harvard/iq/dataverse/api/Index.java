@@ -4,6 +4,7 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DataverseDao;
+import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.common.NullSafeJsonBuilder;
@@ -44,6 +45,7 @@ import org.apache.solr.client.solrj.SolrServerException;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -98,6 +100,8 @@ public class Index extends AbstractApiBean {
     SearchFilesServiceBean searchFilesService;
     @EJB
     private PermissionsSolrDocFactory solrDocFactory;
+    @Inject
+    private DataverseRoleServiceBean rolesSvc;
 
     public static String contentChanged = "contentChanged";
     public static String contentIndexed = "contentIndexed";

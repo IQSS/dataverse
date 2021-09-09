@@ -1,5 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.api.dto.RoleDTO;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateRoleCommand;
@@ -31,6 +33,12 @@ public class Roles extends AbstractApiBean {
 
     @Inject
     private JsonPrinter jsonPrinter;
+
+    @Inject
+    private DataverseRoleServiceBean rolesSvc;
+
+    @Inject
+    private PermissionServiceBean permissionSvc;
 
     @GET
     @Path("{id}")

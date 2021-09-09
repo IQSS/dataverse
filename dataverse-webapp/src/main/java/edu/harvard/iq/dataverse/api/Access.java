@@ -2,12 +2,12 @@ package edu.harvard.iq.dataverse.api;
 
 import com.amazonaws.services.glacier.model.MissingParameterValueException;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
-import edu.harvard.iq.dataverse.DatasetDao;
 import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
 import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.common.BundleUtil;
@@ -118,8 +118,6 @@ public class Access extends AbstractApiBean {
     @EJB
     DataFileServiceBean dataFileService;
     @EJB
-    DatasetDao datasetDao;
-    @EJB
     DatasetVersionServiceBean versionService;
     @EJB
     DataverseDao dataverseDao;
@@ -155,6 +153,8 @@ public class Access extends AbstractApiBean {
     private CitationFactory citationFactory;
     @Inject
     private JsonPrinter jsonPrinter;
+    @Inject
+    private RoleAssigneeServiceBean roleAssigneeSvc;
 
 
     // TODO:

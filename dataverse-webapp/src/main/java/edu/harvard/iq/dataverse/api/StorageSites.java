@@ -1,9 +1,11 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
+import edu.harvard.iq.dataverse.locality.StorageSiteServiceBean;
 import edu.harvard.iq.dataverse.locality.StorageSiteUtil;
 import edu.harvard.iq.dataverse.persistence.StorageSite;
 
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -18,6 +20,9 @@ import java.util.List;
 
 @Path("admin/storageSites")
 public class StorageSites extends AbstractApiBean {
+
+    @Inject
+    private StorageSiteServiceBean storageSiteSvc;
 
     @GET
     public Response listAll() {

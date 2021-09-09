@@ -1,5 +1,9 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
+import edu.harvard.iq.dataverse.MetadataBlockDao;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
+import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.api.dto.ExplicitGroupDTO;
 import edu.harvard.iq.dataverse.api.dto.RoleAssignmentDTO;
@@ -63,7 +67,6 @@ import edu.harvard.iq.dataverse.persistence.user.User;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
-import org.jsoup.Jsoup;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -104,6 +107,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
+import static org.apache.commons.lang.StringUtils.isNumeric;
 
 /**
  * A REST API for dataverses.
@@ -127,6 +131,18 @@ public class Dataverses extends AbstractApiBean {
 
     @Inject
     private JsonPrinter jsonPrinter;
+
+    @Inject
+    private DataverseRoleServiceBean rolesSvc;
+
+    @Inject
+    private RoleAssigneeServiceBean roleAssigneeSvc;
+
+    @Inject
+    private PermissionServiceBean permissionSvc;
+
+    @Inject
+    private MetadataBlockDao metadataBlockDao;
 
     @POST
     @ApiWriteOperation
@@ -472,8 +488,8 @@ public class Dataverses extends AbstractApiBean {
         try {
             for (JsonValue blockId : Util.asJsonArray(blockIds).getValuesAs(JsonValue.class)) {
                 MetadataBlock blk = (blockId.getValueType() == ValueType.NUMBER)
-                        ? findMetadataBlock(((JsonNumber) blockId).longValue())
-                        : findMetadataBlock(((JsonString) blockId).getString());
+                        ? metadataBlockDao.findById(((JsonNumber) blockId).longValue())
+                        : metadataBlockDao.findByName(((JsonString) blockId).getString());
                 if (blk == null) {
                     return error(Response.Status.BAD_REQUEST, "Can't find metadata block '" + blockId + "'");
                 }
@@ -983,6 +999,25 @@ public class Dataverses extends AbstractApiBean {
         } catch (IllegalCommandException ex) {
             return forbidden(ex.getMessage());
         }
+    }
+
+    private RoleAssignee findAssignee(String identifier) {
+        try {
+            RoleAssignee roleAssignee = roleAssigneeSvc.getRoleAssignee(identifier);
+            return roleAssignee;
+        } catch (EJBException ex) {
+            Throwable cause = ex;
+            while (cause.getCause() != null) {
+                cause = cause.getCause();
+            }
+            logger.log(Level.INFO, "Exception caught looking up RoleAssignee based on identifier ''{0}'': {1}", new Object[]{identifier, cause.getMessage()});
+            return null;
+        }
+    }
+
+    private DatasetFieldType findDatasetFieldType(String idtf) throws NumberFormatException {
+        return isNumeric(idtf) ? datasetFieldSvc.find(Long.parseLong(idtf))
+                : datasetFieldSvc.findByNameOpt(idtf);
     }
 
 }

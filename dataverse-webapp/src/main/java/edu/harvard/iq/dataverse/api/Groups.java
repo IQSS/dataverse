@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
+import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.groups.impl.ipaddress.IpGroupProvider;
 import edu.harvard.iq.dataverse.authorization.groups.impl.shib.ShibGroupProvider;
 import edu.harvard.iq.dataverse.persistence.group.IpGroup;
@@ -41,6 +42,9 @@ public class Groups extends AbstractApiBean {
 
     @Inject
     private JsonPrinter jsonPrinter;
+
+    @Inject
+    private GroupServiceBean groupSvc;
 
     Pattern legalGroupName = Pattern.compile("^[-_a-zA-Z0-9]+$");
 
