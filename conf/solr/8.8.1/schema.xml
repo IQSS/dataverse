@@ -450,6 +450,9 @@
     <copyField source="universe" dest="_text_" maxChars="3000"/>
     <copyField source="weighting" dest="_text_" maxChars="3000"/>
     <copyField source="westLongitude" dest="_text_" maxChars="3000"/>
+    
+    <!-- Dataverse - per Geoblacklight, populating bbok field from a location_rpt field -->
+     <copyField source="solr_srpt" dest="solr_bboxtype"/>
     <!-- End: Dataverse-specific -->
     
     <!-- This can be enabled, in case the client does not know what fields may be searched. It isn't enabled by default
@@ -482,6 +485,9 @@
     <dynamicField name="*_dts" type="pdate"    indexed="true"  stored="true" multiValued="true"/>
     <dynamicField name="*_p"  type="location" indexed="true" stored="true"/>
     <dynamicField name="*_srpt"  type="location_rpt" indexed="true" stored="true"/>
+    <!--  Dataverse - adding bbox field per Geobloacklight -->
+    <dynamicField name="*_bboxtype" type="bbox" stored="true" indexed="true"/>
+    
     
     <!-- payloaded dynamic fields -->
     <dynamicField name="*_dpf" type="delimited_payloads_float" indexed="true"  stored="true"/>
@@ -909,6 +915,9 @@
     -->
     <fieldType name="location_rpt" class="solr.SpatialRecursivePrefixTreeFieldType"
                geo="true" distErrPct="0.025" maxDistErr="0.001" distanceUnits="kilometers" />
+    <!-- DataVerse - per Geoblacklight, Adding field type for bboxField that enables, among other things, overlap ratio calculations -->
+    <fieldType name="bbox" class="solr.BBoxField"
+           geo="true" distanceUnits="kilometers" numberType="pdouble" />
 
     <!-- Payloaded field types -->
     <fieldType name="delimited_payloads_float" stored="false" indexed="true" class="solr.TextField">

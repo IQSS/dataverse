@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetLinkingServiceBean;
@@ -880,6 +881,47 @@ public class IndexServiceBean {
                                     solrInputDocument.addField(solrFieldFacetable, dsf.getValuesWithoutNaValues());
                                 }
                             }
+                        }
+                    }
+                }
+                
+                //ToDo - define a geom/bbox type solr field and find those instead of just this one
+                if(dsfType.getName().equals(DatasetFieldConstant.geographicBoundingBox)) {
+                    for (DatasetFieldCompoundValue compoundValue : dsf.getDatasetFieldCompoundValues()) {
+                        String westLon=null;
+                        String eastLon=null;
+                        String northLat=null;
+                        String southLat=null;
+                        for(DatasetField childDsf: compoundValue.getChildDatasetFields()) {
+                            switch (childDsf.getDatasetFieldType().getName()) {
+                            case DatasetFieldConstant.westLongitude:
+                                westLon = childDsf.getRawValue();
+                                break;
+                            case DatasetFieldConstant.eastLongitude:
+                                eastLon = childDsf.getRawValue();
+                                break;
+                            case DatasetFieldConstant.northLatitude:
+                                northLat = childDsf.getRawValue();
+                                break;
+                            case DatasetFieldConstant.southLatitude:
+                                southLat = childDsf.getRawValue();
+                                break;
+                            }
+                        }
+                        if ((eastLon != null || westLon != null) && (northLat != null || southLat != null)) {
+                            // we have a point or a box, so proceed
+                            if (eastLon == null) {
+                                eastLon = westLon;
+                            } else if (westLon == null) {
+                                westLon = eastLon;
+                            }
+                            if (northLat == null) {
+                                northLat = southLat;
+                            } else if (southLat == null) {
+                                southLat = northLat;
+                            }
+                            //W, E, N, S
+                            solrInputDocument.addField("solr_srpt", "ENVELOPE(" + westLon + "," + eastLon + "," + northLat + "," + southLat + ")");
                         }
                     }
                 }
