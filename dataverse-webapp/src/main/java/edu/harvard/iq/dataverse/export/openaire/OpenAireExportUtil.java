@@ -1380,6 +1380,7 @@ public class OpenAireExportUtil {
             }
         }
 
+
         if (hasValidLocationBox(northLatitude, southLatitude, eastLongitude, westLongitude)) {
             String locationBoxValue = southLatitude + " " + westLongitude + " " + northLatitude + " " + eastLongitude;
 
