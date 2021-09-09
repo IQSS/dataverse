@@ -70,6 +70,7 @@ import org.hibernate.validator.constraints.NotBlank;
 @Table(indexes = {@Index(columnList="ingeststatus")
 		, @Index(columnList="checksumvalue")
 		, @Index(columnList="contenttype")
+    , @Index(columnList="notaryservicebound")
 		, @Index(columnList="restricted")})
 public class DataFile extends DvObject implements Comparable {
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
@@ -179,8 +180,7 @@ public class DataFile extends DvObject implements Comparable {
     
     
     @Expose
-    @Column(nullable = false)
-    private boolean notaryServiceBound=true;
+    private boolean notaryServiceBound;
     
     
     @Expose

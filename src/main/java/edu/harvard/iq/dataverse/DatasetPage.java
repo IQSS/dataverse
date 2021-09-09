@@ -384,7 +384,7 @@ public class DatasetPage implements java.io.Serializable {
     public String getThumbnailString() {
         // This method gets called 30 (!) times, just to load the page!
         // - so let's cache that string the first time it's called.
-
+        logger.log(Level.INFO, "DatasetPage#getThumbnailString() is called");
         if (thumbnailString != null) {
             if ("".equals(thumbnailString)) {
                 return null;
@@ -1239,7 +1239,7 @@ public class DatasetPage implements java.io.Serializable {
     private Map<Long, String> datafileThumbnailsMap = new HashMap<>();
 
     public boolean isThumbnailAvailable(FileMetadata fileMetadata) {
-
+        logger.log(Level.INFO, "DatasetPage#isThumbnailAvailable() is called");
         // new and optimized logic:
         // - check download permission here (should be cached - so it's free!)
         // - only then check if the thumbnail is available/exists.
@@ -2005,6 +2005,12 @@ public class DatasetPage implements java.io.Serializable {
             }
         }
         for(DataFile f : dataset.getFiles()) {
+
+            logger.log(Level.INFO, "========== Dataset#init() method ============");
+            logger.log(Level.INFO, "fileId={0}", f.getId());
+            logger.log(Level.INFO, "content type={0}", f.getContentType());
+            logger.log(Level.INFO, "checksum value={0}", f.getChecksumValue());
+            logger.log(Level.INFO, "NS-bound={0}", f.isNotaryServiceBound());            
             // TODO: Consider uncommenting this optimization.
 //            if (versionHasTabular) {
 //                hasTabular = true;
