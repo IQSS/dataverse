@@ -50,10 +50,6 @@ public class CreateDatasetVersionCommandTest {
         // Create version to be added
         DatasetVersion dsvNew = new DatasetVersion();
         dsvNew.setVersionState(DatasetVersion.VersionState.DRAFT);
-        List<DatasetField> fields = new ArrayList<>(); 
-        //adding title to pass new validation - fields required
-        fields.add(UtilIT.createTitleField("Title"));
-        dsvNew.setDatasetFields(fields);
 
         // Execute
         CreateDatasetVersionCommand sut = new CreateDatasetVersionCommand( makeRequest(), ds, dsvNew );

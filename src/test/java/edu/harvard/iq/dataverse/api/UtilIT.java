@@ -2672,10 +2672,6 @@ public class UtilIT {
                 .post("/api/dataverses/" + dataverseAlias +"/datasets");
         return response;
     }
-    
-    public static DatasetField createTitleField(String value) {
-        return constructPrimitive(DatasetFieldConstant.title, value);
-    }
 
     private static DatasetField constructPrimitive(String fieldName, String value) {
         DatasetField field = new DatasetField();

@@ -567,10 +567,6 @@ public class IngestUtilTest {
         fileMetadata.setLabel("foo.png");
         fileMetadata.setDirectoryLabel("/has/leading/slash");
         datasetVersion.getFileMetadatas().add(fileMetadata);
-        List<DatasetField> fields = new ArrayList<>();  
-        //adding fields for validation
-        fields.add(UtilIT.createTitleField("Title"));
-        datasetVersion.setDatasetFields(fields);
         
         //We are programmatically stripping of leading and trailing slashes
         Set<ConstraintViolation> violations1 = datasetVersion.validate();
