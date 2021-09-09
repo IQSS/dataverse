@@ -384,7 +384,6 @@ public class DatasetPage implements java.io.Serializable {
     public String getThumbnailString() {
         // This method gets called 30 (!) times, just to load the page!
         // - so let's cache that string the first time it's called.
-        logger.log(Level.INFO, "DatasetPage#getThumbnailString() is called");
         if (thumbnailString != null) {
             if ("".equals(thumbnailString)) {
                 return null;
