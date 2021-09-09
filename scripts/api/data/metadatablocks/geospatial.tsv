@@ -12,7 +12,7 @@
 	eastLongitude	East Longitude	Easternmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -180,0 <= East Bounding Longitude Value <= 180,0.		text	8		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	geospatial
 	northLongitude	North Latitude	Northernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -90,0 <= North Bounding Latitude Value <= 90,0.		text	9		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	geospatial
 	southLongitude	South Latitude	Southernmost coordinate delimiting the geographic extent of the Dataset. A valid range of values,  expressed in decimal degrees, is -90,0 <= South Bounding Latitude Value <= 90,0.		text	10		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	geographicBoundingBox	geospatial
-#controlledVocabulary	DatasetField	Value	identifier	displayOrder											
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder	altValue	altValue	altValue	altValue							
 	country	Afghanistan		0											
 	country	Albania		1											
 	country	Algeria		2											
