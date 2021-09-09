@@ -9,11 +9,9 @@ import edu.harvard.iq.dataverse.api.dto.FileDTO;
 import edu.harvard.iq.dataverse.api.dto.MetadataBlockDTO;
 import edu.harvard.iq.dataverse.common.DatasetFieldConstant;
 import edu.harvard.iq.dataverse.common.MarkupChecker;
-import edu.harvard.iq.dataverse.export.ExportUtil;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import io.vavr.Tuple2;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -46,11 +44,9 @@ public class OpenAireExportUtil {
     private static final String GRANT_INFO_PREFIX = "info:eu-repo/grantAgreement/";
 
     public static String XSI_NAMESPACE = "http://www.w3.org/2001/XMLSchema-instance";
-    public static String SCHEMA_VERSION = "4.1";
-    public static String RESOURCE_NAMESPACE = "http://datacite.org/schema/kernel-4";
-    public static String RESOURCE_SCHEMA_LOCATION = "http://schema.datacite.org/meta/kernel-4.1/metadata.xsd";
-
-    public static String FunderType = "Funder";
+    public static String SCHEMA_VERSION = "3.1";
+    public static String RESOURCE_NAMESPACE = "http://datacite.org/schema/kernel-3";
+    public static String RESOURCE_SCHEMA_LOCATION = "http://schema.datacite.org/meta/kernel-3.1/metadata.xsd";
 
     public static void datasetJson2openaire(JsonObject datasetDtoAsJson, OutputStream outputStream) throws XMLStreamException {
         logger.fine(JsonUtil.prettyPrint(datasetDtoAsJson.toString()));
@@ -95,8 +91,7 @@ public class OpenAireExportUtil {
         // 1, Identifier (with mandatory type sub-property) (M)
         writeIdentifierElement(xmlw, globalId.toURL().toString(), language);
 
-        // 2, Creator (with optional given name, family name,
-        //      name identifier and affiliation sub-properties) (M)
+        // 2, Creator (with optional name identifier and affiliation sub-properties) (M)
         writeCreatorsElement(xmlw, version, language);
 
         // 3, Title (with optional type sub-properties)
@@ -115,8 +110,7 @@ public class OpenAireExportUtil {
         // 6, Subject (with scheme sub-property)
         writeSubjectsElement(xmlw, version, language);
 
-        // 7, Contributor (with optional given name, family name,
-        //      name identifier and affiliation sub-properties)
+        // 7, Contributor (with optional name identifier and affiliation sub-properties)
         writeContributorsElement(xmlw, version, language);
 
         // 8, Date (with type sub-property)  (R)
@@ -145,16 +139,13 @@ public class OpenAireExportUtil {
         writeVersionElement(xmlw, version, language);
 
         // 16 Rights (O), rights
-        writeAccessRightsElement(xmlw, datasetDto, language);
+        writeAccessRightsElement(xmlw, datasetDto);
 
         // 17 Description (R), description
         writeDescriptionsElement(xmlw, version, language);
 
         // 18 GeoLocation (with point, box and polygon sub-properties) (R)
-        writeGeoLocationsElement(xmlw, version, language);
-
-        // 19 FundingReference (with name, identifier, and award related sub- properties) (O)
-        writeFundingReferencesElement(xmlw, version, language);
+        writeFullGeoLocationsElement(xmlw, version, language);
     }
 
     /**
@@ -216,7 +207,7 @@ public class OpenAireExportUtil {
     }
 
     /**
-     * 2, Creator (with optional given name, family name, name identifier and
+     * 2, Creator (with optional name identifier and
      * affiliation sub-properties) (M)
      *
      * @param xmlw              The stream writer
@@ -225,7 +216,7 @@ public class OpenAireExportUtil {
      * @throws XMLStreamException
      */
     public static void writeCreatorsElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String language) throws XMLStreamException {
-        // creators -> creator -> creatorName with nameType attribute, givenName, familyName, nameIdentifier
+        // creators -> creator -> creatorName -> nameIdentifier
         // write all creators
         boolean creator_check = false;
 
@@ -262,19 +253,9 @@ public class OpenAireExportUtil {
                                 xmlw.writeStartElement("creator"); // <creator>
 
                                 creatorName = Cleanup.normalize(creatorName);
-                                boolean isPerson = ExportUtil.isPerson(creatorName);
+
                                 Map<String, String> creator_map = new HashMap<String, String>();
-
-                                if ((StringUtils.containsIgnoreCase(nameIdentifierScheme, "orcid")) || isPerson) {
-                                    creator_map.put("nameType", "Personal");
-                                } else {
-                                    creator_map.put("nameType", "Organizational");
-                                }
                                 writeFullElement(xmlw, null, "creatorName", creator_map, creatorName, language);
-
-                                if(isPerson) {
-                                    writeGivenNameAndFamilyNameElements(xmlw, creatorName, language);
-                                }
 
                                 if (StringUtils.isNotBlank(nameIdentifier)) {
                                     creator_map.clear();
@@ -528,7 +509,7 @@ public class OpenAireExportUtil {
     }
 
     /**
-     * 7, Contributor (with optional given name, family name, name identifier
+     * 7, Contributor (with optional name identifier
      * and affiliation sub-properties)
      *
      * @param xmlw              The stream writer
@@ -584,10 +565,10 @@ public class OpenAireExportUtil {
                             if (StringUtils.isNotBlank(distributorName)) {
                                 contributor_check = writeOpenTag(xmlw, "contributors", contributor_check);
                                 writeContributorElement(xmlw,
-                                                        "Distributor",
-                                                        distributorName,
-                                                        distributorAffiliation,
-                                                        language);
+                                        "Distributor",
+                                        distributorName,
+                                        distributorAffiliation,
+                                        language);
                             }
                         }
                     } else if (DatasetFieldConstant.datasetContact.equals(fieldDTO.getTypeName())) {
@@ -607,10 +588,10 @@ public class OpenAireExportUtil {
                             if (StringUtils.isNotBlank(contactName)) {
                                 contributor_check = writeOpenTag(xmlw, "contributors", contributor_check);
                                 writeContributorElement(xmlw,
-                                                        "ContactPerson",
-                                                        contactName,
-                                                        contactAffiliation,
-                                                        language);
+                                        "ContactPerson",
+                                        contactName,
+                                        contactAffiliation,
+                                        language);
                             }
                         }
                     } else if (DatasetFieldConstant.contributor.equals(fieldDTO.getTypeName())) {
@@ -627,9 +608,7 @@ public class OpenAireExportUtil {
                                 }
                             }
 
-                            // Fix Funder contributorType
-                            if (StringUtils.isNotBlank(contributorName) && !StringUtils.equalsIgnoreCase(FunderType,
-                                                                                                         contributorType)) {
+                            if (StringUtils.isNotBlank(contributorName)) {
                                 contributor_check = writeOpenTag(xmlw, "contributors", contributor_check);
                                 writeContributorElement(xmlw, contributorType, contributorName, null, language);
                             }
@@ -696,7 +675,7 @@ public class OpenAireExportUtil {
     }
 
     /**
-     * 7, Contributor (with optional given name, family name, name identifier
+     * 7, Contributor (with optional name identifier
      * and affiliation sub-properties)
      * <p>
      * Write single contributor tag.
@@ -719,32 +698,13 @@ public class OpenAireExportUtil {
 
         Map<String, String> contributor_map = new HashMap<String, String>();
         contributorName = Cleanup.normalize(contributorName);
-        boolean isPerson = ExportUtil.isPerson(contributorName);
 
-        if (isPerson) {
-            contributor_map.put("nameType", "Personal");
-        } else {
-            contributor_map.put("nameType", "Organizational");
-        }
         writeFullElement(xmlw, null, "contributorName", contributor_map, contributorName, language);
-
-        if (isPerson) {
-            writeGivenNameAndFamilyNameElements(xmlw, contributorName, language);
-        }
 
         if (StringUtils.isNotBlank(contributorAffiliation)) {
             writeFullElement(xmlw, null, "affiliation", null, contributorAffiliation, language);
         }
         xmlw.writeEndElement(); // </contributor>
-    }
-
-    private static void writeGivenNameAndFamilyNameElements(XMLStreamWriter xmlw, String contributorName, String language) throws XMLStreamException {
-        Tuple2<String, String> firstAndLastNames = FirstNames.getInstance().extractFirstAndLastName(contributorName);
-
-        if (firstAndLastNames != null) {
-            writeFullElement(xmlw, null, "givenName", null, firstAndLastNames._1, language);
-            writeFullElement(xmlw, null, "familyName", null, firstAndLastNames._2, language);
-        }
     }
 
     /**
@@ -846,7 +806,7 @@ public class OpenAireExportUtil {
     }
 
     /**
-     * 10, ResourceType (with mandatory general type description sub- property)
+     * 10, ResourceType (with optional general type description sub- property)
      *
      * @param xmlw              The Steam writer
      * @param datasetVersionDTO
@@ -965,7 +925,6 @@ public class OpenAireExportUtil {
             relatedIdentifierTypeMap.put("EAN13".toLowerCase(), "EAN13");
             relatedIdentifierTypeMap.put("EISSN".toLowerCase(), "EISSN");
             relatedIdentifierTypeMap.put("Handle".toLowerCase(), "Handle");
-            relatedIdentifierTypeMap.put("IGSN".toLowerCase(), "IGSN");
             relatedIdentifierTypeMap.put("ISBN".toLowerCase(), "ISBN");
             relatedIdentifierTypeMap.put("ISSN".toLowerCase(), "ISSN");
             relatedIdentifierTypeMap.put("ISTC".toLowerCase(), "ISTC");
@@ -1146,16 +1105,15 @@ public class OpenAireExportUtil {
     /**
      * 16 Rights (O)
      *
-     * @param xmlw     The Steam writer
+     * @param xmlw    The Steam writer
      * @param dataset
-     * @param language current language
      * @throws XMLStreamException
      */
-    public static void writeAccessRightsElement(XMLStreamWriter xmlw, DatasetDTO dataset, String language) throws XMLStreamException {
+    public static void writeAccessRightsElement(XMLStreamWriter xmlw, DatasetDTO dataset) throws XMLStreamException {
         // rightsList -> rights with rightsURI attribute
         xmlw.writeStartElement("rightsList"); // <rightsList>
         if (dataset.isEmbargoActive()) {
-            writeRightsHeader(xmlw, language);
+            writeRightsHeader(xmlw);
             xmlw.writeAttribute("rightsURI", RIGHTS_URI_EMBARGOED_ACCESS);
             xmlw.writeEndElement();
         } else {
@@ -1163,8 +1121,8 @@ public class OpenAireExportUtil {
                     .map(DatasetVersionDTO::getFiles)
                     .orElseGet(Collections::emptyList);
             // set terms from the info:eu-repo-Access-Terms vocabulary
-            writeRightsUriInfoAttribute(xmlw, files, language, dataset.hasActiveGuestbook());
-            writeRightsUriLicenseInfoAttribute(xmlw, files, language);
+            writeRightsUriInfoAttribute(xmlw, files, dataset.hasActiveGuestbook());
+            writeRightsUriLicenseInfoAttribute(xmlw, files);
         }
         xmlw.writeEndElement(); // </rightsList>
     }
@@ -1176,16 +1134,11 @@ public class OpenAireExportUtil {
      * Write headers
      *
      * @param xmlw     The Steam writer
-     * @param language current language
      * @throws XMLStreamException
      */
-    private static void writeRightsHeader(XMLStreamWriter xmlw, String language) throws XMLStreamException {
+    private static void writeRightsHeader(XMLStreamWriter xmlw) throws XMLStreamException {
         // write the rights header
         xmlw.writeStartElement("rights"); // <rights>
-
-        if (StringUtils.isNotBlank(language)) {
-            xmlw.writeAttribute("xml:lang", language);
-        }
     }
 
     /**
@@ -1350,10 +1303,11 @@ public class OpenAireExportUtil {
      * @param language          current language
      * @throws XMLStreamException
      */
-    public static void writeGeoLocationsElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String language) throws XMLStreamException {
+    public static void writeFullGeoLocationsElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String language) throws XMLStreamException {
         // geoLocation -> geoLocationPlace
         String geoLocationPlace = dto2Primitive(datasetVersionDTO, DatasetFieldConstant.productionPlace);
         boolean geoLocations_check = false;
+        boolean hasValidBoxLocation = false;
 
         // get DatasetFieldConstant.geographicBoundingBox
         for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
@@ -1363,13 +1317,23 @@ public class OpenAireExportUtil {
                     geoLocations_check = writeOpenTag(xmlw, "geoLocations", geoLocations_check);
                     if (fieldDTO.getMultiple()) {
                         for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                            writeGeoLocationsElement(xmlw, foo, geoLocationPlace, language);
+                            boolean hasValidCurrentBoxLocation = writeGeoLocationsElement(xmlw, foo, geoLocationPlace, language);
+                            hasValidBoxLocation = hasValidBoxLocation || hasValidCurrentBoxLocation;
                         }
                     } else {
-                        writeGeoLocationsElement(xmlw, fieldDTO.getSingleCompound(), geoLocationPlace, language);
+                        hasValidBoxLocation = writeGeoLocationsElement(xmlw, fieldDTO.getSingleCompound(), geoLocationPlace, language);
                     }
                 }
             }
+        }
+
+        if (!hasValidBoxLocation && StringUtils.isNotBlank(geoLocationPlace)) {
+            if (!geoLocations_check) {
+                geoLocations_check = writeOpenTag(xmlw, "geoLocations", geoLocations_check);
+                writeOpenTag(xmlw, "geoLocation", false);
+            }
+            writeFullElement(xmlw, null, "geoLocationPlace", null, geoLocationPlace, language);
+            writeEndTag(xmlw, true);
         }
 
         writeEndTag(xmlw, geoLocations_check);
@@ -1384,131 +1348,78 @@ public class OpenAireExportUtil {
      * @param language         current language
      * @throws XMLStreamException
      */
-    public static void writeGeoLocationsElement(XMLStreamWriter xmlw, Set<FieldDTO> foo, String geoLocationPlace, String language) throws XMLStreamException {
-        //boolean geoLocations_check = false;
-        boolean geoLocation_check = false;
-        boolean geoLocationbox_check = false;
+    public static boolean writeGeoLocationsElement(XMLStreamWriter xmlw, Set<FieldDTO> foo, String geoLocationPlace, String language) throws XMLStreamException {
 
-        if (StringUtils.isNotBlank(geoLocationPlace)) {
-
-            geoLocation_check = writeOpenTag(xmlw, "geoLocation", geoLocation_check);
-            writeFullElement(xmlw, null, "geoLocationPlace", null, geoLocationPlace, language);
-        }
-        geoLocation_check = writeOpenTag(xmlw, "geoLocation", geoLocation_check);
-        geoLocationbox_check = writeOpenTag(xmlw, "geoLocationBox", geoLocationbox_check);
+        String northLatitude = StringUtils.EMPTY;
+        String southLatitude = StringUtils.EMPTY;
+        String eastLongitude = StringUtils.EMPTY;
+        String westLongitude = StringUtils.EMPTY;
 
         for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
             FieldDTO next = iterator.next();
-            String typeName = next.getTypeName();
+
+            String value = next.getSinglePrimitive().trim();
 
             Pattern pattern = Pattern.compile("([a-z]+)(Longitude|Latitude)");
             Matcher matcher = pattern.matcher(next.getTypeName());
-            boolean skip = false;
             if (matcher.find()) {
                 switch (matcher.group(1)) {
                     case "south":
+                        southLatitude = value;
+                        break;
                     case "north":
-                        typeName = matcher.group(1) + "BoundLatitude";
+                        northLatitude = value;
                         break;
-
                     case "west":
+                        westLongitude = value;
+                        break;
                     case "east":
-                        typeName = matcher.group(1) + "BoundLongitude";
+                        eastLongitude = value;
                         break;
-
-                    default:
-                        skip = true;
-                        break;
-                }
-                if (!skip) {
-                    writeFullElement(xmlw, null, typeName, null, next.getSinglePrimitive(), language);
                 }
             }
         }
-        writeEndTag(xmlw, geoLocationbox_check);
-        writeEndTag(xmlw, geoLocation_check);
-    }
 
-    /**
-     * 19 FundingReference (with name, identifier, and award related sub-
-     * properties) (O)
-     *
-     * @param xmlw              The Steam writer
-     * @param datasetVersionDTO
-     * @param language          current language
-     * @throws XMLStreamException
-     */
-    public static void writeFundingReferencesElement(XMLStreamWriter xmlw, DatasetVersionDTO datasetVersionDTO, String language) throws XMLStreamException {
-        // fundingReferences -> fundingReference -> funderName, awardNumber
-        boolean fundingReference_check = false;
+        if (hasValidLocationBox(northLatitude, southLatitude, eastLongitude, westLongitude)) {
+            String locationBoxValue = southLatitude + " " + westLongitude + " " + northLatitude + " " + eastLongitude;
 
-        for (Map.Entry<String, MetadataBlockDTO> entry : datasetVersionDTO.getMetadataBlocks().entrySet()) {
-            String key = entry.getKey();
-            MetadataBlockDTO value = entry.getValue();
-            if ("citation".equals(key)) {
-                for (FieldDTO fieldDTO : value.getFields()) {
-                    if (DatasetFieldConstant.grantNumber.equals(fieldDTO.getTypeName())) {
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                            String awardNumber = null;
-                            String funderName = null;
-
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
-                                FieldDTO next = iterator.next();
-                                if (DatasetFieldConstant.grantNumberValue.equals(next.getTypeName())) {
-                                    awardNumber = next.getSinglePrimitive();
-                                }
-                                if (DatasetFieldConstant.grantNumberAgency.equals(next.getTypeName())) {
-                                    funderName = next.getSinglePrimitive();
-                                }
-                            }
-
-                            if (StringUtils.isNotBlank(funderName)) {
-                                fundingReference_check = writeOpenTag(xmlw,
-                                                                      "fundingReferences",
-                                                                      fundingReference_check);
-                                xmlw.writeStartElement("fundingReference"); // <fundingReference>
-                                writeFullElement(xmlw, null, "funderName", null, funderName, language);
-
-                                if (StringUtils.isNotBlank(awardNumber)) {
-                                    writeFullElement(xmlw, null, "awardNumber", null, awardNumber, language);
-                                }
-
-                                xmlw.writeEndElement(); // </fundingReference>
-                            }
-                        }
-                    } else if (DatasetFieldConstant.contributor.equals(fieldDTO.getTypeName())) {
-                        for (Set<FieldDTO> foo : fieldDTO.getMultipleCompound()) {
-                            String contributorName = null;
-                            String contributorType = null;
-
-                            for (Iterator<FieldDTO> iterator = foo.iterator(); iterator.hasNext(); ) {
-                                FieldDTO next = iterator.next();
-                                if (DatasetFieldConstant.contributorName.equals(next.getTypeName())) {
-                                    contributorName = next.getSinglePrimitive();
-                                }
-                                if (DatasetFieldConstant.contributorType.equals(next.getTypeName())) {
-                                    contributorType = next.getSinglePrimitive();
-                                }
-                            }
-
-                            // Fix Funder contributorType
-                            if (StringUtils.isNotBlank(contributorName) && StringUtils.equalsIgnoreCase(FunderType,
-                                                                                                        contributorType)) {
-                                fundingReference_check = writeOpenTag(xmlw,
-                                                                      "fundingReferences",
-                                                                      fundingReference_check);
-                                xmlw.writeStartElement("fundingReference"); // <fundingReference>
-                                writeFullElement(xmlw, null, "funderName", null, contributorName, language);
-
-                                xmlw.writeEndElement(); // </fundingReference>
-                            }
-                        }
-                    }
-                }
+            writeOpenTag(xmlw, "geoLocation", false);
+            writeFullElement(xmlw, null, "geoLocationBox", null, locationBoxValue.trim().replaceAll(" +", " "), language);
+            if (StringUtils.isNotBlank(geoLocationPlace)) {
+                writeFullElement(xmlw, null, "geoLocationPlace", null, geoLocationPlace, language);
             }
+            writeEndTag(xmlw, true);
+
+            return true;
         }
-        writeEndTag(xmlw, fundingReference_check);
+        return false;
     }
+
+    private static boolean hasValidLocationBox(String north, String south, String east, String west) {
+        return isValidLatitude(north) &&
+                isValidLatitude(south) &&
+                isValidLongitude(east) &&
+                isValidLongitude(west);
+    }
+
+    private static boolean isValidLatitude(String value) {
+        try {
+            double val = Double.parseDouble(value);
+            return val >= -90.0 && val <= 90.0;
+        } catch (NullPointerException | NumberFormatException ex) {
+            return false;
+        }
+    }
+
+    private static boolean isValidLongitude(String value) {
+        try {
+            double val = Double.parseDouble(value);
+            return val >= -180.0 && val <= 180.0;
+        } catch (NullPointerException | NumberFormatException ex) {
+            return false;
+        }
+    }
+
 
     private static String dto2Primitive(DatasetVersionDTO datasetVersionDTO, String datasetFieldTypeName) {
         // give the single value of the given metadata
@@ -1608,9 +1519,9 @@ public class OpenAireExportUtil {
         return result;
     }
 
-    private static void writeRightsUriLicenseInfoAttribute(XMLStreamWriter xmlw, List<FileDTO> files, String language) throws XMLStreamException {
+    private static void writeRightsUriLicenseInfoAttribute(XMLStreamWriter xmlw, List<FileDTO> files) throws XMLStreamException {
         if (!Lists.isEmpty(files)) {
-            writeRightsHeader(xmlw, language);
+            writeRightsHeader(xmlw);
 
             if (areAllFilesRestricted(files)) {
                 xmlw.writeCharacters("Access to all files in the dataset is restricted.");
@@ -1630,8 +1541,8 @@ public class OpenAireExportUtil {
         }
     }
 
-    private static void writeRightsUriInfoAttribute(XMLStreamWriter xmlw, List<FileDTO> files, String language, boolean hasActiveGuestbook) throws XMLStreamException {
-        writeRightsHeader(xmlw, language);
+    private static void writeRightsUriInfoAttribute(XMLStreamWriter xmlw, List<FileDTO> files, boolean hasActiveGuestbook) throws XMLStreamException {
+        writeRightsHeader(xmlw);
 
         if (Lists.isEmpty(files)) {
             xmlw.writeAttribute("rightsURI", RIGHTS_URI_CLOSED_ACCESS);

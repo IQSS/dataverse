@@ -3,14 +3,13 @@ package edu.harvard.iq.dataverse.export.openaire;
 import edu.harvard.iq.dataverse.export.OpenAireExporter;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @ExtendWith(MockitoExtension.class)
 class OpenAireExporterTest {
@@ -80,7 +79,7 @@ class OpenAireExporterTest {
         String result = instance.getXMLNameSpace();
 
         // then
-        assertEquals("http://datacite.org/schema/kernel-4", result);
+        assertEquals("http://datacite.org/schema/kernel-3", result);
     }
 
     @Test
@@ -90,7 +89,7 @@ class OpenAireExporterTest {
         String result = instance.getXMLSchemaLocation();
 
         // then
-        assertEquals("http://schema.datacite.org/meta/kernel-4.1/metadata.xsd", result);
+        assertEquals("http://schema.datacite.org/meta/kernel-3.1/metadata.xsd", result);
     }
 
     @Test
@@ -100,6 +99,6 @@ class OpenAireExporterTest {
         String result = instance.getXMLSchemaVersion();
 
         // then
-        assertEquals("4.1", result);
+        assertEquals("3.1", result);
     }
 }

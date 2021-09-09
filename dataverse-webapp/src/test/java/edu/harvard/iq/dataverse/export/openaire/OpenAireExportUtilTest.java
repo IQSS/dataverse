@@ -7,8 +7,7 @@ import edu.harvard.iq.dataverse.api.dto.FileDTO;
 import edu.harvard.iq.dataverse.persistence.GlobalId;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.*;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -83,36 +82,28 @@ public class OpenAireExportUtilTest {
 
         writer.close();
         Assert.assertEquals("<creators>"
-                                    + "<creator>"
-                                    + "<creatorName nameType=\"Personal\">Privileged, Pete</creatorName>"
-                                    + "<givenName>Pete</givenName>"
-                                    + "<familyName>Privileged</familyName>"
-                                    + "<nameIdentifier nameIdentifierScheme=\"ORCID\">ellenid</nameIdentifier>"
-                                    + "<affiliation>Top</affiliation>"
-                                    + "</creator>"
-                                    + "<creator>"
-                                    + "<creatorName nameType=\"Personal\">Smith, John</creatorName>"
-                                    + "<givenName>John</givenName>"
-                                    + "<familyName>Smith</familyName>"
-                                    + "</creator>"
-                                    + "<creator>"
-                                    + "<creatorName nameType=\"Personal\">John Smith</creatorName>"
-                                    + "<givenName>John</givenName>"
-                                    + "<familyName>Smith</familyName>"
-                                    + "</creator>"
-                                    + "<creator>"
-                                    + "<creatorName nameType=\"Personal\">Awesome, Audrey</creatorName>"
-                                    + "<givenName>Audrey</givenName>"
-                                    + "<familyName>Awesome</familyName>"
-                                    + "<nameIdentifier nameIdentifierScheme=\"DAISY\">audreyId</nameIdentifier>"
-                                    + "<affiliation>Bottom</affiliation>"
-                                    + "</creator>"
-                                    + "<creator>"
-                                    + "<creatorName nameType=\"Organizational\">Apache Foundation</creatorName>"
-                                    + "<nameIdentifier nameIdentifierScheme=\"DAISY\">audreyId</nameIdentifier>"
-                                    + "<affiliation>Bottom</affiliation>"
-                                    + "</creator>"
-                                    + "</creators>",
+                        + "<creator>"
+                        + "<creatorName>Privileged, Pete</creatorName>"
+                        + "<nameIdentifier nameIdentifierScheme=\"ORCID\">ellenid</nameIdentifier>"
+                        + "<affiliation>Top</affiliation>"
+                        + "</creator>"
+                        + "<creator>"
+                        + "<creatorName>Smith, John</creatorName>"
+                        + "</creator>"
+                        + "<creator>"
+                        + "<creatorName>John Smith</creatorName>"
+                        + "</creator>"
+                        + "<creator>"
+                        + "<creatorName>Awesome, Audrey</creatorName>"
+                        + "<nameIdentifier nameIdentifierScheme=\"DAISY\">audreyId</nameIdentifier>"
+                        + "<affiliation>Bottom</affiliation>"
+                        + "</creator>"
+                        + "<creator>"
+                        + "<creatorName>Apache Foundation</creatorName>"
+                        + "<nameIdentifier nameIdentifierScheme=\"DAISY\">audreyId</nameIdentifier>"
+                        + "<affiliation>Bottom</affiliation>"
+                        + "</creator>"
+                        + "</creators>",
                             writer.toString());
     }
 
@@ -133,25 +124,25 @@ public class OpenAireExportUtilTest {
 
         writer.close();
         Assert.assertEquals("<creators>"
-                                    + "<creator>"
-                                    + "<creatorName nameType=\"Organizational\">IBM</creatorName>"
-                                    + "</creator>"
-                                    + "<creator>"
-                                    + "<creatorName nameType=\"Organizational\">Harvard University</creatorName>"
-                                    + "</creator>"
-                                    + "<creator>"
-                                    + "<creatorName nameType=\"Organizational\">The Institute for Quantitative Social Science</creatorName>"
-                                    + "</creator>"
-                                    + "<creator>"
-                                    + "<creatorName nameType=\"Organizational\">The Ford Foundation</creatorName>"
-                                    + "</creator>"
-                                    + "<creator>"
-                                    + "<creatorName nameType=\"Organizational\">United Nations Economic and Social Commission for Asia and the Pacific (UNESCAP)</creatorName>"
-                                    + "</creator>"
-                                    + "<creator>"
-                                    + "<creatorName nameType=\"Organizational\">Michael J. Fox Foundation for Parkinson's Research</creatorName>"
-                                    + "</creator>"
-                                    + "</creators>",
+                        + "<creator>"
+                        + "<creatorName>IBM</creatorName>"
+                        + "</creator>"
+                        + "<creator>"
+                        + "<creatorName>Harvard University</creatorName>"
+                        + "</creator>"
+                        + "<creator>"
+                        + "<creatorName>The Institute for Quantitative Social Science</creatorName>"
+                        + "</creator>"
+                        + "<creator>"
+                        + "<creatorName>The Ford Foundation</creatorName>"
+                        + "</creator>"
+                        + "<creator>"
+                        + "<creatorName>United Nations Economic and Social Commission for Asia and the Pacific (UNESCAP)</creatorName>"
+                        + "</creator>"
+                        + "<creator>"
+                        + "<creatorName>Michael J. Fox Foundation for Parkinson's Research</creatorName>"
+                        + "</creator>"
+                        + "</creators>",
                             writer.toString());
     }
 
@@ -173,19 +164,19 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeCreatorsElement(writer.xml, dto, null);
         writer.close();
         Assert.assertEquals("<creators>"
-                                    + "<creator>"
-                                    + "<creatorName nameType=\"Organizational\">Digital Archive of Massachusetts Anti-Slavery and Anti-Segregation Petitions, Massachusetts Archives, Boston MA</creatorName>"
-                                    + "</creator>"
-                                    + "<creator>"
-                                    + "<creatorName nameType=\"Organizational\">U.S. Department of Commerce, Bureau of the Census, Geography Division</creatorName>"
-                                    + "</creator>"
-                                    + "<creator>"
-                                    + "<creatorName nameType=\"Organizational\">Harvard Map Collection, Harvard College Library</creatorName>"
-                                    + "</creator>"
-                                    + "<creator>"
-                                    + "<creatorName nameType=\"Organizational\">Geographic Data Technology, Inc. (GDT)</creatorName>"
-                                    + "</creator>"
-                                    + "</creators>",
+                        + "<creator>"
+                        + "<creatorName>Digital Archive of Massachusetts Anti-Slavery and Anti-Segregation Petitions, Massachusetts Archives, Boston MA</creatorName>"
+                        + "</creator>"
+                        + "<creator>"
+                        + "<creatorName>U.S. Department of Commerce, Bureau of the Census, Geography Division</creatorName>"
+                        + "</creator>"
+                        + "<creator>"
+                        + "<creatorName>Harvard Map Collection, Harvard College Library</creatorName>"
+                        + "</creator>"
+                        + "<creator>"
+                        + "<creatorName>Geographic Data Technology, Inc. (GDT)</creatorName>"
+                        + "</creator>"
+                        + "</creators>",
                             writer.toString());
     }
 
@@ -295,14 +286,13 @@ public class OpenAireExportUtilTest {
 
         writer.close();
         Assert.assertEquals("<contributors>"
-                                    + "<contributor contributorType=\"ContactPerson\">"
-                                    + "<contributorName nameType=\"Personal\">Smith, John</contributorName>"
-                                    + "<givenName>John</givenName><familyName>Smith</familyName>"
-                                    + "</contributor>"
-                                    + "<contributor contributorType=\"ContactPerson\">"
-                                    + "<contributorName nameType=\"Personal\">John Smith</contributorName>"
-                                    + "<givenName>John</givenName><familyName>Smith</familyName></contributor>"
-                                    + "</contributors>",
+                        + "<contributor contributorType=\"ContactPerson\">"
+                        + "<contributorName>Smith, John</contributorName>"
+                        + "</contributor>"
+                        + "<contributor contributorType=\"ContactPerson\">"
+                        + "<contributorName>John Smith</contributorName>"
+                        + "</contributor>"
+                        + "</contributors>",
                             writer.toString());
     }
 
@@ -325,25 +315,25 @@ public class OpenAireExportUtilTest {
 
         writer.close();
         Assert.assertEquals("<contributors>"
-                                    + "<contributor contributorType=\"ContactPerson\">"
-                                    + "<contributorName nameType=\"Organizational\">IBM</contributorName>"
-                                    + "</contributor>"
-                                    + "<contributor contributorType=\"ContactPerson\">"
-                                    + "<contributorName nameType=\"Organizational\">Harvard University</contributorName>"
-                                    + "</contributor>"
-                                    + "<contributor contributorType=\"ContactPerson\">"
-                                    + "<contributorName nameType=\"Organizational\">The Institute for Quantitative Social Science</contributorName>"
-                                    + "</contributor>"
-                                    + "<contributor contributorType=\"ContactPerson\">"
-                                    + "<contributorName nameType=\"Organizational\">The Ford Foundation</contributorName>"
-                                    + "</contributor>"
-                                    + "<contributor contributorType=\"ContactPerson\">"
-                                    + "<contributorName nameType=\"Organizational\">United Nations Economic and Social Commission for Asia and the Pacific (UNESCAP)</contributorName>"
-                                    + "</contributor>"
-                                    + "<contributor contributorType=\"ContactPerson\">"
-                                    + "<contributorName nameType=\"Organizational\">Michael J. Fox Foundation for Parkinson's Research</contributorName>"
-                                    + "</contributor>"
-                                    + "</contributors>",
+                        + "<contributor contributorType=\"ContactPerson\">"
+                        + "<contributorName>IBM</contributorName>"
+                        + "</contributor>"
+                        + "<contributor contributorType=\"ContactPerson\">"
+                        + "<contributorName>Harvard University</contributorName>"
+                        + "</contributor>"
+                        + "<contributor contributorType=\"ContactPerson\">"
+                        + "<contributorName>The Institute for Quantitative Social Science</contributorName>"
+                        + "</contributor>"
+                        + "<contributor contributorType=\"ContactPerson\">"
+                        + "<contributorName>The Ford Foundation</contributorName>"
+                        + "</contributor>"
+                        + "<contributor contributorType=\"ContactPerson\">"
+                        + "<contributorName>United Nations Economic and Social Commission for Asia and the Pacific (UNESCAP)</contributorName>"
+                        + "</contributor>"
+                        + "<contributor contributorType=\"ContactPerson\">"
+                        + "<contributorName>Michael J. Fox Foundation for Parkinson's Research</contributorName>"
+                        + "</contributor>"
+                        + "</contributors>",
                             writer.toString());
     }
 
@@ -367,10 +357,10 @@ public class OpenAireExportUtilTest {
         writer.close();
         Assert.assertEquals("<contributors><contributor " +
                         "contributorType=\"ContactPerson\">" +
-                        "<contributorName nameType=\"Personal\">Smith, John</contributorName>" +
-                        "<givenName>John</givenName><familyName>Smith</familyName></contributor>" +
-                        "<contributor contributorType=\"ContactPerson\"><contributorName nameType=\"Personal\">John Smith</contributorName>" +
-                        "<givenName>John</givenName><familyName>Smith</familyName></contributor>" +
+                        "<contributorName>Smith, John</contributorName>" +
+                        "</contributor>" +
+                        "<contributor contributorType=\"ContactPerson\"><contributorName>John Smith</contributorName>" +
+                        "</contributor>" +
                         "</contributors>",
                             writer.toString());
     }
@@ -391,29 +381,47 @@ public class OpenAireExportUtilTest {
         OpenAireExportUtil.writeContributorsElement(writer.xml, dto, null);
 
         writer.close();
-        Assert.assertEquals("<contributors><contributor contributorType=\"ContactPerson\">" +
-                        "<contributorName nameType=\"Organizational\">LastContact1, FirstContact1</contributorName>" +
-                        "<affiliation>ContactAffiliation1</affiliation></contributor><contributor contributorType=\"ContactPerson\">" +
-                        "<contributorName nameType=\"Personal\">Condon, Kevin</contributorName>" +
-                        "<givenName>Kevin</givenName><familyName>Condon</familyName><affiliation>ContactAffiliation2</affiliation>" +
-                        "</contributor><contributor contributorType=\"ContactPerson\">" +
-                        "<contributorName nameType=\"Personal\">Philip Durbin</contributorName><givenName>Philip</givenName>" +
-                        "<familyName>Durbin</familyName><affiliation>ContactAffiliation3</affiliation></contributor>" +
-                        "<contributor contributorType=\"Producer\"><contributorName nameType=\"Organizational\">LastProducer1, FirstProducer1</contributorName>" +
-                        "<affiliation>ProducerAffiliation1</affiliation></contributor><contributor contributorType=\"Producer\">" +
-                        "<contributorName nameType=\"Organizational\">LastProducer2, FirstProducer2</contributorName>" +
-                        "<affiliation>ProducerAffiliation2</affiliation></contributor><contributor contributorType=\"DataCollector\">" +
-                        "<contributorName nameType=\"Organizational\">LastContributor1, FirstContributor1</contributorName>" +
-                        "</contributor><contributor contributorType=\"DataCurator\"><contributorName " +
-                        "nameType=\"Organizational\">LastContributor2, FirstContributor2</contributorName></contributor>" +
-                        "<contributor contributorType=\"Funder\"><contributorName>GrantInformationGrantAgency1</contributorName>" +
+        Assert.assertEquals("<contributors>" +
+                        "<contributor contributorType=\"ContactPerson\">" +
+                        "<contributorName>LastContact1, FirstContact1</contributorName>" +
+                        "<affiliation>ContactAffiliation1</affiliation>" +
+                        "</contributor>" +
+                        "<contributor contributorType=\"ContactPerson\">" +
+                        "<contributorName>Condon, Kevin</contributorName>" +
+                        "<affiliation>ContactAffiliation2</affiliation>" +
+                        "</contributor>" +
+                        "<contributor contributorType=\"ContactPerson\">" +
+                        "<contributorName>Philip Durbin</contributorName>" +
+                        "<affiliation>ContactAffiliation3</affiliation>" +
+                        "</contributor>" +
+                        "<contributor contributorType=\"Producer\">" +
+                        "<contributorName>LastProducer1, FirstProducer1</contributorName>" +
+                        "<affiliation>ProducerAffiliation1</affiliation>" +
+                        "</contributor>" +
+                        "<contributor contributorType=\"Producer\">" +
+                        "<contributorName>LastProducer2, FirstProducer2</contributorName>" +
+                        "<affiliation>ProducerAffiliation2</affiliation>" +
+                        "</contributor>" +
+                        "<contributor contributorType=\"DataCollector\">" +
+                        "<contributorName>LastContributor1, FirstContributor1</contributorName>" +
+                        "</contributor>" +
+                        "<contributor contributorType=\"DataCurator\">" +
+                        "<contributorName>LastContributor2, FirstContributor2</contributorName>" +
+                        "</contributor>" +
+                        "<contributor contributorType=\"Funder\">" +
+                        "<contributorName>GrantInformationGrantAgency1</contributorName>" +
                         "<nameIdentifier nameIdentifierScheme=\"info\">info:eu-repo/grantAgreement/grantNumberAgencyShortName1/grantNumberProgram1/GrantInformationGrantNumber1</nameIdentifier>" +
-                        "</contributor><contributor contributorType=\"Distributor\"><contributorName " +
-                        "nameType=\"Organizational\">LastDistributor1, FirstDistributor1</contributorName>" +
-                        "<affiliation>DistributorAffiliation1</affiliation></contributor><contributor contributorType=\"Distributor\">" +
-                        "<contributorName nameType=\"Organizational\">LastDistributor2, FirstDistributor2</contributorName>" +
-                        "<affiliation>DistributorAffiliation2</affiliation></contributor></contributors>",
-                            writer.toString());
+                        "</contributor>" +
+                        "<contributor contributorType=\"Distributor\">" +
+                        "<contributorName>LastDistributor1, FirstDistributor1</contributorName>" +
+                        "<affiliation>DistributorAffiliation1</affiliation>" +
+                        "</contributor>" +
+                        "<contributor contributorType=\"Distributor\">" +
+                        "<contributorName>LastDistributor2, FirstDistributor2</contributorName>" +
+                        "<affiliation>DistributorAffiliation2</affiliation>" +
+                        "</contributor>" +
+                        "</contributors>",
+                writer.toString());
     }
 
     /**
@@ -739,7 +747,7 @@ public class OpenAireExportUtilTest {
 
         DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
         datasetDto.setHasActiveGuestbook(false);
-        OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto, null);
+        OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto);
         writer.close();
         Assert.assertEquals("<rightsList>"
                                     + "<rights rightsURI=\"info:eu-repo/semantics/openAccess\" />"
@@ -801,33 +809,24 @@ public class OpenAireExportUtilTest {
 
         DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeGeoLocationsElement(writer.xml, dto, null);
+        OpenAireExportUtil.writeFullGeoLocationsElement(writer.xml, dto, null);
 
         writer.close();
-        Assert.assertEquals("<geoLocations>"
-                                    + "<geoLocation>"
-                                    + "<geoLocationPlace>ProductionPlace</geoLocationPlace>"
-                                    + "<geoLocationBox>"
-                                    + "<westBoundLongitude>10</westBoundLongitude>"
-                                    + "<eastBoundLongitude>20</eastBoundLongitude>"
-                                    + "<northBoundLatitude>30</northBoundLatitude>"
-                                    + "<southBoundLatitude>40</southBoundLatitude>"
-                                    + "</geoLocationBox>"
-                                    + "</geoLocation>"
-                                    + "<geoLocation>"
-                                    + "<geoLocationPlace>ProductionPlace</geoLocationPlace>"
-                                    + "<geoLocationBox>"
-                                    + "<southBoundLatitude>80</southBoundLatitude>"
-                                    + "<northBoundLatitude>70</northBoundLatitude>"
-                                    + "<eastBoundLongitude>60</eastBoundLongitude>"
-                                    + "<westBoundLongitude>50</westBoundLongitude>"
-                                    + "</geoLocationBox>"
-                                    + "</geoLocation></geoLocations>",
-                            writer.toString());
+        Assert.assertEquals("<geoLocations>" +
+                        "<geoLocation>" +
+                        "<geoLocationBox>40 10 30 20</geoLocationBox>" +
+                        "<geoLocationPlace>ProductionPlace</geoLocationPlace>" +
+                        "</geoLocation>" +
+                        "<geoLocation>" +
+                        "<geoLocationBox>80 50 70 60</geoLocationBox>" +
+                        "<geoLocationPlace>ProductionPlace</geoLocationPlace>" +
+                        "</geoLocation>" +
+                        "</geoLocations>",
+                writer.toString());
     }
 
     /**
-     * Test: 18, GeoLocation (with point, box and polygon sub-properties) (R)
+     * Test: 18, GeoLocation (with box) (R)
      * <p>
      * description
      *
@@ -840,57 +839,47 @@ public class OpenAireExportUtilTest {
 
         DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-simplified.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeGeoLocationsElement(writer.xml, dto, null);
+        OpenAireExportUtil.writeFullGeoLocationsElement(writer.xml, dto, null);
 
         writer.close();
         Assert.assertEquals("<geoLocations>"
-                                    + "<geoLocation>"
-                                    + "<geoLocationBox>"
-                                    + "<eastBoundLongitude>23</eastBoundLongitude>"
-                                    + "<northBoundLatitude>786</northBoundLatitude>"
-                                    + "<westBoundLongitude>45</westBoundLongitude>"
-                                    + "<southBoundLatitude>34</southBoundLatitude>"
-                                    + "</geoLocationBox>"
-                                    + "</geoLocation></geoLocations>",
-                            writer.toString());
+                        + "<geoLocation>"
+                        + "<geoLocationBox>34 45 89 23</geoLocationBox>"
+                        + "</geoLocation></geoLocations>",
+                writer.toString());
     }
 
     /**
-     * Test: 19, FundingReference (with name, identifier, and award related sub-
-     * properties) (O)
+     * Test: 18, GeoLocation (without box, with place) (R)
      * <p>
-     * fundingReference
+     * description
      *
      * @throws javax.xml.stream.XMLStreamException
      * @throws java.io.FileNotFoundException
      */
     @Test
-    public void testWriteFundingReferencesElement() throws XMLStreamException, IOException, URISyntaxException {
+    public void testWriteGeoLocationElement3() throws XMLStreamException, IOException, URISyntaxException {
         Writer writer = new Writer();
 
-        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
+        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-updated.txt");
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeFundingReferencesElement(writer.xml, dto, null);
+        OpenAireExportUtil.writeFullGeoLocationsElement(writer.xml, dto, null);
 
         writer.close();
-        Assert.assertEquals("<fundingReferences><fundingReference>"
-                                    + "<funderName>GrantInformationGrantAgency1</funderName>"
-                                    + "<awardNumber>GrantInformationGrantNumber1</awardNumber>"
-                                    + "</fundingReference>"
-                                    + "<fundingReference>"
-                                    + "<funderName>GrantInformationGrantAgency2</funderName>"
-                                    + "<awardNumber>GrantInformationGrantNumber2</awardNumber>"
-                                    + "</fundingReference></fundingReferences>",
-                            writer.toString());
+        Assert.assertEquals("<geoLocations>"
+                        + "<geoLocation>"
+                        + "<geoLocationPlace>Cambridge, UK</geoLocationPlace>"
+                        + "</geoLocation></geoLocations>",
+                writer.toString());
     }
 
     /**
-     * Test 19.1, funderName Name of the funding provider.
+     * funderName Name of the funding provider.
      * <p>
      * funderName
      */
     @Test
-    public void testWriteFunderNamePropertyNotInContributor()
+    public void testWriteFunderNamePropertyInContributor()
             throws XMLStreamException, IOException, URISyntaxException {
         Writer writer = new Writer();
 
@@ -904,33 +893,14 @@ public class OpenAireExportUtilTest {
             writer.xml.writeEndElement();
         }
         writer.close();
-        Assert.assertEquals("<root />",
-                            writer.toString());
+        Assert.assertEquals("<root>" +
+                        "<contributors>" +
+                        "<contributor contributorType=\"Funder\">" +
+                        "<contributorName>Dennis</contributorName>" +
+                        "</contributor>" +
+                        "</contributors></root>",
+                writer.toString());
     }
-
-    /**
-     * Test 19.1, funderName Name of the funding provider.
-     * <p>
-     * funderName
-     */
-    @Test
-    public void testWriteFunderNamePropertyInFundingReferencesElement()
-            throws XMLStreamException, IOException, URISyntaxException {
-        Writer writer = new Writer();
-
-        DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-updated.txt");
-        DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeFundingReferencesElement(writer.xml, dto, null);
-
-        writer.close();
-        Assert.assertEquals("<fundingReferences>"
-                                    + "<fundingReference><funderName>Dennis</funderName></fundingReference>"
-                                    + "<fundingReference><funderName>NIH</funderName><awardNumber>NIH1231245154</awardNumber></fundingReference>"
-                                    + "<fundingReference><funderName>NIH</funderName><awardNumber>NIH99999999</awardNumber></fundingReference>"
-                                    + "</fundingReferences>",
-                            writer.toString());
-    }
-
 
     @Test
     public void testWriteAccessRightElement_restrictedAccess_withGuestbook() throws XMLStreamException, IOException, URISyntaxException {
@@ -938,7 +908,7 @@ public class OpenAireExportUtilTest {
 
         DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-all-defaults.txt");
         datasetDto.setHasActiveGuestbook(true);
-        OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto, null);
+        OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto);
         writer.close();
         Assert.assertEquals("<rightsList>"
                                     + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\" />"
@@ -953,7 +923,7 @@ public class OpenAireExportUtilTest {
 
         DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-with-one-restrictedFile.txt");
         datasetDto.setHasActiveGuestbook(false);
-        OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto, null);
+        OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto);
         writer.close();
         Assert.assertEquals("<rightsList>"
                                     + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\" />"
@@ -967,7 +937,7 @@ public class OpenAireExportUtilTest {
 
         DatasetDTO datasetDto = createDatasetDTOFromJson("txt/export/openaire/dataset-with-all-restrictedFiles.txt");
         datasetDto.setHasActiveGuestbook(false);
-        OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto, null);
+        OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto);
         writer.close();
         Assert.assertEquals("<rightsList>"
                                     + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\" />"
@@ -982,7 +952,7 @@ public class OpenAireExportUtilTest {
         DatasetDTO datasetDto = createDatasetDTOFromJson(
                 "txt/export/openaire/dataset-with-all-allRightsReservedFiles.txt");
         datasetDto.setHasActiveGuestbook(false);
-        OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto, null);
+        OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto);
         writer.close();
         Assert.assertEquals("<rightsList>"
                                     + "<rights rightsURI=\"info:eu-repo/semantics/openAccess\" />"
@@ -999,7 +969,7 @@ public class OpenAireExportUtilTest {
         dto.getFiles().get(1).setLicenseName("\"Apache Software License 2.0\"");
         dto.getFiles().get(1).setLicenseUrl("https://www.apache.org/licenses/LICENSE-2.0");
         datasetDto.setHasActiveGuestbook(false);
-        OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto, null);
+        OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto);
         writer.close();
         Assert.assertEquals("<rightsList>"
                                     + "<rights rightsURI=\"info:eu-repo/semantics/openAccess\" />"
@@ -1017,7 +987,7 @@ public class OpenAireExportUtilTest {
         dto.getFiles().get(1).setLicenseName("");
         dto.getFiles().get(1).setLicenseUrl("");
         datasetDto.setHasActiveGuestbook(false);
-        OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto, null);
+        OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto);
         writer.close();
         Assert.assertEquals("<rightsList>"
                                     + "<rights rightsURI=\"info:eu-repo/semantics/openAccess\" />"
@@ -1035,7 +1005,7 @@ public class OpenAireExportUtilTest {
         dto.getFiles().get(1).setLicenseName("");
         dto.getFiles().get(1).setLicenseUrl("");
         datasetDto.setHasActiveGuestbook(false);
-        OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto, null);
+        OpenAireExportUtil.writeAccessRightsElement(writer.xml, datasetDto);
         writer.close();
         Assert.assertEquals("<rightsList>"
                                     + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\" />"
@@ -1052,7 +1022,7 @@ public class OpenAireExportUtilTest {
         dataset.setEmbargoActive(true);
 
         // when
-        OpenAireExportUtil.writeAccessRightsElement(writer.xml, dataset, null);
+        OpenAireExportUtil.writeAccessRightsElement(writer.xml, dataset);
         writer.close();
 
         // then
