@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.harvest.server.OAISetServiceBean;
 import edu.harvard.iq.dataverse.persistence.harvest.OAISet;
-import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import org.apache.commons.lang.StringUtils;
 
@@ -23,7 +22,6 @@ import javax.json.JsonReader;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
@@ -42,29 +40,19 @@ import static edu.harvard.iq.dataverse.common.NullSafeJsonBuilder.jsonObjectBuil
 @Stateless
 @Path("harvest/server/oaisets")
 public class HarvestingServer extends AbstractApiBean {
+
     @EJB
-    OAISetServiceBean oaiSetService;
+    private OAISetServiceBean oaiSetService;
 
     private static final Logger logger = Logger.getLogger(HarvestingServer.class.getName());
 
-    // TODO: this should be available to admin only.
-
     @GET
     @Path("/")
-    public Response oaiSets(@QueryParam("key") String apiKey) throws IOException {
+    public Response oaiSets(@QueryParam("key") String apiKey) throws WrappedResponse {
 
+        findSuperuserOrDie();
 
-        List<OAISet> oaiSets = null;
-        try {
-            oaiSets = oaiSetService.findAll();
-        } catch (Exception ex) {
-            return error(Response.Status.INTERNAL_SERVER_ERROR, "Caught an exception looking up available OAI sets; " + ex.getMessage());
-        }
-
-        if (oaiSets == null) {
-            // returning an empty list:
-            return ok(jsonObjectBuilder().add("oaisets", ""));
-        }
+        List<OAISet> oaiSets = oaiSetService.findAll();
 
         JsonArrayBuilder hcArr = Json.createArrayBuilder();
 
@@ -77,9 +65,11 @@ public class HarvestingServer extends AbstractApiBean {
 
     @GET
     @Path("{specname}")
-    public Response oaiSet(@PathParam("specname") String spec, @QueryParam("key") String apiKey) throws IOException {
+    public Response oaiSet(@PathParam("specname") String spec, @QueryParam("key") String apiKey) throws IOException, WrappedResponse {
 
-        OAISet set = null;
+        findSuperuserOrDie();
+
+        OAISet set;
         try {
             set = oaiSetService.findBySpec(spec);
         } catch (Exception ex) {
@@ -108,19 +98,9 @@ public class HarvestingServer extends AbstractApiBean {
     @POST
     @ApiWriteOperation
     @Path("{specname}")
-    public Response createOaiSet(String jsonBody, @PathParam("specname") String spec, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
-        /*
-         * authorization modeled after the UI (aka HarvestingSetsPage)
-         */
-        AuthenticatedUser dvUser;
-        try {
-            dvUser = findAuthenticatedUserOrDie();
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        if (!dvUser.isSuperuser()) {
-            return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.superUser.required"));
-        }
+    public Response createOaiSet(String jsonBody, @PathParam("specname") String spec, @QueryParam("key") String apiKey) throws WrappedResponse, JsonParseException {
+
+        findSuperuserOrDie();
 
         StringReader rdr = new StringReader(jsonBody);
 
@@ -171,19 +151,13 @@ public class HarvestingServer extends AbstractApiBean {
 
     }
 
-    @PUT
-    @ApiWriteOperation
-    @Path("{nickName}")
-    public Response modifyOaiSet(String jsonBody, @PathParam("specname") String spec, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
-        // TODO:
-        // ...
-        return created("/harvest/server/oaisets" + spec, null);
-    }
-
     @DELETE
     @ApiWriteOperation
     @Path("{specname}")
-    public Response deleteOaiSet(@PathParam("specname") String spec, @QueryParam("key") String apiKey) {
+    public Response deleteOaiSet(@PathParam("specname") String spec, @QueryParam("key") String apiKey) throws WrappedResponse {
+
+        findSuperuserOrDie();
+
         OAISet set = null;
         try {
             set = oaiSetService.findBySpec(spec);
@@ -205,31 +179,6 @@ public class HarvestingServer extends AbstractApiBean {
 
         return ok("OAI Set " + spec + " deleted");
 
-    }
-
-    @GET
-    @Path("{specname}/datasets")
-    public Response oaiSetListDatasets(@PathParam("specname") String spec, @QueryParam("key") String apiKey) throws IOException {
-        OAISet set = null;
-        try {
-            set = oaiSetService.findBySpec(spec);
-        } catch (Exception ex) {
-            logger.warning("Exception caught looking up OAI set " + spec + ": " + ex.getMessage());
-            return error(Response.Status.BAD_REQUEST, "Internal error: failed to look up OAI set " + spec + ".");
-        }
-
-        return ok("");
-
-    }
-
-    /* Auxiliary, helper methods: */
-    public static JsonArrayBuilder oaiSetsAsJsonArray(List<OAISet> oaiSets) {
-        JsonArrayBuilder hdArr = Json.createArrayBuilder();
-
-        for (OAISet set : oaiSets) {
-            hdArr.add(oaiSetAsJson(set));
-        }
-        return hdArr;
     }
 
     public static JsonObjectBuilder oaiSetAsJson(OAISet set) {

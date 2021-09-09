@@ -47,7 +47,6 @@ import edu.harvard.iq.dataverse.persistence.user.GuestUser;
 import edu.harvard.iq.dataverse.persistence.user.PrivateUrlUser;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignee;
 import edu.harvard.iq.dataverse.persistence.user.User;
-import edu.harvard.iq.dataverse.persistence.user.UserNotificationRepository;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -381,6 +380,13 @@ public abstract class AbstractApiBean {
         return findAuthenticatedUserOrDie(getRequestApiKey());
     }
 
+    protected AuthenticatedUser findSuperuserOrDie() throws WrappedResponse {
+        AuthenticatedUser user = findAuthenticatedUserOrDie();
+        if (!user.isSuperuser()) {
+            throw new WrappedResponse(forbidden("This API call can be used by superusers only"));
+        }
+        return user;
+    }
 
     private AuthenticatedUser findAuthenticatedUserOrDie(String key) throws WrappedResponse {
         AuthenticatedUser authUser = authSvc.lookupUser(key);
