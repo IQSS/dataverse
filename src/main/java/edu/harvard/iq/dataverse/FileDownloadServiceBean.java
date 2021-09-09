@@ -223,7 +223,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
                 logger.log(Level.INFO, "nonNS case:fileDownloadUrl={0}", fileDownloadUrl);
                  
             }
-            logger.log(Level.INFO, "redirecting to the URL");
+            logger.log(Level.INFO, "redirecting to the URL={0}", fileDownloadUrl);
             
             try {
                 FacesContext.getCurrentInstance().getExternalContext().redirect(fileDownloadUrl);
