@@ -228,6 +228,10 @@ public class SettingsServiceBean {
         SPSS/sav format, "RData" for R, etc.
         for example: :TabularIngestSizeLimit:RData */
         TabularIngestSizeLimit,
+        /* Validate physical files in the dataset when publishing, if the dataset size less than the threshold limit */
+        DatasetChecksumValidationSizeLimit,
+        /* Validate physical files in the dataset when publishing, if the datafile size less than the threshold limit */
+        DataFileChecksumValidationSizeLimit,
         /**
          The message added to a popup upon dataset publish
          * 
@@ -451,7 +455,16 @@ public class SettingsServiceBean {
          * publication might also need to be included.
          */
         AnonymizedFieldTypeNames,
-
+        /**
+         * A Json array containing key/values corresponding the the allowed languages
+         * for entering metadata. FOrmat matches that of the Languages setting: e.g.
+         * '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]' with
+         * the locale being an ISO-639 code for that language (2 and 3 letter codes from
+         * the 639-2 and 639-3 standards are allowed. These will be used directly in
+         * metadata exports) and the title containing a human readable string. These
+         * values are selectable at the Dataverse level and apply to Dataset metadata.
+         */
+        MetadataLanguages,
         /**
          * Configurable text for alert/info message on passwordreset.xhtml when users are required to update their password.
          */
