@@ -11,6 +11,8 @@ import java.sql.Timestamp;
 import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
@@ -31,8 +33,12 @@ public class ExternalVocabularyValue implements Serializable {
         this.value = value;
     }
 
+    
     @Id
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @Column(columnDefinition = "TEXT", unique=true, nullable = false)
     private String uri;
 
     public String getUri() {
