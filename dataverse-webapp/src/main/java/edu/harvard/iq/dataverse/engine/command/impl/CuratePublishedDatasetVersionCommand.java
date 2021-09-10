@@ -113,6 +113,8 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         updateVersion.setLastUpdateTime(getTimestamp());
         tempDataset.setModificationTime(getTimestamp());
 
+        markForReharvest(tempDataset);
+
         Dataset savedDataset = ctxt.em().merge(tempDataset);
         ctxt.em().merge(updateVersion);
 
@@ -140,6 +142,10 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
 
 
         return savedDataset;
+    }
+
+    private void markForReharvest(Dataset tempDataset) {
+        tempDataset.setLastChangeForExporterTime(getTimestamp());
     }
 
     private void removeAndUpdateFilesFromDatasetForMerge(Dataset tempDataset,
