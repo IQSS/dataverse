@@ -50,14 +50,14 @@
                                </ui:fragment>
                                <ui:fragment rendered="#{!empty termsOfUseAndAccess.license and empty DatasetPage.licenseId and empty editMode}">
                                        <p>
-                                           <img src="#{termsOfUseAndAccess.license.iconUrl}" title="#{termsOfUseAndAccess.license.shortDescription}" alt="#{bundle['file.icon.alttxt']}" style="max-width:90px;width:100%;max-height:30px;height:100%" />
+                                           <img src="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.iconUrl}" title="#{DatasetPage.workingVersion.termsOfUseAndAccess.license.shortDescription}" style="display:none"  onload="this.style.display='inline'" />
                                            <a href="#{termsOfUseAndAccess.license.uri}" title="#{termsOfUseAndAccess.license.shortDescription}" target="_blank">#{termsOfUseAndAccess.license.name}</a>
                                        </p>
 
                                </ui:fragment>
                                <ui:fragment rendered="#{!empty DatasetPage.licenseId}">
                                    <p>
-                                       <img src="#{DatasetPage.getSelectedLicenseById().iconUrl}" title="#{DatasetPage.getSelectedLicenseById().shortDescription}" alt="#{bundle['file.icon.alttxt']}" style="max-width:90px;width:100%;max-height:30px;height:100%" />
+                                       <img src="#{DatasetPage.getSelectedLicenseById().iconUrl}" title="#{DatasetPage.getSelectedLicenseById().shortDescription}"  style="display:none"  onload="this.style.display='inline'" />
                                        <a href="#{DatasetPage.getSelectedLicenseById().uri}" title="#{DatasetPage.getSelectedLicenseById().shortDescription}" target="_blank">#{DatasetPage.getSelectedLicenseById().name}</a>
                                    </p>
                                </ui:fragment>
