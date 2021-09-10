@@ -2010,7 +2010,11 @@ public class Admin extends AbstractApiBean {
         }
     }
 
-    // TODO: GET /licenses/default
+	@GET
+	@Path("/licenses/default")
+	public Response getDefault(){
+		return ok("Default license ID is " + licenseService.getDefault().getId());
+	}
 
     @PUT
     @Path("/licenses/default")
