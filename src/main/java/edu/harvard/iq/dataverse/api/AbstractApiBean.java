@@ -24,6 +24,7 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
 import edu.harvard.iq.dataverse.UserServiceBean;
+import edu.harvard.iq.dataverse.LicenseServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
@@ -179,6 +180,9 @@ public abstract class AbstractApiBean {
 
     @EJB
     protected MetadataBlockServiceBean metadataBlockSvc;
+
+    @EJB
+    protected LicenseServiceBean licenseSvc;
 
     @EJB
     protected UserServiceBean userSvc;

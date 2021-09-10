@@ -11,6 +11,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import java.net.URI;
@@ -53,6 +54,22 @@ public class LicenseServiceBean {
         List<License> licenses = em.createNamedQuery("License.findDefault", License.class)
                 .getResultList();
         return licenses.get(0);
+    }
+
+    public License getByNameOrUri(String nameOrUri) throws FetchException {
+        License license;
+        try {
+            license = em.createNamedQuery("License.findByNameOrUri", License.class)
+                    .setParameter("name", nameOrUri)
+                    .setParameter("uri", nameOrUri)
+                    .getSingleResult();
+        } catch (NoResultException noResultException){
+            throw new FetchException("Couldn't find an active license with that name or uri");
+        }
+        if (license == null || !license.isActive()){
+            throw new FetchException("Couldn't find an active license with that name or uri");
+        }
+        return license;
     }
 
     public void setDefault(Long id) throws UpdateException, FetchException {
