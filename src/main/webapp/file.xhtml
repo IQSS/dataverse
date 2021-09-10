@@ -98,14 +98,14 @@
                                         <div class="clearfix #{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation bg-citation-file'}">
                                             <div class="citation #{FilePage.fileMetadata.datasetVersion.deaccessioned ? '' : 'margin-bottom'}">
                                                 <span id="citation-select-2" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
-                                                    <h:outputText value="#{FilePage.fileMetadata.dataFile.isIdentifierRegistered() ? FilePage.fileMetadata.getDirectFileCitation(true) : FilePage.fileMetadata.getFileCitation(true)}" escape="false"/>
+                                                    <h:outputText value="#{FilePage.fileMetadata.dataFile.isIdentifierRegistered() ? FilePage.fileMetadata.getDirectFileCitation(true, FilePage.anonymizedAccess) : FilePage.fileMetadata.getFileCitation(true, FilePage.anonymizedAccess)}" escape="false"/>
                                                 </span>
                                                 <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}" 
                                                       data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
                                                 <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.dataset.released and FilePage.fileMetadata.datasetVersion.draft}" 
                                                       data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
                                             </div>
-                                            <div class="pull-left row col-sm-9 padding-none">
+                                            <div class="pull-left row col-sm-9 padding-none" jsf:rendered="#{!FilePage.anonymizedAccess}">
                                                 <div class="col-sm-3 col-md-4 col-lg-3 btn-group margin-bottom citation-download" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                                     <button type="button" class="btn btn-link dropdown-toggle padding-none downloadCitation" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                          #{bundle['file.cite.file.downloadBtn']} <span class="caret"></span>
@@ -142,7 +142,7 @@
                                         <div class="clearfix #{FilePage.fileMetadata.datasetVersion.deaccessioned ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
                                             <div class="citation #{FilePage.fileMetadata.datasetVersion.deaccessioned ? '' : 'margin-bottom'}">
                                                 <span class="citation-select" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
-                                                    <h:outputText value="#{FilePage.fileMetadata.datasetVersion.getCitation(true)}" escape="false"/>
+                                                    <h:outputText value="#{FilePage.fileMetadata.datasetVersion.getCitation(true, FilePage.anonymizedAccess)}" escape="false"/>
                                                 </span>
                                                 <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}" 
                                                       data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
@@ -151,7 +151,7 @@
                                                 <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}" 
                                                       data-toggle="tooltip" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
                                             </div>
-                                            <div class="pull-left row col-sm-9 padding-none">
+                                            <div class="pull-left row col-sm-9 padding-none"  jsf:rendered="#{!FilePage.anonymizedAccess}">
                                                 <div class="col-sm-3 col-md-4 col-lg-3 btn-group margin-bottom citation-download" jsf:rendered="#{!FilePage.fileMetadata.datasetVersion.deaccessioned}">
                                                     <button type="button" class="btn btn-link dropdown-toggle padding-none downloadCitation" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                         #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
@@ -208,6 +208,7 @@
                                                                 <ui:param name="isFilePg" value="true"/>
                                                                 <ui:param name="lockedFromDownload" value="#{FilePage.lockedFromDownload}"/>
                                                                 <ui:param name="exploreTools" value="#{FilePage.exploreTools}"/>
+                                                                <ui:param name="anonymized" value="#{FilePage.anonymizedAccess}"/>
                                                             </ui:include>
                                                         </ui:fragment>
                                                         <!-- END: Explore/Download/Request Button Block -->
@@ -576,7 +577,9 @@
                             </p:tab>
                             <p:tab id="versionsTab" title="#{bundle['file.dataFilesTab.versions']}">
                                 <!-- Versions -->
-                                <ui:include src="file-versions.xhtml"></ui:include>
+                                <ui:include src="file-versions.xhtml">
+                                  <ui:param name="anonymized" value="#{FilePage.anonymizedAccess}"/>
+                                </ui:include>
                             </p:tab>
                         </p:tabView>
                     </div>

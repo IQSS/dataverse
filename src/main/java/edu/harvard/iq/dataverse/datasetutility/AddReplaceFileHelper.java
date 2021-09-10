@@ -9,12 +9,15 @@ import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.DatasetLock;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.Util;
+import edu.harvard.iq.dataverse.api.Files;
+import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -31,6 +34,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -42,12 +46,24 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJBException;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonArray;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
 import javax.validation.ConstraintViolation;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.apache.commons.lang.StringUtils;
+
+import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.io.IOUtils;
 import org.ocpsoft.common.util.Strings;
+
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.STATUS_ERROR;
+import static edu.harvard.iq.dataverse.api.AbstractApiBean.STATUS_OK;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 /**
  *  Methods to add or replace a single file.
@@ -100,7 +116,7 @@ public class AddReplaceFileHelper{
     public static String FILE_ADD_OPERATION = "FILE_ADD_OPERATION";
     public static String FILE_REPLACE_OPERATION = "FILE_REPLACE_OPERATION";
     public static String FILE_REPLACE_FORCE_OPERATION = "FILE_REPLACE_FORCE_OPERATION";
-    
+    public static String MULTIPLEFILES_ADD_OPERATION = "MULTIPLEFILES_ADD_OPERATION";
             
     private String currentOperation;
     
@@ -299,33 +315,49 @@ public class AddReplaceFileHelper{
         this.user = dvRequest.getUser();
         
     }
-    
+
     /**
-     * 
+     *
      * @param chosenDataset
      * @param newFileName
      * @param newFileContentType
      * @param newFileInputStream
      * @param optionalFileParams
-     * @return 
+     * @return
      */
-    public boolean runAddFileByDataset(Dataset chosenDataset, 
-            String newFileName, 
-            String newFileContentType, 
-            String newStorageIdentifier,
-            InputStream newFileInputStream,
-            OptionalFileParams optionalFileParams){
-        
+    public boolean runAddFileByDataset(Dataset chosenDataset,
+                                       String newFileName,
+                                       String newFileContentType,
+                                       String newStorageIdentifier,
+                                       InputStream newFileInputStream,
+                                       OptionalFileParams optionalFileParams){
+        return this.runAddFileByDataset(chosenDataset,newFileName,newFileContentType,newStorageIdentifier,newFileInputStream,optionalFileParams,false);
+
+    }
+
+    public boolean runAddFileByDataset(Dataset chosenDataset,
+                                       String newFileName,
+                                       String newFileContentType,
+                                       String newStorageIdentifier,
+                                       InputStream newFileInputStream,
+                                       OptionalFileParams optionalFileParams,
+                                       boolean multipleFiles) {
+
         msgt(">> runAddFileByDatasetId");
 
         initErrorHandling();
-        
-        this.currentOperation = FILE_ADD_OPERATION;
-        
+
+        if(multipleFiles) {
+            this.currentOperation = MULTIPLEFILES_ADD_OPERATION;
+        }
+        else {
+            this.currentOperation = FILE_ADD_OPERATION;
+        }
+
         if (!this.step_001_loadDataset(chosenDataset)){
             return false;
         }
-        
+
         //return this.runAddFile(this.dataset, newFileName, newFileContentType, newFileInputStream, optionalFileParams);
         return this.runAddReplaceFile(dataset, newFileName, newFileContentType, newStorageIdentifier, newFileInputStream, optionalFileParams);
 
@@ -730,8 +762,10 @@ public class AddReplaceFileHelper{
             
         }else{
             msgt("step_070_run_update_dataset_command");
-            if (!this.step_070_run_update_dataset_command()){
-                return false;            
+            if (!this.isMultipleFilesAddOperation()) {
+                if (!this.step_070_run_update_dataset_command()) {
+                    return false;
+                }
             }
         }
         
@@ -792,6 +826,16 @@ public class AddReplaceFileHelper{
     public boolean isFileAddOperation(){
     
         return this.currentOperation.equals(FILE_ADD_OPERATION);
+    }
+
+    /**
+     * Is this a multiple files add operation ?
+     * @return
+     */
+
+    public boolean isMultipleFilesAddOperation(){
+
+        return this.currentOperation.equals(MULTIPLEFILES_ADD_OPERATION);
     }
 
     /**
@@ -1867,14 +1911,13 @@ public class AddReplaceFileHelper{
         //if (true){
             //return true;
         //}
-        
-        msg("pre ingest start");
-        // start the ingest!
-        //
-               
-        ingestService.startIngestJobsForDataset(dataset, dvRequest.getAuthenticatedUser());
-        
-        msg("post ingest start");
+
+        if (!this.isMultipleFilesAddOperation()) {
+            msg("pre ingest start");
+            // start the ingest!
+            ingestService.startIngestJobsForDataset(dataset, dvRequest.getAuthenticatedUser());
+            msg("post ingest start");
+        }
         return true;
     }
 
@@ -1961,6 +2004,160 @@ public class AddReplaceFileHelper{
 
     public void setDuplicateFileWarning(String duplicateFileWarning) {
         this.duplicateFileWarning = duplicateFileWarning;
+    }
+
+    public Response addFiles(String jsonData, Dataset dataset, User authUser) {
+        msgt("(addFilesToDataset) jsonData: " + jsonData.toString());
+
+        JsonArrayBuilder jarr = Json.createArrayBuilder();
+
+        JsonArray filesJson = null;
+
+        int totalNumberofFiles = 0;
+        int successNumberofFiles = 0;
+        // -----------------------------------------------------------
+        // Read jsonData and Parse files information from jsondata  :
+        // -----------------------------------------------------------
+        try (StringReader rdr = new StringReader(jsonData)) {
+            JsonReader dbJsonReader = Json.createReader(rdr);
+            filesJson = dbJsonReader.readArray();
+            dbJsonReader.close();
+
+
+            if (filesJson != null) {
+                totalNumberofFiles = filesJson.getValuesAs(JsonObject.class).size();
+
+                for (JsonObject fileJson : filesJson.getValuesAs(JsonObject.class)) {
+
+                    OptionalFileParams optionalFileParams = null;
+                    try {
+                        optionalFileParams = new OptionalFileParams(fileJson.toString());
+
+                        String newFilename = null;
+                        String newFileContentType = null;
+                        String newStorageIdentifier = null;
+                        if (optionalFileParams.hasStorageIdentifier()) {
+                            newStorageIdentifier = optionalFileParams.getStorageIdentifier();
+                            if (optionalFileParams.hasFileName()) {
+                                newFilename = optionalFileParams.getFileName();
+                                if (optionalFileParams.hasMimetype()) {
+                                    newFileContentType = optionalFileParams.getMimeType();
+                                }
+                            }
+
+                            msgt("ADD!  = " + newFilename);
+
+                            runAddFileByDataset(dataset,
+                                    newFilename,
+                                    newFileContentType,
+                                    newStorageIdentifier,
+                                    null,
+                                    optionalFileParams, true);
+
+                            if (hasError()) {
+                                JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                                        .add("storageIdentifier", newStorageIdentifier)
+                                        .add("errorMessage", getHttpErrorCode().toString() +":"+ getErrorMessagesAsString("\n"))
+                                        .add("fileDetails", fileJson);
+                                jarr.add(fileoutput);
+                            } else {
+                                JsonObject successresult = getSuccessResultAsJsonObjectBuilder().build();
+                                String duplicateWarning = getDuplicateFileWarning();
+
+                                if (duplicateWarning != null && !duplicateWarning.isEmpty()) {
+                                    JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                                            .add("storageIdentifier", newStorageIdentifier)
+                                            .add("warningMessage", getDuplicateFileWarning())
+                                            .add("fileDetails", successresult.getJsonArray("files").getJsonObject(0));
+                                    jarr.add(fileoutput);
+                                } else {
+                                    JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                                            .add("storageIdentifier", newStorageIdentifier)
+                                            .add("successMessage", "Added successfully to the dataset")
+                                            .add("fileDetails", successresult.getJsonArray("files").getJsonObject(0));
+                                    jarr.add(fileoutput);
+                                }
+                            }
+                            successNumberofFiles = successNumberofFiles + 1;
+                        } else {
+                            JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                                    .add("errorMessage", "You must provide a storageidentifier, filename, and mimetype.")
+                                    .add("fileDetails", fileJson);
+
+                            jarr.add(fileoutput);
+                        }
+
+                    } catch (DataFileTagException ex) {
+                        Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
+                        JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                                .add("errorCode", Response.Status.BAD_REQUEST.getStatusCode())
+                                .add("message", ex.getMessage())
+                                .add("fileDetails", fileJson);
+                        jarr.add(fileoutput);
+
+                    }
+                    catch (NoFilesException ex) {
+                        Logger.getLogger(Files.class.getName()).log(Level.SEVERE, null, ex);
+                        JsonObjectBuilder fileoutput = Json.createObjectBuilder()
+                                .add("errorCode", Response.Status.BAD_REQUEST.getStatusCode())
+                                .add("message", BundleUtil.getStringFromBundle("NoFileException!  Serious Error! See administrator!"))
+                                .add("fileDetails", fileJson);
+                        jarr.add(fileoutput);
+                    }
+
+                }// End of adding files
+
+                DatasetLock eipLock = dataset.getLockFor(DatasetLock.Reason.EditInProgress);
+                if (eipLock == null) {
+                    logger.log(Level.WARNING, "Dataset not locked for EditInProgress ");
+                } else {
+                    datasetService.removeDatasetLocks(dataset, DatasetLock.Reason.EditInProgress);
+                    logger.log(Level.INFO, "Removed EditInProgress lock ");
+                }
+
+                try {
+                    Command<Dataset> cmd = new UpdateDatasetVersionCommand(dataset, dvRequest);
+                    ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
+                    commandEngine.submit(cmd);
+                } catch (CommandException ex) {
+                    return error(Response.Status.INTERNAL_SERVER_ERROR, "CommandException updating DatasetVersion from addFiles job: " + ex.getMessage());
+                }
+
+                dataset = datasetService.find(dataset.getId());
+
+                List<DataFile> s = dataset.getFiles();
+                for (DataFile dataFile : s) {
+                }
+                //ingest job
+                ingestService.startIngestJobsForDataset(dataset, (AuthenticatedUser) authUser);
+
+            }
+        }
+        catch ( javax.json.stream.JsonParsingException ex) {
+            ex.printStackTrace();
+            return error(BAD_REQUEST, "Json Parsing Exception :" + ex.getMessage());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return error(BAD_REQUEST, e.getMessage());
+        }
+
+        JsonObjectBuilder result = Json.createObjectBuilder()
+                .add("Total number of files", totalNumberofFiles)
+                .add("Number of files successfully added", successNumberofFiles);
+
+
+        return Response.ok().entity(Json.createObjectBuilder()
+                .add("status", STATUS_OK)
+                .add("data", Json.createObjectBuilder().add("Files", jarr).add("Result", result)).build() ).build();
+    }
+
+    protected static Response error(Response.Status sts, String msg ) {
+        return Response.status(sts)
+                .entity( NullSafeJsonBuilder.jsonObjectBuilder()
+                        .add("status", STATUS_ERROR)
+                        .add( "message", msg ).build()
+                ).type(MediaType.APPLICATION_JSON_TYPE).build();
     }
     
 } // end class

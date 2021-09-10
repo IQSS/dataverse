@@ -31,7 +31,7 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLInputFactory;
 
 import edu.harvard.iq.dataverse.util.json.ControlledVocabularyException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -116,6 +116,10 @@ public class ImportDDIServiceBean {
     boolean isAbstractAdded = false;
     String defaultAbsractText="Required description text(abstract tag) was not found";
 
+    
+    @EJB ImportGenericServiceBean importGenericService;
+    
+    
     // TODO: stop passing the xml source as a string; (it could be huge!) -- L.A. 4.5
     // TODO: what L.A. Said.
     public DatasetDTO doImport(ImportType importType, String xmlToParse) throws XMLStreamException, ImportException {
@@ -308,7 +312,7 @@ public class ImportDDIServiceBean {
                     // this will set a StudyId if it has not yet been set; it will get overridden by a metadata
                     // id in the StudyDscr section, if one exists
                     if ( AGENCY_HANDLE.equals( xmlr.getAttributeValue(null, "agency") ) ) {
-                        parseStudyIdHandle( parseText(xmlr), datasetDTO );
+                        importGenericService.reassignIdentifierAsGlobalId( parseText(xmlr), datasetDTO );
                     }
                 // EMK TODO: we need to save this somewhere when we add harvesting infrastructure
                 } /*else if ( xmlr.getLocalName().equals("holdings") && StringUtil.isEmpty(datasetDTO..getHarvestHoldings()) ) {
@@ -1491,10 +1495,8 @@ public class ImportDDIServiceBean {
                   FieldDTO field = FieldDTO.createPrimitiveFieldDTO("alternativeTitle", parseText(xmlr));
                    citation.getFields().add(field);
                 } else if (xmlr.getLocalName().equals("IDNo")) {
-                    if ( AGENCY_HANDLE.equals( xmlr.getAttributeValue(null, "agency") ) ) {
-                        parseStudyIdHandle( parseText(xmlr), datasetDTO );
-                    } else if ( AGENCY_DOI.equals( xmlr.getAttributeValue(null, "agency") ) ) {
-                        parseStudyIdDOI( parseText(xmlr), datasetDTO );
+                    if ( AGENCY_HANDLE.equals( xmlr.getAttributeValue(null, "agency") ) || AGENCY_DOI.equals( xmlr.getAttributeValue(null, "agency") ) ) {
+                        importGenericService.reassignIdentifierAsGlobalId(parseText(xmlr), datasetDTO);
                     } else if ( AGENCY_DARA.equals( xmlr.getAttributeValue(null, "agency"))) {
                         /*
                             da|ra - "Registration agency for social and economic data"
