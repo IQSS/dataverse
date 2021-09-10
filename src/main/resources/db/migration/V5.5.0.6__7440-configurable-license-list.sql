@@ -22,3 +22,4 @@ UPDATE termsofuseandaccess
 SET license_id = (SELECT license.id FROM license WHERE license.name = 'CC0')
 WHERE termsofuseandaccess.license = 'CC0' AND termsofuseandaccess.license_id IS NULL;
 
+ALTER TABLE termsofuseandaccess DROP COLUMN IF EXISTS license;
