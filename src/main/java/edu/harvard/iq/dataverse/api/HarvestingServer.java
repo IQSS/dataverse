@@ -195,6 +195,17 @@ public class HarvestingServer extends AbstractApiBean {
     @DELETE
     @Path("{specname}")
     public Response deleteOaiSet(@PathParam("specname") String spec, @QueryParam("key") String apiKey) {
+        
+        AuthenticatedUser dvUser;
+        try {
+            dvUser = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        if (!dvUser.isSuperuser()) {   
+            return badRequest(BundleUtil.getStringFromBundle("harvestserver.deleteSetDialog.setspec.superUser.required"));
+        }
+        
         OAISet set = null;  
         try {
             set = oaiSetService.findBySpec(spec);

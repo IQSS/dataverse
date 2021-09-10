@@ -95,6 +95,20 @@ public class HarvestingServerIT {
         // try to export set as admin user, should succeed (under admin API, not checking that normal user will fail)
         Response r4 = UtilIT.exportOaiSet(setName);
         assertEquals(200, r4.getStatusCode());
+        
+        // try to delete as normal user  should fail
+        Response r5 = given()
+                .header(UtilIT.API_TOKEN_HTTP_HEADER, normalUserAPIKey)
+                .delete(u0);
+        logger.info("r5.getStatusCode(): " + r5.getStatusCode());
+        assertEquals(400, r5.getStatusCode());
+        
+        // try to delete as admin user  should work
+        Response r6 = given()
+                .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
+                .delete(u0);
+        logger.info("r6.getStatusCode(): " + r6.getStatusCode());
+        assertEquals(200, r6.getStatusCode());
 
         // TODO - get an answer to the question of if it's worth cleaning up (users, sets) or not
     }
