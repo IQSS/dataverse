@@ -1,12 +1,13 @@
 package edu.harvard.iq.dataverse.api;
 
-import com.google.api.client.util.Lists;
-import edu.harvard.iq.dataverse.license.dto.ActiveLicenseDto;
+import edu.harvard.iq.dataverse.api.dto.ActiveLicenseDTO;
+import edu.harvard.iq.dataverse.persistence.datafile.license.License;
 import edu.harvard.iq.dataverse.persistence.datafile.license.LicenseRepository;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.ws.rs.GET;
@@ -18,14 +19,24 @@ import java.util.stream.Collectors;
 @Path("info")
 public class Info extends AbstractApiBean {
 
-    @Inject
-    SettingsServiceBean settingsService;
+    private static final Logger logger = LoggerFactory.getLogger(Info.class);
 
-    @Inject
+    private SettingsServiceBean settingsService;
     private LicenseRepository licenseRepository;
+    private SystemConfig systemConfig;
 
-    @EJB
-    SystemConfig systemConfig;
+    // -------------------- CONSTRUCTORS --------------------
+
+    public Info() { }
+
+    @Inject
+    public Info(SettingsServiceBean settingsService, LicenseRepository licenseRepository, SystemConfig systemConfig) {
+        this.settingsService = settingsService;
+        this.licenseRepository = licenseRepository;
+        this.systemConfig = systemConfig;
+    }
+
+    // -------------------- LOGIC --------------------
 
     @GET
     @Path("settings/:DatasetPublishPopupCustomText")
@@ -61,15 +72,11 @@ public class Info extends AbstractApiBean {
     @GET
     @Path("activeLicenses")
     public Response getActiveLicenses() {
-        List<ActiveLicenseDto> activeLicenses = Lists.newArrayList();
-        licenseRepository.findActiveOrderedByPosition()
-                .forEach(license -> activeLicenses.add(new ActiveLicenseDto(license.getName())));
+        List<ActiveLicenseDTO> activeLicenses = licenseRepository.findActiveOrderedByPosition().stream()
+                .map(License::getName)
+                .map(ActiveLicenseDTO::new)
+                .collect(Collectors.toList());
 
-        return allowCors(response(req -> ok(
-                activeLicenses
-                        .stream()
-                        .map(ActiveLicenseDto::toString)
-                        .collect(Collectors.joining(", "))
-        )));
+        return allowCors(response(r -> ok(activeLicenses)));
     }
 }

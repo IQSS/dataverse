@@ -2,26 +2,34 @@ package edu.harvard.iq.dataverse.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class ResponseDTO<T> {
+import javax.ws.rs.core.Response;
 
-    private int code;
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class ApiResponseDTO<T> {
+
+    protected String status;
+    protected int code;
     private T data;
 
     // -------------------- CONSTRUCTORS --------------------
 
-    public ResponseDTO() { }
+    public ApiResponseDTO() { }
 
-    public ResponseDTO(int code, T data) {
+    public ApiResponseDTO(String status, int code, T data) {
+        this.status = status;
         this.code = code;
         this.data = data;
     }
 
-    public ResponseDTO(int code) {
-        this.code = code;
+    public ApiResponseDTO(Response.Status status, T data) {
+        this(status.name(), status.getStatusCode(), data);
     }
 
     // -------------------- GETTERS --------------------
+
+    public String getStatus() {
+        return status;
+    }
 
     public int getCode() {
         return code;
@@ -31,13 +39,4 @@ public class ResponseDTO<T> {
         return data;
     }
 
-    // -------------------- SETTERS --------------------
-
-    public void setCode(int code) {
-        this.code = code;
-    }
-
-    public void setData(T data) {
-        this.data = data;
-    }
 }

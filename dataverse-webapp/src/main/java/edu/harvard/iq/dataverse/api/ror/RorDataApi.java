@@ -2,7 +2,7 @@ package edu.harvard.iq.dataverse.api.ror;
 
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 import edu.harvard.iq.dataverse.api.dto.RorDataResponse;
-import edu.harvard.iq.dataverse.api.errorhandlers.ApiErrorResponse;
+import edu.harvard.iq.dataverse.api.dto.ApiErrorResponseDTO;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.ror.RorDataService;
 import edu.harvard.iq.dataverse.search.ror.RorIndexingService;
@@ -70,7 +70,7 @@ public class RorDataApi extends AbstractApiBean{
         } catch (IOException ioe) {
             logger.warn("Exception during file upload: ", ioe);
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(ApiErrorResponse.errorResponse(Response.Status.BAD_REQUEST.getStatusCode(),
+                    .entity(ApiErrorResponseDTO.errorResponse(Response.Status.BAD_REQUEST.getStatusCode(),
                             "There was an IO error with file being uploaded"))
                     .build();
         } finally {

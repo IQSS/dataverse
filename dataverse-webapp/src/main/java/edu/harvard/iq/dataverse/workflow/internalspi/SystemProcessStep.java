@@ -102,7 +102,7 @@ public class SystemProcessStep extends FilesystemAccessingWorkflowStep {
             );
         } else {
             return outputParams ->
-                    new Failure("Process " + processId + "returned " + exitCode + " exit code",
+                    new Failure("Process " + processId + " returned " + exitCode + " exit code",
                             "External program exited with errors", failureArtifacts());
         }
     }

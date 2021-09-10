@@ -11,7 +11,7 @@ import javax.ws.rs.ext.Provider;
 
 import java.io.IOException;
 
-import static edu.harvard.iq.dataverse.api.errorhandlers.ApiErrorResponse.errorResponse;
+import static edu.harvard.iq.dataverse.api.dto.ApiErrorResponseDTO.errorResponse;
 
 
 /**
@@ -19,7 +19,7 @@ import static edu.harvard.iq.dataverse.api.errorhandlers.ApiErrorResponse.errorR
  * <br/>
  * It blocks request processing when Dataverse installation
  * is in readonly mode.
- * 
+ *
  * @author madryk
  */
 @Provider

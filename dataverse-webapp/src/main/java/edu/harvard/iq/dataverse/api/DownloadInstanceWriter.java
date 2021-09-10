@@ -1,6 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
-import edu.harvard.iq.dataverse.api.errorhandlers.ApiErrorResponse;
+import edu.harvard.iq.dataverse.api.dto.ApiErrorResponseDTO;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataConverter;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
@@ -99,10 +99,10 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
             int thumbnailSize = NumberUtils.toInt(di.getConversionParamValue(), ImageThumbConverter.DEFAULT_THUMBNAIL_SIZE);
             InputStreamIO thumbnailStorageIO = Optional
                     .ofNullable(imageThumbConverter.getImageThumbnailAsInputStream(dataFile, thumbnailSize))
-                    .orElseThrow(() -> new WebApplicationException(ApiErrorResponse.errorResponse(404, "Image thumbnail not found").asJaxRsResponse()));
+                    .orElseThrow(() -> new WebApplicationException(ApiErrorResponseDTO.errorResponse(404, "Image thumbnail not found").asJaxRsResponse()));
 
-            // and, since we now have tabular data files that can 
-            // have thumbnail previews... obviously, we don't want to 
+            // and, since we now have tabular data files that can
+            // have thumbnail previews... obviously, we don't want to
             // add the variable header to the image stream!
             thumbnailStorageIO.setNoVarHeader(Boolean.TRUE);
             thumbnailStorageIO.setVarHeader(null);
@@ -119,8 +119,8 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
             return;
         }
         if (StringUtils.equals("format", di.getConversionParam()) && dataFile.isTabularData()) {
-            // Conversions, and downloads of "stored originals" are 
-            // now supported on all DataFiles for which StorageIO 
+            // Conversions, and downloads of "stored originals" are
+            // now supported on all DataFiles for which StorageIO
             // access drivers are available.
 
             if ("original".equals(di.getConversionParamValue())) {
@@ -135,14 +135,14 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                 String requestedMimeType = di.getServiceFormatType(di.getConversionParam(), di.getConversionParamValue());
                 if (requestedMimeType == null) {
                     // default mime type, in case real type is unknown;
-                    // (this shouldn't happen in real life - but just in case): 
+                    // (this shouldn't happen in real life - but just in case):
                     requestedMimeType = "application/octet-stream";
                 }
-                storageIO = Optional.ofNullable(dataConverter.performFormatConversion(dataFile, storageIO, 
+                storageIO = Optional.ofNullable(dataConverter.performFormatConversion(dataFile, storageIO,
                                                                                       di.getConversionParamValue(), requestedMimeType))
                                     .orElseThrow(() -> new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE));
             }
-            
+
             if (StringUtils.equals("prep", di.getConversionParamValue())) {
                 writeStorageIOToOutputStream(storageIO, outstream, httpHeaders);
             } else {
@@ -153,12 +153,12 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
         if (StringUtils.equals("subset", di.getConversionParam()) && dataFile.isTabularData()) {
             logger.debug("processing subset request.");
 
-            // TODO: 
-            // If there are parameters on the list that are 
+            // TODO:
+            // If there are parameters on the list that are
             // not valid variable ids, or if they do not belong to
-            // the datafile referenced - I simply skip them; 
-            // perhaps I should throw an invalid argument exception 
-            // instead. 
+            // the datafile referenced - I simply skip them;
+            // perhaps I should throw an invalid argument exception
+            // instead.
 
             List<DataVariable> filteredVariables = filterToVariablesOfDataFile(di, dataFile);
 
@@ -211,10 +211,10 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
         //                    checkForWholeDatasetDownload = true;
 
         if (storageIO instanceof S3AccessIO && !(dataFile.isTabularData()) && isRedirectToS3()) {
-            // definitely close the (still open) S3 input stream, 
+            // definitely close the (still open) S3 input stream,
             // since we are not going to use it. The S3 documentation
             // emphasizes that it is very important not to leave these
-            // lying around un-closed, since they are going to fill 
+            // lying around un-closed, since they are going to fill
             // up the S3 connection pool!
             try {
                 storageIO.getInputStream().close();
@@ -243,14 +243,14 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
         writeGuestbookResponse(di);
         datasetDownloadLogger.incrementLogIfDownloadingWholeDataset(Collections.singletonList(dataFile));
     }
-    
+
     private List<DataVariable> filterToVariablesOfDataFile(DownloadInstance di, DataFile dataFile) {
         List<DataVariable> dataVariables = new ArrayList<>();
         if (di.getExtraArguments() == null || di.getExtraArguments().size() == 0) {
             logger.debug("empty list of extra arguments.");
             return dataVariables;
         }
-        
+
         logger.debug("processing extra arguments list of length " + di.getExtraArguments().size());
         for (int i = 0; i < di.getExtraArguments().size(); i++) {
             DataVariable variable = (DataVariable) di.getExtraArguments().get(i);
@@ -265,7 +265,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
         }
         return dataVariables;
     }
-    
+
     private URI generateTemporaryS3URI(S3AccessIO<DataFile> s3StorageIO) {
         String redirectUrlStr;
         try {
@@ -287,7 +287,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
             throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
         }
     }
-    
+
     private void writeGuestbookResponse(DownloadInstance di) {
         if (di.getGbr() != null) {
             try {
@@ -301,9 +301,9 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
             logger.debug("not writing guestbook response");
         }
     }
-    
+
     private void writeStorageIOToOutputStream(StorageIO<DataFile> storageIO, OutputStream outstream, MultivaluedMap<String, Object> httpHeaders) throws IOException {
-        
+
         try (InputStream instream = storageIO.getInputStream()) {
 
             if (instream == null) {
@@ -336,8 +336,8 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
             byte[] bffr = new byte[4 * 8192];
 
             // before writing out any bytes from the input stream, flush
-            // any extra content, such as the variable header for the 
-            // subsettable files: 
+            // any extra content, such as the variable header for the
+            // subsettable files:
 
             if (storageIO.getVarHeader() != null) {
                 if (storageIO.getVarHeader().getBytes().length > 0) {

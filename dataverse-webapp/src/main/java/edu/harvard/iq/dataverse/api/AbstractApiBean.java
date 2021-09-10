@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.EjbDataverseEngine;
 import edu.harvard.iq.dataverse.MetadataBlockDao;
 import edu.harvard.iq.dataverse.UserServiceBean;
+import edu.harvard.iq.dataverse.api.dto.ApiResponseDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.common.BundleUtil;
 import edu.harvard.iq.dataverse.common.NullSafeJsonBuilder;
@@ -517,16 +518,32 @@ public abstract class AbstractApiBean {
      *  HTTP Response methods *
     \* ====================== */
 
-    protected Response ok(JsonArrayBuilder bld) {
+    protected Response ok(JsonValue value) {
         return Response.ok(Json.createObjectBuilder()
-                                   .add("status", STATUS_OK)
-                                   .add("data", bld).build()).build();
+                .add("status", STATUS_OK)
+                .add("data", value).build())
+                .type(MediaType.APPLICATION_JSON_TYPE)
+                .build();
     }
 
-    protected Response ok(Object objectToBeSerialized) {
+    protected Response ok(JsonObjectBuilder bld) {
+        return ok(bld.build());
+    }
+
+    protected Response ok(JsonArrayBuilder bld) {
+        return ok(bld.build());
+    }
+
+    protected Response ok(String msg) {
+        return ok(Json.createObjectBuilder().add("message", msg));
+    }
+
+    protected <T> Response ok(T objectToBeSerialized) {
         ObjectMapper objectMapper = new ObjectMapper();
 
-        String serializedObj = Try.of(() -> objectMapper.writeValueAsString(objectToBeSerialized))
+        ApiResponseDTO<T> response = new ApiResponseDTO<>(Status.OK, objectToBeSerialized);
+
+        String serializedObj = Try.of(() -> objectMapper.writeValueAsString(response))
                 .getOrElseThrow(throwable -> new SerializationException("There was a problem with serializing object",
                                                                         throwable));
 
@@ -534,28 +551,6 @@ public abstract class AbstractApiBean {
                 .type(MediaType.APPLICATION_JSON_TYPE)
                 .entity(serializedObj)
                 .build();
-    }
-
-    protected Response ok(JsonObjectBuilder bld) {
-        return Response.ok(Json.createObjectBuilder()
-                                   .add("status", STATUS_OK)
-                                   .add("data", bld).build())
-                .type(MediaType.APPLICATION_JSON)
-                .build();
-    }
-
-    protected Response ok(String msg) {
-        return Response.ok().entity(Json.createObjectBuilder()
-                                            .add("status", STATUS_OK)
-                                            .add("data", Json.createObjectBuilder().add("message", msg)).build())
-                .type(MediaType.APPLICATION_JSON)
-                .build();
-    }
-
-    protected Response ok(boolean value) {
-        return Response.ok().entity(Json.createObjectBuilder()
-                                            .add("status", STATUS_OK)
-                                            .add("data", value).build()).build();
     }
 
     /**

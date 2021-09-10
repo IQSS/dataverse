@@ -1,29 +1,19 @@
-package edu.harvard.iq.dataverse.api.errorhandlers;
+package edu.harvard.iq.dataverse.api.dto;
 
 import edu.harvard.iq.dataverse.api.AbstractApiBean;
 
 import javax.ws.rs.core.Response;
 
-public class ApiErrorResponse {
+public class ApiErrorResponseDTO extends ApiResponseDTO<Void> {
 
-    private String status;
-    private int code;
     private String message;
     private String incidentId;
-    
-    // -------------------- CONSTRUCTORS --------------------
-    
-    private ApiErrorResponse() { }
-    
-    // -------------------- GETTERS -------------------
-    
-    public String getStatus() {
-        return status;
-    }
 
-    public int getCode() {
-        return code;
-    }
+    // -------------------- CONSTRUCTORS --------------------
+
+    private ApiErrorResponseDTO() { }
+
+    // -------------------- GETTERS -------------------
 
     public String getMessage() {
         return message;
@@ -35,16 +25,16 @@ public class ApiErrorResponse {
 
     // -------------------- LOGIC --------------------
 
-    public static ApiErrorResponse errorResponse(int code, String message) {
-        ApiErrorResponse errorResponse = new ApiErrorResponse();
+    public static ApiErrorResponseDTO errorResponse(int code, String message) {
+        ApiErrorResponseDTO errorResponse = new ApiErrorResponseDTO();
         errorResponse.status = AbstractApiBean.STATUS_ERROR;
         errorResponse.code = code;
         errorResponse.message = message;
 
         return errorResponse;
     }
-    
-    public ApiErrorResponse withIncidentId(String incidentId) {
+
+    public ApiErrorResponseDTO withIncidentId(String incidentId) {
         this.incidentId = incidentId;
         return this;
     }

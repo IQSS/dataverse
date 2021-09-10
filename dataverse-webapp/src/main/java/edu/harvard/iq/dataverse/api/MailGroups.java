@@ -3,8 +3,8 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.api.converters.MailGroupConverter;
 import edu.harvard.iq.dataverse.api.dto.MailDomainGroupDTO;
-import edu.harvard.iq.dataverse.api.dto.ResponseDTO;
-import edu.harvard.iq.dataverse.api.errorhandlers.ApiErrorResponse;
+import edu.harvard.iq.dataverse.api.dto.ApiResponseDTO;
+import edu.harvard.iq.dataverse.api.dto.ApiErrorResponseDTO;
 import edu.harvard.iq.dataverse.authorization.groups.impl.mail.MailDomainGroupService;
 import edu.harvard.iq.dataverse.persistence.group.MailDomainGroup;
 
@@ -89,19 +89,19 @@ public class MailGroups {
 
     private Response createErrorResponse(Response.Status status, String message) {
         return Response.status(status)
-                .entity(ApiErrorResponse.errorResponse(status.getStatusCode(), message))
+                .entity(ApiErrorResponseDTO.errorResponse(status.getStatusCode(), message))
                 .build();
     }
 
     private <T> Response createOkResponse(T entity) {
         return Response.status(Response.Status.OK)
-                .entity(new ResponseDTO<T>(Response.Status.OK.getStatusCode(), entity))
+                .entity(new ApiResponseDTO<T>(Response.Status.OK, entity))
                 .build();
     }
 
     private Response createEmptyOkResponse() {
         return Response.status(Response.Status.OK)
-                .entity(new ResponseDTO<>(Response.Status.OK.getStatusCode()))
+                .entity(new ApiResponseDTO<>(Response.Status.OK, null))
                 .build();
     }
 

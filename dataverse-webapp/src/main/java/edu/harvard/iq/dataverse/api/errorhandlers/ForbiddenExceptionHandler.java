@@ -7,7 +7,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import static edu.harvard.iq.dataverse.api.errorhandlers.ApiErrorResponse.errorResponse;
+import static edu.harvard.iq.dataverse.api.dto.ApiErrorResponseDTO.errorResponse;
 
 /**
  * Produces custom 403 messages for the API.

@@ -7,7 +7,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import static edu.harvard.iq.dataverse.api.errorhandlers.ApiErrorResponse.errorResponse;
+import static edu.harvard.iq.dataverse.api.dto.ApiErrorResponseDTO.errorResponse;
 
 @Provider
 public class NotAllowedExceptionHandler implements ExceptionMapper<NotAllowedException> {
@@ -20,7 +20,7 @@ public class NotAllowedExceptionHandler implements ExceptionMapper<NotAllowedExc
 
         String uri = request.getRequestURI();
         return Response.status(405)
-                .entity(errorResponse(405, 
+                .entity(errorResponse(405,
                             "'" + uri + "' endpoint does not support method '" + request.getMethod() + "'. Consult our API guide at https://repod.icm.edu.pl/guides/en/4.11/user/index.html."))
                 .type("application/json").build();
 
