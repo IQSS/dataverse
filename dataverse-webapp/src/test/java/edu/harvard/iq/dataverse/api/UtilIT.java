@@ -16,7 +16,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import org.junit.Test;
+import org.junit.*;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -37,9 +37,7 @@ import java.util.logging.Logger;
 
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.path.xml.XmlPath.from;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class UtilIT {
 
@@ -1059,20 +1057,6 @@ public class UtilIT {
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
                 .body(restrict)
                 .put("/api/files/" + idInPath + "/restrict" + optionalQueryParam);
-        return response;
-    }
-
-    static Response allowAccessRequests(String datasetIdOrPersistentId, boolean allowRequests, String apiToken) {
-        String idInPath = datasetIdOrPersistentId; // Assume it's a number.
-        String optionalQueryParam = ""; // If idOrPersistentId is a number we'll just put it in the path.
-        if (!NumberUtils.isNumber(datasetIdOrPersistentId)) {
-            idInPath = ":persistentId";
-            optionalQueryParam = "?persistentId=" + datasetIdOrPersistentId;
-        }
-        Response response = given()
-                .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .body(allowRequests)
-                .put("/api/access/" + idInPath + "/allowAccessRequest" + optionalQueryParam);
         return response;
     }
 

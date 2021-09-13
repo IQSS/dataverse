@@ -11,9 +11,7 @@ import com.jayway.restassured.response.Response;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import org.hamcrest.collection.IsMapContaining;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -26,9 +24,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author madunlap
@@ -452,9 +448,6 @@ public class AccessIT {
         Response requestFileAccessResponse = UtilIT.requestFileAccess(tabFile3IdRestrictedNew.toString(), apiTokenRando);
         //Cannot request until we set the dataset to allow requests
         assertEquals(400, requestFileAccessResponse.getStatusCode());
-        //Update Dataset to allow requests
-        Response allowAccessRequestsResponse = UtilIT.allowAccessRequests(datasetIdNew.toString(), true, apiToken);
-        assertEquals(200, allowAccessRequestsResponse.getStatusCode());
         //Must republish to get it to work
         Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetIdNew, "major", apiToken);
         assertEquals(200, publishDataset.getStatusCode());

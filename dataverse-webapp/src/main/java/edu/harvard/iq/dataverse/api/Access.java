@@ -26,7 +26,6 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestAccessCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.guestbook.GuestbookResponseServiceBean;
 import edu.harvard.iq.dataverse.notification.NotificationObjectType;
@@ -779,50 +778,6 @@ public class Access extends AbstractApiBean {
         }
 
         return null;
-    }
-
-    /**
-     * Allow (or disallow) access requests to Dataset
-     *
-     * @param datasetToAllowAccessId
-     * @param requestStr
-     * @return
-     * @author sekmiller
-     */
-    @PUT
-    @ApiWriteOperation
-    @Path("{id}/allowAccessRequest")
-    public Response allowAccessRequest(@PathParam("id") String datasetToAllowAccessId, String requestStr) {
-
-        DataverseRequest dataverseRequest = null;
-        Dataset dataset;
-
-        try {
-            dataset = findDatasetOrDie(datasetToAllowAccessId);
-        } catch (WrappedResponse ex) {
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.allowRequests.failure.noDataset", datasetToAllowAccessId));
-        }
-
-        boolean allowRequest = Boolean.valueOf(requestStr);
-
-        try {
-            dataverseRequest = createDataverseRequest(findUserOrDie());
-        } catch (WrappedResponse wr) {
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noUser", wr.getLocalizedMessage()));
-        }
-
-        dataset.getEditVersion().getTermsOfUseAndAccess().setFileAccessRequest(allowRequest);
-
-        try {
-            engineSvc.submit(new UpdateDatasetVersionCommand(dataset, dataverseRequest));
-        } catch (CommandException ex) {
-            return error(BAD_REQUEST, BundleUtil.getStringFromBundle("access.api.fileAccess.failure.noSave", dataset.getDisplayName(), ex.getLocalizedMessage()));
-        }
-
-        String text = allowRequest ? BundleUtil.getStringFromBundle("access.api.allowRequests.allows") : BundleUtil.getStringFromBundle("access.api.allowRequests.disallows");
-
-        return ok(BundleUtil.getStringFromBundle("access.api.allowRequests.success", dataset.getDisplayName(), text));
-
     }
 
     /**
