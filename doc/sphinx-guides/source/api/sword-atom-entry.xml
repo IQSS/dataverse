@@ -26,9 +26,6 @@
    <!-- geographic coverage -->
    <dcterms:coverage>United States</dcterms:coverage>
    <dcterms:coverage>Canada</dcterms:coverage>
-   <!-- license and restrictions -->
-   <dcterms:license>NONE</dcterms:license>
-   <dcterms:rights>Downloader will not use the Materials in any way prohibited by applicable laws.</dcterms:rights>
    <!-- related publications -->
    <dcterms:isReferencedBy holdingsURI="http://dx.doi.org/10.1038/dvn333" agency="DOI" IDNo="10.1038/dvn333">Peets, J., &amp; Stumptown, J. (2013). Roasting at Home. New England Journal of Coffee, 3(1), 22-34.</dcterms:isReferencedBy>
 </entry>

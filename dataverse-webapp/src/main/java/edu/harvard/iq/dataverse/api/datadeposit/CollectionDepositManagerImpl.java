@@ -121,7 +121,6 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
 
                     String foreignFormat = SwordUtil.DCTERMS;
                     try {
-
                         importGenericService.importXML(deposit.getSwordEntry().toString(), foreignFormat, newDatasetVersion);
                     } catch (Exception ex) {
                         throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "problem calling importXML: " + ex);
@@ -130,7 +129,6 @@ public class CollectionDepositManagerImpl implements CollectionDepositManager {
                     swordService.addDatasetContact(newDatasetVersion, user);
                     swordService.addDatasetDepositor(newDatasetVersion, user);
                     swordService.addDatasetSubjectIfMissing(newDatasetVersion);
-                    swordService.setDatasetLicenseAndTermsOfUse(newDatasetVersion, deposit.getSwordEntry());
 
                     Dataset createdDataset = null;
                     try {

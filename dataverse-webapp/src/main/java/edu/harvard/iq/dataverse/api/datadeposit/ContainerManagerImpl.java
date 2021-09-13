@@ -161,7 +161,6 @@ public class ContainerManagerImpl implements ContainerManager {
                     swordService.addDatasetContact(datasetVersion, user);
                     swordService.addDatasetDepositor(datasetVersion, user);
                     swordService.addDatasetSubjectIfMissing(datasetVersion);
-                    swordService.setDatasetLicenseAndTermsOfUse(datasetVersion, deposit.getSwordEntry());
                     try {
                         engineSvc.submit(updateDatasetCommand);
                     } catch (CommandException ex) {
@@ -169,8 +168,7 @@ public class ContainerManagerImpl implements ContainerManager {
                     }
                     ReceiptGenerator receiptGenerator = new ReceiptGenerator(citationFactory);
                     String baseUrl = urlManagerServiceBean.getHostnamePlusBaseUrlPath();
-                    DepositReceipt depositReceipt = receiptGenerator.createDatasetReceipt(baseUrl, dataset);
-                    return depositReceipt;
+                    return receiptGenerator.createDatasetReceipt(baseUrl, dataset);
                 } else {
                     throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Could not find dataset based on global id (" + globalId + ") in URL: " + uri);
                 }

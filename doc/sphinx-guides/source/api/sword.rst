@@ -57,8 +57,6 @@ New features as of v1.1
 
 - "Contributor" can now be populated and the "Type" (Editor, Funder, Researcher, etc.) can be specified with an XML attribute. For example: <dcterms:contributor type="Funder">CaffeineForAll</dcterms:contributor>
 
-- "License" can now be set with dcterms:license and the possible values are "CC0" and "NONE". "License" interacts with "Terms of Use" (dcterms:rights) in that if you include dcterms:rights in the XML, the license will be set to "NONE". If you don't include dcterms:rights, the license will default to "CC0". It is invalid to specify "CC0" as a license and also include dcterms:rights; an error will be returned. For backwards compatibility, dcterms:rights is allowed to be blank (i.e. <dcterms:rights></dcterms:rights>) but blank values will not be persisted to the database and the license will be set to "NONE".
-
 - "Contact E-mail" is automatically populated from dataset owner's email.
 
 - "Subject" uses our controlled vocabulary list of subjects. This list is in the Citation Metadata of our User Guide > `Metadata References <http://guides.dataverse.org/en/latest/user/appendix.html#metadata-references>`_. Otherwise, if a term does not match our controlled vocabulary list, it will put any subject terms in "Keyword". If Subject is empty it is automatically populated with "N/A".
@@ -114,10 +112,6 @@ Dublin Core Terms (DC Terms) Qualified Mapping - Dataverse DB Element Crosswalk
 |dcterms:relation             |               relatedMaterial                |              |  Any related material (journal article citation is not included here - see: dcterms:isReferencedBy below).                                                  |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 |dcterms:coverage             |              otherGeographicCoverage         |              |  General information on the geographic coverage of the Dataset.                                                                                             |
-+-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
-|dcterms:license              |                   license                    |              |  Set the license to CC0 (default in Dataverse for new Datasets), otherwise enter "NONE" and fill in the dcterms:rights field.                               |                
-+-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
-|dcterms:rights               |                 termsofuse                   |              |  If not using CC0, enter any terms of use or restrictions for the Dataset.                                                                                  |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 |dcterms:isReferencedBy       |             publicationCitation              |              |  The publication (journal article, book, other work) that uses this dataset (include citation, permanent identifier (DOI), and permanent URL).              |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
