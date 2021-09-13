@@ -132,11 +132,6 @@ public class DublinCoreExportUtil {
         //Geo Elements
         writeSpatialElements(xmlw, version, dcFlavor);
 
-        //License and Terms
-        writeFullElement(xmlw, dcFlavor + ":" + "license", version.getLicense());
-        writeFullElement(xmlw, dcFlavor + ":" + "rights", version.getTermsOfUse());
-        writeFullElement(xmlw, dcFlavor + ":" + "rights", version.getRestrictions());
-
     }
 
     private static void createOAIDC(XMLStreamWriter xmlw, DatasetDTO datasetDto, String dcFlavor) throws XMLStreamException {

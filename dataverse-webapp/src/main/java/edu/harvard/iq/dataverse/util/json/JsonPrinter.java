@@ -18,7 +18,6 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
-import edu.harvard.iq.dataverse.persistence.dataset.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFacet;
@@ -334,28 +333,7 @@ public class JsonPrinter {
                 .add("archiveTime", format(dsv.getArchiveTime()))
                 .add("lastUpdateTime", format(dsv.getLastUpdateTime()))
                 .add("releaseTime", format(dsv.getReleaseTime()))
-                .add("createTime", format(dsv.getCreateTime()))
-                .add("license",
-                     dsv.getTermsOfUseAndAccess().getLicense() != null ?
-                             dsv.getTermsOfUseAndAccess().getLicense().toString() :
-                             null)
-                .add("termsOfUse", getLicenseInfo(dsv))
-                .add("confidentialityDeclaration", dsv.getTermsOfUseAndAccess().getConfidentialityDeclaration())
-                .add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus())
-                .add("specialPermissions", dsv.getTermsOfUseAndAccess().getSpecialPermissions())
-                .add("restrictions", dsv.getTermsOfUseAndAccess().getRestrictions())
-                .add("citationRequirements", dsv.getTermsOfUseAndAccess().getCitationRequirements())
-                .add("depositorRequirements", dsv.getTermsOfUseAndAccess().getDepositorRequirements())
-                .add("conditions", dsv.getTermsOfUseAndAccess().getConditions())
-                .add("disclaimer", dsv.getTermsOfUseAndAccess().getDisclaimer())
-                .add("termsOfAccess", dsv.getTermsOfUseAndAccess().getTermsOfAccess())
-                .add("dataAccessPlace", dsv.getTermsOfUseAndAccess().getDataAccessPlace())
-                .add("originalArchive", dsv.getTermsOfUseAndAccess().getOriginalArchive())
-                .add("availabilityStatus", dsv.getTermsOfUseAndAccess().getAvailabilityStatus())
-                .add("contactForAccess", dsv.getTermsOfUseAndAccess().getContactForAccess())
-                .add("sizeOfCollection", dsv.getTermsOfUseAndAccess().getSizeOfCollection())
-                .add("studyCompletion", dsv.getTermsOfUseAndAccess().getStudyCompletion())
-                .add("fileAccessRequest", dsv.getTermsOfUseAndAccess().isFileAccessRequest());
+                .add("createTime", format(dsv.getCreateTime()));
 
         bld.add("metadataBlocks", jsonByBlocks(dsv.getDatasetFields(), excludeEmailFields));
 
@@ -780,14 +758,6 @@ public class JsonPrinter {
         } else {
             return "";
         }
-    }
-
-    private String getLicenseInfo(DatasetVersion dsv) {
-        if (dsv.getTermsOfUseAndAccess().getLicense() != null
-                && dsv.getTermsOfUseAndAccess().getLicense().equals(TermsOfUseAndAccess.License.CC0)) {
-            return "CC0 Waiver";
-        }
-        return dsv.getTermsOfUseAndAccess().getTermsOfUse();
     }
 
     private JsonArrayBuilder getFileCategories(FileMetadata fmd) {

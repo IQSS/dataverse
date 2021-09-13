@@ -13,7 +13,6 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
-import edu.harvard.iq.dataverse.persistence.dataset.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
 
@@ -159,36 +158,6 @@ public class OREMap {
                 .add(JsonLDTerm.schemaOrg("name").getLabel(), version.getParsedTitle())
                 .add(JsonLDTerm.schemaOrg("dateModified").getLabel(),
                      DateUtil.retrieveISOFormatter(ZoneId.of("UTC")).format(version.getLastUpdateTime().toInstant()));
-
-        TermsOfUseAndAccess terms = version.getTermsOfUseAndAccess();
-        if (terms.getLicense() == TermsOfUseAndAccess.License.CC0) {
-            aggBuilder.add(JsonLDTerm.schemaOrg("license").getLabel(),
-                           "https://creativecommons.org/publicdomain/zero/1.0/");
-        } else {
-            addIfNotNull(aggBuilder, JsonLDTerm.termsOfUse, terms.getTermsOfUse());
-        }
-        addIfNotNull(aggBuilder, JsonLDTerm.confidentialityDeclaration, terms.getConfidentialityDeclaration());
-        addIfNotNull(aggBuilder, JsonLDTerm.specialPermissions, terms.getSpecialPermissions());
-        addIfNotNull(aggBuilder, JsonLDTerm.restrictions, terms.getRestrictions());
-        addIfNotNull(aggBuilder, JsonLDTerm.citationRequirements, terms.getCitationRequirements());
-        addIfNotNull(aggBuilder, JsonLDTerm.depositorRequirements, terms.getDepositorRequirements());
-        addIfNotNull(aggBuilder, JsonLDTerm.conditions, terms.getConditions());
-        addIfNotNull(aggBuilder, JsonLDTerm.disclaimer, terms.getDisclaimer());
-
-        // Add fileTermsofAccess as an object since it is compound
-        JsonObjectBuilder fAccess = Json.createObjectBuilder();
-        addIfNotNull(fAccess, JsonLDTerm.termsOfAccess, terms.getTermsOfAccess());
-        addIfNotNull(fAccess, JsonLDTerm.fileRequestAccess, terms.isFileAccessRequest());
-        addIfNotNull(fAccess, JsonLDTerm.dataAccessPlace, terms.getDataAccessPlace());
-        addIfNotNull(fAccess, JsonLDTerm.originalArchive, terms.getOriginalArchive());
-        addIfNotNull(fAccess, JsonLDTerm.availabilityStatus, terms.getAvailabilityStatus());
-        addIfNotNull(fAccess, JsonLDTerm.contactForAccess, terms.getContactForAccess());
-        addIfNotNull(fAccess, JsonLDTerm.sizeOfCollection, terms.getSizeOfCollection());
-        addIfNotNull(fAccess, JsonLDTerm.studyCompletion, terms.getStudyCompletion());
-        JsonObject fAccessObject = fAccess.build();
-        if (!fAccessObject.isEmpty()) {
-            aggBuilder.add(JsonLDTerm.fileTermsOfAccess.getLabel(), fAccessObject);
-        }
 
         aggBuilder.add(JsonLDTerm.schemaOrg("includedInDataCatalog").getLabel(),
                        dataset.getDataverseContext().getDisplayName());
