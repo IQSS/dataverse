@@ -931,8 +931,6 @@ public class GuestbookResponseServiceBean {
     public Map<Integer, String> mapDatasetTitles(Long dataverseId) {
         Map<Integer, String> ret = new HashMap<>();
 
-        int count = 0;
-
         List<Object[]> titleResults = dataverseService.getDatasetTitlesWithinDataverse(dataverseId);
 
         if (titleResults != null) {
@@ -942,11 +940,8 @@ public class GuestbookResponseServiceBean {
                 
                 ret.put(datasetId, datasetTitle);
 
-                count++;
             }
         }
-
-        logger.info("Found " + count + " dataset titles in dataverse " + dataverseId);
 
         return ret;
         
