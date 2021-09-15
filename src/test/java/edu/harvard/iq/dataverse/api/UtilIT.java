@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse.api;
 
+import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
@@ -9,6 +10,8 @@ import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -35,6 +38,8 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+
+import static com.jayway.restassured.RestAssured.put;
 import static com.jayway.restassured.path.xml.XmlPath.from;
 import static com.jayway.restassured.RestAssured.given;
 import edu.harvard.iq.dataverse.util.StringUtil;
@@ -2660,7 +2665,7 @@ public class UtilIT {
     static Response getLicenseById(Long id) {
 
         Response getLicenseResponse = given()
-                .get("/api/admin/licenses/id/"+id.toString());
+                .get("/api/admin/licenses/"+id.toString());
         return getLicenseResponse;
     }
 
@@ -2675,10 +2680,13 @@ public class UtilIT {
         String jsonIn = getDatasetJson(pathToJsonFile);
 
         Response updateLicenseResponse = given()
+                .request()
                 .body(jsonIn)
                 .contentType("application/json")
-                .put("/api/admin/licenses/id/"+id.toString());
+                .put("/api/admin/licenses/{id}", id);
         return updateLicenseResponse;
+
+
     }
 
     static Response updateLicenseByName(String pathToJsonFile, String name) {
@@ -2694,7 +2702,7 @@ public class UtilIT {
     static Response deleteLicenseById(Long id) {
 
         Response deleteLicenseResponse = given()
-                .delete("/api/admin/licenses/id/"+id.toString());
+                .delete("/api/admin/licenses/"+id.toString());
         return deleteLicenseResponse;
     }
 
