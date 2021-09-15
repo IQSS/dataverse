@@ -592,6 +592,7 @@ public class JsonParser {
             throw new JsonParseException("incorrect  typeClass for field " + json.getString("typeName", "") + ", should be controlledVocabulary");
         }
        
+        
         ret.setDatasetFieldType(type);
                
         if (type.isCompound()) {
@@ -610,6 +611,7 @@ public class JsonParser {
 
         } else {
             // primitive
+            
                 List<DatasetFieldValue> values = parsePrimitiveValue(type, json);
                 for (DatasetFieldValue val : values) {
                     val.setDatasetField(ret);
@@ -696,6 +698,13 @@ public class JsonParser {
 
     public List<DatasetFieldValue> parsePrimitiveValue(DatasetFieldType dft , JsonObject json) throws JsonParseException {
 
+        Map<Long, JsonObject> cvocMap = datasetFieldSvc.getCVocConf(true);
+        boolean extVocab=false;
+        if(cvocMap.containsKey(dft.getId())) {
+            extVocab=true;
+        }
+
+        
         List<DatasetFieldValue> vals = new LinkedList<>();
         if (dft.isAllowMultiples()) {
            try {
@@ -707,6 +716,12 @@ public class JsonParser {
                 DatasetFieldValue datasetFieldValue = new DatasetFieldValue();
                 datasetFieldValue.setDisplayOrder(vals.size() - 1);
                 datasetFieldValue.setValue(val.getString().trim());
+                if(extVocab) {
+                    if(!datasetFieldSvc.isValidCVocValue(dft, datasetFieldValue.getValue())) {
+                        throw new JsonParseException("Invalid values submitted for " + dft.getName() + " which is limited to specific vocabularies.");
+                    }
+                    datasetFieldSvc.registerExternalTerm(cvocMap.get(dft.getId()), datasetFieldValue.getValue());
+                }
                 vals.add(datasetFieldValue);
             }
 
@@ -717,6 +732,12 @@ public class JsonParser {
             }            
             DatasetFieldValue datasetFieldValue = new DatasetFieldValue();
             datasetFieldValue.setValue(json.getString("value", "").trim());
+            if(extVocab) {
+                if(!datasetFieldSvc.isValidCVocValue(dft, datasetFieldValue.getValue())) {
+                    throw new JsonParseException("Invalid values submitted for " + dft.getName() + " which is limited to specific vocabularies.");
+                }
+                datasetFieldSvc.registerExternalTerm(cvocMap.get(dft.getId()), datasetFieldValue.getValue());
+            }
             vals.add(datasetFieldValue);
         }
 

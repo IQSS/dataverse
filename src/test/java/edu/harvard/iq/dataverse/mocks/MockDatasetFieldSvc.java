@@ -3,6 +3,8 @@ package edu.harvard.iq.dataverse.mocks;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.json.JsonObject;
+
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
@@ -47,6 +49,10 @@ public class MockDatasetFieldSvc extends DatasetFieldServiceBean {
         cvv.setDatasetFieldType(dsft);
         cvv.setStrValue(strValue);
         return cvv;
+    }
+    
+    public Map<Long, JsonObject> getCVocConf(boolean byTermUriField){
+        return new HashMap<Long, JsonObject>();
     }
 
 }

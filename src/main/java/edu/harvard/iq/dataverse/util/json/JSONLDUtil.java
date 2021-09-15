@@ -178,7 +178,6 @@ public class JSONLDUtil {
                         dsf.setDatasetFieldType(dsft);
                     }
 
-                    // Todo - normalize object vs. array
                     JsonArray valArray = getValues(jsonld.get(key), dsft.isAllowMultiples(), dsft.getName());
 
                     addField(dsf, valArray, dsft, datasetFieldSvc, append);
@@ -385,6 +384,8 @@ public class JSONLDUtil {
         logger.fine("Compound: " + dsft.isCompound());
         logger.fine("CV: " + dsft.isAllowControlledVocabulary());
 
+        Map<Long, JsonObject> cvocMap = datasetFieldSvc.getCVocConf(true);
+        
         if (dsft.isCompound()) {
             /*
              * List<DatasetFieldCompoundValue> vals = parseCompoundValue(type,
@@ -450,7 +451,7 @@ public class JSONLDUtil {
                 }
                 // Only add value to the list if it is not a duplicate
                 if (strValue.equals("Other")) {
-                    System.out.println("vals = " + vals + ", contains: " + vals.contains(cvv));
+                    logger.fine("vals = " + vals + ", contains: " + vals.contains(cvv));
                 }
                 if (!vals.contains(cvv)) {
                     if (vals.size() > 0) {
@@ -463,10 +464,21 @@ public class JSONLDUtil {
             dsf.setControlledVocabularyValues(vals);
 
         } else {
+
+            boolean extVocab=false;
+            if(cvocMap.containsKey(dsft.getId())) {
+                extVocab=true;
+            }
             List<DatasetFieldValue> vals = dsf.getDatasetFieldValues();
 
             for (JsonString strVal : valArray.getValuesAs(JsonString.class)) {
                 String strValue = strVal.getString();
+                if(extVocab) {
+                    if(!datasetFieldSvc.isValidCVocValue(dsft, strValue)) {
+                        throw new BadRequestException("Invalid values submitted for " + dsft.getName() + " which is limited to specific vocabularies.");
+                    }
+                    datasetFieldSvc.registerExternalTerm(cvocMap.get(dsft.getId()), strValue);
+                }
                 DatasetFieldValue datasetFieldValue = new DatasetFieldValue();
 
                 datasetFieldValue.setDisplayOrder(vals.size());

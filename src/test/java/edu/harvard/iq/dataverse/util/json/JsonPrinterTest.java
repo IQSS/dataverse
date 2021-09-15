@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
 import edu.harvard.iq.dataverse.DatasetFieldCompoundValue;
 import edu.harvard.iq.dataverse.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.DatasetFieldValue;
@@ -202,7 +203,8 @@ public class JsonPrinterTest {
         fields.add(datasetContactField);
 
         SettingsServiceBean nullServiceBean = null;
-        JsonPrinter.injectSettingsService(nullServiceBean);
+        DatasetFieldServiceBean nullDFServiceBean = null;
+        JsonPrinter.injectSettingsService(nullServiceBean, nullDFServiceBean);
         
         JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
@@ -242,8 +244,9 @@ public class JsonPrinterTest {
         vals.add(val);
         datasetContactField.setDatasetFieldCompoundValues(vals);
         fields.add(datasetContactField);
-
-        JsonPrinter.injectSettingsService(new MockSettingsSvc());
+        
+        DatasetFieldServiceBean nullDFServiceBean = null;
+        JsonPrinter.injectSettingsService(new MockSettingsSvc(), nullDFServiceBean);
 
         JsonObject jsonObject = JsonPrinter.json(block, fields).build();
         assertNotNull(jsonObject);
