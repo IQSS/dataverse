@@ -104,15 +104,17 @@ import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.StreamingOutput;
 import javax.xml.stream.XMLStreamException;
 
 /**
@@ -141,6 +143,9 @@ public class Dataverses extends AbstractApiBean {
     
     @EJB
     GuestbookServiceBean guestbookService;
+    
+    @EJB
+    DataverseServiceBean dataverseService;
 
     @POST
     public Response addRoot(String body) {
@@ -946,10 +951,9 @@ public class Dataverses extends AbstractApiBean {
     
     @GET
     @Path("{identifier}/guestbookResponses/")
-    @Produces({"application/download"})
     public Response getGuestbookResponsesByDataverse(@PathParam("identifier") String dvIdtf,
             @QueryParam("guestbookId") Long gbId, @Context HttpServletResponse response) {
-        
+
         try {
             Dataverse dv = findDataverseOrDie(dvIdtf);
             User u = findUserOrDie();
@@ -960,30 +964,31 @@ public class Dataverses extends AbstractApiBean {
             } else {
                 return error(Status.FORBIDDEN, "Not authorized");
             }
-            
-            String fileTimestamp = dateFormatter.format(new Date());
-            String filename = dv.getAlias() + "_GBResponses_" + fileTimestamp + ".csv";
-            
-            response.setHeader("Content-Disposition", "attachment; filename="
-                + filename);
-               ServletOutputStream outputStream = response.getOutputStream();
 
-            Map<Integer, Object> customQandAs = guestbookResponseService.mapCustomQuestionAnswersAsStrings(dv.getId(), gbId);
-
-            List<Object[]> guestbookResults = guestbookResponseService.getGuestbookResults(dv.getId(), gbId);
-            outputStream.write("Guestbook, Dataset, Dataset PID, Date, Type, File Name, File Id, File PID, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
-            for (Object[] result : guestbookResults) {
-                StringBuilder sb = guestbookResponseService.convertGuestbookResponsesToCSV(customQandAs, result);
-                outputStream.write(sb.toString().getBytes());
-                outputStream.flush();
-            }
-            return Response.ok().build();
-        } catch (IOException io) {
-            return error(Status.BAD_REQUEST, "Failed to produce response file. Exception: " + io.getMessage());
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
 
+        StreamingOutput stream = new StreamingOutput() {
+
+            @Override
+            public void write(OutputStream os) throws IOException,
+                    WebApplicationException {
+
+                Dataverse dv = dataverseService.findByAlias(dvIdtf);
+                Map<Integer, Object> customQandAs = guestbookResponseService.mapCustomQuestionAnswersAsStrings(dv.getId(), gbId);
+                Map<Integer, String> datasetTitles = guestbookResponseService.mapDatasetTitles(dv.getId());
+                
+                List<Object[]> guestbookResults = guestbookResponseService.getGuestbookResults(dv.getId(), gbId);
+                os.write("Guestbook, Dataset, Dataset PID, Date, Type, File Name, File Id, File PID, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
+                for (Object[] result : guestbookResults) {
+                    StringBuilder sb = guestbookResponseService.convertGuestbookResponsesToCSV(customQandAs, datasetTitles, result);
+                    os.write(sb.toString().getBytes());
+
+                }
+            }
+        };
+        return Response.ok(stream).build();
     }
     
     @PUT

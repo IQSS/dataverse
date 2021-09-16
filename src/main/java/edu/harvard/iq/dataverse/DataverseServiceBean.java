@@ -89,6 +89,12 @@ public class DataverseServiceBean implements java.io.Serializable {
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
 
+    private static final String BASE_QUERY_DATASET_TITLES_WITHIN_DV = "select v.value, o.id\n" 
+                + "from datasetfieldvalue v, dvobject o "
+                + "where " 
+                + "v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 " 
+                + "and datasetversion_id = (select max(id) from datasetversion where dataset_id = o.id))";
+
     public Dataverse save(Dataverse dataverse) {
        
         dataverse.setModificationTime(new Timestamp(new Date().getTime()));
@@ -912,5 +918,15 @@ public class DataverseServiceBean implements java.io.Serializable {
         logger.info(result);
         return (result);
     }
+    
+    // A quick custom query that finds all the (direct children) dataset titles 
+    // with a dataverse and returns a list of (dataset_id, title) pairs. 
+    public List<Object[]> getDatasetTitlesWithinDataverse(Long dataverseId) {
+        String cqString = BASE_QUERY_DATASET_TITLES_WITHIN_DV
+                + "and o.owner_id = " + dataverseId;
+
+        return em.createNativeQuery(cqString).getResultList();
+    }
+
     
 }
