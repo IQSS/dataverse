@@ -241,38 +241,8 @@ public class PasswordResetPage implements java.io.Serializable {
         this.passwordResetData = passwordResetData;
     }
 
-    public boolean isSilentPasswordAlgorithmUpdateEnabled(){
-        return settingsWrapper.isTrueForKey(SettingsServiceBean.Key.SilentPasswordAlgorithmUpdateEnabled, false);
-    }
-
     public String getGoodPasswordDescription() {
         // FIXME: Pass the errors in.
         return passwordValidatorService.getGoodPasswordDescription(null);
-    }
-    
-    public String getCustomPasswordResetAlertMessage() {
-        String customPasswordResetAlertMessage = settingsWrapper.getValueForKey(SettingsServiceBean.Key.PVCustomPasswordResetAlertMessage);
-        if(customPasswordResetAlertMessage != null && !customPasswordResetAlertMessage.isEmpty()){
-            return customPasswordResetAlertMessage;
-        } else {
-            return BundleUtil.getStringFromBundle("passwdReset.newPasswd.details");
-        }
-    }
-
-    public String getCustomPasswordResetAlertIntro() {
-        String customPasswordResetAlertIntro = settingsWrapper.getValueForKey(SettingsServiceBean.Key.CustomPasswordResetAlertIntro);
-        if(customPasswordResetAlertIntro != null && !customPasswordResetAlertIntro.isEmpty()){
-            return customPasswordResetAlertIntro;
-        } else {
-            return BundleUtil.getStringFromBundle("passwdReset.alert.intro");
-        }
-    }
-    public String getCustomPasswordResetButton() {
-        String customPasswordResetButton = settingsWrapper.getValueForKey(SettingsServiceBean.Key.CustomPasswordResetButton);
-        if(customPasswordResetButton != null && !customPasswordResetButton.isEmpty()){
-            return customPasswordResetButton;
-        } else {
-            return BundleUtil.getStringFromBundle("passwdReset.resetBtn");
-        }
     }
 }
