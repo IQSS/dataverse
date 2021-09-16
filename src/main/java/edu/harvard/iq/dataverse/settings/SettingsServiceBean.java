@@ -333,14 +333,6 @@ public class SettingsServiceBean {
          * The number of consecutive digits allowed for a password
          */
         PVNumberOfConsecutiveDigitsAllowed,
-        /**
-         * Configurable text for alert/info message on passwordreset.xhtml when users are required to update their password.
-         */
-        PVCustomPasswordResetAlertMessage,
-        /**
-         * Set silent upgrade of password algorithm.
-         */
-        SilentPasswordAlgorithmUpdateEnabled,
         /*
         String to describe DOI format for data files. Default is DEPENDENT. 
         'DEPENEDENT' means the DOI will be the Dataset DOI plus a file DOI with a slash in between.
@@ -464,12 +456,7 @@ public class SettingsServiceBean {
          * metadata exports) and the title containing a human readable string. These
          * values are selectable at the Dataverse level and apply to Dataset metadata.
          */
-        MetadataLanguages,
-        /**
-         * Configurable text for alert/info message on passwordreset.xhtml when users are required to update their password.
-         */
-        CustomPasswordResetAlertIntro,
-        CustomPasswordResetButton;
+        MetadataLanguages;
 
         @Override
         public String toString() {

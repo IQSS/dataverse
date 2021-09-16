@@ -160,7 +160,6 @@ public class LoginPage implements java.io.Serializable {
         
         AuthenticationRequest authReq = new AuthenticationRequest();
         List<FilledCredential> filledCredentialsList = getFilledCredentials();
-        boolean silentPasswordAlgorithmUpdate = settingsService.isTrueForKey(SettingsServiceBean.Key.SilentPasswordAlgorithmUpdateEnabled, false);
         if ( filledCredentialsList == null ) {
             logger.info("Credential list is null!");
             return null;
@@ -168,9 +167,9 @@ public class LoginPage implements java.io.Serializable {
         for ( FilledCredential fc : filledCredentialsList ) {       
             authReq.putCredential(fc.getCredential().getKey(), fc.getValue());
         }
-        if (silentPasswordAlgorithmUpdate){
-            FacesContext.getCurrentInstance().getExternalContext().getFlash().put("silentUpgradePasswd",authReq.getCredential(BuiltinAuthenticationProvider.KEY_PASSWORD));
-        }
+
+        FacesContext.getCurrentInstance().getExternalContext().getFlash().put("silentUpgradePasswd",authReq.getCredential(BuiltinAuthenticationProvider.KEY_PASSWORD));
+
         authReq.setIpAddress( dvRequestService.getDataverseRequest().getSourceAddress() );
         try {
             AuthenticatedUser r = authSvc.getUpdateAuthenticatedUser(credentialsAuthProviderId, authReq);
