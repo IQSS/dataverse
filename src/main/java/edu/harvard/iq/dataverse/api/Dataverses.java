@@ -60,6 +60,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlock
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 
@@ -180,24 +181,8 @@ public class Dataverses extends AbstractApiBean {
             d = execCommand(new CreateDataverseCommand(d, createDataverseRequest(u), null, null));
             return created("/dataverses/" + d.getAlias(), json(d));
         } catch (WrappedResponse ww) {
-            Throwable cause = ww.getCause();
-            StringBuilder sb = new StringBuilder();
-            if (cause == null) {
-                return ww.refineResponse("cause was null!");
-            }
-            while (cause.getCause() != null) {
-                cause = cause.getCause();
-                if (cause instanceof ConstraintViolationException) {
-                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ")
-                                .append(violation.getPropertyPath()).append(" at ")
-                                .append(violation.getLeafBean()).append(" - ")
-                                .append(violation.getMessage());
-                    }
-                }
-            }
-            String error = sb.toString();
+
+            String error = ConstraintViolationUtil.getErrorStringForConstraintViolations(ww.getCause());
             if (!error.isEmpty()) {
                 logger.log(Level.INFO, error);
                 return ww.refineResponse(error);
@@ -211,13 +196,7 @@ public class Dataverses extends AbstractApiBean {
             while (cause.getCause() != null) {
                 cause = cause.getCause();
                 if (cause instanceof ConstraintViolationException) {
-                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ")
-                                .append(violation.getPropertyPath()).append(" at ")
-                                .append(violation.getLeafBean()).append(" - ")
-                                .append(violation.getMessage());
-                    }
+                    sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
                 }
             }
             logger.log(Level.SEVERE, sb.toString());
@@ -269,13 +248,7 @@ public class Dataverses extends AbstractApiBean {
                 while (cause.getCause() != null) {
                     cause = cause.getCause();
                     if (cause instanceof ConstraintViolationException) {
-                        ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                        for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                            sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ")
-                                    .append(violation.getPropertyPath()).append(" at ")
-                                    .append(violation.getLeafBean()).append(" - ")
-                                    .append(violation.getMessage());
-                        }
+                        sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
                     }
                 }
                 String error = sb.toString();
