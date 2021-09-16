@@ -12,6 +12,7 @@ import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
 import edu.harvard.iq.dataverse.export.OAI_OREExporter;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonLDNamespace;
 import edu.harvard.iq.dataverse.util.json.JsonLDTerm;
@@ -197,7 +198,7 @@ public class OREMap {
                 DataFile df = fmd.getDataFile();
                 JsonObjectBuilder aggRes = Json.createObjectBuilder();
 
-                if (!fmd.getDescription().isEmpty()) {
+                if (!StringUtil.isEmpty(fmd.getDescription())) {
                     aggRes.add(JsonLDTerm.schemaOrg("description").getLabel(), fmd.getDescription());
                 } else {
                     addIfNotNull(aggRes, JsonLDTerm.schemaOrg("description"), df.getDescription());
