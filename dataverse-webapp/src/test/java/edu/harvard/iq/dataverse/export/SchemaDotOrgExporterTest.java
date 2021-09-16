@@ -13,17 +13,16 @@ import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.FieldType;
-import edu.harvard.iq.dataverse.persistence.dataset.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.qualifiers.TestBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import org.assertj.core.util.Lists;
-import org.junit.Assert;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.*;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -45,9 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -259,10 +256,6 @@ public class SchemaDotOrgExporterTest {
         version.setReleaseTime(publicationDate);
         version.setVersionNumber(1l);
 
-        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-        terms.setLicense(TermsOfUseAndAccess.License.CC0);
-        version.setTermsOfUseAndAccess(terms);
-
         Dataset dataset = new Dataset();
         dataset.setProtocol("doi");
         dataset.setAuthority("10.5072/FK2");
@@ -380,10 +373,6 @@ public class SchemaDotOrgExporterTest {
         version.setReleaseTime(publicationDate);
         version.setVersionNumber(1l);
 
-        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-        terms.setLicense(TermsOfUseAndAccess.License.CC0);
-        version.setTermsOfUseAndAccess(terms);
-
         Dataset dataset = new Dataset();
         dataset.setProtocol("doi");
         dataset.setAuthority("10.5072/FK2");
@@ -437,10 +426,6 @@ public class SchemaDotOrgExporterTest {
         Date publicationDate = dateFmt.parse("19551105");
         version.setReleaseTime(publicationDate);
         version.setVersionNumber(1l);
-
-        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-        terms.setLicense(TermsOfUseAndAccess.License.CC0);
-        version.setTermsOfUseAndAccess(terms);
 
         Dataset dataset = new Dataset();
         dataset.setProtocol("doi");
@@ -516,10 +501,6 @@ public class SchemaDotOrgExporterTest {
         version.setReleaseTime(publicationDate);
         version.setVersionNumber(1l);
 
-        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-        terms.setLicense(TermsOfUseAndAccess.License.CC0);
-        version.setTermsOfUseAndAccess(terms);
-
         Dataset dataset = new Dataset();
         dataset.setProtocol("doi");
         dataset.setAuthority("10.5072/FK2");
@@ -590,10 +571,6 @@ public class SchemaDotOrgExporterTest {
         version.setReleaseTime(publicationDate);
         version.setVersionNumber(1l);
 
-        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-        terms.setLicense(TermsOfUseAndAccess.License.CC0);
-        version.setTermsOfUseAndAccess(terms);
-
         Dataset dataset = new Dataset();
         dataset.setProtocol("doi");
         dataset.setAuthority("10.5072/FK2");
@@ -656,10 +633,6 @@ public class SchemaDotOrgExporterTest {
         Date publicationDate = dateFmt.parse("19551105");
         version.setReleaseTime(publicationDate);
         version.setVersionNumber(1l);
-
-        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-        terms.setLicense(TermsOfUseAndAccess.License.CC0);
-        version.setTermsOfUseAndAccess(terms);
 
         Dataset dataset = new Dataset();
         dataset.setProtocol("doi");

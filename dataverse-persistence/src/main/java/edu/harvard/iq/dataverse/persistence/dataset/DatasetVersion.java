@@ -26,12 +26,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedNativeQueries;
 import javax.persistence.NamedNativeQuery;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -99,10 +97,6 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
         DRAFT, RELEASED, ARCHIVED, DEACCESSIONED;
     }
 
-    public enum License {
-        NONE, CC0;
-    }
-
     public static final int ARCHIVE_NOTE_MAX_LENGTH = 1000;
     public static final int VERSION_NOTE_MAX_LENGTH = 1000;
 
@@ -138,10 +132,6 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
     // this is not our preferred ordering, which is with the AlphaNumericComparator,
     // but does allow the files to be grouped by category
     private List<FileMetadata> fileMetadatas = new ArrayList<>();
-
-    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
-    @JoinColumn(name = "termsOfUseAndAccess_id")
-    private TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
 
     @OneToMany(mappedBy = "datasetVersion", orphanRemoval = true,
             cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
@@ -208,10 +198,6 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
 
     public List<FileMetadata> getFileMetadatas() {
         return fileMetadatas;
-    }
-
-    public TermsOfUseAndAccess getTermsOfUseAndAccess() {
-        return termsOfUseAndAccess;
     }
 
     public List<DatasetField> getDatasetFields() {
@@ -398,10 +384,6 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
         }
     };
 
-    public void setTermsOfUseAndAccess(TermsOfUseAndAccess termsOfUseAndAccess) {
-        this.termsOfUseAndAccess = termsOfUseAndAccess;
-    }
-
     /**
      * Sets the dataset fields for this version. Also updates the fields to
      * have @{code this} as their dataset version.
@@ -554,15 +536,6 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
             dsv.setDatasetFields(DatasetFieldUtil.copyDatasetFields(this.getDatasetFields()));
         }
 
-        if (this.getTermsOfUseAndAccess() != null) {
-            dsv.setTermsOfUseAndAccess(this.getTermsOfUseAndAccess().copyTermsOfUseAndAccess());
-        } else {
-            TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-            terms.setDatasetVersion(dsv);
-            terms.setLicense(TermsOfUseAndAccess.License.CC0);
-            dsv.setTermsOfUseAndAccess(terms);
-        }
-
         for (FileMetadata fm : this.getFileMetadatas()) {
             FileMetadata newFm = new FileMetadata();
             // TODO:
@@ -589,18 +562,6 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
 
         dsv.setDataset(this.getDataset());
         return dsv;
-
-    }
-
-    public void initDefaultValues() {
-        //first clear then initialize - in case values were present
-        // from template or user entry
-        this.setDatasetFields(new ArrayList<>());
-        this.setDatasetFields(this.initDatasetFields());
-        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-        terms.setDatasetVersion(this);
-        terms.setLicense(TermsOfUseAndAccess.License.CC0);
-        this.setTermsOfUseAndAccess(terms);
 
     }
 

@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.persistence.dataset.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.workflow.WorkflowComment;
 import org.apache.commons.collections4.CollectionUtils;
@@ -64,14 +63,6 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
 
         // Merge the new version into out JPA context
         ctxt.em().merge(updateVersion);
-
-
-        TermsOfUseAndAccess oldTerms = updateVersion.getTermsOfUseAndAccess();
-        TermsOfUseAndAccess newTerms = getDataset().getEditVersion().getTermsOfUseAndAccess();
-        newTerms.setDatasetVersion(updateVersion);
-        updateVersion.setTermsOfUseAndAccess(newTerms);
-        //Put old terms on version that will be deleted....
-        getDataset().getEditVersion().setTermsOfUseAndAccess(oldTerms);
 
         List<WorkflowComment> newComments = getDataset().getEditVersion().getWorkflowComments();
         if (CollectionUtils.isNotEmpty(newComments)) {

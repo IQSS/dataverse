@@ -633,7 +633,6 @@ public class Datasets extends AbstractApiBean {
             if (updateDraft) {
                 final DatasetVersion editVersion = ds.getEditVersion();
                 editVersion.setDatasetFields(incomingVersion.getDatasetFields());
-                editVersion.setTermsOfUseAndAccess(incomingVersion.getTermsOfUseAndAccess());
                 Dataset managedDataset = execCommand(new UpdateDatasetVersionCommand(ds, req));
                 managedVersion = managedDataset.getEditVersion();
             } else {

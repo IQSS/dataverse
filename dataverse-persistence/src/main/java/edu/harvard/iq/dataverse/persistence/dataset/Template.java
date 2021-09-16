@@ -16,7 +16,6 @@ import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -50,10 +49,6 @@ public class Template implements Serializable {
     @Temporal(value = TemporalType.TIMESTAMP)
     @Column(nullable = false)
     private Date createTime;
-
-    @OneToOne(cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = true)
-    @JoinColumn(name = "termsOfUseAndAccess_id")
-    private TermsOfUseAndAccess termsOfUseAndAccess;
 
     @OneToMany(mappedBy = "template", orphanRemoval = true,
             cascade = {CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
@@ -94,10 +89,6 @@ public class Template implements Serializable {
         return new SimpleDateFormat("MMMM d, yyyy").format(createTime);
     }
 
-    public TermsOfUseAndAccess getTermsOfUseAndAccess() {
-        return termsOfUseAndAccess;
-    }
-
     public List<DatasetField> getDatasetFields() {
         return datasetFields;
     }
@@ -115,14 +106,6 @@ public class Template implements Serializable {
         if (source.getDatasetFields() != null && !source.getDatasetFields().isEmpty()) {
             newTemplate.setDatasetFields(DatasetFieldUtil.copyDatasetFields(source.getDatasetFields()));
         }
-        TermsOfUseAndAccess terms;
-        if (source.getTermsOfUseAndAccess() != null) {
-            terms = source.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
-        } else {
-            terms = new TermsOfUseAndAccess();
-            terms.setLicense(TermsOfUseAndAccess.defaultLicense);
-        }
-        newTemplate.setTermsOfUseAndAccess(terms);
         newTemplate.setDataverse(dataverse);
 
         return newTemplate;
@@ -148,10 +131,6 @@ public class Template implements Serializable {
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
-    }
-
-    public void setTermsOfUseAndAccess(TermsOfUseAndAccess termsOfUseAndAccess) {
-        this.termsOfUseAndAccess = termsOfUseAndAccess;
     }
 
     public void setDataverse(Dataverse dataverse) {

@@ -3,14 +3,12 @@ package edu.harvard.iq.dataverse.export;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.persistence.dataset.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,7 +25,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -84,9 +82,6 @@ public class JsonLdBuilderTest {
         Dataverse dataverse = new Dataverse();
         dataverse.setName("LibraScholar");
         dataset.setOwner(dataverse);
-        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-        terms.setLicense(TermsOfUseAndAccess.License.CC0);
-        datasetVersion.setTermsOfUseAndAccess(terms);
         String jsonLd = jsonLdBuilder.buildJsonLd(datasetVersion);
         System.out.println("jsonLd: " + JsonUtil.prettyPrint(jsonLd));
         JsonReader jsonReader = Json.createReader(new StringReader(jsonLd));
@@ -137,11 +132,6 @@ public class JsonLdBuilderTest {
         Dataverse dataverse = new Dataverse();
         dataverse.setName("LibraScholar");
         dataset.setOwner(dataverse);
-
-        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-        terms.setLicense(TermsOfUseAndAccess.License.NONE);
-        terms.setTermsOfUse("Call me maybe");
-        datasetVersion.setTermsOfUseAndAccess(terms);
 
         String jsonLd = jsonLdBuilder.buildJsonLd(datasetVersion);
         System.out.println("jsonLd: " + JsonUtil.prettyPrint(jsonLd));

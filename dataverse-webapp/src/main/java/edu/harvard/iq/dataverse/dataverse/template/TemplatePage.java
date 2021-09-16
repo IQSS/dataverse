@@ -13,7 +13,6 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldUtil;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldsByType;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.persistence.dataset.Template;
-import edu.harvard.iq.dataverse.persistence.dataset.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import io.vavr.control.Try;
@@ -185,17 +184,6 @@ public class TemplatePage implements java.io.Serializable {
         template.setDatasetFields(datasetFields);
         inputRenderersByFieldType = inputFieldRendererManager.obtainRenderersByType(datasetFields);
         mdbForEdit = datasetFieldsInitializer.groupAndUpdateFlagsForEdit(datasetFields, dataverse.getMetadataBlockRootDataverse());
-
-        if (template.getTermsOfUseAndAccess() == null) {
-            template.setTermsOfUseAndAccess(prepareTermsOfUseAndAccess(template));
-        }
-    }
-
-    private TermsOfUseAndAccess prepareTermsOfUseAndAccess(Template template) {
-        TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-        terms.setTemplate(template);
-        terms.setLicense(TermsOfUseAndAccess.License.CC0);
-        return terms;
     }
 
     private void saveDatasetFieldsGUIOrder(List<DatasetField> datasetFields) {
