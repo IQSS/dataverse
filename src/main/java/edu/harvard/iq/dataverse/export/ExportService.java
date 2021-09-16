@@ -154,6 +154,9 @@ public class ExportService {
             }
         } catch (ServiceConfigurationError serviceError) {
             throw new ExportException("Service configuration error during export. " + serviceError.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.warning(e.getMessage());
         }
         // Finally, if we have been able to successfully export in all available 
         // formats, we'll increment the "last exported" time stamp: 

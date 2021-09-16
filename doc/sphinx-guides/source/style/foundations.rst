@@ -277,10 +277,12 @@ There are over 250 glyphs in font format from the Glyphicon Halflings set provid
    <span class="glyphicon glyphicon-user"></span>
    <span class="glyphicon glyphicon-lock"></span>
 
-FontCustom Icon Font
---------------------
+.. _style-guide-fontcustom:
 
-With the use of `FontCustom <https://github.com/FontCustom/fontcustom>`__ we were able to generate our own custom icon webfonts. We use these in the search result cards to help distinguish between Dataverse collection, dataset and file results.
+Font Custom Icon Font
+---------------------
+
+With the use of `Font Custom <https://github.com/FontCustom/fontcustom>`__ we generate our own custom icon fonts. We use these in the search result cards to help distinguish between Dataverse collection, dataset and file results.
 
 .. raw:: html
 
@@ -298,6 +300,7 @@ With the use of `FontCustom <https://github.com/FontCustom/fontcustom>`__ we wer
    <span class="icon-dataset text-dataset"></span>
    <span class="icon-file text-file"></span>
 
+The :doc:`/developers/fontcustom` section of the Developer Guide explains how to update these custom icons.
 
 Socicon Icon Font 
 -----------------

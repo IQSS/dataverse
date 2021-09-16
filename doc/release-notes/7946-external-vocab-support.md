@@ -1,0 +1,3 @@
+### Experimental Support for External Vocabulary Services
+
+Dataverse can now be configured to associate specific metadata fields with third-party vocabulary services to provide an easy way for users to select values from those vocabularies. The mapping involves use of external Javascripts. Two such scripts have been developed so far: one for vocabularies served via the SKOSMOS protocol (see https://skosmos.org) and one allowing people to be identified via their ORCID (see https://orcid.org). The guides contain info about the new :CVocConf setting used for configuration and additional information about this functionality. Scripts, examples, and additional documentation are available at https://github.com/gdcc/dataverse-external-vocab-support.
