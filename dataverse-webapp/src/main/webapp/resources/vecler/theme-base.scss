@@ -2432,7 +2432,6 @@ div.panelSearchForm input.search-input {
     }
 }
 
-
 #metrics-label {
 	background: #fff;
 	border-radius: 6px 0 0 6px;
@@ -2761,6 +2760,10 @@ table[id$="resultsTable"] {
 	.card-content-container {
 		> a, > span.text-muted, .card-title-icon-block + div {
 			font-size: 0.867em;
+		}
+
+		.label-container > .label { 
+			display: inline-block;
 		}
 	}
 
