@@ -4,7 +4,6 @@ import edu.harvard.iq.dataverse.DataverseDao;
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateHarvestingClientCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.GetHarvestingClientCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateHarvestingClientCommand;
 import edu.harvard.iq.dataverse.harvest.client.HarvesterServiceBean;
 import edu.harvard.iq.dataverse.harvest.client.HarvestingClientDao;
@@ -48,7 +47,7 @@ public class HarvestingClients extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(HarvestingClients.class.getName());
 
-    /*
+    /***
      *  /api/harvest/clients
      *  and
      *  /api/harvest/clients/{nickname}
@@ -58,9 +57,11 @@ public class HarvestingClients extends AbstractApiBean {
      */
     @GET
     @Path("/")
-    public Response harvestingClients(@QueryParam("key") String apiKey) throws IOException {
+    public Response harvestingClients(@QueryParam("key") String apiKey) throws WrappedResponse {
 
-        List<HarvestingClient> harvestingClients = null;
+        findSuperuserOrDie();
+
+        List<HarvestingClient> harvestingClients;
         try {
             harvestingClients = harvestingClientService.getAllHarvestingClients();
         } catch (Exception ex) {
@@ -73,36 +74,18 @@ public class HarvestingClients extends AbstractApiBean {
         }
 
         JsonArrayBuilder hcArr = Json.createArrayBuilder();
-
-        for (HarvestingClient harvestingClient : harvestingClients) {
-            // We already have this harvestingClient - wny do we need to 
-            // execute this "Get HarvestingClients Client Command" in order to get it, 
-            // again? - the purpose of the command is to run the request through 
-            // the Authorization system, to verify that they actually have 
-            // the permission to view this harvesting client config. -- L.A. 4.4
-            HarvestingClient retrievedHarvestingClient = null;
-            try {
-                DataverseRequest req = createDataverseRequest(findUserOrDie());
-                retrievedHarvestingClient = execCommand(new GetHarvestingClientCommand(req, harvestingClient));
-            } catch (Exception ex) {
-                // Don't do anything. 
-                // We'll just skip this one - since this means the user isn't 
-                // authorized to view this client configuration. 
-            }
-
-            if (retrievedHarvestingClient != null) {
-                hcArr.add(harvestingConfigAsJson(retrievedHarvestingClient));
-            }
-        }
+        harvestingClients.forEach(client -> hcArr.add(harvestingConfigAsJson(client)));
 
         return ok(jsonObjectBuilder().add("harvestingClients", hcArr));
     }
 
     @GET
     @Path("{nickName}")
-    public Response harvestingClient(@PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException {
+    public Response harvestingClient(@PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException, WrappedResponse {
 
-        HarvestingClient harvestingClient = null;
+        findSuperuserOrDie();
+
+        HarvestingClient harvestingClient;
         try {
             harvestingClient = harvestingClientService.findByNickname(nickName);
         } catch (Exception ex) {
@@ -114,28 +97,8 @@ public class HarvestingClients extends AbstractApiBean {
             return error(Response.Status.NOT_FOUND, "Harvesting client " + nickName + " not found.");
         }
 
-        HarvestingClient retrievedHarvestingClient = null;
-
         try {
-            // findUserOrDie() and execCommand() both throw WrappedResponse 
-            // exception, that already has a proper HTTP response in it. 
-
-            retrievedHarvestingClient = execCommand(new GetHarvestingClientCommand(createDataverseRequest(findUserOrDie()), harvestingClient));
-            logger.info("retrieved Harvesting Client " + retrievedHarvestingClient.getName() + " with the GetHarvestingClient command.");
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        } catch (Exception ex) {
-            logger.warning("Unknown exception caught while executing GetHarvestingClientCommand: " + ex.getMessage());
-            retrievedHarvestingClient = null;
-        }
-
-        if (retrievedHarvestingClient == null) {
-            return error(Response.Status.BAD_REQUEST,
-                         "Internal error: failed to retrieve harvesting client " + nickName + ".");
-        }
-
-        try {
-            return ok(harvestingConfigAsJson(retrievedHarvestingClient));
+            return ok(harvestingConfigAsJson(harvestingClient));
         } catch (Exception ex) {
             logger.warning("Unknown exception caught while trying to format harvesting client config as json: " + ex.getMessage());
             return error(Response.Status.BAD_REQUEST,
@@ -146,7 +109,9 @@ public class HarvestingClients extends AbstractApiBean {
     @POST
     @ApiWriteOperation
     @Path("{nickName}")
-    public Response createHarvestingClient(String jsonBody, @PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
+    public Response createHarvestingClient(String jsonBody, @PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws WrappedResponse {
+
+        AuthenticatedUser superuser = findSuperuserOrDie();
 
         try (StringReader rdr = new StringReader(jsonBody)) {
             JsonObject json = Json.createReader(rdr).readObject();
@@ -167,7 +132,7 @@ public class HarvestingClients extends AbstractApiBean {
             }
             ownerDataverse.getHarvestingClientConfigs().add(harvestingClient);
 
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DataverseRequest req = createDataverseRequest(superuser);
             HarvestingClient managedHarvestingClient = execCommand(new CreateHarvestingClientCommand(req, harvestingClient));
             return created("/harvest/clients/" + nickName, harvestingConfigAsJson(managedHarvestingClient));
 
@@ -184,8 +149,11 @@ public class HarvestingClients extends AbstractApiBean {
     @PUT
     @ApiWriteOperation
     @Path("{nickName}")
-    public Response modifyHarvestingClient(String jsonBody, @PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
-        HarvestingClient harvestingClient = null;
+    public Response modifyHarvestingClient(String jsonBody, @PathParam("nickName") String nickName, @QueryParam("key") String apiKey) throws WrappedResponse {
+
+        AuthenticatedUser superuser = findSuperuserOrDie();
+
+        HarvestingClient harvestingClient;
         try {
             harvestingClient = harvestingClientService.findByNickname(nickName);
         } catch (Exception ex) {
@@ -200,7 +168,7 @@ public class HarvestingClients extends AbstractApiBean {
         String ownerDataverseAlias = harvestingClient.getDataverse().getAlias();
 
         try (StringReader rdr = new StringReader(jsonBody)) {
-            DataverseRequest req = createDataverseRequest(findUserOrDie());
+            DataverseRequest req = createDataverseRequest(superuser);
             JsonObject json = Json.createReader(rdr).readObject();
 
             String newDataverseAlias = jsonParser().parseHarvestingClient(json, harvestingClient);
@@ -223,39 +191,25 @@ public class HarvestingClients extends AbstractApiBean {
 
     }
 
-    // TODO: 
-    // add a @DELETE method 
-    // (there is already a DeleteHarvestingClient command)
 
-    // Methods for managing harvesting runs (jobs):
-
-
-    // This POST starts a new harvesting run:
+    /**
+     * This POST starts a new harvesting run:
+     */
     @POST
     @ApiWriteOperation
     @Path("{nickName}/run")
-    public Response startHarvestingJob(@PathParam("nickName") String clientNickname, @QueryParam("key") String apiKey) throws IOException {
+    public Response startHarvestingJob(@PathParam("nickName") String clientNickname, @QueryParam("key") String apiKey) throws WrappedResponse {
+
+            AuthenticatedUser superuser = findSuperuserOrDie();
 
         try {
-            AuthenticatedUser authenticatedUser = null;
-
-            try {
-                authenticatedUser = findAuthenticatedUserOrDie();
-            } catch (WrappedResponse wr) {
-                return error(Response.Status.UNAUTHORIZED, "Authentication required to use this API method");
-            }
-
-            if (authenticatedUser == null || !authenticatedUser.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Only the Dataverse Admin user can run harvesting jobs");
-            }
-
             HarvestingClient harvestingClient = harvestingClientService.findByNickname(clientNickname);
 
             if (harvestingClient == null) {
                 return error(Response.Status.NOT_FOUND, "No such dataverse: " + clientNickname);
             }
 
-            DataverseRequest dataverseRequest = createDataverseRequest(authenticatedUser);
+            DataverseRequest dataverseRequest = createDataverseRequest(superuser);
             harvesterService.doAsyncHarvest(dataverseRequest, harvestingClient);
 
         } catch (Exception e) {
@@ -263,35 +217,6 @@ public class HarvestingClients extends AbstractApiBean {
         }
         return this.accepted();
     }
-
-    // This GET shows the status of the harvesting run in progress for this 
-    // client, if present: 
-    // @GET
-    // @Path("{nickName}/run")
-    // TODO: 
-
-    // This DELETE kills the harvesting run in progress for this client, 
-    // if present: 
-    // @DELETE
-    // @Path("{nickName}/run")
-    // TODO: 
-
-
-
-
-
-    /* Auxiliary, helper methods: */ 
-    
-    /*
-    @Deprecated
-    public static JsonArrayBuilder harvestingConfigsAsJsonArray(List<Dataverse> harvestingDataverses) {
-        JsonArrayBuilder hdArr = Json.createArrayBuilder();
-        
-        for (Dataverse hd : harvestingDataverses) {
-            hdArr.add(harvestingConfigAsJson(hd.getHarvestingClientConfig()));
-        }
-        return hdArr;
-    }*/
 
     public static JsonObjectBuilder harvestingConfigAsJson(HarvestingClient harvestingConfig) {
         if (harvestingConfig == null) {
