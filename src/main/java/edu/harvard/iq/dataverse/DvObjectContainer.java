@@ -104,7 +104,7 @@ public abstract class DvObjectContainer extends DvObject {
 
     public String getEffectiveCurationLabelSetName() {
         String setName = curationLabelSetName;
-        if (StringUtils.isBlank(setName) || setName.equals(SystemConfig.defaultCurationLabelSet)) {
+        if (StringUtils.isBlank(setName) || setName.equals(SystemConfig.DEFAULTCURATIONLABELSET)) {
             if (this.getOwner() != null) {
                 setName = this.getOwner().getEffectiveCurationLabelSetName();
             } else {
@@ -116,7 +116,7 @@ public abstract class DvObjectContainer extends DvObject {
 
     public String getCurationLabelSetName() {
         if (curationLabelSetName == null) {
-            return SystemConfig.defaultCurationLabelSet;
+            return SystemConfig.DEFAULTCURATIONLABELSET;
         }
         return curationLabelSetName;
     }
