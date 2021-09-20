@@ -186,6 +186,26 @@ function accessibilityApplySetting(setting, value) {
 }
 
 /**
+ * Toggle the navbar-expanded class on body tag.
+ *  @param state true - add class, false - remove class, undefined - toggle class
+ */
+ function accessibilityToggleNavbarBodyCass(state) {
+
+    if (state === undefined) {
+        accessibilityDebugLog("Toggling navbar-expanded class");
+        document.body.classList.toggle("navbar-expanded");
+    }
+    else if (state) {
+        accessibilityDebugLog("Adding navbar-expanded class");
+        document.body.classList.add("navbar-expanded");
+    }
+    else {
+        accessibilityDebugLog("Removing navbar-expanded class");
+        document.body.classList.remove("navbar-expanded");
+    }
+}
+
+/**
  * Toggle the visibility of the mobile navbar.
  * @param boolean true -> visible, false -> hidden
  */
@@ -197,12 +217,14 @@ function accessibilityToggleNavbar(visible) {
             navbar.classList.add("in");
             navbar.setAttribute("aria-expanded", "true");
             navbar.style = "";
+            accessibilityToggleNavbarBodyCass(true);
             accessibilityDebugLog("Toggled navbar to its visible state");
         }
         else {
             navbar.classList.remove("in");
             navbar.setAttribute("aria-expanded", "false");
             navbar.style = "height: 1px";
+            accessibilityToggleNavbarBodyCass(false);
             accessibilityDebugLog("Toggled navbar to its hidden state");
         }
     }
@@ -235,6 +257,10 @@ function accessibilityBindButtonEvents() {
 
         accessibilitySetAriaPressed(key);
     }
+
+    document.querySelector(".navbar-toggle").addEventListener("click", function() {
+        accessibilityToggleNavbarBodyCass();
+    }, false);
 }
 
 

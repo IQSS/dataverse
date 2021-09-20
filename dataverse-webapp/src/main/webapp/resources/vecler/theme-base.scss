@@ -2037,6 +2037,10 @@ $navbar-height: 102px;
 @media screen and (max-width: $screen-xs-max) {
 	$navbar-height-mobile: 70px;
 
+	body.navbar-expanded {
+		overflow: hidden;
+	}
+
 	#navbarFixed .navbar-brand {
 		height: $navbar-height-mobile;
 		margin-left: 0.666em;
@@ -3578,6 +3582,13 @@ body.font-size-percent-200 {
 		margin-top: 0;
 		background-color: transparent;
 		box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+	}
+}
+
+body.font-size-percent-150,
+body.font-size-percent-200 {
+	&.navbar-expanded {
+		overflow: hidden;
 	}
 }
 
