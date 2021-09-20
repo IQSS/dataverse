@@ -160,6 +160,19 @@
                                             <p:message for="dataverseStorage" display="text"/>
                                 </div>
                             </div>
+                            <div class="col-md-6 form-group" jsf:rendered="#{dataverseSession.user.superuser and DataversePage.getCurationLabelSetOptions().size() >0}">
+                                <h:outputLabel for="dataverseCurationLabels" styleClass="control-label">
+                                    #{bundle.curationLabels} 
+                                    <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                          data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.curationLabels.title']}"></span>
+                                </h:outputLabel>
+                                <div class="form-col-container">
+                                            <h:selectOneMenu id="dataverseCurationLabels" styleClass="form-control" value="#{DataversePage.dataverse.curationLabelSetName}">
+                                              <f:selectItems value="#{DataversePage.getCurationLabelSetOptions()}" var="setName" itemLabel="#{setName}" itemValue="#{setName}"/>
+                                            </h:selectOneMenu>
+                                            <p:message for="dataverseCurationLabels" display="text"/>
+                                </div>
+                            </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 form-group">

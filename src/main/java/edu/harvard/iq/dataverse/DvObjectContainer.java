@@ -1,8 +1,8 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.Locale;
-
 import javax.persistence.MappedSuperclass;
 import org.apache.commons.lang3.StringUtils;
 
@@ -95,4 +95,34 @@ public abstract class DvObjectContainer extends DvObject {
         }
     }
     
+    
+
+    /* Dataverse collections can be configured to allow use of Curation labels and have this inheritable value to decide which set of labels to use.
+     * This mechanism is similar to that for the storageDriver except that there is an addition option to disable use of labels. 
+     */
+    private String curationLabelSetName = null;
+
+    public String getEffectiveCurationLabelSetName() {
+        String setName = curationLabelSetName;
+        if (StringUtils.isBlank(setName) || setName.equals(SystemConfig.defaultCurationLabelSet)) {
+            if (this.getOwner() != null) {
+                setName = this.getOwner().getEffectiveCurationLabelSetName();
+            } else {
+                setName = SystemConfig.CURATIONLABELSDISABLED;
+            }
+        }
+        return setName;
+    }
+
+    public String getCurationLabelSetName() {
+        if (curationLabelSetName == null) {
+            return SystemConfig.defaultCurationLabelSet;
+        }
+        return curationLabelSetName;
+    }
+
+    public void setCurationLabelSetName(String setName) {
+        this.curationLabelSetName = setName;
+    }
+
 }
