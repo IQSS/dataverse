@@ -112,6 +112,31 @@ function accessibilityRemoveSettingClass(setting) {
 }
 
 /**
+ * Set the aria-pressed attribute for WCAG buttons.
+ * @param string Setting name.
+ */
+ function accessibilitySetAriaPressed(setting) {
+    if (!(setting in accessibilityUserPreferencesData)) {
+        accessibilityDebugErr("This setting is not defined in accessibilityUserPreferencesData");
+        return;
+    }
+
+    var value = accessibilityGetSetting(setting);
+    var buttons = document.querySelectorAll("#" + accessibilityUserPreferencesData[setting] + "-mode-selector button");
+
+    for (var i=0; i<buttons.length; i++) {
+        if (value && value === buttons[i].className || !value && buttons[i].className === "default") {
+            accessibilityDebugLog("Set aria-pressed button state for \"" + setting + "\":\"" + buttons[i].className + "\" to \"true\"");
+            buttons[i].setAttribute("aria-pressed", "true");
+        }
+        else {
+            accessibilityDebugLog("Set aria-pressed button state for \"" + setting + "\":\"" + buttons[i].className + "\" to \"false\"");
+            buttons[i].setAttribute("aria-pressed", "false");
+        }
+    }
+}
+
+/**
  * Apply setting changes to storage and body tag.
  * @param string Setting name.
  * @param string Setting value.
@@ -127,12 +152,14 @@ function accessibilityApplySetting(setting, value) {
             accessibilityDebugLog("Toggling setting \"" + setting + "\" off");
             accessibilityRemoveSetting(setting);
             accessibilityRemoveSettingClass(setting);
+            accessibilitySetAriaPressed(setting);
         }
         else {
             accessibilityDebugLog("Toggling setting \"" + setting + "\" on");
             accessibilitySetSetting(setting, value);
             accessibilityRemoveSettingClass(setting);
             accessibilityAddSettingClass(setting);
+            accessibilitySetAriaPressed(setting);
         }
     }
     else if (value && value !== "default") {
@@ -140,6 +167,7 @@ function accessibilityApplySetting(setting, value) {
         accessibilitySetSetting(setting, value);
         accessibilityRemoveSettingClass(setting);
         accessibilityAddSettingClass(setting);
+        accessibilitySetAriaPressed(setting);
 
         if (setting === "fontSize") {
             accessibilityToggleNavbar(true);
@@ -149,6 +177,7 @@ function accessibilityApplySetting(setting, value) {
         accessibilityDebugLog("Changing setting \"" + setting + "\"to default");
         accessibilityRemoveSetting(setting);
         accessibilityRemoveSettingClass(setting);
+        accessibilitySetAriaPressed(setting);
 
         if (setting === "fontSize") {
             accessibilityToggleNavbar(false);
@@ -203,6 +232,8 @@ function accessibilityBindButtonEvents() {
             }, false);
             accessibilityDebugLog("Bound button event to \"" + key + "\"");
         }
+
+        accessibilitySetAriaPressed(key);
     }
 }
 
