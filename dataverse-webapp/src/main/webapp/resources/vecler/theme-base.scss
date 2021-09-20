@@ -3111,8 +3111,12 @@ div.filesTable {
 	}
 }
 
-/* Fix offscreen submenu on mobile */
+/* Fix offscreen menu/submenu on mobile */
 @media screen and (max-width: $screen-xs-max) {
+	#actionButtonBlock {
+		text-align: right;
+	}
+
 	.dropdown-submenu.pull-left > .dropdown-menu {
 		left: 0;
 	}
