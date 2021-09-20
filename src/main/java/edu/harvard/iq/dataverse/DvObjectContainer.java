@@ -100,10 +100,10 @@ public abstract class DvObjectContainer extends DvObject {
     /* Dataverse collections can be configured to allow use of Curation labels and have this inheritable value to decide which set of labels to use.
      * This mechanism is similar to that for the storageDriver except that there is an addition option to disable use of labels. 
      */
-    private String curationLabelSetName = null;
+    private String externalLabelSetName = null;
 
     public String getEffectiveCurationLabelSetName() {
-        String setName = curationLabelSetName;
+        String setName = externalLabelSetName;
         if (StringUtils.isBlank(setName) || setName.equals(SystemConfig.DEFAULTCURATIONLABELSET)) {
             if (this.getOwner() != null) {
                 setName = this.getOwner().getEffectiveCurationLabelSetName();
@@ -115,14 +115,14 @@ public abstract class DvObjectContainer extends DvObject {
     }
 
     public String getCurationLabelSetName() {
-        if (curationLabelSetName == null) {
+        if (externalLabelSetName == null) {
             return SystemConfig.DEFAULTCURATIONLABELSET;
         }
-        return curationLabelSetName;
+        return externalLabelSetName;
     }
 
     public void setCurationLabelSetName(String setName) {
-        this.curationLabelSetName = setName;
+        this.externalLabelSetName = setName;
     }
 
 }
