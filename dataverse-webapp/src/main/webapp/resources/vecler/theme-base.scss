@@ -3046,6 +3046,15 @@ div.filesTable {
 	padding: 0 4px;
 }
 
+.datasetfield-value + .datasetfield-value {
+	border-top: 1px solid $gray-border-color;
+	padding-top: 8px;
+
+	p {
+		margin-top: 10px;
+	}
+}
+
 /* Fix submenu entries not accessible by keyboard */
 .dropdown-submenu {
 	.dropdown-menu {
