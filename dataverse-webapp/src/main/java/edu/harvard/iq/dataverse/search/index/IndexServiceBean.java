@@ -865,7 +865,7 @@ public class IndexServiceBean {
                     Long fileEntityId = fileMetadata.getDataFile().getId();
                     datafileSolrInputDocument.addField(SearchFields.ENTITY_ID, fileEntityId);
                     datafileSolrInputDocument.addField(SearchFields.DATAVERSE_VERSION_INDEXED_BY, dataverseVersion);
-                    datafileSolrInputDocument.addField(SearchFields.IDENTIFIER, fileEntityId);
+                    datafileSolrInputDocument.addField(SearchFields.IDENTIFIER, fileMetadata.getDataFile().getGlobalId());
                     datafileSolrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
                     datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
                     datafileSolrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dataset.getDataverseContext().getIndexableCategoryName());

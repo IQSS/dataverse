@@ -19,7 +19,7 @@ public class SolrSearchResultTest {
         boolean showEntityIds = false;
         boolean showApiUrls = false;
 
-        SolrSearchResult result01 = new SolrSearchResult("myQuery", "myName");
+        SolrSearchResult result01 = new SolrSearchResult();
         result01.setType(SearchObjectType.DATAVERSES);
         JsonObjectBuilder actual01 = result01.json(showRelevance, showEntityIds, showApiUrls);
         JsonObject actual = actual01.build();

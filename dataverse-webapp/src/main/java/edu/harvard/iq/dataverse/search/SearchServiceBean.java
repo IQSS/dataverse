@@ -23,6 +23,7 @@ import edu.harvard.iq.dataverse.search.response.FacetLabel;
 import edu.harvard.iq.dataverse.search.response.FilterQuery;
 import edu.harvard.iq.dataverse.search.response.Highlight;
 import edu.harvard.iq.dataverse.search.response.PublicationStatusCounts;
+import edu.harvard.iq.dataverse.search.response.SearchParentInfo;
 import edu.harvard.iq.dataverse.search.response.SolrQueryResponse;
 import edu.harvard.iq.dataverse.search.response.SolrSearchResult;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
@@ -338,7 +339,7 @@ public class SearchServiceBean {
                 }
 
             }
-            SolrSearchResult solrSearchResult = new SolrSearchResult(query, name);
+            SolrSearchResult solrSearchResult = new SolrSearchResult();
             // @todo put all this in the constructor?
             List<String> states = (List<String>) solrDocument.getFieldValue(SearchFields.PUBLICATION_STATUS);
             if (states != null) {
@@ -364,11 +365,10 @@ public class SearchServiceBean {
             solrSearchResult.setHighlightsAsList(highlights);
             solrSearchResult.setHighlightsMap(highlightsMap);
             solrSearchResult.setHighlightsAsMap(highlightsMap3);
-            Map<String, String> parent = new HashMap<>();
+            SearchParentInfo parent = new SearchParentInfo();
             String description = (String) solrDocument.getFieldValue(SearchFields.DESCRIPTION);
             solrSearchResult.setDescriptionNoSnippet(description);
             solrSearchResult.setDeaccessionReason(deaccessionReason);
-            solrSearchResult.setDvTree(dvTree);
 
             String originSource = (String) solrDocument.getFieldValue(SearchFields.METADATA_SOURCE);
             if (IndexServiceBean.HARVESTED.equals(originSource)) {
@@ -428,7 +428,7 @@ public class SearchServiceBean {
                 Object parentGlobalIdObject = solrDocument.getFieldValue(SearchFields.PARENT_IDENTIFIER);
                 if (parentGlobalIdObject != null) {
                     parentGlobalId = (String) parentGlobalIdObject;
-                    parent.put(SolrSearchResult.PARENT_IDENTIFIER, parentGlobalId);
+                    parent.setParentIdentifier(parentGlobalId);
                 }
                 solrSearchResult.setHtmlUrl(baseUrl + "/dataset.xhtml?persistentId=" + parentGlobalId);
                 solrSearchResult.setDownloadUrl(baseUrl + "/api/access/datafile/" + entityid);
@@ -480,9 +480,9 @@ public class SearchServiceBean {
                 solrSearchResult.setFileAccess(fileAccess);
             }
             // @todo store PARENT_ID as a long instead and cast as such
-            parent.put("id", (String) solrDocument.getFieldValue(SearchFields.PARENT_ID));
-            parent.put("name", (String) solrDocument.getFieldValue(SearchFields.PARENT_NAME));
-            parent.put("citation", getLocalizedValueWithFallback(solrDocument, SearchFields.PARENT_CITATION));
+            parent.setId((String) solrDocument.getFieldValue(SearchFields.PARENT_ID))
+                  .setName((String) solrDocument.getFieldValue(SearchFields.PARENT_NAME))
+                  .setCitation(getLocalizedValueWithFallback(solrDocument, SearchFields.PARENT_CITATION));
             solrSearchResult.setParent(parent);
             solrSearchResults.add(solrSearchResult);
         }

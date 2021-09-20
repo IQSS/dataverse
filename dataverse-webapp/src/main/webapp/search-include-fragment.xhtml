@@ -466,7 +466,6 @@
                                 <div class="label-container pull-right">
                                     <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{result.draftState}"/>
                                     <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
-                                    <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
                                 </div>
                                 
                                 <h:outputLink value="#{dvUrlFinal}" target="#{dvCardUrlTarget}">
@@ -482,7 +481,7 @@
     
                             <h:outputLink value="#{dvParentUrlFinal}" target="#{dvCardUrlsTarget}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
                                 <h:outputText value="#{bundle.dataverse}" styleClass="sr-only" />
-                                <h:outputText value="#{result.parent.get('name')}"/>
+                                <h:outputText value="#{result.parent.name}"/>
                             </h:outputLink>
     
                             <hr style="margin:.5em;border:0;"/>
@@ -530,7 +529,6 @@
                                 <span class="glyphicon glyphicon-link text-info pull-right" title="#{bundle.linked}" jsf:rendered="#{dsIsLinked}" role="img" aria-label="#{bundle.linked}" />
                                 <div class="label-container pull-right">
                                     <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{result.draftState}"/>
-                                    <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
                                     <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{result.inReviewState}"/>
                                     <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
                                     <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{result.deaccessionedState}"/>
@@ -549,7 +547,7 @@
                             
                             <h:outputLink value="#{dsParentUrl}" target="#{dsCardUrlsTarget}" rendered="#{result.parent.id != SearchIncludeFragment.dataverse.id}">
                                 <h:outputText value="#{bundle.dataverse}" styleClass="sr-only" />
-                                <h:outputText value="#{result.parent.get('name')}"/>
+                                <h:outputText value="#{result.parent.name}"/>
                             </h:outputLink>
     
                             <div class="resultDatasetCitationBlock #{result.deaccessionedState ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
@@ -607,7 +605,6 @@
                                     <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{result.draftState}"/>
                                     <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{result.inReviewState}"/>
                                     <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
-                                    <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
                                 </div>
                                 <a href="#{fileUrlFinal}" target="#{fileCardUrlsTarget}">
                                     <h:outputText value="#{bundle.file}" styleClass="sr-only" />
@@ -621,7 +618,7 @@
                                 <h:outputText styleClass="text-muted" value="#{dv:formatDate(result.releaseOrCreateDate)} - "/>
                                 <a href="#{fileParentUrlFinal}" target="#{fileCardUrlsTarget}">
                                     <h:outputText value="#{bundle.dataset}" styleClass="sr-only" />
-                                    <h:outputText value="#{result.parent.get('name')}" escape="false"/></a>
+                                    <h:outputText value="#{result.parent.name}" escape="false"/></a>
                             </div>
     
                             <div>

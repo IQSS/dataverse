@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 
 import javax.inject.Inject;
 import java.util.Collections;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(Arquillian.class)
@@ -27,7 +28,7 @@ public class SolrSearchResultsServiceIT extends WebappArquillianDeployment {
     public void populateDataverseSearchCard() {
 
         // given
-        SolrSearchResult result = new SolrSearchResult("*", "");
+        SolrSearchResult result = new SolrSearchResult();
         result.setEntityId(19L);
 
         // when
@@ -43,7 +44,7 @@ public class SolrSearchResultsServiceIT extends WebappArquillianDeployment {
     public void populateDatasetSearchCard() {
 
         // given
-        SolrSearchResult result = new SolrSearchResult("*", "");
+        SolrSearchResult result = new SolrSearchResult();
         result.setDatasetVersionId(43L);
         result.setIdentifier("doi:10.18150/FK2/MLDB99");
 
@@ -63,7 +64,7 @@ public class SolrSearchResultsServiceIT extends WebappArquillianDeployment {
     public void populateDatafileSearchCard() {
 
         // given
-        SolrSearchResult result = new SolrSearchResult("*", "");
+        SolrSearchResult result = new SolrSearchResult();
         result.setEntityId(55L);
 
         // when

@@ -710,7 +710,7 @@ public class Index extends AbstractApiBean {
             fileFound.add("name", result.getNameSort());
             fileFound.add("entityId", result.getEntityId().toString());
             fileFound.add("datasetVersionId", result.getDatasetVersionId());
-            fileFound.add("datasetId", result.getParent().get(SearchFields.ID));
+            fileFound.add("datasetId", result.getParent().getId());
             filesFound.add(fileFound);
         }
         JsonArrayBuilder facets = Json.createArrayBuilder();

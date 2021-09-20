@@ -410,7 +410,7 @@
     
                             <c:set var="dvParentUrl" value="/dataverse/#{result.dataverseParentAlias}"/>
                             <h:outputLink value="#{!MyDataSearchFragment.rootDv and !result.isInTree ? dvParentUrl : widgetWrapper.wrapURL(dvParentUrl)}" target="#{!MyDataSearchFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}" rendered="#{result.parent.id != MyDataSearchFragment.dataverse.id}">
-                                <h:outputText value="#{result.parent.get('name')}"/>
+                                <h:outputText value="#{result.parent.name}"/>
                             </h:outputLink>
     
                             <hr style="margin:.5em;border:0;"/>
@@ -478,7 +478,7 @@
     
                             <c:set var="dvParentAlias" value="/dataverse/#{result.dataverseAlias}"/>
                             <h:outputLink value="#{!MyDataSearchFragment.rootDv and !result.isInTree ? dvParentAlias : widgetWrapper.wrapURL(dvParentAlias)}" target="#{(!MyDataSearchFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}" rendered="#{result.parent.id != MyDataSearchFragment.dataverse.id}">
-                                <h:outputText value="#{result.parent.get('name')}"/>
+                                <h:outputText value="#{result.parent.name}"/>
                             </h:outputLink>
     
                             <div class="resultDatasetCitationBlock #{result.deaccessionedState ? 'alert alert-danger bg-danger' : 'alert alert-info bg-citation'}">
@@ -552,7 +552,7 @@
                             <div>
                                 <h:outputText styleClass="text-muted" value="#{dv:formatDate(result.releaseOrCreateDate)} - "/>
                                 <a href="#{!MyDataSearchFragment.rootDv and !result.isInTree ? result.fileDatasetUrl : widgetWrapper.wrapURL(result.fileDatasetUrl)}" target="#{(!MyDataSearchFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
-                                    <h:outputText value="#{result.parent.get('name')}"/></a>
+                                    <h:outputText value="#{result.parent.name}"/></a>
                             </div>
     
                             <div>
