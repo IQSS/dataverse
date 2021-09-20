@@ -41,6 +41,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -1210,4 +1211,46 @@ public class DataversePage implements java.io.Serializable {
    		}
    		return label;
     }
+    
+    public Set<String> getCurationLabelSetOptions() {
+        Set<String> setNames = new HashSet<String>();
+        Set<String> allowedSetNames = systemConfig.getCurationLabels().keySet();
+        if (allowedSetNames.size() > 0) {
+            // Add an entry for the default (inherited from an ancestor or the system
+            // default)
+            String inheritedLabelSet = getCurationLabelSetName();
+            if (!StringUtils.isBlank(inheritedLabelSet)) {
+                setNames.add(inheritedLabelSet);
+            }
+            // Add an entry for disabled
+            setNames.add(SystemConfig.CURATIONLABELSDISABLED);
+            setNames.addAll(allowedSetNames);
+        }
+        return setNames;
+    }
+
+    public String getCurationLabelSetName() {
+        Dataverse parent = dataverse.getOwner();
+        String setName = null;
+        boolean fromAncestor = false;
+        if (parent != null) {
+            setName = parent.getEffectiveCurationLabelSetName();
+            // recurse dataverse chain to root and if any have a curation label set name set,
+            // fromAncestor is true
+            while (parent != null) {
+                if (!parent.getCurationLabelSetName().equals(SystemConfig.DEFAULTCURATIONLABELSET)) {
+                    fromAncestor = true;
+                    break;
+                }
+                parent = parent.getOwner();
+            }
+        }
+        if (fromAncestor) {
+            setName = setName + " " + BundleUtil.getStringFromBundle("dataverse.storage.inherited");
+        } else {
+            setName = setName + " " + BundleUtil.getStringFromBundle("dataverse.storage.default");
+        }
+        return setName;
+    }
+
 }
