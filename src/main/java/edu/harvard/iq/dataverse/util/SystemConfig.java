@@ -23,6 +23,7 @@ import java.net.UnknownHostException;
 import java.time.Year;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -1101,15 +1102,21 @@ public class SystemConfig {
             JsonObject labelSets = jsonReader.readObject();
             for (String key : labelSets.keySet()) {
                 JsonArray labels = (JsonArray) labelSets.getJsonArray(key);
+                String[] labelArray = new String[labels.size()];
+                
                 boolean allLabelsOK = true;
-                String[] labelArray = labels.toArray(String[]::new);
-                for (String label : labelArray) {
+                Iterator<JsonValue> iter = labels.iterator();
+                int i=0;
+                while(iter.hasNext()) {
+                    String label = ((JsonString)iter.next()).getString();
                     Matcher matcher = pattern.matcher(label);
                     if (!matcher.matches()) {
                         logger.warning("Label rejected: " + label + ", Label set " + key + " ignored.");
                         allLabelsOK = false;
                         break;
                     }
+                    labelArray[i] = label;
+                    i++;
                 }
                 if (allLabelsOK) {
                     labelMap.put(key, labelArray);
