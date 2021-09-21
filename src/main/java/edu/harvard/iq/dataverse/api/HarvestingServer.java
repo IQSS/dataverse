@@ -104,8 +104,7 @@ public class HarvestingServer extends AbstractApiBean {
      * "description":$optional_set_description,"definition":$set_search_query_string}.
      */
     @POST
-    @Path("{specname}")
-    public Response createOaiSet(String jsonBody, @PathParam("specname") String spec, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
+    public Response createOaiSet(String jsonBody, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
         /*
 	     * authorization modeled after the UI (aka HarvestingSetsPage)
          */
@@ -126,23 +125,8 @@ public class HarvestingServer extends AbstractApiBean {
 		JsonObject json = jrdr.readObject();
 
 		OAISet set = new OAISet();
-		//Validating spec 
-		if (!StringUtils.isEmpty(spec)) {
-			if (spec.length() > 30) {
-				return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.sizelimit"));
-			}
-			if (!Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", spec)) {
-				return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.invalid"));
-				// If it passes the regex test, check 
-			}
-			if (oaiSetService.findBySpec(spec) != null) {
-				return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.alreadyused"));
-			}
 
-		} else {
-			return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.required"));
-		}
-		set.setSpec(spec);
+
 		String name, desc, defn;
 
 		try {
@@ -150,6 +134,24 @@ public class HarvestingServer extends AbstractApiBean {
 		} catch (NullPointerException npe_name) {
 			return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.required"));
 		}
+                		//Validating spec 
+		if (!StringUtils.isEmpty(name)) {
+			if (name.length() > 30) {
+				return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.sizelimit"));
+			}
+			if (!Pattern.matches("^[a-zA-Z0-9\\_\\-]+$", name)) {
+				return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.invalid"));
+				// If it passes the regex test, check 
+			}
+			if (oaiSetService.findBySpec(name) != null) {
+				return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.alreadyused"));
+			}
+
+		} else {
+			return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.required"));
+		}
+                
+                set.setSpec(name);
 		try {
 			defn = json.getString("definition");
 		} catch (NullPointerException npe_defn) {
@@ -164,7 +166,7 @@ public class HarvestingServer extends AbstractApiBean {
 		set.setDescription(desc);
 		set.setDefinition(defn);
 		oaiSetService.save(set);
-		return created("/harvest/server/oaisets" + spec, oaiSetAsJson(set));
+		return created("/harvest/server/oaisets" + name, oaiSetAsJson(set));
 	}
 	
     }

@@ -72,6 +72,7 @@ public class HarvestingServerIT {
 
         // make sure the set does not exist
         String u0 = String.format("/api/harvest/server/oaisets/%s", setName);
+        String createPath ="/api/harvest/server/oaisets/";
         Response r0 = given()
                 .get(u0);
         assertEquals(404, r0.getStatusCode());
@@ -80,21 +81,21 @@ public class HarvestingServerIT {
         Response r1 = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, normalUserAPIKey)
                 .body(jsonForTestSpec(setName, def))
-                .post(u0);
+                .post(createPath);
         assertEquals(400, r1.getStatusCode());
 
         // try to create set as admin user, should succeed
         Response r2 = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
                 .body(jsonForTestSpec(setName, def))
-                .post(u0);
+                .post(createPath);
         assertEquals(201, r2.getStatusCode());
 
         // try to create set with same name as admin user, should fail
         Response r3 = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
                 .body(jsonForTestSpec(setName, def))
-                .post(u0);
+                .post(createPath);
         assertEquals(400, r3.getStatusCode());
 
         // try to export set as admin user, should succeed (under admin API, not checking that normal user will fail)
@@ -125,6 +126,7 @@ public class HarvestingServerIT {
 
         // make sure the set does not exist
         String u0 = String.format("/api/harvest/server/oaisets/%s", setName);
+        String createPath ="/api/harvest/server/oaisets/";
         Response r0 = given()
                 .get(u0);
         assertEquals(404, r0.getStatusCode());
@@ -134,7 +136,7 @@ public class HarvestingServerIT {
         Response r1 = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
                 .body(jsonForTestSpec(setName, def))
-                .post(u0);
+                .post(createPath);
         assertEquals(201, r1.getStatusCode());
 
         
@@ -211,11 +213,11 @@ public class HarvestingServerIT {
         String setName = identifier;
         String setQuery = "dsPersistentId:" + identifier;
         String apiPath = String.format("/api/harvest/server/oaisets/%s", setName);
-
+        String createPath ="/api/harvest/server/oaisets/";
         Response createSetResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
                 .body(jsonForTestSpec(setName, setQuery))
-                .post(apiPath);
+                .post(createPath);
         assertEquals(201, createSetResponse.getStatusCode());
 
         // TODO: a) look up the set via native harvest/server api; 
