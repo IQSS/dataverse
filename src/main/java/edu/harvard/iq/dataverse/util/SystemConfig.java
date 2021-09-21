@@ -22,6 +22,7 @@ import java.net.UnknownHostException;
 import java.time.Year;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
@@ -38,6 +39,8 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.json.JsonString;
+import javax.json.JsonValue;
 
 import org.passay.CharacterRule;
 import org.apache.commons.io.IOUtils;
@@ -1116,15 +1119,21 @@ public class SystemConfig {
             JsonObject labelSets = jsonReader.readObject();
             for (String key : labelSets.keySet()) {
                 JsonArray labels = (JsonArray) labelSets.getJsonArray(key);
+                String[] labelArray = new String[labels.size()];
+                
                 boolean allLabelsOK = true;
-                String[] labelArray = labels.toArray(String[]::new);
-                for (String label : labelArray) {
+                Iterator<JsonValue> iter = labels.iterator();
+                int i=0;
+                while(iter.hasNext()) {
+                    String label = ((JsonString)iter.next()).getString();
                     Matcher matcher = pattern.matcher(label);
                     if (!matcher.matches()) {
                         logger.warning("Label rejected: " + label + ", Label set " + key + " ignored.");
                         allLabelsOK = false;
                         break;
                     }
+                    labelArray[i] = label;
+                    i++;
                 }
                 if (allLabelsOK) {
                     labelMap.put(key, labelArray);
