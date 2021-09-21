@@ -5532,7 +5532,22 @@ public class DatasetPage implements java.io.Serializable {
         return displayName; 
     }
     
-<<<<<<< HEAD
+    public Map<Long, JsonObject> getCVocConf() {
+        //Cache this in the view
+        if(cachedCvocMap==null) {
+        cachedCvocMap = fieldService.getCVocConf(false);
+        }
+        return cachedCvocMap;
+    }
+    
+    public List<String> getVocabScripts() {
+        return fieldService.getVocabScripts(getCVocConf());
+    }
+
+    public String getFieldLanguage(String languages) {
+        return fieldService.getFieldLanguage(languages,session.getLocaleCode());
+    }
+    
     public void setExternalStatus(String status) {
         try {
             dataset = commandEngine.submit(new SetExternalStatusCommand(dvRequestService.getDataverseRequest(), dataset, status));
@@ -5552,21 +5567,5 @@ public class DatasetPage implements java.io.Serializable {
     
     public List<String> getAllowedExternalStatuses() {
         return settingsWrapper.getAllowedExternalStatuses(dataset);
-=======
-    public Map<Long, JsonObject> getCVocConf() {
-        //Cache this in the view
-        if(cachedCvocMap==null) {
-        cachedCvocMap = fieldService.getCVocConf(false);
-        }
-        return cachedCvocMap;
-    }
-    
-    public List<String> getVocabScripts() {
-        return fieldService.getVocabScripts(getCVocConf());
-    }
-
-    public String getFieldLanguage(String languages) {
-        return fieldService.getFieldLanguage(languages,session.getLocaleCode());
->>>>>>> refs/remotes/IQSS/develop
     }
 }

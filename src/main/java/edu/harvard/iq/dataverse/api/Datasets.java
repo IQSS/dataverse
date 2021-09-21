@@ -1756,29 +1756,27 @@ public class Datasets extends AbstractApiBean {
     }
 
     @PUT
-    @Path("{id}/setExternalStatus")
-    public Response setExternalStatus(@PathParam("id") String idSupplied, @QueryParam("label") String label) {
+    @Path("{id}/setExternalCurationStatus")
+    public Response setExternalCurationStatus(@PathParam("id") String idSupplied, @QueryParam("label") String label) {
         logger.info("Label is " + label);
         try {
             execCommand(new SetExternalStatusCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), label));
-            return ok("External Status updated");
+            return ok("External Curation Status updated");
         } catch (WrappedResponse wr) {
             //Just change to Bad Request and send
-            //ToDo - check in api call
             return Response.fromResponse(wr.getResponse()).status(Response.Status.BAD_REQUEST).build();
         }
     }
     
     @DELETE
-    @Path("{id}/setExternalStatus")
-    public Response deleteExternalStatus(@PathParam("id") String idSupplied) {
+    @Path("{id}/setExternalCurationStatus")
+    public Response deleteExternalCurationStatus(@PathParam("id") String idSupplied) {
 
         try {
             execCommand(new SetExternalStatusCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), null));
-            return ok("External Status deleted");
+            return ok("External Curation Status deleted");
         } catch (WrappedResponse wr) {
             //Just change to Bad Request and send
-            //ToDo - check in api call
             return Response.fromResponse(wr.getResponse()).status(Response.Status.BAD_REQUEST).build();
         }
     }

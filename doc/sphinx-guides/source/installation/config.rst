@@ -2385,6 +2385,8 @@ Scripts that implement this association for specific service protocols are maint
 
 ``curl -X PUT --upload-file cvoc-conf.json http://localhost:8080/api/admin/settings/:CVocConf``
 
+.. _:AllowedCurationLabels:
+
 :AllowedCurationLabels
  
 A JSON Object containing lists of allowed labels (up to 32 characters, spaces allowed) that can be set, via API or UI by users with the permission to publish a dataset. The set of labels allowed 
