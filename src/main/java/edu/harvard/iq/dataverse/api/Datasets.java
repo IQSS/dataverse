@@ -13,6 +13,7 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
@@ -129,6 +130,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -184,7 +186,7 @@ public class Datasets extends AbstractApiBean {
 
     private static final Logger logger = Logger.getLogger(Datasets.class.getCanonicalName());
     
-    @Inject DataverseSession session;    
+    @Inject DataverseSession session;
 
     @EJB
     DatasetServiceBean datasetService;
@@ -240,6 +242,9 @@ public class Datasets extends AbstractApiBean {
     
     @Inject
     WorkflowServiceBean wfService;
+    
+    @Inject
+    DataverseRoleServiceBean dataverseRoleService;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -2819,17 +2824,16 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     }
     
     
-    /** QDR
-     * 
+    /** 
      * API to find curation assignements and statuses
      * 
      * @return
      * @throws WrappedResponse
      */
     @GET
-    @Path("/listCurationStatuses")
+    @Path("/listCurationStates")
     @Produces("text/csv")
-    public Response getCurationStatuses() throws WrappedResponse {
+    public Response getCurationStates() throws WrappedResponse {
 
         try {
             AuthenticatedUser user = findAuthenticatedUserOrDie();
@@ -2840,18 +2844,24 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
             return wr.getResponse();
         }
         
+        List<DataverseRole> allRoles = dataverseRoleService.findAll();
+        List<DataverseRole> curationRoles = new ArrayList<DataverseRole>();
+        allRoles.forEach(r -> {if(r.permissions().contains(Permission.PublishDataset)) curationRoles.add(r);});
+        HashMap<String, HashSet<String>> assignees = new HashMap<String, HashSet<String>>();
+        curationRoles.forEach(r-> {assignees.put(r.getAlias(), null);});
+        
         StringBuilder csvSB = new StringBuilder(String.join(",", 
                 BundleUtil.getStringFromBundle("dataset"), 
                 BundleUtil.getStringFromBundle("datasets.api.creationdate"), 
                 BundleUtil.getStringFromBundle("datasets.api.modificationdate"), 
-                BundleUtil.getStringFromBundle("datasets.api.curationstatus")));
+                BundleUtil.getStringFromBundle("datasets.api.curationstatus"),
+                String.join(",", assignees.keySet())));
         for (Dataset dataset : datasetSvc.findAllUnpublished()) {
                 List<RoleAssignment> ras = permissionService.assignmentsOn(dataset);
-                String assignee = null;
+                curationRoles.forEach(r-> {assignees.put(r.getAlias(), new HashSet<String>());});
                 for (RoleAssignment ra : ras) {
-                    if (ra.getRole().getName().equals("Assignee")) {
-                        assignee = ra.getAssigneeIdentifier();
-                        break;
+                    if (curationRoles.contains(ra.getRole())) {
+                        assignees.get(ra.getRole().getAlias()).add(ra.getAssigneeIdentifier());
                     }
                 }
                 String name = dataset.getCurrentName().replace("\"","\"\"");
@@ -2860,7 +2870,9 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                 String date = new SimpleDateFormat("yyyy-MM-dd").format(dataset.getCreateDate());
                 String modDate = new SimpleDateFormat("yyyy-MM-dd").format(dataset.getModificationTime());
                 String hyperlink = "\"=HYPERLINK(\"\"" + url + "\"\",\"\"" + name + "\"\")\"";
-                csvSB.append("\n").append(String.join(",", hyperlink, date, modDate, assignee==null ? "":assignee, status==null ? "": status));
+                List<String> sList = new ArrayList<String>();
+                assignees.entrySet().forEach(e-> sList.add(e.getValue().size()==0 ? "": String.join(";", e.getValue())));
+                csvSB.append("\n").append(String.join(",", hyperlink, date, modDate, status==null ? "": status, String.join(",",  sList)));
         }
         csvSB.append("\n");
     return ok(csvSB.toString(), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "datasets.status.csv");
