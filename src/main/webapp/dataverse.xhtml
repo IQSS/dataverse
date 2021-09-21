@@ -168,7 +168,7 @@
                                 </h:outputLabel>
                                 <div class="form-col-container">
                                             <h:selectOneMenu id="dataverseCurationLabels" styleClass="form-control" value="#{DataversePage.dataverse.curationLabelSetName}">
-                                              <f:selectItems value="#{DataversePage.getCurationLabelSetOptions()}" var="setName" itemLabel="#{setName}" itemValue="#{setName}"/>
+                                              <f:selectItems value="#{DataversePage.getCurationLabelSetOptions()}" var="setName" itemLabel="#{setName.getKey()}" itemValue="#{setName.getValue()}"/>
                                             </h:selectOneMenu>
                                             <p:message for="dataverseCurationLabels" display="text"/>
                                 </div>

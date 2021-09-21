@@ -6,9 +6,11 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.Setting;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean.Key;
+import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.MailUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -317,13 +319,13 @@ public class SettingsWrapper implements java.io.Serializable {
 
     List<String> allowedExternalStatuses = null;
 
-    public List<String> getAllowedExternalStatuses() {
-        String names = get(SettingsServiceBean.Key.AllowedCurationLabels.toString(), "");
-        if (!names.isEmpty() && allowedExternalStatuses == null) {
-            allowedExternalStatuses = new ArrayList<String>();
-            allowedExternalStatuses.addAll(Arrays.asList(names.split("\\s*,\\s*")));
+    public List<String> getAllowedExternalStatuses(Dataset d) {
+        String setName = d.getEffectiveCurationLabelSetName();
+        if(setName.equals(SystemConfig.CURATIONLABELSDISABLED)) {
+            return new ArrayList<String>();
         }
-        return allowedExternalStatuses;
+        String[] labelArray = systemConfig.getCurationLabels().get(setName);
+        return Arrays.asList(labelArray);
     }
 }
 

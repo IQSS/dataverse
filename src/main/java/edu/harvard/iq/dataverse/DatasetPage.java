@@ -5534,4 +5534,8 @@ public class DatasetPage implements java.io.Serializable {
             JsfHelper.addErrorMessage(msg);
         }
     }
+    
+    public List<String> getAllowedExternalStatuses() {
+        return settingsWrapper.getAllowedExternalStatuses(dataset);
+    }
 }
