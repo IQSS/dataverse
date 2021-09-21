@@ -1131,7 +1131,8 @@ public class SystemConfig {
                 }
             }
         } catch (Exception e) {
-            logger.warning("Unable to parse " + SettingsServiceBean.Key.AllowedCurationLabels.name());
+            logger.warning("Unable to parse " + SettingsServiceBean.Key.AllowedCurationLabels.name() + ": " + e.getLocalizedMessage());
+            e.printStackTrace();
         }
         return labelMap;
     }
