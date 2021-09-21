@@ -1212,24 +1212,24 @@ public class DataversePage implements java.io.Serializable {
    		return label;
     }
     
-    public Set<String> getCurationLabelSetOptions() {
-        Set<String> setNames = new HashSet<String>();
+    public Set<Entry<String, String>> getCurationLabelSetOptions() {
+        HashMap<String, String> setNames = new HashMap<String, String>();
         Set<String> allowedSetNames = systemConfig.getCurationLabels().keySet();
         if (allowedSetNames.size() > 0) {
             // Add an entry for the default (inherited from an ancestor or the system
             // default)
-            String inheritedLabelSet = getCurationLabelSetName();
+            String inheritedLabelSet = getCurationLabelSetNameLabel();
             if (!StringUtils.isBlank(inheritedLabelSet)) {
-                setNames.add(inheritedLabelSet);
+                setNames.put(inheritedLabelSet,SystemConfig.DEFAULTCURATIONLABELSET);
             }
             // Add an entry for disabled
-            setNames.add(SystemConfig.CURATIONLABELSDISABLED);
-            setNames.addAll(allowedSetNames);
+            setNames.put(SystemConfig.CURATIONLABELSDISABLED, SystemConfig.CURATIONLABELSDISABLED);
+            allowedSetNames.forEach(name -> {setNames.put(name,  name);});
         }
-        return setNames;
+        return setNames.entrySet();
     }
 
-    public String getCurationLabelSetName() {
+    public String getCurationLabelSetNameLabel() {
         Dataverse parent = dataverse.getOwner();
         String setName = null;
         boolean fromAncestor = false;
@@ -1245,7 +1245,7 @@ public class DataversePage implements java.io.Serializable {
                 parent = parent.getOwner();
             }
         }
-        if (fromAncestor) {
+        if (fromAncestor && setName!=null) {
             setName = setName + " " + BundleUtil.getStringFromBundle("dataverse.storage.inherited");
         } else {
             setName = setName + " " + BundleUtil.getStringFromBundle("dataverse.storage.default");
