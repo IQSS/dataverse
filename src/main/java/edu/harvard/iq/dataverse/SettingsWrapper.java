@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
+
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
@@ -29,6 +31,7 @@ import javax.mail.internet.InternetAddress;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.omnifaces.el.functions.Strings;
 
 /**
  *
@@ -37,6 +40,8 @@ import org.json.JSONObject;
 @ViewScoped
 @Named
 public class SettingsWrapper implements java.io.Serializable {
+    
+    private static final Logger logger = Logger.getLogger(SettingsWrapper.class.getCanonicalName());
 
     @EJB
     SettingsServiceBean settingService;
@@ -321,10 +326,15 @@ public class SettingsWrapper implements java.io.Serializable {
 
     public List<String> getAllowedExternalStatuses(Dataset d) {
         String setName = d.getEffectiveCurationLabelSetName();
+        logger.info("Set name: " + setName);
         if(setName.equals(SystemConfig.CURATIONLABELSDISABLED)) {
             return new ArrayList<String>();
         }
+        logger.info(Strings.concat(",", systemConfig.getCurationLabels().keySet()));
         String[] labelArray = systemConfig.getCurationLabels().get(setName);
+        if(labelArray==null) {
+            return new ArrayList<String>();
+        }
         return Arrays.asList(labelArray);
     }
 }
