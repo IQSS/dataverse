@@ -15,6 +15,8 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Arrays;
@@ -49,19 +51,25 @@ public class SetExternalStatusCommand extends AbstractDatasetCommand<Dataset> {
             throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure.isReleased"), this);
         }
         if (label==null || label.isEmpty()) {
-            getDataset().getLatestVersion().setExternalStatusLabel(label);
+            getDataset().getLatestVersion().setExternalStatusLabel(null);
         } else {
-            String allowedLabels = ctxt.settings().getValueForKey(SettingsServiceBean.Key.AllowedCurationLabels, "");
-            if (Arrays.asList(allowedLabels.split("\\s*,\\s*")).contains(label)) {
-                Pattern pattern = Pattern.compile("(^[\\w ]+$)");
-                Matcher matcher = pattern.matcher(label);
-                if (!matcher.matches()) {
-                    logger.info("Label rejected: " + label);
-                    throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure.badformat"), this);
+            String setName = getDataset().getEffectiveCurationLabelSetName();
+            if(setName.equals(SystemConfig.CURATIONLABELSDISABLED)) {
+                logger.info("External status labeling disbaled for dataset id: " + getDataset().getId());
+                throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure.disabled"), this);
+                
+            }
+            String[] labelArray = ctxt.systemConfig().getCurationLabels().get(setName);
+            boolean found = false;
+            for(String name: labelArray) {
+                if(name.equals(label)) {
+                    found=true;
+                    getDataset().getLatestVersion().setExternalStatusLabel(label);
+                    break;
                 }
-                getDataset().getLatestVersion().setExternalStatusLabel(label);
-            } else {
-                logger.info("Label not found: " + label);
+            }
+            if(!found) {
+                logger.info("Label not found: " + label + " in set " + setName);
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure.notallowed"), this);
             }
         }
