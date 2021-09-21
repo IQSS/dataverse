@@ -1,18 +1,10 @@
 package edu.harvard.iq.dataverse.settings;
 
-import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.api.ApiBlockingFilter;
-import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.util.StringUtil;
 
-import java.io.StringReader;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
@@ -20,6 +12,12 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.io.StringReader;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Service bean accessing a persistent hash map, used as settings in the application.
@@ -192,12 +190,14 @@ public class SettingsServiceBean {
         /** Optionally override http://guides.dataverse.org . */
         GuidesBaseUrl,
 
+        CVocConf,
+
         /**
          * A link to an installation of https://github.com/IQSS/miniverse or
          * some other metrics app.
          */
         MetricsUrl,
-        
+
         /**
          * Number of minutes before a metrics query can be rerun. Otherwise a cached value is returned.
          * Previous month dates always return cache. Only applies to new internal caching system (not miniverse).
@@ -228,6 +228,10 @@ public class SettingsServiceBean {
         SPSS/sav format, "RData" for R, etc.
         for example: :TabularIngestSizeLimit:RData */
         TabularIngestSizeLimit,
+        /* Validate physical files in the dataset when publishing, if the dataset size less than the threshold limit */
+        DatasetChecksumValidationSizeLimit,
+        /* Validate physical files in the dataset when publishing, if the datafile size less than the threshold limit */
+        DataFileChecksumValidationSizeLimit,
         /**
          The message added to a popup upon dataset publish
          * 
@@ -458,6 +462,12 @@ public class SettingsServiceBean {
          */
         MetadataLanguages,
         /**
+         * A boolean setting that, if true will send an email and notification to users
+         * when a Dataset is created. Messages go to those who have the
+         * ability/permission necessary to publish the dataset
+         */
+        SendNotificationOnDatasetCreation,
+        /**
          * A comma separated list of allowed labels (up to 32 characters, spaces
          * allowed) that can be set, via API or UI by users with the permission to
          * publish a dataset. These should correspond to the states in an organizations
@@ -499,7 +509,7 @@ public class SettingsServiceBean {
     }
     
     /**
-     * Same as {@link #get(java.lang.String)}, but with static checking.
+     * Same as {@link #get(String)}, but with static checking.
      * @param key Enum value of the name.
      * @return The setting, or {@code null}.
      */
