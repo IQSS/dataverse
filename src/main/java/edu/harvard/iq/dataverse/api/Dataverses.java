@@ -7,7 +7,6 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.DataverseContact;
-import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.GlobalId;
@@ -61,6 +60,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlock
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 
@@ -186,24 +186,8 @@ public class Dataverses extends AbstractApiBean {
             d = execCommand(new CreateDataverseCommand(d, createDataverseRequest(u), null, null));
             return created("/dataverses/" + d.getAlias(), json(d));
         } catch (WrappedResponse ww) {
-            Throwable cause = ww.getCause();
-            StringBuilder sb = new StringBuilder();
-            if (cause == null) {
-                return ww.refineResponse("cause was null!");
-            }
-            while (cause.getCause() != null) {
-                cause = cause.getCause();
-                if (cause instanceof ConstraintViolationException) {
-                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ")
-                                .append(violation.getPropertyPath()).append(" at ")
-                                .append(violation.getLeafBean()).append(" - ")
-                                .append(violation.getMessage());
-                    }
-                }
-            }
-            String error = sb.toString();
+
+            String error = ConstraintViolationUtil.getErrorStringForConstraintViolations(ww.getCause());
             if (!error.isEmpty()) {
                 logger.log(Level.INFO, error);
                 return ww.refineResponse(error);
@@ -217,13 +201,7 @@ public class Dataverses extends AbstractApiBean {
             while (cause.getCause() != null) {
                 cause = cause.getCause();
                 if (cause instanceof ConstraintViolationException) {
-                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ")
-                                .append(violation.getPropertyPath()).append(" at ")
-                                .append(violation.getLeafBean()).append(" - ")
-                                .append(violation.getMessage());
-                    }
+                    sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
                 }
             }
             logger.log(Level.SEVERE, sb.toString());
@@ -246,11 +224,11 @@ public class Dataverses extends AbstractApiBean {
             ds.setOwner(owner);
 
             if (ds.getVersions().isEmpty()) {
-                return badRequest("Please provide initial version in the dataset json");
+                return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.mustIncludeVersion"));
             }
             
             if (!ds.getFiles().isEmpty() && !u.isSuperuser()){
-                return badRequest("Only a superuser may add files via this api");
+                return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.superuserFiles"));
             }
 
             // clean possible version metadata
@@ -263,8 +241,29 @@ public class Dataverses extends AbstractApiBean {
             ds.setIdentifier(null);
             ds.setProtocol(null);
             ds.setGlobalIdCreateTime(null);
+            Dataset managedDs = null;
+            try {
+                managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u)));
+            } catch (WrappedResponse ww) {
+                Throwable cause = ww.getCause();
+                StringBuilder sb = new StringBuilder();
+                if (cause == null) {
+                    return ww.refineResponse("cause was null!");
+                }
+                while (cause.getCause() != null) {
+                    cause = cause.getCause();
+                    if (cause instanceof ConstraintViolationException) {
+                        sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
+                    }
+                }
+                String error = sb.toString();
+                if (!error.isEmpty()) {
+                    logger.log(Level.INFO, error);
+                    return ww.refineResponse(error);
+                }
+                return ww.getResponse();
+            }
 
-            Dataset managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u)));
             return created("/datasets/" + managedDs.getId(),
                     Json.createObjectBuilder()
                             .add("id", managedDs.getId())
@@ -289,8 +288,6 @@ public class Dataverses extends AbstractApiBean {
             ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, false); 
             
             ds.setOwner(owner);
-            
-            
 
             // clean possible dataset/version metadata
             DatasetVersion version = ds.getVersions().get(0);
