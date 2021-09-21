@@ -61,6 +61,29 @@ The available drivers can be listed with::
     
 (Individual datasets can be configured to use specific file stores as well. See the "Datasets" section below.)
 
+Configure a Dataverse Collection to allow use of a given Curation Label Set
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Datasets within a given Dataverse collection can be annotated with a Curation Label  from one of the label sets defined by :ref:`:AllowedCurationLabels <:AllowedCurationLabels>`. The allowed set can be specified via the API as shown below, or by editing the 'General Information' for a Dataverse collection on the Dataverse collection page. Only accessible to superusers. ::
+ 
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT -d $curationLabelSet http://$SERVER/api/admin/dataverse/$dataverse-alias/curationLabelSet
+    
+The current driver can be seen using::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/$dataverse-alias/curationLabelSet
+
+and can be reset to the default store with::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/admin/dataverse/$dataverse-alias/curationLabelSet
+    
+The available curation label sets can be listed with::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/curationLabelSet
+    
+If the :AllowedCurationLabels setting has a value, one of the available values will always be "DISABLED" which allows curation labels to be turned off for a give collection/dataset
+    
+(Individual datasets can be configured to use specific file stores as well. See the "Datasets" section below.)
+
 
 Datasets
 --------
@@ -153,4 +176,23 @@ The available drivers can be listed with::
 
     curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/storageDrivers
     
+Configure a Dataset to allow use of a Curation Label Set
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Configure a dataset to allow use of labels from a given Curation Label Set (as defined with the :ref:`:AllowedCurationLabels <:AllowedCurationLabels>` setting) This API can only be used by a superuser. ::
+ 
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT -d $curationLabelSet http://$SERVER/api/datasets/$dataset-id/curationLabelSet
+    
+The current driver can be seen using::
+
+    curl http://$SERVER/api/datasets/$dataset-id/curationLabelSet
+
+It can be reset to the default store as follows (only a superuser can do this) ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/datasets/$dataset-id/curationLabelSet
+    
+The available drivers can be listed with::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/curationLabelSets
+    
+If the :AllowedCurationLabels setting has a value, one of the available values will always be "DISABLED" which allows curation labels to be turned off for a give collection/dataset

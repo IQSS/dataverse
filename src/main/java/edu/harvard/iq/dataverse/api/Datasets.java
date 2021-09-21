@@ -2596,6 +2596,90 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     }
 
     @GET
+    @Path("{identifier}/curationLabelSet")
+    public Response getCurationLabelSet(@PathParam("identifier") String dvIdtf,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse { 
+        
+        Dataset dataset; 
+        
+        try {
+            dataset = findDatasetOrDie(dvIdtf);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "No such dataset");
+        }
+            
+        return response(req -> ok(dataset.getEffectiveCurationLabelSetName()));
+    }
+    
+    @PUT
+    @Path("{identifier}/curationLabelSet")
+    public Response setCurationLabelSet(@PathParam("identifier") String dvIdtf,
+            String curationLabelSet,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+        
+        // Superuser-only:
+        AuthenticatedUser user;
+        try {
+            user = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.BAD_REQUEST, "Authentication is required.");
+        }
+        if (!user.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+        
+        Dataset dataset; 
+        
+        try {
+            dataset = findDatasetOrDie(dvIdtf);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "No such dataset");
+        }
+        if (SystemConfig.CURATIONLABELSDISABLED.equals(curationLabelSet) || SystemConfig.DEFAULTCURATIONLABELSET.equals(curationLabelSet)) {
+            dataset.setCurationLabelSetName(curationLabelSet);
+            return ok("Curation Label Set Name set to: " + curationLabelSet);
+        } else {
+            for (String setName : systemConfig.getCurationLabels().keySet()) {
+                if (setName.equals(curationLabelSet)) {
+                    dataset.setCurationLabelSetName(curationLabelSet);
+                    return ok("Curation Label Set Name set to: " + setName);
+                }
+            }
+        }
+        return error(Response.Status.BAD_REQUEST,
+            "No Such Curation Label Set");
+    }
+    
+    @DELETE
+    @Path("{identifier}/curationLabelSet")
+    public Response resetCurationLabelSet(@PathParam("identifier") String dvIdtf,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+    
+        // Superuser-only:
+        AuthenticatedUser user;
+        try {
+            user = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.BAD_REQUEST, "Authentication is required.");
+        }
+        if (!user.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+        
+        Dataset dataset; 
+        
+        try {
+            dataset = findDatasetOrDie(dvIdtf);
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.NOT_FOUND, "No such dataset");
+        }
+        
+        dataset.setCurationLabelSetName(SystemConfig.DEFAULTCURATIONLABELSET);
+        datasetService.merge(dataset);
+        return ok("Curation Label Set reset to default: " + SystemConfig.DEFAULTCURATIONLABELSET);
+    }
+
+    @GET
     @Path("{identifier}/timestamps")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTimestamps(@PathParam("identifier") String id) {
