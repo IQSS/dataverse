@@ -7,6 +7,7 @@ import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataverse.DataverseUtil;
 import edu.harvard.iq.dataverse.engine.command.Command;
+import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateSavedSearchCommand;
@@ -16,6 +17,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseCommand;
 import edu.harvard.iq.dataverse.search.FacetCategory;
 import edu.harvard.iq.dataverse.search.IndexServiceBean;
+import edu.harvard.iq.dataverse.search.SearchException;
 import edu.harvard.iq.dataverse.search.SearchFields;
 import edu.harvard.iq.dataverse.search.SearchIncludeFragment;
 import edu.harvard.iq.dataverse.search.SearchServiceBean;
@@ -30,9 +32,12 @@ import java.util.List;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -1200,15 +1205,11 @@ public class DataversePage implements java.io.Serializable {
     	}
    		String label = DataAccess.getStorageDriverLabelFor(storageDriverId);
    		if(fromAncestor) {
-   			label = label + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
+   			label = label + " " + BundleUtil.getStringFromBundle("dataverse.storage.inherited");
    		} else {
-   			label = label + " " + BundleUtil.getStringFromBundle("dataverse.default");
+   			label = label + " " + BundleUtil.getStringFromBundle("dataverse.storage.default");
    		}
    		return label;
-    }
-    
-    public Set<Entry<String, String>> getMetadataLanguages() {
-        return settingsWrapper.getMetadataLanguages(this.dataverse).entrySet();
     }
     
     public Set<Entry<String, String>> getCurationLabelSetOptions() {
@@ -1223,7 +1224,9 @@ public class DataversePage implements java.io.Serializable {
             }
             // Add an entry for disabled
             setNames.put(SystemConfig.CURATIONLABELSDISABLED, SystemConfig.CURATIONLABELSDISABLED);
-            allowedSetNames.forEach(name -> {setNames.put(name,  name);});
+            allowedSetNames.forEach(name -> {
+                setNames.put(name, name);
+            });
         }
         return setNames.entrySet();
     }
