@@ -70,6 +70,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.omnifaces.el.functions.Strings;
+
 import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationProvidersRegistrationServiceBean;
@@ -93,6 +96,8 @@ import edu.harvard.iq.dataverse.userdata.UserListResult;
 import edu.harvard.iq.dataverse.util.ArchiverUtil;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.FileUtil;
+import edu.harvard.iq.dataverse.util.SystemConfig;
+
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -1892,6 +1897,97 @@ public class Admin extends AbstractApiBean {
     	JsonObjectBuilder bld = jsonObjectBuilder();
     	DataAccess.getStorageDriverLabels().entrySet().forEach(s -> bld.add(s.getKey(), s.getValue()));
 		return ok(bld);
+    }
+    
+    @GET
+    @Path("/dataverse/{alias}/curationLabelSet")
+    public Response getCurationLabelSet(@PathParam("alias") String alias) throws WrappedResponse {
+        Dataverse dataverse = dataverseSvc.findByAlias(alias);
+        if (dataverse == null) {
+            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+        }
+        try {
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        // Note that this returns what's set directly on this dataverse. If
+        // null/SystemConfig.DEFAULTCURATIONLABELSET, the user would have to recurse the
+        // chain of parents to find the effective curationLabelSet
+        return ok(dataverse.getCurationLabelSetName());
+    }
+
+    @PUT
+    @Path("/dataverse/{alias}/curationLabelSet")
+    public Response setCurationLabelSet(@PathParam("alias") String alias, String label) throws WrappedResponse {
+        Dataverse dataverse = dataverseSvc.findByAlias(alias);
+        if (dataverse == null) {
+            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+        }
+        try {
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        if (SystemConfig.CURATIONLABELSDISABLED.equals(label) || SystemConfig.DEFAULTCURATIONLABELSET.equals(label)) {
+            dataverse.setCurationLabelSetName(label);
+            return ok("Curation Label Set Name set to: " + label);
+        } else {
+            for (String setName : systemConfig.getCurationLabels().keySet()) {
+                if (setName.equals(label)) {
+                    dataverse.setCurationLabelSetName(label);
+                    return ok("Curation Label Set Name set to: " + setName);
+                }
+            }
+        }
+        return error(Response.Status.BAD_REQUEST,
+                "No Curation Label Set found for : " + label);
+    }
+
+    @DELETE
+    @Path("/dataverse/{alias}/curationLabelSet")
+    public Response resetCurationLabelSet(@PathParam("alias") String alias) throws WrappedResponse {
+        Dataverse dataverse = dataverseSvc.findByAlias(alias);
+        if (dataverse == null) {
+            return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
+        }
+        try {
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        dataverse.setCurationLabelSetName(SystemConfig.DEFAULTCURATIONLABELSET);
+        return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
+    }
+
+    @GET
+    @Path("/dataverse/curationLabelSets")
+    public Response listCurationLabelSets() throws WrappedResponse {
+        try {
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        JsonObjectBuilder bld = Json.createObjectBuilder();
+
+        systemConfig.getCurationLabels().entrySet().forEach(s -> {
+            JsonArrayBuilder labels = Json.createArrayBuilder();
+            Arrays.asList(s.getValue()).forEach(l -> labels.add(l));
+            bld.add(s.getKey(), labels);
+        });
+        return ok(bld);
     }
     
     @POST
