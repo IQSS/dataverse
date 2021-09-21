@@ -1244,10 +1244,12 @@ public class DataversePage implements java.io.Serializable {
                 parent = parent.getOwner();
             }
         }
-        if (fromAncestor && setName!=null) {
-            setName = setName + " " + BundleUtil.getStringFromBundle("dataverse.storage.inherited");
-        } else {
-            setName = setName + " " + BundleUtil.getStringFromBundle("dataverse.storage.default");
+        if (setName != null) {
+            if (fromAncestor) {
+                setName = setName + " " + BundleUtil.getStringFromBundle("dataverse.storage.inherited");
+            } else {
+                setName = setName + " " + BundleUtil.getStringFromBundle("dataverse.storage.default");
+            }
         }
         return setName;
     }
