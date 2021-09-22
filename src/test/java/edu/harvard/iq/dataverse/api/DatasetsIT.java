@@ -53,6 +53,7 @@ import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static org.junit.Assert.assertEquals;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.CoreMatchers.nullValue;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -320,6 +321,36 @@ public class DatasetsIT {
         
         publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPersistentId, "major", apiToken);
         //"Delete metadata failed: " + updateField.getDatasetFieldType().getDisplayName() + ": " + displayValue + " not found."
+    }
+    
+    @Test
+    public void testAddEmptyDatasetViaNativeAPI() {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+        
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);        
+        
+        String pathToJsonFile = "scripts/search/tests/data/emptyDataset.json";
+        Response createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+        createDatasetResponse.prettyPrint();
+
+        createDatasetResponse.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", startsWith("Validation Failed: "));  
+        
+        pathToJsonFile = "scripts/search/tests/data/datasetMissingReqFields.json";        
+        createDatasetResponse = UtilIT.createDatasetViaNativeApi(dataverseAlias, pathToJsonFile, apiToken);
+        createDatasetResponse.prettyPrint();
+        
+        createDatasetResponse.then().assertThat()
+                .statusCode(FORBIDDEN.getStatusCode())
+                .body("message", startsWith("Validation Failed: "));
+ 
     }
 
     /**

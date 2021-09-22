@@ -38,3 +38,4 @@ Developer Guide
    dataset-semantic-metadata-api
    dataset-migration-api 
    workflows
+   fontcustom
