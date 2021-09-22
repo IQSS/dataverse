@@ -11,8 +11,8 @@
                 xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
     <o:resourceInclude path="/CustomizationFilesServlet?customFileType=header" rendered="#{!widgetWrapper.widgetView}"/>
     <o:importFunctions type="edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers" />
-    <ui:param name="showAddDataverseLink" value="#{permissionServiceBean.userOn(AuthenticatedUsers:get(),dataverseServiceBean.findRootDataverse()).canIssueCommand('CreateDataverseCommand') }"/>
-    <ui:param name="showAddDatasetLink" value="#{permissionServiceBean.userOn(AuthenticatedUsers:get(),dataverseServiceBean.findRootDataverse()).canIssueCommand('AbstractCreateDatasetCommand') }"/>
+    <ui:param name="showAddDataverseLink" value="#{permissionsWrapper.showAddDataverseLink()}"/>
+    <ui:param name="showAddDatasetLink" value="#{permissionsWrapper.showAddDatasetLink()}"/>
     <ui:param name="showAddDataGroup" value="#{showAddDataverseLink or showAddDatasetLink}"/>
 
     <div id="dataverse-header-block">

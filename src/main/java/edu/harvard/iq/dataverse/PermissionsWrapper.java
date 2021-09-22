@@ -6,12 +6,14 @@
 package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.authorization.Permission;
+import edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -24,6 +26,7 @@ import javax.inject.Named;
 @ViewScoped
 @Named
 public class PermissionsWrapper implements java.io.Serializable {
+    private static final Logger logger = Logger.getLogger(PermissionsWrapper.class.getName());
 
     @EJB
     PermissionServiceBean permissionService;
@@ -33,6 +36,9 @@ public class PermissionsWrapper implements java.io.Serializable {
     
     @Inject
     DataverseRequestServiceBean dvRequestService;
+    
+    @Inject
+    SettingsWrapper settingsWrapper;
 
     private final Map<Long, Map<Class<? extends Command<?>>, Boolean>> commandMap = new HashMap<>();
 
@@ -238,7 +244,50 @@ public class PermissionsWrapper implements java.io.Serializable {
         return canIssueCommand(dvo, PublishDatasetCommand.class);
     }
     
+    // For the dataverse_header fragment (and therefore, most of the pages),
+    // we need to know if authorized users can add dataverses and datasets to the
+    // root collection. 
+    // Not a very expensive operation - but it'll add up quickly, if the 
+    // page keeps asking for it repeatedly. So these values absolutely need to be
+    // cached. 
     
+    Boolean showAddDataverseLink = null; 
+    
+    public boolean showAddDataverseLink() {
+        logger.info("in showAddDataverseLink");
+        if (showAddDataverseLink != null) {
+            logger.info("using cached showDataverseLink value");
+            return showAddDataverseLink;
+        }
+        try {
+            showAddDataverseLink = permissionService.userOn(AuthenticatedUsers.get(), settingsWrapper.getRootDataverse()).canIssueCommand("CreateDataverseCommand");
+            logger.info("rerieved showDataverseLink value");
+            return showAddDataverseLink;
+        } catch (ClassNotFoundException ex) {
+            logger.info("ClassNotFoundException checking if authenticated users can create dataverses in root.");
+        }
+
+        return false;
+    }
+    
+    Boolean showAddDatasetLink = null; 
+    
+    public boolean showAddDatasetLink() {
+        logger.info("in showAddDatasetLink");
+        if (showAddDatasetLink != null) {
+            logger.info("using cached showDatasetLink value");
+            return showAddDatasetLink;
+        }
+        try {
+            showAddDatasetLink = permissionService.userOn(AuthenticatedUsers.get(), settingsWrapper.getRootDataverse()).canIssueCommand("AbstractCreateDatasetCommand");
+            logger.info("rerieved showDatasetLink value");
+            return showAddDatasetLink;
+        } catch (ClassNotFoundException ex) {
+            logger.info("ClassNotFoundException checking if authenticated users can create datasets in root.");
+        }
+
+        return false;
+    }
     
     
     

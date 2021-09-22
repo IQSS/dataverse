@@ -57,6 +57,9 @@ public class SettingsWrapper implements java.io.Serializable {
     // Related to a specific setting for guide urls
     private String guidesBaseUrl = null; 
 
+    private String siteUrl = null; 
+    
+    private Dataverse rootDataverse = null; 
  
     public String get(String settingKey) {
         if (settingsMap == null) {
@@ -156,6 +159,13 @@ public class SettingsWrapper implements java.io.Serializable {
 
     public String getGuidesVersion() {
         return systemConfig.getGuidesVersion();
+    }
+    
+    public String getDataverseSiteUrl() {
+        if (siteUrl == null) {
+            siteUrl = systemConfig.getDataverseSiteUrl();
+        }
+        return siteUrl;
     }
     
     public Long getZipDownloadLimit(){
@@ -371,6 +381,14 @@ public class SettingsWrapper implements java.io.Serializable {
             // None - :MetadataLanguages is not set so return null to turn off the display (backward compatibility)
             return null;
         }
+    }
+    
+    Dataverse getRootDataverse() {
+        if (rootDataverse == null) {
+            rootDataverse = dataverseService.findRootDataverse();
+        }
+        
+        return rootDataverse;
     }
 
 }
