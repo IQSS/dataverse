@@ -2576,6 +2576,21 @@ div.panelSearchForm input.search-input {
 			width: 100%;
 			padding-left: 17px;
 		}
+
+		@media screen and (max-width: $screen-xs-max) {
+			div {
+				display: block;
+			}
+
+			.owl-carousel-logo {
+				text-align: center;
+			}
+
+			.owl-carousel-description {
+				margin-top: 0.5em;
+				padding-left: 0;
+			}
+		}
 	}
 }
 

@@ -285,12 +285,12 @@
                                             <c:set var="dvFeatUrl" value="/dataverse/#{dv.alias}"/>
                                             <a href="#{widgetWrapper.wrapURL(dvFeatUrl)}" class="item" aria-label="#{bundle.dataverse} #{dv.name}">
                                                 <ui:fragment rendered="#{empty dv.dataverseTheme.logo}">
-                                                    <div>
+                                                    <div class="owl-carousel-logo">
                                                         <i class="icon-dataverse" role="img" aria-label="#{bundle.dataverse}"></i>
                                                     </div>
                                                 </ui:fragment>
                                                 <ui:fragment rendered="#{!empty dv.dataverseTheme.logo}">
-                                                    <div>
+                                                    <div class="owl-carousel-logo">
                                                         <img src="/logos/#{dv.logoOwnerId}/#{dv.dataverseTheme.logo}"
                                                             alt="#{bundle['dataverse.results.cards.dataverse.logoPrefix']} #{dv.name}"/>
                                                     </div>
