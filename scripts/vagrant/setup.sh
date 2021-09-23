@@ -25,7 +25,7 @@ java -version
 
 # maven included in centos8 requires 1.8.0 - download binary instead
 # current version is 3.6.3 - requires newer jacoco.pom.xml
-wget -q https://www-us.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+wget -q https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
 tar xfz apache-maven-3.6.3-bin.tar.gz
 mkdir /opt/maven
 mv apache-maven-3.6.3/* /opt/maven/
