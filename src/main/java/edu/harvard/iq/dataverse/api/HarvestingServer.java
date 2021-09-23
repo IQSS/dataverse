@@ -187,41 +187,40 @@ public class HarvestingServer extends AbstractApiBean {
 
         StringReader rdr = new StringReader(jsonBody);
         
-	try( JsonReader jrdr = Json.createReader(rdr) )
-	{
-		JsonObject json = jrdr.readObject();
-                OAISet update;
-		//Validating spec 
-		if (!StringUtils.isEmpty(spec)) {
-                    update = oaiSetService.findBySpec(spec);
-			if (update == null) {
-				return badRequest(BundleUtil.getStringFromBundle("harvestserver.editSetDialog.setspec.notFound"));
-			}
-
-		} else {
-			return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.required"));
-		}
-
-		String desc, defn;
-                    
-		try {
-			defn = json.getString("definition");
-		} catch (NullPointerException npe_defn) {
-			defn = ""; // if they're updating description but not definition;
-		}
-		try {
-			desc = json.getString("description");
-		} catch (NullPointerException npe_desc) {
-			desc = ""; //treating description as optional
-		}
-                if (defn.isEmpty() && desc.isEmpty()){
-                    return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.required"));
+        try (JsonReader jrdr = Json.createReader(rdr)) {
+            JsonObject json = jrdr.readObject();
+            OAISet update;
+            //Validating spec 
+            if (!StringUtils.isEmpty(spec)) {
+                update = oaiSetService.findBySpec(spec);
+                if (update == null) {
+                    return badRequest(BundleUtil.getStringFromBundle("harvestserver.editSetDialog.setspec.notFound"));
                 }
-		update.setDescription(desc);
-		update.setDefinition(defn);
-		oaiSetService.save(update);
-		return ok("/harvest/server/oaisets" + spec, oaiSetAsJson(update));
-	}
+
+            } else {
+                return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.required"));
+            }
+
+            String desc, defn;
+
+            try {
+                defn = json.getString("definition");
+            } catch (NullPointerException npe_defn) {
+                defn = ""; // if they're updating description but not definition;
+            }
+            try {
+                desc = json.getString("description");
+            } catch (NullPointerException npe_desc) {
+                desc = ""; //treating description as optional
+            }
+            if (defn.isEmpty() && desc.isEmpty()) {
+                return badRequest(BundleUtil.getStringFromBundle("harvestserver.newSetDialog.setspec.required"));
+            }
+            update.setDescription(desc);
+            update.setDefinition(defn);
+            oaiSetService.save(update);
+            return ok("/harvest/server/oaisets" + spec, oaiSetAsJson(update));
+        }
     }
     
     @DELETE
