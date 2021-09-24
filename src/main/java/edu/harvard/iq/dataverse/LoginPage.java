@@ -168,8 +168,6 @@ public class LoginPage implements java.io.Serializable {
             authReq.putCredential(fc.getCredential().getKey(), fc.getValue());
         }
 
-        FacesContext.getCurrentInstance().getExternalContext().getFlash().put("silentUpgradePasswd",authReq.getCredential(BuiltinAuthenticationProvider.KEY_PASSWORD));
-
         authReq.setIpAddress( dvRequestService.getDataverseRequest().getSourceAddress() );
         try {
             AuthenticatedUser r = authSvc.getUpdateAuthenticatedUser(credentialsAuthProviderId, authReq);
@@ -209,6 +207,7 @@ public class LoginPage implements java.io.Serializable {
                     logger.log( Level.WARNING, "Error logging in: " + response.getMessage(), response.getError() );
                     return null;
                 case BREAKOUT:
+                    FacesContext.getCurrentInstance().getExternalContext().getFlash().put("silentUpgradePasswd",authReq.getCredential(BuiltinAuthenticationProvider.KEY_PASSWORD));
                     return response.getMessage();
                 default:
                     JsfHelper.addErrorMessage("INTERNAL ERROR");
