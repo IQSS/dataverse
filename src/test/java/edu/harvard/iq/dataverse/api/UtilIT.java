@@ -42,8 +42,13 @@ import org.hamcrest.Matcher;
 import static com.jayway.restassured.RestAssured.put;
 import static com.jayway.restassured.path.xml.XmlPath.from;
 import static com.jayway.restassured.RestAssured.given;
+import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldConstant;
+import edu.harvard.iq.dataverse.DatasetFieldType;
+import edu.harvard.iq.dataverse.DatasetFieldValue;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.StringReader;
+import java.util.Collections;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -2738,5 +2743,15 @@ public class UtilIT {
                 .body(jsonLDBody.getBytes(StandardCharsets.UTF_8))
                 .post("/api/dataverses/" + dataverseAlias +"/datasets");
         return response;
+    }
+
+    private static DatasetField constructPrimitive(String fieldName, String value) {
+        DatasetField field = new DatasetField();
+        field.setDatasetFieldType(
+                new DatasetFieldType(fieldName, DatasetFieldType.FieldType.TEXT, false));
+        field.setDatasetFieldValues(
+                Collections.singletonList(
+                        new DatasetFieldValue(field, value)));
+        return field;
     }
 }

@@ -61,6 +61,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDataverseMetadataBlock
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateExplicitGroupCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
+import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import static edu.harvard.iq.dataverse.util.StringUtil.nonEmpty;
 
@@ -104,15 +105,17 @@ import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.StreamingOutput;
 import javax.xml.stream.XMLStreamException;
 
 /**
@@ -141,6 +144,9 @@ public class Dataverses extends AbstractApiBean {
     
     @EJB
     GuestbookServiceBean guestbookService;
+    
+    @EJB
+    DataverseServiceBean dataverseService;
 
     @POST
     public Response addRoot(String body) {
@@ -181,24 +187,8 @@ public class Dataverses extends AbstractApiBean {
             d = execCommand(new CreateDataverseCommand(d, createDataverseRequest(u), null, null));
             return created("/dataverses/" + d.getAlias(), json(d));
         } catch (WrappedResponse ww) {
-            Throwable cause = ww.getCause();
-            StringBuilder sb = new StringBuilder();
-            if (cause == null) {
-                return ww.refineResponse("cause was null!");
-            }
-            while (cause.getCause() != null) {
-                cause = cause.getCause();
-                if (cause instanceof ConstraintViolationException) {
-                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ")
-                                .append(violation.getPropertyPath()).append(" at ")
-                                .append(violation.getLeafBean()).append(" - ")
-                                .append(violation.getMessage());
-                    }
-                }
-            }
-            String error = sb.toString();
+
+            String error = ConstraintViolationUtil.getErrorStringForConstraintViolations(ww.getCause());
             if (!error.isEmpty()) {
                 logger.log(Level.INFO, error);
                 return ww.refineResponse(error);
@@ -212,13 +202,7 @@ public class Dataverses extends AbstractApiBean {
             while (cause.getCause() != null) {
                 cause = cause.getCause();
                 if (cause instanceof ConstraintViolationException) {
-                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append(" Invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ")
-                                .append(violation.getPropertyPath()).append(" at ")
-                                .append(violation.getLeafBean()).append(" - ")
-                                .append(violation.getMessage());
-                    }
+                    sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
                 }
             }
             logger.log(Level.SEVERE, sb.toString());
@@ -241,11 +225,11 @@ public class Dataverses extends AbstractApiBean {
             ds.setOwner(owner);
 
             if (ds.getVersions().isEmpty()) {
-                return badRequest("Please provide initial version in the dataset json");
+                return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.mustIncludeVersion"));
             }
             
             if (!ds.getFiles().isEmpty() && !u.isSuperuser()){
-                return badRequest("Only a superuser may add files via this api");
+                return badRequest(BundleUtil.getStringFromBundle("dataverses.api.create.dataset.error.superuserFiles"));
             }
 
             // clean possible version metadata
@@ -258,8 +242,29 @@ public class Dataverses extends AbstractApiBean {
             ds.setIdentifier(null);
             ds.setProtocol(null);
             ds.setGlobalIdCreateTime(null);
+            Dataset managedDs = null;
+            try {
+                managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u)));
+            } catch (WrappedResponse ww) {
+                Throwable cause = ww.getCause();
+                StringBuilder sb = new StringBuilder();
+                if (cause == null) {
+                    return ww.refineResponse("cause was null!");
+                }
+                while (cause.getCause() != null) {
+                    cause = cause.getCause();
+                    if (cause instanceof ConstraintViolationException) {
+                        sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
+                    }
+                }
+                String error = sb.toString();
+                if (!error.isEmpty()) {
+                    logger.log(Level.INFO, error);
+                    return ww.refineResponse(error);
+                }
+                return ww.getResponse();
+            }
 
-            Dataset managedDs = execCommand(new CreateNewDatasetCommand(ds, createDataverseRequest(u)));
             return created("/datasets/" + managedDs.getId(),
                     Json.createObjectBuilder()
                             .add("id", managedDs.getId())
@@ -284,8 +289,6 @@ public class Dataverses extends AbstractApiBean {
             ds = JSONLDUtil.updateDatasetMDFromJsonLD(ds, jsonLDBody, metadataBlockSvc, datasetFieldSvc, false, false, licenseSvc);
             
             ds.setOwner(owner);
-            
-            
 
             // clean possible dataset/version metadata
             DatasetVersion version = ds.getVersions().get(0);
@@ -946,10 +949,9 @@ public class Dataverses extends AbstractApiBean {
     
     @GET
     @Path("{identifier}/guestbookResponses/")
-    @Produces({"application/download"})
     public Response getGuestbookResponsesByDataverse(@PathParam("identifier") String dvIdtf,
             @QueryParam("guestbookId") Long gbId, @Context HttpServletResponse response) {
-        
+
         try {
             Dataverse dv = findDataverseOrDie(dvIdtf);
             User u = findUserOrDie();
@@ -960,30 +962,31 @@ public class Dataverses extends AbstractApiBean {
             } else {
                 return error(Status.FORBIDDEN, "Not authorized");
             }
-            
-            String fileTimestamp = dateFormatter.format(new Date());
-            String filename = dv.getAlias() + "_GBResponses_" + fileTimestamp + ".csv";
-            
-            response.setHeader("Content-Disposition", "attachment; filename="
-                + filename);
-               ServletOutputStream outputStream = response.getOutputStream();
 
-            Map<Integer, Object> customQandAs = guestbookResponseService.mapCustomQuestionAnswersAsStrings(dv.getId(), gbId);
-
-            List<Object[]> guestbookResults = guestbookResponseService.getGuestbookResults(dv.getId(), gbId);
-            outputStream.write("Guestbook, Dataset, Dataset PID, Date, Type, File Name, File Id, File PID, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
-            for (Object[] result : guestbookResults) {
-                StringBuilder sb = guestbookResponseService.convertGuestbookResponsesToCSV(customQandAs, result);
-                outputStream.write(sb.toString().getBytes());
-                outputStream.flush();
-            }
-            return Response.ok().build();
-        } catch (IOException io) {
-            return error(Status.BAD_REQUEST, "Failed to produce response file. Exception: " + io.getMessage());
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
 
+        StreamingOutput stream = new StreamingOutput() {
+
+            @Override
+            public void write(OutputStream os) throws IOException,
+                    WebApplicationException {
+
+                Dataverse dv = dataverseService.findByAlias(dvIdtf);
+                Map<Integer, Object> customQandAs = guestbookResponseService.mapCustomQuestionAnswersAsStrings(dv.getId(), gbId);
+                Map<Integer, String> datasetTitles = guestbookResponseService.mapDatasetTitles(dv.getId());
+                
+                List<Object[]> guestbookResults = guestbookResponseService.getGuestbookResults(dv.getId(), gbId);
+                os.write("Guestbook, Dataset, Dataset PID, Date, Type, File Name, File Id, File PID, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
+                for (Object[] result : guestbookResults) {
+                    StringBuilder sb = guestbookResponseService.convertGuestbookResponsesToCSV(customQandAs, datasetTitles, result);
+                    os.write(sb.toString().getBytes());
+
+                }
+            }
+        };
+        return Response.ok(stream).build();
     }
     
     @PUT
