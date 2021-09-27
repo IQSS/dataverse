@@ -3488,19 +3488,19 @@ div.ui-dialog.largePopUp {
  * 80 CHARACTERS LIMIT SWITCH BELOW
  */
 
-p.text-block {
+p.text-block, .text-block {
 	margin-bottom: 0;
 	word-break: break-word;
 }
 
 body.eighty-limit-toggle {
-	p.text-block, p.help-block, span.ui-chkbox-label, .datasetfield-value, #dataverseDesc p {
+	p.text-block, p.help-block, .text-block, span.ui-chkbox-label, .datasetfield-value, #dataverseDesc p {
 		max-width: 36.4em;
 	}
 }
 
 body.eighty-limit-toggle.wcag-text-toggle {
-	p.text-block, p.help-block, span.ui-chkbox-label, .datasetfield-value, #dataverseDesc p {
+	p.text-block, p.help-block, .text-block, span.ui-chkbox-label, .datasetfield-value, #dataverseDesc p {
 		max-width: 48em;
 	}
 }
@@ -3511,7 +3511,7 @@ body.eighty-limit-toggle.wcag-text-toggle {
  */
 
 body.wcag-text-toggle {
-	p.text-block, p.help-block, span.ui-chkbox-label, .datasetfield-value, #dataverseDesc p {
+	p.text-block, p.help-block, .text-block, span.ui-chkbox-label, .datasetfield-value, #dataverseDesc p {
 		word-spacing: 0.16em;
 		letter-spacing: 0.12em;
 		line-height: 1.5em;

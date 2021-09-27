@@ -25,7 +25,7 @@
                 <h:form id="harvestingServiceForm" class="form-horizontal">
                     <div class="form-group">
                         <label for="enableService" class="col-sm-2 control-label">#{bundle['harvestserver.service.label']}</label>
-                        <div class="col-sm-2">
+                        <div class="col-sm-3">
                             <p:selectOneMenu id="enableService" onchange="toggleServerStatus()" value="#{harvestingSetsPage.oaiServerStatusRadio}">
                                 <f:selectItem itemLabel="#{bundle['harvestserver.service.disabled']}" itemValue="0" />
                                 <f:selectItem itemLabel="#{bundle['harvestserver.service.enabled']}" itemValue="1" />
@@ -67,12 +67,12 @@
                                 <div id="no-clients-message" class="panel panel-default">
                                     <div class="panel-body">
                                         <span class="help-block h3">#{bundle['harvestserver.noSets.why.header']}</span>
-                                        <ul>
+                                        <ul class="text-block">
                                             <li><h:outputText value="#{bundle['harvestserver.noSets.why.reason1']}" escape="false"/></li>
                                             <li><h:outputText value="#{bundle['harvestserver.noSets.why.reason2']}" escape="false"/></li>
                                         </ul>
                                         <span class="help-block h3">#{bundle['harvestserver.noSets.how.header']}</span>
-                                        <ul>
+                                        <ul class="text-block">
                                             <li><h:outputText value="#{bundle['harvestserver.noSets.how.tip1']}" escape="false"/></li>
                                             <li>
                                                 <h:outputFormat value="#{bundle['harvestserver.noSets.how.tip2']}" escape="false">
@@ -80,7 +80,7 @@
                                                 </h:outputFormat>
                                             </li>
                                         </ul>
-                                        <p>
+                                        <p class="text-block">
                                             <h:outputFormat value="#{bundle['harvestserver.noSets.getStarted']}" escape="false">
                                                 <f:param value="#{settingsWrapper.guidesBaseUrl}"/>
                                                 <f:param value="#{settingsWrapper.guidesVersion}"/>
