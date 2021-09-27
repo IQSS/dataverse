@@ -562,6 +562,22 @@ public abstract class AbstractApiBean {
         return Response.ok().entity(data).type(mediaType).build();
     }
 
+    protected <T> Response created(String uri, T objectToBeSerialized) {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        ApiResponseDTO<T> response = new ApiResponseDTO<>(STATUS_OK, Status.CREATED.getStatusCode(), objectToBeSerialized);
+
+        String serializedObj = Try.of(() -> objectMapper.writeValueAsString(response))
+                .getOrElseThrow(throwable -> new SerializationException("There was a problem with serializing object",
+                        throwable));
+
+        return Response.created(URI.create(uri))
+                .type(MediaType.APPLICATION_JSON_TYPE)
+                .entity(serializedObj)
+                .build();
+    }
+
+
     protected Response created(String uri, JsonObjectBuilder bld) {
         return Response.created(URI.create(uri))
                 .entity(Json.createObjectBuilder()

@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssigneeServiceBean;
 import edu.harvard.iq.dataverse.S3PackageImporter;
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
+import edu.harvard.iq.dataverse.api.dto.DatasetLockDTO;
 import edu.harvard.iq.dataverse.api.dto.SubmitForReviewDataDTO;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.batch.jobs.importer.ImportMode;
@@ -200,7 +201,7 @@ public class Datasets extends AbstractApiBean {
 
     @Inject
     private DataFileCreator dataFileCreator;
-    
+
     @Inject
     private DatasetThumbnailService datasetThumbnailService;
 
@@ -1779,7 +1780,11 @@ public class Datasets extends AbstractApiBean {
                 }
             }
 
-            return ok(locks.stream().map(lock -> jsonPrinter.json(lock)).collect(jsonPrinter.toJsonArray()));
+            List<DatasetLockDTO> allLocks = locks.stream()
+                    .map(l -> new DatasetLockDTO.Converter().convert(l))
+                    .collect(Collectors.toList());
+
+            return ok(allLocks);
 
         } catch (WrappedResponse wr) {
             return wr.getResponse();

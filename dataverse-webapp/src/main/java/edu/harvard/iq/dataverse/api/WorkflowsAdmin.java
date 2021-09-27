@@ -1,6 +1,7 @@
 package edu.harvard.iq.dataverse.api;
 
 import edu.harvard.iq.dataverse.api.annotations.ApiWriteOperation;
+import edu.harvard.iq.dataverse.api.dto.WorkflowDTO;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetRepository;
@@ -71,7 +72,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
             Workflow wf = jp.parseWorkflow(jsonWorkflow);
             Workflow managedWf = workflows.save(wf);
 
-            return created("/admin/workflows/" + managedWf.getId(), jsonPrinter.json(managedWf));
+            return created("/admin/workflows/" + managedWf.getId(),new WorkflowDTO.Converter().convert(managedWf));
         } catch (JsonParseException ex) {
             return badRequest("Can't parse Json: " + ex.getMessage());
         }
@@ -123,7 +124,7 @@ public class WorkflowsAdmin extends AbstractApiBean {
     public Response getDefault(@PathParam("triggerType") String triggerType) {
         try {
             return workflows.getDefaultWorkflow(TriggerType.valueOf(triggerType))
-                    .map(wf -> ok(jsonPrinter.json(wf)))
+                    .map(wf -> ok(new WorkflowDTO.Converter().convert(wf)))
                     .orElse(notFound("no default workflow"));
         } catch (IllegalArgumentException iae) {
             return badRequest("Unknown trigger type '" + triggerType + "'. Available triggers: " + Arrays.toString(TriggerType.values()));
@@ -146,9 +147,9 @@ public class WorkflowsAdmin extends AbstractApiBean {
     @Path("/{identifier}")
     public Response getWorkflow(@PathParam("identifier") String identifier) {
         try {
-            long idtf = Long.parseLong(identifier);
-            return workflows.getWorkflow(idtf)
-                    .map(wf -> ok(jsonPrinter.json(wf)))
+            long id = Long.parseLong(identifier);
+            return workflows.getWorkflow(id)
+                    .map(w -> ok(new WorkflowDTO.Converter().convert(w)))
                     .orElse(notFound("Can't find workflow with id " + identifier));
         } catch (NumberFormatException nfe) {
             return badRequest("workflow identifier has to be numeric.");

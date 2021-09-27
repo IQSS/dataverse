@@ -1,6 +1,5 @@
 package edu.harvard.iq.dataverse.util.json;
 
-import com.google.common.collect.Lists;
 import edu.harvard.iq.dataverse.citation.CitationFactory;
 import edu.harvard.iq.dataverse.common.NullSafeJsonBuilder;
 import edu.harvard.iq.dataverse.common.Util;
@@ -12,10 +11,8 @@ import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.Rest
 import edu.harvard.iq.dataverse.persistence.datafile.license.FileTermsOfUse.TermsOfUseType;
 import edu.harvard.iq.dataverse.persistence.datafile.license.License;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetDistributor;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldType;
-import edu.harvard.iq.dataverse.persistence.dataset.DatasetLock;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.MetadataBlock;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
@@ -23,10 +20,6 @@ import edu.harvard.iq.dataverse.persistence.dataverse.DataverseContact;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseFacet;
 import edu.harvard.iq.dataverse.persistence.dataverse.DataverseTheme;
 import edu.harvard.iq.dataverse.persistence.group.ExplicitGroup;
-import edu.harvard.iq.dataverse.persistence.group.IpAddress;
-import edu.harvard.iq.dataverse.persistence.group.IpAddressRange;
-import edu.harvard.iq.dataverse.persistence.group.IpGroup;
-import edu.harvard.iq.dataverse.persistence.group.ShibGroup;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticationProviderRow;
 import edu.harvard.iq.dataverse.persistence.user.BuiltinUser;
@@ -35,8 +28,6 @@ import edu.harvard.iq.dataverse.persistence.user.Permission;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssigneeDisplayInfo;
 import edu.harvard.iq.dataverse.persistence.user.RoleAssignment;
 import edu.harvard.iq.dataverse.persistence.user.User;
-import edu.harvard.iq.dataverse.persistence.workflow.Workflow;
-import edu.harvard.iq.dataverse.persistence.workflow.WorkflowStepData;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
@@ -44,13 +35,10 @@ import org.apache.commons.lang.StringUtils;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -68,7 +56,6 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static edu.harvard.iq.dataverse.common.NullSafeJsonBuilder.jsonObjectBuilder;
-import static java.util.stream.Collectors.toList;
 
 /**
  * Convert objects to Json.
@@ -146,58 +133,11 @@ public class JsonPrinter {
         return bld;
     }
 
-    public JsonObjectBuilder json(DatasetLock lock) {
-        return jsonObjectBuilder()
-                .add("lockType", lock.getReason().toString())
-                .add("date", lock.getStartTime().toString())
-                .add("user", lock.getUser().getUserIdentifier())
-                .add("message", lock.getInfo());
-
-    }
-
     public JsonObjectBuilder json(RoleAssigneeDisplayInfo d) {
         return jsonObjectBuilder()
                 .add("title", d.getTitle())
                 .add("email", d.getEmailAddress())
                 .add("affiliation", d.getAffiliation());
-    }
-
-    public JsonObjectBuilder json(IpGroup grp) {
-        // collect single addresses
-        List<String> singles = grp.getRanges().stream().filter(IpAddressRange::isSingleAddress)
-                .map(IpAddressRange::getBottom)
-                .map(IpAddress::toString).collect(toList());
-        // collect "real" ranges
-        List<List<String>> ranges = grp.getRanges().stream().filter(rng -> !rng.isSingleAddress())
-                .map(rng -> Arrays.asList(rng.getBottom().toString(), rng.getTop().toString()))
-                .collect(toList());
-
-        JsonObjectBuilder bld = jsonObjectBuilder()
-                .add("alias", grp.getPersistedGroupAlias())
-                .add("identifier", grp.getIdentifier())
-                .add("id", grp.getId())
-                .add("name", grp.getDisplayName())
-                .add("description", grp.getDescription());
-
-        if (!singles.isEmpty()) {
-            bld.add("addresses", asJsonArray(singles));
-        }
-
-        if (!ranges.isEmpty()) {
-            JsonArrayBuilder rangesBld = Json.createArrayBuilder();
-            ranges.forEach(r -> rangesBld.add(Json.createArrayBuilder().add(r.get(0)).add(r.get(1))));
-            bld.add("ranges", rangesBld);
-        }
-
-        return bld;
-    }
-
-    public JsonObjectBuilder json(ShibGroup grp) {
-        return jsonObjectBuilder()
-                .add("name", grp.getName())
-                .add("attribute", grp.getAttribute())
-                .add("pattern", grp.getPattern())
-                .add("id", grp.getId());
     }
 
     public JsonArrayBuilder rolesToJson(List<DataverseRole> role) {
@@ -219,27 +159,6 @@ public class JsonPrinter {
         }
         if (role.getOwner() != null && role.getOwner().getId() != null) {
             bld.add("ownerId", role.getOwner().getId());
-        }
-
-        return bld;
-    }
-
-    public JsonObjectBuilder json(Workflow wf) {
-        JsonObjectBuilder bld = jsonObjectBuilder();
-        bld.add("name", wf.getName());
-        if (wf.getId() != null) {
-            bld.add("id", wf.getId());
-        }
-
-        if (wf.getSteps() != null && !wf.getSteps().isEmpty()) {
-            JsonArrayBuilder arr = Json.createArrayBuilder();
-            for (WorkflowStepData stp : wf.getSteps()) {
-                arr.add(jsonObjectBuilder().add("stepType", stp.getStepType())
-                                .add("provider", stp.getProviderId())
-                                .add("parameters", mapToObject(stp.getStepParameters()))
-                                .add("requiredSettings", mapToObject(stp.getStepSettings())));
-            }
-            bld.add("steps", arr);
         }
 
         return bld;
@@ -406,17 +325,6 @@ public class JsonPrinter {
         return filesArr;
     }
 
-    public JsonObjectBuilder json(DatasetDistributor dist) {
-        return jsonObjectBuilder()
-                .add("displayOrder", dist.getDisplayOrder())
-                .add("version", dist.getVersion())
-                .add("abbreviation", json(dist.getAbbreviation()))
-                .add("affiliation", json(dist.getAffiliation()))
-                .add("logo", json(dist.getLogo()))
-                .add("name", json(dist.getName()))
-                .add("url", json(dist.getUrl()));
-    }
-
     public JsonObjectBuilder jsonByBlocks(List<DatasetField> fields, boolean excludeEmailFromExport) {
         JsonObjectBuilder blocksBld = jsonObjectBuilder();
 
@@ -444,17 +352,6 @@ public class JsonPrinter {
 
         blockBld.add("fields", parsedFields);
         return blockBld;
-    }
-
-    public JsonObject json(DatasetField dfv) {
-        if (dfv.isEmpty()) {
-            return null;
-        } else {
-            JsonArrayBuilder fieldArray = new JsonDatasetFieldsPrinter().json(Lists.newArrayList(dfv),
-                                                                                            true);
-            JsonArray out = fieldArray.build();
-            return out.getJsonObject(0);
-        }
     }
 
     public JsonObjectBuilder json(MetadataBlock blk) {
@@ -727,22 +624,6 @@ public class JsonPrinter {
         } else {
             return null;
         }
-    }
-
-    /**
-     * Takes a map, returns a Json object for this map.
-     * If map is {@code null}, returns {@code null}.
-     *
-     * @param in the map to be translated
-     * @return a Json Builder of the map, or {@code null}.
-     */
-    public JsonObjectBuilder mapToObject(Map<String, String> in) {
-        if (in == null) {
-            return null;
-        }
-        JsonObjectBuilder b = jsonObjectBuilder();
-        in.keySet().forEach(k -> b.add(k, in.get(k)));
-        return b;
     }
 
     // -------------------- PRIVATE --------------------
