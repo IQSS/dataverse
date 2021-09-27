@@ -1,0 +1,16 @@
+{
+    "datasetVersion": {
+        "metadataBlocks": {
+            "citation": {
+                "fields": [
+                    {
+                        "value": "Only A Title",
+                        "typeClass": "primitive",
+                        "multiple": false,
+                        "typeName": "title"
+                    }
+                ]
+            }
+        }
+    }
+}
