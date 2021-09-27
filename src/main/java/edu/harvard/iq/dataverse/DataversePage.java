@@ -1205,11 +1205,15 @@ public class DataversePage implements java.io.Serializable {
     	}
    		String label = DataAccess.getStorageDriverLabelFor(storageDriverId);
    		if(fromAncestor) {
-   			label = label + " " + BundleUtil.getStringFromBundle("dataverse.storage.inherited");
+   			label = label + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
    		} else {
-   			label = label + " " + BundleUtil.getStringFromBundle("dataverse.storage.default");
+   			label = label + " " + BundleUtil.getStringFromBundle("dataverse.default");
    		}
    		return label;
+    }
+    
+    public Set<Entry<String, String>> getMetadataLanguages() {
+        return settingsWrapper.getMetadataLanguages(this.dataverse).entrySet();
     }
     
     public Set<Entry<String, String>> getCurationLabelSetOptions() {
