@@ -86,7 +86,6 @@ import edu.harvard.iq.dataverse.dataaccess.DataAccess;
 import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataaccess.S3AccessIO;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.UnforcedCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RevokeRoleCommand;
@@ -2823,9 +2822,8 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
     }
     
-    
     /** 
-     * API to find curation assignements and statuses
+     * API to find curation assignments and statuses
      * 
      * @return
      * @throws WrappedResponse
@@ -2843,38 +2841,45 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-        
+
         List<DataverseRole> allRoles = dataverseRoleService.findAll();
         List<DataverseRole> curationRoles = new ArrayList<DataverseRole>();
-        allRoles.forEach(r -> {if(r.permissions().contains(Permission.PublishDataset)) curationRoles.add(r);});
+        allRoles.forEach(r -> {
+            if (r.permissions().contains(Permission.PublishDataset))
+                curationRoles.add(r);
+        });
         HashMap<String, HashSet<String>> assignees = new HashMap<String, HashSet<String>>();
-        curationRoles.forEach(r-> {assignees.put(r.getAlias(), null);});
-        
-        StringBuilder csvSB = new StringBuilder(String.join(",", 
-                BundleUtil.getStringFromBundle("dataset"), 
-                BundleUtil.getStringFromBundle("datasets.api.creationdate"), 
-                BundleUtil.getStringFromBundle("datasets.api.modificationdate"), 
+        curationRoles.forEach(r -> {
+            assignees.put(r.getAlias(), null);
+        });
+
+        StringBuilder csvSB = new StringBuilder(String.join(",",
+                BundleUtil.getStringFromBundle("dataset"),
+                BundleUtil.getStringFromBundle("datasets.api.creationdate"),
+                BundleUtil.getStringFromBundle("datasets.api.modificationdate"),
                 BundleUtil.getStringFromBundle("datasets.api.curationstatus"),
                 String.join(",", assignees.keySet())));
         for (Dataset dataset : datasetSvc.findAllUnpublished()) {
-                List<RoleAssignment> ras = permissionService.assignmentsOn(dataset);
-                curationRoles.forEach(r-> {assignees.put(r.getAlias(), new HashSet<String>());});
-                for (RoleAssignment ra : ras) {
-                    if (curationRoles.contains(ra.getRole())) {
-                        assignees.get(ra.getRole().getAlias()).add(ra.getAssigneeIdentifier());
-                    }
+            List<RoleAssignment> ras = permissionService.assignmentsOn(dataset);
+            curationRoles.forEach(r -> {
+                assignees.put(r.getAlias(), new HashSet<String>());
+            });
+            for (RoleAssignment ra : ras) {
+                if (curationRoles.contains(ra.getRole())) {
+                    assignees.get(ra.getRole().getAlias()).add(ra.getAssigneeIdentifier());
                 }
-                String name = dataset.getCurrentName().replace("\"","\"\"");
-                String status = dataset.getLatestVersion().getExternalStatusLabel();
-                String url = systemConfig.getDataverseSiteUrl() + dataset.getTargetUrl() + dataset.getGlobalId().asString();
-                String date = new SimpleDateFormat("yyyy-MM-dd").format(dataset.getCreateDate());
-                String modDate = new SimpleDateFormat("yyyy-MM-dd").format(dataset.getModificationTime());
-                String hyperlink = "\"=HYPERLINK(\"\"" + url + "\"\",\"\"" + name + "\"\")\"";
-                List<String> sList = new ArrayList<String>();
-                assignees.entrySet().forEach(e-> sList.add(e.getValue().size()==0 ? "": String.join(";", e.getValue())));
-                csvSB.append("\n").append(String.join(",", hyperlink, date, modDate, status==null ? "": status, String.join(",",  sList)));
+            }
+            String name = dataset.getCurrentName().replace("\"", "\"\"");
+            String status = dataset.getLatestVersion().getExternalStatusLabel();
+            String url = systemConfig.getDataverseSiteUrl() + dataset.getTargetUrl() + dataset.getGlobalId().asString();
+            String date = new SimpleDateFormat("yyyy-MM-dd").format(dataset.getCreateDate());
+            String modDate = new SimpleDateFormat("yyyy-MM-dd").format(dataset.getModificationTime());
+            String hyperlink = "\"=HYPERLINK(\"\"" + url + "\"\",\"\"" + name + "\"\")\"";
+            List<String> sList = new ArrayList<String>();
+            assignees.entrySet().forEach(e -> sList.add(e.getValue().size() == 0 ? "" : String.join(";", e.getValue())));
+            csvSB.append("\n").append(String.join(",", hyperlink, date, modDate, status == null ? "" : status, String.join(",", sList)));
         }
         csvSB.append("\n");
-    return ok(csvSB.toString(), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "datasets.status.csv");
+        return ok(csvSB.toString(), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "datasets.status.csv");
     }
 }

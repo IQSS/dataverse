@@ -1223,7 +1223,9 @@ public class DataversePage implements java.io.Serializable {
             }
             // Add an entry for disabled
             setNames.put(SystemConfig.CURATIONLABELSDISABLED, SystemConfig.CURATIONLABELSDISABLED);
-            allowedSetNames.forEach(name -> {setNames.put(name,  name);});
+            allowedSetNames.forEach(name -> {
+                setNames.put(name, name);
+            });
         }
         return setNames.entrySet();
     }
@@ -1246,9 +1248,9 @@ public class DataversePage implements java.io.Serializable {
         }
         if (setName != null) {
             if (fromAncestor) {
-                setName = setName + " " + BundleUtil.getStringFromBundle("dataverse.storage.inherited");
+                setName = setName + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
             } else {
-                setName = setName + " " + BundleUtil.getStringFromBundle("dataverse.storage.default");
+                setName = setName + " " + BundleUtil.getStringFromBundle("dataverse.default");
             }
         }
         return setName;
