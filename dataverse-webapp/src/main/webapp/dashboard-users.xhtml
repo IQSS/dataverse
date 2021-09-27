@@ -209,15 +209,15 @@
                                 <div style="grid-column: 1;">
                                     <b>#{bundle['dashboard.list_users.tbl_header.authProviderFactoryAlias']}</b>:
                                 </div>
-                                <div style="grid-column: 2; width: 200%">
+                                <div style="grid-column: 2">
                                     <h:outputText value="#{DashboardUsersPage.selectedUserInfo.authenticator}"/>
                                 </div>
 
                                 <div style="grid-column: 1;">
                                     <b>#{bundle['dashboard.list_users.moreDialog.emailStatus']}</b>:
                                 </div>
-                                <div style="grid-column: 2; width: 200%">
-                                    <p class="form-control-static #{DashboardUsersPage.selectedUserInfo.isEmailVerified() ? 'text-success' : 'text-danger'}">
+                                <div style="grid-column: 2">
+                                    <p class="#{DashboardUsersPage.selectedUserInfo.isEmailVerified() ? 'text-success' : 'text-danger'}">
                                         <h:outputText
                                                 styleClass="glyphicon #{DashboardUsersPage.selectedUserInfo.isEmailVerified() ?
                                             'glyphicon-ok' : 'glyphicon-ban-circle'}"/>
@@ -229,7 +229,7 @@
                                 <div style="grid-column: 1;">
                                     <b>#{bundle['dashboard.list_users.moreDialog.emailNotificationsLanguage']}</b>:
                                 </div>
-                                <div style="grid-column: 2; width: 200%">
+                                <div style="grid-column: 2;">
                                     <h:outputText value="#{DashboardUsersPage.selectedUserInfo.notificationsLanguage}"/>
                                 </div>
                             </div>
