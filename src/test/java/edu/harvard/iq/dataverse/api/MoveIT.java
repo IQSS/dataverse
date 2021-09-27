@@ -55,9 +55,7 @@ public class MoveIT {
         Response noPermToCreateDataset = UtilIT.createRandomDatasetViaNativeApi(curatorDataverseAlias1, authorApiToken);
         noPermToCreateDataset.prettyPrint();
         noPermToCreateDataset.then().assertThat()
-                .statusCode(UNAUTHORIZED.getStatusCode())
-                .body("message", equalTo("User @" + authorUsername + " is not permitted to perform requested action."));
-
+                .statusCode(UNAUTHORIZED.getStatusCode());
         Response grantAuthorAddDataset = UtilIT.grantRoleOnDataverse(curatorDataverseAlias1, DataverseRole.DS_CONTRIBUTOR.toString(), "@" + authorUsername, curatorApiToken);
         grantAuthorAddDataset.prettyPrint();
         grantAuthorAddDataset.then().assertThat()
