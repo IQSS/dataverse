@@ -1,21 +1,13 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Did you encounter something unexpected or incorrect in the Dataverse software? We'd like to hear about it!
 title: ''
 labels: ''
 assignees: ''
 
 ---
 <!--
-Thank you for contributing to the Dataverse Project!
-
-NOTE: Make sure you search the issue tracker to verify this bug has not been submitted already.
-
-Issue tracker: https://github.com/IQSS/dataverse/issues
-
-If there is an existing open issue that matches the issue you want to report, please add a comment to it.
-
-If there is no pre-existing issue or it has been closed, please proceed with creating this bug issue.
+Thank you for contributing to the Dataverse Project through the creation of a bug report!
 
 WARNING: If this is a security issue it should be reported privately to security@dataverse.org
 
@@ -30,13 +22,13 @@ Start below this comment section.
 * When does this issue occur?
 
 
-* Which page does it occurs on?
+* Which page(s) does it occurs on?
 
 
 * What happens?
 
 
-* To whom does it occur (anonymous visitor, editor, administrator)?
+* To whom does it occur (all users, curators, superusers)?
 
 
 * What did you expect to happen?
