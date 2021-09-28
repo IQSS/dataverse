@@ -2815,10 +2815,11 @@ To create a harvesting set you must supply a JSON file that contains the followi
 An example JSON file would look like this:
 
   {
-   "name”:"ffAuthor",
+   "name":"ffAuthor",
    "definition":"authorName:Finch, Fiona",
    "description":"Fiona Finch’s Datasets"
   }
+
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
@@ -2853,6 +2854,7 @@ An example JSON file would look like this:
    "definition":"authorName:Finch, Fiona AND subject:trees",
    "description":"Fiona Finch’s Datasets with subject of trees"
   }
+
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
