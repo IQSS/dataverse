@@ -2,6 +2,7 @@ package edu.harvard.iq.dataverse.search;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.DataFileTag;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
@@ -117,6 +118,8 @@ public class IndexServiceBean {
     SettingsServiceBean settingsService;
     @EJB
     SolrClientService solrClientService;
+    @EJB
+    DataFileServiceBean dataFileService;
 
     @EJB
     VariableServiceBean variableService;
@@ -937,22 +940,35 @@ public class IndexServiceBean {
                 logger.fine(
                         "We are indexing a draft version of a dataset that has a released version. We'll be checking file metadatas if they are exact clones of the released versions.");
             }
+            Date date=java.util.Calendar.getInstance().getTime();
+                System.out.print("Start file check: " + date );
             for (FileMetadata fileMetadata : fileMetadatas) {
                 
                 boolean indexThisMetadata = true;
+
                 if (checkForDuplicateMetadata) {
-                    
-                    logger.fine("Checking if this file metadata is a duplicate.");
+                    logger.fine("Checking if this file metadata is a duplicate.");                    
+                    if (fileMetadata.getDataFile() != null) {
+                        FileMetadata findReleasedFileMetadata = dataFileService.findFileMetadataByDatasetVersionIdAndDataFileId(dataset.getReleasedVersion().getId(), fileMetadata.getDataFile().getId());
+                        if (findReleasedFileMetadata != null) {
+                            if ((fileMetadata.getDataFile().isRestricted() == findReleasedFileMetadata.getDataFile().isRestricted())) {
+                                if (fileMetadata.contentEquals(findReleasedFileMetadata)
+                                        && variableMetadataUtil.compareVariableMetadata(findReleasedFileMetadata, fileMetadata)) {
+                                    indexThisMetadata = false;
+                                    logger.fine("This file metadata hasn't changed since the released version; skipping indexing.");
+                                } else {
+                                    logger.fine("This file metadata has changed since the released version; we want to index it!");
+                                }
+                            } else {
+                                logger.fine("This file's restricted status has changed since the released version; we want to index it!");
+                            }
+                        }
+                    }
+
+                    /*
                     for (FileMetadata releasedFileMetadata : dataset.getReleasedVersion().getFileMetadatas()) {
                         if (fileMetadata.getDataFile() != null && fileMetadata.getDataFile().equals(releasedFileMetadata.getDataFile())) {
-                            /*
-                             * Duplicate if metadata matches and, for full text indexing and the
-                             * SearchFields.ACCESS field, if the restricted status of the file hasn't
-                             * changed. To address the case where full text indexing was on when a file was
-                             * not restricted and it is now restricted and full text indexing has been shut
-                             * off, we need to check for the change in restricted status regardless of
-                             * whether full text indexing is on now.
-                             */
+
                             if ((fileMetadata.getDataFile().isRestricted() == releasedFileMetadata.getDataFile().isRestricted())) {
                                 if (fileMetadata.contentEquals(releasedFileMetadata)
                                         && variableMetadataUtil.compareVariableMetadata(releasedFileMetadata,fileMetadata)
@@ -968,6 +984,7 @@ public class IndexServiceBean {
                             break;
                         }
                     }
+            */
                 }
                 if (indexThisMetadata) {
                     
@@ -1242,7 +1259,8 @@ public class IndexServiceBean {
                 }
             }
         }
-        
+                Date        date=java.util.Calendar.getInstance().getTime();
+                System.out.print("End file check: " + date );
         try {
             solrClientService.getSolrClient().add(docs);
             solrClientService.getSolrClient().commit();
