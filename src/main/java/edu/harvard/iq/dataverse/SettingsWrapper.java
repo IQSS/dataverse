@@ -383,11 +383,9 @@ public class SettingsWrapper implements java.io.Serializable {
 
     public List<String> getAllowedExternalStatuses(Dataset d) {
         String setName = d.getEffectiveCurationLabelSetName();
-        logger.info("Set name: " + setName);
         if(setName.equals(SystemConfig.CURATIONLABELSDISABLED)) {
             return new ArrayList<String>();
         }
-        logger.info(Strings.concat(",", systemConfig.getCurationLabels().keySet()));
         String[] labelArray = systemConfig.getCurationLabels().get(setName);
         if(labelArray==null) {
             return new ArrayList<String>();

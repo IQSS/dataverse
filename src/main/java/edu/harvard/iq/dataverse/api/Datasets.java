@@ -70,7 +70,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.RemoveLockCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SetDatasetCitationDateCommand;
-import edu.harvard.iq.dataverse.engine.command.impl.SetExternalStatusCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.SetCurationStatusCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLCommand;
@@ -177,6 +177,7 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.omnifaces.el.functions.Strings;
 
 import com.amazonaws.services.s3.model.PartETag;
 
@@ -1759,26 +1760,56 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
-    @PUT
-    @Path("{id}/setExternalCurationStatus")
-    public Response setExternalCurationStatus(@PathParam("id") String idSupplied, @QueryParam("label") String label) {
-        logger.info("Label is " + label);
+    @GET
+    @Path("{id}/curationStatus")
+    public Response getCurationStatus(@PathParam("id") String idSupplied) {
         try {
-            execCommand(new SetExternalStatusCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), label));
-            return ok("External Curation Status updated");
+            Dataset ds = findDatasetOrDie(idSupplied);
+            DatasetVersion dsv = ds.getLatestVersion();
+            if (dsv.isDraft() && permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), ds).has(Permission.PublishDataset)) {
+                return response(req -> ok(dsv.getExternalStatusLabel()));
+            } else {
+                return error(Response.Status.FORBIDDEN, "You are not permitted to view the curation status of this dataset.");
+            }
         } catch (WrappedResponse wr) {
-            //Just change to Bad Request and send
+            return wr.getResponse();
+        }
+    }
+
+    @PUT
+    @Path("{id}/curationStatus")
+    public Response setCurationStatus(@PathParam("id") String idSupplied, @QueryParam("label") String label) {
+        Dataset ds = null;
+        User u = null;
+        try {
+            ds = findDatasetOrDie(idSupplied);
+            u = findUserOrDie();
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        try {
+            execCommand(new SetCurationStatusCommand(createDataverseRequest(u), ds, label));
+            return ok("Curation Status updated");
+        } catch (WrappedResponse wr) {
+            // Just change to Bad Request and send
             return Response.fromResponse(wr.getResponse()).status(Response.Status.BAD_REQUEST).build();
         }
     }
     
     @DELETE
-    @Path("{id}/setExternalCurationStatus")
-    public Response deleteExternalCurationStatus(@PathParam("id") String idSupplied) {
-
+    @Path("{id}/curationStatus")
+    public Response deleteCurationStatus(@PathParam("id") String idSupplied) {
+        Dataset ds = null;
+        User u = null;
         try {
-            execCommand(new SetExternalStatusCommand(createDataverseRequest(findUserOrDie()), findDatasetOrDie(idSupplied), null));
-            return ok("External Curation Status deleted");
+            ds = findDatasetOrDie(idSupplied);
+            u = findUserOrDie();
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        try {
+            execCommand(new SetCurationStatusCommand(createDataverseRequest(u), ds, null));
+            return ok("Curation Status deleted");
         } catch (WrappedResponse wr) {
             //Just change to Bad Request and send
             return Response.fromResponse(wr.getResponse()).status(Response.Status.BAD_REQUEST).build();
@@ -2602,12 +2633,21 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     public Response getCurationLabelSet(@PathParam("identifier") String dvIdtf,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse { 
         
+        try {
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        
         Dataset dataset; 
         
         try {
             dataset = findDatasetOrDie(dvIdtf);
         } catch (WrappedResponse ex) {
-            return error(Response.Status.NOT_FOUND, "No such dataset");
+            return ex.getResponse();
         }
             
         return response(req -> ok(dataset.getEffectiveCurationLabelSetName()));
@@ -2635,7 +2675,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         try {
             dataset = findDatasetOrDie(dvIdtf);
         } catch (WrappedResponse ex) {
-            return error(Response.Status.NOT_FOUND, "No such dataset");
+            return ex.getResponse();
         }
         if (SystemConfig.CURATIONLABELSDISABLED.equals(curationLabelSet) || SystemConfig.DEFAULTCURATIONLABELSET.equals(curationLabelSet)) {
             dataset.setCurationLabelSetName(curationLabelSet);
@@ -2673,7 +2713,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         try {
             dataset = findDatasetOrDie(dvIdtf);
         } catch (WrappedResponse ex) {
-            return error(Response.Status.NOT_FOUND, "No such dataset");
+            return ex.getResponse();
         }
         
         dataset.setCurationLabelSetName(SystemConfig.DEFAULTCURATIONLABELSET);
@@ -2681,6 +2721,31 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         return ok("Curation Label Set reset to default: " + SystemConfig.DEFAULTCURATIONLABELSET);
     }
 
+    @GET
+    @Path("{identifier}/allowedCurationLabels")
+    public Response getAllowedCurationLabels(@PathParam("identifier") String dvIdtf,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse { 
+        
+        try {
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        
+        Dataset dataset; 
+        
+        try {
+            dataset = findDatasetOrDie(dvIdtf);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+        String[] labelArray = systemConfig.getCurationLabels().get(dataset.getEffectiveCurationLabelSetName());
+        return response(req -> ok(Strings.concat(",", labelArray)));
+    }
+    
     @GET
     @Path("{identifier}/timestamps")
     @Produces(MediaType.APPLICATION_JSON)
@@ -2869,7 +2934,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
                     assignees.get(ra.getRole().getAlias()).add(ra.getAssigneeIdentifier());
                 }
             }
-            String name = dataset.getCurrentName().replace("\"", "\"\"");
+            String name = "\"" + dataset.getCurrentName().replace("\"", "\"\"") + "\"";
             String status = dataset.getLatestVersion().getExternalStatusLabel();
             String url = systemConfig.getDataverseSiteUrl() + dataset.getTargetUrl() + dataset.getGlobalId().asString();
             String date = new SimpleDateFormat("yyyy-MM-dd").format(dataset.getCreateDate());

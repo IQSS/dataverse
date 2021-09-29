@@ -33,13 +33,13 @@ import com.beust.jcommander.Strings;
 import com.google.api.LabelDescriptor;
 
 @RequiredPermissions(Permission.PublishDataset)
-public class SetExternalStatusCommand extends AbstractDatasetCommand<Dataset> {
+public class SetCurationStatusCommand extends AbstractDatasetCommand<Dataset> {
 
-    private static final Logger logger = Logger.getLogger(SetExternalStatusCommand.class.getName());
+    private static final Logger logger = Logger.getLogger(SetCurationStatusCommand.class.getName());
     
     String label;
     
-    public SetExternalStatusCommand(DataverseRequest aRequest, Dataset dataset, String label) {
+    public SetCurationStatusCommand(DataverseRequest aRequest, Dataset dataset, String label) {
         super(aRequest, dataset);
         this.label=label;
     }
@@ -55,9 +55,7 @@ public class SetExternalStatusCommand extends AbstractDatasetCommand<Dataset> {
         } else {
             String setName = getDataset().getEffectiveCurationLabelSetName();
             if(setName.equals(SystemConfig.CURATIONLABELSDISABLED)) {
-                logger.info("External status labeling disbaled for dataset id: " + getDataset().getId());
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure.disabled"), this);
-                
             }
             String[] labelArray = ctxt.systemConfig().getCurationLabels().get(setName);
             boolean found = false;
@@ -69,7 +67,7 @@ public class SetExternalStatusCommand extends AbstractDatasetCommand<Dataset> {
                 }
             }
             if(!found) {
-                logger.info("Label not found: " + label + " in set " + setName);
+                logger.fine("Label not found: " + label + " in set " + setName);
                 throw new IllegalCommandException(BundleUtil.getStringFromBundle("dataset.status.failure.notallowed"), this);
             }
         }

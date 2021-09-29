@@ -7,6 +7,7 @@ import com.jayway.restassured.response.Response;
 import java.util.logging.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.junit.Ignore;
 import com.jayway.restassured.path.json.JsonPath;
@@ -22,6 +23,8 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import edu.harvard.iq.dataverse.DataFile;
+import edu.harvard.iq.dataverse.DataverseServiceBean;
+
 import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.authorization.users.PrivateUrlUser;
@@ -2299,7 +2302,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals(200, deleteUserResponse.getStatusCode());
 
     }
-
+    
     @Test
     public void testReCreateDataset() {
 
@@ -2366,6 +2369,59 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         Response deleteUserResponse = UtilIT.deleteUser(username);
         deleteUserResponse.prettyPrint();
         assertEquals(200, deleteUserResponse.getStatusCode());
+    }
+
+    @Test
+    public void testCurationLabelAPIs() {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String username = UtilIT.getUsernameFromResponse(createUser);
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverseResponse = UtilIT.createRandomDataverse(apiToken);
+        createDataverseResponse.prettyPrint();
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
+
+        SystemConfig systemConfig = Mockito.mock(SystemConfig.class);
+        Map<String, String[]> labelSets = new HashMap<String, String[]>();
+        labelSets.put("StandardProcess", new String[] { "Author contacted", "Privacy Review", "Awaiting paper publication", "Final Approval"});
+        labelSets.put("AlternateProcess", new String[] {"State 1","State 2","State 3"});
+        Mockito.when(systemConfig.getCurationLabels()).thenReturn(labelSets);
+
+        //Set curation label set on dataverse
+        //Valid option, bad user
+        Response setDataverseCurationLabelSetResponse = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "AlternateProcess");
+        setDataverseCurationLabelSetResponse.then().assertThat().statusCode(FORBIDDEN.getStatusCode());
+        
+        Response makeSuperUser = UtilIT.makeSuperUser(username);
+        assertEquals(200, makeSuperUser.getStatusCode());
+
+        //Non-existent option
+        setDataverseCurationLabelSetResponse = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "OddProcess");
+        setDataverseCurationLabelSetResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        //Valid option, bad user
+        setDataverseCurationLabelSetResponse = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "AlternateProcess");
+        setDataverseCurationLabelSetResponse.then().assertThat().statusCode(OK.getStatusCode());
+
+        
+        // Create a dataset using native api
+        Response createDatasetResponse = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDatasetResponse.prettyPrint();
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDatasetResponse);
+        // Get the curation label set in use
+        Response response = UtilIT.getDatasetCurationLabelSet(datasetId, apiToken);
+        response.then().assertThat().statusCode(OK.getStatusCode());
+        //Verify that the set name is what was set on the dataverse
+        String labelSetName = getData(response.getBody().asString());
+        assertEquals("AlternateProcess", labelSetName);
+        
+        // Now set a label
+        //Option from the wrong set
+        response = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "Author contacted");
+        response.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        // Valid option
+        response = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "State 1");
+        response.then().assertThat().statusCode(OK.getStatusCode());
     }
 
     private String getData(String body) {

@@ -1922,7 +1922,7 @@ public class Admin extends AbstractApiBean {
 
     @PUT
     @Path("/dataverse/{alias}/curationLabelSet")
-    public Response setCurationLabelSet(@PathParam("alias") String alias, String label) throws WrappedResponse {
+    public Response setCurationLabelSet(@PathParam("alias") String alias, @QueryParam("name") String name) throws WrappedResponse {
         Dataverse dataverse = dataverseSvc.findByAlias(alias);
         if (dataverse == null) {
             return error(Response.Status.NOT_FOUND, "Could not find dataverse based on alias supplied: " + alias + ".");
@@ -1935,19 +1935,19 @@ public class Admin extends AbstractApiBean {
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
-        if (SystemConfig.CURATIONLABELSDISABLED.equals(label) || SystemConfig.DEFAULTCURATIONLABELSET.equals(label)) {
-            dataverse.setCurationLabelSetName(label);
-            return ok("Curation Label Set Name set to: " + label);
+        if (SystemConfig.CURATIONLABELSDISABLED.equals(name) || SystemConfig.DEFAULTCURATIONLABELSET.equals(name)) {
+            dataverse.setCurationLabelSetName(name);
+            return ok("Curation Label Set Name set to: " + name);
         } else {
             for (String setName : systemConfig.getCurationLabels().keySet()) {
-                if (setName.equals(label)) {
-                    dataverse.setCurationLabelSetName(label);
+                if (setName.equals(name)) {
+                    dataverse.setCurationLabelSetName(name);
                     return ok("Curation Label Set Name set to: " + setName);
                 }
             }
         }
         return error(Response.Status.BAD_REQUEST,
-                "No Curation Label Set found for : " + label);
+                "No Curation Label Set found for : " + name);
     }
 
     @DELETE
@@ -1966,7 +1966,7 @@ public class Admin extends AbstractApiBean {
             return wr.getResponse();
         }
         dataverse.setCurationLabelSetName(SystemConfig.DEFAULTCURATIONLABELSET);
-        return ok("Storage reset to default: " + DataAccess.DEFAULT_STORAGE_DRIVER_IDENTIFIER);
+        return ok("Curation Label Set reset to default: " + SystemConfig.DEFAULTCURATIONLABELSET);
     }
 
     @GET
