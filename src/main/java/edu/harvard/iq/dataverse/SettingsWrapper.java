@@ -60,7 +60,9 @@ public class SettingsWrapper implements java.io.Serializable {
     private String siteUrl = null; 
     
     private Dataverse rootDataverse = null; 
- 
+    
+    private String guidesVersion = null;
+    
     public String get(String settingKey) {
         if (settingsMap == null) {
             initSettingsMap();
@@ -137,9 +139,7 @@ public class SettingsWrapper implements java.io.Serializable {
 
     
     public String getGuidesBaseUrl() {
-        if (true)
-
-            if (guidesBaseUrl == null) {
+        if (guidesBaseUrl == null) {
             String saneDefault = "https://guides.dataverse.org";
         
             guidesBaseUrl = getValueForKey(SettingsServiceBean.Key.GuidesBaseUrl);
@@ -158,7 +158,10 @@ public class SettingsWrapper implements java.io.Serializable {
     }
 
     public String getGuidesVersion() {
-        return systemConfig.getGuidesVersion();
+        if (guidesVersion == null) {
+            guidesVersion = systemConfig.getGuidesVersion();
+        }
+        return guidesVersion;
     }
     
     public String getDataverseSiteUrl() {
