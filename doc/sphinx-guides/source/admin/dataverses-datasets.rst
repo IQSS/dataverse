@@ -68,7 +68,7 @@ Datasets within a given Dataverse collection can be annotated with a Curation La
 
 The curationLabelSet to use within a given collection can be set by specifying its name using::
  
-    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT -d $curationLabelSet http://$SERVER/api/admin/dataverse/$dataverse-alias/curationLabelSet
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT -d $curationLabelSetName http://$SERVER/api/admin/dataverse/$dataverse-alias/curationLabelSet
     
 The reserved word "DISABLED" can be used to disable this feature within a given Dataverse collection. 
     
