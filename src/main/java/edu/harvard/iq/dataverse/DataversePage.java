@@ -99,8 +99,8 @@ public class DataversePage implements java.io.Serializable {
     @EJB
     SystemConfig systemConfig;
     @EJB DataverseRoleServiceBean dataverseRoleServiceBean;
-    @Inject
-    SearchIncludeFragment searchIncludeFragment;
+    ///@Inject
+    ///SearchIncludeFragment searchIncludeFragment;
     @Inject
     DataverseRequestServiceBean dvRequestService;
     @Inject
@@ -310,6 +310,8 @@ public class DataversePage implements java.io.Serializable {
     public String init() {
         //System.out.println("_YE_OLDE_QUERY_COUNTER_");  // for debug purposes
 
+        logger.info("Inside the init method.");
+        
         if (this.getAlias() != null || this.getId() != null || this.getOwnerId() == null) {// view mode for a dataverse
             if (this.getAlias() != null) {
                 dataverse = dataverseService.findByAlias(this.getAlias());

@@ -88,6 +88,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     }
     
     public void initBreadcrumbs(DvObject dvObject) {
+        logger.info("initializing breadcrumbs.");
             if (dvObject == null) {
                 return;
             }
@@ -262,6 +263,16 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     
     private String redirectToRoot(){
         return "dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias();
+    }
+    
+    public boolean isUnnecessaryCheck1() {
+        logger.info("Unnecessary check 1 in dataverse header fragment.");
+        return true; 
+    }
+    
+    public boolean isUnnecessaryCheck2() {
+        logger.info("Unnecessary check 2 in dataverse header fragment.");
+        return true; 
     }
     
     public boolean isSignupAllowed() {

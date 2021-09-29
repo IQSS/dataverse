@@ -54,9 +54,13 @@ public class SettingsWrapper implements java.io.Serializable {
 
     private Map<String, String> settingsMap;
     
+    private Map<String, Object> configValuesMap; 
+    
     // Related to a specific setting for guide urls
     private String guidesBaseUrl = null; 
-
+    private String guidesVersion = null; 
+    
+    
  
     public String get(String settingKey) {
         if (settingsMap == null) {
@@ -134,9 +138,7 @@ public class SettingsWrapper implements java.io.Serializable {
 
     
     public String getGuidesBaseUrl() {
-        if (true)
-
-            if (guidesBaseUrl == null) {
+        if (guidesBaseUrl == null) {
             String saneDefault = "https://guides.dataverse.org";
         
             guidesBaseUrl = getValueForKey(SettingsServiceBean.Key.GuidesBaseUrl);
@@ -155,7 +157,10 @@ public class SettingsWrapper implements java.io.Serializable {
     }
 
     public String getGuidesVersion() {
-        return systemConfig.getGuidesVersion();
+        if (guidesVersion == null) {
+            guidesVersion = systemConfig.getGuidesVersion();
+        }
+        return guidesVersion; 
     }
     
     public Long getZipDownloadLimit(){

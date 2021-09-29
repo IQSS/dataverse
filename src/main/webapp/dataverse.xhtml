@@ -28,26 +28,28 @@
                     <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
                     <f:viewAction action="#{DataversePage.init}"/>
                     <f:viewAction action="#{dataverseHeaderFragment.initBreadcrumbs(DataversePage.dataverse)}"/>
-                    <f:viewParam name="alias" value="#{SearchIncludeFragment.dataverseAlias}"/>
-                    <f:viewParam name="q" value="#{SearchIncludeFragment.query}"/>
-                    <f:viewParam name="types" value="#{SearchIncludeFragment.selectedTypesString}"/>
-                    <f:viewParam name="fq1" value="#{SearchIncludeFragment.fq1}"/>
-                    <f:viewParam name="fq0" value="#{SearchIncludeFragment.fq0}"/>
-                    <f:viewParam name="fq2" value="#{SearchIncludeFragment.fq2}"/>
-                    <f:viewParam name="fq3" value="#{SearchIncludeFragment.fq3}"/>
-                    <f:viewParam name="fq4" value="#{SearchIncludeFragment.fq4}"/>
-                    <f:viewParam name="fq5" value="#{SearchIncludeFragment.fq5}"/>
-                    <f:viewParam name="fq6" value="#{SearchIncludeFragment.fq6}"/>
-                    <f:viewParam name="fq7" value="#{SearchIncludeFragment.fq7}"/>
-                    <f:viewParam name="fq8" value="#{SearchIncludeFragment.fq8}"/>
-                    <f:viewParam name="fq9" value="#{SearchIncludeFragment.fq9}"/>
-                    <f:viewParam name="sort" value="#{SearchIncludeFragment.sortField}"/>
-                    <f:viewParam name="order" value="#{SearchIncludeFragment.sortOrder}"/>
-                    <f:viewParam name="page" value="#{SearchIncludeFragment.page}"/>
+                    <f:viewAction action="#{permissionsWrapper.showAddDataverseLink()}"/>
+                    <f:viewAction action="#{permissionsWrapper.showAddDatasetLink()}"/>
+                    <!-- L.A.f:viewParam name="alias" value="_{SearchIncludeFragment.dataverseAlias}"/ -->
+                    <!-- L.A.f:viewParam name="q" value="_{SearchIncludeFragment.query}"/ -->
+                    <!-- L.A.f:viewParam name="types" value="_{SearchIncludeFragment.selectedTypesString}"/ -->
+                    <!-- L.A.f:viewParam name="fq1" value="_{SearchIncludeFragment.fq1}"/ -->
+                    <!-- L.A.f:viewParam name="fq0" value="_{SearchIncludeFragment.fq0}"/ -->
+                    <!-- L.A.f:viewParam name="fq2" value="_{SearchIncludeFragment.fq2}"/ -->
+                    <!-- L.A.f:viewParam name="fq3" value="_{SearchIncludeFragment.fq3}"/ -->
+                    <!-- L.A.f:viewParam name="fq4" value="_{SearchIncludeFragment.fq4}"/ -->
+                    <!-- L.A.f:viewParam name="fq5" value="_{SearchIncludeFragment.fq5}"/ -->
+                    <!-- L.A.f:viewParam name="fq6" value="_{SearchIncludeFragment.fq6}"/ -->
+                    <!-- L.A.f:viewParam name="fq7" value="_{SearchIncludeFragment.fq7}"/ -->
+                    <!-- L.A.f:viewParam name="fq8" value="_{SearchIncludeFragment.fq8}"/ -->
+                    <!-- L.A.f:viewParam name="fq9" value="_{SearchIncludeFragment.fq9}"/ -->
+                    <!-- L.A.f:viewParam name="sort" value="_{SearchIncludeFragment.sortField}"/ -->
+                    <!-- L.A.f:viewParam name="order" value="_{SearchIncludeFragment.sortOrder}"/ -->
+                    <!-- L.A.f:viewParam name="page" value="_{SearchIncludeFragment.page}"/ -->
                     <f:viewParam name="debug" value="#{dataverseSession.debug}"/>
-                    <f:viewParam name="adjustFacetName" value="#{SearchIncludeFragment.adjustFacetName}"/>
-                    <f:viewParam name="adjustFacetNumber" value="#{SearchIncludeFragment.adjustFacetNumber}"/>
-                    <f:viewAction action="#{SearchIncludeFragment.search()}" />
+                    <!-- L.A.f:viewParam name="adjustFacetName" value="_{SearchIncludeFragment.adjustFacetName}"/ -->
+                    <!-- L.A.f:viewParam name="adjustFacetNumber" value="_{SearchIncludeFragment.adjustFacetNumber}"/ -->
+                    <!-- f:viewAction action="_{SearchIncludeFragment.search()}" / -->
                 </f:metadata>
                 <h:form id="dataverseForm">
                     <!-- Edit Mode -->
@@ -138,7 +140,7 @@
                                 </h:outputLabel>
                                 <div class="form-col-container">
                                     <div class="input-group">
-                                        <div class="input-group-addon"><span class="small">#{systemConfig.dataverseSiteUrl}/dataverse/</span></div>
+                                        <div class="input-group-addon"><span class="small">#{settingsWrapper.dataverseSiteUrl}/dataverse/</span></div>
                                         <p:inputText id="identifier" styleClass="form-control" 
                                                      validator="#{DataversePage.validateAlias}" 
                                                      value="#{DataversePage.dataverse.alias}" 
@@ -422,7 +424,8 @@
                         <div id="actionButtonBlock" class="col-xs-12 button-block margin-bottom" jsf:rendered="#{!widgetWrapper.widgetView}">
                             <div class="row">
                                 <!-- Metrics for Root Dataverse -->
-                                <div id="metrics-block1" class="col-xs-4" jsf:rendered="#{DataversePage.isRootDataverse() and !settingsWrapper.rsyncOnly}">
+                                <div id="metrics-block1" class="col-xs-4" jsf:rendered="false">
+                                <!-- L.A.div id="metrics-block1" class="col-xs-4" jsf:rendered="_{DataversePage.isRootDataverse() and !settingsWrapper.rsyncOnly}" -->
                                     <div id="metrics-label" class="col-xs-4 small text-center">
                                         <h:outputLink value="#{systemConfig.metricsUrl}" target="_blank" title="#{bundle['metrics.title.tip']}" rendered="#{systemConfig.metricsUrl != null}">
                                             <span class="glyphicon glyphicon-stats"/> #{bundle['metrics.title']}
@@ -488,7 +491,8 @@
                                                             #{bundle['dataverse.link']}
                                                         </p:commandLink>
                                                     </li>
-                                                    <li class="#{SearchIncludeFragment.mode == 'search' ? '' : 'disabled'}">
+                                                    <li class="">
+                                                    <!-- L.A.li class="_{SearchIncludeFragment.mode == 'search' ? '' : 'disabled'}" -->
                                                         <p:commandLink action="#{DataversePage.setupLinkingPopup('savedSearch')}"
                                                                        oncomplete="PF('linkDataverseForm').show()"
                                                                        update=":linkDataverseForm"
@@ -580,7 +584,8 @@
                             </div>
                             <!-- END: ActionButtonBlock -->
                         </div>
-                        <ui:fragment rendered="#{SearchIncludeFragment.filterQueries.size() == 0 and SearchIncludeFragment.mode != SearchIncludeFragment.searchModeString}">
+                        <ui:fragment rendered="false">
+                        <!-- ui:fragment rendered="_{SearchIncludeFragment.filterQueries.size() == 0 and SearchIncludeFragment.mode != SearchIncludeFragment.searchModeString}" -->
                             <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
                             <div class="row margin-bottom" jsf:rendered="#{!empty DataversePage.dataverse.description and !widgetWrapper.widgetView}">
                                 <div id="dataverseDesc" class="col-xs-12">
@@ -680,7 +685,7 @@
                 <!-- Search/Browse Facets Panel -->
                 <p:fragment id="searchResults">
                     <ui:fragment rendered="#{empty DataversePage.editMode}">
-                        <ui:include src="search-include-fragment.xhtml"/>
+                        <!-- ui:include src="search-include-fragment.xhtml"/ -->
                     </ui:fragment>
                 </p:fragment>
                 <!-- END Search/Browse Facets Panel -->
@@ -688,7 +693,7 @@
                     <p:dialog id="shareDialog" header="#{bundle['dataverse.share.dataverseShare']}" widgetVar="shareDialog" modal="true">
                         <h:form styleClass="form-horizontal"> 
                         <p class="help-block">#{bundle['dataverse.share.dataverseShare.tip']}</p>
-                        <div id="sharrre-widget" data-url="#{systemConfig.dataverseSiteUrl}/dataverse/#{DataversePage.dataverse.alias}" data-text="#{bundle['dataverse.share.dataverseShare.shareText']}"></div>
+                        <div id="sharrre-widget" data-url="#{settingsWrapper.dataverseSiteUrl}/dataverse/#{DataversePage.dataverse.alias}" data-text="#{bundle['dataverse.share.dataverseShare.shareText']}"></div>
                         <div class="button-block">
                             <button class="btn btn-default" onclick="PF('shareDialog').hide()" type="button">
                                 #{bundle.close}
@@ -735,22 +740,24 @@
                                     </div>
                                 </div>
                                 <ui:fragment rendered="#{DataversePage.linkMode == 'SAVEDSEARCH'}">
-                                    <div class="form-group" jsf:rendered="#{!empty SearchIncludeFragment.query}">
+                                    <div class="form-group" jsf:rendered="false">
+                                    <!-- L.A.div class="form-group" jsf:rendered="_{!empty SearchIncludeFragment.query}" -->
                                         <label class="col-sm-4 control-label">
                                          #{bundle['dataverse.savedsearch.searchquery']}
                                         </label>
                                         <div class="col-sm-7">
                                             <p class="form-control-static">
-                                            #{SearchIncludeFragment.query.toString()}
+                                            _{SearchIncludeFragment.query.toString()}
                                             </p>
                                         </div>
                                     </div>
-                                    <div class="form-group" jsf:rendered="#{!empty SearchIncludeFragment.filterQueriesDebug}">
+                                    <!-- div class="form-group" jsf:rendered="_{!empty SearchIncludeFragment.filterQueriesDebug}" -->
+                                    <div class="form-group" jsf:rendered="false">
                                         <label class="col-sm-4 control-label">
                                          #{bundle['dataverse.savedsearch.filterQueries']}
                                         </label>
                                         <div class="col-sm-7">
-                                            <ui:repeat value="#{SearchIncludeFragment.filterQueriesDebug}" var="fq">
+                                            <ui:repeat value="_{SearchIncludeFragment.filterQueriesDebug}" var="fq">
                                                 <p class="form-control-static"><h:outputText value="#{fq}"/></p>
                                             </ui:repeat>
                                         </div>
