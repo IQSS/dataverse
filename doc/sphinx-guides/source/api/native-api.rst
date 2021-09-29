@@ -2812,14 +2812,13 @@ To create a harvesting set you must supply a JSON file that contains the followi
 - Definition: A search query to select the datasets to be harvested. For example, a query containing authorName:YYY would include all datasets where ‘YYY’ is the authorName.
 - Description: Text that describes the harvesting set. The description appears in the Manage Harvesting Sets dashboard and in API responses. This field is optional.
 
-An example JSON file would look like this:
+An example JSON file would look like this::
 
   {
    "name":"ffAuthor",
    "definition":"authorName:Finch, Fiona",
    "description":"Fiona Finch’s Datasets"
   }
-
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
@@ -2848,13 +2847,12 @@ To modify a harvesting set, you must supply a JSON file that contains one or bot
 
 Note that you may not modify the name of an existing harvesting set.
 
-An example JSON file would look like this:
+An example JSON file would look like this::
 
   {
    "definition":"authorName:Finch, Fiona AND subject:trees",
    "description":"Fiona Finch’s Datasets with subject of trees"
   }
-
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
 
