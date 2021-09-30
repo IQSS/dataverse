@@ -386,7 +386,7 @@ public class SettingsWrapper implements java.io.Serializable {
         }
     }
     
-    Dataverse getRootDataverse() {
+    public Dataverse getRootDataverse() {
         if (rootDataverse == null) {
             rootDataverse = dataverseService.findRootDataverse();
         }
