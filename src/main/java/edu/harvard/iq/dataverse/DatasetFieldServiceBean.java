@@ -641,11 +641,12 @@ public class DatasetFieldServiceBean implements java.io.Serializable {
      */
     public boolean isValidCVocValue(DatasetFieldType dft, String value) {
         JsonObject jo = getCVocConf(true).get(dft.getId());
-        JsonArray vocabs = jo.getJsonArray("vocabs");
+        JsonObject vocabs = jo.getJsonObject("vocabs");
         boolean valid = false;
         boolean couldBeFreeText = true;
         boolean freeTextAllowed = jo.getBoolean("allow-free-text", false);
-        for (JsonObject vocab : vocabs.getValuesAs(JsonObject.class)) {
+        for (String vocabName : vocabs.keySet()) {
+            JsonObject vocab = vocabs.getJsonObject(vocabName);
             String baseUri = vocab.getString("uriSpace");
             if (value.startsWith(baseUri)) {
                 valid = true;
