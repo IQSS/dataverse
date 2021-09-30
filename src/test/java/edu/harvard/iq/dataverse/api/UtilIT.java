@@ -2676,7 +2676,7 @@ public class UtilIT {
     static Response setDataverseCurationLabelSet(String alias, String apiToken, String labelSetName) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .put("/api/dataverses/" + alias + "/curationLabelSet?name=" + labelSetName);
+                .put("/api/admin/dataverse/" + alias + "/curationLabelSet?name=" + labelSetName);
         return response;
     }
     
