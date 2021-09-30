@@ -57,7 +57,7 @@ You should expect a 200 ("OK") response indicating that the label has been set. 
 Delete a Draft Dataset's Curation Label
 ---------------------------------------
 
-To delete the curation label on a draft Datasetspecify the Dataset ID (DATASET_ID) or Persistent identifier (DATASET_PID).
+To delete the curation label on a draft Dataset, specify the Dataset ID (DATASET_ID) or Persistent identifier (DATASET_PID).
 
 .. code-block:: bash
 
