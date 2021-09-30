@@ -39,4 +39,4 @@ Developer Guide
    dataset-migration-api 
    workflows
    fontcustom
-   curation-label-api
+   
