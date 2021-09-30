@@ -81,28 +81,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
             StorageIO<DataFile> storageIO = DataAccess.getStorageIO(dataFile, daReq);
 
             if (storageIO != null) {
-                List<Range> ranges = new ArrayList<>();
-                long fileSize = storageIO.getDataFile().getFilesize();
                 try {
-                    String range = null;
-                    HttpHeaders headers = di.getRequestHttpHeaders();
-                    if (headers != null) {
-                        range = headers.getHeaderString("Range");
-                    }
-                    long offset = 0;
-                    try {
-                        ranges = getRanges(range, fileSize);
-                    } catch (Exception ex) {
-                        logger.fine("Exception caught processing Range header: " + ex.getLocalizedMessage());
-                        // The message starts with "Datafile" because otherwise the message is not passed
-                        // to the user due to how WebApplicationExceptionHandler works.
-                        throw new NotFoundException("Datafile download error due to Range header: " + ex.getLocalizedMessage());
-                    }
-                    if (!ranges.isEmpty()) {
-                        // For now we only support a single range.
-                        offset = ranges.get(0).getStart();
-                    }
-                    storageIO.setOffset(offset);
                     storageIO.open();
                 } catch (IOException ioex) {
                     //throw new WebApplicationException(Response.Status.SERVICE_UNAVAILABLE);
@@ -293,8 +272,6 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
 
                             if ("original".equals(di.getConversionParamValue())) {
                                 logger.fine("stored original of an ingested file requested");
-                                // Get orginal file size before storageIO is reassigned to prevent an NPE.
-                                fileSize = storageIO.getDataFile().getOriginalFileSize();
                                 storageIO = StoredOriginalFile.retreive(storageIO);
                             } else {
                                 // Other format conversions: 
@@ -425,7 +402,32 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         httpHeaders.add("Content-Type", mimeType + "; name=\"" + finalFileName + "\"");
 
                         long contentSize;
+                        // This is hard-coded to false and could probably be removed some day,
+                        // but for now it's illustrative.
                         boolean useChunkedTransfer = false;
+
+                        // User may have requested a range of bytes.
+                        List<Range> ranges = new ArrayList<>();
+                        long fileSize = storageIO.getSize();
+                        String range = null;
+                        HttpHeaders headers = di.getRequestHttpHeaders();
+                        if (headers != null) {
+                            range = headers.getHeaderString("Range");
+                        }
+                        long offset = 0;
+                        try {
+                            ranges = getRanges(range, fileSize);
+                        } catch (Exception ex) {
+                            logger.fine("Exception caught processing Range header: " + ex.getLocalizedMessage());
+                            // The message starts with "Datafile" because otherwise the message is not passed
+                            // to the user due to how WebApplicationExceptionHandler works.
+                            throw new NotFoundException("Datafile download error due to Range header: " + ex.getLocalizedMessage());
+                        }
+                        if (!ranges.isEmpty()) {
+                            // For now we only support a single range.
+                            offset = ranges.get(0).getStart();
+                        }
+                        storageIO.setOffset(offset);
                         //if ((contentSize = getFileSize(di, storageIO.getVarHeader())) > 0) {
                         if ((contentSize = getContentSize(storageIO)) > 0 && ranges.isEmpty()) {
                             logger.fine("Content size (retrieved from the AccessObject): " + contentSize);
@@ -436,6 +438,10 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             logger.fine("Content size (Range header in use): " + rangeContentSize);
                             httpHeaders.add("Content-Length", rangeContentSize);
                         } else {
+                            // Neither a range request, nor do we know the size. Must be dynamically
+                            // generated, such as a subsetting request.
+                            // Note the chunk lines below are commented out because Payara will see
+                            // that the header is not present and switch into chunk mode.
                             //httpHeaders.add("Transfer-encoding", "chunked");
                             //useChunkedTransfer = true;
                         }
@@ -450,11 +456,15 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         // any extra content, such as the variable header for the 
                         // subsettable files: 
                         if (storageIO.getVarHeader() != null) {
+                            logger.fine("storageIO.getVarHeader().getBytes().length: " + storageIO.getVarHeader().getBytes().length);
                             if (storageIO.getVarHeader().getBytes().length > 0) {
                                 if (useChunkedTransfer) {
                                     String chunkSizeLine = String.format("%x\r\n", storageIO.getVarHeader().getBytes().length);
                                     outstream.write(chunkSizeLine.getBytes());
                                 }
+                                // FIXME: check if ranges.isEmpty() here. These bytes, the header, is being written
+                                // even if we are only requesting the last bytes of a file. So you see all or part
+                                // of the header, even if you don't request it.
                                 outstream.write(storageIO.getVarHeader().getBytes());
                                 if (useChunkedTransfer) {
                                     outstream.write(chunkClose);
@@ -462,29 +472,42 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             }
                         }
 
-                        // Default to reading the whole file. We'll count down as we write.
-                        long leftToRead = fileSize;
-                        if (!ranges.isEmpty()) {
-                            // Read a range of bytes instead of the whole file.
-                            // For now we only support a single range.
-                            leftToRead = ranges.get(0).getLength();
-                        }
-                        while ((bufsize = instream.read(bffr)) != -1) {
-                            if (useChunkedTransfer) {
-                                String chunkSizeLine = String.format("%x\r\n", bufsize);
-                                outstream.write(chunkSizeLine.getBytes());
-                            }
-                            if ((leftToRead -= bufsize) > 0) {
-                                // Just do a normal write. Potentially lots to go. Don't break.
+                        // Dynamic streams, etc. Normal operation. No leftToRead.
+                        if (ranges.isEmpty()) {
+                            logger.fine("Normal, non-range request of file id " + dataFile.getId());
+                            while ((bufsize = instream.read(bffr)) != -1) {
+                                if (useChunkedTransfer) {
+                                    String chunkSizeLine = String.format("%x\r\n", bufsize);
+                                    outstream.write(chunkSizeLine.getBytes());
+                                }
                                 outstream.write(bffr, 0, bufsize);
-                            } else {
-                                // Get those last bytes or bytes equal to bufsize. Last one. Then break.
-                                outstream.write(bffr, 0, (int) leftToRead + bufsize);
-                                break;
+                                if (useChunkedTransfer) {
+                                    outstream.write(chunkClose);
+                                }
                             }
-                            if (useChunkedTransfer) {
-                                outstream.write(chunkClose);
+                        } else {
+                            logger.fine("Range request of file id " + dataFile.getId());
+                            // Read a range of bytes instead of the whole file. We'll count down as we write.
+                            // For now we only support a single range.
+                            long leftToRead = ranges.get(0).getLength();
+                            while ((bufsize = instream.read(bffr)) != -1) {
+                                if (useChunkedTransfer) {
+                                    String chunkSizeLine = String.format("%x\r\n", bufsize);
+                                    outstream.write(chunkSizeLine.getBytes());
+                                }
+                                if ((leftToRead -= bufsize) > 0) {
+                                    // Just do a normal write. Potentially lots to go. Don't break.
+                                    outstream.write(bffr, 0, bufsize);
+                                } else {
+                                    // Get those last bytes or bytes equal to bufsize. Last one. Then break.
+                                    outstream.write(bffr, 0, (int) leftToRead + bufsize);
+                                    break;
+                                }
+                                if (useChunkedTransfer) {
+                                    outstream.write(chunkClose);
+                                }
                             }
+
                         }
 
                         if (useChunkedTransfer) {

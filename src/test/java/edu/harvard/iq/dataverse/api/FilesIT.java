@@ -11,8 +11,12 @@ import static edu.harvard.iq.dataverse.api.AccessIT.apiToken;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import java.io.File;
+import java.io.IOException;
 import static java.lang.Thread.sleep;
 import java.math.BigDecimal;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1589,30 +1593,40 @@ public class FilesIT {
         Integer fileId = 0;
         fileId = localFile;
         String nullApiToken = null;
+        String nullFormat = null;
+        String nullThumbnail = null;
         String byteRange = null;
         byteRange = "2-";
         // java.lang.IndexOutOfBoundsException: Range [0, 0 + -2) out of bounds for length 32768
-        Response downloadFile = UtilIT.downloadFile(fileId, byteRange, nullApiToken);
+        Response downloadFile = UtilIT.downloadFile(fileId, byteRange, nullFormat, nullThumbnail, nullApiToken);
         downloadFile.prettyPrint();
     }
 
-    @Ignore
+//    @Ignore
     @Test
     public void test0to100() {
         Integer localFile = 16;
+        Integer tabularLocalFile = 156;
         Integer s3file = 11;
         Integer fileId = 0;
         fileId = localFile;
-        fileId = s3file;
+//        fileId = s3file;
+        fileId = tabularLocalFile;
         String nullApiToken = null;
+        String format = null;
+        format = "original";
+        String nullThumbnail = null;
         String byteRange = null;
-        byteRange = "0-9"; // first ten
-        byteRange = "-9"; // last ten
-        byteRange = "9-"; // last ten
-        Response downloadFile = UtilIT.downloadFile(fileId, byteRange, nullApiToken);
+//        byteRange = "0-9"; // first ten
+        byteRange = "0-150"; 
+//        byteRange = "-9"; // last ten
+//        byteRange = "9-"; // last ten
+        Response downloadFile = UtilIT.downloadFile(fileId, byteRange, format, nullThumbnail, nullApiToken);
         downloadFile.prettyPrint();
     }
 
+    // test Range header with thumbnails, etc.
+    
     @Ignore
     @Test
     public void testMultipleRanges() {
@@ -1622,9 +1636,95 @@ public class FilesIT {
         fileId = localFile;
 //        fileId = s3file;
         String nullApiToken = null;
+        String nullFormat = null;
+        String nullThumbnail = null;
         String byteRange = null;
         byteRange = "0-9,90-99";
-        Response downloadFile = UtilIT.downloadFile(fileId, byteRange, nullApiToken);
+        Response downloadFile = UtilIT.downloadFile(fileId, byteRange, nullFormat, nullThumbnail, nullApiToken);
         downloadFile.prettyPrint();
     }    
+
+    @Test
+    public void testRange() throws IOException {
+
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        String authorUsername = UtilIT.getUsernameFromResponse(createUser);
+        String authorApiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(authorApiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, authorApiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        Integer datasetId = UtilIT.getDatasetIdFromResponse(createDataset);
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+
+        Path pathToCsv = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "data.csv");
+        String contentOfCsv = ""
+                + "name,pounds,species\n"
+                + "Marshall,40,dog\n"
+                + "Tiger,17,cat\n"
+                + "Panther,21,cat\n";
+        java.nio.file.Files.write(pathToCsv, contentOfCsv.getBytes());
+
+        Response uploadFileCsv = UtilIT.uploadFileViaNative(datasetId.toString(), pathToCsv.toString(), authorApiToken);
+        uploadFileCsv.prettyPrint();
+        uploadFileCsv.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("data.csv"));
+
+        Integer fileIdCsv = JsonPath.from(uploadFileCsv.body().asString()).getInt("data.files[0].dataFile.id");
+
+        assertTrue("Failed test if Ingest Lock exceeds max duration " + pathToCsv, UtilIT.sleepForLock(datasetId.longValue(), "Ingest", authorApiToken, UtilIT.MAXIMUM_INGEST_LOCK_DURATION));
+
+        
+        String byteRange = "0-9"; // first ten
+//        byteRange = "0-29"; // first thirty
+//        byteRange = "-40";
+        String format = null;
+//        format = "original";
+//        String nullApiToken = null;
+        Response downloadFile = UtilIT.downloadFile(fileIdCsv, byteRange, format, null, authorApiToken);
+        downloadFile.prettyPrint();
+
+        if (true) return;
+        Response uploadFile = UtilIT.uploadFile(datasetPid, "trees.zip", authorApiToken);
+        uploadFile.prettyPrint();
+        
+//        Response uploadFile = UtilIT.uploadFileViaNative(datasetPid, apiToken, authorApiToken);
+
+        Response getDatasetJson1 = UtilIT.nativeGetUsingPersistentId(datasetPid, authorApiToken);
+        getDatasetJson1.prettyPrint();
+        Long fileIdPng = JsonPath.from(getDatasetJson1.getBody().asString()).getLong("data.latestVersion.files[1].dataFile.id");
+        System.out.println("datafileId: " + fileIdPng);
+        getDatasetJson1.then().assertThat()
+                .statusCode(200);
+
+        String trueOrWidthInPixels = "true";
+        Response getFileThumbnailImageA = UtilIT.getFileThumbnail(fileIdPng.toString(), trueOrWidthInPixels, authorApiToken);
+        getFileThumbnailImageA.then().assertThat()
+                .contentType("image/png")
+                .statusCode(OK.getStatusCode());
+
+        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, authorApiToken);
+        publishDataverse.then().assertThat().statusCode(OK.getStatusCode());
+        Response publishDataset = UtilIT.publishDatasetViaNativeApi(datasetPid, "major", authorApiToken);
+        publishDataset.then().assertThat().statusCode(OK.getStatusCode());
+
+        // Yes, you can get a range of bytes from a thumbnail.
+        String imageThumbPixels = "true";
+        Response downloadThumbnail = UtilIT.downloadFile(fileIdPng.intValue(), "0-149", null, imageThumbPixels, authorApiToken);
+        downloadThumbnail.prettyPrint();
+        downloadThumbnail.then().assertThat().statusCode(OK.getStatusCode());
+        
+
+    }
+
 }
