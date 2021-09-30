@@ -2392,7 +2392,7 @@ Scripts that implement this association for specific service protocols are maint
  
 A JSON Object containing lists of allowed labels (up to 32 characters, spaces allowed) that can be set, via API or UI by users with the permission to publish a dataset. The set of labels allowed 
 for datasets can be selected by a superuser - via the Dataverse collection page (Edit/General Info) or set via API call. 
-The labels in a set should correspond to the states in an organization's curation process and are intended to help users/curators track the progress of a dataset through an externally defined curation process. 
+The labels in a set should correspond to the states in an organization's curation process and are intended to help users/curators track the progress of a dataset through a defined curation process. 
 A dataset may only have one label at a time and if a label is set, it will be removed at publication time. 
 This functionality is disabled when this setting is empty/not set.
 Each set of labels is identified by a curationLabelSet name and a JSON Array of the labels allowed in that set.
