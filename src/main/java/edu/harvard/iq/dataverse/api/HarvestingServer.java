@@ -46,7 +46,9 @@ public class HarvestingServer extends AbstractApiBean {
     private static final Logger logger = Logger.getLogger(HarvestingServer.class.getName()); 
     
     // TODO: this should be available to admin only.
-
+    // TODO: if we decide to update the Harvesting Sets Page to use commands for 
+    // Create, Modify, and Delete we should also add them here.
+    
     @GET
     @Path("/")
     public Response oaiSets(@QueryParam("key") String apiKey) throws IOException {
