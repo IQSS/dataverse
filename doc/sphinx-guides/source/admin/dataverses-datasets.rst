@@ -190,7 +190,7 @@ A dataset can be annotated with a Curation Label to indicate the status of the d
 
 The label is applied to a draft Dataset version via the user interface or API and the available label sets are defined by :ref:`:AllowedCurationLabels <:AllowedCurationLabels>`. Internally, the labels have no effect, and at publication, any existing label will be removed. A reporting API call allows admins to get a list of datasets and their curation statuses.
 
-The label set used for a dataset can be specified via the API as shown below. Only accessible to superusers. ::
+The label set used for a dataset can be specified via the API as shown below. Only accessible to superusers.
  
 The curationLabelSet to use within a given dataset can be set by specifying its name using::
  
