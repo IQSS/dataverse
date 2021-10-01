@@ -245,4 +245,13 @@ public class PasswordResetPage implements java.io.Serializable {
         // FIXME: Pass the errors in.
         return passwordValidatorService.getGoodPasswordDescription(null);
     }
+
+    public String getCustomPasswordResetAlertMessage() {
+        String customPasswordResetAlertMessage = settingsWrapper.getValueForKey(SettingsServiceBean.Key.PVCustomPasswordResetAlertMessage);
+        if(customPasswordResetAlertMessage != null && !customPasswordResetAlertMessage.isEmpty()){
+            return customPasswordResetAlertMessage;
+        } else {
+            return BundleUtil.getStringFromBundle("passwdReset.newPasswd.details");
+        }
+    }
 }
