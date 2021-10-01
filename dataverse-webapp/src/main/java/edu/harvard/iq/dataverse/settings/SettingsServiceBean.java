@@ -637,6 +637,12 @@ public class SettingsServiceBean {
          * storage state.
          */
         ReadonlyMode,
+
+        /**
+         * Maximal size (in bytes) of files that can be uploaded in a single
+         * batch. If set to 0 then there's no limit.
+         */
+        SingleUploadBatchMaxSize
         ;
 
 

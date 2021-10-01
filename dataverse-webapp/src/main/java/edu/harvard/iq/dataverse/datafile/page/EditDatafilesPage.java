@@ -102,7 +102,7 @@ import static java.util.stream.Collectors.toSet;
 public class EditDatafilesPage implements java.io.Serializable {
 
     private static final long TEMP_VALID_TIME_MILLIS = 24 * 60 * 60 * 1000;
-	
+
 	private static final Logger logger = Logger.getLogger(EditDatafilesPage.class.getCanonicalName());
 
     public enum FileEditMode {
@@ -178,6 +178,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     private String versionString = "";
 
+    private long currentBatchSize = 0L;
 
     private boolean saveEnabled = false;
 
@@ -211,13 +212,13 @@ public class EditDatafilesPage implements java.io.Serializable {
         } else {
             logger.fine("File metadatas list hasn't been initialized yet.");
         }
-        // [experimental] 
+        // [experimental]
         // this would be a way to hide any already-uploaded files from the page
         // while a new upload is happening:
         // (the uploadStarted button on the page needs the update="filesTable"
         // attribute added for this to work)
         //if (uploadInProgress) {
-        //    return null; 
+        //    return null;
         //}
 
         return fileMetadatas;
@@ -226,38 +227,38 @@ public class EditDatafilesPage implements java.io.Serializable {
     public void setFileMetadatas(List<FileMetadata> fileMetadatas) {
         this.fileMetadatas = fileMetadatas;
     }
-    
-    /* 
+
+    /*
         The 2 methods below are for setting up the PrimeFaces:dataTabe component
-        used to display the uploaded files, or the files selected for editing. 
-    
-        - isScrollable(): 
-          this supplies the value of the component attribute "scrollable". 
+        used to display the uploaded files, or the files selected for editing.
+
+        - isScrollable():
+          this supplies the value of the component attribute "scrollable".
           When we have more than NUMBER_OF_SCROLL_ROWS worth of files (currently
           set to 25), we will add a scroller to the table, showing NUMBER_OF_SCROLL_ROWS
-          at a time; thus making the page a little bit more useable. 
-          When there is fewer rows, however, the attribute needs to be set to 
-          "false" - because otherwise some (idiosyncratic) amount of white space 
-          is added to the bottom of the table, making the page look silly. 
-    
+          at a time; thus making the page a little bit more useable.
+          When there is fewer rows, however, the attribute needs to be set to
+          "false" - because otherwise some (idiosyncratic) amount of white space
+          is added to the bottom of the table, making the page look silly.
+
         - getScrollHeightPercentage():
-          this method calculates the *percentage* of the total length of the 
-          list of files, such that the resulting table is always NUMBER_OF_SCROLL_ROWS 
-          high. This is *the only way* to keep the number of files shown in the 
+          this method calculates the *percentage* of the total length of the
+          list of files, such that the resulting table is always NUMBER_OF_SCROLL_ROWS
+          high. This is *the only way* to keep the number of files shown in the
           table fixed as the size of the list grows! (the "scrollRows" attribute
           of the p:dataTable component only applies when "liveScroll=true" is being
-          used). 
+          used).
     */
 
     public boolean isScrollable() {
         return !(fileMetadatas == null || fileMetadatas.size() <= NUMBER_OF_SCROLL_ROWS + 1);
     }
-    
+
     /*
-        Any settings, such as the upload size limits, should be saved locally - 
-        so that the db doesn't get hit repeatedly. (this setting is initialized 
+        Any settings, such as the upload size limits, should be saved locally -
+        so that the db doesn't get hit repeatedly. (this setting is initialized
         in the init() method)
-    
+
         This may be "null", signifying unlimited download size.
     */
 
@@ -278,9 +279,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     /*
-        The number of files the GUI user is allowed to upload in one batch, 
-        via drag-and-drop, or through the file select dialog. Now configurable 
-        in the Settings table. 
+        The number of files the GUI user is allowed to upload in one batch,
+        via drag-and-drop, or through the file select dialog. Now configurable
+        in the Settings table.
     */
     public Long getMaxNumberOfFiles() {
         return this.multipleUploadFilesLimit;
@@ -307,7 +308,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public String getDropBoxKey() {
-        // Site-specific DropBox application registration key is configured 
+        // Site-specific DropBox application registration key is configured
         // via a JVM option under glassfish.
         //if (true)return "some-test-key";  // for debugging
 
@@ -344,6 +345,14 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public void setVersionId(Long versionId) {
         this.versionId = versionId;
+    }
+
+    public long getCurrentBatchSize() {
+        return currentBatchSize;
+    }
+
+    public void setCurrentBatchSize(long currentBatchSize) {
+        this.currentBatchSize = currentBatchSize;
     }
 
     public String initCreateMode(DatasetVersion version, List<DataFile> newFilesList, List<FileMetadata> selectedFileMetadatasList) {
@@ -388,7 +397,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // Set Working Version and Dataset by Datasaet Id and Version
             //retrieveDatasetVersionResponse = datasetVersionService.retrieveDatasetVersionById(dataset.getId(), null);
             dataset = datasetDao.find(dataset.getId());
-            // Is the Dataset harvested? (because we don't allow editing of harvested 
+            // Is the Dataset harvested? (because we don't allow editing of harvested
             // files!)
             if (dataset == null || dataset.isHarvested()) {
                 return permissionsWrapper.notFound();
@@ -402,7 +411,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         workingVersion = dataset.getEditVersion();
 
-        // Check if they have permission to modify this dataset: 
+        // Check if they have permission to modify this dataset:
 
         if (!permissionsWrapper.canCurrentUserUpdateDataset(dataset)) {
             return permissionsWrapper.notAuthorized();
@@ -412,7 +421,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
 
         if (mode == FileEditMode.EDIT) {
-            
+
             Set<Long> selectedFileIds = Arrays.asList(StringUtils.split(StringUtils.trimToEmpty(selectedFileIdsString), ','))
                     .stream()
                     .map(NumberUtils::toLong)
@@ -429,11 +438,11 @@ public class EditDatafilesPage implements java.io.Serializable {
 
             populateFileMetadatas(selectedFileIds);
             setUpRsync();
-            // and if no filemetadatas can be found for the specified file ids 
-            // and version id - same deal, send them to the "not found" page. 
-            // (at least for now; ideally, we probably want to show them a page 
-            // with a more informative error message; something alonog the lines 
-            // of - could not find the files for the ids specified; or, these 
+            // and if no filemetadatas can be found for the specified file ids
+            // and version id - same deal, send them to the "not found" page.
+            // (at least for now; ideally, we probably want to show them a page
+            // with a more informative error message; something alonog the lines
+            // of - could not find the files for the ids specified; or, these
             // datafiles are not present in the version specified, etc.
             if (fileMetadatas.size() < 1) {
                 return permissionsWrapper.notFound();
@@ -541,7 +550,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
             if (markedForDelete.getDataFile().isNew()) {
                 logger.fine("this is a brand new file.");
-                // the file was just added during this step, so in addition to 
+                // the file was just added during this step, so in addition to
                 // removing it from the fileMetadatas lists (above), we also remove it from
                 // the newFiles list and the dataset's files, so it never gets saved.
 
@@ -555,7 +564,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
             }
         }
-        
+
         logger.fine("Files was removed from the list - changes will persist after save changes will be executed");
         JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("file.deleted.success", fileNames));
     }
@@ -576,7 +585,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         	logger.warning("Failed to cleanup temporary file " + FileUtil.getFilesTempDirectory());
         }
 	}
-    
+
     private void deleteTempFile(DataFile dataFile) {
         // Before we remove the file from the list and forget about
         // it:
@@ -637,9 +646,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public String save() {
-        // Once all the filemetadatas pass the validation, we'll only allow the user 
+        // Once all the filemetadatas pass the validation, we'll only allow the user
         // to try to save once; (this it to prevent them from creating multiple
-        // DRAFT versions, if the page gets stuck in that state where it 
+        // DRAFT versions, if the page gets stuck in that state where it
         // successfully creates a new version, but can't complete the remaining
         // tasks. -- L.A. 4.2
 
@@ -656,7 +665,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             //SEK 10/15/2018 only apply the following tests if dataset has already been saved.
             if (dataset.getId() != null) {
                 Dataset lockTest = datasetDao.find(dataset.getId());
-                //SEK 09/19/18 Get Dataset again to test for lock just in case the user downloads the rsync script via the api while the 
+                //SEK 09/19/18 Get Dataset again to test for lock just in case the user downloads the rsync script via the api while the
                 // edit files page is open and has already loaded a file in http upload for Dual Mode
                 if (dataset.isLockedFor(DatasetLock.Reason.DcmUpload) || lockTest.isLockedFor(DatasetLock.Reason.DcmUpload)) {
                     logger.log(Level.INFO, "Couldn''t save dataset: {0}", "DCM script has been downloaded for this dataset. Additonal files are not permitted."
@@ -681,11 +690,11 @@ public class EditDatafilesPage implements java.io.Serializable {
                 newFile.getFileMetadata().setTermsOfUse(termsOfUse);
             }
 
-            // Try to save the NEW files permanently: 
+            // Try to save the NEW files permanently:
             List<DataFile> filesAdded = ingestService.saveAndAddFilesToDataset(workingVersion, newFiles);
 
             // reset the working list of fileMetadatas, as to only include the ones
-            // that have been added to the version successfully: 
+            // that have been added to the version successfully:
             fileMetadatas.clear();
             for (DataFile addedFile : filesAdded) {
                 fileMetadatas.add(addedFile.getFileMetadata());
@@ -697,14 +706,14 @@ public class EditDatafilesPage implements java.io.Serializable {
 
             try {
                 // Note that the user may have uploaded provenance metadata file(s)
-                // for some of the new files that have since failed to be permanently saved 
-                // in storage (in the ingestService.saveAndAddFilesToDataset() step, above); 
-                // these files have been dropped from the fileMetadatas list, and we 
-                // are not adding them to the dataset; but the 
+                // for some of the new files that have since failed to be permanently saved
+                // in storage (in the ingestService.saveAndAddFilesToDataset() step, above);
+                // these files have been dropped from the fileMetadatas list, and we
+                // are not adding them to the dataset; but the
                 // provenance update set still has entries for these failed files,
                 // so we are passing the fileMetadatas list to the saveStagedProvJson()
-                // method below - so that it doesn't attempt to save the entries 
-                // that are no longer valid. 
+                // method below - so that it doesn't attempt to save the entries
+                // that are no longer valid.
                 provPopupFragmentBean.saveStagedProvJson(false, fileMetadatas);
             } catch (AbstractApiBean.WrappedResponse ex) {
                 JsfHelper.addFlashErrorMessage(getBundleString("file.metadataTab.provenance.error"));
@@ -731,25 +740,25 @@ public class EditDatafilesPage implements java.io.Serializable {
             return StringUtils.EMPTY;
         }
 
-        // Have we just deleted some draft datafiles (successfully)? 
+        // Have we just deleted some draft datafiles (successfully)?
         // finalize the physical file deletes:
-        // (DataFileService will double-check that the datafiles no 
-        // longer exist in the database, before attempting to delete 
+        // (DataFileService will double-check that the datafiles no
+        // longer exist in the database, before attempting to delete
         // the physical files)
         if (deleteStorageLocations != null) {
             datafileDao.finalizeFileDeletes(deleteStorageLocations);
         }
 
-        saveEnabled = false; 
+        saveEnabled = false;
 
         if (newFiles.size() > 0) {
             logger.fine("clearing newfiles list.");
             newFiles.clear();
             /*
-             - We decided not to bother obtaining persistent ids for new files 
-             as they are uploaded and created. The identifiers will be assigned 
-             later, when the version is published. 
-             
+             - We decided not to bother obtaining persistent ids for new files
+             as they are uploaded and created. The identifiers will be assigned
+             later, when the version is published.
+
             logger.info("starting async job for obtaining persistent ids for files.");
             datasetService.obtainPersistentIdentifiersForDatafiles(dataset);
             */
@@ -768,7 +777,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                     "dataset.message.addFiles.partialSuccess", nFilesTotal - nOldFiles, nNewFiles));
         }
 
-        // Call Ingest Service one more time, to 
+        // Call Ingest Service one more time, to
         // queue the data ingest jobs for asynchronous execution:
         if (mode == FileEditMode.UPLOAD) {
             ingestService.startIngestJobsForDataset(dataset, (AuthenticatedUser) session.getUser());
@@ -874,7 +883,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         uploadComponentId = event.getComponent().getClientId();
 
         // -----------------------------------------------------------
-        // Read JSON object from the output of the DropBox Chooser: 
+        // Read JSON object from the output of the DropBox Chooser:
         // -----------------------------------------------------------
         JsonReader dbJsonReader = Json.createReader(new StringReader(dropBoxSelection));
         JsonArray dbArray = dbJsonReader.readArray();
@@ -918,7 +927,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // -----------------------------------------------------------
             try (InputStream dropBoxStream = this.getDropBoxContent(dropBoxMethod)) {
 
-                // Note: A single uploaded file may produce multiple datafiles - 
+                // Note: A single uploaded file may produce multiple datafiles -
                 // for example, multiple files can be extracted from an uncompressed
                 // zip file.
                 datafiles = dataFileCreator.createDataFiles(dropBoxStream, fileName, "application/octet-stream");
@@ -1043,26 +1052,26 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public void uploadFinished() {
         // This method is triggered from the page, by the <p:upload ... onComplete=...
-        // attribute. 
+        // attribute.
         // Note that its behavior is different from that of of <p:upload ... onStart=...
-        // that's triggered only once, even for a multiple file upload. In contrast, 
-        // onComplete=... gets executed for each of the completed multiple upload events. 
+        // that's triggered only once, even for a multiple file upload. In contrast,
+        // onComplete=... gets executed for each of the completed multiple upload events.
         // So when you drag-and-drop a bunch of files, you CANNOT rely on onComplete=...
-        // to notify the page when the batch finishes uploading! There IS a way 
-        // to detect ALL the current uploads completing: the p:upload widget has 
-        // the property "files", that contains the list of all the files currently 
+        // to notify the page when the batch finishes uploading! There IS a way
+        // to detect ALL the current uploads completing: the p:upload widget has
+        // the property "files", that contains the list of all the files currently
         // uploading; so checking on the size of the list tells you if any uploads
-        // are still in progress. Once it's zero, you know it's all done. 
-        // This is super important - because if the user is uploading 1000 files 
-        // via drag-and-drop, you don't want to re-render the entire page each 
+        // are still in progress. Once it's zero, you know it's all done.
+        // This is super important - because if the user is uploading 1000 files
+        // via drag-and-drop, you don't want to re-render the entire page each
         // time every single of the 1000 uploads finishes!
-        // (check editFilesFragment.xhtml for the exact code handling this; and 
+        // (check editFilesFragment.xhtml for the exact code handling this; and
         // http://stackoverflow.com/questions/20747201/when-multiple-upload-is-finished-in-pfileupload
         // for more info). -- 4.6
         logger.fine("upload finished");
 
-        // Add the file(s) added during this last upload event, single or multiple, 
-        // to the full list of new files, and the list of filemetadatas 
+        // Add the file(s) added during this last upload event, single or multiple,
+        // to the full list of new files, and the list of filemetadatas
         // used to render the page:
 
         for (DataFile dataFile : uploadedFiles) {
@@ -1084,10 +1093,10 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
         }
 
-        // We clear the following duplicate warning labels, because we want to 
-        // only inform the user of the duplicates dropped in the current upload 
-        // attempt - for ex., one batch of drag-and-dropped files, or a single 
-        // file uploaded through the file chooser. 
+        // We clear the following duplicate warning labels, because we want to
+        // only inform the user of the duplicates dropped in the current upload
+        // attempt - for ex., one batch of drag-and-dropped files, or a single
+        // file uploaded through the file chooser.
         dupeFileNamesExisting = null;
         dupeFileNamesNew = null;
         multipleDupesExisting = false;
@@ -1110,6 +1119,9 @@ public class EditDatafilesPage implements java.io.Serializable {
     private String uploadSuccessMessage = null;
     private String uploadComponentId = null;
 
+    public Long getMaxBatchSize() {
+        return settingsService.getValueForKeyAsLong(Key.SingleUploadBatchMaxSize);
+    }
 
     /**
      * Handle native file replace
@@ -1124,12 +1136,20 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         UploadedFile uFile = event.getFile();
 
+        long fileSize = uFile.getSize();
+        if (getMaxBatchSize() > 0 && (currentBatchSize + fileSize) > getMaxBatchSize()) {
+            uploadWarningMessage = BundleUtil.getStringFromBundle("dataset.file.uploadBatchTooBig");
+            uploadComponentId = event.getComponent().getClientId();
+            return;
+        }
+        currentBatchSize += fileSize;
+
         List<DataFile> dFileList = null;
 
         try (InputStream inputStream = uFile.getInputStream()) {
-            // Note: A single uploaded file may produce multiple datafiles - 
+            // Note: A single uploaded file may produce multiple datafiles -
             // for example, multiple files can be extracted from an uncompressed
-            // zip file. 
+            // zip file.
             dFileList = dataFileCreator.createDataFiles(inputStream, uFile.getFileName(), uFile.getContentType());
 
         } catch (IOException | FileExceedsMaxSizeException ex) {
@@ -1142,14 +1162,14 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
 
         // -----------------------------------------------------------
-        // These raw datafiles are then post-processed, in order to drop any files 
-        // already in the dataset/already uploaded, and to correct duplicate file names, etc. 
+        // These raw datafiles are then post-processed, in order to drop any files
+        // already in the dataset/already uploaded, and to correct duplicate file names, etc.
         // -----------------------------------------------------------
         String warningMessage = processUploadedFileList(dFileList);
 
         if (warningMessage != null) {
             uploadWarningMessage = warningMessage;
-            // save the component id of the p:upload widget, so that we could 
+            // save the component id of the p:upload widget, so that we could
             // send an info message there, from elsewhere in the code:
             uploadComponentId = event.getComponent().getClientId();
         }
@@ -1160,8 +1180,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
         }
     }
-    
-    
+
+
     /**
      * After uploading via the site or Dropbox,
      * check the list of DataFile objects
@@ -1183,7 +1203,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         DataFile dataFile;
         String warningMessage = null;
 
-        // NOTE: for native file uploads, the dFileList will only 
+        // NOTE: for native file uploads, the dFileList will only
         // contain 1 file--method is called for every file even if the UI shows "simultaneous uploads"
 
         // -----------------------------------------------------------
@@ -1206,8 +1226,8 @@ public class EditDatafilesPage implements java.io.Serializable {
             }
 
             // -----------------------------------------------------------
-            // Check for duplicates -- e.g. file is already in the dataset, 
-            // or if another file with the same checksum has already been 
+            // Check for duplicates -- e.g. file is already in the dataset,
+            // or if another file with the same checksum has already been
             // uploaded.
             // -----------------------------------------------------------
             if (isFileAlreadyInDataset(dataFile)) {
@@ -1229,8 +1249,8 @@ public class EditDatafilesPage implements java.io.Serializable {
                 // remove temp file
                 deleteTempFile(dataFile);
             } else {
-                // OK, this one is not a duplicate, we want it. 
-                // But let's check if its filename is a duplicate of another 
+                // OK, this one is not a duplicate, we want it.
+                // But let's check if its filename is a duplicate of another
                 // file already uploaded, or already in the dataset:
                 dataFile.getFileMetadata().setLabel(duplicateFilenameCheck(dataFile.getFileMetadata()));
                 if (isTemporaryPreviewAvailable(dataFile.getStorageIdentifier(), dataFile.getContentType())) {
@@ -1239,14 +1259,14 @@ public class EditDatafilesPage implements java.io.Serializable {
                 uploadedFiles.add(dataFile);
                 // We are NOT adding the fileMetadata to the list that is being used
                 // to render the page; we'll do that once we know that all the individual uploads
-                // in this batch (as in, a bunch of drag-and-dropped files) have finished. 
+                // in this batch (as in, a bunch of drag-and-dropped files) have finished.
                 //fileMetadatas.add(dataFile.getFileMetadata());
             }
         }
 
         // -----------------------------------------------------------
         // Format error message for duplicate files
-        // (note the separate messages for the files already in the dataset, 
+        // (note the separate messages for the files already in the dataset,
         // and the newly uploaded ones)
         // -----------------------------------------------------------
         if (dupeFileNamesExisting != null) {
@@ -1407,10 +1427,10 @@ public class EditDatafilesPage implements java.io.Serializable {
     }
 
     public boolean isThumbnailAvailable(FileMetadata fileMetadata) {
-        // new and optimized logic: 
+        // new and optimized logic:
         // - check download permission here (should be cached - so it's free!)
         // - only then ask the file service if the thumbnail is available/exists.
-        // the service itself no longer checks download permissions.  
+        // the service itself no longer checks download permissions.
         if (!fileDownloadHelper.canUserDownloadFile(fileMetadata)) {
             return false;
         }
@@ -1433,7 +1453,7 @@ public class EditDatafilesPage implements java.io.Serializable {
         return lockedFromEditsVar;
     }
 
-    // Methods for edit functions that are performed on one file at a time, 
+    // Methods for edit functions that are performed on one file at a time,
     // in popups that block the rest of the page:
 
     public boolean isDesignatedDatasetThumbnail(FileMetadata fileMetadata) {
@@ -1496,8 +1516,8 @@ public class EditDatafilesPage implements java.io.Serializable {
         logger.fine("saving as the designated thumbnail");
         // We don't need to do anything specific to save this setting, because
         // the setUseAsDatasetThumbnail() method, above, has already updated the
-        // file object appropriately. 
-        // However, once the "save" button is pressed, we want to show a success message, if this is 
+        // file object appropriately.
+        // However, once the "save" button is pressed, we want to show a success message, if this is
         // a new image has been designated as such:
         if (getUseAsDatasetThumbnail() && !alreadyDesignatedAsDatasetThumbnail) {
             String successMessage = getBundleString("file.assignedDataverseImage.success");
@@ -1657,7 +1677,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public void saveAdvancedOptions() {
 
-        // Language encoding for SPSS SAV (and, possibly, other tabular ingests:) 
+        // Language encoding for SPSS SAV (and, possibly, other tabular ingests:)
         if (ingestLanguageEncoding != null) {
             if (fileMetadataSelectedForIngestOptionsPopup != null && fileMetadataSelectedForIngestOptionsPopup.getDataFile() != null) {
                 if (fileMetadataSelectedForIngestOptionsPopup.getDataFile().getIngestRequest() == null) {
@@ -1673,8 +1693,8 @@ public class EditDatafilesPage implements java.io.Serializable {
 
         // Extra labels for SPSS POR (and, possibly, other tabular ingests:)
         // (we are adding this parameter to the IngestRequest now, instead of back
-        // when it was uploaded. This is because we want the user to be able to 
-        // hit cancel and bail out, until they actually click 'save' in the 
+        // when it was uploaded. This is because we want the user to be able to
+        // hit cancel and bail out, until they actually click 'save' in the
         // "advanced options" popup) -- L.A. 4.0 beta 11
         if (savedLabelsTempFile != null) {
             if (fileMetadataSelectedForIngestOptionsPopup != null && fileMetadataSelectedForIngestOptionsPopup.getDataFile() != null) {
@@ -1701,7 +1721,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 selectedFileIds.remove(fileId);
             }
 
-            // If we've already gone through all the file ids on the list - 
+            // If we've already gone through all the file ids on the list -
             // we can stop going through the filemetadatas:
 
             if (selectedFileIds.isEmpty()) {

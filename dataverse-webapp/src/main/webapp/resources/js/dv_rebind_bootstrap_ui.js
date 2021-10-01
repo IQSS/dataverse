@@ -10,11 +10,11 @@ function reinitializePrimefacesComponentsJS() {
         var originalSelectCheckboxMenuBindPanelKeyEvents = PrimeFaces.widget.SelectCheckboxMenu.prototype.bindPanelKeyEvents;
         var originalSelectCheckboxMenuRenderHeader = PrimeFaces.widget.SelectCheckboxMenu.prototype.renderHeader;
         var originalSelectCheckboxMenuHide = PrimeFaces.widget.SelectCheckboxMenu.prototype.hide;
-        
+
         // Adds i18n handling on elements read by screen reader
         PrimeFaces.widget.SelectCheckboxMenu.prototype.renderHeader = function() {
             originalSelectCheckboxMenuRenderHeader.apply(this);
-            
+
             if (this.toggler) {
                 this.toggler.find('> .ui-helper-hidden-accessible > input').attr('aria-label', PrimeFaces.getLocaleSettings().selectAllSelectCheckboxMenu);
             }
@@ -25,7 +25,7 @@ function reinitializePrimefacesComponentsJS() {
                 this.closer.attr('aria-label', PrimeFaces.getLocaleSettings().closeText);
             }
         };
-        
+
         // Rebinds original primefaces key events for proper handling of TAB key
         // in situations when "select all" option is disabled
         // Note that this is mostly copy-paste of original function
@@ -33,10 +33,10 @@ function reinitializePrimefacesComponentsJS() {
         // see: forms.selectcheckboxmenu.js in primefaces repository
         PrimeFaces.widget.SelectCheckboxMenu.prototype.bindKeyEvents = function() {
             originalSelectCheckboxMenuBindKeyEvents.apply(this);
-            
+
             var $this = this;
             this.keyboardTarget.off('keydown.selectCheckboxMenu'); // turn off default key handling
-            
+
             this.keyboardTarget.on('keydown.selectCheckboxMenu', function(e) { // replace with our key handling
                 var keyCode = $.ui.keyCode,
                 key = e.which;
@@ -88,7 +88,7 @@ function reinitializePrimefacesComponentsJS() {
                 };
             });
         }
-        
+
         // Added tab handling on panel
         // When pressing tab key from last tabbable element it moves focus to first tabbable element
         // When pressing alt+tab key from first tabbable element it moves focus to last tabbable element
@@ -96,7 +96,7 @@ function reinitializePrimefacesComponentsJS() {
             originalSelectCheckboxMenuBindPanelKeyEvents.apply(this);
             var $this = this;
             var focusableElementsString = 'a[href]:visible, input:not([disabled]):visible, select:not([disabled]):visible, textarea:not([disabled]):visible, button:not([disabled]):visible, [tabindex="0"]:visible';
-            
+
             this.panel.on('keydown.selectCheckboxMenuLockTab', focusableElementsString, function(e) {
                 var keyCode = $.ui.keyCode;
                 var focusableElements = $this.panel.find(focusableElementsString);
@@ -112,16 +112,16 @@ function reinitializePrimefacesComponentsJS() {
                         focusableElements.first().focus();
                     }
                 }
-                
+
             });
         };
-        
+
         // Handles focus change when closing panel
         PrimeFaces.widget.SelectCheckboxMenu.prototype.hide = function(animate) {
             originalSelectCheckboxMenuHide.apply(this, [animate]);
             this.keyboardTarget.focus();
         };
-        
+
         PrimeFaces.widget.SelectCheckboxMenu.prototype.updateLabel = function() {
             var checkedItems = this.jq.find(':checked'),
             labelText = '';
@@ -141,34 +141,34 @@ function reinitializePrimefacesComponentsJS() {
                     labelText = this.defaultLabel;
                 }
             }
-    
+
             this.label.text(labelText);
             this.labelContainer.attr('title', labelText);
             this.keyboardTarget.val(labelText);
         }
     }
-    
+
     if (PrimeFaces.widget.SelectOneMenu) {
         var originalSelectOneMenuInitContents = PrimeFaces.widget.SelectOneMenu.prototype.initContents;
         var originalSelectOneMenuChangeAriaValue = PrimeFaces.widget.SelectOneMenu.prototype.changeAriaValue;
         var originalSelectOneMenuHighlightItem = PrimeFaces.widget.SelectOneMenu.prototype.highlightItem;
         var originalSelectOneMenuShow = PrimeFaces.widget.SelectOneMenu.prototype.show;
-        
+
         PrimeFaces.widget.SelectOneMenu.prototype.initContents = function() {
             originalSelectOneMenuInitContents.apply(this);
             if(this.cfg.filter) {
                 var filterElement = this.panel.find('> div.ui-selectonemenu-filter-container > input.ui-selectonemenu-filter');
-                
+
                 //this.panel.attr('role', 'combobox');
                 //this.panel.attr('aria-owns', this.itemsContainer.attr('id'))
-                
+
                 filterElement.attr('role', 'combobox');
                 filterElement.attr('aria-owns', this.itemsContainer.attr('id'));
                 filterElement.attr('aria-controls', this.itemsContainer.attr('id'));
                 filterElement.attr('aria-label', 'Filtruj opcje');
             }
         };
-        
+
         PrimeFaces.widget.SelectOneMenu.prototype.changeAriaValue = function(item) {
             var filterElement = this.panel.find('> div.ui-selectonemenu-filter-container > input.ui-selectonemenu-filter');
             var itemId = item.attr('id');
@@ -177,12 +177,12 @@ function reinitializePrimefacesComponentsJS() {
                     .attr('aria-describedby', itemId);
             this.itemsContainer.attr('aria-activedescendant', itemId);
             //this.itemsContainer.removeAttr('aria-activedescendant');
-            
+
             if(this.cfg.filter) {
                 filterElement.attr('aria-activedescendant', itemId);
             }
         };
-        
+
         PrimeFaces.widget.SelectOneMenu.prototype.highlightItem = function(item) {
             this.items.attr('aria-selected', false);
             this.items.filter('.ui-state-highlight').removeClass('ui-state-highlight');
@@ -194,7 +194,7 @@ function reinitializePrimefacesComponentsJS() {
                 this.changeAriaValue(item);
             }
         };
-        
+
         PrimeFaces.widget.SelectOneMenu.prototype.show = function() {
             if (this.cfg.filter) {
                 this.filterInput.val('');
@@ -204,7 +204,7 @@ function reinitializePrimefacesComponentsJS() {
             originalSelectOneMenuShow.apply(this);
         }
     }
-    
+
     if (PrimeFaces.widget.FileUpload) {
 
         // Added update of progress for screen readers
@@ -213,7 +213,7 @@ function reinitializePrimefacesComponentsJS() {
             // skip calling PrimeFaces.widget.FileUpload.init() on purpose
             PrimeFaces.widget.DeferredWidget.prototype.init.call(this, cfg);
             //this._super(cfg);
-            
+
             if(this.cfg.disabled) {
                 return;
             }
@@ -251,7 +251,7 @@ function reinitializePrimefacesComponentsJS() {
                 porletFormsSelector = 'form[action="' + postURL + '"]';
                 postURL = encodedURLfield.val();
             }
-            
+
             this.ucfg = {
                     url: postURL,
                     portletForms: porletFormsSelector,
@@ -285,6 +285,29 @@ function reinitializePrimefacesComponentsJS() {
                                 summary: $this.cfg.fileLimitMessage
                             });
 
+                            return;
+                        }
+
+                        var totalSize = 0;
+                        const filesTable = $('[data-currentBatchSize]');
+
+                        if (filesTable) {
+                            const currentBatchSize = parseInt(filesTable.attr('data-currentBatchSize') || 0);
+                            totalSize = currentBatchSize;
+                        }
+
+                        for (const singleFile of data.originalFiles) {
+                            if (singleFile.size) {
+                                totalSize += singleFile.size;
+                            }
+                        }
+
+                        const maxBatchSize = parseInt($this.jq.attr('data-maxBatchSize') || 0);
+                        if (maxBatchSize > 0 && maxBatchSize < totalSize) {
+                            $this.clearMessages();
+                            $this.showMessage({
+                                summary: $this.jq.attr('data-uploadBatchTooBigMessage')
+                            });
                             return;
                         }
 
@@ -374,7 +397,7 @@ function reinitializePrimefacesComponentsJS() {
                 this.jq.fileupload(this.ucfg);
                 this.input = $(this.jqId + '_input');
         };
-        
+
         var originalFileUploadRenderMessages = PrimeFaces.widget.FileUpload.prototype.renderMessages;
 
         // Adds i18n support for elements read by screen reader
@@ -383,13 +406,13 @@ function reinitializePrimefacesComponentsJS() {
             this.clearMessageLink.attr('aria-label', PrimeFaces.getLocaleSettings().closeText);
             this.clearMessageLink.attr('role', 'button');
         };
-        
+
         var originalAddFileToRow = PrimeFaces.widget.FileUpload.prototype.addFileToRow;
-        
+
         // Adds i18n support for elements read by screen reader
         PrimeFaces.widget.FileUpload.prototype.addFileToRow = function(file, data) {
             originalAddFileToRow.apply(this, [file, data]);
-            
+
             this.files.forEach(function(file) {
                 file.row.find('.ui-fileupload-cancel')
                     .attr('aria-label', PrimeFaces.getLocaleSettings().cancelFileUpload + PrimeFaces.escapeHTML(file.name));
@@ -400,21 +423,21 @@ function reinitializePrimefacesComponentsJS() {
         // copy of original primefaces messages java script handling with
         // fixed bug introduced in pf 8.0
         PrimeFaces.widget.Message = PrimeFaces.widget.BaseWidget.extend({
-            
+
             init: function(cfg) {
                 this._super(cfg);
-                
+
                 var text = this.jq.children('div').children('.ui-message-error-detail').text(); // change: error detail is enclosed with div tag
-                
+
                 if(text) {
                    var target = $(PrimeFaces.escapeClientId(this.cfg.target));
-                   
+
                    if (this.cfg.tooltip) {
                       target.data('tooltip', text);
                    }
-                   
+
                    target.attr('aria-describedby', this.id + '_error-detail');
-                } 
+                }
            }
         });
     }
@@ -543,34 +566,34 @@ function reinitializePrimefacesComponentsJS() {
                     $this.callBehavior('select');
                 }
             });
-            
+
             var toolbarObserver = new MutationObserver(function(mutations, observer) {
                 for (var i=0; i<mutations.length; ++i) {
                     var mutation = mutations[i];
                     var mutationTarget = $(mutation.target);
-                    
+
                     if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                         mutationTarget.attr('aria-pressed', mutationTarget.hasClass('ql-active'));
                     }
                 }
             });
             toolbarObserver.observe(this.toolbar[0].children[0], { attributes: true, attributeFilter: [ "class" ], childList: true, subtree: true });
-            
+
             $(this.jq).find('.ql-tooltip.ql-hidden').remove();
-            
+
             $(this.jq).find('.ql-editor').attr('aria-label', this.jq.data('editor-aria-label'))
         }
     }
-    
+
     if(PrimeFaces.widget.Dialog) {
         // Dialog Listener For Calling handleResizeDialog
         var originalDialogPostShow = PrimeFaces.widget.Dialog.prototype.postShow;
         var originalDialogOnHide = PrimeFaces.widget.Dialog.prototype.onHide;
-        
+
         PrimeFaces.widget.Dialog.prototype.postShow = function() {
             originalDialogPostShow.apply(this);
             this.jq.attr('aria-live', 'off');
-            
+
             var dialog_id = this.jq.attr('id').split(/[:]+/).pop();
             var dialog_titlebar_el = document.getElementById(this.id).querySelector(".ui-dialog-title");
             handleResizeDialog(dialog_id);
@@ -579,16 +602,16 @@ function reinitializePrimefacesComponentsJS() {
         }
         PrimeFaces.widget.Dialog.prototype.onHide = function(a, b) {
             originalDialogOnHide.apply(this, [a,b]);
-            
+
             fixBodyWidth(false);
 
             $(window).off("resize", fixBodyWidth);
         }
-        
+
         // Change default focus element
         PrimeFaces.widget.Dialog.prototype.applyFocus = function() {
             var $this = this;
-            
+
             if(this.cfg.focus) {
                 PrimeFaces.expressions.SearchExpressionFacade.resolveComponentsAsSelector(this.cfg.focus).focus();
             } else {
@@ -599,25 +622,25 @@ function reinitializePrimefacesComponentsJS() {
             }
         };
     }
-    
+
     if (PrimeFaces.widget.PickList) {
         var originalPickListInit = PrimeFaces.widget.PickList.prototype.init;
         var originalPickListDisableButton = PrimeFaces.widget.PickList.prototype.disableButton;
         var originalPickListEnableButton = PrimeFaces.widget.PickList.prototype.enableButton;
-        
+
         PrimeFaces.widget.PickList.prototype.init = function(cfg) {
             originalPickListInit.apply(this, [cfg]);
-            
+
             this.sourceCaption = this.sourceList.prev('.ui-picklist-caption'),
             this.targetCaption = this.targetList.prev('.ui-picklist-caption');
-             
+
             if (this.sourceCaption.find('.ui- nu').length > 0) {
                 this.sourceCaption = this.sourceCaption.find('.ui-selectonemenu').find('label');
-                
+
                 this.sourceList.attr('aria-label', this.sourceCaption.text());
                 this.sourceInput.attr('title', this.sourceCaption.text());
             }
-            
+
             if (this.sourceFilter) {
                 if (this.sourceCaption.length) {
                     this.sourceFilter.attr('aria-label', PrimeFaces.getLocaleSettings().filterPickList + ' ' + this.sourceCaption.text());
@@ -632,9 +655,9 @@ function reinitializePrimefacesComponentsJS() {
                     this.targetFilter.attr('aria-label', PrimeFaces.getLocaleSettings().filterPickList);
                 }
             }
-            
+
         };
-        
+
         PrimeFaces.widget.PickList.prototype.disableButton = function(button) {
             originalPickListDisableButton.apply(this, [button]);
             button.attr('aria-disabled', true);
@@ -644,14 +667,14 @@ function reinitializePrimefacesComponentsJS() {
             button.attr('aria-disabled', false);
         }
     }
-    
+
 
     if (PrimeFaces.widget.AutoComplete) {
         var originalAutocompleteInvokeItemSelectBehavior = PrimeFaces.widget.AutoComplete.prototype.invokeItemSelectBehavior;
         var originalAutocompleteRemoveItem = PrimeFaces.widget.AutoComplete.prototype.removeItem;
         var originalAutocompleteBindStaticEvents = PrimeFaces.widget.AutoComplete.prototype.bindStaticEvents;
-        
-        
+
+
         PrimeFaces.widget.AutoComplete.prototype.invokeItemSelectBehavior = function(event, itemValue) {
             originalAutocompleteInvokeItemSelectBehavior.apply(this, [event, itemValue]);
             if (this.cfg.multiple) {
@@ -666,9 +689,9 @@ function reinitializePrimefacesComponentsJS() {
         }
         PrimeFaces.widget.AutoComplete.prototype.bindStaticEvents = function() {
             originalAutocompleteBindStaticEvents.apply(this);
-            
+
             var $this = this;
-            
+
             $( window ).scroll(function() {
                 var isActive = $this.panel.is(':visible');
                 if(isActive) {
@@ -677,13 +700,13 @@ function reinitializePrimefacesComponentsJS() {
             });
         }
     }
-    
+
     if (PrimeFaces.widget.DefaultCommand) {
         var originalDefaultCommandInit = PrimeFaces.widget.DefaultCommand.prototype.init;
-        
+
         PrimeFaces.widget.DefaultCommand.prototype.init = function(cfg) {
             originalDefaultCommandInit.apply(this, [cfg]);
-            
+
             var closestForm = this.jqTarget.closest('form');
             closestForm.off('keydown.' + this.id).on('keydown.' + this.id, {scopeEnter: false}, function (e, data) {
                 var keyCode = $.ui.keyCode;
@@ -708,26 +731,26 @@ function reinitializePrimefacesComponentsJS() {
 
     /* disable swipe events for tabView and paginator, to allow scrolling contents without unexpected behavior */
     if (PrimeFaces.widget.Paginator) {
-        PrimeFaces.widget.Paginator.prototype.bindSwipeEvents = function() {} 
+        PrimeFaces.widget.Paginator.prototype.bindSwipeEvents = function() {}
     }
     if (PrimeFaces.widget.TabView) {
         PrimeFaces.widget.TabView.prototype.bindSwipeEvents = function() {}
     }
-    
+
     if (PrimeFaces.widget.Paginator) {
         var originalPaginatorInit = PrimeFaces.widget.Paginator.prototype.init;
         var originalPaginatorUpdatePageLinks = PrimeFaces.widget.Paginator.prototype.updatePageLinks;
-        
+
         PrimeFaces.widget.Paginator.prototype.init = function(cfg) {
             originalPaginatorInit.apply(this, [cfg]);
-            
+
             var currentPage = this.pagesContainer.find('.ui-paginator-page.ui-state-active');
             currentPage.attr('aria-label', currentPage.attr('aria-label') + ' ' + PrimeFaces.getLocaleSettings().ariaCurrentPagePaginator)
         }
-        
+
         PrimeFaces.widget.Paginator.prototype.updatePageLinks = function() {
             originalPaginatorUpdatePageLinks.apply(this);
-            
+
             var currentPage = this.pagesContainer.find('.ui-paginator-page.ui-state-active');
             currentPage.attr('aria-label', currentPage.attr('aria-label') + ' ' + PrimeFaces.getLocaleSettings().ariaCurrentPagePaginator)
         }
@@ -737,7 +760,7 @@ function reinitializePrimefacesComponentsJS() {
         var originalBlockUIRender = PrimeFaces.widget.BlockUI.prototype.render;
         var originalBlockUIShow = PrimeFaces.widget.BlockUI.prototype.show;
         var originalBlockUIHide = PrimeFaces.widget.BlockUI.prototype.hide;
-        
+
         // BlockUI component will sometimes change css position property of block element
         // to properly position overlay over block element. This doesn't play nice
         // with fix_submenus_overflow() - calculations done there to properly position
@@ -746,9 +769,9 @@ function reinitializePrimefacesComponentsJS() {
         // when overlay is visible.
         PrimeFaces.widget.BlockUI.prototype.render= function() {
             this.originalBlockPosition = this.block.css("position");
-            
+
             originalBlockUIRender.apply(this);
-            
+
             this.block.css('position', this.originalBlockPosition);
         }
         PrimeFaces.widget.BlockUI.prototype.show= function() {
@@ -756,7 +779,7 @@ function reinitializePrimefacesComponentsJS() {
             if (position !== "fixed" && position  !== "absolute") {
                 this.block.css('position', 'relative');
             }
-            
+
             originalBlockUIShow.apply(this);
         }
         PrimeFaces.widget.BlockUI.prototype.hide= function() {
@@ -776,7 +799,7 @@ function bind_bsui_components(){
         $(this).hasClass('keep-open'),
         e.stopPropagation();
     });
-    
+
     // Collapse Header Icons
     $('div[id^="panelCollapse"]').on('shown.bs.collapse', function () {
       $(this).siblings('.panel-heading').children('span.glyphicon').removeClass("glyphicon-chevron-down").addClass("glyphicon-chevron-up");
@@ -785,10 +808,10 @@ function bind_bsui_components(){
     $('div[id^="panelCollapse"]').on('hidden.bs.collapse', function () {
       $(this).siblings('.panel-heading').children('span.glyphicon').removeClass("glyphicon-chevron-up").addClass("glyphicon-chevron-down");
     });
-    
-    // Button dropdown menus 
+
+    // Button dropdown menus
     $('.dropdown-toggle').dropdown();
-    
+
     // Hide open tooltips + popovers
     hideTooltipsAndPopovers();
 
@@ -797,13 +820,13 @@ function bind_bsui_components(){
 
     // Disabled pagination links
     disabledLinks();
-    
+
     // Sharrre
     sharrre();
-    
+
     // Custom Popover with HTML content
     popoverHTML();
-    
+
 }
 
 /*
@@ -826,11 +849,11 @@ function bindTooltips() {
         .tooltip({container: 'body', trigger: 'manual'})
         .on("mouseover", event => {
             var closestTooltipToggle = $(event.target).closest('.bootstrap-button-tooltip, [data-toggle="tooltip"]');
-            
+
             if (closestTooltipToggle.data()['bs.tooltip'].tip().hasClass('in')) { // check if tooltip is visible
                 return;
             }
-            
+
             $(event.target).tooltip("show");
             $(".tooltip").on("mouseleave", function () {
                 $(event.target).tooltip("hide");
@@ -839,7 +862,7 @@ function bindTooltips() {
         .on("mouseout", event => {
             setTimeout(() => {
                 var closestTooltipToggle = $(event.target).closest('.bootstrap-button-tooltip, [data-toggle="tooltip"]');
-                
+
                 if (closestTooltipToggle.is(":hover")) {
                     return;
                 }
@@ -942,7 +965,7 @@ function post_differences(){
  */
 function sharrre(){
     var language = $('#sharrre-widget').data('language');
-    
+
     var sharrreLocales = {
             pl: {
                 'sharrre.button.facebook.title': 'Udostępnij na Facebooku',
@@ -955,12 +978,12 @@ function sharrre(){
                 'sharrre.button.newWindonw.info': '(opens in new window)'
             }
     };
-    
+
     var currentLocales = sharrreLocales[language];
     if (currentLocales === null) {
         currentLocales = sharrreLocales.en;
     }
-    
+
     $('#sharrre-widget').sharrre({
         share: {
             facebook: true,
@@ -977,12 +1000,12 @@ function sharrre(){
         urlCurl: '',
         render: function(api, options){
             var elementHtml = $(api.element).html();
-            
+
             $.each(options.locales, function(key, translation) {
                 elementHtml = elementHtml.split('{' + key + '}').join(translation);
             });
             $(api.element).html(elementHtml);
-            
+
             $(api.element).on('click', '.sharrre-twitter', function() {
                 api.openPopup('twitter');
             });
@@ -1018,12 +1041,12 @@ function handleResizeDialog(dialogElement) {
     var doc = $('body');
     var win = $(window);
     var dialogPos = '';
-    
+
     function calculateResize() {
         var overlay = $('#' + dialogElement + '_modal');
         var bodyHeight = '';
         var bodyWidth = '';
-    
+
         // position:fixed is maybe cool, but it makes the dialog not scrollable on browser level, even if document is big enough
         if (dialog.height() > win.height()) {
             bodyHeight = dialog.height() + 'px';
@@ -1036,7 +1059,7 @@ function handleResizeDialog(dialogElement) {
         dialog.css('position', dialogPos);
         doc.css('width', bodyWidth);
         doc.css('height', bodyHeight);
-        
+
         var pos = dialog.offset();
         if (pos.top + dialog.height() > doc.height()) {
                 pos.top = doc.height() - dialog.height();
@@ -1059,9 +1082,9 @@ function handleResizeDialog(dialogElement) {
             pos.top = offsetY;
             dialog.offset(pos);
     }
-    
+
     calculateResize();
-    
+
     dialog.find('textarea').each(function(index){
         $(this).on('keyup change cut paste focus', function(){
             calculateResize();
@@ -1210,8 +1233,8 @@ $(document).ready(function() {
     /* Fix focus being set on tabindex="-1" element when using arrows */
     $(".no-focus").focus(function(event) {
         /* Timeout is necessary, submenu must appear first to set focus on it */
-        setTimeout(function(){ 
-            $(event.target).next().find("li a").first().focus(); 
+        setTimeout(function(){
+            $(event.target).next().find("li a").first().focus();
         }, 1);
     });
 

@@ -5,6 +5,7 @@
         xmlns:ui="http://java.sun.com/jsf/facelets"
         xmlns:p="http://primefaces.org/ui"
         xmlns:jsf="http://xmlns.jcp.org/jsf"
+        xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
         xmlns:o="http://omnifaces.org/ui"
         xmlns:dv="http://dataverse.org/facelets"
         xmlns:iqbs="http://java.sun.com/jsf/composite/iqbs"
@@ -160,6 +161,8 @@
                                               fileLimit="#{EditDatafilesPage.getMaxNumberOfFiles()}"
                                               invalidSizeMessage="#{bundle['file.edit.error.file_exceeds_limit']}"
                                               sequential="true"
+                                              pt:data-maxBatchSize="#{EditDatafilesPage.maxBatchSize}"
+                                              pt:data-uploadBatchTooBigMessage="#{bundle['dataset.file.uploadBatchTooBig']}"
                                               widgetVar="fileUploadWidget"/>
 
                                 <div jsf:id="dropboxBlock"
@@ -374,6 +377,7 @@
                                  rowSelectMode="checkbox"
                                  selection="#{EditDatafilesPage.selectedFiles}"
                                  var="fileMetadata"
+                                 pt:data-currentBatchSize="#{EditDatafilesPage.currentBatchSize}"
                                  widgetVar="filesTable"
                                  emptyMessage="#{showFileUpload ? bundle['file.noUploadedFiles.tip'] : bundle['file.noSelectedFiles.tip']}"
                                  styleClass="filesTable medium-min-width"
