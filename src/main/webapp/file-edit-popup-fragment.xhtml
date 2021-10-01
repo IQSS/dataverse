@@ -67,9 +67,9 @@
 
     <!-- Embargo Dialog-->
     <p:dialog id="fileEmbargoPopup" styleClass="smallPopUp" resizable="false" header="#{bundle['file.editEmbargo']}" widgetVar="fileEmbargoPopup" modal="true">
-        <p:focus for="fileEmbargoMenuDS"/>
+        <p:focus for="fileEmbargoDateDS"/>
         <p class="help-block" jsf:rendered="#{bean.validEmbargoSelection}">#{bundle['file.editEmbargoDialog.tip']}</p>
-        <p class="text-warning embargo" jsf:rendered="#{bean.validEmbargoSelection and !bean.embargoForWholeSelection}"><span class="glyphicon glyphicon-warning-sign"/>#{bundle['file.editEmbargoDialog.none.tip']} #{bundle['file.editEmbargoDialog.partial.tip']}</p>
+        <p class="text-warning embargo" jsf:rendered="#{bean.validEmbargoSelection and !bean.embargoForWholeSelection}"><span class="glyphicon glyphicon-warning-sign"/>#{bundle['file.editEmbargoDialog.some.tip']} #{bundle['file.editEmbargoDialog.partial.tip']}</p>
         <p class="text-danger embargo" jsf:rendered="#{!bean.validEmbargoSelection}"><span class="glyphicon glyphicon-exclamation-sign"/>#{bundle['file.editEmbargoDialog.none.tip']}</p>
 
         <h:panelGroup id="embargoInputs">
@@ -88,15 +88,19 @@
                                     class="glyphicon glyphicon-asterisk text-danger"
                                     jsf:rendered="#{!bean.removeEmbargo}" />
                             </p>
-                            <p:datePicker id="fileEmbargoMenuDS"
+                            <p:datePicker id="fileEmbargoDateDS"
                                 value="#{bean.selectionEmbargo.dateAvailable}"
                                 locale="#{dataverseSession.localeCode}"
                                 mindate="#{settingsWrapper.minEmbargoDate}" pattern="yyyy-MM-dd"
                                 maxdate="#{settingsWrapper.maxEmbargoDate}"
                                 disabled="#{bean.removeEmbargo}"
-                                validator="#{bean.validateEmbargoDate}" />
+                                validator="#{bean.validate}" >
+                                <p:ajax process="#{updateElements}"
+                                    update="#{updateElements}"
+                                    />
+                                </p:datePicker>
                             <div>
-                                <h:message for="fileEmbargoMenuDS"
+                                <h:message for="fileEmbargoDateDS"
                                     styleClass="bg-danger text-danger" />
                             </div>
                         </div>
@@ -118,10 +122,12 @@
                             value="#{bundle[ 'file.editEmbargo.delete']}" />
                     </div>
                     <div class="col-lg-9">
-                        <p:selectBooleanCheckbox value="#{bean.removeEmbargo}"
-                            itemLabel="#{bundle['file.editEmbargoDialog.remove']}">
-                            <p:ajax process="@this:@parent:@parent"
-                                update="@this:@parent:@parent" />
+                        <p:selectBooleanCheckbox value="#{bean.removeEmbargo}" id="embargoCheckbox"
+                            itemLabel="#{bundle['file.editEmbargoDialog.remove']}"
+                            disabled="#{!facesContext.validationFailed}">
+                            <p:ajax process="#{updateElements}"
+                                update="#{updateElements}"
+                                />
                         </p:selectBooleanCheckbox>
                     </div>
                 </div>
@@ -131,7 +137,7 @@
             <p:commandButton rendered="#{bean.validEmbargoSelection}" styleClass="btn btn-default" id="fileEmbargoPopupSaveButton" value="#{bundle.saveChanges}" 
             oncomplete="if (args &amp;&amp; !args.validationFailed) PF('fileEmbargoPopup').hide();return false;" update="#{updateElements}" action="#{bean[saveEmbargoAction]}"/>
             <p:commandButton styleClass="btn btn-link" id="fileEmbargoPopupCancelButton" value="#{bundle.cancel}" onclick="PF('fileEmbargoPopup').hide();
-                    PF('blockDatasetForm').hide();" actionListener="#{bean.clearFileMetadataSelectedForEmbargoPopup()}"/>
+                    PF('blockDatasetForm').hide();" action="#{bean.clearEmbargoPopup()}" update="#{updateElements}" immediate="true"/>
         </div>
     </p:dialog>
     

@@ -67,7 +67,7 @@
                                         
                                         <!-- DATASET Publication Status -->
                                         <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{FilePage.fileMetadata.datasetVersion.draft}"/>
-                                        <h:outputText value="#{FilePage.fileMetadata.datasetVersion.draft ? bundle['embargoed.future'] : bundle['embargoed']}" styleClass="label label-primary" rendered="#{!(empty FilePage.file.embargo)}"/>
+                                        <h:outputText value="#{FilePage.fileMetadata.datasetVersion.draft ? bundle['embargoed.future'] : bundle['embargoed']}" styleClass="label label-primary" rendered="#{dataFileServiceBean.isActivelyEmbargoed(FilePage.fileMetadata)}"/>
                                         <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{FilePage.fileMetadata.datasetVersion.inReview}"/>
                                         <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!FilePage.fileMetadata.datasetVersion.dataset.released}"/>   
                                         <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{FilePage.fileMetadata.datasetVersion.deaccessioned}"/>
@@ -533,7 +533,7 @@
                                                         <td>#{!(empty FilePage.file.embargo) ? FilePage.embargoPhrase: ''} #{!(empty FilePage.file.embargo) ? FilePage.file.embargo.dateAvailable : FilePage.file.publicationDateFormattedYYYYMMDD}
                                                         </td>
                                                     </tr>
-                                                    <tr id="fileEmbargoBlock" jsf:rendered="#{!(empty FilePage.file.embargo) and dataFileServiceBean.isActivelyEmbargoed(FilePage.fileMetadata) and ! (empty FilePage.file.embargo.reason)}">
+                                                    <tr id="fileEmbargoBlock" jsf:rendered="#{!(empty FilePage.file.embargo) and ! (empty FilePage.file.embargo.reason)}">
                                                         <th scope="row">
                                                             #{bundle['file.metadataTab.fileMetadata.embargoReason.label']}
                                                         </th>

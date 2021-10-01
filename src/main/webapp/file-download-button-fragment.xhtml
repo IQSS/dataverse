@@ -14,7 +14,7 @@
     <!-- Access Status -->
     <li class="dropdown-header">File Access <span class="glyphicon glyphicon-file"/></li>
     <li><span class="dropdown-item-text">
-            <span class="#{!fileDownloadHelper.isRestrictedOrEmbargoed(fileMetadata) ?
+            <span class="#{!fileMetadata.restricted ?
                            'glyphicon glyphicon-globe text-success' : (!fileDownloadHelper.canDownloadFile(fileMetadata) ? 'glyphicon glyphicon-lock text-danger' : 'icon-unlock text-success')}"/>
             
             <!-- TODO - add Embargo state -->

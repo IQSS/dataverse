@@ -154,7 +154,7 @@ import org.primefaces.model.TreeNode;
  */
 @ViewScoped
 @Named("DatasetPage")
-public class DatasetPage implements java.io.Serializable {
+public class DatasetPage implements java.io.Serializable,  javax.faces.validator.Validator {
 
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
 
@@ -5569,7 +5569,6 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public Embargo getSelectionEmbargo() {
-        logger.info("getting: " + selectionEmbargo.getDateAvailable());
         return selectionEmbargo;
     }
 
@@ -5593,9 +5592,10 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean isExistingEmbargo() {
-        boolean selectionHasEmbargo = isExistingEmbargo(selectedFiles, true);
-        if(selectionHasEmbargo) {
-            return true;
+        for(FileMetadata fmd: selectedFiles) {
+            if(!fmd.getDataFile().isReleased() && (fmd.getDataFile().getEmbargo()!=null)) {
+                return true;
+            }
         }
         if(fileMetadataForAction!=null && !fileMetadataForAction.getDataFile().isReleased() && (fileMetadataForAction.getDataFile().getEmbargo()!=null)) {
             return true;
@@ -5603,13 +5603,8 @@ public class DatasetPage implements java.io.Serializable {
         return false;
     }
     
-    public boolean isExistingEmbargo(List<FileMetadata> fmdList, boolean unReleased) {
-        for(FileMetadata fmd: fmdList) {
-            if((unReleased != fmd.getDataFile().isReleased())&& (fmd.getDataFile().getEmbargo()!=null)) {
-                return true;
-            }
-        }
-        return false;
+    public boolean isActivelyEmbargoed(List<FileMetadata> fmdList) {
+        return FileUtil.isActivelyEmbargoed(fmdList);
     }
     
     public boolean isEmbargoForWholeSelection() {
@@ -5632,12 +5627,13 @@ public class DatasetPage implements java.io.Serializable {
         this.removeEmbargo = removeEmbargo;
         //If we flipped the state, update the selectedEmbargo. Otherwise (e.g. when save is hit) don't make changes
         if(existing != this.removeEmbargo) {
+            logger.info("State flip");
         if(removeEmbargo) {
             logger.info("Setting empty embargo");
             selectionEmbargo= new Embargo(null, null);
-        } else {
-            selectionEmbargo= new Embargo();
         }
+        logger.info("Resetting in remove");
+        PrimeFaces.current().resetInputs("datasetForm:embargoInputs");
         }
     }
     
@@ -5646,14 +5642,14 @@ public class DatasetPage implements java.io.Serializable {
             refreshSelectedFiles(selectedFiles);
         }
         //Todo - add validation and.or separate delete from save of a new embargo
-        if(selectionEmbargo.getDateAvailable()==null && selectionEmbargo.getReason()==null) {
+        if(isRemoveEmbargo() || (selectionEmbargo.getDateAvailable()==null && selectionEmbargo.getReason()==null)) {
             selectionEmbargo=null;
         }
-        logger.info("emb is null: " + (selectionEmbargo==null));
-        logger.info("emb date: " + selectionEmbargo.getFormattedDateAvailable());
+        logger.fine("emb is null: " + (selectionEmbargo==null));
+        logger.fine("emb date: " + selectionEmbargo.getFormattedDateAvailable());
         
         if(!(selectionEmbargo==null || (selectionEmbargo!=null && settingsWrapper.isValidEmbargoDate(selectionEmbargo)))) {
-            logger.info("Validation error: " + selectionEmbargo.getFormattedDateAvailable());
+            logger.fine("Validation error: " + selectionEmbargo.getFormattedDateAvailable());
             FacesContext.getCurrentInstance().validationFailed();
             return "";
         }
@@ -5697,8 +5693,17 @@ public class DatasetPage implements java.io.Serializable {
         return returnToDraftVersion();
     }
 
-    public void clearFileMetadataSelectedForEmbargoPopup() {
+    public void clearEmbargoPopup() {
+        logger.fine("clearEmbargoPopup called");
+        selectionEmbargo= new Embargo();
         setRemoveEmbargo(false);
+        PrimeFaces.current().resetInputs("datasetForm:embargoInputs");
+    }
+
+    public void clearSelectionEmbargo() {
+        logger.fine("clearSelectionEmbargo called");
+        selectionEmbargo= new Embargo();
+        PrimeFaces.current().resetInputs("datasetForm:embargoInputs");
     }
 
     public boolean isCantDownloadDueToEmbargo() {
@@ -5732,19 +5737,42 @@ public class DatasetPage implements java.io.Serializable {
         return true;
     }
     
-    public void validateEmbargoDate(FacesContext context, UIComponent component, Object value)
+    
+    
+    /************
+     * 
+     * Fix updates to use param
+     * remove validate check of findComponent
+     * check other changes to see if they are needed.
+     * 
+     */
+    
+    public void validate(FacesContext context, UIComponent component, Object value)
             throws ValidatorException {
-        if (!removeEmbargo) {
-            if (!settingsWrapper.isValidEmbargoDate(selectionEmbargo)) {
+        logger.info("In validate");
+            if(selectionEmbargo.getDateAvailable()!=null) {
+                logger.info("emb date:" + selectionEmbargo.getFormattedDateAvailable());
+            }
+            UIComponent cb = component.findComponent("embargoCheckbox");
+            
+            UIInput endComponent = (UIInput) cb;
+            boolean removedState = (Boolean)endComponent.getSubmittedValue();
+            if(!removedState) {
+            logger.info("val: " + value);
+            Embargo newE = new Embargo(((LocalDate)value), null);
+            if (!settingsWrapper.isValidEmbargoDate(newE)) {
                 String minDate = settingsWrapper.getMinEmbargoDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                 String maxDate= settingsWrapper.getMaxEmbargoDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                 String msgString = BundleUtil.getStringFromBundle("embargo.date.invalid", Arrays.asList(minDate, maxDate));
-                //It is not clear that this message ever appears, but the value could be sent by adding validatorMessage="#{bundle['embargo.date.invalid']}"  to the datepicker element in file-edit-popup-fragment.html
+                // If we don't throw an exception here, the datePicker will use it's own
+                // vaidator and display a default message. The value for that can be set by
+                // adding validatorMessage="#{bundle['embargo.date.invalid']}" (a version with no params) to the datepicker
+                // element in file-edit-popup-fragment.html, but it would be better to catch all
+                // problems here (so we can show a message with the min/max dates).
                 FacesMessage msg = new FacesMessage(msgString);
                 msg.setSeverity(FacesMessage.SEVERITY_ERROR);
                 throw new ValidatorException(msg);
-            }
-        }
+            }}
     }
     
 }

@@ -1071,8 +1071,13 @@ public class FilePage implements java.io.Serializable {
         return returnToDraftVersion();
     }
     
-    public void clearFileMetadataSelectedForEmbargoPopup() {
+    public void clearEmbargoPopup() {
         setRemoveEmbargo(false);
+        selectionEmbargo = new Embargo(); 
+    }
+    
+    public void clearSelectionEmbargo() {
+        selectionEmbargo = new Embargo(); 
     }
     
     public boolean isCantRequestDueToEmbargo() {

@@ -330,7 +330,8 @@ public class SettingsWrapper implements java.io.Serializable {
     
     
     public boolean isValidEmbargoDate(Embargo e) {
-        if (e.getDateAvailable().isAfter(LocalDate.now())
+        
+        if (e.getDateAvailable()==null || e.getDateAvailable().isAfter(LocalDate.now())
                 && e.getDateAvailable().isBefore(getMaxEmbargoDate().plusDays(1))) {
             return true;
         }

@@ -2110,4 +2110,13 @@ public class FileUtil implements java.io.Serializable  {
     public static boolean isActivelyEmbargoed(FileMetadata fileMetadata) {
         return isActivelyEmbargoed(fileMetadata.getDataFile());
     }
+    
+    public static boolean isActivelyEmbargoed(List<FileMetadata> fmdList) {
+        for (FileMetadata fmd : fmdList) {
+            if (isActivelyEmbargoed(fmd)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
