@@ -64,7 +64,11 @@ The available drivers can be listed with::
 Configure a Dataverse Collection to Allow Use of a Given Curation Label Set
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Datasets within a given Dataverse collection can be annotated with a Curation Label from one of the label sets defined by :ref:`:AllowedCurationLabels <:AllowedCurationLabels>`. The allowed set can be specified via the API as shown below, or by editing the 'General Information' for a Dataverse collection on the Dataverse collection page. Only accessible to superusers.
+Datasets within a given Dataverse collection can be annotated with a Curation Label to indicate the status of the dataset with respect to a defined curation process. Labels are completely customizable (alphanumeric or spaces, up to 32 characters, e.g. "Author contacted", "Privacy Review", "Awaiting paper publication").
+
+The label is applied to a draft Dataset version via the user interface or API and the available label sets are defined by :ref:`:AllowedCurationLabels <:AllowedCurationLabels>`. Internally, the labels have no effect, and at publication, any existing label will be removed. A reporting API call allows admins to get a list of datasets and their curation statuses.
+
+The label set used for a collection can be specified via the API as shown below, or by editing the 'General Information' for a Dataverse collection on the Dataverse collection page. Only accessible to superusers.
 
 The curationLabelSet to use within a given collection can be set by specifying its name using::
  
@@ -84,10 +88,9 @@ The available curation label sets can be listed with::
 
     curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/curationLabelSet
     
-If the :AllowedCurationLabels setting has a value, one of the available choices will always be "DISABLED" which allows curation labels to be turned off for a give collection/dataset
+If the :AllowedCurationLabels setting has a value, one of the available choices will always be "DISABLED" which allows curation labels to be turned off for a given collection/dataset.
     
-(Individual datasets can be configured to use specific curationLabelSets as well. See the "Datasets" section below.)
-
+Individual datasets can be configured to use specific curationLabelSets as well. See the "Datasets" section below.
 
 Datasets
 --------
@@ -183,7 +186,11 @@ The available drivers can be listed with::
 Configure a Dataset to Allow Use of a Curation Label Set
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Configure a dataset to allow use of labels from a given Curation Label Set (as defined with the :ref:`:AllowedCurationLabels <:AllowedCurationLabels>` setting) This API can only be used by a superuser. ::
+A dataset can be annotated with a Curation Label to indicate the status of the dataset with respect to a defined curation process. Labels are completely customizable (alphanumeric or spaces, up to 32 characters, e.g. "Author contacted", "Privacy Review", "Awaiting paper publication").
+
+The label is applied to a draft Dataset version via the user interface or API and the available label sets are defined by :ref:`:AllowedCurationLabels <:AllowedCurationLabels>`. Internally, the labels have no effect, and at publication, any existing label will be removed. A reporting API call allows admins to get a list of datasets and their curation statuses.
+
+The label set used for a dataset can be specified via the API as shown below. Only accessible to superusers.
  
 The curationLabelSet to use within a given dataset can be set by specifying its name using::
  
@@ -203,4 +210,6 @@ The available curationLabelSets can be listed with::
 
     curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/curationLabelSets
     
-If the :AllowedCurationLabels setting has a value, one of the available choices will always be "DISABLED" which allows curation labels to be turned off for a give collection/dataset
+If the :AllowedCurationLabels setting has a value, one of the available choices will always be "DISABLED" which allows curation labels to be turned off for a given collection/dataset.
+
+Collections can be configured to use specific curationLabelSets as well. See the "Dataverse Collections" section above.
