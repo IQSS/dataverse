@@ -161,7 +161,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
             this.unreadNotificationCount = userNotificationService.getUnreadNotificationCountByUser(userId);
         }catch (Exception e){
             logger.warning("Error trying to retrieve unread notification count for user." + e.getMessage());
-            this.unreadNotificationCount = new Long("0");
+            this.unreadNotificationCount = 0L; 
         }
         return this.unreadNotificationCount;
     }

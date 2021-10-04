@@ -206,6 +206,8 @@ public class SettingsWrapper implements java.io.Serializable {
         return siteUrl;
     }
     
+    // OK to call SystemConfig - the value is based on a JVM option; no 
+    // extra database lookups. 
     public Long getZipDownloadLimit(){
         if (zipDownloadLimit == null) {
             String zipLimitOption = getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit);
