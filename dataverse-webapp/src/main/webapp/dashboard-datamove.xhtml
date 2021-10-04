@@ -39,7 +39,7 @@
             <p:tabView styleClass="no-bottom-border">
                 <p:focus for="sourceDatasetMenu"/>
                 <p:tab title="#{bundle['dashboard.datamove.tab.dataset.move']}">
-                    <h:form id="dataset-move-form">
+                    <h:form id="dataset-move-form" styleClass="dataset-move-form">
                         <div class="col-md-6">
                             <div class="panel panel-default">
                                 <div class="panel-heading text-info">
@@ -48,10 +48,11 @@
                                 <div class="panel-body">
 
                                     <!-- dataset to move: -->
-                                    <div class="col-xs-12 form-group">
+                                    <div class="form-group">
                                         <p:outputLabel value="#{bundle['dashboard.datamove.dataset.label']}"
-                                                       for="sourceDatasetMenu" styleClass="col-xs-3 control-label"/>
-                                        <div class="col-xs-9">
+                                                        for="sourceDatasetMenu"
+                                                        styleClass="col-xs-12 col-sm-2 col-md-3 control-label"/>
+                                        <div class="col-xs-12 col-sm-10 col-md-9">
                                             <p:autoComplete id="sourceDatasetMenu"
                                                             required="true"
                                                             requiredMessage="#{bundle['requiredField']}"
@@ -102,11 +103,11 @@
                                 <div class="panel-body">
 
                                     <!-- dataverse to move to: -->
-                                    <div class="col-xs-12 form-group">
+                                    <div class="form-group">
                                         <p:outputLabel value="#{bundle['dashboard.datamove.dataverse.label']}"
-                                                       for="destinationDataverseMenu"
-                                                       styleClass="col-xs-3 control-label"/>
-                                        <div class="col-xs-9">
+                                                        for="destinationDataverseMenu"
+                                                        styleClass="col-xs-12 col-sm-2 col-md-3 control-label"/>
+                                        <div class="col-xs-12 col-sm-10 col-md-9">
                                             <p:autoComplete id="destinationDataverseMenu"
                                                             required="true"
                                                             requiredMessage="#{bundle['requiredField']}"
@@ -178,7 +179,7 @@
                     </h:form>
                 </p:tab>
                 <p:tab title="#{bundle['dashboard.datamove.tab.dataverse.move']}">
-                    <h:form id="dataverse-move-form">
+                    <h:form id="dataverse-move-form" styleClass="dataset-move-form">
                         <div class="col-md-6">
                             <div class="panel panel-default">
                                 <div class="panel-heading text-info">
@@ -186,10 +187,10 @@
                                 </div>
                                 <div class="panel-body">
                                     <!-- dataverse to move: -->
-                                    <div class="col-xs-12 form-group">
+                                    <div class="form-group">
                                         <p:outputLabel value="#{bundle['dashboard.datamove.dataverse.label']}"
-                                                       for="sourceMenu" styleClass="col-xs-3 control-label"/>
-                                        <div class="col-xs-9">
+                                                       for="sourceMenu" styleClass="col-xs-12 col-sm-2 col-md-3 control-label"/>
+                                        <div class="col-xs-12 col-sm-10 col-md-9">
                                             <p:autoComplete id="sourceMenu"
                                                             required="true"
                                                             requiredMessage="#{bundle['requiredField']}"
@@ -234,12 +235,12 @@
                                 </div>
                                 <div class="panel-body">
                                     <!-- dataverse to move to: -->
-                                    <div class="col-xs-12 form-group">
+                                    <div class="form-group">
                                         <p:outputLabel
                                                 value="#{bundle['dashboard.datamove.dataverse.label']}"
                                                 for="targetMenu"
-                                                styleClass="col-xs-3 control-label"/>
-                                        <div class="col-xs-9">
+                                                styleClass="col-xs-12 col-sm-2 col-md-3 control-label"/>
+                                        <div class="col-xs-12 col-sm-10 col-md-9">
                                             <p:autoComplete id="targetMenu"
                                                             required="true"
                                                             requiredMessage="#{bundle['requiredField']}"

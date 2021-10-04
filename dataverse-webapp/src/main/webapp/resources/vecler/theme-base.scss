@@ -3157,6 +3157,30 @@ div.filesTable {
 	}
 }
 
+/* Move Data dashboard page */
+
+.dataset-move-form .form-group {
+	.ui-autocomplete {
+		width: 100%;
+	}
+
+	@media screen and (min-width: $screen-sm-min) {
+		label {
+			margin-top: 0.3125em;
+		}
+	}
+
+	@media screen and (max-width: $screen-xs-max) {
+		.col-xs-12 {
+			padding: 0;
+
+			+ .col-xs-12 {
+				margin-top: 0.5em;
+			}
+		}
+	}
+}
+
 /* Modal */
 
 .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button {
