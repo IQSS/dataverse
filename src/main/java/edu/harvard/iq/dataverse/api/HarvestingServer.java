@@ -50,10 +50,8 @@ public class HarvestingServer extends AbstractApiBean {
     // Create, Modify, and Delete we should also add them here.
     
     @GET
-    @Path("/")
     public Response oaiSets(@QueryParam("key") String apiKey) throws IOException {
-        
-
+    
         List<OAISet> oaiSets = null;
         try {
             oaiSets = oaiSetService.findAll();
@@ -99,7 +97,7 @@ public class HarvestingServer extends AbstractApiBean {
                     "Internal error: failed to produce output for OAI set " + spec + ".");
         }
     }
-   
+
     /**
      * create an OAI set from spec in path and other parameters from POST body
      * (as JSON). {"name":$set_name,

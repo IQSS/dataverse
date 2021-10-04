@@ -2,20 +2,20 @@ package edu.harvard.iq.dataverse.api;
 
 import java.util.logging.Logger;
 import com.jayway.restassured.RestAssured;
+import static com.jayway.restassured.RestAssured.given;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import com.jayway.restassured.response.Response;
-import static com.jayway.restassured.RestAssured.given;
 import com.jayway.restassured.path.json.JsonPath;
+import static edu.harvard.iq.dataverse.api.UtilIT.API_TOKEN_HTTP_HEADER;
 import javax.json.Json;
 import javax.json.JsonArray;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.Ignore;
-import static com.jayway.restassured.RestAssured.given;
 import java.util.List;
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -90,6 +90,20 @@ public class HarvestingServerIT {
                 .body(jsonForTestSpec(setName, def))
                 .post(createPath);
         assertEquals(201, r2.getStatusCode());
+        
+        Response getSet = given()
+                .get(u0);
+        
+        logger.info("getSet.getStatusCode(): " + getSet.getStatusCode());
+        logger.info("getSet printresponse:  " + getSet.prettyPrint());
+        assertEquals(200, getSet.getStatusCode());
+        
+        Response responseAll = given()
+                .get("/api/harvest/server/oaisets");
+        
+        logger.info("responseAll.getStatusCode(): " + responseAll.getStatusCode());
+        logger.info("responseAll printresponse:  " + responseAll.prettyPrint());
+        assertEquals(200, responseAll.getStatusCode());
 
         // try to create set with same name as admin user, should fail
         Response r3 = given()
@@ -228,6 +242,13 @@ public class HarvestingServerIT {
         assertEquals(200, exportSetResponse.getStatusCode());
         //SEK 09/04/2019 resonable wait time for export OAI? #6128
         Thread.sleep(5000L);
+        
+        Response getSet = given()
+                .get(apiPath);
+        
+        logger.info("getSet.getStatusCode(): " + getSet.getStatusCode());
+        logger.info("getSet printresponse:  " + getSet.prettyPrint());
+        assertEquals(200, getSet.getStatusCode());
 
         // Run ListIdentifiers on this newly-created set:
         Response listIdentifiersResponse = UtilIT.getOaiListIdentifiers(setName, "oai_dc");
@@ -235,6 +256,9 @@ public class HarvestingServerIT {
 
         assertEquals(OK.getStatusCode(), listIdentifiersResponse.getStatusCode());
         assertNotNull(ret);
+        logger.info("setName: " + setName);
+        logger.info("listIdentifiersResponse.prettyPrint:..... ");
+        listIdentifiersResponse.prettyPrint();
         // There should be 1 and only 1 record in the response:
         assertEquals(1, ret.size());
         // And the record should be the dataset we have just created:
