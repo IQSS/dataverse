@@ -124,7 +124,7 @@
                     <div class="col-lg-9">
                         <p:selectBooleanCheckbox value="#{bean.removeEmbargo}" id="embargoCheckbox"
                             itemLabel="#{bundle['file.editEmbargoDialog.remove']}"
-                            disabled="#{!facesContext.validationFailed}">
+                            disabled="#{facesContext.validationFailed}">
                             <p:ajax process="#{updateElements}"
                                 update="#{updateElements}"
                                 />
