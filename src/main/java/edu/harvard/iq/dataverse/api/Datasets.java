@@ -2656,7 +2656,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     @PUT
     @Path("{identifier}/curationLabelSet")
     public Response setCurationLabelSet(@PathParam("identifier") String dvIdtf,
-            String curationLabelSet,
+            @QueryParam("name") String curationLabelSet,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
         
         // Superuser-only:
@@ -2664,7 +2664,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         try {
             user = findAuthenticatedUserOrDie();
         } catch (WrappedResponse ex) {
-            return error(Response.Status.BAD_REQUEST, "Authentication is required.");
+            return error(Response.Status.UNAUTHORIZED, "Authentication is required.");
         }
         if (!user.isSuperuser()) {
             return error(Response.Status.FORBIDDEN, "Superusers only.");

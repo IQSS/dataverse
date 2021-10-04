@@ -2399,7 +2399,7 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         //Non-existent option
         setDataverseCurationLabelSetResponse = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "OddProcess");
         setDataverseCurationLabelSetResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
-        //Valid option, bad user
+        //Valid option, superuser
         setDataverseCurationLabelSetResponse = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "AlternateProcess");
         setDataverseCurationLabelSetResponse.then().assertThat().statusCode(OK.getStatusCode());
 
