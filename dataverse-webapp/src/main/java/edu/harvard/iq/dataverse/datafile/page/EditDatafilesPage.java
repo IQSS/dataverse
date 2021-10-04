@@ -46,9 +46,7 @@ import edu.harvard.iq.dataverse.util.SystemConfig;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -171,6 +169,7 @@ public class EditDatafilesPage implements java.io.Serializable {
     private Long versionId;
     private List<DataFile> newFiles = new ArrayList<>();
     private List<DataFile> uploadedFiles = new ArrayList<>();
+    private DataFileUploadInfo dataFileUploadInfo = new DataFileUploadInfo();
     private DatasetVersion workingVersion;
     private String dropBoxSelection = "";
 
@@ -547,26 +546,34 @@ public class EditDatafilesPage implements java.io.Serializable {
                 removeFileMetadataFromList(dataset.getEditVersion().getFileMetadatas(), markedForDelete);
             }
 
-
             if (markedForDelete.getDataFile().isNew()) {
+                DataFile dataFileToDelete = markedForDelete.getDataFile();
                 logger.fine("this is a brand new file.");
                 // the file was just added during this step, so in addition to
                 // removing it from the fileMetadatas lists (above), we also remove it from
                 // the newFiles list and the dataset's files, so it never gets saved.
 
-                removeDataFileFromList(dataset.getFiles(), markedForDelete.getDataFile());
-                removeDataFileFromList(newFiles, markedForDelete.getDataFile());
-                deleteTempFile(markedForDelete.getDataFile());
+                removeDataFileFromList(dataset.getFiles(), dataFileToDelete);
+                removeDataFileFromList(newFiles, dataFileToDelete);
+                deleteTempFile(dataFileToDelete);
+                updateCurrentBatchSizeForDeletedDataFile(dataFileToDelete);
                 // Also remove checksum from the list of newly uploaded checksums (perhaps odd
                 // to delete and then try uploading the same file again, but it seems like it
                 // should be allowed/the checksum list is part of the state to clean-up
-                checksumMapNew.remove(markedForDelete.getDataFile().getChecksumValue());
+                checksumMapNew.remove(dataFileToDelete.getChecksumValue());
 
             }
         }
 
         logger.fine("Files was removed from the list - changes will persist after save changes will be executed");
         JsfHelper.addFlashSuccessMessage(BundleUtil.getStringFromBundle("file.deleted.success", fileNames));
+    }
+
+    private void updateCurrentBatchSizeForDeletedDataFile(DataFile dataFileToDelete) {
+        dataFileUploadInfo.removeFromDataFilesToSave(dataFileToDelete);
+        if (dataFileUploadInfo.canSubtractSize(dataFileToDelete)) {
+            currentBatchSize -= dataFileUploadInfo.getSourceFileSize(dataFileToDelete);
+        }
     }
 
     private void cleanupTempFiles() {
@@ -1151,7 +1158,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             // for example, multiple files can be extracted from an uncompressed
             // zip file.
             dFileList = dataFileCreator.createDataFiles(inputStream, uFile.getFileName(), uFile.getContentType());
-
+            dataFileUploadInfo.addSizeAndDataFiles(fileSize, dFileList);
         } catch (IOException | FileExceedsMaxSizeException ex) {
             logger.warning("Failed to process and/or save the file " + uFile.getFileName() + "; " + ex.getMessage());
             return;
@@ -1239,6 +1246,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
                 // remove temp file
                 deleteTempFile(dataFile);
+                updateCurrentBatchSizeForDeletedDataFile(dataFile);
             } else if (isFileAlreadyUploaded(dataFile)) {
                 if (dupeFileNamesNew == null) {
                     dupeFileNamesNew = dataFile.getFileMetadata().getLabel();
@@ -1248,6 +1256,7 @@ public class EditDatafilesPage implements java.io.Serializable {
                 }
                 // remove temp file
                 deleteTempFile(dataFile);
+                updateCurrentBatchSizeForDeletedDataFile(dataFile);
             } else {
                 // OK, this one is not a duplicate, we want it.
                 // But let's check if its filename is a duplicate of another
