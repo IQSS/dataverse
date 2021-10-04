@@ -5754,7 +5754,10 @@ public class DatasetPage implements java.io.Serializable,  javax.faces.validator
             UIComponent cb = component.findComponent("embargoCheckbox");
             
             UIInput endComponent = (UIInput) cb;
-            boolean removedState = (Boolean)endComponent.getSubmittedValue();
+            boolean removedState = false;
+            if(endComponent!=null) {
+                removedState = (Boolean)endComponent.getSubmittedValue();
+            }
             if(!removedState) {
             logger.info("val: " + value);
             Embargo newE = new Embargo(((LocalDate)value), null);
