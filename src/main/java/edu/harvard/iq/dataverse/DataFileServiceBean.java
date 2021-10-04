@@ -1650,11 +1650,7 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
 
     public Embargo findEmbargo(Long id) {
-        try {
-         return em.createQuery("select object(e) from Embargo as e, DataFile d where d.id=:fileId and d.embargo_id=e.id", Embargo.class)
-        .setParameter("fileId", id).getSingleResult();
-        } catch(NoResultException nre) {
-        return null;
-        }
+        DataFile d = find(id);
+        return d.getEmbargo();
     }
 }
