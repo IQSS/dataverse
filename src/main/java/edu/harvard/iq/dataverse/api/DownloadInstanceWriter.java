@@ -36,6 +36,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -462,10 +463,34 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                     String chunkSizeLine = String.format("%x\r\n", storageIO.getVarHeader().getBytes().length);
                                     outstream.write(chunkSizeLine.getBytes());
                                 }
-                                // FIXME: check if ranges.isEmpty() here. These bytes, the header, is being written
-                                // even if we are only requesting the last bytes of a file. So you see all or part
-                                // of the header, even if you don't request it.
-                                outstream.write(storageIO.getVarHeader().getBytes());
+                                // If a range is not being requested, let's call that the normal case.
+                                // Write the entire line of variable headers. Later, the rest of the file
+                                // will be written.
+                                if (ranges.isEmpty()) {
+                                    outstream.write(storageIO.getVarHeader().getBytes());
+                                } else {
+                                    // Range requested. We should only write the header if the range specifies the
+                                    // start of the file or if the range includes some of the end of the header.
+                                    // For now we only support a single range.
+                                    Range range1 = ranges.get(0);
+                                    if (range1.getStart() == 0 & range1.getLength() >= storageIO.getVarHeader().getBytes().length) {
+                                        // Does the range requested include the whole length of the variable headers?
+                                        // If so, write those headers, if the range is the start of the file (index 0).
+                                        logger.fine("Writing entire variable header line.");
+                                        outstream.write(storageIO.getVarHeader().getBytes());
+                                    } else if (range1.getStart() == 0 & range1.getLength() < storageIO.getVarHeader().getBytes().length) {
+                                        // Is the user requesting a small range near the front, so small that we can't
+                                        // even write the full line of variable headers? Ok, we'll just write as much
+                                        // as we can, within the range.
+                                        logger.fine("Writing this many bytes of the variable header line: " + range1.getLength());
+                                        outstream.write(Arrays.copyOfRange(storageIO.getVarHeader().getBytes(), 0, (int) range1.getLength()));
+                                    } else {
+                                        // TODO: Consider supporting weird scenarios:
+                                        // - The user is requesting the end or middle of the file and should end up with part or all of the variable headers.
+                                        // - ??
+                                        logger.fine("A range was requested but didn't start with 0. Skip printing of variable headers.");
+                                    }
+                                }
                                 if (useChunkedTransfer) {
                                     outstream.write(chunkClose);
                                 }
