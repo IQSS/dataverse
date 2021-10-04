@@ -5645,8 +5645,6 @@ public class DatasetPage implements java.io.Serializable,  javax.faces.validator
         if(isRemoveEmbargo() || (selectionEmbargo.getDateAvailable()==null && selectionEmbargo.getReason()==null)) {
             selectionEmbargo=null;
         }
-        logger.fine("emb is null: " + (selectionEmbargo==null));
-        logger.fine("emb date: " + selectionEmbargo.getFormattedDateAvailable());
         
         if(!(selectionEmbargo==null || (selectionEmbargo!=null && settingsWrapper.isValidEmbargoDate(selectionEmbargo)))) {
             logger.fine("Validation error: " + selectionEmbargo.getFormattedDateAvailable());
