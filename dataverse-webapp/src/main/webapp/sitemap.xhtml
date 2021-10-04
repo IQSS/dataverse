@@ -39,15 +39,38 @@
                 <h3>
                     #{bundle['sitemap.links.mainmenu']}
                 </h3>
+
+                <div jsf:rendered="#{settingsWrapper.getConfiguredAboutUrls().size() eq 1}">
+                    <ui:repeat value="#{settingsWrapper.getConfiguredAboutUrls().entrySet().toArray()}" var="about">
+                        <h4>
+                            <h:outputLink value="#{about.key}" target="_blank" title="#{bundle['opensInNewTab']}">
+                                <h:outputText value="#{about.value}"/>
+                            </h:outputLink>
+                        </h4>
+                    </ui:repeat>
+                </div>
+                <div jsf:rendered="#{settingsWrapper.getConfiguredAboutUrls().size() > 1}">
+                    <h4>
+                        #{bundle['header.about']}
+                    </h4>
+                    <ui:repeat value="#{settingsWrapper.getConfiguredAboutUrls().entrySet().toArray()}" var="about">
+                        <p>
+                            <h:outputLink value="#{about.key}" target="_blank" title="#{bundle['opensInNewTab']}">
+                                <h:outputText value="#{about.value}"/>
+                            </h:outputLink>
+                        </p>
+                    </ui:repeat>
+                </div>
+
                 <h4>
                     #{bundle['header.help']}
                 </h4>
                 <p>
-                    <h:outputLink value="#{settingsWrapper.guidesBaseUrl}/#{settingsWrapper.guidesVersion}/user/index.html" target="_blank">
+                    <h:outputLink value="#{settingsWrapper.guidesBaseUrl}/#{settingsWrapper.guidesVersion}/user/index.html"
+                                  target="_blank" title="#{bundle['opensInNewTab']}">
                         #{bundle['header.guides.user']}
                     </h:outputLink>
                 </p>
-
                 <h3 jsf:rendered="#{systemConfig.showPrivacyPolicyFooterLinkRendered || systemConfig.showTermsOfUseFooterLinkRendered || systemConfig.showAccessibilityStatementFooterLinkRendered}">
                     #{bundle['sitemap.links.pages']}
                 </h3>
