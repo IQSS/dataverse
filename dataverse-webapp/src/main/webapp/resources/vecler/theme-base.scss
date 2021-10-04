@@ -936,6 +936,21 @@ div.form-col-container.edit-compound-field div.form-col-container.form-hidden-co
 	padding: 0;
 }
 
+@media screen and (max-width: 40em) {
+	.ui-fileupload-buttonbar .ui-button {
+		padding: 0;
+
+		.ui-button-text {
+			display: block;
+		}
+	}
+}
+
+.row.form-horizontal .form-group {
+	margin-left: 0;
+	margin-right: 0;
+}
+
 /* Graphical text editor */
 
 .ql-container {
