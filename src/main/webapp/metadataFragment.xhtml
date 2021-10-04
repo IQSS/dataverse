@@ -12,7 +12,7 @@
            <script defer="defer" src="#{vocabScriptUrl}?version=#{systemConfig.getVersion()}"/>
         </ui:repeat>
         </p:fragment>
-        <c:set var="cvocConf" value="#{DatasetPage.getCVocConf()}"/>
+        <c:set var="cvocConf" value="#{settingsWrapper.getCVocConf()}"/>
     <!-- View Mode -->
     <div class="panel-group" jsf:rendered="${empty editMode  or managePage}">
         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />

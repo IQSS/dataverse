@@ -106,7 +106,7 @@ public class SystemConfig {
      * zip file upload.
      */
     private static final int defaultZipUploadFilesLimit = 1000; 
-    private static final long defaultZipDownloadLimit = 104857600L; // 100MB
+    public static final long defaultZipDownloadLimit = 104857600L; // 100MB
     private static final int defaultMultipleUploadFilesLimit = 1000;
     private static final int defaultLoginSessionTimeout = 480; // = 8 hours
 
@@ -121,6 +121,11 @@ public class SystemConfig {
         return getVersion(false);
     }
     
+    // The return value is a "prviate static String", that should be initialized
+    // once, on the first call (see the code below)... But this is a @Stateless 
+    // bean... so that would mean "once per thread"? - this would be a prime 
+    // candidate for being moved into some kind of an application-scoped caching
+    // service... some CachingService @Singleton - ? (L.A. 5.7)
     public String getVersion(boolean withBuildNumber) {
         
         if (appVersionString == null) {
@@ -407,7 +412,7 @@ public class SystemConfig {
         return metricsUrl;
     }
 
-    static long getLongLimitFromStringOrDefault(String limitSetting, Long defaultValue) {
+    public static long getLongLimitFromStringOrDefault(String limitSetting, Long defaultValue) {
         Long limit = null;
 
         if (limitSetting != null && !limitSetting.equals("")) {
@@ -524,7 +529,7 @@ public class SystemConfig {
         // is no language-specific value
         String appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, saneDefaultForAppTermsOfUse);
         //Now get the language-specific value if it exists
-        if (!language.equalsIgnoreCase(BundleUtil.getDefaultLocale().getLanguage())) {
+        if (language != null && !language.equalsIgnoreCase(BundleUtil.getDefaultLocale().getLanguage())) {
             appTermsOfUse = settingsService.getValueForKey(SettingsServiceBean.Key.ApplicationTermsOfUse, language,	appTermsOfUse);
         }
         return appTermsOfUse;

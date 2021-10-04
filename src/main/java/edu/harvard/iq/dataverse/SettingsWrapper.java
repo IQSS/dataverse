@@ -51,6 +51,9 @@ public class SettingsWrapper implements java.io.Serializable {
 
     @EJB
     SystemConfig systemConfig;
+    
+    @EJB
+    DatasetFieldServiceBean fieldService;
 
     private Map<String, String> settingsMap;
     
@@ -62,6 +65,35 @@ public class SettingsWrapper implements java.io.Serializable {
     private Dataverse rootDataverse = null; 
     
     private String guidesVersion = null;
+    
+    private String appVersion = null; 
+    
+    private String appVersionWithBuildNumber = null; 
+    
+    private Boolean shibPassiveLoginEnabled = null; 
+    
+    private String footerCopyrightAndYear = null; 
+    
+    //External Vocabulary support
+    private Map<Long, JsonObject> cachedCvocMap = null;
+    
+    private Long zipDownloadLimit = null; 
+    
+    private Boolean publicInstall = null; 
+    
+    private Integer uploadMethodsCount;
+    
+    private Boolean rsyncUpload = null; 
+    
+    private Boolean rsyncDownload = null; 
+    
+    private Boolean httpUpload = null; 
+    
+    private Boolean rsyncOnly = null;
+    
+    private String metricsUrl = null; 
+    
+    private Boolean dataFilePIDSequentialDependent = null;
     
     public String get(String settingKey) {
         if (settingsMap == null) {
@@ -159,11 +191,14 @@ public class SettingsWrapper implements java.io.Serializable {
 
     public String getGuidesVersion() {
         if (guidesVersion == null) {
-            guidesVersion = systemConfig.getGuidesVersion();
+            String saneDefault = getAppVersion();
+            guidesVersion = getValueForKey(SettingsServiceBean.Key.GuidesVersion, saneDefault);
         }
         return guidesVersion;
     }
     
+    // OK to call SystemConfig - the method does not rely on database 
+    // settings.
     public String getDataverseSiteUrl() {
         if (siteUrl == null) {
             siteUrl = systemConfig.getDataverseSiteUrl();
@@ -172,31 +207,72 @@ public class SettingsWrapper implements java.io.Serializable {
     }
     
     public Long getZipDownloadLimit(){
-        return systemConfig.getZipDownloadLimit();
+        if (zipDownloadLimit == null) {
+            String zipLimitOption = getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit);
+            zipDownloadLimit = SystemConfig.getLongLimitFromStringOrDefault(zipLimitOption, SystemConfig.defaultZipDownloadLimit);
+        }
+        return zipDownloadLimit;
     }
 
     public boolean isPublicInstall(){
-        return systemConfig.isPublicInstall();
+        if (publicInstall == null) {
+            boolean saneDefault = false;
+            publicInstall = isTrueForKey(SettingsServiceBean.Key.PublicInstall, saneDefault);
+        }
+        return publicInstall; 
     }
     
     public boolean isRsyncUpload() {
-        return systemConfig.isRsyncUpload();
+        if (rsyncUpload == null) {
+            rsyncUpload = getUploadMethodAvailable(SystemConfig.FileUploadMethods.RSYNC.toString());
+        }
+        return rsyncUpload; 
     }
     
     public boolean isRsyncDownload() {
-        return systemConfig.isRsyncDownload();
+        if (rsyncDownload == null) {
+            String downloadMethods = getValueForKey(SettingsServiceBean.Key.DownloadMethods);
+            rsyncDownload = downloadMethods != null && downloadMethods.toLowerCase().contains(SystemConfig.FileDownloadMethods.RSYNC.toString());
+        }
+        return rsyncDownload;
     }
     
     public boolean isRsyncOnly() {
-        return systemConfig.isRsyncOnly();
+        if (rsyncOnly == null) {
+            String downloadMethods = getValueForKey(SettingsServiceBean.Key.DownloadMethods);
+            if(downloadMethods == null){
+                rsyncOnly = false;
+            } else if (!downloadMethods.toLowerCase().equals(SystemConfig.FileDownloadMethods.RSYNC.toString())){
+                rsyncOnly = false;
+            } else {
+                String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods);
+                if (uploadMethods==null){
+                    rsyncOnly = false;
+                } else {
+                    rsyncOnly = Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size() == 1 && uploadMethods.toLowerCase().equals(SystemConfig.FileUploadMethods.RSYNC.toString());
+                }
+            }
+        }
+        return rsyncOnly;
     }
     
     public boolean isHTTPUpload(){
-        return systemConfig.isHTTPUpload();
+        if (httpUpload == null) {
+            httpUpload = getUploadMethodAvailable(SystemConfig.FileUploadMethods.NATIVE.toString());
+        }
+        return httpUpload;      
     }
     
     public boolean isDataFilePIDSequentialDependent(){
-        return systemConfig.isDataFilePIDSequentialDependent();
+        if (dataFilePIDSequentialDependent == null) {
+            dataFilePIDSequentialDependent = false;
+            String doiIdentifierType = getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
+            String doiDataFileFormat = getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
+            if (doiIdentifierType.equals("storedProcGenerated") && doiDataFileFormat.equals("DEPENDENT")){
+                dataFilePIDSequentialDependent = true;
+            }
+        }
+        return dataFilePIDSequentialDependent;
     }
     
     public String getSupportTeamName() {
@@ -212,7 +288,15 @@ public class SettingsWrapper implements java.io.Serializable {
     }
     
     public Integer getUploadMethodsCount() {
-        return systemConfig.getUploadMethodCount();
+        if (uploadMethodsCount == null) {
+            String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods); 
+            if (uploadMethods==null){
+                uploadMethodsCount = 0;
+            } else {
+                uploadMethodsCount = Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).size();
+            } 
+        }
+        return uploadMethodsCount;
     }
 
     public boolean isRootDataverseThemeDisabled() {
@@ -392,6 +476,68 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         
         return rootDataverse;
+    }
+    
+    // The following 2 methods may be unnecessary *with the current implementation* of 
+    // how the application version is retrieved (the values are initialized and caached inside 
+    // SystemConfig once per thread - see the code there); 
+    // But in case we switch to some other method, that requires a database 
+    // lookup like other settings, it should be here. 
+    // This would be a prime candidate for moving into some kind of an 
+    // APPLICATION-scope caching singleton. -- L.A. 5.7
+    public String getAppVersion() {
+        if (appVersion == null) {
+            appVersion = systemConfig.getVersion();
+        }
+        return appVersion;
+    }
+    
+    public String getAppVersionWithBuildNumber() {
+        if (appVersionWithBuildNumber == null) {
+            appVersionWithBuildNumber = systemConfig.getVersion(true);
+        }
+        return appVersionWithBuildNumber;
+    }
+    
+    public boolean isShibPassiveLoginEnabled() {
+        if (shibPassiveLoginEnabled == null) {
+            boolean defaultResponse = false;
+            shibPassiveLoginEnabled = isTrueForKey(SettingsServiceBean.Key.ShibPassiveLoginEnabled, defaultResponse);
+        }
+        return shibPassiveLoginEnabled;
+    }
+    
+    // This method may not be necessary *currently* either (the value is 
+    // stored in the bundle). -- L.A. 5.7
+    public String getFooterCopyrightAndYear() {
+        if (footerCopyrightAndYear == null) {
+            footerCopyrightAndYear = systemConfig.getFooterCopyrightAndYear();
+        }
+        return footerCopyrightAndYear; 
+    }
+    
+    public Map<Long, JsonObject> getCVocConf() {
+        //Cache this in the view
+        if(cachedCvocMap==null) {
+        cachedCvocMap = fieldService.getCVocConf(false);
+        }
+        return cachedCvocMap;
+    }
+    
+    public String getMetricsUrl() {
+        if (metricsUrl == null) {
+            metricsUrl = getValueForKey(SettingsServiceBean.Key.MetricsUrl);
+        }
+        return metricsUrl;
+    }
+    
+    private Boolean getUploadMethodAvailable(String method){
+        String uploadMethods = getValueForKey(SettingsServiceBean.Key.UploadMethods); 
+        if (uploadMethods==null){
+            return false;
+        } else {
+           return  Arrays.asList(uploadMethods.toLowerCase().split("\\s*,\\s*")).contains(method);
+        }
     }
 
 }

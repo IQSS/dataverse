@@ -709,8 +709,8 @@ public class DataversePage implements java.io.Serializable {
         return "/dataverse.xhtml?alias=" + dataverse.getAlias() + "&faces-redirect=true";
     }
 
-    public boolean isRootDataverse() {
-        return dataverse.getOwner() == null;
+    public boolean isRootDataverse() {        
+        return dataverse == null ? false : dataverse.getOwner() == null;
     }
 
     public Dataverse getOwner() {

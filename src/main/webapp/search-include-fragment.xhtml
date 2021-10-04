@@ -9,7 +9,7 @@
      xmlns:jsf="http://xmlns.jcp.org/jsf">
 
     <c:set var="page" value="/dataverse/#{DataversePage.dataverse.alias}"/>
-    <c:set var="cvocConf" value="#{DatasetPage.getCVocConf()}"/>
+    <c:set var="cvocConf" value="#{settingsWrapper.getCVocConf()}"/>
     <p:fragment>
         <p:autoUpdate/>
         <ui:repeat value="#{DatasetPage.vocabScripts}" var="vocabScriptUrl">

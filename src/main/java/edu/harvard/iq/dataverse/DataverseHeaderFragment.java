@@ -75,7 +75,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     
     List<Breadcrumb> breadcrumbs = new ArrayList<>();
     
-    private List<BannerMessage> bannerMessages = new ArrayList<>();
+    private List<BannerMessage> bannerMessages = null; 
 
     private Long unreadNotificationCount = null;
     
@@ -287,28 +287,32 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     
     
     public List<BannerMessage> getBannerMessages() {
-        User user = dataverseSession.getUser();
-        AuthenticatedUser au = null;
-        if (user.isAuthenticated()) {
-            au = (AuthenticatedUser) user;
-        }           
+        if (bannerMessages == null) {
+            bannerMessages = new ArrayList<>();
+            
+            User user = dataverseSession.getUser();
+            AuthenticatedUser au = null;
+            if (user.isAuthenticated()) {
+                au = (AuthenticatedUser) user;
+            }           
         
-        if(au == null){
-            bannerMessages = bannerMessageService.findBannerMessages();
-        } else{
-            bannerMessages = bannerMessageService.findBannerMessages(au.getId());
-        } 
+            if  (au == null)    {
+                bannerMessages = bannerMessageService.findBannerMessages();
+            } else  {
+                bannerMessages = bannerMessageService.findBannerMessages(au.getId());
+            } 
         
-        if (!dataverseSession.getDismissedMessages().isEmpty()) {           
-            for (BannerMessage dismissed : dataverseSession.getDismissedMessages()) {
-                Iterator<BannerMessage> itr = bannerMessages.iterator();
-                while (itr.hasNext()) {
-                    BannerMessage test = itr.next();
-                    if (test.equals(dismissed)) {
-                        itr.remove();
+            if (!dataverseSession.getDismissedMessages().isEmpty()) {           
+                for (BannerMessage dismissed : dataverseSession.getDismissedMessages()) {
+                    Iterator<BannerMessage> itr = bannerMessages.iterator();
+                    while (itr.hasNext()) {
+                        BannerMessage test = itr.next();
+                        if (test.equals(dismissed)) {
+                            itr.remove();
+                        }
                     }
-                }
-            }            
+                }            
+            }
         }
         
         return bannerMessages;
