@@ -5628,6 +5628,7 @@ public class DatasetPage implements java.io.Serializable {
         //If we flipped the state, update the selectedEmbargo. Otherwise (e.g. when save is hit) don't make changes
         if(existing != this.removeEmbargo) {
             logger.info("State flip");
+            selectionEmbargo= new Embargo();
         if(removeEmbargo) {
             logger.info("Setting empty embargo");
             selectionEmbargo= new Embargo(null, null);
@@ -5641,7 +5642,7 @@ public class DatasetPage implements java.io.Serializable {
         if (workingVersion.isReleased()) {
             refreshSelectedFiles(selectedFiles);
         }
-        //Todo - add validation and.or separate delete from save of a new embargo
+        
         if(isRemoveEmbargo() || (selectionEmbargo.getDateAvailable()==null && selectionEmbargo.getReason()==null)) {
             selectionEmbargo=null;
         }
