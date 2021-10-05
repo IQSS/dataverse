@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +27,10 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.faces.validator.ValidatorException;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import javax.json.Json;
@@ -328,7 +333,6 @@ public class SettingsWrapper implements java.io.Serializable {
             return LocalDate.now().plusDays(1);
     }
     
-    
     public boolean isValidEmbargoDate(Embargo e) {
         
         if (e.getDateAvailable()==null || e.getDateAvailable().isAfter(LocalDate.now())
@@ -342,6 +346,25 @@ public class SettingsWrapper implements java.io.Serializable {
     public boolean isEmbargoAllowed() {
         //Need a valid :MaxEmbargoDurationInMonths setting to allow embargoes
         return getMaxEmbargoDate()!=null;
+    }
+    
+    public void validateEmbargoDate(FacesContext context, UIComponent component, Object value)
+            throws ValidatorException {
+        Embargo newE = new Embargo(((LocalDate) value), null);
+        if (!isValidEmbargoDate(newE)) {
+            String minDate = getMinEmbargoDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            String maxDate = getMaxEmbargoDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            String msgString = BundleUtil.getStringFromBundle("embargo.date.invalid", Arrays.asList(minDate, maxDate));
+            // If we don't throw an exception here, the datePicker will use it's own
+            // vaidator and display a default message. The value for that can be set by
+            // adding validatorMessage="#{bundle['embargo.date.invalid']}" (a version with
+            // no params) to the datepicker
+            // element in file-edit-popup-fragment.html, but it would be better to catch all
+            // problems here (so we can show a message with the min/max dates).
+            FacesMessage msg = new FacesMessage(msgString);
+            msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+            throw new ValidatorException(msg);
+        }
     }
 
     Map<String,String> languageMap = null;

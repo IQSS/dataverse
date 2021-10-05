@@ -154,7 +154,7 @@ import org.primefaces.model.TreeNode;
  */
 @ViewScoped
 @Named("DatasetPage")
-public class DatasetPage implements java.io.Serializable,  javax.faces.validator.Validator {
+public class DatasetPage implements java.io.Serializable {
 
     private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
 
@@ -5734,46 +5734,4 @@ public class DatasetPage implements java.io.Serializable,  javax.faces.validator
         }
         return true;
     }
-    
-    
-    
-    /************
-     * 
-     * Fix updates to use param
-     * remove validate check of findComponent
-     * check other changes to see if they are needed.
-     * 
-     */
-    
-    public void validate(FacesContext context, UIComponent component, Object value)
-            throws ValidatorException {
-        logger.info("In validate");
-            if(selectionEmbargo.getDateAvailable()!=null) {
-                logger.info("emb date:" + selectionEmbargo.getFormattedDateAvailable());
-            }
-            UIComponent cb = component.findComponent("embargoCheckbox");
-            
-            UIInput endComponent = (UIInput) cb;
-            boolean removedState = false;
-            if(endComponent!=null) {
-                removedState = (Boolean)endComponent.getSubmittedValue();
-            }
-            if(!removedState) {
-            logger.info("val: " + value);
-            Embargo newE = new Embargo(((LocalDate)value), null);
-            if (!settingsWrapper.isValidEmbargoDate(newE)) {
-                String minDate = settingsWrapper.getMinEmbargoDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                String maxDate= settingsWrapper.getMaxEmbargoDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                String msgString = BundleUtil.getStringFromBundle("embargo.date.invalid", Arrays.asList(minDate, maxDate));
-                // If we don't throw an exception here, the datePicker will use it's own
-                // vaidator and display a default message. The value for that can be set by
-                // adding validatorMessage="#{bundle['embargo.date.invalid']}" (a version with no params) to the datepicker
-                // element in file-edit-popup-fragment.html, but it would be better to catch all
-                // problems here (so we can show a message with the min/max dates).
-                FacesMessage msg = new FacesMessage(msgString);
-                msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-                throw new ValidatorException(msg);
-            }}
-    }
-    
 }

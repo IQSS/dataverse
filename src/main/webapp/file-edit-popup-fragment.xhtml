@@ -67,7 +67,7 @@
 
     <!-- Embargo Dialog-->
     <p:dialog id="fileEmbargoPopup" styleClass="smallPopUp" resizable="false" header="#{bundle['file.editEmbargo']}" widgetVar="fileEmbargoPopup" modal="true">
-        <p:focus for="fileEmbargoDateDS"/>
+        <p:focus for="fileEmbargoDate"/>
         <p class="help-block" jsf:rendered="#{bean.validEmbargoSelection}">#{bundle['file.editEmbargoDialog.tip']}</p>
         <p class="text-warning embargo" jsf:rendered="#{bean.validEmbargoSelection and !bean.embargoForWholeSelection}"><span class="glyphicon glyphicon-warning-sign"/>#{bundle['file.editEmbargoDialog.some.tip']} #{bundle['file.editEmbargoDialog.partial.tip']}</p>
         <p class="text-danger embargo" jsf:rendered="#{!bean.validEmbargoSelection}"><span class="glyphicon glyphicon-exclamation-sign"/>#{bundle['file.editEmbargoDialog.none.tip']}</p>
@@ -88,19 +88,19 @@
                                     class="glyphicon glyphicon-asterisk text-danger"
                                     jsf:rendered="#{!bean.removeEmbargo}" />
                             </p>
-                            <p:datePicker id="fileEmbargoDateDS"
+                            <p:datePicker id="fileEmbargoDate"
                                 value="#{bean.selectionEmbargo.dateAvailable}"
                                 locale="#{dataverseSession.localeCode}"
                                 mindate="#{settingsWrapper.minEmbargoDate}" pattern="yyyy-MM-dd"
                                 maxdate="#{settingsWrapper.maxEmbargoDate}"
                                 disabled="#{bean.removeEmbargo}"
-                                validator="#{bean.validate}" >
+                                validator="#{settingsWrapper.validateEmbargoDate}" >
                                 <p:ajax process="#{updateElements}"
                                     update="#{updateElements}"
                                     />
                                 </p:datePicker>
                             <div>
-                                <h:message for="fileEmbargoDateDS"
+                                <h:message for="fileEmbargoDate"
                                     styleClass="bg-danger text-danger" />
                             </div>
                         </div>

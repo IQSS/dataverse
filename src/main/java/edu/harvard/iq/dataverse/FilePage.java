@@ -1096,20 +1096,4 @@ public class FilePage implements java.io.Serializable {
             return BundleUtil.getStringFromBundle("embargoed.willbeuntil");
         }
     }
-    
-    
-    public void validateEmbargoDate(FacesContext context, UIComponent component, Object value)
-            throws ValidatorException {
-        if (!removeEmbargo) {
-            if (!settingsWrapper.isValidEmbargoDate(selectionEmbargo)) {
-                String minDate = settingsWrapper.getMinEmbargoDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                String maxDate= settingsWrapper.getMaxEmbargoDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                FacesMessage msg = new FacesMessage(BundleUtil.getStringFromBundle("embargo.date.invalid", Arrays.asList(minDate, maxDate)));
-                msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-                throw new ValidatorException(msg);
-            }
-        }
-    }
-    
-
 }
