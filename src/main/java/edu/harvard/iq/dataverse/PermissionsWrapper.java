@@ -104,8 +104,13 @@ public class PermissionsWrapper implements java.io.Serializable {
         return canIssueCommand(dvo, DeleteDataverseCommand.class);
     }
     
+    private Boolean userCanIssueCreateDataverseCommand = null; 
+    
     public boolean canIssueCreateDataverseCommand(DvObject dvo) {
-        return canIssueCommand(dvo, CreateDataverseCommand.class);
+        if (userCanIssueCreateDataverseCommand == null) {
+            userCanIssueCreateDataverseCommand = canIssueCommand(dvo, CreateDataverseCommand.class);
+        }
+        return userCanIssueCreateDataverseCommand;
     }
     
     
@@ -251,7 +256,7 @@ public class PermissionsWrapper implements java.io.Serializable {
     // page keeps asking for it repeatedly. So these values absolutely need to be
     // cached. 
     
-    Boolean showAddDataverseLink = null; 
+    private Boolean showAddDataverseLink = null; 
     
     public boolean showAddDataverseLink() {
         logger.info("in showAddDataverseLink");
@@ -270,7 +275,7 @@ public class PermissionsWrapper implements java.io.Serializable {
         return false;
     }
     
-    Boolean showAddDatasetLink = null; 
+    private Boolean showAddDatasetLink = null; 
     
     public boolean showAddDatasetLink() {
         logger.info("in showAddDatasetLink");
@@ -289,7 +294,31 @@ public class PermissionsWrapper implements java.io.Serializable {
         return false;
     }
     
+    private Boolean canAuthUsersCreateDatasetsInCurrentDataverse = null; 
     
+    public boolean canAuthUsersCreateDatasetsInCurrentDataverse(Dataverse currentDataverse) {
+        if (canAuthUsersCreateDatasetsInCurrentDataverse == null) {
+            canAuthUsersCreateDatasetsInCurrentDataverse = authUsersCanCreateDatasetsInDataverse(currentDataverse);
+        }
+        return canAuthUsersCreateDatasetsInCurrentDataverse;
+    }
+    
+    private Boolean canAuthUsersCreateDataversesInCurrentDataverse = null;
+    
+    public boolean canAuthUsersCreateDataversesInCurrentDataverse (Dataverse currentDataverse) {
+        if (canAuthUsersCreateDataversesInCurrentDataverse == null) {
+            canAuthUsersCreateDataversesInCurrentDataverse = authUsersCanCreateDataversesInDataverse(currentDataverse); 
+        }
+        return canAuthUsersCreateDataversesInCurrentDataverse;
+    }
+    
+    private boolean authUsersCanCreateDatasetsInDataverse(Dataverse dataverse) {
+        
+    }
+    
+    private boolean authUsersCanCreateDataversesInDataverse(Dataverse dataverse) {
+        
+    }
     
     // todo: move any calls to this to call NavigationWrapper   
     @Inject NavigationWrapper navigationWrapper;
