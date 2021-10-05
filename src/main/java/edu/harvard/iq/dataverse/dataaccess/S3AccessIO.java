@@ -282,8 +282,6 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
 
         setChannel(Channels.newChannel(super.getInputStream()));
 
-        super.getInputStream().skip(super.getOffset());
-
         return super.getInputStream();
     }
     

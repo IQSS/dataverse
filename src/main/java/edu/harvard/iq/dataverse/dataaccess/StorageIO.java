@@ -391,8 +391,16 @@ public abstract class StorageIO<T extends DvObject> {
         size = s;
     }
 
-    public void setOffset(long offset) {
-        this.offset = offset;
+    // open() has already been called. Now we can skip, if need be.
+    public void setOffset(long offset) throws IOException {
+        InputStream inputStream = getInputStream();
+        if (inputStream != null) {
+            inputStream.skip(offset);
+            // The skip has already been done. Why not record it.
+            this.offset = offset;
+        } else {
+            throw new IOException("Could not skip into InputStream because it is null");
+        }
     }
 
     public void setInputStream(InputStream is) {
