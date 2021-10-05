@@ -22,14 +22,3 @@ jobs:
               run: |
                   cd tests/shell
                   shellspec
-    shellspec-macos:
-        name: "MacOS"
-        runs-on: macos-10.15
-        steps:
-            -   name: Install shellspec
-                run: curl -fsSL https://git.io/shellspec | sh -s 0.28.1 --yes
-            -   uses: actions/checkout@v2
-            -   name: Run Shellspec
-                run: |
-                    cd tests/shell
-                    /Users/runner/.local/bin/shellspec
