@@ -22,7 +22,7 @@ jobs:
                   github_token: ${{ secrets.github_token }}
                   reporter: github-pr-review # Change reporter.
                   fail_on_error: true
-                  exclude: tests/shell/*
+                  exclude: "./tests/shell/*"
     shellspec-ubuntu:
         name: "Ubuntu"
         runs-on: ubuntu-latest
@@ -31,6 +31,23 @@ jobs:
               run: curl -fsSL https://git.io/shellspec | sh -s 0.28.1 --yes
             - uses: actions/checkout@v2
             - name: Run Shellspec
+              run: |
+                  cd tests/shell
+                  shellspec
+    shellspec-centos7:
+        name: "CentOS 7"
+        runs-on: ubuntu-latest
+        container:
+            image: centos:7
+        steps:
+            - uses: actions/checkout@v2
+            - name: Install shellspec
+              run: |
+                  curl -fsSL https://github.com/shellspec/shellspec/releases/download/0.28.1/shellspec-dist.tar.gz | tar -xz -C /usr/share
+                  ln -s /usr/share/shellspec/shellspec /usr/bin/shellspec
+            - name: Install dependencies
+              run: yum install -y ed
+            - name: Run shellspec
               run: |
                   cd tests/shell
                   shellspec
