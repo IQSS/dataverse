@@ -1,0 +1,35 @@
+name: "Shellspec"
+on:
+    push:
+        paths:
+            - tests/shell/**
+            - conf/solr/**
+            # add more when more specs are written relying on data
+    pull_request:
+        paths:
+            - tests/shell/**
+            - conf/solr/**
+            # add more when more specs are written relying on data
+jobs:
+    shellspec-linux:
+        name: "Linux"
+        runs-on: ubuntu-latest
+        steps:
+            - name: Install shellspec
+              run: curl -fsSL https://git.io/shellspec | sh -s 0.28.1 --yes
+            - uses: actions/checkout@v2
+            - name: Run Shellspec
+              run: |
+                  cd tests/shell
+                  shellspec
+    shellspec-macos:
+        name: "MacOS"
+        runs-on: macos-10.15
+        steps:
+            -   name: Install shellspec
+                run: curl -fsSL https://git.io/shellspec | sh -s 0.28.1 --yes
+            -   uses: actions/checkout@v2
+            -   name: Run Shellspec
+                run: |
+                    cd tests/shell
+                    /Users/runner/.local/bin/shellspec
