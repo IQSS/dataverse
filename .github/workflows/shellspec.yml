@@ -10,6 +10,8 @@ on:
             - tests/shell/**
             - conf/solr/**
             # add more when more specs are written relying on data
+env:
+    SHELLSPEC_VERSION: 0.28.1
 jobs:
     shellcheck:
         name: Shellcheck
@@ -28,7 +30,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Install shellspec
-              run: curl -fsSL https://git.io/shellspec | sh -s 0.28.1 --yes
+              run: curl -fsSL https://git.io/shellspec | sh -s ${{ env.SHELLSPEC_VERSION }} --yes
             - uses: actions/checkout@v2
             - name: Run Shellspec
               run: |
@@ -43,7 +45,7 @@ jobs:
             - uses: actions/checkout@v2
             - name: Install shellspec
               run: |
-                  curl -fsSL https://github.com/shellspec/shellspec/releases/download/0.28.1/shellspec-dist.tar.gz | tar -xz -C /usr/share
+                  curl -fsSL https://github.com/shellspec/shellspec/releases/download/${{ env.SHELLSPEC_VERSION }}/shellspec-dist.tar.gz | tar -xz -C /usr/share
                   ln -s /usr/share/shellspec/shellspec /usr/bin/shellspec
             - name: Install dependencies
               run: yum install -y ed
@@ -51,3 +53,20 @@ jobs:
               run: |
                   cd tests/shell
                   shellspec
+    shellspec-rocky8:
+        name: "RockyLinux 8"
+        runs-on: ubuntu-latest
+        container:
+            image: rockylinux/rockylinux:8
+        steps:
+            -   uses: actions/checkout@v2
+            -   name: Install shellspec
+                run: |
+                    curl -fsSL https://github.com/shellspec/shellspec/releases/download/${{ env.SHELLSPEC_VERSION }}/shellspec-dist.tar.gz | tar -xz -C /usr/share
+                    ln -s /usr/share/shellspec/shellspec /usr/bin/shellspec
+            -   name: Install dependencies
+                run: dnf install -y ed bc diffutils
+            -   name: Run shellspec
+                run: |
+                    cd tests/shell
+                    shellspec
