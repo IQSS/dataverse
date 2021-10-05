@@ -1821,6 +1821,10 @@ div.filesTable {
 
 @media screen and (max-width: $screen-xs-max) {
 	@include table-metrics-mobile;
+
+	th.table-cell-vertical-mobile .ui-column-title {
+		writing-mode: vertical-lr;
+	}
 }
 
 .ui-sortable-handle {
@@ -3247,6 +3251,8 @@ div.filesTable {
 .ui-dialog.ui-widget.ui-widget-content {
 	min-height: 200px;
 	min-width: 320px;
+	max-width: 100vw;
+	max-height: 100vh;
 	border: none;
 	border-radius: $border-radius;
 	box-shadow: 0 5px 10px rgba(0,0,0,0.2);

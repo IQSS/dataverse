@@ -11,6 +11,7 @@
 
 <h:body>
     <f:metadata>
+        <ui:param name="pageTitle" value="#{bundle['dashboard.license.header']}" />
         <f:viewParam name="dataverseId" value="#{dashboardPage.dataverseId}"/>
         <f:viewAction action="#{dataverseSession.updateLocaleInViewRoot}"/>
         <f:viewAction action="#{LicenseListingPage.init}"/>
@@ -30,14 +31,13 @@
                         <div class="container">
                             <div class="row">
                                 <div class="col licenses-top-buttons">
-                                    <p:commandButton action="#{LicenseListingPage.redirectToLicenseReorderPage()}"
-                                                     value="#{bundle['dashboard.license.reorderButton']}"
-                                                     styleClass="btn "/>
+                                    <p:commandLink action="#{LicenseListingPage.redirectToLicenseReorderPage()}" styleClass="btn btn-default btn-access">
+                                        <span class="glyphicon glyphicon-sort"/> #{bundle['dashboard.license.reorderButton']}
+                                    </p:commandLink>
 
-                                    <p:commandButton onclick="PF('newLicense').show();"
-                                                     value="#{bundle['dashboard.license.newLicense.add']}"
-                                                     styleClass="btn"/>
-
+                                    <p:commandLink onclick="PF('newLicense').show();" styleClass="btn btn-default btn-access">
+                                        <span class="glyphicon glyphicon-plus"/> #{bundle['dashboard.license.newLicense.add']}
+                                    </p:commandLink>
                                 </div>
                             </div>
                         </div>
@@ -105,7 +105,7 @@
                                                 width="64" height="64"/>
                             </p:column>
                             <p:column headerText="#{bundle['dashboard.license.active']}"
-                                      style="width: 10%; text-align: center; vertical-align: middle">
+                                      style="width: 10%; text-align: center; vertical-align: middle" class="table-cell-vertical-mobile">
                                 <p:selectBooleanCheckbox value="#{otherTos.active}">
                                     <p:ajax update="@this"
                                             listener="#{OtherTermsOfUseTab.saveLicenseActiveStatus(otherTos)}"/>
