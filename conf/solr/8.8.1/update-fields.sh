@@ -18,6 +18,8 @@ INPUT=""
 FIELDS=""
 COPY_FIELDS=""
 TRIGGER_CHAIN=0
+ED_DELETE_FIELDS="'a+,'b-d"
+ED_DELETE_COPYFIELDS="'a+,'b-d"
 
 SOLR_SCHEMA_FIELD_BEGIN_MARK="SCHEMA-FIELDS::BEGIN"
 SOLR_SCHEMA_FIELD_END_MARK="SCHEMA-FIELDS::END"
@@ -78,6 +80,7 @@ else
       grep -c "${MARK}" "${SCHEMA}" || error "Missing ${MARK} from ${SCHEMA}"
     done
   )
+
   # Check guards are unique (count occurrences and sum calc via bc)
   [ "$(echo -n "${CHECKS}" | tr '\n' '+' | sed -e 's#$#\n#' | bc)" -eq 4 ] || \
     error "Some include guards are not unique in ${SCHEMA}"
@@ -92,6 +95,33 @@ else
   # Actual comparison of line numbers
   [ "$(echo "${CHECKS}" | tr '\n' '<' | sed -e 's#<$#\n#' -e 's#\(<[0-9]\+\)<\([0-9]\+\)#\1 \&\& \2#' | bc)" -eq 1 ] || \
     error "Include guards are not in correct order in ${SCHEMA}"
+
+  # Check guards are exclusively in their lines
+  # (no field or copyField on same line)
+  for MARK in ${MARKS_ORDERED}
+  do
+    grep "${MARK}" "${SCHEMA}" | grep -q -v -e '\(<field \|<copyField \)' \
+      || error "Mark ${MARK} is not on an exclusive line"
+  done
+
+  # Check if there are no lines between the field marks (then skip delete in ed)
+  DISTANCE_FIELDS_MARKS=$( \
+    grep -n -e "\(${SOLR_SCHEMA_FIELD_BEGIN_MARK}\|${SOLR_SCHEMA_FIELD_END_MARK}\)" "${SCHEMA}" \
+      | cut -f 1 -d ":" | tr '\n' '<' | sed -e 's#<$#-1\n#' | bc
+  )
+  if [ "${DISTANCE_FIELDS_MARKS}" -eq 0 ]; then
+    ED_DELETE_FIELDS="#"
+  fi
+  # Check if there are no lines between the copyfield marks (then skip delete in ed)
+  DISTANCE_COPYFIELDS_MARKS=$( \
+    grep -n -e "\(${SOLR_SCHEMA_COPYFIELD_BEGIN_MARK}\|${SOLR_SCHEMA_COPYFIELD_END_MARK}\)" "${SCHEMA}" \
+      | cut -f 1 -d ":" | tr '\n' '<' | sed -e 's#<$#-1\n#' | bc
+  )
+  if [ "${DISTANCE_COPYFIELDS_MARKS}" -eq 0 ]; then
+    ED_DELETE_COPYFIELDS="#"
+  fi
+  #TODO
+  #-> IF NO ELEMENTS BETWEEN GUARDS, DO NOT DELETE TO AVOID ED ERRORS
 fi
 
 
@@ -133,7 +163,7 @@ else
 # Mark field end as 'b'
 /${SOLR_SCHEMA_FIELD_END_MARK}/kb
 # Delete all between lines a and b
-'a+,'b-d
+${ED_DELETE_FIELDS}
 # Read fields file and paste after line a
 'ar ${FIELDS}
 # Write fields to schema
@@ -155,7 +185,7 @@ EOF
 # Mark copyField end as 'b'
 /${SOLR_SCHEMA_COPYFIELD_END_MARK}/kb
 # Delete all between lines a and b
-'a+,'b-d
+${ED_DELETE_COPYFIELDS}
 # Read fields file and paste after line a
 'ar ${COPY_FIELDS}
 # Write copyFields to schema
