@@ -51,4 +51,3 @@ To add a screenshot, please use one of the following formats and/or methods desc
 
 * https://help.github.com/en/articles/file-attachments-on-issues-and-pull-requests
 *
-Or you can drag and drop your file to this comment directly
