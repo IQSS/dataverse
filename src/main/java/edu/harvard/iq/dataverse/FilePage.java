@@ -1031,6 +1031,7 @@ public class FilePage implements java.io.Serializable {
         } else {
             selectionEmbargo= new Embargo();
         }
+        PrimeFaces.current().resetInputs("fileForm:embargoInputs");
     }
     
     public String saveEmbargo() {
@@ -1076,12 +1077,12 @@ public class FilePage implements java.io.Serializable {
     public void clearEmbargoPopup() {
         setRemoveEmbargo(false);
         selectionEmbargo = new Embargo();
-        PrimeFaces.current().resetInputs("datasetForm:embargoInputs");
+        PrimeFaces.current().resetInputs("fileForm:embargoInputs");
     }
     
     public void clearSelectionEmbargo() {
         selectionEmbargo = new Embargo();
-        PrimeFaces.current().resetInputs("datasetForm:embargoInputs");
+        PrimeFaces.current().resetInputs("fileForm:embargoInputs");
     }
     
     public boolean isCantRequestDueToEmbargo() {
