@@ -2827,13 +2827,13 @@ An example JSON file would look like this::
   export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   export SERVER_URL=https://demo.dataverse.org
 
-  curl -H X-Dataverse-key:$API_TOKEN -X POST "$SERVER_URL/api/harvest/server/oaisets/" --upload-file harvestset-finch.json
+  curl -H X-Dataverse-key:$API_TOKEN -X POST "$SERVER_URL/api/harvest/server/oaisets/add" --upload-file harvestset-finch.json
 
 The fully expanded example above (without the environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/harvest/server/oaisets/" --upload-file "harvestset-finch.json"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/harvest/server/oaisets/add" --upload-file "harvestset-finch.json"
 
 Only users with superuser permissions may create harvesting sets.
 
