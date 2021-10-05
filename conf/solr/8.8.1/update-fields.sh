@@ -60,6 +60,12 @@ while getopts ":hp" opt; do
   esac
 done
 
+# Check for recent Bash version
+# shellcheck disable=SC2086
+if [ ${BASH_VERSION%%.*} -lt 4 ]; then
+  error "Bash v4.x or later required"
+fi
+
 # remove all the parsed options
 shift $((OPTIND-1))
 
