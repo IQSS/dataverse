@@ -698,6 +698,14 @@ div.ui-selectonemenu.form-control {
 	padding: 1px 0;
 }
 
+.ui-selectcheckboxmenu-panel {
+	max-width: 100vw;
+
+	.ui-selectcheckboxmenu-list-item {
+		white-space: break-spaces;
+	}
+}
+
 .ui-selectcheckboxmenu .ui-selectcheckboxmenu-multiple-container  {
 	padding-right: 2em; /* same as primefaces ui-selectcheckboxmenu-trigger width */
 
