@@ -33,6 +33,11 @@ function error {
     exit 2
 }
 
+function exists {
+  type "$1" >/dev/null 2>&1 && return 0
+  ( IFS=:; for p in $PATH; do [ -x "${p%/}/$1" ] && return 0; done; return 1 )
+}
+
 function usage {
     cat << EOF
 $(basename "$0") ${VERSION}
@@ -65,6 +70,10 @@ done
 if [ ${BASH_VERSION%%.*} -lt 4 ]; then
   error "Bash v4.x or later required"
 fi
+
+# Check for ed and bc being present
+exists ed || error "Please ensure ed & bc are installed"
+exists bc || error "Please ensure ed & bc are installed"
 
 # remove all the parsed options
 shift $((OPTIND-1))
