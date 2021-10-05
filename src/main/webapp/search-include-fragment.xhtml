@@ -47,8 +47,8 @@
             <div class="button-block">
                 <!-- ADD DATA -->
                 <o:importFunctions type="edu.harvard.iq.dataverse.authorization.groups.impl.builtin.AuthenticatedUsers" />
-                <ui:fragment rendered="#{!dataverseSession.user.authenticated and (permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand')
-                                         or permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateNewDatasetCommand'))}">
+                <ui:fragment rendered="#{!dataverseSession.user.authenticated and (permissionsWrapper.authUsersCanCreateDataversesInDataverse(SearchIncludeFragment.dataverse)
+                                         or permissionsWrapper.authUsersCanCreateDatasetsInDataverse(SearchIncludeFragment.dataverse))}">
                     <button type="button" class="btn btn-default btn-access" onclick="PF('addData_popup').show()">
                         <span class="glyphicon glyphicon-plus"/> #{bundle['dataverse.results.btn.addData']}
                     </button>

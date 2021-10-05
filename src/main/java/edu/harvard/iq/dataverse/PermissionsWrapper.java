@@ -40,12 +40,21 @@ public class PermissionsWrapper implements java.io.Serializable {
     @Inject
     SettingsWrapper settingsWrapper;
 
+    // This map stores looked up permission results (boolean), for multiple DvObjects
+    // (referenced by the Long ids), for multiple Commands. The current session 
+    // user is assumed when lookups are performed. 
     private final Map<Long, Map<Class<? extends Command<?>>, Boolean>> commandMap = new HashMap<>();
+    
+    // In some instances our pages need to know whether Authorized Users as a whole - 
+    // not a specific user! - can perform a specific action on a dataverse
+    // - such as create datasets or dataverses, in the current dv, or root etc. 
+    // These values can be used in rendered= logic, so we want to cache them too. 
+    private final Map<Long, Map<String, Boolean>> authUsersDataversePermissionsMap = new HashMap<>();
 
     // Maps for caching permissions lookup results:
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { DvObject.id : Boolean }
     private final Map<String, Boolean> datasetPermissionMap = new HashMap<>(); // { Permission human_name : Boolean }
-
+    
     /**
      * Check if the current Dataset can Issue Commands
      *
@@ -104,13 +113,8 @@ public class PermissionsWrapper implements java.io.Serializable {
         return canIssueCommand(dvo, DeleteDataverseCommand.class);
     }
     
-    private Boolean userCanIssueCreateDataverseCommand = null; 
-    
     public boolean canIssueCreateDataverseCommand(DvObject dvo) {
-        if (userCanIssueCreateDataverseCommand == null) {
-            userCanIssueCreateDataverseCommand = canIssueCommand(dvo, CreateDataverseCommand.class);
-        }
-        return userCanIssueCreateDataverseCommand;
+        return canIssueCommand(dvo, CreateDataverseCommand.class);
     }
     
     
@@ -266,6 +270,7 @@ public class PermissionsWrapper implements java.io.Serializable {
         }
         try {
             showAddDataverseLink = permissionService.userOn(AuthenticatedUsers.get(), settingsWrapper.getRootDataverse()).canIssueCommand("CreateDataverseCommand");
+            /*                     permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand')*/
             logger.info("rerieved showDataverseLink value");
             return showAddDataverseLink;
         } catch (ClassNotFoundException ex) {
@@ -294,7 +299,7 @@ public class PermissionsWrapper implements java.io.Serializable {
         return false;
     }
     
-    private Boolean canAuthUsersCreateDatasetsInCurrentDataverse = null; 
+    /*private Boolean canAuthUsersCreateDatasetsInCurrentDataverse = null; 
     
     public boolean canAuthUsersCreateDatasetsInCurrentDataverse(Dataverse currentDataverse) {
         if (canAuthUsersCreateDatasetsInCurrentDataverse == null) {
@@ -310,14 +315,40 @@ public class PermissionsWrapper implements java.io.Serializable {
             canAuthUsersCreateDataversesInCurrentDataverse = authUsersCanCreateDataversesInDataverse(currentDataverse); 
         }
         return canAuthUsersCreateDataversesInCurrentDataverse;
-    }
+    }*/
     
-    private boolean authUsersCanCreateDatasetsInDataverse(Dataverse dataverse) {
+    public boolean authUsersCanCreateDatasetsInDataverse(Dataverse dataverse) {
+        if (checkPermissionMap(authUsersDataversePermissionsMap, dataverse.getId(), "CreateNewDatasetCommand") == null) {
+            boolean result = false;
+            try {
+                result = permissionService.userOn(AuthenticatedUsers.get(),dataverse).canIssueCommand("CreateNewDatasetCommand");
+                logger.info("rerieved auth users can create datasets");
+            } catch (ClassNotFoundException ex) {
+                logger.info("ClassNotFoundException checking if authenticated users can create datasets in dataverse.");
+            }
+            storeObjectPermission(authUsersDataversePermissionsMap, dataverse.getId(), "CreateNewDatasetCommand", result);
+        } else {
+            logger.info("using cached authUsersCanCreateDatasetsInDataverse result");
+        }
+        return checkPermissionMap(authUsersDataversePermissionsMap, dataverse.getId(), "CreateNewDatasetCommand");
+
         
     }
     
-    private boolean authUsersCanCreateDataversesInDataverse(Dataverse dataverse) {
-        
+    public boolean authUsersCanCreateDataversesInDataverse(Dataverse dataverse) {
+        if (checkPermissionMap(authUsersDataversePermissionsMap, dataverse.getId(), "CreateDataverseCommand") == null) {
+            boolean result = false;
+            try {
+                result = permissionService.userOn(AuthenticatedUsers.get(),dataverse).canIssueCommand("CreateDataverseCommand");
+                logger.info("rerieved auth users can create dvs");
+            } catch (ClassNotFoundException ex) {
+                logger.info("ClassNotFoundException checking if authenticated users can create dataverses in dataverse.");
+            }
+            storeObjectPermission(authUsersDataversePermissionsMap, dataverse.getId(), "CreateDataverseCommand", result);
+        } else {
+             logger.info("using cached authUsersCanCreateDataversesInDataverse result");
+        }
+        return checkPermissionMap(authUsersDataversePermissionsMap, dataverse.getId(), "CreateDataverseCommand");
     }
     
     // todo: move any calls to this to call NavigationWrapper   
@@ -329,6 +360,24 @@ public class PermissionsWrapper implements java.io.Serializable {
     
     public String notFound() {
         return navigationWrapper.notFound();
+    }
+    
+    private static Boolean checkPermissionMap(Map<Long, Map<String, Boolean>> permMap, Long id, String permission) {
+        if (!permMap.containsKey(id)) {
+            return null;
+        }
+        if (!permMap.get(id).containsKey(permission)) {
+            return null; 
+        }
+        return permMap.get(id).get(permission);
+        
+    }
+    
+    private static void storeObjectPermission(Map<Long, Map<String, Boolean>> permMap, Long id, String permission, boolean result) {
+        if (!permMap.containsKey(id)) {
+            permMap.put(id, new HashMap<>());
+        }
+        permMap.get(id).put(permission, result);
     }
 
 }
