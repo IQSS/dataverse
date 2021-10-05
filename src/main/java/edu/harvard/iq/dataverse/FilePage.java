@@ -57,6 +57,8 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.validation.ConstraintViolation;
+
+import org.primefaces.PrimeFaces;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
 
@@ -1073,11 +1075,13 @@ public class FilePage implements java.io.Serializable {
     
     public void clearEmbargoPopup() {
         setRemoveEmbargo(false);
-        selectionEmbargo = new Embargo(); 
+        selectionEmbargo = new Embargo();
+        PrimeFaces.current().resetInputs("datasetForm:embargoInputs");
     }
     
     public void clearSelectionEmbargo() {
-        selectionEmbargo = new Embargo(); 
+        selectionEmbargo = new Embargo();
+        PrimeFaces.current().resetInputs("datasetForm:embargoInputs");
     }
     
     public boolean isCantRequestDueToEmbargo() {
