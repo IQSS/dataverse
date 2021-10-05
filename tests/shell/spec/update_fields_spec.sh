@@ -5,9 +5,15 @@ update_fields() {
 }
 
 Describe "Update fields command"
-  Path schema-xml="../../conf/solr/8.8.1/schema.xml"
-  It "needs upstream schema.xml"
-    The path schema-xml should be exist
+
+  Describe "can operate on upstream data"
+    copyUpstreamSchema() { cp ../../conf/solr/8.8.1/schema.xml data/solr/upstream-schema.xml; }
+    AfterAll 'copyUpstreamSchema'
+
+    Path schema-xml="../../conf/solr/8.8.1/schema.xml"
+    It "needs upstream schema.xml"
+      The path schema-xml should be exist
+    End
   End
 
   Describe "schema.xml validation"
@@ -60,40 +66,100 @@ Describe "Update fields command"
         The error should include "guards are not in correct order"
       End
     End
+
+    It "throws error when marks not in exclusive line"
+      When run update_fields data/solr/mark-nolinebreak.xml
+      The status should equal 2
+      The error should include "is not on an exclusive line"
+    End
   End
 
   Describe "reading input"
-    It "throws error when no source given"
-      When run update_fields data/solr/minimal.xml
-      The status should equal 2
-      The error should include "provide source file or piped input"
+    Describe "fails because"
+      It "throws error when no source given"
+        When run update_fields data/solr/minimal-schema.xml
+        The status should equal 2
+        The error should include "provide source file or piped input"
+      End
+
+      It "throws error when given file not found"
+        When run update_fields data/solr/minimal-schema.xml foobar
+        The status should equal 2
+        The error should include "Cannot read"
+        The error should include "foobar"
+      End
+
+      It "throws error when given file is empty"
+        When run update_fields data/solr/minimal-schema.xml data/solr/empty-source.xml
+        The status should equal 2
+        The error should include "Cannot read"
+        The error should include "empty-source.xml"
+      End
+
+      It "throws error when given invalid source file"
+        When run update_fields data/solr/minimal-schema.xml data/solr/invalid-source.xml
+        The status should equal 2
+        The error should include "No <field> or <copyField>"
+      End
+
+      It "throws error when given invalid stdin source"
+        Data < data/solr/invalid-source.xml
+        When run update_fields data/solr/minimal-schema.xml
+        The status should equal 2
+        The error should include "No <field> or <copyField>"
+      End
     End
 
-    It "throws error when given file not found"
-      When run update_fields data/solr/minimal.xml foobar
-      The status should equal 2
-      The error should include "Cannot read"
-      The error should include "foobar"
-    End
+    Describe "succeeds because"
+      setup() { cp data/solr/minimal-schema.xml data/solr/minimal-schema-work.xml; }
+      cleanup() { rm data/solr/minimal-schema-work.xml; }
+      BeforeEach 'setup'
+      AfterEach 'cleanup'
 
-    It "throws error when given file is empty"
-      When run update_fields data/solr/minimal.xml data/solr/empty.xml
-      The status should equal 2
-      The error should include "Cannot read"
-      The error should include "empty.xml"
-    End
+      deleteUpstreamSchema() { rm data/solr/upstream-schema.xml; }
+      AfterAll 'deleteUpstreamSchema'
 
-    It "throws error when given invalid source file"
-      When run update_fields data/solr/minimal.xml data/solr/invalid-source.md
-      The status should equal 2
-      The error should include "No <field> or <copyField>"
-    End
+      match_content() {
+        grep -q "$@" "${match_content}"
+      }
 
-    It "throws error when given invalid stdin source"
-      Data < data/solr/invalid-source.md
-      When run update_fields data/solr/minimal.xml
-      The status should equal 2
-      The error should include "No <field> or <copyField>"
+      It "prints nothing when editing minimal schema"
+        Data < data/solr/minimal-source.xml
+        When run update_fields data/solr/minimal-schema-work.xml
+        The status should equal 0
+        The output should equal ""
+        The path data/solr/minimal-schema-work.xml should be file
+        The path data/solr/minimal-schema-work.xml should satisfy match_content "<field name=\"test\""
+        The path data/solr/minimal-schema-work.xml should satisfy match_content "<copyField source=\"test\""
+      End
+
+      It "prints nothing when editing upstream schema"
+        Data < data/solr/minimal-source.xml
+        When run update_fields data/solr/upstream-schema.xml
+        The status should equal 0
+        The output should equal ""
+        The path data/solr/upstream-schema.xml should be file
+        The path data/solr/upstream-schema.xml should satisfy match_content "<field name=\"test\""
+        The path data/solr/upstream-schema.xml should satisfy match_content "<copyField source=\"test\""
+      End
+    End
+  End
+
+  Describe "chaining data"
+    setup() { cp data/solr/minimal-schema.xml data/solr/minimal-schema-work.xml; }
+    cleanup() { rm data/solr/minimal-schema-work.xml; }
+    BeforeEach 'setup'
+    AfterEach 'cleanup'
+
+    match_content() {
+      echo "${match_content}" | diff "$1" -
+    }
+
+    It "prints after editing"
+      Data < data/solr/minimal-source.xml
+      When run update_fields -p data/solr/minimal-schema-work.xml
+      The status should equal 0
+      The output should satisfy match_content data/solr/chain-output.xml
     End
   End
 End
