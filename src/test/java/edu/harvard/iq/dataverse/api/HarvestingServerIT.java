@@ -72,7 +72,7 @@ public class HarvestingServerIT {
 
         // make sure the set does not exist
         String u0 = String.format("/api/harvest/server/oaisets/%s", setName);
-        String createPath ="/api/harvest/server/oaisets/";
+        String createPath ="/api/harvest/server/oaisets/add";
         Response r0 = given()
                 .get(u0);
         assertEquals(404, r0.getStatusCode());
@@ -140,7 +140,7 @@ public class HarvestingServerIT {
 
         // make sure the set does not exist
         String u0 = String.format("/api/harvest/server/oaisets/%s", setName);
-        String createPath ="/api/harvest/server/oaisets/";
+        String createPath ="/api/harvest/server/oaisets/add";
         Response r0 = given()
                 .get(u0);
         assertEquals(404, r0.getStatusCode());
@@ -227,7 +227,7 @@ public class HarvestingServerIT {
         String setName = identifier;
         String setQuery = "dsPersistentId:" + identifier;
         String apiPath = String.format("/api/harvest/server/oaisets/%s", setName);
-        String createPath ="/api/harvest/server/oaisets/";
+        String createPath ="/api/harvest/server/oaisets/add";
         Response createSetResponse = given()
                 .header(UtilIT.API_TOKEN_HTTP_HEADER, adminUserAPIKey)
                 .body(jsonForTestSpec(setName, setQuery))

@@ -104,6 +104,7 @@ public class HarvestingServer extends AbstractApiBean {
      * "description":$optional_set_description,"definition":$set_search_query_string}.
      */
     @POST
+    @Path("/add")
     public Response createOaiSet(String jsonBody, @QueryParam("key") String apiKey) throws IOException, JsonParseException {
         /*
 	     * authorization modeled after the UI (aka HarvestingSetsPage)
