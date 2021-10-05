@@ -76,7 +76,11 @@ Describe "Update fields command"
 
   Describe "reading input"
     Describe "fails because"
+      # Test if $CI is set (always true inside Github Workflow)
+      detect_github_action() { ! test -z ${CI:+x}; }
+
       It "throws error when no source given"
+        Skip if "running on Github Action" detect_github_action
         When run update_fields data/solr/minimal-schema.xml
         The status should equal 2
         The error should include "provide source file or piped input"
