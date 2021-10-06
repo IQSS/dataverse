@@ -86,7 +86,7 @@ and can be reset to the default (inherited from the parent collection or DISABLE
     
 The available curation label sets can be listed with::
 
-    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/curationLabelSet
+    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/curationLabelSets
     
 If the :AllowedCurationLabels setting has a value, one of the available choices will always be "DISABLED" which allows curation labels to be turned off for a given collection/dataset.
     
