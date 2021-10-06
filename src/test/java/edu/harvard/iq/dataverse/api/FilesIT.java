@@ -1737,10 +1737,10 @@ public class FilesIT {
         Response downloadFileNoArgs = UtilIT.downloadFile(fileIdCsv, null, null, null, authorApiToken);
         downloadFileNoArgs.then().assertThat()
                 .statusCode(OK.getStatusCode())
-                .body(equalTo("name	pounds	species\n"
-                        + "\"Marshall\"	40	\"dog\"\n"
-                        + "\"Tiger\"	17	\"cat\"\n"
-                        + "\"Panther\"	21	\"cat\"\n"));
+                .body(equalTo("name\tpounds\tspecies\n"
+                        + "\"Marshall\"\t40\t\"dog\"\n"
+                        + "\"Tiger\"\t17\t\"cat\"\n"
+                        + "\"Panther\"\t21\t\"cat\"\n"));
 
         // Original version of tabular file (CSV in this case).
         Response downloadFileOrig = UtilIT.downloadFile(fileIdCsv, null, "original", null, authorApiToken);
