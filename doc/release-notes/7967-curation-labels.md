@@ -8,7 +8,23 @@ The Solr schema must be updated as part of installing the release of Dataverse c
 
 ## Additional Release Steps
 
-1\. Replace Solr schema.xml to allow Curation Labels to be used
+1\. Replace Solr schema.xml to allow Curation Labels to be used. See specific instructions below for those installations with custom metadata blocks (1a) and those without (1b).
+
+1a\.
+
+For installations with Custom Metadata Blocks:
+
+-stop solr instance (usually service solr stop, depending on solr installation/OS, see the [Installation Guide](https://guides.dataverse.org/en/5.7/installation/prerequisites.html#solr-init-script)
+
+- add the following line to your schema.xml:
+
+    <field name="externalStatus" type="string" stored="true" indexed="true" multiValued="false"/>
+
+- restart solr instance (usually service solr start, depending on solr/OS)
+
+1b\. 
+
+For installations without Custom Metadata Blocks:
 
 -stop solr instance (usually service solr stop, depending on solr installation/OS, see the [Installation Guide](https://guides.dataverse.org/en/5.7/installation/prerequisites.html#solr-init-script)
 
