@@ -45,11 +45,10 @@ public class PermissionsWrapper implements java.io.Serializable {
     // user is assumed when lookups are performed. 
     private final Map<Long, Map<Class<? extends Command<?>>, Boolean>> commandMap = new HashMap<>();
     
-    // In some instances our pages need to know whether Authorized Users as a whole - 
+    // In some instances our pages need to know whether Authenticated Users as a whole - 
     // not a specific user! - can perform a specific action on a dataverse
     // - such as create datasets or dataverses, in the current dv, or root etc. 
     // These values can be used in rendered= logic, so we want to cache them too. 
-    private final Map<Long, Map<String, Boolean>> authUsersDataversePermissionsMap = new HashMap<>();
     private final Map<Long, Map<Class<? extends Command<?>>, Boolean>> authUsersCommandMap = new HashMap<>();
 
     // Maps for caching permissions lookup results:
@@ -253,9 +252,9 @@ public class PermissionsWrapper implements java.io.Serializable {
     }
     
     // For the dataverse_header fragment (and therefore, most of the pages),
-    // we need to know if authorized users can add dataverses and datasets to the
+    // we need to know if authenticated users can add dataverses and datasets to the
     // root collection. For the "Add Data" menu further in the search include fragment
-    // if the user is not logged in, the page will check if authorized users can 
+    // if the user is not logged in, the page will check if authenticated users can 
     // add dataverses and datasets in the *current* dataverse. 
     // These are not very expensive operations - but it'll add up quickly, if the 
     // page keeps asking for these repeatedly. So these values absolutely need to be
