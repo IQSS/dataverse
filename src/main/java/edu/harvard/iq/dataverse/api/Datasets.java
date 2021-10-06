@@ -2679,11 +2679,13 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         }
         if (SystemConfig.CURATIONLABELSDISABLED.equals(curationLabelSet) || SystemConfig.DEFAULTCURATIONLABELSET.equals(curationLabelSet)) {
             dataset.setCurationLabelSetName(curationLabelSet);
+            datasetService.merge(dataset);
             return ok("Curation Label Set Name set to: " + curationLabelSet);
         } else {
             for (String setName : systemConfig.getCurationLabels().keySet()) {
                 if (setName.equals(curationLabelSet)) {
                     dataset.setCurationLabelSetName(curationLabelSet);
+                    datasetService.merge(dataset);
                     return ok("Curation Label Set Name set to: " + setName);
                 }
             }
