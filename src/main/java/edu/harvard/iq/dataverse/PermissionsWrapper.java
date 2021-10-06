@@ -50,6 +50,7 @@ public class PermissionsWrapper implements java.io.Serializable {
     // - such as create datasets or dataverses, in the current dv, or root etc. 
     // These values can be used in rendered= logic, so we want to cache them too. 
     private final Map<Long, Map<String, Boolean>> authUsersDataversePermissionsMap = new HashMap<>();
+    private final Map<Long, Map<Class<? extends Command<?>>, Boolean>> authUsersCommandMap = new HashMap<>();
 
     // Maps for caching permissions lookup results:
     private final Map<Long, Boolean> fileDownloadPermissionMap = new HashMap<>(); // { DvObject.id : Boolean }
@@ -63,42 +64,40 @@ public class PermissionsWrapper implements java.io.Serializable {
      * @return {@code true} if the user can issue the command on the object.
      */
     public boolean canIssueCommand(DvObject dvo, Class<? extends Command<?>> command) {
-        if ((dvo==null) || (dvo.getId()==null)){
-            return false;
-        }
-        if (command==null){
+        if (dvo==null || dvo.getId()==null || command==null){
             return false;
         }
 
-        if (commandMap.containsKey(dvo.getId())) {
-            Map<Class<? extends Command<?>>, Boolean> dvoCommandMap = this.commandMap.get(dvo.getId());
-            if (dvoCommandMap.containsKey(command)) {
-                return dvoCommandMap.get(command);
-            } else {
-                return addCommandtoDvoCommandMap(dvo, command, dvoCommandMap);
-            }
+        if (checkDvoCacheForCommandAuthorization(dvo.getId(), CreateDataverseCommand.class, commandMap) == null) {
+            boolean canIssueCommand = false;
+            canIssueCommand = permissionService.requestOn(dvRequestService.getDataverseRequest(), dvo).canIssue(command);
+            logger.info("rerieved authorization for " + command.toString() + " on dvo " + dvo.getId());
 
+            addCommandAuthorizationToDvoCache(dvo.getId(), CreateDataverseCommand.class, commandMap, canIssueCommand);
         } else {
-            Map<Class<? extends Command<?>>, Boolean> newDvoCommandMap = new HashMap<>();
-            commandMap.put(dvo.getId(), newDvoCommandMap);
-            return addCommandtoDvoCommandMap(dvo, command, newDvoCommandMap);
+            logger.info("using cached authorization for " + command.toString() + " on dvo " + dvo.getId());
         }
+        return checkDvoCacheForCommandAuthorization(dvo.getId(), CreateDataverseCommand.class, commandMap);
     }
 
-    private boolean addCommandtoDvoCommandMap(DvObject dvo, Class<? extends Command<?>> command, Map<Class<? extends Command<?>>, Boolean> dvoCommandMap) {
-        if ( dvo==null || (dvo.getId()==null) ){
-            return false;
+    private Boolean checkDvoCacheForCommandAuthorization(Long id, Class<? extends Command<?>> command, Map<Long, Map<Class<? extends Command<?>>, Boolean>> dvoCommandMap) {
+        if (!dvoCommandMap.containsKey(id)) {
+            return null;
         }
-        if (command==null){
-            return false;
+        if (!dvoCommandMap.get(id).containsKey(command)) {
+            return null; 
         }
-        
-        boolean canIssueCommand;
-        canIssueCommand = permissionService.requestOn(dvRequestService.getDataverseRequest(), dvo).canIssue(command);
-        dvoCommandMap.put(command, canIssueCommand);
-        return canIssueCommand;
+        return dvoCommandMap.get(id).get(command);
     }
-
+    
+    
+    private void addCommandAuthorizationToDvoCache(Long id, Class<? extends Command<?>> command, Map<Long, Map<Class<? extends Command<?>>, Boolean>> dvoCommandMap, boolean canIssueCommand) {
+        if (!dvoCommandMap.containsKey(id)) {
+            dvoCommandMap.put(id, new HashMap<>());
+        }
+        dvoCommandMap.get(id).put(command, canIssueCommand);
+    }
+    
     /* Dataverse Commands */
 
     public boolean canIssueUpdateDataverseCommand(DvObject dvo) {
@@ -255,100 +254,49 @@ public class PermissionsWrapper implements java.io.Serializable {
     
     // For the dataverse_header fragment (and therefore, most of the pages),
     // we need to know if authorized users can add dataverses and datasets to the
-    // root collection. 
-    // Not a very expensive operation - but it'll add up quickly, if the 
-    // page keeps asking for it repeatedly. So these values absolutely need to be
+    // root collection. For the "Add Data" menu further in the search include fragment
+    // if the user is not logged in, the page will check if authorized users can 
+    // add dataverses and datasets in the *current* dataverse. 
+    // These are not very expensive operations - but it'll add up quickly, if the 
+    // page keeps asking for these repeatedly. So these values absolutely need to be
     // cached. 
     
-    private Boolean showAddDataverseLink = null; 
-    
-    public boolean showAddDataverseLink() {
-        logger.info("in showAddDataverseLink");
-        if (showAddDataverseLink != null) {
-            logger.info("using cached showDataverseLink value");
-            return showAddDataverseLink;
-        }
-        try {
-            showAddDataverseLink = permissionService.userOn(AuthenticatedUsers.get(), settingsWrapper.getRootDataverse()).canIssueCommand("CreateDataverseCommand");
-            /*                     permissionServiceBean.userOn(AuthenticatedUsers:get(),SearchIncludeFragment.dataverse).canIssueCommand('CreateDataverseCommand')*/
-            logger.info("rerieved showDataverseLink value");
-            return showAddDataverseLink;
-        } catch (ClassNotFoundException ex) {
-            logger.info("ClassNotFoundException checking if authenticated users can create dataverses in root.");
-        }
-
-        return false;
-    }
-    
-    private Boolean showAddDatasetLink = null; 
-    
-    public boolean showAddDatasetLink() {
-        logger.info("in showAddDatasetLink");
-        if (showAddDatasetLink != null) {
-            logger.info("using cached showDatasetLink value");
-            return showAddDatasetLink;
-        }
-        try {
-            showAddDatasetLink = permissionService.userOn(AuthenticatedUsers.get(), settingsWrapper.getRootDataverse()).canIssueCommand("AbstractCreateDatasetCommand");
-            logger.info("rerieved showDatasetLink value");
-            return showAddDatasetLink;
-        } catch (ClassNotFoundException ex) {
-            logger.info("ClassNotFoundException checking if authenticated users can create datasets in root.");
-        }
-
-        return false;
-    }
-    
-    /*private Boolean canAuthUsersCreateDatasetsInCurrentDataverse = null; 
-    
-    public boolean canAuthUsersCreateDatasetsInCurrentDataverse(Dataverse currentDataverse) {
-        if (canAuthUsersCreateDatasetsInCurrentDataverse == null) {
-            canAuthUsersCreateDatasetsInCurrentDataverse = authUsersCanCreateDatasetsInDataverse(currentDataverse);
-        }
-        return canAuthUsersCreateDatasetsInCurrentDataverse;
-    }
-    
-    private Boolean canAuthUsersCreateDataversesInCurrentDataverse = null;
-    
-    public boolean canAuthUsersCreateDataversesInCurrentDataverse (Dataverse currentDataverse) {
-        if (canAuthUsersCreateDataversesInCurrentDataverse == null) {
-            canAuthUsersCreateDataversesInCurrentDataverse = authUsersCanCreateDataversesInDataverse(currentDataverse); 
-        }
-        return canAuthUsersCreateDataversesInCurrentDataverse;
-    }*/
-    
     public boolean authUsersCanCreateDatasetsInDataverse(Dataverse dataverse) {
-        if (checkPermissionMap(authUsersDataversePermissionsMap, dataverse.getId(), "CreateNewDatasetCommand") == null) {
-            boolean result = false;
+        if (dataverse == null || dataverse.getId() == null) {
+            return false;
+        }
+        if (checkDvoCacheForCommandAuthorization(dataverse.getId(), CreateNewDatasetCommand.class, authUsersCommandMap) == null) {
+            boolean canIssueCommand = false;
             try {
-                result = permissionService.userOn(AuthenticatedUsers.get(),dataverse).canIssueCommand("CreateNewDatasetCommand");
+                canIssueCommand = permissionService.userOn(AuthenticatedUsers.get(),dataverse).canIssueCommand("CreateNewDatasetCommand");
                 logger.info("rerieved auth users can create datasets");
             } catch (ClassNotFoundException ex) {
                 logger.info("ClassNotFoundException checking if authenticated users can create datasets in dataverse.");
             }
-            storeObjectPermission(authUsersDataversePermissionsMap, dataverse.getId(), "CreateNewDatasetCommand", result);
+            addCommandAuthorizationToDvoCache(dataverse.getId(), CreateNewDatasetCommand.class, authUsersCommandMap, canIssueCommand);
         } else {
             logger.info("using cached authUsersCanCreateDatasetsInDataverse result");
         }
-        return checkPermissionMap(authUsersDataversePermissionsMap, dataverse.getId(), "CreateNewDatasetCommand");
-
-        
+        return checkDvoCacheForCommandAuthorization(dataverse.getId(), CreateNewDatasetCommand.class, authUsersCommandMap);
     }
     
     public boolean authUsersCanCreateDataversesInDataverse(Dataverse dataverse) {
-        if (checkPermissionMap(authUsersDataversePermissionsMap, dataverse.getId(), "CreateDataverseCommand") == null) {
-            boolean result = false;
+        if (dataverse == null || dataverse.getId() == null) {
+            return false;
+        }
+        if (checkDvoCacheForCommandAuthorization(dataverse.getId(), CreateDataverseCommand.class, authUsersCommandMap) == null) {
+            boolean canIssueCommand = false;
             try {
-                result = permissionService.userOn(AuthenticatedUsers.get(),dataverse).canIssueCommand("CreateDataverseCommand");
-                logger.info("rerieved auth users can create dvs");
+                canIssueCommand = permissionService.userOn(AuthenticatedUsers.get(),dataverse).canIssueCommand("CreateDataverseCommand");
+                logger.info("rerieved auth users can create dataverses");
             } catch (ClassNotFoundException ex) {
                 logger.info("ClassNotFoundException checking if authenticated users can create dataverses in dataverse.");
             }
-            storeObjectPermission(authUsersDataversePermissionsMap, dataverse.getId(), "CreateDataverseCommand", result);
+            addCommandAuthorizationToDvoCache(dataverse.getId(), CreateDataverseCommand.class, authUsersCommandMap, canIssueCommand);
         } else {
-             logger.info("using cached authUsersCanCreateDataversesInDataverse result");
+            logger.info("using cached authUsersCanCreateDataversesInDataverse result");
         }
-        return checkPermissionMap(authUsersDataversePermissionsMap, dataverse.getId(), "CreateDataverseCommand");
+        return checkDvoCacheForCommandAuthorization(dataverse.getId(), CreateDataverseCommand.class, authUsersCommandMap);
     }
     
     // todo: move any calls to this to call NavigationWrapper   
@@ -361,23 +309,4 @@ public class PermissionsWrapper implements java.io.Serializable {
     public String notFound() {
         return navigationWrapper.notFound();
     }
-    
-    private static Boolean checkPermissionMap(Map<Long, Map<String, Boolean>> permMap, Long id, String permission) {
-        if (!permMap.containsKey(id)) {
-            return null;
-        }
-        if (!permMap.get(id).containsKey(permission)) {
-            return null; 
-        }
-        return permMap.get(id).get(permission);
-        
-    }
-    
-    private static void storeObjectPermission(Map<Long, Map<String, Boolean>> permMap, Long id, String permission, boolean result) {
-        if (!permMap.containsKey(id)) {
-            permMap.put(id, new HashMap<>());
-        }
-        permMap.get(id).put(permission, result);
-    }
-
 }
