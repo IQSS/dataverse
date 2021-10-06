@@ -280,7 +280,7 @@
         <dependency>
             <groupId>io.gdcc</groupId>
             <artifactId>sword2-server</artifactId>
-            <version>1.2.0</version>
+            <version>1.2.1</version>
         </dependency>
         <!-- Dependency to use sword2-server in our codebase -->
         <dependency>
