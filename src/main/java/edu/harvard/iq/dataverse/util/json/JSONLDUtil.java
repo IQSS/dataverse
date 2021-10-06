@@ -200,7 +200,7 @@ public class JSONLDUtil {
                                         License license = licenseSvc.getByNameOrUri(jsonld.getString(key));
                                         setSemTerm(terms, key, license);
                                     }
-                                    catch (FetchException e) {
+                                    catch (NoResultException e) {
                                         throw new BadRequestException("Invalid license");
                                     }
                                 }
@@ -255,7 +255,7 @@ public class JSONLDUtil {
      * @return
      */
     public static DatasetVersion deleteDatasetVersionMDFromJsonLD(DatasetVersion dsv, String jsonLDBody,
-            MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc) {
+            MetadataBlockServiceBean metadataBlockSvc, LicenseServiceBean licenseSvc) {
         logger.fine("deleteDatasetVersionMD");
         JsonObject jsonld = decontextualizeJsonLD(jsonLDBody);
         //All terms are now URIs
@@ -305,13 +305,12 @@ public class JSONLDUtil {
                     // Internal/non-metadatablock terms
                     boolean found=false;
                     if (key.equals(JsonLDTerm.schemaOrg("license").getUrl())) {
-                        // TODO: FIND OUT THE INTENTION OF THIS CODE: IF CC0 THEN NONE ???
-//                        if(jsonld.getString(key).equals(TermsOfUseAndAccess.CC0_URI)) {
-//                            setSemTerm(terms, key, TermsOfUseAndAccess.License.NONE);
-//                        } else {
-//                            throw new BadRequestException(
-//                                    "Term: " + key + " with value: " + jsonld.getString(key) + " not found.");
-//                        }
+                        if(licenseSvc.getByNameOrUri(jsonld.getString(key)) != null) {
+                            setSemTerm(terms, key, licenseSvc.getDefault());
+                        } else {
+                            throw new BadRequestException(
+                                    "Term: " + key + " with value: " + jsonld.getString(key) + " not found.");
+                        }
                         found=true;
                     } else if (datasetTerms.contains(key)) {
                         if(!deleteIfSemTermMatches(terms, key, jsonld.get(key))) {

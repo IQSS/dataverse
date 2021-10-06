@@ -1131,7 +1131,7 @@ public class OpenAireExportUtil {
         }
         xmlw.writeEndElement(); // </rights>
 
-        // check if getLicense() method contains CC0
+        // check if getLicense() method contains a non custom license
         // check if getTermsOfUse() method starts with http://
         writeRightsHeader(xmlw, language);
         if (datasetVersionDTO.getLicense() != null) {
