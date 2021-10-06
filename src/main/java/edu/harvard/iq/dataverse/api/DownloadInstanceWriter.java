@@ -696,36 +696,33 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                 throw new RuntimeException("The format is bytes=<range-start>-<range-end> where start and end are optional.");
             }
 
-            if (ranges.isEmpty()) {
-                // The 6 is to remove "bytes="
+            // The 6 is to remove "bytes="
+            for (String part : range.substring(6).split(",")) {
 
-                for (String part : range.substring(6).split(",")) {
+                long start = getRangeStart(part);
+                long end = getRangeEnd(part);
 
-                    long start = getRangeStart(part);
-                    long end = getRangeEnd(part);
-
-                    if (start == -1) {
-                        // start does not exist. Base start off of how many bytes from end.
-                        start = fileSize - end;
-                        end = fileSize - 1;
-                    } else if (end == -1 || end > fileSize - 1) {
-                        // Set end when it doesn't exist.
-                        // Also, automatically set end to size of file if end is beyond
-                        // the file size (rather than throwing an error).
-                        end = fileSize - 1;
-                    }
-
-                    if (start > end) {
-                        throw new RuntimeException("Start is larger than end.");
-                    }
-
-                    if (ranges.size() < 1) {
-                        ranges.add(new Range(start, end));
-                    } else {
-                        throw new RuntimeException("Only one range is allowed.");
-                    }
-
+                if (start == -1) {
+                    // start does not exist. Base start off of how many bytes from end.
+                    start = fileSize - end;
+                    end = fileSize - 1;
+                } else if (end == -1 || end > fileSize - 1) {
+                    // Set end when it doesn't exist.
+                    // Also, automatically set end to size of file if end is beyond
+                    // the file size (rather than throwing an error).
+                    end = fileSize - 1;
                 }
+
+                if (start > end) {
+                    throw new RuntimeException("Start is larger than end.");
+                }
+
+                if (ranges.size() < 1) {
+                    ranges.add(new Range(start, end));
+                } else {
+                    throw new RuntimeException("Only one range is allowed.");
+                }
+
             }
         }
 
