@@ -200,7 +200,7 @@ The reserved word "DISABLED" can be used to disable this feature within a given 
     
 The name of the current curationLabelSet can be seen using::
 
-    curl http://$SERVER/api/datasets/$dataset-id/curationLabelSet
+    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/datasets/$dataset-id/curationLabelSet
 
 and can be reset to the default (inherited from the parent collection) with (only a superuser can do this) ::
 
