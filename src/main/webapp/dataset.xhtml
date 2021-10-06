@@ -327,7 +327,7 @@
                                                             <li class="dropdown-submenu pull-left">
                                                                 <a tabindex="-1" href="#">#{bundle['dataset.changestatus']}</a>
                                                                 <ul class="dropdown-menu">
-                                                                    <ui:repeat value="#{settingsWrapper.allowedExternalStatuses}" var="status">
+                                                                    <ui:repeat value="#{DatasetPage.allowedExternalStatuses}" var="status">
                                                                         <li>
                                                                             <p:commandLink action="#{DatasetPage.setExternalStatus(status)}" update=":datasetForm:topDatasetBlockFragment,:messagePanel">
                                                                               #{status}
