@@ -845,14 +845,14 @@ public class AdminIT {
     @Test
     public void testLicenses(){
         
-        String pathToJsonFile = "scripts/api/data/license.json";
+        String pathToJsonFile = "src/test/resources/json/license.json";
         Response addLicenseResponse = UtilIT.addLicense(pathToJsonFile);
         addLicenseResponse.prettyPrint();
         String body = addLicenseResponse.getBody().asString();
         String status = JsonPath.from(body).getString("status");
         assertEquals("OK", status);
         
-        pathToJsonFile = "scripts/api/data/licenseError.json";
+        pathToJsonFile = "src/test/resources/json/licenseError.json";
         Response addLicenseErrorResponse = UtilIT.addLicense(pathToJsonFile);
         addLicenseErrorResponse.prettyPrint();
         body = addLicenseErrorResponse.getBody().asString();
@@ -871,13 +871,6 @@ public class AdminIT {
         body = getLicenseByIdResponse.getBody().asString();
         status = JsonPath.from(body).getString("status");
         assertEquals("OK", status);
-
-        //TODO implement tests after these methods from PR's have been merged into multi-license
-        /*Response getLicenseByNameResponse = UtilIT.getLicenseByName("");
-        getLicenseByNameResponse.prettyPrint();
-        body = getLicenseByNameResponse.getBody().asString();
-        status = JsonPath.from(body).getString("status");
-        assertEquals("OK", status);*/
         
         Response getLicenseErrorResponse = UtilIT.getLicenseById(licenseId + 1L);
         getLicenseErrorResponse.prettyPrint();
@@ -885,20 +878,12 @@ public class AdminIT {
         status = JsonPath.from(body).getString("status");
         assertEquals("ERROR", status);
         
-        pathToJsonFile = "scripts/api/data/licenseUpdate.json";
+        pathToJsonFile = "src/test/resources/json/licenseUpdate.json";
         Response updateLicenseByIdResponse = UtilIT.updateLicenseById(pathToJsonFile, licenseId);
         updateLicenseByIdResponse.prettyPrint();
         body = updateLicenseByIdResponse.getBody().asString();
         status = JsonPath.from(body).getString("status");
         assertEquals("OK", status);
-
-        //TODO updateLicenseByName method does not exist yet or has not been merged yet
-        /*pathToJsonFile = "scripts/api/data/licenseUpdate.json";
-        Response updateLicenseByNameResponse = UtilIT.updateLicenseByName(pathToJsonFile, "");
-        updateLicenseByNameResponse.prettyPrint();
-        body = updateLicenseByNameResponse.getBody().asString();
-        status = JsonPath.from(body).getString("status");
-        assertEquals("OK", status);*/
         
         Response updateLicenseErrorResponse = UtilIT.updateLicenseById(pathToJsonFile, licenseId + 1L);
         updateLicenseErrorResponse.prettyPrint();
@@ -911,13 +896,6 @@ public class AdminIT {
         body = deleteLicenseByIdResponse.getBody().asString();
         status = JsonPath.from(body).getString("status");
         assertEquals("OK", status);
-
-        //TODO deleteLicenseByName method does not exist yet or has not been merged yet
-        /*Response deleteLicenseByNameResponse = UtilIT.deleteLicenseByName("");
-        deleteLicenseByNameResponse.prettyPrint();
-        body = deleteLicenseByNameResponse.getBody().asString();
-        status = JsonPath.from(body).getString("status");
-        assertEquals("OK", status);*/
         
         Response deleteLicenseErrorResponse = UtilIT.deleteLicenseById(licenseId + 1L);
         deleteLicenseErrorResponse.prettyPrint();

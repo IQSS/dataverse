@@ -1,16 +1,17 @@
 package edu.harvard.iq.dataverse.util;
 
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.Guestbook;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.harvard.iq.dataverse.*;
+import edu.harvard.iq.dataverse.api.UtilIT;
 import edu.harvard.iq.dataverse.util.FileUtil.FileCitationExtension;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.logging.Level;
@@ -127,7 +128,9 @@ public class FileUtilTest {
             DatasetVersion dsv1 = new DatasetVersion();
             dsv1.setVersionState(DatasetVersion.VersionState.RELEASED);
             TermsOfUseAndAccess termsOfUseAndAccess = new TermsOfUseAndAccess();
-            termsOfUseAndAccess.setLicense(termsOfUseAndAccess.getCC0());
+            License license = new License("CC0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("https://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true);
+            license.setDefault(true);
+            termsOfUseAndAccess.setLicense(license);
             dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
             assertEquals(false, FileUtil.isDownloadPopupRequired(dsv1));
         }
@@ -142,7 +145,9 @@ public class FileUtilTest {
              * the popup when the are Terms of Use. This feels like a bug since the
              * Terms of Use should probably be shown.
              */
-            termsOfUseAndAccess.setLicense(termsOfUseAndAccess.getCC0());
+            License license = new License("CC0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("https://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true);
+            license.setDefault(true);
+            termsOfUseAndAccess.setLicense(license);
             termsOfUseAndAccess.setTermsOfUse("be excellent to each other");
             dsv1.setTermsOfUseAndAccess(termsOfUseAndAccess);
             assertEquals(false, FileUtil.isDownloadPopupRequired(dsv1));

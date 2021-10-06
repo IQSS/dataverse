@@ -9,11 +9,9 @@ import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.License;
 import edu.harvard.iq.dataverse.LicenseServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
-import edu.harvard.iq.dataverse.api.FetchException;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
-import java.net.URI;
-import java.net.URISyntaxException;
+
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -21,6 +19,8 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.NoResultException;
+
 import org.apache.commons.lang3.StringUtils;
 import org.swordapp.server.SwordEntry;
 import org.swordapp.server.SwordError;
@@ -190,8 +190,8 @@ public class SwordServiceBean {
                 terms.setLicense(licenseToSet);
                 setTermsOfUse(datasetVersionToMutate, dcterms, licenseToSet);
             }
-        } catch (FetchException e) {
-            throw new SwordError(e.getMessage());
+        } catch (NoResultException e) {
+            throw new SwordError("Couldn't find an active license with: " + licenseProvided);
         }
 
     }

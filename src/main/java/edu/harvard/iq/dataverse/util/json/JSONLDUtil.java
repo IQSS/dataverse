@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.util.json;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -16,7 +15,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -30,6 +28,7 @@ import javax.json.JsonWriter;
 import javax.json.JsonWriterFactory;
 import javax.json.JsonValue.ValueType;
 import javax.json.stream.JsonGenerator;
+import javax.persistence.NoResultException;
 import javax.ws.rs.BadRequestException;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
@@ -46,8 +45,6 @@ import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.License;
 import edu.harvard.iq.dataverse.LicenseServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
-import edu.harvard.iq.dataverse.api.ConflictException;
-import edu.harvard.iq.dataverse.api.FetchException;
 import org.apache.commons.lang3.StringUtils;
 
 import com.apicatalog.jsonld.JsonLd;
@@ -55,7 +52,6 @@ import com.apicatalog.jsonld.api.JsonLdError;
 import com.apicatalog.jsonld.document.JsonDocument;
 
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
-import edu.harvard.iq.dataverse.util.bagit.OREMap;
 
 public class JSONLDUtil {
 
@@ -210,9 +206,9 @@ public class JSONLDUtil {
                                         setSemTerm(terms, key, licenseSvc.getByNameOrUri(jsonld.getString(key)));
                                     }
                                 } else {
-                                    throw new ConflictException("Cannot change to " + jsonld.getString(key) + " license due to existing Terms of Use", null);
+                                    throw new IllegalArgumentException("Cannot change to " + jsonld.getString(key) + " license due to existing Terms of Use", null);
                                 }
-                            } catch (FetchException | ConflictException e) {
+                            } catch (NoResultException | IllegalArgumentException e) {
                                 logger.warning(e.getMessage());
                                 throw new BadRequestException(e.getMessage());
                             }
