@@ -170,8 +170,9 @@ public class DatasetUtil {
                         return defaultDatasetThumbnail;
                     }
                 }
-            } else if (thumbnailFile.isRestricted()) {
-                logger.fine("Dataset (id :" + dataset.getId() + ") has a thumbnail the user selected but the file must have later been restricted. Returning null.");
+            } else if (thumbnailFile.isRestricted() || FileUtil.isActivelyEmbargoed(thumbnailFile)) {
+                logger.fine("Dataset (id :" + dataset.getId() + ") has a thumbnail (user selected or automatically chosen) but the file must have later been restricted or embargoed. Returning null.");
+                //ToDo: Should we do dataset.setTumbnailFile(null); so that the attempt to auto select a thumb happens again?
                 return null;
             } else {
                 String imageSourceBase64 = ImageThumbConverter.getImageThumbnailAsBase64(thumbnailFile, size);
@@ -257,7 +258,7 @@ public class DatasetUtil {
         for (FileMetadata fmd : datasetVersion.getFileMetadatas()) {
             DataFile testFile = fmd.getDataFile();
             // We don't want to use a restricted image file as the dedicated thumbnail:
-            if (!testFile.isRestricted() && FileUtil.isThumbnailSupported(testFile) && ImageThumbConverter.isThumbnailAvailable(testFile, ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE)) {
+            if (!testFile.isRestricted() && !FileUtil.isActivelyEmbargoed(testFile) && FileUtil.isThumbnailSupported(testFile) && ImageThumbConverter.isThumbnailAvailable(testFile, ImageThumbConverter.DEFAULT_DATASETLOGO_SIZE)) {
                 return testFile;
             }
         }
