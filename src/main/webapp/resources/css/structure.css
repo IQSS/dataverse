@@ -390,6 +390,7 @@ div.btn-group ul.dropdown-menu li.disabled span.ui-commandlink.ui-state-disabled
 div.field-add-delete a.btn {margin:0 1em 0 0;}
 div.field-add-delete a.btn:last-child {margin-right:0;}
 div.field-add-delete a.btn.compound-field-btn {margin-top:1.8em;}
+div[data-cvoc-parentfield] ~ div.field-add-delete a.btn.compound-field-btn {margin-top:0px;}
 div.field-add-delete a.btn.nolabel-field-btn {margin-top:0;}
 
 /* Featured Dataverses*/
@@ -881,7 +882,7 @@ thead.ui-datatable-scrollable-theadclone {display:none}
 
 #file-title-block span.file-title-label {font-size:36px !important;line-height:1.1;font-weight:bold;margin-right:.5em;}
 #file-title-block span.label {vertical-align: text-top;}
-#file-title-block span.label, #file-title-block span.glyphicon-lock, #file-title-block span.icon-unlock, #file-title-block span.glyphicon-time {margin-right:.5em;}
+#file-title-block span.label, #file-title-block span.glyphicon-lock, #file-title-block span.icon-unlock {margin-right:.5em;}
 #file-title-block span.glyphicon-lock, #file-title-block span.icon-unlock {top:1px;}
 #file-title-block span.ingest-warning {vertical-align:text-bottom;font-size:30px;}
 #fileCategoriesBlock span.label {margin-right: 0.5em;}
@@ -1000,6 +1001,39 @@ progress::-webkit-progress-bar {
 progress::-webkit-progress-value {
   background-color:green;
 }
+
+/*External vocabulary support*/
+
+.select2-container .select2-selection--single {
+        border:1px solid #cccccc;
+        border-radius: 3px;
+        height:34px;
+        display:inline;
+        background:#ffffff;
+}
+
+.select2-container .select2-selection--single .select2-selection__rendered {
+        display:inline-block!important;
+        max-width:90%
+}
+.select2-selection__clear, .select2-selection__rendered {
+        vertical-align: -webkit-baseline-middle;
+}
+.select2-results li {
+        font-weight:400;
+        font-size:14px;
+}
+.select2-rendered__match {
+        font-weight:600;
+}
+.cvoc-vocab {
+padding-left:0px;
+padding-right:0px;
+}
+.cvoc-term {
+padding-right:0px;
+}
+
 /*EMBARGO*/
 .ui-datepicker {
   z-index: 100001!important;
