@@ -147,11 +147,6 @@ public class JSONLDUtil {
 
         TermsOfUseAndAccess terms = (dsv.getTermsOfUseAndAccess() != null) ? dsv.getTermsOfUseAndAccess().copyTermsOfUseAndAccess() : new TermsOfUseAndAccess();
 
-        if (dsv.getTermsOfUseAndAccess() == null) {
-            if (!jsonld.containsKey(JsonLDTerm.schemaOrg("license").getUrl()) && !jsonld.containsKey(JsonLDTerm.termsOfUse.getUrl())) {
-                terms.setLicense(licenseSvc.getDefault());
-            }
-        }
 
         for (String key : jsonld.keySet()) {
             if (!key.equals("@context")) {
@@ -189,41 +184,36 @@ public class JSONLDUtil {
                             dsv.setVersionNumber(Long.parseLong(friendlyVersion.substring(0, index)));
                             dsv.setMinorVersionNumber(Long.parseLong(friendlyVersion.substring(index + 1)));
                         }
-                    } else if (key.equals(JsonLDTerm.schemaOrg("license").getUrl())) {
-                        //Special handling for license
-                        if (!append || !isSet(terms, key)) {
-                            // Mirror rules from SwordServiceBean
-                            if (jsonld.containsKey(JsonLDTerm.termsOfUse.getUrl())) {
-                                throw new BadRequestException(
-                                        "Cannot specify " + JsonLDTerm.schemaOrg("license").getUrl() + " and "
-                                                + JsonLDTerm.termsOfUse.getUrl());
-                            }
-                            try {
-                                if (dsv.getTermsOfUseAndAccess() == null && !dsv.getDataset().isReleased()) {
-                                    if (StringUtils.isEmpty(jsonld.getString(key)) || licenseSvc.getByNameOrUri(jsonld.getString(key)) == null) {
-                                        setSemTerm(terms, key, licenseSvc.getDefault());
-                                    } else {
-                                        setSemTerm(terms, key, licenseSvc.getByNameOrUri(jsonld.getString(key)));
-                                    }
-                                } else {
-                                    throw new IllegalArgumentException("Cannot change to " + jsonld.getString(key) + " license due to existing Terms of Use", null);
-                                }
-                            } catch (NoResultException | IllegalArgumentException e) {
-                                logger.warning(e.getMessage());
-                                throw new BadRequestException(e.getMessage());
-                            }
-                        } else {
-                            throw new BadRequestException(
-                                    "Can't append to a single-value field that already has a value: "
-                                            + JsonLDTerm.schemaOrg("license").getUrl());
-                        }
-                    } else if (datasetTerms.contains(key)) {
+                    }
+                    else if (datasetTerms.contains(key)) {
                         // Other Dataset-level TermsOfUseAndAccess
                         if (!append || !isSet(terms, key)) {
-                            setSemTerm(terms, key, jsonld.getString(key));
-                        } else {
-                            throw new BadRequestException(
-                                    "Can't append to a single-value field that already has a value: " + key);
+                            if (key.equals(JsonLDTerm.schemaOrg("license").getUrl())) {
+                                if (jsonld.containsKey(JsonLDTerm.termsOfUse.getUrl())) {
+                                    throw new BadRequestException("Cannot specify " + JsonLDTerm.schemaOrg("license").getUrl() + " and " + JsonLDTerm.termsOfUse.getUrl());
+                                }
+                                if (StringUtils.isEmpty(jsonld.getString(key))) {
+                                    setSemTerm(terms, key, licenseSvc.getDefault());
+                                }
+                                else {
+                                    try {
+                                        License license = licenseSvc.getByNameOrUri(jsonld.getString(key));
+                                        setSemTerm(terms, key, license);
+                                    }
+                                    catch (FetchException e) {
+                                        throw new BadRequestException("Invalid license");
+                                    }
+                                }
+                            }
+                            else if (key.equals("https://dataverse.org/schema/core#fileRequestAccess")) {
+                                setSemTerm(terms, key, jsonld.getBoolean(key));
+                            }
+                            else {
+                                setSemTerm(terms, key, jsonld.getString(key));
+                            }
+                        }
+                        else {
+                            throw new BadRequestException("Can't append to a single-value field that already has a value: " + key);
                         }
                     } else if (key.equals(JsonLDTerm.fileTermsOfAccess.getUrl())) {
                         // Other DataFile-level TermsOfUseAndAccess
@@ -692,6 +682,7 @@ public class JSONLDUtil {
     // Convenience methods for TermsOfUseAndAccess
 
     public static final List<String> datasetTerms = new ArrayList<String>(Arrays.asList(
+            "http://schema.org/license",
             "https://dataverse.org/schema/core#termsOfUse",
             "https://dataverse.org/schema/core#confidentialityDeclaration",
             "https://dataverse.org/schema/core#specialPermissions", "https://dataverse.org/schema/core#restrictions",
