@@ -72,7 +72,7 @@ The label set used for a collection can be specified via the API as shown below,
 
 The curationLabelSet to use within a given collection can be set by specifying its name using::
  
-    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT -d $curationLabelSetName http://$SERVER/api/admin/dataverse/$dataverse-alias/curationLabelSet
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT http://$SERVER/api/admin/dataverse/$dataverse-alias/curationLabelSet?name=$curationLabelSetName
     
 The reserved word "DISABLED" can be used to disable this feature within a given Dataverse collection. 
     
@@ -194,7 +194,7 @@ The label set used for a dataset can be specified via the API as shown below. On
  
 The curationLabelSet to use within a given dataset can be set by specifying its name using::
  
-    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT -d $curationLabelSetName http://$SERVER/api/datasets/$dataset-id/curationLabelSet
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT http://$SERVER/api/datasets/$dataset-id/curationLabelSet?name=$curationLabelSetName
     
 The reserved word "DISABLED" can be used to disable this feature within a given Dataverse collection. 
     
