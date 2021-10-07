@@ -1,10 +1,12 @@
 External Tools
 ==============
 
-External tools can provide additional features that are not part of Dataverse itself, such as data exploration. See the "Writing Your Own External Tool" section below for more information on developing your own tool for Dataverse.
+External tools can provide additional features that are not part of Dataverse itself, such as data exploration. See the :ref:`writing_external_tool` section for more information on developing your own tool for Dataverse.
 
 .. contents:: |toctitle|
   :local:
+
+.. _inventory_of_external_tools:
 
 Inventory of External Tools
 ---------------------------
@@ -19,6 +21,7 @@ Support for external tools is just getting off the ground but the following tool
 
 - [Your tool here! Please get in touch! :) ]
 
+.. _adjust_external_tool_manifest:
 
 Downloading and Adjusting an External Tool Manifest File
 --------------------------------------------------------
@@ -33,10 +36,10 @@ External tools must be expressed in an external tool manifest file, a specific J
 
 External tools can operate on any file, including tabular files that have been created by successful ingestion. (For more on ingest, see the :doc:`/user/tabulardataingest/ingestprocess` of the User Guide.) The optional ``contentType`` entry specifies the mimetype a tool works on. (Not providing this parameter makes the tool work on ingested tabular files and is equivalent to specifying the ``contentType`` as "text/tab-separated-values".)  
 
-In the example above, a mix of required and optional reserved words appear that can be used to insert dynamic values into tools. The supported values are:
+A mix of required and optional reserved words can be inserted in ``toolParameters`` that can be used to insert dynamic values into tools. The supported values are:
 
 - ``{fileId}`` (required) - The Dataverse database ID of a file the external tool has been launched on.
-- ``{siteUrl}`` (optional) - The URL of the Dataverse installation that hosts the file with the fileId above.
+- ``{siteUrl}`` (optional) - The URL of the Dataverse installation that hosts the file with the ``{fileId}``.
 - ``{apiToken}`` (optional) - The Dataverse API token of the user launching the external tool, if available.
 - ``{datasetId}`` (optional) - The ID of the dataset containing the file.
 - ``{datasetVersion}`` (optional) - The friendly version number ( or \:draft ) of the dataset version the tool is being launched from.
@@ -44,23 +47,25 @@ In the example above, a mix of required and optional reserved words appear that 
 Making an External Tool Available in Dataverse
 ----------------------------------------------
 
-If the JSON file were called, for example, :download:`awesomeTool.json <../_static/installation/files/root/external-tools/awesomeTool.json>` you would make any necessary adjustments, as described above, and then make the tool available within Dataverse with the following curl command:
+If the JSON file were called, for example, :download:`awesomeTool.json <../_static/installation/files/root/external-tools/awesomeTool.json>` you would make any necessary adjustments, as described in :ref:`adjust_external_tool_manifest`, and then make the tool available within Dataverse with the following curl command::
 
-``curl -X POST -H 'Content-type: application/json' --upload-file awesomeTool.json http://localhost:8080/api/admin/externalTools``
+    curl -X POST -H 'Content-type: application/json' --upload-file awesomeTool.json http://localhost:8080/api/admin/externalTools
 
 Listing all External Tools in Dataverse
 ---------------------------------------
 
-To list all the external tools that are available in Dataverse:
+To list all the external tools that are available in Dataverse::
 
-``curl http://localhost:8080/api/admin/externalTools``
+    curl http://localhost:8080/api/admin/externalTools
 
 Removing an External Tool Available in Dataverse
 ------------------------------------------------
 
-Assuming the external tool database id is "1", remove it with the following command:
+Assuming the external tool database id is "1", remove it with the following command::
 
-``curl -X DELETE http://localhost:8080/api/admin/externalTools/1``
+    curl -X DELETE http://localhost:8080/api/admin/externalTools/1
+
+.. _writing_external_tool:
 
 Writing Your Own External Tool
 ------------------------------
@@ -69,4 +74,4 @@ If you have an idea for an external tool, please let the Dataverse community kno
 
 If you need help with your tool, please feel free to post on the dataverse-dev mailing list: https://groups.google.com/forum/#!forum/dataverse-dev
 
-Once you've gotten your tool working, please make a pull request to update the list of tools above.
+Once you've gotten your tool working, please make a pull request to update the :ref:`inventory_of_external_tools`.

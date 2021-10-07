@@ -1,7 +1,7 @@
 Client Libraries
 ================
 
-Currently there are client libraries for Python, R, and Java that can be used to develop against Dataverse APIs. We use the term "client library" on this page but "Dataverse SDK" (software development kit) is another way of describing these resources. They are designed to help developers express Dataverse concepts more easily in the languages listed below. For support on any of these client libraries, please consult each project's README.
+Currently there are client libraries for Python, R, and Java that can be used to develop against Dataverse APIs. We use the term "client library" on this page but "Dataverse SDK" (software development kit) is another way of describing these resources. They are designed to help developers express Dataverse concepts more easily in their programs and applications. For support on any of these client libraries, please consult each project's README.
 
 Because Dataverse is a SWORD server, additional client libraries exist for Java, Ruby, and PHP per the :doc:`/api/sword` page.
 

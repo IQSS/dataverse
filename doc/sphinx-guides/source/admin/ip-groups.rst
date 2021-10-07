@@ -13,6 +13,9 @@ IP Groups can be listed with the following curl command:
 
 ``curl http://localhost:8080/api/admin/groups/ip``
 
+
+.. _ip_group_create:
+
 Creating an IP Group
 --------------------
 
@@ -20,7 +23,7 @@ IP Groups must be expressed as ranges in IPv4 or IPv6 format. For illustrative p
 
 .. literalinclude:: ../_static/admin/ipGroupAll.json
 
-Let's say you download the example above and edit it to give it a range used by your library, giving it a filename of ``ipGroup1.json`` and putting it in the ``/tmp`` directory. Next, load it into Dataverse using the following curl command:
+Let's say you download this example and edit it to give it a range used by your library, giving it a filename of ``ipGroup1.json`` and putting it in the ``/tmp`` directory. Next, load it into Dataverse using the following curl command:
 
 ``curl -X POST -H 'Content-type: application/json' http://localhost:8080/api/admin/groups/ip --upload-file /tmp/ipGroup1.json``
 
@@ -29,7 +32,7 @@ Note that you can update a group the same way, as long as you use the same alias
 Listing an IP Group
 --------------------
 
-Let's say you used "ipGroup1" as the alias of the IP Group you created above. To list just that IP Group, you can include the alias in the curl command like this:
+Let's say you used "ipGroup1" as the alias of the IP Group you created in :ref:`ip_group_create`. To list just that IP Group, you can include the alias in the curl command like this:
 
 ``curl http://localhost:8080/api/admin/groups/ip/ipGroup1``
 
@@ -38,6 +41,6 @@ Deleting an IP Group
 
 It is not recommended to delete an IP Group that has been assigned roles. If you want to delete an IP Group, you should first remove its permissions.
 
-To delete an IP Group with an alias of "ipGroup1", use the curl command below:
+To delete an IP Group with an alias of "ipGroup1", use the curl command:
 
 ``curl -X DELETE http://localhost:8080/api/admin/groups/ip/ipGroup1``

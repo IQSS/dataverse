@@ -1,6 +1,6 @@
 Consents
 =========
-Consents are used for user registration where you can define what user has to(or can) accept in order to successfully register account.
+Consents are used for user registration where you can define what user has to (or can) accept in order to successfully register account.
 
 Dataverse offers a possibility of adding/editing consents that are for superusers only.
 If you are a logged-in superuser, you can access it by REST api.
@@ -48,33 +48,35 @@ In order to create consent you need to follow the following json structure:
     }
 ..
 
-The curl command below assumes you have kept the name “consent.json” and that this file is in your current working directory.
+Next curl command assumes you have kept the name “consent.json” and that this file is in your current working directory.
 
 ::
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X POST http://localhost:8080/api/admin/consents --upload-file consent.json
 
-Consent needs to have english version since it is the default one
+Consent needs to have English version since it is the default one
 and it will be shown when no consent in user language will be available.
 Consent actions are optional and if you don't need them just remove the key and value.
 
-- name - unique name for consent.
-- displayOrder - order of consent.
-- required - is the consent required to be accepted.
-- hidden - is the consent hidden from all users. (Used mainly to get rid of unused consent since they are by definition non-removable).
+- **name** - unique name for consent.
+- **displayOrder** - order of consent.
+- **required** - is the consent required to be accepted.
+- **hidden** - is the consent hidden from all users. (Used mainly to get rid of unused consent since they are by definition non-removable).
+- **consentDetails** - list that holds the details about consent.
 
-* consentDetails - list that holds the details about consent.
-* language - language that is associated with the displayed text.
-* text - text that is shown to the user in given language.
+  - **language** - language that is associated with the displayed text.
+  - **text** - text that is shown to the user in given language.
 
-- consentActions - generic structure that allows to execute certain actions after user accepts the consent.
-- consentActionType - type of action.
-- actionOptions - configuration specific to action type.
+- **consentActions** - generic structure that allows to execute certain actions after user accepts the consent.
+
+  - **consentActionType** - type of action.
+  - **actionOptions** - configuration specific to action type.
 
 Action Types
 ~~~~~~~~~~~~
 .. list-table:: Action types
    :widths: 25 50
+   :header-rows: 1
 
    * - Action type
      - Description
@@ -83,11 +85,12 @@ Action Types
 
 .. list-table:: Available options for SEND_NEWSLETTER_EMAIL action type
    :widths: 25 50
+   :header-rows: 1
 
    * - KEY
      - VALUE
    * - email
-     - {Email address to the person that manages subscriptions for the newsletter}
+     - Email address to the person that manages subscriptions for the newsletter
 
 Editing consents
 -----------------

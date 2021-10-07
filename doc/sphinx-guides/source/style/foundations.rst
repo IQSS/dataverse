@@ -77,7 +77,7 @@ We use our brand color, a custom burnt orange ``{color:#C55B28;}``, which is set
       background:#337AB7;
     }
     .bg-file {
-      background:#F5F5F5;
+      background:#777777;
     }
 
     #navbarFixed .navbar-brand {
@@ -115,7 +115,7 @@ We use our brand color, a custom burnt orange ``{color:#C55B28;}``, which is set
       color:#31708F;
     }
     .text-file {
-      color:#F5F5F5;
+      color:#777777;
     }
 
 .. raw:: html
@@ -124,7 +124,7 @@ We use our brand color, a custom burnt orange ``{color:#C55B28;}``, which is set
     <div class="panel-body">
       <p class="text-dataverse">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
       <p class="text-dataset">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-      <p class="text-file">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p class="h">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
     </div>
   </div>
 
@@ -324,7 +324,7 @@ We use `Socicon <http://www.socicon.com>`__ for our custom social icons. In the 
 Logos
 =====
 
-The Dataverse Project logo (below) is displayed in the footer, and was the basis for the creation of the application's icons and favicon.
+The Dataverse Project logo is displayed in the footer, and was the basis for the creation of the application's icons and favicon.
 
 Create both print and web version of the Dataverse Project logo by downloading this vector-based SVG file: :download:`dataverse_project_logo.svg <../_static/dataverse_project_logo.svg>`
 
@@ -336,7 +336,7 @@ Create both print and web version of the Dataverse Project logo by downloading t
     </div>
   </div>
 
-The brand logo (below) was created as a custom icon to represent the concept of a "dataverse." It is used as the brand logo in the Bootstrap navbar component and across the application.
+The brand logo was created as a custom icon to represent the concept of a "dataverse." It is used as the brand logo in the Bootstrap navbar component and across the application.
 
 .. raw:: html
 

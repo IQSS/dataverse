@@ -3,7 +3,10 @@ Dataverse Management
 
 A dataverse is a container for datasets (research data, code, documentation, and metadata) and other dataverses, which can be setup for individual researchers, departments, journals and organizations.
 
-|image1|
+.. figure:: ./img/Dataverse-Diagram.png
+    :alt: Schematic Diagram of Dataverse
+    
+    Schematic diagram of a Dataverse in *Dataverse 4.0*. Dataverse is a container for Datasets and other Dataverses.
 
 Once a user creates a dataverse they, by default, become the
 administrator of that dataverse. The dataverse administrator has access
@@ -23,14 +26,13 @@ Creating a dataverse is easy but first you must be a registered user (see :doc:`
     * **Identifier**: This is an abbreviation, usually lower-case, that becomes part of the URL for the new dataverse. Special characters (~,\`, !, @, #, $, %, ^, &, and \*) and spaces are not allowed. **Note**: if you change the Dataverse URL field, the URL for your Dataverse changes (http//.../'url'), which affects links to this page.
     * **Email**: This is the email address that will be used as the contact for this particular dataverse. You can have more than one contact email address for your dataverse.
     * **Affiliation**: Add any Affiliation that can be associated to this particular dataverse (e.g., project name, institute name, department name, journal name, etc). This is automatically filled out if you have added an affiliation for your user account.
-    * **Description**: Provide a description of this dataverse. This will display on the home page of your dataverse and in the search result list. The description field supports certain HTML tags (<a>, <b>, <blockquote>, <br>, <code>, <del>, <dd>, <dl>, <dt>, <em>, <hr>, <h1>-<h3>, <i>, <img>, <kbd>, <li>, <ol>, <p>, <pre>, <s>, <sup>, <sub>, <strong>, <strike>, <ul>).
+    * **Description**: Provide a description of this dataverse. This will display on the home page of your dataverse and in the search result list.
     * **Category**: Select a category that best describes the type of dataverse this will be. For example, if this is a dataverse for an individual researcher's datasets, select Researcher. If this is a dataverse for an institution, select Organization & Institution.
     * **Choose the sets of Metadata Elements for datasets in this dataverse**: By default the metadata elements will be from the host dataverse that this new dataverse is created in. Dataverse offers metadata standards for multiple domains. To learn more about the metadata standards in Dataverse please check out the :doc:`/user/appendix`.
     * **Select facets for this dataverse**: by default the facets that will appear on your dataverse landing page will be from the host dataverse that this new dataverse was created in. The facets are simply metadata fields that can be used to help others easily find dataverses and datasets within this dataverse. You can select as many facets as you would like.
 #. Selected metadata elements are also used to pick which metadata fields you would like to use for creating templates for your datasets. Metadata fields can be hidden, or selected as required or optional. Once you have selected all the fields you would like to use, you can create your template(s) after you finish creating your dataverse.
 #. Click "Create Dataverse" button and you're done! 
 
-\*Required fields are denoted by a red asterisk.
 
 Edit Dataverse 
 =================
@@ -38,7 +40,7 @@ Edit Dataverse
 To edit your dataverse, navigate to your dataverse homepage and select the "Edit Dataverse" button, 
 where you will be presented with the following editing options: 
 
-- :ref:`General Information <general-information>`: edit name, identifier, category, contact email, affiliation, description, Metadata Elements, and facets for your dataverse
+- :ref:`general-information`: edit name, identifier, category, contact email, affiliation, description, Metadata Elements, and facets for your dataverse
 - :ref:`Theme <theme>`: upload a logo for your dataverse, add a link to your department or personal website, and select colors for your dataverse in order to brand it
 - :ref:`Widgets <dataverse-widgets>`: get code to add to your website to have your dataverse display on it
 - :ref:`Permissions <dataverse-permissions>`: give Dataverse users permissions to your dataverse, i.e.-can edit datasets, and see which users already have which permissions for your dataverse
@@ -98,11 +100,19 @@ Roles and permissions may also be granted to groups. Groups can be defined as a 
 
 Admins of a dataverse can assign roles and permissions to the users of that dataverse. If you are an admin on a dataverse, then you will find the link to the Permissions page under the Edit dropdown on the dataverse page. 
 
-|image2|
+.. _dvperms1:
+.. figure:: ./img/dvperms1.png
+    :alt: Permissions link highlighted
+    
+    Screenshot of dataverse page with highlighted Permissions link location.
 
-Clicking on Permissions will bring you to this page:
+Clicking on Permissions will bring you to the page presented in :numref:`dvperms2`:
 
-|image3|
+.. _dvperms2:
+.. figure:: ./img/dv2.png
+    :alt: Permissions page
+    
+    Screenshot of dataverse Permissions page.
 
 When you access a dataverse's permissions page, you will see three sections:
 
@@ -118,7 +128,11 @@ Setting Access Configurations
 ---------------------------------------------
 Under the Permissions tab, you can click the "Edit Access" button to open a box where you can add to your dataverse and what permissions are granted to those who add to your dataverse.
 
-|image4|
+.. _dvperms3:
+.. figure:: ./img/dv3.png
+    :alt: Edit Access modal
+    
+    Screenshot of Edit Access modal window.
 
 The first question on this page allows you to determine how open your dataverse is to new additions - you can set whether or not the entire userbase (all logged in users) has the ability to add datasets or sub dataverses to your dataverse. 
 
@@ -130,11 +144,19 @@ Assigning Roles to Users and Groups
 ------------------------------------------
 Under the Users/Groups tab, you can add, edit, or remove the roles granted to users and groups on your dataverse. A role is a set of permissions granted to a user or group when they're using your dataverse. For example, giving your research assistant the "Contributor" role would give her the following self-explanatory permissions on your dataverse and all datasets within your dataverse: "ViewUnpublishedDataset", "DownloadFile", "EditDataset", and "DeleteDatasetDraft". She would, however, lack the "PublishDataset" permission, and thus would be unable to publish datasets on your dataverse. If you wanted to give her that permission, you would give her a role with that permission, like the Curator role. Users and groups can hold multiple roles at the same time if needed. Roles can be removed at any time. All roles and their associated permissions are listed under the "Roles" tab of the same page.
 
-|image5|
+.. _dvperms4:
+.. figure:: ./img/dv4.png
+    :alt: User/Group suggestion in Assign Role modal
+    
+    Screenshot of Assign Role modal window with suggested user for User/Group field.
 
 Note that the Dataset Creator role and Contributor role are sometimes confused. The Dataset Creator role is assigned at the dataverse level and allows a user to create new datasets in that dataverse. The Contributor role can be assigned at the dataset level, granting a user the ability to edit *that specific* dataset. Alternatively, the Contributor role can be assigned at the dataverse level, granting the user the ability to edit *all* datasets in that dataverse.
 
-|image6|
+.. _dvperms5:
+.. figure:: ./img/dv5.png
+    :alt: Assign Role modal
+    
+    Screenshot of Assign Role modal window.
 
 Note: If you need to assign a role to ALL Dataverse user accounts, you can assign the role to the ":authenticated-users" group.
 
@@ -218,19 +240,5 @@ Publish Your Dataverse
 Once your dataverse is ready to go public, go to your dataverse page, click on the "Publish" button on the right 
 hand side of the page. A pop-up will appear to confirm that you are ready to actually Publish, since once a dataverse
 is made public, it can no longer be unpublished.
-
-
-.. |image1| image:: ./img/Dataverse-Diagram.png
-.. |image2| image:: ./img/dvperms1.png
-   :class: img-responsive
-.. |image3| image:: ./img/dv2.png
-   :class: img-responsive
-.. |image4| image:: ./img/dv3.png
-   :class: img-responsive
-.. |image5| image:: ./img/dv4.png
-   :class: img-responsive
-.. |image6| image:: ./img/dv5.png
-   :class: img-responsive
-
 
 

@@ -23,7 +23,7 @@ If a step in a workflow fails, Dataverse make an effort to roll back all the ste
 .. tip::
   For invoking external systems using a REST api, Dataverse's internal step
   provider offers a step for sending and receiving customizable HTTP requests.
-  It's called *http/sr*, and is detailed below.
+  It's called *http/sr*, and is described in :ref:`http_sr_step` section.
 
 Administration
 ~~~~~~~~~~~~~~
@@ -69,6 +69,7 @@ A step that pauses the workflow. The workflow is paused until a POST request is 
       "stepType":"pause"
   }
 
+.. _http_sr_step:
 
 http/sr
 +++++++

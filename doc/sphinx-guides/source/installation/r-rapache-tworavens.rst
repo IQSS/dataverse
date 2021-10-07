@@ -21,7 +21,7 @@ of Dataverse v.4.6.1) version of the installer scripts and updated this guide. W
 installation process, particularly the difficult process of installing
 correct versions of the required third party R packages.
 
-**Note that the installation process below supercedes the basic R
+**Note that the installation process described in this document supercedes the basic R
 setup described in the "Prerequisites" portion of the Installation
 Guide. Meaning that once completed, it installs everything needed to
 run TwoRavens, PLUS all the libraries and components required to
@@ -32,7 +32,7 @@ ingest RData files, export as RData, and use Data Explorer.**
 Please be warned: 
 
 - This process may still require some system administration skills. 
-- The guide below is very Linux-specific. This process has been tested
+- This guide is very Linux-specific. Described process has been tested
   on RedHat/CentOS servers only. In some ways it *may* actually be
   easier to get it all installed on MacOS X (because
   MacOS X versions of third party R packages are available
@@ -43,7 +43,7 @@ In addition to the TwoRavens web application proper, several required
 components need to be installed and configured. This includes R,
 rApache and a collection of required third-party R packages. The
 installation steps for these components are described in the
-individual sections of the document below.
+individual sections of the document.
 
 .. contents:: |toctitle|
   :local:
@@ -69,20 +69,24 @@ application also needs to be able to execute some R code on the server. Instead 
 communicate to R. Rserve is installed as a "contributor" R package. It runs as a 
 daemon process on the server, accepting network connections on a dedicated port. 
 Dataverse project supplies an :fixedwidthplain:`init.d`-style startup file for the 
-daemon. The R setup in step ``2.`` will set it up so that the daemon gets started
+daemon. The R setup in step :ref:`tworavens_install_r_packages` will set it up so that the daemon gets started
 automatically when the system boots. 
 
 When a user requests to run 
 a statistical model on a data file, TwoRavens will instruct the R code on the 
 server to download the file **directly from the Dataverse application**. Access 
 URLs need to be configured for this to work properly (this is done by the TwoRavens 
-installer script in step ``3.``)  
+installer script in step :ref:`install_tworavens_app`)
 
 If you install all components on a single server and front Glassfish with Apache 
 (see "Network Ports" under the :doc:`config` section), the component and 
 data flow diagram might looks something like this:
 
-|tworavens_components|
+.. _tworavens_components:
+.. figure:: ./img/tworavens_components.png
+   :alt: Dataverse installation with TwoRavens support
+   
+   Diagram presenting Dataverse installation with TwoRavens support on single server
 
 In addition to Rserve, there are 14 more R library packages that the TwoRavens R 
 code requires in order to run. These in turn require 30 more as their own dependencies, 
@@ -97,11 +101,13 @@ between any two of the packages can result in a failure to install. In this rele
 we have attempted to resolve this by installing the **specific  versions of the R 
 packages that have been proven** to work together. If you have attempted to 
 install TwoRavens in the past, and it didn't work, please see the part of 
-section ``1.b.`` where we explain how to completely erase all the previously 
+section :ref:`prerequisites_r` where we explain how to completely erase all the previously 
 built packages.
  
 1. Prerequisites
 ++++++++++++++++
+
+.. _prerequisites_apache:
 
 a. httpd (Apache): 
 ------------------
@@ -135,6 +141,8 @@ For example, if the options line in your configuration is
 change it to 
 
 ``Options FollowSymLinks``
+
+.. _prerequisites_r:
 
 b. R:
 -----
@@ -190,11 +198,11 @@ If you are using RHEL/CentOS 7 in combination with R 3.5, download :download:`ra
        	yum install rapache-1.2.9_R-3.5.x86_64.rpm
 
 **Please note:** 
-The rpms above cannot be *guaranteed* to work on your
+The rpms cannot be *guaranteed* to work on your
 system. You may have a collection of system libraries installed on
 your system that will create a version conflict. If that's the case,
-or if you are trying to install on an operating system that's listed
-above, do not despair: simply build rApache from `source
+or if you are trying to install on an different operating system,
+do not despair: simply build rApache from `source
 <http://rapache.net/downloads.html>`_ . **Make sure** to build with
 the R that's the same version you are planning on using.
 
@@ -208,6 +216,8 @@ One of the required packages needed :fixedwidthplain:`/bin/ed`. The R package bu
         yum install ed wget
 
 Depending on how your system was originally set up, you may end up needing to install some other missing rpms. We'll explain how to troubleshoot compiler errors caused by missing libraries and/or executables. 
+
+.. _tworavens_install_r_packages:
 
 2. Install Extra R Packages
 +++++++++++++++++++++++++++
@@ -233,7 +243,7 @@ Unpack the zip file, then run the script::
         ./r-setup.sh
 
 
-See the section ``II.`` of the Appendix for trouble-shooting tips. 
+See :ref:`what_r_setup_sh_does` section of the Appendix for trouble-shooting tips.
 
 For the Rserve package the setup script will also create a system user
 :fixedwidthplain:`rserve`, and install the startup script for the
@@ -253,22 +263,26 @@ Make sure the rserve password is correctly specified in the ``domain.xml`` of yo
         <jvm-options>-Ddataverse.rserve.password=...</jvm-options>
 
 
+.. _install_tworavens_app:
+
 3. Install the TwoRavens Application
 ++++++++++++++++++++++++++++++++++++
 
 a. download and unzip the application
 -------------------------------------
 
-(though you may have already done so, in step ``2.`` above - see the instructions there). 
+(though you may have already done so, in step :ref:`tworavens_install_r_packages` - see the instructions there). 
 
 
 b. Rename the resulting directory "dataexplore" ...
 --------------------------------------------------------
 
-...and place it in the web root directory of your apache server. We'll assume ``/var/www/html/dataexplore`` in the examples below::
+...and place it in the web root directory of your apache server. We'll assume ``/var/www/html/dataexplore`` here and in whole :ref:`install_tworavens_app` section::
 
         mv TwoRavens-dataverse-distribution /var/www/html/dataexplore
 
+
+.. _run_the_installer:
 
 c. run the installer
 --------------------
@@ -288,7 +302,7 @@ rApache/TwoRavens URL ``http://{your hostname}:80``       URL of the Apache serv
 Dataverse URL         ``http://{your hostname}:8080``     URL of the Dataverse that integrates with this TwoRavens installation.
 ===================== ================================    =========== 
 
-Please note the default values above. The installer assumes 
+Please note that for default values the installer assumes 
 
 - that you are running both the Dataverse and TwoRavens/rApache on the same host; 
 - the default ports for Apache (80) and Glassfish that is serving your Dataverse (8080); 
@@ -299,8 +313,8 @@ and TwoRavens. Accept all the defaults, and you should have a working installati
 in no time.
 
 However, if you are planning to use this installation to actually serve data to 
-users, you'll most likely want to run under HTTPS. Please refer to the discussion 
-in the Appendix, ``I.`` for more information on setting it up. Configuring HTTPS 
+users, you'll most likely want to run under HTTPS. Please refer to :ref:`ports_configuration_discussion`
+in the Appendix for more information on setting it up. Configuring HTTPS 
 takes a little extra work. But note that the TwoRavens configuration 
 can actually end up being simpler. If you use our recommended configuration for 
 HTTPS (described in the Appendix), both the "TwoRavens URL" and "Dataverse URL" 
@@ -319,6 +333,8 @@ Once everything is installed and configured, the installer script will print out
 
         The application URL is https://server.dataverse.edu/dataexplore/gui.html
 
+.. _version_conflict_check:
+
 d. Version conflict check  (preprocess.R)
 -----------------------------------------
 
@@ -330,7 +346,7 @@ Compare the two files. **It is important that the two copies are identical**.
 
 **If different**: 
 
-- the **TwoRavens version wins**. Meaning, you need to copy the version supplied with this TwoRavens distribution and overwrite the Glassfish version (above); then restart Glassfish. 
+- the **TwoRavens version wins**. Meaning, you need to copy the version supplied with this TwoRavens distribution and overwrite the Glassfish version (``<DOMAIN DIRECTORY>/applications/dataverse-<VERSION>/WEB-INF/classes/edu/harvard/iq/dataverse/rserve/scripts/preprocess.R``); then restart Glassfish. 
 
 - unless this is a brand new Dataverse installation, it may have cached summary statistics fragments that were produced with the older version of this R code. You **must remove** all such cached files::
 
@@ -340,12 +356,14 @@ Compare the two files. **It is important that the two copies are identical**.
 *(Yes, this is a HACK! We are working on finding a better way to ensure this compatibility between 
 TwoRavens and Dataverse!)*
 
+.. _enable_tworavens_button:
+
 e. Enable TwoRavens Button in Dataverse
 ---------------------------------------
 
 Now that you have installed TwoRavens, you can make it available to your users by adding it an "external tool" for your Dataverse installation. (For more on external tools in general, see the :doc:`external-tools` section.)
 
-First, download :download:`twoRavens.json <../_static/installation/files/root/external-tools/twoRavens.json>` as a starting point and edit ``toolUrl`` in that external tool manifest file to be the URL where you want TwoRavens to run. This is the URL reported by the installer script (as in the example at the end of step ``c.``, above).
+First, download :download:`twoRavens.json <../_static/installation/files/root/external-tools/twoRavens.json>` as a starting point and edit ``toolUrl`` in that external tool manifest file to be the URL where you want TwoRavens to run. This is the URL reported by the installer script (as in the example at the end of step :ref:`run_the_installer`).
 
 Once you have made your edits, make the tool available within Dataverse with the following curl command (assuming ``twoRavens.json`` is in your current working directory):
 
@@ -359,9 +377,15 @@ f. Perform a quick test of TwoRavens functionality
 
 Ingest the dummy data file ``50by1000.dta`` (supplied in the Dataverse source tree in 
 ``dataverse/scripts/search/data/tabular``). If successfully ingested as tabular data, 
-the file should appear on the Dataset page as follows: 
+the file should appear on the Dataset page as shown in :numref:`tworavens_test_file_ingested`.
 
-|tworavens_test_file_ingested|
+.. _tworavens_test_file_ingested:
+
+.. figure:: ./img/tworavens_test_file_ingested.png
+   :alt: Ingested file screenshot
+   
+   Screenshot of successfully ingested file
+    
 
 
 If the file does NOT appear as Tabular Data - if it is shown as Stata/dta, 
@@ -372,46 +396,71 @@ tabular ingest. Consult the Glassfish server log for any error messages that may
 explain the failure. 
 
 If the file is showing as Tabular Data, but the ``Explore`` button isn't present, 
-double-check that the steps in ``e.``, above, were correctly performed. 
+double-check that the steps in :ref:`enable_tworavens_button` were correctly performed. 
 
 Otherwise, click on the ``Explore`` button. This will open TwoRavens in a new browser window.
 If the application initializes successfully, you should see the "data pebbles" representing 
-the first 3 variables in the file: 
+the first 3 variables in the file (see: :numref:`tworavens_test_init`).
 
-|tworavens_test_init| 
+.. _tworavens_test_init:
 
-If instead TwoRavens opens with an empty view - no variables listed on the left, and/or no "data pebbles" in the middle panel, we'll provide some diagnostics tips further below.
+.. figure:: ./img/tworavens_test_init.png
+   :alt: 50by1000.dta in TwoRavens
+   
+   Screenshot presenting ``50by1000.dta`` file exploration in TwoRavens
 
-Otherwise, mouse over ``var1``, and click on ``Dep Var``, selecting the variable as "dependent": 
+If instead TwoRavens opens with an empty view - no variables listed in ``Data Selection`` panel on the left, and/or no "data pebbles" in the main panel located in the middle, we'll provide some diagnostics tips in :ref:`tworavens_troubleshooting` section.
 
-|tworavens_test_select_var| 
+Otherwise, mouse over ``var1``, and click on ``Dep Var``, selecting the variable as "dependent" (:numref:`tworavens_test_select_var`). 
 
-Then select ``ls`` from the list of models on the right: 
+.. _tworavens_test_select_var:
+.. figure:: ./img/tworavens_test_select_var.png
+   :class: Variable selection
+   
+   Screenshot of selecting variable as dependent in TwoRavens
 
-|tworavens_test_select_model|
+Then select ``ls`` from the list in ``Model Selection`` panel on the right (:numref:`tworavens_test_select_model`)
+
+.. _tworavens_test_select_model:
+.. figure:: ./img/tworavens_test_select_model.png
+   :class: Model selection
+   
+   Screenshot of selecting of model in TwoRavens
 
 Then click the ``Estimate`` button, above. If the model is successfully executed, 
-the results will appear in a new popup panel, with some generated graph images, as shown below:
+the results will appear in a new popup panel, with some generated graph images, as shown in :numref:`tworavens_test_output`
 
-|tworavens_test_output|
+.. _tworavens_test_output:
+.. figure:: ./img/tworavens_test_output.png
+   :class: Model results
+   
+   Screenshot presenting result of seleted model in TwoRavens
 
-**Troubleshooting:**
+
+.. _tworavens_troubleshooting:
+
+4. Troubleshooting
+++++++++++++++++++
 
 If TwoRavens fails to initialize properly: 
 
-Symptom: instead of the "data pebbles" display shown in the second image, above, you are getting an empty view: 
+Symptom: instead of the "data pebbles" display shown in the :numref:`tworavens_test_init`, you are getting an empty view (:numref:`tworavens_test_empty`) 
 
-|tworavens_test_empty|
+.. _tworavens_test_empty:
+.. figure:: ./img/tworavens_test_empty.png
+   :class: Empty view
+   
+   Screenshot presenting failed initialization of file in TwoRavens
 
 A very likely cause of this condition is TwoRavens not being able to obtain the metadata describing the variables from your Dataverse. 
 Specifically, the "preprocessed summary statistics". 
 
-To diagnose: note the value of the ``dfId`` URL parameter in the view above. 
+To diagnose: note the value of the ``dfId`` URL parameter in the browser address box.
 Try to request the preprocessed fragment by going to the API end point directly:: 
 
         <YOUR DATAVERSE URL>/api/access/datafile/<FILE ID>?format=prep
 
-Where the :fixedwidthplain:`<FILE ID>` is the value of the :fixedwidthplain:`dfId` parameter from the previous view. 
+Where the :fixedwidthplain:`<FILE ID>` should be the same as the :fixedwidthplain:`dfId` parameter. 
 You should get the output that looks like this::
 
         {"dataset":{"private":false},"variables":{"var1":{"plottype":"bar","plotvalues":{"1":100,"2":100,"3":100,"4":100,"5":100,"6":100,"7":100,"8":100,"9":100,"10":100},"varnamesSumStat":"var1","median":5.5,"mean":5.5,"mode":"1","max":10,"min":1,"invalid":0,"valid":1000,"sd":2.87371854193452,"uniques":10,"herfindahl":0.1,"freqmode":100,"fewest":"1","mid":"1","freqfewest":"100","freqmid":"100","numchar":"numeric","nature":"ordinal","binary":"no","interval":"discrete","varnamesTypes":"var1","defaultInterval":"discrete","defaultNumchar":"numeric","defaultNature":"ordinal","defaultBinary":"no"},"var3":{"plottype":"bar","plotvalues":
@@ -421,25 +470,27 @@ If you are getting an error message instead, this is likely an Rserve connection
 Consult the Glassfish server log for any Rserve-related "connection refused" messages. 
 See if Rserve is running, and start it with ``service rserve start``, if necessary. 
 Check if the Rserve host name, username and password in the Glassfish configuration match 
-the actual Rserve configuration. (this is discussed in the section ``2.`` of the guide). 
+the actual Rserve configuration. (this is discussed in the section :ref:`tworavens_install_r_packages` of the guide). 
 Correct this, if necessary, then try again. 
 
 If you ARE getting JSON output, but the TwoRavens view is still broken: 
 
-- Look closely at the very beginning of the JSON fragment. Does it have the ``{"private":false}`` entry, as shown in the example above? If not, this likely an R code version mismatch, described in section ``3.d.``, above. Correct the problem as described there, then try again. 
+- Look closely at the very beginning of the JSON fragment. Does it have the ``{"private":false}`` entry, as shown in the example? If not, this likely an R code version mismatch, described in section :ref:`version_conflict_check`. Correct the problem as described there, then try again. 
 
-- If the JSON looks *exactly* as the fragment above, yet still no data pebbles - enable the JavaScript error console in the TwoRavens window, and try again. Look for any error messages; and, specifically, for any URLs that TwoRavens is failing to access. Look for the debugging entry that shows TwoRavens attempting to download the ``format=prep`` fragment. Does the URL have the correct host name, port and/or the protocol (http vs. https)? If not, re-run the installer, specifying the correct Dataverse URL, and try again. 
+- If the JSON looks *exactly* as in the example, yet still no data pebbles - enable the JavaScript error console in the TwoRavens window, and try again. Look for any error messages; and, specifically, for any URLs that TwoRavens is failing to access. Look for the debugging entry that shows TwoRavens attempting to download the ``format=prep`` fragment. Does the URL have the correct host name, port and/or the protocol (http vs. https)? If not, re-run the installer, specifying the correct Dataverse URL, and try again. 
 
 Symptom: the variables view is initialized properly, but no model output appears when you click ``Estimate``, with or without error messages. 
 
 - Make sure you properly selected the dependent variable (:fixedwidthplain:`var1`) and the model (:fixedwidthplain:`ls`). 
 
-- Consult the Apache error log files (``error_log`` and/or ``ssl_error_log``, in ``/var/log/httpd``) for any error messages. Possible error condition may include: missing R packages (double-check that the R setup, in step ``2.`` completed without errors); ``selinux`` ("Secure Linux") errors related to the rApache shared libraries, or directory permissions (disable Selinux, as described in ``1.a.``)
+- Consult the Apache error log files (``error_log`` and/or ``ssl_error_log``, in ``/var/log/httpd``) for any error messages. Possible error condition may include: missing R packages (double-check that the R setup, in step :ref:`tworavens_install_r_packages` completed without errors); ``selinux`` ("Secure Linux") errors related to the rApache shared libraries, or directory permissions (disable Selinux, as described in :ref:`prerequisites_apache`)
 
 
-4. Appendix
+5. Appendix
 +++++++++++
 
+
+.. _ports_configuration_discussion:
 
 I. Ports configuration discussion
 ---------------------------------
@@ -448,7 +499,7 @@ By default, Glassfish will install itself on ports 8080 and 8181 (for
 ``HTTP`` and ``HTTPS``, respectively). Apache will install itself on port 80 
 (the default port for ``HTTP``). Under this configuration, your Dataverse will 
 be accessible at ``http://{your host}:8080``, and rApache at 
-``http://{your host}/``. The TwoRavens installer, above, will default to these 
+``http://{your host}/``. The TwoRavens installer (see :ref:`run_the_installer`) will default to these 
 values (and assume you are running both the Dataverse and TwoRavens/rApache on 
 the same host).
 
@@ -459,10 +510,12 @@ time. However, if you are planning to use this installation to
 actually serve data to real users, you will most likely want to run your Dataverse 
 on a standard port; and to use ``HTTPS``. It is definitely possible to configure 
 Glassfish to serve the application under ``HTTPS`` on port 443. However, we 
-**do not recommend** this setup! For at least 2 reasons: 1. Running Glassfish on 
-port 443 will require you to **run it as root** user; which should be avoided, 
-if possible, for reasons of security. Also, 2) installing ``SSL`` certificates under 
-Glassfish is unnecessarily complicated. The alternative configuration that 
+**do not recommend** this setup! For at least 2 reasons:
+
+1. Running Glassfish on port 443 will require you to **run it as root** user; which should be avoided, if possible, for reasons of security. Also,
+2. installing ``SSL`` certificates under Glassfish is unnecessarily complicated.
+
+The alternative configuration that 
 we recommend is to "hide" your Glassfish behind Apache. In this setup Apache 
 serves as the ``HTTPS`` front running on port 443, proxying the traffic to 
 Glassfish using ``mod_proxy_ajp``; and Glassfish is running as 
@@ -474,6 +527,8 @@ all on the same server. Please see "Network Ports" under the :doc:`config`
 section, and the :doc:`shibboleth` section of the Installation Guide for more 
 information and configuration instructions.  
 
+
+.. _what_r_setup_sh_does:
 
 II. What the r-setup.sh script does:
 ------------------------------------
@@ -497,10 +552,10 @@ skills.
 III. What the install.pl script does:
 -------------------------------------
 
-The steps below are performed by the ``install.pl`` script. **Provided for reference only!** 
-The instruction below could be used to configure it all by hand, if necessary, or 
+The instruction presented in this section are performed by the ``install.pl`` script. **Provided for reference only!** 
+It could be used to configure it all by hand, if necessary, or 
 to verify that the installer has done it correctly. 
-Once again: **normally you would NOT need to individually perform the steps below**!
+Once again: **normally you would NOT need to individually perform these steps**!
 
 TwoRavens is distributed with a few hard-coded host and directory names. So these 
 need to be replaced with  the values specific to your system. 
@@ -540,7 +595,7 @@ needs to be changed to:
 
 ``setwd("/var/www/html/dataexplore/rook")``
 
-(or your :fixedwidthplain:`dataexplore` directory, if different from the above)
+(or your :fixedwidthplain:`dataexplore` directory, if different)
 
 **In** ``dataexplore/rook/rookutils.R`` **the following lines need to be edited:**
 
@@ -599,23 +654,3 @@ the installer creates the file ``tworavens-rapache.conf`` in the Apache's ``/etc
 
 ``service httpd restart``
 
-.. |tworavens_test_file_ingested| image:: ./img/tworavens_test_file_ingested.png
-   :class: img-responsive
-
-.. |tworavens_test_init| image:: ./img/tworavens_test_init.png
-   :class: img-responsive
-
-.. |tworavens_test_select_var| image:: ./img/tworavens_test_select_var.png
-   :class: img-responsive
-
-.. |tworavens_test_select_model| image:: ./img/tworavens_test_select_model.png
-   :class: img-responsive
-
-.. |tworavens_test_output| image:: ./img/tworavens_test_output.png
-   :class: img-responsive
-
-.. |tworavens_test_empty| image:: ./img/tworavens_test_empty.png
-   :class: img-responsive
-
-.. |tworavens_components| image:: ./img/tworavens_components.png
-   :class: img-responsive

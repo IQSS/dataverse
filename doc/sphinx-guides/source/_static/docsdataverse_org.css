@@ -8,6 +8,29 @@ body {
     padding-top: 52px; /* Required padding for .navbar-fixed-top. Remove if using .navbar-static-top. Change if height of navigation changes. */
 }
 
+/* "Skip to content" label */
+.sr-only.impaired-navigation:focus {
+    position: fixed;
+    top: -1px;
+    left: 0;
+    right: 0;
+    z-index: 1050;
+
+    margin: 0 auto;
+    padding: 0.3em 1em;
+
+    height: auto;
+    width: 15em;
+    clip: unset;
+
+    border-radius: 0 0 0.5em 0.5em;
+    border: 1px solid #fff;
+
+    background: #000;
+    color: #fff;
+    text-align: center;
+}
+
 .hero-spacer {
      margin-top: 30px; 
     /* margin-top: 50px; */
@@ -20,8 +43,11 @@ body {
 footer {
     margin: 30px 0;
 }
+footer a {
+    text-decoration: underline;
+}
 footer p {
-    color: #808080;
+    color: #707070;
 }
 footer span.socicon-github {
     color: #000;
@@ -30,16 +56,29 @@ footer span.socicon-github {
 }
 
 iframe {
-	border:0;
+    border:0;
 }
 
 a.navbar-brand, a.navbar-brand:hover {
     color:#C55B28 !important;
 }
+
 span.navbar-brand {color:#C55B28 !important; padding-left: 32px; height: 50px;}
 span.navbar-brand .icon-dataverse {color:#C55B28; font-size:28px; margin: -4px 0 0 -27px; position: absolute;}
-ul.navbar-nav li.dropdown span.dropdown-toggle {display: block; padding: 15px; color: #777;}
+ul.navbar-nav li.dropdown span.dropdown-toggle {display: block; padding: 15px; color: #595959;}
 ul.navbar-nav li.dropdown.open > span.dropdown-toggle {background: #e7e7e7;}
+
+a.navbar-brand:focus {
+    outline: dashed 1px black;
+}
+
+.navbar-default .navbar-nav > li > a {
+    color: #303030;
+}
+.navbar-default .navbar-nav > li > a:focus {
+    outline: dashed 1px black;
+}
+
 .bg-dataverse, bg-brand {background:#C55B28;}
 .bg-dataset {background:#337AB7;}
 .bg-file {background:#777777;}
@@ -47,6 +86,7 @@ ul.navbar-nav li.dropdown.open > span.dropdown-toggle {background: #e7e7e7;}
 .text-dataverse, .text-brand {color:#C55B28;}
 .text-dataset {color:#31708F;}
 .text-file {color:#777777;}
+.text-muted {color:#595959;}
 
 #dataverse-org-homepage-url {
     height: 50px;
@@ -55,16 +95,15 @@ ul.navbar-nav li.dropdown.open > span.dropdown-toggle {background: #e7e7e7;}
     padding-left: 26px;
 }
 
-.navbar-default .navbar-nav > li > a {
-    color: #303030 !important;
-}
-
 a.headerlink {
 	display: none;
 }
 
 #sidebar.bs-sidenav {
     background-color: #f8d5b8;
+}
+#sidebar.bs-sidenav .nav > li > a {
+    color: #5d5766; /* 5.03:1 - contrast with #f8d5b8 */
 }
 #sidebar.bs-sidenav .nav > li > a:hover, #sidebar.bs-sidenav .nav > li > a:focus {
     background-color: #fbf4c5;
@@ -106,9 +145,45 @@ div.code-example span.glyphicon-question-sign.tooltip-icon:hover {color: #337AB7
 #breadcrumbNavBlock {margin-top:.5em;}
 #breadcrumbNavBlock .breadcrumbBlock {float:left; position:relative;}
 #breadcrumbNavBlock .breadcrumbActive {font-weight:bold;}
-#breadcrumbNavBlock .breadcrumbCarrot {float: left; margin: 0 .4em; color: #B3B3B3; display: block;}
+#breadcrumbNavBlock .breadcrumbCarrot {float: left; margin: 0 .4em; color: #595959; display: block;}
 
 div.form-group .glyphicon.glyphicon-asterisk {font-size: .5em; vertical-align: text-top;}
+
+.label-default {
+    background-color: #595959; /* 7:1 contrast with white */
+}
+.label-success {
+    background-color: #288428; /* 4.75:1 contrast with white */
+}
+.label-info {
+    background-color: #337ab7;
+}
+.label-warning {
+    background-color: #a66304; /* 4.76:1 contrast with white */
+}
+.label-danger {
+    background-color: #c53635; /* 5.31:1 contrast with white */
+}
+
+.alert a {
+    color: #09508D;
+    text-decoration: underline;
+}
+.alert a:focus, .alert a:hover {
+    color: #000;
+}
+
+.ui-tabs .ui-tabs-nav.ui-widget-header li a {
+    color: #337ab7; 
+}
+
+.ui-messages-error, .ui-message-error {
+    color: #a94442;
+}
+
+caption {
+    color: #595959;
+}
 
 /* alternative formattings:  font-weight: bold; font-size: 110%; etc. */
 

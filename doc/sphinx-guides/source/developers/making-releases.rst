@@ -13,14 +13,14 @@ Create the release GitHub issue and branch
 Use the GitHub issue number and the release tag for the name of the branch. 
 For example: 4734-update-v-4.8.6-to-4.9
 
-**Note:** the changes below must be the very last commits merged into the develop branch before it is merged into master and tagged for the release!
-
 Make the following changes in the release branch:
+
+..note:: changes must be the very last commits merged into the develop branch before it is merged into master and tagged for the release!
 
 1. Bump Version Numbers
 =======================
 
-Increment the version number to the milestone (e.g. 4.6.2) in the following two files:
+Increment the version number to the milestone (e.g. 4.6.2) in the following files:
 
 - pom.xml
 - dataverse-webapp/pom.xml
@@ -33,8 +33,8 @@ Add the version being released to the lists in the following two files:
 - doc/sphinx-guides/source/versions.rst 
 - scripts/database/releases.txt
 
-2. Check in the Changes Above...
-================================
+2. Check in the Bumping Version Numbers Changes...
+==================================================
 
 ... into the release branch, make a pull request and merge the release branch into develop. 
 

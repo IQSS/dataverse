@@ -6,7 +6,7 @@ Prerequisites
 
 Before running the Dataverse installation script, you must install and configure the following software.
 
-After following all the steps below, you can proceed to the :doc:`installation-main` section.
+After following all the steps in this document, you can proceed to the :doc:`installation-main` section.
 
 You **may** find it helpful to look at how the configuration is done automatically by various tools such as Vagrant, Puppet, or Ansible. See the :doc:`prep` section for pointers on diving into these scripts.
 
@@ -16,7 +16,7 @@ You **may** find it helpful to look at how the configuration is done automatical
 Linux
 -----
 
-We assume you plan to run Dataverse on Linux and we recommend RHEL/CentOS, which is the Linux distribution tested by the Dataverse development team. Please be aware that while el7 (RHEL/CentOS 7) is the recommended platform, the steps below were orginally written for el6 and may need to be updated (please feel free to make a pull request!).
+We assume you plan to run Dataverse on Linux and we recommend RHEL/CentOS, which is the Linux distribution tested by the Dataverse development team. Please be aware that while el7 (RHEL/CentOS 7) is the recommended platform, the steps in this document were originally written for el6 and may need to be updated (please feel free to make a pull request!).
 
 Java
 ----
@@ -32,17 +32,17 @@ The Oracle JDK can be downloaded from http://www.oracle.com/technetwork/java/jav
 
 On a RHEL/CentOS, install OpenJDK (devel version) using yum::
 
-	# yum install java-1.8.0-openjdk-devel
+	yum install java-1.8.0-openjdk-devel
 
 If you have multiple versions of Java installed, Java 8 should be the default when ``java`` is invoked from the command line. You can test this by running ``java -version``.
 
 On RHEL/CentOS you can make Java 8 the default with the ``alternatives`` command, having it prompt you to select the version of Java from a list::
 
-        # alternatives --config java
+        alternatives --config java
 
 If you don't want to be prompted, here is an example of the non-interactive invocation::
 
-        # alternatives --set java /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
+        alternatives --set java /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java
 
 Glassfish
 ---------
@@ -52,35 +52,35 @@ Glassfish Version 4.1.2 is required.
 Installing Glassfish
 ====================
 
-**Note:** The Dataverse installer need not be run as root, and it is recommended that Glassfish not run as root either. We suggest the creation of a glassfish service account for this purpose.
+.. note:: The Dataverse installer need not be run as root, and it is recommended that Glassfish not run as root either. We suggest the creation of a glassfish service account for this purpose.
 
-- Download and install Glassfish (installed in ``/usr/local/glassfish4.1.2`` in the example commands below)::
+Examples in this section assume that you want to install glassfish in ``/usr/local/glassfish4.1.2`` directory.
 
-	# wget https://dlc-cdn.sun.com/glassfish/4.1.2/release/glassfish-4.1.2.zip
-	# unzip glassfish-4.1.2.zip
-	# mv glassfish4.1.2 /usr/local
+- Download and install Glassfish::
 
-If you intend to install and run Glassfish under a service account (and we hope you do), chown -R the Glassfish hierarchy to root to protect it but give the service account access to the below directories:
+	wget https://dlc-cdn.sun.com/glassfish/4.1.2/release/glassfish-4.1.2.zip
+	unzip glassfish-4.1.2.zip
+	mv glassfish4.1.2 /usr/local
 
-- Set service account permissions::
+- If you intend to install and run Glassfish under a service account (and we hope you do), chown -R the Glassfish hierarchy to root to protect it but give the service account access to the ``lib/`` and ``domains/domain1/`` directories::
 
-	# chown -R root:root /usr/local/glassfish4.1.2
-	# chown glassfish /usr/local/glassfish4.1.2/glassfish/lib
-	# chown -R glassfish:glassfish /usr/local/glassfish4.1.2/glassfish/domains/domain1
+	chown -R root:root /usr/local/glassfish4.1.2
+	chown glassfish /usr/local/glassfish4.1.2/glassfish/lib
+	chown -R glassfish:glassfish /usr/local/glassfish4.1.2/glassfish/domains/domain1
 
-After installation, you may chown the lib/ directory back to root; the installer only needs write access to copy the JDBC driver into that directory.
+After installation, you may chown the ``lib/`` directory back to root; the installer only needs write access to copy the JDBC driver into that directory.
 
 The Certificate Authority (CA) certificate bundle file from Glassfish contains certs that expired in August 2018, causing problems with ORCID login.
 
 - The actual expiration date is August 22, 2018, which you can see with the following command::
 
-	# keytool -list -v -keystore /usr/local/glassfish4.1.2/glassfish/domains/domain1/config/cacerts.jks
+	keytool -list -v -keystore /usr/local/glassfish4.1.2/glassfish/domains/domain1/config/cacerts.jks
 
 - Overwrite Glassfish's CA certs file with the file that ships with the operating system and restart Glassfish::
 
-	# cp /etc/pki/ca-trust/extracted/java/cacerts /usr/local/glassfish4.1.2/glassfish/domains/domain1/config/cacerts.jks
-	# /usr/local/glassfish4.1.2/bin/asadmin stop-domain
-	# /usr/local/glassfish4.1.2/bin/asadmin start-domain
+	cp /etc/pki/ca-trust/extracted/java/cacerts /usr/local/glassfish4.1.2/glassfish/domains/domain1/config/cacerts.jks
+	/usr/local/glassfish4.1.2/bin/asadmin stop-domain
+	/usr/local/glassfish4.1.2/bin/asadmin start-domain
 
 Launching Glassfish on system boot
 ==================================
@@ -97,10 +97,12 @@ Please note that you must run Glassfish in an English locale. If you are using s
 
 Also note that Glassfish may utilize more than the default number of file descriptors, especially when running batch jobs such as harvesting. We have increased ours by adding ulimit -n 32768 to our glassfish init script. On operating systems which use systemd such as RHEL or CentOS 7, file descriptor limits may be increased by adding a line like LimitNOFILE=32768 to the systemd unit file. You may adjust the file descriptor limits on running processes by using the prlimit utility::
 
-	# sudo prlimit --pid pid --nofile=32768:32768
+	sudo prlimit --pid pid --nofile=32768:32768
 
 PostgreSQL
 ----------
+
+.. _install_postgresql:
 
 Installing PostgreSQL
 =======================
@@ -109,22 +111,22 @@ Version 9.6 is required. Previous versions have not been tested.
 
 Version 9.6 is anticipated as an "LTS" release in RHEL and on other platforms::
 
-	# yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
-	# yum makecache fast
-	# yum install -y postgresql96-server
-	# /usr/pgsql-9.6/bin/postgresql96-setup initdb
-	# /usr/bin/systemctl start postgresql-9.6
-	# /usr/bin/systemctl enable postgresql-9.6
+	yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+	yum makecache fast
+	yum install -y postgresql96-server
+	/usr/pgsql-9.6/bin/postgresql96-setup initdb
+	/usr/bin/systemctl start postgresql-9.6
+	/usr/bin/systemctl enable postgresql-9.6
 
 Note these steps are specific to RHEL/CentOS 7. For RHEL/CentOS 6 use::
 
-	# service postgresql-9.6 initdb
-	# service postgresql-9.6 start
+	service postgresql-9.6 initdb
+	service postgresql-9.6 start
 
 Configuring Database Access for the Dataverse Application (and the Dataverse Installer) 
 =======================================================================================
 
-- The application and the installer script will be connecting to PostgreSQL over TCP/IP, using password authentication. In this section we explain how to configure PostgreSQL to accept these connections.
+The application and the installer script will be connecting to PostgreSQL over TCP/IP, using password authentication. In this section we explain how to configure PostgreSQL to accept these connections.
 
 
 - If PostgreSQL is running on the same server as Glassfish, find the localhost (127.0.0.1) entry that's already in the ``pg_hba.conf`` and modify it to look like this:: 
@@ -134,7 +136,7 @@ Configuring Database Access for the Dataverse Application (and the Dataverse Ins
   Once you are done with the prerequisites and run the installer script (documented here: :doc:`installation-main`) it will ask you to enter the address of the Postgres server. Simply accept the default value ``127.0.0.1`` there. 
 
 
-- The Dataverse installer script will need to connect to PostgreSQL **as the admin user**, in order to create and set up the database that the Dataverse will be using. If for whatever reason it is failing to connect (for example, if you don't know/remember what your Postgres admin password is), you may choose to temporarily disable all the access restrictions on localhost connections, by changing the above line to::
+- The Dataverse installer script will need to connect to PostgreSQL **as the admin user**, in order to create and set up the database that the Dataverse will be using. If for whatever reason it is failing to connect (for example, if you don't know/remember what your Postgres admin password is), you may choose to temporarily disable all the access restrictions on localhost connections, by changing the line to::
 
   	host all all 127.0.0.1/32 trust
 
@@ -151,15 +153,15 @@ Configuring Database Access for the Dataverse Application (and the Dataverse Ins
 
         listen_addresses='*' 
 
-  The file ``postgresql.conf`` will be located in the same directory as the ``pg_hba.conf`` above.
+  The file ``postgresql.conf`` will be located in the same directory as the ``pg_hba.conf``.
 
-- **Important: PostgreSQL must be restarted** for the configuration changes to take effect! On RHEL/CentOS 7 and similar (provided you installed Postgres as instructed above)::
+- **Important: PostgreSQL must be restarted** for the configuration changes to take effect! On RHEL/CentOS 7 and similar (provided you installed Postgres as instructed in :ref:`install_postgresql`)::
 
-        # systemctl restart postgresql-9.6
+        systemctl restart postgresql-9.6
 
   or on RHEL/CentOS 6::
 
-        # service postgresql restart
+        service postgresql restart
 
   On MacOS X a "Reload Configuration" icon is usually supplied in the PostgreSQL application folder. Or you could look up the process id of the PostgreSQL postmaster process, and send it the SIGHUP signal:: 
 
@@ -207,7 +209,7 @@ Solr will warn about needing to increase the number of file descriptors and max 
 
 On operating systems which use systemd such as RHEL or CentOS 7, you may then add a line like LimitNOFILE=65000 for the number of open file descriptors and a line with LimitNPROC=65000 for the max processes to the systemd unit file, or adjust the limits on a running process using the prlimit tool::
 
-        # sudo prlimit --pid pid --nofile=65000:65000
+        sudo prlimit --pid pid --nofile=65000:65000
 
 Solr launches asynchronously and attempts to use the ``lsof`` binary to watch for its own availability. Installation of this package isn't required but will prevent a warning in the log at startup.
 
@@ -248,12 +250,12 @@ jq
 Installing jq
 =============
 
-``jq`` is a command line tool for parsing JSON output that is used by the Dataverse installation script. https://stedolan.github.io/jq explains various ways of installing it, but a relatively straightforward method is described below. Please note that you must download the 64- or 32-bit version based on your architecture. In the example below, the 64-bit version is installed. We confirm it's executable and in our ``$PATH`` by checking the version (1.4 or higher should be fine):: 
+``jq`` is a command line tool for parsing JSON output that is used by the Dataverse installation script. https://stedolan.github.io/jq explains various ways of installing it, but following example shows a relatively straightforward method. Please note that you must download the 64- or 32-bit version based on your architecture. In the example, the 64-bit version is installed. We confirm it's executable and in our ``$PATH`` by checking the version (1.4 or higher should be fine):: 
 
-        # cd /usr/bin
-        # wget http://stedolan.github.io/jq/download/linux64/jq
-        # chmod +x jq
-        # jq --version
+        cd /usr/bin
+        wget http://stedolan.github.io/jq/download/linux64/jq
+        chmod +x jq
+        jq --version
 
 ImageMagick
 -----------
@@ -265,14 +267,14 @@ Installing and configuring ImageMagick
 
 On a Red Hat and similar Linux distributions, you can install ImageMagick with something like::
 
-	# yum install ImageMagick 
+	yum install ImageMagick 
 
 (most RedHat systems will have it pre-installed). 
-When installed using standard ``yum`` mechanism, above, the executable for the ImageMagick convert utility will be located at ``/usr/bin/convert``. No further configuration steps will then be required. 
+When installed using standard ``yum`` mechanism, the executable for the ImageMagick convert utility will be located at ``/usr/bin/convert``. No further configuration steps will then be required. 
 
 On MacOS you can compile ImageMagick from sources, or use one of the popular installation frameworks, such as brew. 
 
-If the installed location of the convert executable is different from ``/usr/bin/convert``, you will also need to specify it in your Glassfish configuration using the JVM option, below. For example::
+If the installed location of the convert executable is different from ``/usr/bin/convert``, you will also need to specify it in your Glassfish configuration using the JVM option. For example::
 
    <jvm-options>-Ddataverse.path.imagemagick.convert=/opt/local/bin/convert</jvm-options>
 
@@ -283,7 +285,7 @@ Maven
 
 Maven is a tool for managing developer dependencies in various projects. It is needed in order to create war package that will be deployed::
 
-    # yum install maven
+    yum install maven
 
 
 Git
@@ -291,25 +293,26 @@ Git
 
 Git is used for cloning a project from our sources::
 
-    # yum install git
+    yum install git
 
 R
 -
 
 Dataverse uses `R <https://https://cran.r-project.org/>`_ to handle
-tabular data files. The instructions below describe a **minimal** R
+tabular data files. The instructions in this section describes a **minimal** R
 installation. It will allow you to ingest R (.RData) files as tabular
 data; to export tabular data as .RData files; and to run `Data
 Explorer <https://github.com/scholarsportal/Dataverse-Data-Explorer>`_
 (specifically, R is used to generate .prep metadata files that Data
 Explorer uses).  R can be considered an optional component, meaning
 that if you don't have R installed, you will still be able to run and
-use Dataverse - but the functionality specific to tabular data
-mentioned above will not be available to your users.  **Note** that if
-you choose to also install `TwoRavens
-<https://github.com/IQSS/TwoRavens>`_, it will require some extra R
-components and libraries.  Please consult the instructions in the
-TowRavens section of the Installation Guide.
+use Dataverse - but the mentioned functionality specific to tabular data
+will not be available to your users.
+
+.. note:: If you choose to also install `TwoRavens <https://github.com/IQSS/TwoRavens>`_,
+  it will require some extra R
+  components and libraries.  Please consult the instructions in the
+  TowRavens section of the Installation Guide.
 
 
 Installing R
@@ -336,16 +339,17 @@ RHEL users will want to log in to their organization's respective RHN interface,
 • click on "Subscribed Channels: Alter Channel Subscriptions"
 • enable EPEL, Server Extras, Server Optional
 
+.. _install_r_libraries:
+
 Installing the required R libraries
 ===================================
 
-The following R packages (libraries) are required::
-
-    R2HTML
-    rjson
-    DescTools
-    Rserve
-    haven
+The following R packages (libraries) are required:
+ - R2HTML
+ - rjson
+ - DescTools
+ - Rserve
+ - haven
 
 Install them following the normal R package installation procedures. For example, with the following R commands::
 
@@ -360,7 +364,7 @@ Rserve
 
 Dataverse uses `Rserve <https://rforge.net/Rserve/>`_ to communicate
 to R. Rserve is installed as a library package, as described in the
-step above. It runs as a daemon process on the server, accepting
+previous section (:ref:`install_r_libraries`). It runs as a daemon process on the server, accepting
 network connections on a dedicated port. This requires some extra 
 configuration and we provide a  script (:fixedwidthplain:`scripts/r/rserve/rserve-setup.sh`) for setting it up.  
 Run the script as follows (as root)::
@@ -398,10 +402,10 @@ You should have the following 5 file options::
         RserveConfigured=true
 
 If you have changed the password, make sure it is correctly specified
-in the :fixedwidthplain:`RservePassword` option above.  If
+in the :fixedwidthplain:`RservePassword` option. If
 Rserve is running on a host that's different from your Dataverse
 server, change the :fixedwidthplain:`RserveHost` option
-above as well (and make sure the port 6311 on the Rserve host is not
+as well (and make sure the port 6311 on the Rserve host is not
 firewalled from your Dataverse host).
 
 Now that you have all the prerequisites in place, you can proceed to the :doc:`installation-main` section.

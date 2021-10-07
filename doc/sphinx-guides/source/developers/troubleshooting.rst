@@ -27,15 +27,17 @@ Out of the box, no emails will be sent from your development environment. This i
 
 You can configure ``SystemEmail`` like this:
 
-Make sure you copied ``dataverse.default.properties`` to ~/.dataverse with file name ``dataverse.properties`` and change :
+Make sure you copied ``dataverse.default.properties`` to ~/.dataverse with file name ``dataverse.properties`` and change:
 
-``SystemEmail=testmail@mail.com``
+.. code-block:: properties
+
+    SystemEmail=testmail@mail.com
 
 Unfortunately for developers not at Harvard, the installer script gives you by default an SMTP server of ``mail.hmdc.harvard.edu`` but you can specify an alternative SMTP server when you run the installer.
 
-You can check the current SMTP server with the ``asadmin`` command:
+You can check the current SMTP server with the ``asadmin`` command::
 
-``./asadmin get server.resources.mail-resource.mail/notifyMailSession.host``
+    ./asadmin get server.resources.mail-resource.mail/notifyMailSession.host
 
 This command helps verify what host your domain is using to send mail. Even if it's the correct hostname, you may still need to adjust settings. If all else fails, there are some free SMTP service options available such as Gmail and MailGun. This can be configured from the GlassFish console or the command line.
 
@@ -71,7 +73,7 @@ mail.smtp.socketFactory.class			javax.net.ssl.SSLSocketFactory
 
 Save these changes at the top of the page and restart your Glassfish server to try it out.
 
-The mail session can also be set from command line. To use this method, you will need to delete your notifyMailSession and create a new one. See the below example:
+The mail session can also be set from command line. To use this method, you will need to delete your notifyMailSession and create a new one:
 
 - Delete: ``./asadmin delete-javamail-resource mail/MyMailSession``
 - Create (remove brackets and replace the variables inside): ``./asadmin create-javamail-resource --mailhost [smtp.gmail.com] --mailuser [test\@test\.com] --fromaddress [test\@test\.com] --property mail.smtp.auth=[true]:mail.smtp.password=[password]:mail.smtp.port=[465]:mail.smtp.socketFactory.port=[465]:mail.smtp.socketFactory.fallback=[false]:mail.smtp.socketFactory.class=[javax.net.ssl.SSLSocketFactory] mail/notifyMailSession``
@@ -91,7 +93,9 @@ DataCite
 
 If you are seeing ``Response code: 400, [url] domain of URL is not allowed`` it's probably because your ``SiteUrl`` is set to localhost (``SiteUrl=http://localhost:8080``). You can try something like this in file settings:
 
-``SiteUrl=http://demo.dataverse.org``
+.. code-block:: properties
+
+    SiteUrl=http://demo.dataverse.org
 
 ----
 

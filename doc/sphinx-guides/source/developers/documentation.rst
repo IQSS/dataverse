@@ -71,7 +71,7 @@ Every non-index page should use the following code to display a table of content
 	.. contents:: |toctitle|
 		:local:
 
-This code should be placed below any introductory text/images and directly above the first subheading, much like a Wikipedia page.
+This code should be placed right after any introductory text/images and directly before the first subheading, much like a Wikipedia page.
 
 Images
 ------

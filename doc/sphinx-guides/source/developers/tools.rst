@@ -2,8 +2,6 @@
 Tools
 =====
 
-These are handy tools for your :doc:`/developers/dev-environment/`.
-
 .. contents:: |toctitle|
 	:local:
 
@@ -16,7 +14,7 @@ http://wiki.netbeans.org/ChromeExtensionInstallation
 pgAdmin
 +++++++
 
-You probably installed pgAdmin when following the steps in the :doc:`dev-environment` section but if not, you can download it from https://www.pgadmin.org
+pgAdmin is a graphical tool to manage your database. You can download it from https://www.pgadmin.org
 
 Maven
 +++++
@@ -28,7 +26,7 @@ Vagrant
 
 Vagrant allows you to spin up a virtual machine running Dataverse on your development workstation. You'll need to install Vagrant from https://www.vagrantup.com and VirtualBox from https://www.virtualbox.org.
 
-We assume you have already cloned the repo from https://github.com/IQSS/dataverse as explained in the :doc:`/developers/dev-environment` section.
+We assume you have already cloned the repo from https://github.com/CeON/dataverse.
 
 From the root of the git repo (where the ``Vagrantfile`` is), run ``vagrant up`` and eventually you should be able to reach an installation of Dataverse at http://localhost:8888 (the ``forwarded_port`` indicated in the ``Vagrantfile``).
 

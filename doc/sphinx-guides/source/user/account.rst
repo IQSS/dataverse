@@ -1,3 +1,4 @@
+
 Account Creation + Management
 =============================
 
@@ -27,14 +28,14 @@ Dataverse has been configured for one or more of the following log in options:
 
 Please note that once you create your Dataverse account, it will be associated with only one of the log in options above.
 
-The Institutional Log In, ORCID, GitHub, and Google options are described in more detail below under "Remote Authentication."
+The Institutional Log In, ORCID, GitHub, and Google options are described in :ref:`remote-auth-label` section.
 
 Create Account
 ~~~~~~~~~~~~~~
 
 To create a Dataverse account with the Username/Email log in option, use the "Sign Up" page. Fill out the fields, and then click the 'Create Account' button. Please note that the Username field does not support email addresses but will allow the following characters: a-Z, 0-9, _ (underscores), - (hyphens), and . (periods).
 
-To create a Dataverse account associated with the log in option for your institution, ORCID, GitHub, or Google, use the "Log In" page and select one of the authentication providers. See the "Remote Authentication" section below for details.
+To create a Dataverse account associated with the log in option for your institution, ORCID, GitHub, or Google, use the "Log In" page and select one of the authentication providers. See :ref:`remote-auth-label` section for details.
 
 Edit Account 
 ~~~~~~~~~~~~
@@ -50,7 +51,7 @@ Convert Account
 
 If more than one log in option is available, you can convert from one to another and use the new option from now on.
 
-If you are converting from the Email/Username log in option you will need to have your password ready to complete the conversion process. Click Log In, select the new log in option, and go through the log in process. When you return to Dataverse, look for an option allowing you to convert and enter your password to complete the conversion. The section on Remote Authentication below has more specific information on converting to Institutional Log In, ORCID, GitHub, and Google.
+If you are converting from the Email/Username log in option you will need to have your password ready to complete the conversion process. Click Log In, select the new log in option, and go through the log in process. When you return to Dataverse, look for an option allowing you to convert and enter your password to complete the conversion. The section :ref:`remote-auth-label` has more specific information on converting to Institutional Log In, ORCID, GitHub, and Google.
 
 If you need to perform any other conversion (i.e. from Google to GitHub), use the Support link at the top of the page for assistance.
 
@@ -60,6 +61,8 @@ Reset Account Password
 Only Dataverse accounts using the Username/Email log in option have an associated password stored (securely!) in Dataverse. If you cannot remember this password, click on Log In in the top right corner of any page and click the "Forgot Password?" link below where you would enter your username/email and password. Enter your email address and click "Submit Password Request" to receive an email with a link to reset your password.
 
 Please note that if you have forgotten your username, you can use this same process to receive your username in an email.
+
+.. _remote-auth-label:
 
 Remote Authentication
 ---------------------

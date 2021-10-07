@@ -26,7 +26,7 @@ For each individual vector in a data frame, calculate its UNF signature as follo
 **1. For a vector of numeric elements:**
 Round each vector element to ``N`` significant digits using the ``IEEE 754`` "round towards nearest, ties to even" rounding mode. The default value of ``N`` is 7.
 
-(See an Important :ref:`Note <note1>` on the use of :ref:`default and optional <note1>` values and methods!)
+(See an Important :ref:`Note on the use of default and optional values and methods<note1>`!)
 
 Convert each vector element into a character string in exponential notation, as follows:
 
@@ -40,10 +40,10 @@ Convert each vector element into a character string in exponential notation, as 
 
 *Special cases:*
 
-| Zero representation (an exception to the "leading non-zero digit" rule, above):
+| Zero representation (an exception to the "leading non-zero digit" rule):
 | ``+0.e+`` for positive zero.
 | ``-0.e+`` for negative zero.
-| (see the :ref:`Note <note2>` below on :ref:`negative zero <note2>`)
+| (see the :ref:`Note on negative zero<note2>`)
 
 ``Infinity`` and ``NaN`` ("Not a Number") values:
 
@@ -98,7 +98,7 @@ Normalize bit fields by converting to big-endian form, truncating all leading em
 | (The UTC offset of Eastern Daylight Time is -4:00).
 
 **6. Missing values**
-Missing values, of all of the above types, are encoded as 3 null bytes: ``\000\000\000``.
+Missing values, of all of the types, are encoded as 3 null bytes: ``\000\000\000``.
 
 **Ib. Calculate the UNF of the vector as follows:**
 
@@ -124,11 +124,11 @@ II. Combining multiple UNFs to create UNFs of higher-level objects.
 | Sort the printable UTF8 representations of the individual UNFs in the POSIX locale sort order.
 | Apply the UNF algorithm to the resulting vector of character strings. 
 
-Do note the **sorting** part, above, it is important! In a vector of observations, the order is important; changing the order of observations changes the UNF. A data frame, however, is considered an unordered set of individual vectors. I.e., re-arranging the order in which data variable columns occur in an R or Stata file should not affect the UNF. Hence the UNFs of individual variables are sorted, before the combined UNF of the data frame is calculated.
+Do note the **sorting** part is important! In a vector of observations, the order is important; changing the order of observations changes the UNF. A data frame, however, is considered an unordered set of individual vectors. I.e., re-arranging the order in which data variable columns occur in an R or Stata file should not affect the UNF. Hence the UNFs of individual variables are sorted, before the combined UNF of the data frame is calculated.
 
 **IIb. Similarly, combine the UNFs for a set of data frames to form a single UNF that represents an entire research study ("dataset").**
 
-Again, the UNF of a study (dataset) with a single file = the UNF of the file; for more than one file, calculate the study UNF as described above. 
+Again, the UNF of a study (dataset) with a single file = the UNF of the file; for more than one file, calculate the study UNF in the same way as for data frame with multiple variables. 
 
 Using a consistent UNF version and level of precision across an entire dataset is recommended when calculating the UNFs of individual data objects.
 

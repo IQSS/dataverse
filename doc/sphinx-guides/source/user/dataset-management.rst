@@ -3,7 +3,11 @@ Dataset + File Management
 
 A dataset in Dataverse is a container for your data, documentation, code, and the metadata describing this Dataset.
 
-|image1|
+.. figure:: ./img/DatasetDiagram.png
+   :alt: Schematic Diagram of a Dataset
+   
+   Schematic diagram of a Dataset in *Dataverse 4.0*. Dataset is a container for your data, documentation and code.
+
 
 .. contents:: |toctitle|
 	:local:
@@ -16,7 +20,7 @@ A dataset contains three levels of metadata:
 
 #. **Citation Metadata**: any metadata that would be needed for generating a data citation and other general metadata that could be applied to any dataset;
 #. **Domain Specific Metadata**: with specific support currently for Social Science, Life Science, Geospatial, and Astronomy datasets; and
-#. **File-level Metadata**: varies depending on the type of data file - for more details see :ref:`File Handling <file-handling>` section below).
+#. **File-level Metadata**: varies depending on the type of data file - for more details see :ref:`file-handling` section).
 
 For more details about what Citation and Domain Specific Metadata is supported please see our :ref:`user-appendix`.
 
@@ -50,6 +54,8 @@ Adding a New Dataset
 
 Note: You can add additional metadata once you have completed the initial dataset creation by going to Edit Dataset > Metadata. 
 
+.. _dataset_field_supported_html:
+
 Supported HTML Fields
 ---------------------
 
@@ -66,7 +72,7 @@ If there are multiple upload options available, then you must choose which one t
 
 You can upload files to a dataset while first creating that dataset. You can also upload files after creating a dataset by clicking the "Edit" button at the top of the dataset page and from the dropdown list selecting "Files (Upload)" or clicking the "Upload Files" button above the files table in the Files tab. From either option you will be brought to the Upload Files page for that dataset.
 
-Certain file types in Dataverse are supported by additional functionality, which can include downloading in different formats, file-level metadata preservation, file-level data citation with UNFs, and exploration through data visualization and analysis. See the :ref:`File Handling <file-handling>` section of this page for more information.
+Certain file types in Dataverse are supported by additional functionality, which can include downloading in different formats, file-level metadata preservation, file-level data citation with UNFs, and exploration through data visualization and analysis. See the :ref:`file-handling` section of this page for more information.
 
 
 HTTP Upload
@@ -131,7 +137,7 @@ Basic usage is to run the command: ::
 
     java -jar DVUploader-v1.0.0.jar -server=<Dataverse server URL> -did=<Dataset DOI> -key=<User's API Key> <file or directory list>
 
-Additional command line arguments are available to make the DVUploader list what it would do without uploading, limit the number of files it uploads, recurse through sub-directories, verify fixity, exclude files with specific extensions or name patterns, and/or wait longer than 60 seconds for any Dataverse ingest lock to clear (e.g. while the previously uploaded file is processed, as discussed in the :ref:`File Handling <file-handling>` section below).
+Additional command line arguments are available to make the DVUploader list what it would do without uploading, limit the number of files it uploads, recurse through sub-directories, verify fixity, exclude files with specific extensions or name patterns, and/or wait longer than 60 seconds for any Dataverse ingest lock to clear (e.g. while the previously uploaded file is processed, as discussed in the :ref:`file-handling` section below).
 
 DVUploader is a community-developed tool, and its creation was primarily supported by the Texas Digital Library. Further information and support for DVUploader can be sought at `the project's GitHub repository <https://github.com/IQSS/dataverse-uploader>`_ . 
 
@@ -157,7 +163,6 @@ Additional download options available for tabular data (found in the same drop-d
 - Data File Citation (currently in either RIS, EndNote XML, or BibTeX format); 
 - All of the above, as a zipped bundle. 
 
-|image2|
 
 Geospatial
 ----------
@@ -323,13 +328,23 @@ Data Provenance is a record of where your data came from and how it reached its 
 
 .. COMMENTED OUT UNTIL PROV FILE DOWNLOAD IS ADDED: , and make it available to those who need it.
 
-Dataverse accepts provenance information in two forms: a *Provenance File* or a free-text *Provenance Description*. You can attach this provenance information to your data files in Dataverse as part of the file upload process, by clicking Edit -> Provenance:
+Dataverse accepts provenance information in two forms: a *Provenance File* or a free-text *Provenance Description*. You can attach this provenance information to your data files in Dataverse as part of the file upload process, by clicking Edit -> Provenance (see: :numref:`file-upload-prov-button`).
 
-|file-upload-prov-button|
+.. _file-upload-prov-button:
 
-This will open a window where you can add your Provenance File and/or Provenance Description:
+.. figure:: ./img/prov0.png
+    :alt: Edit provenance screenshot
+    
+    Screenshot of file edit with highlighted entry point for provenance edit
 
-|file-upload-prov-window|  
+This will open a window where you can add your Provenance File and/or Provenance Description (see: :numref:`file-upload-prov-window`).
+
+.. _file-upload-prov-window:
+  
+.. figure:: ./img/prov1.png
+   :alt: Edit provenance modal window
+   
+   Screenshot of provenance editing modal window
 
 A **Provenance File** is the preferred way of submitting provenance information to Dataverse because it provides a detailed and trustworthy record. Provenance files are typically generated during the process of data analysis, using provenance capture tools like provR, RDataTracker, NoWorkFlow, recordr, or CamFlow.
 
@@ -439,7 +454,10 @@ Dataset Versions
 
 Versioning is important for long-term research data management where metadata and/or files are updated over time. It is used to track any metadata or file changes (e.g., by uploading a new file, changing file metadata, adding or editing metadata) once you have published your dataset.
 
-|image3|
+.. figure:: ./img/data_publishing_version_workflow.png
+    :alt: Dataset versioning
+    
+    Schematic diagram presenting rules of Dataset versioning
 
 Once you edit your published dataset a new draft version of this dataset will be created. To publish this new version of your dataset, select the "Publish Dataset" button on the top right side of the page. If you were at version 1 of your dataset, depending on the types of changes you had made, you would be asked to publish your draft as either version 1.1 or version 2.0.
 
@@ -473,13 +491,3 @@ If you deaccession the most recently published version of the dataset but not al
 
 **Important Note**: A tombstone landing page with the basic citation metadata will always be accessible to the public if they use the persistent URL (Handle or DOI) provided in the citation for that dataset.  Users will not be able to see any of the files or additional metadata that were previously available prior to deaccession.
 
-.. |image1| image:: ./img/DatasetDiagram.png
-   :class: img-responsive
-.. |image2| image:: ./img/data-download.png
-   :class: img-responsive
-.. |image3| image:: ./img/data_publishing_version_workflow.png
-   :class: img-responsive
-.. |file-upload-prov-button| image:: ./img/prov0.png
-   :class: img-responsive
-.. |file-upload-prov-window| image:: ./img/prov1.png
-   :class: img-responsive

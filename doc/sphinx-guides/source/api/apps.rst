@@ -3,7 +3,7 @@ Apps
 
 The introduction of Dataverse APIs has fostered the development of apps that are listed at http://dataverse.org/integrations and the :doc:`/admin/integrations` section of the Admin Guide.
 
-The apps below are open source, demonstrating how to use Dataverse APIs. Some of these apps (and others) are built on :doc:`/api/client-libraries` that are available for Dataverse APIs.
+The apps listed in this document are open source, demonstrating how to use Dataverse APIs. Some of them (and others) are built on :doc:`/api/client-libraries` that are available for Dataverse APIs.
 
 .. contents:: |toctitle|
 	:local:

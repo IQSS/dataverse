@@ -186,7 +186,7 @@ The ``get_latest_jointarget_information()`` in ``utils.py`` retrieves recent Joi
 Setting Up WorldMap Test Data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For the dataset page, this script gives a query to add test WorldMap map data. After the query is run, the "Explore Map" button should appear for a tabular file or shapefile. In the example SQL queries below, substitute ``$DATASET_ID`` and ``$DATAFILE_ID`` with the appropriate ID's.
+For the dataset page, this script gives a query to add test WorldMap map data. After the query is run, the "Explore Map" button should appear for a tabular file or shapefile. In the following two SQL examples, substitute ``$DATASET_ID`` and ``$DATAFILE_ID`` with the appropriate ID's.
 
 To add sample map data for a tabular file:
 

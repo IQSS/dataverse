@@ -32,6 +32,7 @@
 <link type="text/css" rel="stylesheet" href="{{pathto("_static/theme.css", 1)}}" />
 <link type="text/css" rel="stylesheet" href="{{pathto("_static/primefaces.css", 1)}}" />
 <link type="text/css" rel="stylesheet" href="{{pathto("_static/docsdataverse_org.css", 1)}}" />
+<link type="text/css" rel="stylesheet" href="{{pathto("_static/pygments_emacs_wcag.css", 1)}}" />
 {%- endblock %}
 
 {%- block extrahead %}
@@ -79,11 +80,13 @@
 {% block sidebarsourcelink %}{% endblock %}
 
 {%- block content %}
+<a id="skip-to-main-content" href="#maincontent" class="sr-only impaired-navigation">Skip to main content</a>
+
 {{ navBar() }}
 <div class="container">
   <div class="row">
     {%- block sidebar1 %}{{ bsidebar() }}{% endblock %}
-    <div class="{{ bs_span_prefix }}{{ bs_content_width }} content">
+    <div id="maincontent" class="{{ bs_span_prefix }}{{ bs_content_width }} content" role="main">
       {% block body %}{% endblock %}
     </div>
     {% block sidebar2 %} {# possible location for sidebar #} {% endblock %}
@@ -105,7 +108,7 @@
       {%- if hasdoc('copyright') %}
         {% trans path=pathto('copyright'), copyright=copyright|e %}<p><a href="{{ path }}">Copyright</a>  &#169; {{ copyright }}.</p>{% endtrans %}
       {%- else %}
-      {% trans copyright=copyright|e %}<p>Developed at the <a href="http://www.iq.harvard.edu/" title="Institute for Quantitative Social Science" target="_blank">Institute for Quantitative Social Science</a>  &nbsp;|&nbsp;  Code available at <a href="https://github.com/IQSS/dataverse" title="Dataverse on GitHub" target="_blank"><span class="socicon socicon-github"></span></a> &nbsp;|&nbsp; Created using <a href="http://sphinx.pocoo.org/" title="Sphinx" target="_blank">Sphinx</a> {{ sphinx_version }}<br/>Last updated on {{ last_updated }} &nbsp;|&nbsp; Dataverse v. {{ version }} &nbsp;|&nbsp; View the <a href="http://guides.dataverse.org/en/latest/" title="Dataverse Guides">latest version of Dataverse Guides</a></p>
+      {% trans copyright=copyright|e %}<p>Developed at the <a href="http://www.iq.harvard.edu/" target="_blank">Institute for Quantitative Social Science</a>  &nbsp;|&nbsp;  Code available at <a href="https://github.com/IQSS/dataverse" title="Dataverse on GitHub" target="_blank"><span class="socicon socicon-github"></span></a> &nbsp;|&nbsp; Created using <a href="http://sphinx.pocoo.org/" target="_blank">Sphinx</a> {{ sphinx_version }}<br/>Last updated on {{ last_updated }} &nbsp;|&nbsp; Dataverse v. {{ version }} &nbsp;|&nbsp; View the <a href="http://guides.dataverse.org/en/latest/" title="Dataverse Guides">latest version of Dataverse Guides</a></p>
         <p>Copyright &#169; {{ copyright }}</p> {% endtrans %}
       {%- endif %}
     {%- endif %}

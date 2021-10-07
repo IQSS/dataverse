@@ -20,8 +20,8 @@ Generally, the installer has a better chance of succeeding if you run it against
 
 You should clone the project from https://github.com/CeON/dataverse ::
 
-    $ cd ~
-    $ git clone https://github.com/CeON/dataverse
+    cd ~
+    git clone https://github.com/CeON/dataverse
 
 when setting up and starting Solr under the :doc:`prerequisites` section.
 
@@ -29,15 +29,7 @@ Cloning the version this will create the directory ``dataverse``.
 
 **Important:** The installer will need to use the PostgreSQL command line utility ``psql`` in order to configure the database. If the executable is not in your system PATH, the installer will try to locate it on your system. However, we strongly recommend that you check and make sure it is in the PATH. This is especially important if you have multiple versions of PostgreSQL installed on your system. Make sure the psql that came with the version that you want to use with your Dataverse is the first on your path. For example, if the PostgreSQL distribution you are running is installed in  /Library/PostgreSQL/9.6, add /Library/PostgreSQL/9.6/bin to the beginning of your $PATH variable. If you are *running* multiple PostgreSQL servers, make sure you know the port number of the one you want to use, as the installer will need it in order to connect to the database (the first PostgreSQL distribution installed on your system is likely using the default port 5432; but the second will likely be on 5433, etc.) Does every word in this paragraph make sense? If it does, great - because you definitely need to be comfortable with basic system tasks in order to install Dataverse. If not - if you don't know how to check where your PostgreSQL is installed, or what port it is running on, or what a $PATH is... it's not too late to stop. Because it will most likely not work. And if you contact us for help, these will be the questions we'll be asking you - so, again, you need to be able to answer them comfortably for it to work. 
 
-Execute the installer script like this (but first read the note below about not running the installer as root)::
-
-        $ cd ~/dataverse/scripts/installer
-        $ ./install
-
-
-**It is no longer necessary to run the installer as root!**
-
-Just make sure the user running the installer has write permission to:
+**It is no longer necessary to run the installer as root!** Just make sure the user running the installer has write permission to:
 
 - /usr/local/glassfish4.1.2/glassfish/lib
 - /usr/local/glassfish4.1.2/glassfish/domains/domain1
@@ -45,6 +37,12 @@ Just make sure the user running the installer has write permission to:
 - your jvm-option specified files.dir
 
 The only reason to run Glassfish as root would be to allow Glassfish itself to listen on the default HTTP(S) ports 80 and 443, or any other port below 1024. However, it is simpler and more secure to run Glassfish run on its default port of 8080 and hide it behind an Apache Proxy, via AJP, running on port 80 or 443. This configuration is required if you're going to use Shibboleth authentication. See more discussion on this here: :doc:`shibboleth`.)
+
+Execute the installer script like this::
+
+    cd ~/dataverse/scripts/installer
+    ./install
+
 
 The script will prompt you for some configuration values. If this is a test/evaluation installation, it may be possible to accept the default values provided for most of the settings:
 
@@ -68,7 +66,7 @@ The script will prompt you for some configuration values. If this is a test/eval
 - Postgres admin password - We'll need it in order to create the database and user for the Dataverse to use, without having to run the installer as root. If you don't know your Postgres admin password, you may simply set the authorization level for localhost to "trust" in the PostgreSQL ``pg_hba.conf`` file (See the PostgreSQL section in the Prerequisites). If this is a production evnironment, you may want to change it back to something more secure, such as "password" or "md5", after the installation is complete.
 - Network address of a remote Solr search engine service (if needed) - In most cases, you will be running your Solr server on the same host as the Dataverse application (then you will want to leave this set to the default value of ``LOCAL``). But in a serious production environment you may set it up on a dedicated separate server.
 
-If desired, these default values can be configured by creating a ``default.config`` (example :download:`here <../_static/util/default.config>`) file in the installer's working directory with new values (if this file isn't present, the above defaults will be used).
+If desired, these default values can be configured by creating a ``default.config`` (example :download:`here <../_static/util/default.config>`) file in the installer's working directory with new values (if this file isn't present, preconfigured defaults will be used).
 
 This allows the installer to be run in non-interactive mode (with ``./install -y -f > install.out 2> install.err``), which can allow for easier interaction with automated provisioning tools.
 
@@ -94,10 +92,6 @@ Glassfish does not provide up to date documentation but Payara (a fork of Glassf
 
 **IMPORTANT:** Please note, that "out of the box" the installer will configure the Dataverse to leave unrestricted access to the administration APIs from (and only from) localhost. Please consider the security implications of this arrangement (anyone with shell access to the server can potentially mess with your Dataverse). An alternative solution would be to block open access to these sensitive API endpoints completely; and to only allow requests supplying a pre-defined "unblock token" (password). If you prefer that as a solution, please consult the supplied script ``post-install-api-block.sh`` for examples on how to set it up. See also "Securing Your Installation" under the :doc:`config` section.
 
-Dataverse uses JHOVE_ to help identify the file format (CSV, PNG, etc.) for files that users have uploaded. The installer places files called ``jhove.conf`` and ``jhoveConfig.xsd`` into the directory ``/usr/local/glassfish4/glassfish/domains/domain1/config`` by default and makes adjustments to the jhove.conf file based on the directory into which you chose to install Glassfish.
-
-.. _JHOVE: http://jhove.openpreservation.org
-
 The script is to a large degree a derivative of the old installer from DVN 3.x. It is written in Perl. If someone in the community is eager to rewrite it, perhaps in a different language, please get in touch. :)
 
 Logging In
@@ -118,9 +112,11 @@ Use the following credentials to log in:
 
 Congratulations! You have a working Dataverse installation. Soon you'll be tweeting at `@dataverseorg <https://twitter.com/dataverseorg>`_ asking to be added to the map at http://dataverse.org :)
 
-Trouble? See if you find an answer in the troubleshooting section below.
+Trouble? See if you find an answer in the :ref:`installation_troubleshooting` section.
 
-Next you'll want to check out the :doc:`config` section, especially the section on security which reminds you to change the password above.
+Next you'll want to check out the :doc:`config` section, especially the section :ref:`securing_installation`.
+
+.. _installation_troubleshooting:
 
 Troubleshooting
 ---------------
@@ -135,9 +131,9 @@ Check to make sure you used a fully qualified domain name when installing Datave
 Problems Sending Email
 ^^^^^^^^^^^^^^^^^^^^^^
 
-If your Dataverse installation is not sending system emails, you may need to provide authentication for your mail host. First, double check the SMTP server being used with this Glassfish asadmin command:
+If your Dataverse installation is not sending system emails, you may need to provide authentication for your mail host. First, double check the SMTP server being used with this Glassfish asadmin command::
 
-``./asadmin get server.resources.mail-resource.mail/notifyMailSession.host``
+    ./asadmin get server.resources.mail-resource.mail/notifyMailSession.host
 
 This should return the DNS of the mail host you configured during or after installation. mail/notifyMailSession is the JavaMail Session that's used to send emails to users. 
 
@@ -158,7 +154,7 @@ When fine tuning your JavaMail Session, there are a number of fields you can edi
 + **Default User:** Username mail host will recognize (e.g. user\@gmail.com)
 + **Default Sender Address:** Email address that your Dataverse will send mail from
 
-Depending on the SMTP server you're using, you may need to add additional properties at the bottom of the page (below "Advanced").
+Depending on the SMTP server you're using, you may need to add additional properties ("Additional Properties" table in "Advanced" section)
 
 From the "Add Properties" utility at the bottom, use the “Add Property” button for each entry you need, and include the name / corresponding value as needed. Descriptions are optional, but can be used for your own organizational needs. 
 
@@ -185,7 +181,7 @@ mail.smtp.socketFactory.fallback		false
 mail.smtp.socketFactory.class			javax.net.ssl.SSLSocketFactory
 ======================================	==============================
 
-The mail session can also be set from command line. To use this method, you will need to delete your notifyMailSession and create a new one. See the below example:
+The mail session can also be set from command line. To use this method, you will need to delete your notifyMailSession and create a new one:
 
 - Delete: ``./asadmin delete-javamail-resource mail/notifyMailSession``
 - Create (remove brackets and replace the variables inside): ``./asadmin create-javamail-resource --mailhost [smtp.gmail.com] --mailuser [test\@test\.com] --fromaddress [test\@test\.com] --property mail.smtp.auth=[true]:mail.smtp.password=[password]:mail.smtp.port=[465]:mail.smtp.socketFactory.port=[465]:mail.smtp.socketFactory.fallback=[false]:mail.smtp.socketFactory.class=[javax.net.ssl.SSLSocketFactory] mail/notifyMailSession``
@@ -205,40 +201,40 @@ Early on when you're installing Dataverse, you may think, "I just want to blow a
 Drop database
 ^^^^^^^^^^^^^
 
-In order to drop the database, you have to stop Glassfish, which will have open connections. Before you stop Glassfish, you may as well undeploy the war file. First, find the name like this:
+In order to drop the database, you have to stop Glassfish, which will have open connections. Before you stop Glassfish, you may as well undeploy the war file. First, find the name like this::
 
-``./asadmin list-applications``
+    ./asadmin list-applications
 
-Then undeploy it like this:
+Then undeploy it like this::
 
-``./asadmin undeploy dataverse-VERSION``
+    ./asadmin undeploy dataverse-VERSION
 
-Stop Glassfish with the init script provided in the :doc:`prerequisites` section or just use:
+Stop Glassfish with the init script provided in the :doc:`prerequisites` section or just use::
 
-``./asadmin stop-domain``
+    ./asadmin stop-domain
 
-With Glassfish down, you should now be able to drop your database and recreate it:
+With Glassfish down, you should now be able to drop your database and recreate it::
 
-``psql -U dvnapp -c 'DROP DATABASE "dvndb"' template1``
+    psql -U dvnapp -c 'DROP DATABASE "dvndb"' template1
 
 Clear Solr
 ^^^^^^^^^^
 
-The database is fresh and new but Solr has stale data it in. Clear it out with this command:
+The database is fresh and new but Solr has stale data it in. Clear it out with this command::
 
-``curl http://localhost:8983/solr/collection1/update/json?commit=true -H "Content-type: application/json" -X POST -d "{\"delete\": { \"query\":\"*:*\"}}"``
+    curl http://localhost:8983/solr/collection1/update/json?commit=true -H "Content-type: application/json" -X POST -d "{\"delete\": { \"query\":\"*:*\"}}"
 
 
 Deleting Uploaded Files
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-The path below will depend on the value for ``dataverse.files.directory`` as described in the :doc:`config` section:
+The path in the following command will depend on the value for ``dataverse.files.directory`` as described in the :doc:`config` section::
 
-``rm -rf /usr/local/glassfish4/glassfish/domains/domain1/files``
+    rm -rf /usr/local/glassfish4/glassfish/domains/domain1/files
 
 Rerun Installer
 ^^^^^^^^^^^^^^^
 
-With all the data cleared out, you should be ready to rerun the installer per above.
+With all the data cleared out, you should be ready to rerun the installer (:ref:`dataverse-installer`).
 
 Related to all this is a series of scripts at https://github.com/IQSS/dataverse/blob/develop/scripts/deploy/phoenix.dataverse.org/deploy that Dataverse developers use have the test server http://phoenix.dataverse.org rise from the ashes before integration tests are run against it. Your mileage may vary. :).

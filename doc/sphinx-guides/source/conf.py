@@ -99,7 +99,7 @@ exclude_patterns = []
 #show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'emacs'
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
@@ -423,6 +423,8 @@ epub_exclude_files = ['search.html']
 # If false, no index is generated.
 #epub_use_index = True
 
+numfig = True
+numfig_secnum_depth = 1
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}

@@ -4,7 +4,7 @@ Windows Development
 
 Development on Windows is not well supported, unfortunately. You will have a much easier time if you develop on Mac or Linux as described under :doc:`../installation/installation-main` section.
 
-If you want to try using Windows for Dataverse development, your best best is to use Vagrant, as described below. Minishift is also an option. These instructions were tested on Windows 10.
+If you want to try using Windows for Dataverse development, your best best is to use Vagrant. Minishift is also an option. These instructions were tested on Windows 10.
 
 .. contents:: |toctitle|
 	:local:
@@ -74,7 +74,7 @@ After a long while you hopefully will have Dataverse installed at http://localho
 Running Dataverse in Minishift
 ------------------------------
 
-Minishift is a dev environment for OpenShift, which is Red Hat's distribution of Kubernetes.  The :doc:`containers` section contains much more detail but the essential steps for using Minishift on Windows are described below.
+Minishift is a dev environment for OpenShift, which is Red Hat's distribution of Kubernetes.  The :doc:`containers` section contains much more detail but the essential steps for using Minishift on Windows are described here.
 
 Install VirtualBox
 ~~~~~~~~~~~~~~~~~~

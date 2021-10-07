@@ -31,6 +31,6 @@ If you have successfully installed multiple Glassfish servers behind a load bala
         [root@server1 ~]# curl https://dataverse.example.edu/host.txt
         server1.example.edu
 
-You would repeat the steps above for all of your Glassfish servers. If users seem to be having a problem with a particular server, you can ask them to visit https://dataverse.example.edu/host.txt and let you know what they see there (e.g. "server1.example.edu") to help you know which server to troubleshoot.
+You would repeat these steps for all of your Glassfish servers. If users seem to be having a problem with a particular server, you can ask them to visit https://dataverse.example.edu/host.txt and let you know what they see there (e.g. "server1.example.edu") to help you know which server to troubleshoot.
 
 Please note that "Network Ports" under the :doc:`config` section has more information on fronting Glassfish with Apache. The :doc:`shibboleth` section talks about the use of ``ProxyPassMatch``.

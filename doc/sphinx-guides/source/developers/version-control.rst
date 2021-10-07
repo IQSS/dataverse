@@ -37,7 +37,7 @@ The "`master <https://github.com/CeON/dataverse/tree/master>`_" branch represent
 The "develop" Branch
 ********************
 
-The "`develop <https://github.com/CeON/dataverse>`_" branch represents code that was stable enough to merge from a "feature" branch (described below) and that will make it into the next release. Like master, commits are never made to the develop branch. The develop branch is where integration occurs. Your goal is have your code merged into the develop branch after it has been reviewed.
+The "`develop <https://github.com/CeON/dataverse>`_" branch represents code that was stable enough to merge from a "feature" branch and that will make it into the next release. Like master, commits are never made to the develop branch. The develop branch is where integration occurs. Your goal is have your code merged into the develop branch after it has been reviewed.
 
 Feature Branches
 ****************
@@ -53,7 +53,7 @@ Pull requests take all shapes and sizes, from a one-character typo fix to hundre
 
 If you are writing code (rather than documentation), please see :doc:`testing` for guidance on writing tests.
 
-The example of creating a pull request below has to do with fixing an important issue with the :doc:`documentation` but applies to fixing code as well.
+The example of creating a pull request presented in this section and its subsections has to do with fixing an important issue with the :doc:`documentation` but applies to fixing code as well.
 
 Find or Create a GitHub Issue
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -65,7 +65,7 @@ Let's say you want to tackle https://github.com/IQSS/dataverse/issues/3728 which
 Create a New Branch off the develop Branch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Always create your feature branch from the latest code in develop, pulling the latest code if necessary. As mentioned above, your branch should have a name like "{USERNAME}_3728_doc_apipolicy_fix" that starts with the nickname, then issue number you are addressing, and ends with a short, descriptive name. Underscores ("_") in your branch name are ok, but please try to avoid other special characters such as ampersands ("&") than have special meaning in Unix shells.
+Always create your feature branch from the latest code in develop, pulling the latest code if necessary. Your branch should have a name like "{USERNAME}_3728_doc_apipolicy_fix" that starts with the nickname, then issue number you are addressing, and ends with a short, descriptive name. Underscores ("_") in your branch name are ok, but please try to avoid other special characters such as ampersands ("&") than have special meaning in Unix shells.
 
 Commit Your Change to Your New Branch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -121,7 +121,7 @@ By default, when a pull request is made from a fork, "Allow edits from maintaine
 
 This is a nice feature of GitHub because it means that the core dev team for Dataverse can make small (or even large) changes to a pull request from a contributor to help the pull request along on its way to QA and being merged.
 
-GitHub documents how to make changes to a fork at https://help.github.com/articles/committing-changes-to-a-pull-request-branch-created-from-a-fork/ but as of this writing the steps involve making a new clone of the repo. This works but you might find it more convenient to add a "remote" to your existing clone. The example below uses the fork at https://github.com/OdumInstitute/dataverse and the branch ``4709-postgresql_96`` but the technique can be applied to any fork and branch:
+GitHub documents how to make changes to a fork at https://help.github.com/articles/committing-changes-to-a-pull-request-branch-created-from-a-fork/ but as of this writing the steps involve making a new clone of the repo. This works but you might find it more convenient to add a "remote" to your existing clone. The following example uses the fork at https://github.com/OdumInstitute/dataverse and the branch ``4709-postgresql_96`` but the technique can be applied to any fork and branch:
 
 .. code-block:: bash
 

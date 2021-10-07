@@ -21,6 +21,8 @@ Basic access URI:
     GET http://$SERVER/api/access/datafile/:persistentId/?persistentId=doi:10.5072/FK2/J8SJZB
 
 
+.. _dataaccess_parameters:
+
 Parameters:
 ~~~~~~~~~~~
 
@@ -96,7 +98,7 @@ It returns a zipped bundle that contains the data in the following formats:
 
 * Tab-delimited;
 * "Saved Original", the proprietary (SPSS, Stata, R, etc.) file from which the tabular data was ingested;
-* Generated R Data frame (unless the "original" above was in R);
+* Generated R Data frame (unless the "original" was already in R);
 * Data (Variable) metadata record, in DDI XML;
 * File citation, in Endnote and RIS formats. 
 
@@ -112,7 +114,7 @@ Data Variable Metadata Access
 
 ``/api/access/datafile/$id/metadata/ddi``
 
-In its basic form the verb above returns a DDI fragment that describes the file and the data variables in it. 
+In its basic form this command returns a DDI fragment that describes the file and the data variables in it. 
 
 The DDI returned will only have two top-level sections:
 
@@ -185,7 +187,7 @@ It is possible to request only specific subsets of, rather than the
 full file-level DDI record. This can be a useful optimization, in
 cases such as when an application needs to look up a single variable;
 especially with data files with large numbers of variables. See
-``variables=123,127`` in the example above.
+``subset`` param in the :ref:`dataaccess_parameters` section.
 
 Preprocessed Data
 -----------------
@@ -200,7 +202,7 @@ Authentication and Authorization
 Data Access API supports both session- and API key-based authentication. 
 
 If a session is available, and it is already associated with an authenticated user, it will be used for access authorization. If not, or if the user in question is not authorized to access the requested object, an attempt will be made to authorize based on an API key, if supplied. 
-All of the API verbs above support the key parameter ``key=...`` as well as the newer ``X-Dataverse-key`` header. For more details, see "Authentication" in the :doc:`intro` section.
+All of the API endpoints presented in this document support the key parameter ``key=...`` as well as the newer ``X-Dataverse-key`` header. For more details, see "Authentication" in the :doc:`intro` section.
 
 Access Requests and Processing
 ------------------------------

@@ -11,6 +11,8 @@ Once you have finished securing and configuring your Dataverse installation, you
 .. contents:: |toctitle|
   :local:
 
+.. _securing_installation:
+
 Securing Your Installation
 --------------------------
 
@@ -19,14 +21,18 @@ Changing the Superuser Password
 
 The default password for the "dataverseAdmin" superuser account is "admin", as mentioned in the :doc:`installation-main` section, and you should change it, of course.
 
+.. _blocking_api_endpoints:
+
 Blocking API Endpoints
 ++++++++++++++++++++++
 
-The :doc:`/api/native-api` contains a useful but potentially dangerous API endpoint called "admin" that allows you to change system settings, make ordinary users into superusers, and more. The ``builtin-users`` endpoint lets people create a local/builtin user account if they know the ``BuiltinUsers.KEY`` value described below.
+The :doc:`/api/native-api` contains a useful but potentially dangerous API endpoint called "admin" that allows you to change system settings, make ordinary users into superusers, and more. The ``builtin-users`` endpoint lets people create a local/builtin user account if they know the ``BuiltinUsers.KEY`` value described in :ref:`builtin_users_key`.
 
-By default, all APIs can be accessed locally and a number of endpoints do not require authentication. https://github.com/IQSS/dataverse/issues/1886 was opened to explore changing these defaults, until then by default `admin` and `test` endpoints are blocked. For details please see also the section on ``BlockedApiPolicy`` below.
+By default, all APIs can be accessed locally and a number of endpoints do not require authentication. https://github.com/IQSS/dataverse/issues/1886 was opened to explore changing these defaults, until then by default `admin` and `test` endpoints are blocked. For details please see also the section on :ref:`blocked_api_policy`.
 
 It's also possible to prevent file uploads via API by adjusting the ``UploadMethods`` file setting.
+
+.. _forcing_https:
 
 Forcing HTTPS
 +++++++++++++
@@ -38,8 +44,8 @@ Privacy Considerations
 
 Out of the box, Dataverse will list email addresses of the "contacts" for datasets when users visit a dataset page and click the "Export Metadata" button. If you prefer to exclude email addresses of dataset contacts from metadata export, set :ref:`ExcludeEmailFromExport <ExcludeEmailFromExport>` to true.
 
-Additional Recommendations
-++++++++++++++++++++++++++
+.. _run_glassfish_as_non_root_user:
+
 Run Glassfish as a User Other Than Root
 +++++++++++++++++++++++++++++++++++++++
 
@@ -50,27 +56,27 @@ Related to this is that you should remove ``/root/.glassfish/pass`` to ensure th
 Enforce Strong Passwords for User Accounts
 ++++++++++++++++++++++++++++++++++++++++++
 
-Dataverse only stores passwords (as salted hash, and using a strong hashing algorithm) for "builtin" users. You can increase the password complexity rules to meet your security needs. If you have configured your Dataverse installation to allow login from remote authentication providers such as Shibboleth, ORCID, GitHub or Google, you do not have any control over those remote providers' password complexity rules. See the "Auth Modes: Local vs. Remote vs. Both" section below for more on login options.
+Dataverse only stores passwords (as salted hash, and using a strong hashing algorithm) for "builtin" users. You can increase the password complexity rules to meet your security needs. If you have configured your Dataverse installation to allow login from remote authentication providers such as Shibboleth, ORCID, GitHub or Google, you do not have any control over those remote providers' password complexity rules. See the :ref:`auth_modes_local_remote_both` section for more on login options.
 
 Even if you are satisfied with the out-of-the-box password complexity rules Dataverse ships with, for the "dataverseAdmin" account you should use a strong password so the hash cannot easily be cracked through dictionary attacks.
 
-Password complexity rules for "builtin" accounts can be adjusted with a variety of settings documented below. Here's a list:
+Password complexity rules for "builtin" accounts can be adjusted with a variety of settings:
 
 - :ref:`PVMinLength`
 - :ref:`PVMaxLength`
 - :ref:`PVNumberOfConsecutiveDigitsAllowed`
 - :ref:`PVCharacterRules`
 - :ref:`PVNumberOfCharacteristics`
-- :ref:`PVDictionaries <PVDictionaries>`
+- :ref:`PVDictionaries`
 - :ref:`PVGoodStrength`
-- :ref:`PVCustomPasswordResetAlertMessage <PVCustomPasswordResetAlertMessage>`
+- :ref:`PVCustomPasswordResetAlertMessage`
 
 Network Ports
 -------------
 
 Remember how under "Decisions to Make" in the :doc:`prep` section we mentioned you'll need to make a decision about whether or not to introduce a proxy in front of Dataverse such as Apache or nginx? The time has come to make that decision.
 
-The need to redirect port HTTP (port 80) to HTTPS (port 443) for security has already been mentioned above and the fact that Glassfish puts these services on 8080 and 8181, respectively, was touched on in the :doc:`installation-main` section. In production, you don't want to tell your users to use Dataverse on ports 8080 and 8181. You should have them use the standard HTTPS port, which is 443.
+The need to redirect port HTTP (port 80) to HTTPS (port 443) for security has already been mentioned in :ref:`forcing_https` and the fact that Glassfish puts these services on 8080 and 8181, respectively, was touched on in the :doc:`installation-main` section. In production, you don't want to tell your users to use Dataverse on ports 8080 and 8181. You should have them use the standard HTTPS port, which is 443.
 
 Your decision to proxy or not should primarily be driven by which features of Dataverse you'd like to use. If you'd like to use Shibboleth, the decision is easy because proxying or "fronting" Glassfish with Apache is required. The details are covered in the :doc:`shibboleth` section.
 
@@ -78,9 +84,9 @@ If you'd like to use TwoRavens, you should also consider fronting with Apache be
 
 Even if you have no interest in Shibboleth nor TwoRavens, you may want to front Dataverse with Apache or nginx to simply the process of installing SSL certificates. There are many tutorials on the Internet for adding certs to Apache, including a some `notes used by the Dataverse team <https://github.com/IQSS/dataverse/blob/v4.6.1/doc/shib/shib.md>`_, but the process of adding a certificate to Glassfish is arduous and not for the faint of heart. The Dataverse team cannot provide much help with adding certificates to Glassfish beyond linking to `tips <http://stackoverflow.com/questions/906402/importing-an-existing-x509-certificate-and-private-key-in-java-keystore-to-use-i>`_ on the web.
 
-Still not convinced you should put Glassfish behind another web server? Even if you manage to get your SSL certificate into Glassfish, how are you going to run Glassfish on low ports such as 80 and 443? Are you going to run Glassfish as root? Bad idea. This is a security risk. Under "Additional Recommendations" under "Securing Your Installation" above you are advised to configure Glassfish to run as a user other than root. (The Dataverse team will close https://github.com/IQSS/dataverse/issues/1934 after updating the Glassfish init script provided in the :doc:`prerequisites` section to not require root.)
+Still not convinced you should put Glassfish behind another web server? Even if you manage to get your SSL certificate into Glassfish, how are you going to run Glassfish on low ports such as 80 and 443? Are you going to run Glassfish as root? Bad idea. This is a security risk. Under :ref:`run_glassfish_as_non_root_user` in "Securing Your Installation" you are advised to configure Glassfish to run as a user other than root. (The Dataverse team will close https://github.com/IQSS/dataverse/issues/1934 after updating the Glassfish init script provided in the :doc:`prerequisites` section to not require root.)
 
-There's also the issue of serving a production-ready version of robots.txt. By using a proxy such as Apache, this is a one-time "set it and forget it" step as explained below in the "Going Live" section.
+There's also the issue of serving a production-ready version of robots.txt. By using a proxy such as Apache, this is a one-time "set it and forget it" step as explained in the :ref:`going_live` section.
 
 If you are convinced you'd like to try fronting Glassfish with Apache, the :doc:`shibboleth` section should be good resource for you.
 
@@ -88,13 +94,13 @@ If you really don't want to front Glassfish with any proxy (not recommended), yo
 
 ``./asadmin set server-config.network-config.network-listeners.network-listener.http-listener-2.port=443``
 
-What about port 80? Even if you don't front Dataverse with Apache, you may want to let Apache run on port 80 just to rewrite HTTP to HTTPS as described above. You can use a similar command as above to change the HTTP port that Glassfish uses from 8080 to 80 (substitute ``http-listener-1.port=80``). Glassfish can be used to enforce HTTPS on its own without Apache, but configuring this is an exercise for the reader. Answers here may be helpful: http://stackoverflow.com/questions/25122025/glassfish-v4-java-7-port-unification-error-not-able-to-redirect-http-to
+What about port 80? Even if you don't front Dataverse with Apache, you may want to let Apache run on port 80 just to rewrite HTTP to HTTPS (see :ref:`forcing_https`). You can use a similar command to change the HTTP port that Glassfish uses from 8080 to 80 (substitute ``http-listener-1.port=80``). Glassfish can be used to enforce HTTPS on its own without Apache, but configuring this is an exercise for the reader. Answers here may be helpful: http://stackoverflow.com/questions/25122025/glassfish-v4-java-7-port-unification-error-not-able-to-redirect-http-to
 
 If you are running an installation with Apache and Glassfish on the same server, and would like to restrict Glassfish from responding to any requests to port 8080 from external hosts (in other words, not through Apache), you can restrict the AJP listener to localhost only with:
 
 ``./asadmin set server-config.network-config.network-listeners.network-listener.http-listener-1.address=127.0.0.1``
 
-You should **NOT** use the configuration option above if you are running in a load-balanced environment, or otherwise have the web server on a different host than the application server.
+You should **NOT** use this configuration option if you are running in a load-balanced environment, or otherwise have the web server on a different host than the application server.
 
 Root Dataverse Permissions
 --------------------------
@@ -128,7 +134,7 @@ Once you have your DOI or Handle account credentials and a namespace, configure 
 Configuring Dataverse for DOIs
 ++++++++++++++++++++++++++++++
 
-By default Dataverse attempts to register DOIs for each dataset and file under a test authority, though you must apply for your own credentials as explained above.
+By default Dataverse attempts to register DOIs for each dataset and file under a test authority, though you must apply for your own credentials.
 
 Here are the configuration options for DOIs:
 
@@ -163,6 +169,8 @@ Here are the configuration options for handles:
 
 Note: If you are **minting your own handles** and plan to set up your own handle service, please refer to `Handle.Net documentation <http://handle.net/hnr_documentation.html>`_.
 
+.. _auth_modes_local_remote_both:
+
 Auth Modes: Local vs. Remote vs. Both
 -------------------------------------
 
@@ -189,7 +197,7 @@ Enabling a second authentication provider will result in the Log In page showing
 File Storage: Local Filesystem vs. S3
 -----------------------------------------------
 
-By default, a Dataverse installation stores data files (files uploaded by end users) on the filesystem at ``/usr/local/glassfish4/glassfish/domains/domain1/files`` but this path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the ``dataverse.files.directory`` JVM option described below.
+By default, a Dataverse installation stores data files (files uploaded by end users) on the filesystem at ``/usr/local/glassfish4/glassfish/domains/domain1/files`` but this path can vary based on answers you gave to the installer (see the :ref:`dataverse-installer` section of the Installation Guide) or afterward by reconfiguring the :ref:`dataverse_files_directory` JVM option.
 
 Amazon S3 Storage (or Compatible)
 +++++++++++++++++++++++++++++++++
@@ -200,12 +208,14 @@ storage (like Minio, Ceph RADOS S3 Gateway and many more).
 
 **Note:** The Dataverse Team is most familiar with AWS S3, and can provide support on its usage with Dataverse. Thanks to community contributions, the application's architecture also allows non-AWS S3 providers. The Dataverse Team can provide very limited support on these other providers. We recommend reaching out to the wider Dataverse community if you have questions.
 
+.. _set_up_s3_account_credentials:
+
 First: Set Up Accounts and Access Credentials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Dataverse and the AWS SDK make use of the "AWS credentials profile file" and "AWS config profile file" located in
 ``~/.aws/`` where ``~`` is the home directory of the user you run Glassfish as. This file can be generated via either
-of two methods described below:
+of two methods:
 
 1. Manually through creation of the credentials and config files or
 2. Automatically via the AWS console commands.
@@ -223,13 +233,15 @@ To **create a user** with full S3 access and nothing more for security reasons, 
 for more info on this process.
 
 **Generate the user keys** needed for Dataverse afterwards by clicking on the created user.
-(You can skip this step when running on EC2, see below.)
+(You can skip this step when running on EC2.)
 
 .. TIP::
   If you are hosting Dataverse on an AWS EC2 instance alongside storage in S3, it is possible to use IAM Roles instead
-  of the credentials file (the file at ``~/.aws/credentials`` mentioned below). Please note that you will still need the
+  of the credentials file (the file at ``~/.aws/credentials`` mentioned in :ref:`manually_set_up_aws_credentials`). Please note that you will still need the
   ``~/.aws/config`` file to specify the region. For more information on this option, see
   http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html
+
+.. _custom_s3_compatible_storage:
 
 Preparation When Using Custom S3-Compatible Service
 ###################################################
@@ -264,19 +276,21 @@ Reported Working S3-Compatible Storage
 
 `Minio v2018-09-12 <http://minio.io>`_
   Set ``dataverse.files.s3-path-style-access=true``, as Minio works path-based. Works pretty smooth, easy to setup.
-  **Can be used for quick testing, too:** just use the example values above. Uses the public (read: unsecure and
+  **Can be used for quick testing, too:** just use the example values from :ref:`custom_s3_compatible_storage`. Uses the public (read: unsecure and
   possibly slow) https://play.minio.io:9000 service.
 
 
-**HINT:** If you are successfully using an S3 storage implementation not yet listed above, please feel free to
+**HINT:** If you are successfully using an S3 storage implementation not yet listed in this document, please feel free to
 `open an issue at Github <https://github.com/IQSS/dataverse/issues/new>`_ and describe your setup.
 We will be glad to add it here.
 
 
+.. _manually_set_up_aws_credentials:
+
 Manually Set Up Credentials File
 ################################
 
-To create the ``~/.aws/credentials`` file manually, you will need to generate a key/secret key (see above). Once you have
+To create the ``~/.aws/credentials`` file manually, you will need to generate a key/secret key (see :ref:`set_up_s3_account_credentials`). Once you have
 acquired the keys, they need to be added to the ``credentials`` file. The format for credentials is as follows:
 
 ::
@@ -336,15 +350,17 @@ Optionally, you can have users download files from S3 directly rather than havin
 
 ``./asadmin create-jvm-options "-Ddataverse.files.s3-download-redirect=true"``
 
-If you enable ``dataverse.files.s3-download-redirect`` as described above, note that the S3 URLs expire after an hour by default but you can configure the expiration time using the ``dataverse.files.s3-url-expiration-minutes`` JVM option. Here's an example of setting the expiration time to 120 minutes:
+If you enable ``dataverse.files.s3-download-redirect``, note that the S3 URLs expire after an hour by default but you can configure the expiration time using the ``dataverse.files.s3-url-expiration-minutes`` JVM option. Here's an example of setting the expiration time to 120 minutes:
 
 ``./asadmin create-jvm-options "-Ddataverse.files.s3-url-expiration-minutes=120"``
 
 In case you would like to configure Dataverse to use a custom S3 service instead of Amazon S3 services, please
-add the options for the custom URL and region as documented below. Please read above if your desired combination has
+add the options for the custom URL and region as documented in :ref:`s3_storage_options`. Please read previous sections if your desired combination has
 been tested already and what other options have been set for a successful integration.
 
 Lastly, go ahead and restart your glassfish server. With Dataverse deployed and the site online, you should be able to upload datasets and data files and see the corresponding files in your S3 bucket. Within a bucket, the folder structure emulates that found in local file storage.
+
+.. _s3_storage_options:
 
 S3 Storage Options
 ##################
@@ -353,7 +369,7 @@ S3 Storage Options
 JVM Option                                 Value               Description                                                         Default value
 =========================================  ==================  ==================================================================  =============
 dataverse.files.storage-driver-id          s3                  Enable S3 storage driver.                                           ``file``
-dataverse.files.s3-bucket-name             <?>                 The bucket name. See above.                                         (none)
+dataverse.files.s3-bucket-name             <?>                 The bucket name.                                                    (none)
 dataverse.files.s3-download-redirect       ``true``/``false``  Enable direct download or proxy through Dataverse.                  ``false``
 dataverse.files.s3-url-expiration-minutes  <?>                 If direct downloads: time until links expire. Optional.             60
 dataverse.files.s3-custom-endpoint-url     <?>                 Use custom S3 endpoint. Needs URL either with or without protocol.  (none)
@@ -366,7 +382,7 @@ dataverse.files.s3-path-style-access       ``true``/``false``  Use path style bu
 Branding Your Installation
 --------------------------
 
-The name of your root dataverse is the brand of your installation of Dataverse and appears in various places such as notifications and support links, as outlined in the :ref:`systemEmail` section below. To further brand your installation and make it your own, Dataverse provides configurable options for easy-to-add (and maintain) custom branding for your Dataverse installation. Here are the custom branding and content options you can add:
+The name of your root dataverse is the brand of your installation of Dataverse and appears in various places such as notifications and support links, as outlined in the :ref:`systemEmail` section. To further brand your installation and make it your own, Dataverse provides configurable options for easy-to-add (and maintain) custom branding for your Dataverse installation. Here are the custom branding and content options you can add:
 
 - Custom welcome/homepage
 - Logo image to navbar
@@ -374,7 +390,7 @@ The name of your root dataverse is the brand of your installation of Dataverse a
 - Footer
 - CSS stylesheet
 
-Downloadable sample HTML and CSS files are provided below which you can edit as you see fit. It's up to you to create a directory in which to store these files, such as ``/var/www/dataverse`` in the examples below.
+Downloadable sample HTML and CSS files are provided in next subsections. You can edit them as you see fit. It's up to you to create a directory in which to store these files, such as ``/var/www/dataverse`` in the examples in following subsections.
 
 You may also want to look at samples at https://github.com/shlake/LibraDataHomepage from community member Sherry Lake as well as her poster from the Dataverse Community Meeting 2018 called "Branding Your Local Dataverse": https://github.com/IQSS/dataverse/files/2128735/UVaHomePage.pdf
 
@@ -395,7 +411,7 @@ If you prefer to start with less of a blank slate, you can download the :downloa
 
 Note that the ``custom-homepage.html`` and ``custom-homepage-dynamic.html`` files provided have multiple elements that assume your root dataverse still has an alias of "root". While you were branding your root dataverse, you may have changed the alias to "harvard" or "librascholar" or whatever and you should adjust the custom homepage code as needed.
 
-For more background on what this file setting is doing, see the "File Settings" section below. If you decide you'd like to remove this setting, just remove the value:
+If you decide you'd like to remove this setting, just remove the value:
 
 ``HomePageCustomizationFile=``
 
@@ -476,7 +492,7 @@ Dataverse can be configured to submit a copy of published Datasets, packaged as 
 
 This integration is occurs through customization of an internal Dataverse archiver workflow that can be configured as a PostPublication workflow to submit the bag to Chronopolis' Duracloud interface using your organization's credentials. An admin API call exists that can manually submit previously published Datasets, and prior versions, to a configured archive such as Chronopolis. The workflow leverages new functionality in Dataverse to create a `JSON-LD <http://www.openarchives.org/ore/0.9/jsonld>`_ serialized `OAI-ORE <https://www.openarchives.org/ore/>`_ map file, which is also available as a metadata export format in the Dataverse web interface.
 
-At present, the DPNSubmitToArchiveCommand is the only implementation extending the AbstractSubmitToArchiveCommand and using the configurable mechanisms discussed below.
+At present, the DPNSubmitToArchiveCommand is the only implementation extending the AbstractSubmitToArchiveCommand and using the configurable mechanisms discussed in this section.
 
 Also note that while the current Chronopolis implementation generates the bag and submits it to the archive's DuraCloud interface, the step to make a 'snapshot' of the space containing the Bag (and verify it's successful submission) are actions a curator must take in the DuraCloud interface.
 
@@ -516,14 +532,14 @@ where:
 
 {version} is the friendly version number, e.g. "1.2".
      
-The submitDataVersionToArchive API (and the workflow discussed below) attempt to archive the dataset version via an archive specific method. For Chronopolis, a DuraCloud space named for the dataset (it's DOI with ':' and '.' replaced with '-') is created and two files are uploaded to it: a version-specific datacite.xml metadata file and a BagIt bag containing the data and an OAI-ORE map file. (The datacite.xml file, stored outside the Bag as well as inside is intended to aid in discovery while the ORE map file is 'complete', containing all user-entered metadata and is intended as an archival record.)
+The submitDataVersionToArchive API (and the workflow discussed in this section also) attempt to archive the dataset version via an archive specific method. For Chronopolis, a DuraCloud space named for the dataset (it's DOI with ':' and '.' replaced with '-') is created and two files are uploaded to it: a version-specific datacite.xml metadata file and a BagIt bag containing the data and an OAI-ORE map file. (The datacite.xml file, stored outside the Bag as well as inside is intended to aid in discovery while the ORE map file is 'complete', containing all user-entered metadata and is intended as an archival record.)
 
 In the Chronopolis case, since the transfer from the DuraCloud front-end to archival storage in Chronopolis can take significant time, it is currently up to the admin/curator to submit a 'snap-shot' of the space within DuraCloud and to monitor its successful transfer. Once transfer is complete the space should be deleted, at which point the Dataverse API call can be used to submit a Bag for other versions of the same Dataset. (The space is reused, so that archival copies of different Dataset versions correspond to different snapshots of the same DuraCloud space.).
 
 **PostPublication Workflow**
 
 To automate the submission of archival copies to an archive as part of publication, one can setup a Dataverse Workflow using the "archiver" workflow step - see the :doc:`/developers/workflows` guide.
-. The archiver step uses the configuration information discussed above including the :ArchiverClassName setting. The workflow step definition should include the set of properties defined in \:ArchiverSettings in the workflow definition.
+. The archiver step uses the configuration information (``:ArchiverClassName`` and others). The workflow step definition should include the set of properties defined in \:ArchiverSettings in the workflow definition.
 
 To active this workflow, one must first install a workflow using the archiver step. A simple workflow that invokes the archiver step configured to submit to DuraCloud as its only action is included in dataverse at /scripts/api/data/workflows/internal-archiver-workflow.json.
 
@@ -537,12 +553,14 @@ The workflow id returned in this call (or available by doing a GET of /api/admin
 
 Once these steps are taken, new publication requests will automatically trigger submission of an archival copy to the specified archiver, Chronopolis' DuraCloud component in this example. For Chronopolis, as when using the API, it is currently the admin's responsibility to snap-shot the DuraCloud space and monitor the result. Failure of the workflow, (e.g. if DuraCloud is unavailable, the configuration is wrong, or the space for this dataset already exists due to a prior publication action or use of the API), will create a failure message but will not affect publication itself.  
 
+.. _going_live:
+
 Going Live: Launching Your Production Deployment
 ------------------------------------------------
 
 This guide has attempted to take you from kicking the tires on Dataverse to finalizing your installation before letting real users in. In theory, all this work could be done on a single server but better would be to have separate staging and production environments so that you can deploy upgrades to staging before deploying to production. This "Going Live" section is about launching your **production** environment.
 
-Before going live with your installation of Dataverse, you must take the steps above under "Securing Your Installation" and you should at least review the various configuration options listed below. An attempt has been made to put the more commonly-configured options earlier in the list.
+Before going live with your installation of Dataverse, you must take the steps under :ref:`securing_installation` and you should at least review the various configuration options listed in this document. An attempt has been made to put the more commonly-configured options earlier in the list.
 
 Out of the box, Dataverse attempts to block search engines from crawling your installation of Dataverse so that test datasets do not appear in search results until you're ready.
 
@@ -555,7 +573,7 @@ Ensure robots.txt Is Not Blocking Search Engines
 For a public production Dataverse installation, it is probably desired that search agents be able to index published pages (AKA - pages that are visible to an unauthenticated user).
 Polite crawlers usually respect the `Robots Exclusion Standard <https://en.wikipedia.org/wiki/Robots_exclusion_standard>`_; we have provided an example of a production robots.txt :download:`here </_static/util/robots.txt>`).
 
-You have a couple of options for putting an updated robots.txt file into production. If you are fronting Glassfish with Apache as recommended above, you can place robots.txt in the root of the directory specified in your ``VirtualHost`` and to your Apache config a ``ProxyPassMatch`` line like the one below to prevent Glassfish from serving the version of robots.txt that is embedded in the Dataverse war file:
+You have a couple of options for putting an updated robots.txt file into production. If you are fronting Glassfish with Apache, you can place robots.txt in the root of the directory specified in your ``VirtualHost`` and to your Apache config a ``ProxyPassMatch`` line like the following to prevent Glassfish from serving the version of robots.txt that is embedded in the Dataverse war file:
 
 .. code-block:: text
 
@@ -658,7 +676,7 @@ DoiBaseUrlString
 
 As of this writing, "https://mds.datacite.org" (DataCite) and "https://ezid.cdlib.org" (EZID) are the main valid values.
 
-While the above two options are recommended because they have been tested by the Dataverse team, it is also possible to use a DataCite Client API as a proxy to DataCite. In this case, requests made to the Client API are captured and passed on to DataCite for processing. The application will interact with the DataCite Client API exactly as if it were interacting directly with the DataCite API, with the only difference being the change to the base endpoint URL.
+While these two options are recommended because they have been tested by the Dataverse team, it is also possible to use a DataCite Client API as a proxy to DataCite. In this case, requests made to the Client API are captured and passed on to DataCite for processing. The application will interact with the DataCite Client API exactly as if it were interacting directly with the DataCite API, with the only difference being the change to the base endpoint URL.
 
 For example, the Australian Data Archive (ADA) successfully uses the Australian National Data Service (ANDS) API (a proxy for DataCite) to mint their DOIs through Dataverse using a ``doi.baseurlstring`` value of "https://researchdata.ands.org.au/api/doi/datacite" as documented at https://documentation.ands.org.au/display/DOC/ANDS+DataCite+Client+API . As ADA did for ANDS DOI minting, any DOI provider (and their corresponding DOI configuration parameters) other than DataCite must be tested with Dataverse to establish whether or not it will function properly.
 
@@ -668,7 +686,7 @@ You can switch to production DataCite with following change:
 
 ``DoiBaseUrlString=https://mds.datacite.org``
 
-See also these related file settings below:
+See also these related file settings:
 
 - :ref:`DoiProvider`
 - :ref:`Protocol`
@@ -730,7 +748,7 @@ HideSchemaDotOrgDownloadUrls
 
 Please note that this setting is experimental.
 
-By default, download URLs to files will be included in Schema.org JSON-LD output. To prevent these URLs from being included in the output, set ``HideSchemaDotOrgDownloadUrls`` to true as in the example below.
+By default, download URLs to files will be included in Schema.org JSON-LD output. To prevent these URLs from being included in the output, set ``HideSchemaDotOrgDownloadUrls`` to true as in the following example:
 
 ``HideSchemaDotOrgDownloadUrls=true``
 
@@ -745,10 +763,12 @@ Indicates amount of minutes before password reset token expires after user reque
 
 ``MinutesUntilPasswordResetTokenExpires=60``
 
+.. _blocked_api_policy:
+
 BlockedApiPolicy
 +++++++++++++++++
 
-Out of the box, all API endpoints are completely open, as mentioned in the section on security above. It is highly recommended that you choose one of the policies below and also configure ``BlockedApiEndpoints``.
+Out of the box, all API endpoints are completely open, as mentioned in the section on security :ref:`blocking_api_endpoints`. It is highly recommended that you choose one of the following policies and also configure ``BlockedApiEndpoints``.
 
 - localhost-only: Allow from localhost.
 - unblock-key: Require a key defined in ``BlockedApiKey``.
@@ -757,7 +777,7 @@ Out of the box, all API endpoints are completely open, as mentioned in the secti
 BlockedApiEndpoints
 ++++++++++++++++++++
 
-A comma separated list of API endpoints to be blocked. For a production installation, "admin" should be blocked (and perhaps "builtin-users" as well), as mentioned in the section on security above:
+A comma separated list of API endpoints to be blocked. For a production installation, "admin" should be blocked (and perhaps "builtin-users" as well), as mentioned in the section on :ref:`blocking_api_endpoints`:
 
 See the :doc:`/api/index` for a list of API endpoints.
 
@@ -782,37 +802,37 @@ Please note that if you're having any trouble sending email, you can refer to "T
 HomePageCustomizationFile
 ++++++++++++++++++++++++++
 
-See :ref:`Branding Your Installation` above.
+See :ref:`Branding Your Installation`.
 
 LogoCustomizationFile
 ++++++++++++++++++++++
 
-See :ref:`Branding Your Installation` above.
+See :ref:`Branding Your Installation`.
 
 HeaderCustomizationFile
 ++++++++++++++++++++++++
 
-See :ref:`Branding Your Installation` above.
+See :ref:`Branding Your Installation`.
 
 DisableRootDataverseTheme
 ++++++++++++++++++++++++++
 
-See :ref:`Branding Your Installation` above.
+See :ref:`Branding Your Installation`.
 
 FooterCustomizationFile
 ++++++++++++++++++++++++
 
-See :ref:`Branding Your Installation` above.
+See :ref:`Branding Your Installation`.
 
 StyleCustomizationFile
 +++++++++++++++++++++++
 
-See :ref:`Branding Your Installation` above.
+See :ref:`Branding Your Installation`.
 
 WebAnalyticsCode
 +++++++++++++++++
 
-See :ref:`Web-Analytics-Code` above.
+See :ref:`Web-Analytics-Code`.
 
 .. _DoiProvider:
 
@@ -821,7 +841,7 @@ DoiProvider
 
 As of this writing "DataCite" and "EZID" are the only valid options for production installations. Developers using version 4.10 and above are welcome to use the keyword "FAKE" to configure a non-production installation with an non-resolving, in-code provider, which will basically short-circuit the DOI publishing process. ``:DoiProvider`` is only needed if you are using DOI.
 
-This setting relates to the ``Protocol``, ``Authority``, ``Shoulder``, and ``IdentifierGenerationStyle`` file settings below:
+This setting relates to the :ref:`Protocol`, :ref:`Authority`, :ref:`Shoulder`, and :ref:`IdentifierGenerationStyle` file settings.
 
 - :ref:`DoiBaseUrlString`
 - :ref:`DoiUsername`
@@ -861,12 +881,13 @@ By default, Dataverse generates a random 6 character string, pre-pended by the S
 for a Dataset. Set this to ``sequentialNumber`` to use sequential numeric values 
 instead (again pre-pended by the Shoulder if set). (the assumed default setting is ``randomString``). 
 In addition to this setting, a database sequence must be created in the database. 
-We provide the script below (downloadable :download:`here </_static/util/createsequence.sql>`).
+We provide the script (downloadable: :download:`/_static/util/createsequence.sql`) that
+will create such sequence.
 You may need to make some changes to suit your system setup, see the comments for more information: 
 
 .. literalinclude:: ../_static/util/createsequence.sql
 
-Note that the SQL above is Postgres-specific. If necessary, it can be reimplemented 
+Note that this SQL is Postgres-specific. If necessary, it can be reimplemented 
 in any other SQL flavor - the standard JPA code in the application simply expects 
 the database to have a saved function ("stored procedure") named ``generateIdentifierAsSequentialNumber``
 with the single return argument ``identifier``. 
@@ -874,7 +895,7 @@ with the single return argument ``identifier``.
 For systems using Postgresql 8.4 or older, the procedural language `plpgsql` should be enabled first.
 We have provided an example :download:`here </_static/util/pg8-createsequence-prep.sql>`.
 
-Please note that ``IdentifierGenerationStyle`` also plays a role for the "identifier" for files. See the section on ``DataFilePIDFormat`` below for more details.
+Please note that ``IdentifierGenerationStyle`` also plays a role for the "identifier" for files. See the section on :ref:`DataFilePIDFormat` for more details.
 
 .. _DataFilePIDFormat:
 
@@ -885,9 +906,9 @@ This setting controls the way that the "identifier" component of a file's persis
 
 By default the identifier for a file is dependent on its parent dataset. For example, if the identifier of a dataset is "TJCLKP", the identifier for a file within that dataset will consist of the parent dataset's identifier followed by a slash ("/"), followed by a random 6 character string, yielding "TJCLKP/MLGWJO". Identifiers in this format are what you should expect if you leave ``DataFilePIDFormat`` undefined or set it to ``DEPENDENT`` and have not changed the ``IdentifierGenerationStyle`` setting from its default.
 
-Alternatively, the identifier for File PIDs can be configured to be independent of Dataset PIDs using the setting "``INDEPENDENT``". In this case, file PIDs will not contain the PIDs of their parent datasets, and their PIDs will be generated the exact same way that datasets' PIDs are, based on the ``IdentifierGenerationStyle`` setting described above (random 6 character strings or sequential numbers, pre-pended by any shoulder).
+Alternatively, the identifier for File PIDs can be configured to be independent of Dataset PIDs using the setting "``INDEPENDENT``". In this case, file PIDs will not contain the PIDs of their parent datasets, and their PIDs will be generated the exact same way that datasets' PIDs are, based on the :ref:`IdentifierGenerationStyle` setting (random 6 character strings or sequential numbers, pre-pended by any shoulder).
 
-The chart below shows examples from each possible combination of parameters from the two settings. ``IdentifierGenerationStyle`` can be either ``randomString`` (the default) or ``sequentialNumber`` and ``:DataFilePIDFormat`` can be either ``DEPENDENT`` (the default) or ``INDEPENDENT``. In the examples below the "identifier" for the dataset is "TJCLKP" for "randomString" and "100001" for "sequentialNumber".
+The following table shows examples from each possible combination of parameters from the two settings. ``IdentifierGenerationStyle`` can be either ``randomString`` (the default) or ``sequentialNumber`` and ``:DataFilePIDFormat`` can be either ``DEPENDENT`` (the default) or ``INDEPENDENT``. In the examples in the table we assumed that the "identifier" for the dataset is "TJCLKP" for "randomString" and "100001" for "sequentialNumber".
 
 +-----------------+---------------+------------------+
 |                 | randomString  | sequentialNumber |
@@ -898,11 +919,11 @@ The chart below shows examples from each possible combination of parameters from
 | **INDEPENDENT** |    MLGWJO     |      100002      |
 +-----------------+---------------+------------------+
 
-As seen above, in cases where ``IdentifierGenerationStyle`` is set to *sequentialNumber* and ``DataFilePIDFormat`` is set to *DEPENDENT*, each file within a dataset will be assigned a number *within* that dataset starting with "1".
+In cases where ``IdentifierGenerationStyle`` is set to *sequentialNumber* and ``DataFilePIDFormat`` is set to *DEPENDENT*, each file within a dataset will be assigned a number *within* that dataset starting with "1".
 
 Otherwise, if ``DataFilePIDFormat`` is set to *INDEPENDENT*, then each file will be assigned a PID with the next number in the overall sequence, regardless of what dataset it is in. If the file is created after a dataset with the PID 100001, then the file will be assigned the PID 100002. This option is functional, but it is not a recommended use case.
 
-Note that in either case, when using the ``sequentialNumber`` option, datasets and files share the same database sequence that was created as part of the setup described in ``IdentifierGenerationStyle`` above.
+Note that in either case, when using the ``sequentialNumber`` option, datasets and files share the same database sequence that was created as part of the setup described in ref:`IdentifierGenerationStyle`.
 
 .. _FilePIDsEnabled:
 
@@ -960,7 +981,7 @@ Sets ip addresses that are allowed to resume :doc:`../developers/workflows`. Use
 GuidesVersion
 ++++++++++++++
 
-Set ``GuidesVersion`` to override the version number in the URL of guides. For example, rather than http://guides.dataverse.org/en/4.6/user/account.html the version is overriden to http://guides.dataverse.org/en/1234-new-feature/user/account.html in the example below:
+Set ``GuidesVersion`` to override the version number in the URL of guides. For example, rather than http://guides.dataverse.org/en/4.6/user/account.html the version is overriden to http://guides.dataverse.org/en/1234-new-feature/user/account.html in the following example:
 
 ``GuidesVersion=1234-new-feature``
 
@@ -997,7 +1018,7 @@ For performance reasons, Dataverse will only create zip files on the fly up to 1
 TabularIngestSizeLimit
 +++++++++++++++++++++++
 
-Threshold in bytes for limiting whether or not "ingest" it attempted for tabular files (which can be resource intensive). For example, with the below in place, files greater than 2 GB in size will not go through the ingest process:
+Threshold in bytes for limiting whether or not "ingest" it attempted for tabular files (which can be resource intensive). In the following example, files greater than 2 GB in size will not go through the ingest process:
 
 ``TabularIngestSizeLimit=2000000000``
 
@@ -1041,7 +1062,7 @@ If ``SolrFullTextIndexing`` is set to true, the content of files of any size wil
 SignUpUrl
 ++++++++++
 
-The relative path URL to which users will be sent for signup. The default setting is below.
+The relative path URL to which users will be sent for signup. The default setting value is:
 
 ``SignUpUrl=/dataverseuser.xhtml?editMode=CREATE``
 
@@ -1147,7 +1168,7 @@ Password policy setting for builtinuser accounts: dictates which types of charac
 - one letter
 - one digit
 
-The default setting above is equivalent to specifying "Alphabetical:1,Digit:1".
+The default setting is equivalent to specifying "Alphabetical:1,Digit:1".
 
 By specifying "UpperCase:1,LowerCase:1,Digit:1,Special:1", for example, you can put the following four rules in place instead:
 
@@ -1255,7 +1276,7 @@ Limit on how many guestbook entries to display on the guestbook-responses page. 
 CustomDatasetSummaryFields
 +++++++++++++++++++++++++++
 
-You can replace the default dataset metadata fields that are displayed above files table on the dataset page with a custom list separated by commas using the curl command below.
+You can replace the default dataset metadata fields that are displayed in dataset summary (summary is displayed after the citation and before files table on the dataset page) with a custom list separated by commas as shown in the following example:
 
 ``CustomDatasetSummaryFields=producer,subtitle,alternativeTitle``
 
@@ -1286,7 +1307,7 @@ Languages
 ++++++++++
 
 Sets which languages should be available. If there is more than one, a dropdown is displayed
-in the header. This should be formated as a JSON array as shown below.
+in the header. This should be formated as a JSON array as shown in the example.
 
 ``Languages=[{  "locale":"en", "title":"English"},  {  "locale":"fr", "title":"Français"}]``
 
@@ -1353,7 +1374,7 @@ Setting can be postfixed with language code to obtain translated versions.
 SiteFullName
 ++++++++++++
 
-Indicates full name of the site that will be presented in the header below SiteName.
+Indicates full name of the site that will be presented in the header right after (below) SiteName.
 
 ``SiteFullName=Repository for Open Data``
 
@@ -1389,6 +1410,8 @@ Used in conjunction with the ``BlockedApiPolicy`` being set to ``unblock-key``. 
 
 ``BlockedApiKey=localhost-only``
 
+.. _builtin_users_key:
+
 BuiltinUsers.KEY
 ++++++++++++++++
 
@@ -1399,7 +1422,7 @@ The key required to create users via API as documented at :doc:`/api/native-api`
 FooterCopyright
 ++++++++++++++++
 
-By default the footer says "Copyright © [YYYY]" but you can add text after the year, as in the example below.
+By default the footer says "Copyright © [YYYY]" but you can add text after the year, as in the example:
 
 ``FooterCopyright=, Your Institution``
 
@@ -1463,7 +1486,7 @@ Set ``SearchHighlightFragmentSize`` to override the default value of 100 from ht
 PVDictionaries
 +++++++++++++++
 
-Password policy setting for builtin user accounts: set a comma separated list of dictionaries containing words that cannot be used in a user password. ``/usr/share/dict/words`` is suggested and shown modified below to not contain words 3 letters or less. You are free to choose a different dictionary. By default, no dictionary is checked.
+Password policy setting for builtin user accounts: set a comma separated list of dictionaries containing words that cannot be used in a user password. ``/usr/share/dict/words`` is a suggested option. You are however free to choose a different dictionary. By default, no dictionary is checked.
 
 .. _PVCustomPasswordResetAlertMessage:
 
@@ -1474,7 +1497,7 @@ Changes the default info message displayed when a user is required to change the
 
 ``{0} Reset Password{1} – Our password requirements have changed. Please pick a strong password that matches the criteria below.``
 
-Where the {0} and {1} denote surrounding HTML **bold** tags. It's recommended to put a single space before your custom message for better appearance (as in the default message above). Including the {0} and {1} to bolden part of your message is optional.
+Where the {0} and {1} denote surrounding HTML **bold** tags. It's recommended to put a single space before your custom message for better appearance (as in the default message). Including the {0} and {1} to bolden part of your message is optional.
 
 Customize the message using the following curl command's syntax:
 
@@ -1497,7 +1520,7 @@ The URL for your Repository Storage Abstraction Layer (RSAL) installation. This 
 JVM Options
 -----------
 
-JVM stands Java Virtual Machine and as a Java application, Glassfish can read JVM options when it is started. A number of JVM options are configured by the installer below is a complete list of the Dataverse-specific JVM options. You can inspect the configured options by running:
+JVM stands Java Virtual Machine and as a Java application, Glassfish can read JVM options when it is started. A number of JVM options are configured by the installer. In this section we present a complete list of the Dataverse-specific JVM options. You can inspect the configured options by running:
 
 ``./asadmin list-jvm-options | egrep 'dataverse|doi'``
 
@@ -1513,6 +1536,8 @@ dataverse.auth.password-reset-timeout-in-minutes
 ++++++++++++++++++++++++++++++++++++++++++++++++
 
 Users have 60 minutes to change their passwords by default. You can adjust this value here.
+
+.. _dataverse_files_directory:
 
 dataverse.files.directory
 +++++++++++++++++++++++++

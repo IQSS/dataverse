@@ -2,8 +2,6 @@
 Deployment
 ==========
 
-Developers often only deploy Dataverse to their :doc:`dev-environment` but it can be useful to deploy Dataverse to cloud services such as Amazon Web Services (AWS).
-
 .. contents:: |toctitle|
 	:local:
 
@@ -21,7 +19,7 @@ First, you need to have AWS Command Line Interface (AWS CLI) installed, which is
 
 If you have not yet installed AWS CLI you should install it by following the instructions at https://docs.aws.amazon.com/cli/latest/userguide/installing.html
 
-Afterwards, you should re-run the "version" command above to verify that AWS CLI has been properly installed. If "version" still doesn't work, read on for troubleshooting advice. If "version" works, you can skip down to the "Configure AWS CLI" step.
+Afterwards, you should re-run the "version" command to verify that AWS CLI has been properly installed. If "version" still doesn't work, read on for troubleshooting advice. If "version" works, you can skip down to the "Configure AWS CLI" step.
 
 Troubleshooting "aws: command not found"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -38,7 +36,7 @@ On Mac, to update your ``$PATH`` to include the location where the current AWS d
 
 After all this, you can try the "version" command again.
 
-Note that it's possible to add an ``export`` line like the one above to your ``~/.bash_profile`` file so you don't have to run it yourself when you open a new terminal.
+Note that it's possible to add an ``export`` command to your ``~/.bash_profile`` file so you don't have to run it yourself when you open a new terminal.
 
 Configure AWS CLI
 ~~~~~~~~~~~~~~~~~
@@ -68,19 +66,21 @@ Create a plain text file at ``~/.aws/credentials`` with the following content::
 
 Then update the file and replace the values for "aws_access_key_id" and "aws_secret_access_key" with your actual credentials by following the instructions at https://aws.amazon.com/blogs/security/wheres-my-secret-access-key/
 
-If you are having trouble configuring the files manually as described above, see https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html which documents the ``aws configure`` command.
+If you are having trouble configuring the files manually, see https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html which documents the ``aws configure`` command.
+
+.. _configure_ansible_file:
 
 Configure Ansible File (Optional)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In order to configure Dataverse settings such as the password of the dataverseAdmin user, download https://raw.githubusercontent.com/IQSS/dataverse-ansible/master/defaults/main.yml and edit the file to your liking.
 
-You can skip this step if you're fine with the values in the "main.yml" file in the link above.
+You can skip this step if you're fine with the values in the "main.yml" file.
 
 Download and Run the "Create Instance" Script
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Once you have done the configuration above, you are ready to try running the "create instance" script to spin up Dataverse in AWS.
+Once you have done the configuration, you are ready to try running the "create instance" script to spin up Dataverse in AWS.
 
 Download :download:`ec2-create-instance.sh <../../../../scripts/installer/ec2-create-instance.sh>` and put it somewhere reasonable. For the purpose of these instructions we'll assume it's in the "Downloads" directory in your home directory.
 
@@ -92,7 +92,7 @@ You must specify the branch with ``-b`` but you can also specify a non-IQSS git 
 
 ``bash ~/Downloads/ec2-create-instance.sh -b develop -r https://github.com/scholarsportal/dataverse.git``
 
-If you configured an Ansible file above and want to make use of it, add ``-g main.yml`` (or whatever you named your file) as in the following example.
+If you configured an Ansible file (:ref:`configure_ansible_file`) and want to make use of it, add ``-g main.yml`` (or whatever you named your file) as in the following example.
 
 ``bash ~/Downloads/ec2-create-instance.sh -b develop -r https://github.com/scholarsportal/dataverse.git -b main.yml``
 

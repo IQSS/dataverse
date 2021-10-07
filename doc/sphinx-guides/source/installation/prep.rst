@@ -47,9 +47,14 @@ There are some community-lead projects to use configuration management tools suc
 
 The Dataverse development team is happy to "bless" additional community efforts along these lines (i.e. Docker, Chef, Salt, etc.) by creating a repo under https://github.com/IQSS and managing team access.
 
-Dataverse permits a fair amount of flexibility in where you choose to install the various components. The diagram below shows a load balancer, multiple proxies and web servers, redundant database servers, and offloading of potentially resource intensive work to a separate server. 
+Dataverse permits a fair amount of flexibility in where you choose to install the various components. The diagram :numref:`3webservers` shows a load balancer, multiple proxies and web servers, redundant database servers, and offloading of potentially resource intensive work to a separate server. 
 
-|3webservers|
+.. _3webservers:
+
+.. figure:: ./img/3webservers.png
+   :alt: Three web servers installation
+   
+   Diagram presenting Dataverse installation on three servers behind a load balancer
 
 A setup such as this is advanced enough to be considered out of scope for this guide (apart from a stub in the :doc:`advanced` section) but you are welcome to ask questions about similar configurations via the support channels listed in the :doc:`intro`.
 
@@ -126,5 +131,3 @@ Next Steps
 
 Proceed to the :doc:`prerequisites` section which will help you get ready to run the Dataverse installation script.
 
-.. |3webservers| image:: ./img/3webservers.png
-   :class: img-responsive

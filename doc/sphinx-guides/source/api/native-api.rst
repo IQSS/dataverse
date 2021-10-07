@@ -18,12 +18,15 @@ Dataverses
 Create a Dataverse
 ~~~~~~~~~~~~~~~~~~
 
-Generates a new dataverse under ``$id``. Expects a JSON content describing the dataverse, as in the example below.
+Generates a new dataverse under ``$id``. Expects a JSON content describing the dataverse, for example:
+
+.. literalinclude:: ../_static/api/dataverse-complete.json
+
 If ``$id`` is omitted, a root dataverse is created. ``$id`` can either be a dataverse id (long) or a dataverse alias (more robust). ::
 
     POST http://$SERVER/api/dataverses/$id?key=$apiKey
 
-Download the :download:`JSON example <../_static/api/dataverse-complete.json>` file and modified to create dataverses to suit your needs. The fields ``name``, ``alias``, and ``dataverseContacts`` are required. The controlled vocabulary for ``dataverseType`` is
+Download the :download:`JSON example <../_static/api/dataverse-complete.json>` file and modify it to suit your needs. The fields ``name``, ``alias``, and ``dataverseContacts`` are required. The allowed values for ``dataverseType`` are:
 
 - ``DEPARTMENT``
 - ``JOURNALS``
@@ -35,7 +38,6 @@ Download the :download:`JSON example <../_static/api/dataverse-complete.json>` f
 - ``TEACHING_COURSES``
 - ``UNCATEGORIZED``
 
-.. literalinclude:: ../_static/api/dataverse-complete.json
 
 View a Dataverse
 ~~~~~~~~~~~~~~~~
@@ -92,8 +94,8 @@ POSTed JSON example::
 
   {
     "alias": "sys1",
-    "name": “Restricted System Role”,
-    "description": “A person who may only add datasets.”,
+    "name": "Restricted System Role",
+    "description": "A person who may only add datasets.",
     "permissions": [
       "AddDataset"
     ]
@@ -147,9 +149,11 @@ List Metadata Blocks Defined on a Dataverse
 Define Metadata Blocks for a Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sets the metadata blocks of the dataverse. Makes the dataverse a metadatablock root. The query body is a JSON array with a list of metadatablocks identifiers (either id or name), such as "journal" and "geospatial" in the example below. Requires "EditDataverse" permission. In this example the "root" dataverse is being modified but you can substitute any dataverse alias:
+Sets the metadata blocks of the dataverse. Makes the dataverse a metadatablock root. The query body is a JSON array with a list of metadatablocks identifiers (either id or name), such as "journal" and "geospatial" in the example::
 
-``curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-type:application/json" -d "[\"journal\",\"geospatial\"]" http://localhost:8080/api/dataverses/:root/metadatablocks``
+    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-type:application/json" -d "[\"journal\",\"geospatial\"]" http://localhost:8080/api/dataverses/:root/metadatablocks
+
+Command requires "EditDataverse" permission. In the example the "root" dataverse is being modified but you can substitute it with any dataverse alias.
 
 Determine if a Dataverse Inherits Its Metadata Blocks from Its Parent
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -239,7 +243,7 @@ Datasets
 
 **Note** Creation of new datasets is done with a ``POST`` onto dataverses. See Dataverses_ section.
 
-**Note** In all commands below, except where it's stated that version is referred by its ID, dataset versions can be referred to as:
+**Note** In all commands in this section and its subsections, except where it's stated that version is referred by its ID, dataset versions can be referred to as:
 
 * ``:draft``  the draft version, if any
 * ``:latest`` either a draft (if exists) or the latest published version.
@@ -288,7 +292,7 @@ Get Version of a Dataset
 Export Metadata of a Dataset in Various Formats
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|CORS| Export the metadata of the current published version of a dataset in various formats see Note below::
+|CORS| Export the metadata of the current published version of a dataset in various formats::
 
     GET http://$SERVER/api/datasets/export?exporter=ddi&persistentId=$persistentId
 
@@ -324,7 +328,7 @@ A ``format=original`` parameter can be added in order to download tabular data f
 
 .. note:: As a result a zip file called ``dataverse_files.zip`` will be saved in your current directory. Except dataset version files this archive includes ``MANIFEST.txt`` file with additional information - like why some files couldn't have been downloaded.
 
-.. note:: To get specific dataset version id you can call :ref:`List Files in a Dataset <list-dataset-version-files>` endpoint.
+.. note:: To get specific dataset version id you can call :ref:`list-dataset-version-files` endpoint.
 
 A curl example using a DOI::
 
@@ -360,15 +364,15 @@ For example, after making your edits, your JSON file might look like :download:`
 
     curl -H "X-Dataverse-key: $API_TOKEN" -X PUT $SERVER_URL/api/datasets/:persistentId/versions/:draft?persistentId=$PID --upload-file dataset-update-metadata.json
 
-Note that in the example JSON file above, there is a single JSON object with ``metadataBlocks`` as a key. When you download a representation of your dataset in JSON format, the ``metadataBlocks`` object you need is nested inside another object called ``json``. To extract just the ``metadataBlocks`` key when downloading a JSON representation, you can use a tool such as ``jq`` like this::
+Note that in the example JSON file (:download:`dataset-update-metadata.json <../_static/api/dataset-update-metadata.json>`), there is a single JSON object with ``metadataBlocks`` as a key. When you download a representation of your dataset in JSON format, the ``metadataBlocks`` object you need is nested inside another object called ``json``. To extract just the ``metadataBlocks`` key when downloading a JSON representation, you can use a tool such as ``jq`` like this::
 
     curl -H "X-Dataverse-key: $API_TOKEN" $SERVER_URL/api/datasets/:persistentId/versions/:latest?persistentId=$PID | jq '.data | {metadataBlocks: .metadataBlocks}' > dataset-update-metadata.json
 
-Now that the resulting JSON file only contains the ``metadataBlocks`` key, you can edit the JSON such as with ``vi`` in the example below::
+Now that the resulting JSON file only contains the ``metadataBlocks`` key, you can edit the JSON such as with ``vi`` in the example::
 
     vi dataset-update-metadata.json
 
-Now that you've made edits to the metadata in your JSON file, you can send it to Dataverse as described above.
+Now that you've made edits to the metadata in your JSON file, you can send it to Dataverse.
 
 Edit Dataset Metadata
 ~~~~~~~~~~~~~~~~~~~~~
@@ -392,6 +396,8 @@ You may delete some of the metadata of a dataset version by supplying a file wit
     
 For these deletes your JSON file must include an exact match of those dataset fields which you would like to delete. A sample JSON file may be downloaded here: :download:`dataset-delete-author-metadata.json <../_static/api/dataset-delete-author-metadata.json>` 
 
+
+.. _publish_dataset:
 
 Publish a Dataset
 ~~~~~~~~~~~~~~~~~
@@ -538,7 +544,7 @@ Example python code to add a file. This may be run by changing these parameters 
 * ``persistentId`` - Example: ``doi:10.5072/FK2/6XACVA``
 * ``dataset_id`` - Database id of the dataset
 
-In practice, you only need one the ``dataset_id`` or the ``persistentId``. The example below shows both uses.
+In practice, you only need one the ``dataset_id`` or the ``persistentId``. The following example shows both uses.
 
 .. code-block:: python
 
@@ -616,6 +622,8 @@ In practice, you only need one the ``dataset_id`` or the ``persistentId``. The e
     print r.json()
     print r.status_code
 
+.. _submit_for_review:
+
 Submit a Dataset for Review
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -628,13 +636,13 @@ The people who need to review the dataset (often curators or journal editors) ca
 Return a Dataset to Author
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-After the curators or journal editors have reviewed a dataset that has been submitted for review (see "Submit for Review", above) they can either choose to publish the dataset (see the ``:publish`` "action" above) or return the dataset to its authors. In the web interface there is a "Return to Author" button (see :doc:`/user/dataset-management`), but the interface does not provide a way to explain **why** the dataset is being returned. There is a way to do this outside of this interface, however. Instead of clicking the "Return to Author" button in the UI, a curator can write a "reason for return" into the database via API.
+After the curators or journal editors have reviewed a dataset that has been submitted for review (see :ref:`submit_for_review`) they can either choose to publish the dataset (see :ref:`publish_dataset`) or return the dataset to its authors. In the web interface there is a "Return to Author" button (see :doc:`/user/dataset-management`), but the interface does not provide a way to explain **why** the dataset is being returned. There is a way to do this outside of this interface, however. Instead of clicking the "Return to Author" button in the UI, a curator can write a "reason for return" into the database via API.
 
 Here's how curators can send a "reason for return" to the dataset authors. First, the curator creates a JSON file that contains the reason for return:
 
 .. literalinclude:: ../_static/api/reason-for-return.json
 
-In the example below, the curator has saved the JSON file as :download:`reason-for-return.json <../_static/api/reason-for-return.json>` in their current working directory. Then, the curator sends this JSON file to the ``returnToAuthor`` API endpoint like this::
+In the following example, the curator has saved the JSON file as :download:`reason-for-return.json <../_static/api/reason-for-return.json>` in their current working directory. Then, the curator sends this JSON file to the ``returnToAuthor`` API endpoint like this::
 
     curl -H "Content-type:application/json" -d @reason-for-return.json -H "X-Dataverse-key: $API_TOKEN" -X POST "$SERVER_URL/api/datasets/:persistentId/returnToAuthor?persistentId=$DOI_OR_HANDLE_OF_DATASET"
 
@@ -703,7 +711,7 @@ For example::
 
 If the dataset is not locked (or if there is no lock of the specified type), the API will exit with a warning message. 
 
-(Note that the API calls above all support both the database id and persistent identifier notation for referencing the dataset)
+(Note that all of these API calls support both the database id and persistent identifier notation for referencing the dataset)
 
 
 Files
@@ -712,7 +720,7 @@ Files
 Adding Files
 ~~~~~~~~~~~~
 
-.. Note:: Files can be added via the native API but the operation is performed on the parent object, which is a dataset. Please see the Datasets_ endpoint above for more information.
+.. Note:: Files can be added via the native API but the operation is performed on the parent object, which is a dataset. Please see the Datasets_ endpoint for more information.
 
 Accessing (downloading) files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -878,7 +886,7 @@ Create a Builtin User
 
 For security reasons, builtin users cannot be created via API unless the team who runs the Dataverse installation has populated a database setting called ``BuiltinUsers.KEY``, which is described under "Securing Your Installation" and "Database Settings" in the :doc:`/installation/config` section of the Installation Guide. You will need to know the value of ``BuiltinUsers.KEY`` before you can proceed.
 
-To create a builtin user via API, you must first construct a JSON document.  You can download :download:`user-add.json <../_static/api/user-add.json>` or copy the text below as a starting point and edit as necessary.
+To create a builtin user via API, you must first construct a JSON document.  You can download :download:`user-add.json <../_static/api/user-add.json>` or copy the following example as a starting point and edit as necessary.
 
 .. literalinclude:: ../_static/api/user-add.json
 
@@ -1169,7 +1177,7 @@ List users with the options to search and "page" through results. Only accessibl
     GET http://$SERVER/api/admin/list-users
 
 
-Sample output appears below.
+Sample output:
 
 * When multiple pages of results exist, the ``selectedPage`` parameters may be specified.
 * Note, the resulting ``pagination`` section includes ``pageCount``, ``previousPageNumber``, ``nextPageNumber``, and other variables that may be used to re-create the UI.
@@ -1380,7 +1388,7 @@ Execute a saved search by database id and make links to dataverses and datasets 
 
   PUT http://$SERVER/api/admin/savedsearches/makelinks/$id?debug=true
 
-Execute all saved searches and make links to dataverses and datasets that are found. ``debug`` works as described above.  ::
+Execute all saved searches and make links to dataverses and datasets that are found. ``debug`` parameter works in the same manner as in making links for single saved search::
 
   PUT http://$SERVER/api/admin/savedsearches/makelinks/all?debug=true
 
@@ -1452,12 +1460,6 @@ Clear a specific metric cache. Currently this must match the name of the row in 
 
     DELETE http://$SERVER/api/admin/clearMetricsCache/$metricDbName
 
-.. |CORS| raw:: html
-
-      <span class="label label-success pull-right">
-        CORS
-      </span>
-
 Inherit Dataverse Role Assignments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1466,3 +1468,11 @@ Recursively applies the role assignments of the specified dataverse, for the rol
   GET http://$SERVER/api/admin/dataverse/{dataverse alias}/addRoleAssignmentsToChildren
   
 Note: setting ``:InheritParentRoleAssignments`` will automatically trigger inheritance of the parent dataverse's role assignments for a newly created dataverse. Hence this API call is intended as a way to update existing child dataverses or to update children after a change in role assignments has been made on a parent dataverse.
+
+
+.. |CORS| raw:: html
+
+      <span class="label label-success pull-right">
+        CORS
+      </span>
+

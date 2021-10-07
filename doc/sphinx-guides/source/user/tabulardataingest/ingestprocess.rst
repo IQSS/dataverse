@@ -29,7 +29,7 @@ efficiently by the application. For the purposes of archival
 preservation it can be exported, in plain text XML files, using a
 standardized, open `DDI Codebook
 <http://www.ddialliance.org/Specification/DDI-Codebook/2.5/>`_
-format. (more info below)
+format.
 
 
 Tabular Data and Metadata

@@ -27,7 +27,7 @@ The Guides are reference documents that explain how to use Dataverse,
 which are divided into the following sections: User Guide,
 Installation Guide, Developer Guide, and API Guide. The User Guide is further divided into primary activities: finding & using
 data, adding Datasets, administering dataverses or Datasets, and Dataset exploration/visualizations. Details
-on all of the above tasks can be found in the Users Guide. The
+on all of the those tasks can be found in the Users Guide. The
 Installation Guide is for people or organizations who want to host their
 own Dataverse. The Developer Guide contains instructions for
 people who want to contribute to the Open Source Dataverse

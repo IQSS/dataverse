@@ -11,7 +11,7 @@ Manage Users
 
 The Manage Users table gives the network administrator a list of all user accounts in table form. You can access it by clicking the "Manage Users" button on the :doc:`dashboard`, which is linked from the header of all Dataverse pages (if you're logged in as an administrator). It lists username, full name, email address, affiliation, the authentication method they use, the roles their account has been granted, and whether or not they have Superuser status.
 
-Users are listed alphabetically by username. The search bar above the table allows you to search for a specific user. It performs a right-truncated wildcard search of the Username, Name, and Email columns. This means, if you search "baseba" then it will search those three columns for any string of text that begins with "baseba", e.g. "baseball" or "baseballfan".
+Users are listed alphabetically by username. The input labelled "Search these users..." above the table allows you to search for a specific user. It performs a right-truncated wildcard search of the Username, Name, and Email columns. This means, if you search "baseba" then it will search those three columns for any string of text that begins with "baseba", e.g. "baseball" or "baseballfan".
 
 If you would like to assign or remove a user's Superuser status, then you can do so by checking or unchecking their checkbox under the "Superuser" column.
 
@@ -24,7 +24,7 @@ There are two ways to list users via API. If you have relatively few users, you 
 
         curl -H "X-Dataverse-key: $API_TOKEN" http://localhost:8080/api/admin/authenticatedUsers
 
-If you have many users and want to be able to search and paginate through the results, use the command below with a superuser API token::
+If you have many users and want to be able to search and paginate through the results, use the following command with a superuser API token::
 
     curl -H "X-Dataverse-key: $API_TOKEN" http://localhost:8080/api/admin/list-users
 
@@ -60,9 +60,9 @@ Deleting an API Token
 
 If an API token is compromised it should be deleted. Users can generate a new one for themselves as explained in the :doc:`/user/account` section of the User Guide, but you may want to preemptively delete tokens from the database.
 
-Using the API token 7ae33670-be21-491d-a244-008149856437 as an example:
+Using the API token 7ae33670-be21-491d-a244-008149856437 as an example::
 
-``delete from apitoken where tokenstring = '7ae33670-be21-491d-a244-008149856437';``
+    delete from apitoken where tokenstring = '7ae33670-be21-491d-a244-008149856437';
 
-You should expect the output ``DELETE 1`` after issuing the command above.
+You should expect the output ``DELETE 1`` after issuing this command.
 

@@ -33,7 +33,7 @@ We don't know what's causing this issue, but here's a known workaround:
 
 - Start Glassfish
 
-The shell script below performs the steps above. 
+Or execute the following shell script.
 Note that it may or may not work on your system, so it is provided as an example only, downloadable :download:`here </_static/util/clear_timer.sh>`. Aside from the configuration values that need to be changed to reflect your environment (the Glassfish directory, name of the database, etc.) the script relies on the database being configured in a certain way for access. (See the comments in the script for more information)
 
 .. literalinclude:: ../_static/util/clear_timer.sh

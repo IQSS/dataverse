@@ -227,7 +227,7 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
 Iteration
 ---------
 
-Be default, up to 10 results are returned with every request (though this can be increased with the ``per_page`` parameter). To iterate through many results, increase the ``start`` parameter on each iteration until you reach the ``total_count`` in the response. An example in Python is below.
+Be default, up to 10 results are returned with every request (though this can be increased with the ``per_page`` parameter). To iterate through many results, increase the ``start`` parameter on each iteration until you reach the ``total_count`` in the response. An example of such iteration in Python:
 
 .. code-block:: python
 
@@ -252,7 +252,7 @@ Be default, up to 10 results are returned with every request (though this can be
         condition = start < total
 
 
-Output from iteration example
+Output from iteration example:
 
 .. code-block:: none
 

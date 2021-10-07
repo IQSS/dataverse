@@ -9,7 +9,11 @@
 #}
 {%- extends "layout.html" %}
 {% set title = _('Search') %}
-{% set script_files = script_files + ['_static/searchtools.js'] %}
+{%- block scripts %}
+    {{ super() }}
+    <script src="{{ pathto('_static/searchtools.js', 1) }}"></script>
+    <script src="{{ pathto('_static/language_data.js', 1) }}"></script>
+{%- endblock %}
 {% block extrahead %}
   <script type="text/javascript">
     jQuery(function() { Search.loadIndex("{{ pathto('searchindex.js', 1) }}"); });
@@ -38,9 +42,9 @@
   {% if theme_bootstrap_version == "3" %}
   <form class="form-inline" action="" method="get">
     <div class="form-group">
-      <input type="text" class="form-control" name="q" value="" />
+      <input type="text" class="form-control" name="q" value="" placeholder="{{ _('Search') }}" aria-label="{{ _('Search') }}" />
     </div>
-    <input type="submit" class="btn btn-default" value="{{ _('search') }}" />
+    <input type="submit" class="btn btn-default" value="{{ _('Search') }}" />
     <span id="search-progress" style="padding-left: 10px"></span>
   </form>  
   {% else %}

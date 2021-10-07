@@ -33,9 +33,9 @@ An export batch job, whether started via the API, or by the application timer, w
 Downloading Metadata via GUI
 ----------------------------
 
-The :doc:`/user/dataset-management` section of the User Guide explains how end users can download the metadata formats above from the Dataverse GUI.
+The :doc:`/user/dataset-management` section of the User Guide explains how end users can download the metadata formats from the Dataverse GUI.
 
 Downloading Metadata via API
 ----------------------------
 
-The :doc:`/api/native-api` section of the API Guide explains how end users can download the metadata formats above via API.
+The :doc:`/api/native-api` section of the API Guide explains how end users can download the metadata formats via API.

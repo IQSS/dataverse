@@ -54,23 +54,34 @@ Preparing a tabular file to be mapped
 
 **1. Ingest**
 
-Geospatial tabular files need a bit of preparation in Dataverse before they can be mapped in Geoconnect. When you upload your file, Dataverse will take about ten seconds to ingest it. During the ingest process it will identify the file as tabular data. 
+Geospatial tabular files need a bit of preparation in Dataverse before they can be mapped in Geoconnect. When you upload your file, Dataverse will take about ten seconds to ingest it. During the ingest process it will identify the file as tabular data (see :numref:`image1`). 
 
-|image1|
+.. _image1:
+.. figure:: ./img/geoconnect-tabular-1.png
+   :alt: Ingested file screenshot
+   
+   Screenshot of successfully ingested file
 
 
 **2.Tag as Geospatial**
 
-Next, you'll need to let Dataverse know that your tabular file contains geospatial data. Select your file, click the "Edit Files" button, and select "Tags" from the dropdown menu. This will take you to the Edit Tags menu (pictured below). Under the "Tabular Data Tags" dropdown, select "Geospatial". Then click "Save Changes".
+Next, you'll need to let Dataverse know that your tabular file contains geospatial data. Select your file, click the "Edit Files" button, and select "Tags" from the dropdown menu. This will take you to the Edit Tags menu (:numref:`image2`). Under the "Tabular Data Tags" dropdown, select "Geospatial". Then click "Save Changes".
 
-|image2|
-
+.. _image2:
+.. figure:: ./img/geoconnect-tabular-2.png
+   :alt: Assign Geospatial tag screenshot
+   
+   Screenshot of assigning "Geospatial" tag on tabular file
 
 **3. Publish & Map Data**
 
 At this point, a "Map data" button will appear next to your file. Publish this new version of your dataset to activate this button.
 
-|image3|
+.. _image3:
+.. figure:: ./img/geoconnect-tabular-3.png
+   :alt: Map data button
+   
+   Screenshot presenting file with highlighted "Map data" button
 
 
 Creating the map
@@ -92,29 +103,53 @@ The following screenshots illustrate the mapping process:
 
 **1. Once you've pressed the "Map Data" button, you're brought to this page:**
 
-|image4|
+.. _image4:
+.. figure:: ./img/geoconnect-tabular-4.png
+   :alt: file in Geoconnect
+   
+   Screenshot presenting file in Geoconnect application
 
 **2. Choose a Geospatial Data Type**
 
-|image5|
+.. _image5:
+.. figure:: ./img/geoconnect-tabular-5.png
+   :alt: Geospatial Data Type selection screenshot
+   
+   Screenshot of selecting Geospatial Data Type in Geoconnect
 
 **3. Choose a column from your file to match the WorldMap Layer you selected**
 
-|image6|
+.. _image6:
+.. figure:: ./img/geoconnect-tabular-6.png
+   :alt: Geospatial Data Type selection screenshot
+   
+   Screenshot of selecting Geospatial Data Column Name from tabular file in Geoconnect
 
 **4. Choose from the list of WorldMap Layers available for the Geospatial Data Type you selected**
 
-|image7|
+.. _image7:
+.. figure:: ./img/geoconnect-tabular-7.png
+   :alt: WorldMap layer selection screenshot
+   
+   Screenshot of selecting available WorldMap layer in Geoconnect
 
 **5.Submit the data for mapping!**
 
-|image8|
+.. _image8:
+.. figure:: ./img/geoconnect-tabular-8.png
+   :alt: Map generation screenshot
+   
+   Screenshot presenting generating map in Geoconnect
 
 **6. View Results**
 
-At this point you will be presented with a basic map that can be styled to your specifications. The example pictured below includes an error message - some of the rows weren't able to be matched properly. In this case, you could still go forward with your map, but without the information from the unmatched rows.
+At this point you will be presented with a basic map that can be styled to your specifications. The example pictured in :numref:`image9` below includes an error message - some of the rows weren't able to be matched properly. In this case, you could still go forward with your map, but without the information from the unmatched rows.
 
-|image9|
+.. _image9:
+.. figure:: ./img/geoconnect-tabular-9.png
+   :alt: Map preview screenshot
+   
+   Screenshot presenting preview of generated map in Geoconnect
 
 Finalizing your map
 ===================
@@ -125,7 +160,7 @@ Now that you have created your map:
 
 - Dataverse will contain a preview of the map and links to the larger version on WorldMap.
 
-The map editor (pictured above) provides a set of options you can use to style your map. Clicking "Apply Changes" saves the current version of your map to Dataverse and Worldmap. The "Return to the Dataverse" button brings you back to Dataverse. "View on WorldMap" takes you to the map's page on WorldMap, which offers additional views and options. 
+The map editor (:numref:`image9`) provides a set of options you can use to style your map. Clicking "Apply Changes" saves the current version of your map to Dataverse and Worldmap. The "Return to the Dataverse" button brings you back to Dataverse. "View on WorldMap" takes you to the map's page on WorldMap, which offers additional views and options. 
 
 If you'd like to make further changes to your map in the future, you can return to the editor by clicking the "Map Data" button on your file.
 
@@ -135,21 +170,3 @@ Removing your map
 You can delete your map at any time. If you are on Dataverse, click "Map Data" and click the "Delete Map" button on the upper right. This completely removes the map and underlying data from the WorldMap platform.
 
 
-.. |image1| image:: ./img/geoconnect-tabular-1.png
-   :class: img-responsive
-.. |image2| image:: ./img/geoconnect-tabular-2.png
-   :class: img-responsive
-.. |image3| image:: ./img/geoconnect-tabular-3.png
-   :class: img-responsive
-.. |image4| image:: ./img/geoconnect-tabular-4.png
-   :class: img-responsive
-.. |image5| image:: ./img/geoconnect-tabular-5.png
-   :class: img-responsive
-.. |image6| image:: ./img/geoconnect-tabular-6.png
-   :class: img-responsive
-.. |image7| image:: ./img/geoconnect-tabular-7.png
-   :class: img-responsive
-.. |image8| image:: ./img/geoconnect-tabular-8.png
-   :class: img-responsive
-.. |image9| image:: ./img/geoconnect-tabular-9.png
-   :class: img-responsive

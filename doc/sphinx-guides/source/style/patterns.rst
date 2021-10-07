@@ -126,51 +126,30 @@ Most tables use the `DataTable components <https://www.primefaces.org/showcase/u
 	      		<table role="grid">
 	      			<thead>
 	      				<tr role="row">
-	      					<th style="width:60px;" class="ui-state-default ui-selection-column col-select-width text-center" role="columnheader"><span class="ui-column-title"></span><div class="ui-chkbox ui-chkbox-all ui-widget"><div class="ui-helper-hidden-accessible"><input type="checkbox" name="table_checkbox"></div><div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default"><span class="ui-chkbox-icon ui-icon ui-icon-blank ui-c"></span></div></div></th><th class="ui-state-default col-sm-2 text-center" role="columnheader"><span class="ui-column-title">Dataset</span></th><th class="ui-state-default" role="columnheader"><span class="ui-column-title">Summary</span></th><th class="ui-state-default col-sm-3" role="columnheader"><span class="ui-column-title">Published</span></th>
+	      					<th class="ui-state-default col-sm-2 text-center" role="columnheader"><span class="ui-column-title">Dataset</span></th>
+	      					<th class="ui-state-default" role="columnheader"><span class="ui-column-title">Summary</span></th>
+	      					<th class="ui-state-default col-sm-3" role="columnheader"><span class="ui-column-title">Published</span></th>
 	  					</tr>
 					</thead>
 					<tbody class="ui-datatable-data ui-widget-content">
 						<tr data-ri="0" class="ui-widget-content ui-datatable-even ui-datatable-selectable" role="row" aria-selected="false">
-							<td role="gridcell" class="ui-selection-column col-select-width text-center">
-								<div class="ui-chkbox ui-widget"><div class="ui-helper-hidden-accessible"><input type="checkbox" name="table_checkbox"></div><div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default"><span class="ui-chkbox-icon ui-icon ui-icon-blank ui-c"></span></div></div>
-							</td>
-							<td role="gridcell" class="text-center">
-		                    	<a href="#" class="ui-commandlink ui-widget" onclick="return false;">3.0</a>
-			                </td>
-			                <td role="gridcell">
-			                	<span class="highlightBold">Files (Changed File Metadata: 1); </span><a href="#" class="ui-commandlink ui-widget" onclick="return false;">View Details</a>
-			                </td>
+							<td role="gridcell" class="text-center">3.0</td>
+			                <td role="gridcell"><span class="highlightBold">Files (Changed File Metadata: 1)</span></td>
 			                <td role="gridcell"><span>March 8, 2017</span></td>
 		                </tr>
 		                <tr data-ri="1" class="ui-widget-content ui-datatable-odd ui-datatable-selectable" role="row" aria-selected="false">
-		                    <td role="gridcell" class="ui-selection-column col-select-width text-center">
-		                    	<div class="ui-chkbox ui-widget"><div class="ui-helper-hidden-accessible"><input type="checkbox" name="table_checkbox"></div><div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default"><span class="ui-chkbox-icon ui-icon ui-icon-blank ui-c"></span></div></div>
-		                    </td>
-		                    <td role="gridcell" class="text-center">
-		                    	<a href="#" class="ui-commandlink ui-widget" onclick="return false;">2.0</a>
-		                    </td>
-		                    <td role="gridcell">
-		                    	<span class="highlightBold">Additional Citation Metadata: </span> (1 Added); <a href="#" class="ui-commandlink ui-widget" onclick="return false;">View Details</a>
-		                	</td>
+		                    <td role="gridcell" class="text-center">2.0</td>
+		                    <td role="gridcell"><span class="highlightBold">Additional Citation Metadata: </span> (1 Added)</td>
 		                	<td role="gridcell"><span>January 25, 2017</span></td>
 		                </tr>
 		                <tr data-ri="2" class="ui-widget-content ui-datatable-even ui-datatable-selectable" role="row" aria-selected="false">
-		                	<td role="gridcell" class="ui-selection-column col-select-width text-center">
-		                		<div class="ui-chkbox ui-widget"><div class="ui-helper-hidden-accessible"><input type="checkbox" name="table_checkbox"></div><div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default"><span class="ui-chkbox-icon ui-icon ui-icon-blank ui-c"></span></div></div>
-			                </td>
-			                <td role="gridcell" class="text-center">
-			                    <a href="#" class="ui-commandlink ui-widget" onclick="return false;">1.1</a></td><td role="gridcell"><span class="highlightBold">Additional Citation Metadata: </span> (1 Added); <a href="#" class="ui-commandlink ui-widget" onclick="return false;">View Details</a>
-			                </td>
+			                <td role="gridcell" class="text-center">1.1</td>
+			                <td role="gridcell"><span class="highlightBold">Additional Citation Metadata: </span> (1 Added)</td>
 			                <td role="gridcell"><span>October 25, 2016</span></td>
 		                </tr>
 		                <tr data-ri="3" class="ui-widget-content ui-datatable-odd ui-datatable-selectable" role="row" aria-selected="false">
-		                	<td role="gridcell" class="ui-selection-column col-select-width text-center">
-		                		<div class="ui-chkbox ui-widget"><div class="ui-helper-hidden-accessible"><input type="checkbox" name="table_checkbox"></div><div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default"><span class="ui-chkbox-icon ui-icon ui-icon-blank ui-c"></span></div></div>
-			                </td>
-			                <td role="gridcell" class="text-center">
-			                    <a href="#" class="ui-commandlink ui-widget" onclick="return false;">1.0</a></td><td role="gridcell">
-			                    This is the first published version.
-			                </td>
+			                <td role="gridcell" class="text-center">1.0</td>
+			                <td role="gridcell">This is the first published version.</td>
 			                <td role="gridcell"><span>September 19, 2016</span></td>
 		                </tr>
 		            </tbody>
@@ -201,19 +180,19 @@ Forms fulfill various functions across the site, but we try to style them consis
 
 		      <div class="form-horizontal">
 			       <div class="form-group">
-                <label for="userNameEmail" class="col-sm-3 control-label">
+                <label for="pattern-example-username" class="col-sm-3 control-label">
                     Username 
                 </label>
                 <div class="col-sm-4">
-                	<input name="userName" type="text" value="" tabindex="1" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all ui-state-default form-control" role="textbox" aria-disabled="false" aria-readonly="false">
+                	<input id="pattern-example-username" name="userName" type="text" value="" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all ui-state-default form-control" role="textbox" aria-disabled="false" aria-readonly="false">
                 </div>
             </div>
             <div class="form-group">
-                <label for="email" class="col-sm-3 control-label">
+                <label for="pattern-example-email" class="col-sm-3 control-label">
                     Email 
                 </label>
                 <div class="col-sm-4">
-                	<input name="email" type="text" value="" tabindex="6" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control" role="textbox" aria-disabled="false" aria-readonly="false">
+                	<input id="pattern-example-email" name="email" type="text" value="" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control" role="textbox" aria-disabled="false" aria-readonly="false">
                 </div>
             </div>
         </div>
@@ -225,7 +204,7 @@ Forms fulfill various functions across the site, but we try to style them consis
 
   <div class="form-horizontal">
     <div class="form-group">
-      <label for="userNameEmail" class="col-sm-3 control-label">
+      <label for="userName" class="col-sm-3 control-label">
         #{bundle['user.username']} 
       </label>
       <div class="col-sm-4">
@@ -246,12 +225,12 @@ Here are additional form elements that are common across many pages, including r
               <p class="help-block">
                   This field supports only certain <span class="text-info popoverHTML">HTML tags</span>.
               </p>
-              <label class="control-label" for="metadata_dsDescriptionValue">
+              <label class="control-label" for="datasetForm:description">
                   Text <span class="glyphicon glyphicon-asterisk text-danger"></span>
                   <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" data-toggle="tooltip" data-placement="auto right" data-original-title="A summary describing the purpose, nature, and scope of the Dataset."></span>
               </label>
               <div>
-                  <textarea id="datasetForm:description" name="datasetForm:description" cols="60" rows="5" tabindex="1" maxlength="2147483647" class="ui-inputfield ui-inputtextarea ui-widget ui-state-default ui-corner-all form-control ui-inputtextarea-resizable" role="textbox" aria-disabled="false" aria-readonly="false" aria-multiline="true" data-autosize-on="true" placeholder="" style="overflow: hidden; word-wrap: break-word; height: 114px;"></textarea>
+                  <textarea id="datasetForm:description" name="datasetForm:description" cols="60" rows="5" maxlength="2147483647" class="ui-inputfield ui-inputtextarea ui-widget ui-state-default ui-corner-all form-control ui-inputtextarea-resizable" role="textbox" aria-disabled="false" aria-readonly="false" aria-multiline="true" data-autosize-on="true" placeholder="" style="overflow: hidden; word-wrap: break-word; height: 114px;"></textarea>
                   
                   <div aria-live="polite" class="ui-message ui-message-error ui-widget ui-corner-all">
                       <span class="ui-message-error-detail">Description Text is required.</span>
@@ -259,12 +238,12 @@ Here are additional form elements that are common across many pages, including r
               </div>
           </div>
           <div class="form-col-container col-sm-6">
-               <label class="control-label" for="metadata_dsDescriptionDate">
+               <label class="control-label" for="datasetForm:inputText">
                    Date
                    <span class="glyphicon glyphicon-question-sign tooltip-icon" tabindex="0" data-toggle="tooltip" data-placement="auto right" data-original-title="In cases where a Dataset contains more than one description (for example, one might be supplied by the data producer and another prepared by the data repository where the data are deposited), the date attribute is used to distinguish between the two descriptions. The date attribute follows the ISO convention of YYYY-MM-DD."></span>
               </label>
               <div>
-                <input id="datasetForm:inputText" name="datasetForm:inputText" type="text" tabindex="1" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control " role="textbox" aria-disabled="false" aria-readonly="false" placeholder="YYYY-MM-DD">
+                <input id="datasetForm:inputText" name="datasetForm:inputText" type="text" class="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all form-control " role="textbox" aria-disabled="false" aria-readonly="false" placeholder="YYYY-MM-DD">
               </div>
             </div>
         </div>
@@ -311,38 +290,17 @@ For action buttons on a page, we include an icon and text label. Action buttons 
 	  	
 	  	<div class="btn-group pull-right">
             <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
-                <span class="glyphicon glyphicon-pencil"></span> Edit <span class="caret"></span>
+                <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> Edit <span class="caret"></span>
             </button>
             <ul class="dropdown-menu pull-right text-left" role="menu">
                 <li>
-                	<a href="#" onclick="return false;">Files (Upload)</a>
+                	<a href="#" onclick="return false;" role="menuitem">Files (Upload)</a>
                 </li>
                 <li>
-                	<a id="datasetForm:editMetadata" href="#" class="ui-commandlink ui-widget" onclick="return false;">Metadata</a>
+                	<a id="datasetForm:editMetadata" href="#" class="ui-commandlink ui-widget" onclick="return false;" role="menuitem">Metadata</a>
                 </li>
                 <li>
-                	<a id="datasetForm:editTerms" href="#" class="ui-commandlink ui-widget" onclick="return false;">Terms</a>
-                </li>
-                <li class="dropdown-submenu pull-left">
-                    <a tabindex="-1" href="#">Permissions</a>
-                    <ul class="dropdown-menu">
-                        <li>
-                        	<a id="datasetForm:managePermissions" href="#" onclick="return false;" class="ui-commandlink ui-widget">Dataset</a>
-                        </li>
-                        <li>
-                        	<a id="datasetForm:manageFilePermissions" href="#" onclick="return false;" class="ui-commandlink ui-widget">File</a>
-                        </li>
-                    </ul>
-                </li>
-                <li>
-                	<a id="datasetForm:privateUrl" href="#" class="ui-commandlink ui-widget" onclick="return false;">Private URL</a>
-                </li>
-                <li>
-                	<a href="#" onclick="return false;">Thumbnails + Widgets</a>
-                </li>
-                <li class="divider"></li>
-                <li>
-                	<a id="datasetForm:deaccessionDatasetLink" href="#" class="ui-commandlink ui-widget" onclick="return false;">Deaccession Dataset</a>
+                	<a id="datasetForm:editTerms" href="#" class="ui-commandlink ui-widget" onclick="return false;" role="menuitem">Terms</a>
                 </li>
             </ul>
         </div>
@@ -354,7 +312,7 @@ For action buttons on a page, we include an icon and text label. Action buttons 
 
     <div class="btn-group" jsf:rendered="#{true}">
       <button type="button" id="editDataSet" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-        <span class="glyphicon glyphicon-pencil"/> Edit <span class="caret"></span>
+        <span class="glyphicon glyphicon-pencil" aria-hidden="true"/> Edit <span class="caret"></span>
       </button>
       <ul class="dropdown-menu pull-right text-left" role="menu">
         <li>
@@ -415,10 +373,10 @@ We use the style class ``.no-text`` with the ``.glyphicon`` class to fix spacing
 
 	<div class="panel panel-default code-example">
 	  <div class="panel-body">
-	    <a href="#" class="ui-commandlink ui-widget btn btn-default btn-sm bootstrap-button-tooltip compound-field-btn" aria-label="Add" onclick="return false;" tabindex="1" title="" data-original-title="Add">
+	    <a href="#" class="ui-commandlink ui-widget btn btn-default btn-sm bootstrap-button-tooltip compound-field-btn" aria-label="Add" onclick="return false;" title="" data-original-title="Add">
             <span class="glyphicon glyphicon-plus no-text"></span>
         </a>
-        <a href="#" class="ui-commandlink ui-widget btn btn-default btn-sm bootstrap-button-tooltip compound-field-btn" aria-label="Delete" onclick="return false;" tabindex="1" title="" data-original-title="Delete">
+        <a href="#" class="ui-commandlink ui-widget btn btn-default btn-sm bootstrap-button-tooltip compound-field-btn" aria-label="Delete" onclick="return false;" title="" data-original-title="Delete">
             <span class="glyphicon glyphicon-minus no-text"></span>
         </a>
 	  </div>
@@ -544,11 +502,10 @@ For our help/information, success, warning, and error message blocks we use a cu
   <div class="panel panel-default code-example">
     <div class="panel-body">
       <div class="messagePanel">
-        <div class="alert alert-dismissable alert-info">
-          <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-	        <span class="glyphicon glyphicon-info-sign"></span>&nbsp;<strong>Edit Dataset Metadata</strong> - Add more metadata about this dataset to help others easily find it.
-	      </div>
-	      <div class="alert alert-success">
+        <div class="alert alert-info">
+          <span class="glyphicon glyphicon-info-sign"></span>&nbsp;<strong>Edit Dataset Metadata</strong> - Add more metadata about this dataset to help others easily find it.
+        </div>
+        <div class="alert alert-success">
           <span class="glyphicon glyphicon glyphicon-ok-sign"></span>&nbsp;<strong>Success!</strong> – The metadata for this dataset has been updated.
         </div>
         <div class="alert alert-warning">
@@ -563,8 +520,8 @@ For our help/information, success, warning, and error message blocks we use a cu
 
 .. code-block:: html
 
-   <div class="alert alert-success" role="alert"><p class="text-block">...</p></div>
    <div class="alert alert-info" role="alert"><p class="text-block">...</p></div>
+   <div class="alert alert-success" role="alert"><p class="text-block">...</p></div>
    <div class="alert alert-warning" role="alert"><p class="text-block">...</p></div>
    <div class="alert alert-danger" role="alert"><p class="text-block">...</p></div>
 
@@ -669,7 +626,7 @@ The most common of our containers, the `Panels component <http://getbootstrap.co
                 <div id="panelCollapse0" class="collapse in">
                     <div class="panel-body metadata-panel-body">
                         <div class="form-group col-sm-12">
-                            <label for="metadata_dsDescription" class="col-sm-3 control-label">
+                            <label class="col-sm-3 control-label">
                                 Label
                             </label>
                             <div class="col-sm-9">Value</div>
@@ -768,7 +725,7 @@ The modal is styled using the `Modal component <http://getbootstrap.com/javascri
       <button type="button" class="btn btn-default" data-toggle="modal" data-target=".bs-example-modal-lg">Open Modal</button>
 
       <div class="modal bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
-		<div class="modal-dialog modal-lg" role="document">
+		<div id="myLargeModalLabel" class="modal-dialog modal-lg" role="document">
 		  <div class="modal-content">
 		  	<div class="modal-header">
 		      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>

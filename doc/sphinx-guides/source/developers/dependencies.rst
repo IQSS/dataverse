@@ -23,7 +23,12 @@ As a developer, you should familiarize yourself with the following terms:
 - **Transitive dependencies**: things *others use* for things you use, pulled in recursively.
   See also: `Maven docs <https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Transitive_Dependencies>`_.
 
+.. _direct_and_transitive_dependency_graph:
+
 .. graphviz::
+    :alt: Direct and Transitive dependency graph
+    :align: center
+    :caption: Graph presenting Direct and Transitive dependencies with relations between them and your code
 
     digraph {
         rankdir="LR";
@@ -66,7 +71,7 @@ within the build lifecycle. You have to define a ``<version>``, but ``<scope>`` 
 (See `Maven docs: Dep. Scope <https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Dependency_Scope>`_)
 
 
-During fetching, Maven will analyse all transitive dependencies (see graph above) and, if necessary, fetch those, too.
+During fetching, Maven will analyse all transitive dependencies (see :numref:`direct_and_transitive_dependency_graph`) and, if necessary, fetch those, too.
 Everything downloaded once is cached locally by default, so nothing needs to be fetched again and again, as long as the
 dependency definition does not change.
 
@@ -81,9 +86,11 @@ dependency definition does not change.
    bundles are typically heavyweight and most of the time unnecessary.
 7. **Don't include transitive dependencies.** [#f2]_
 
-   * Exception: if you are relying on it in your code (see *Z* in the graph above), you must declare it. See below
+   - Exception: if you are relying on it in your code (see *Z* in :numref:`direct_and_transitive_dependency_graph`), you must declare it. See :ref:`transitive_dependencies`
      for proper handling in these (rare) cases.
 
+
+.. _transitive_dependencies:
 
 Transitive dependencies
 -----------------------
@@ -92,10 +99,13 @@ Maven is comfortable for developers; it handles recursive resolution, downloadin
 However, as life is a box of chocolates, you might find yourself in *version conflict hell* sooner than later without even
 knowing, but experiencing unintended side effects.
 
-When you look at the graph above, imagine *B* and *TB* rely on different *versions* of *TC*. How does Maven decide
+When you look at the :numref:`direct_and_transitive_dependency_graph`, imagine *B* and *TB* rely on different *versions* of *TC*. How does Maven decide
 which version it will include? Easy: the dependent version of the nearest version wins:
 
 .. graphviz::
+    :alt: Version conflict dependency graph
+    :align: center
+    :caption: Graph presenting version conflict on *Z* dependecy
 
     digraph {
         rankdir="LR";
@@ -140,7 +150,7 @@ Maven can manage versions of transitive dependencies in four ways:
    and add a ``<version>`` tag. Many bigger and standard use projects provide those, making the POM much less bloated
    compared to adding every bit yourself.
 
-A reduced example, only showing bits relevant to the above cases and usage of an explicit transitive dep directly:
+A reduced example, only showing bits relevant to these cases and usage of an explicit transitive dep directly:
 
 .. code-block:: xml
     :linenos:
@@ -256,7 +266,7 @@ Repositories are defined within the Dataverse POM like this:
         </repository>
     </repositories>
 
-You can also add repositories to your local Maven settings, see `docs <https://maven.apache.org/ref/3.6.0/maven-settings/settings.html>`_.
+You can also add repositories to your local `Maven settings <https://maven.apache.org/ref/3.6.0/maven-settings/settings.html>`_.
 
 Typically you will skip the addition of the central repository, but adding it to the POM has the benefit that
 dependencies are first looked up there (which in theory can speed up downloads). You should keep in mind that repositories

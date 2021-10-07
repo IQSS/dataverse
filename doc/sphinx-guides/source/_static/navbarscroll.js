@@ -3,7 +3,7 @@
     See: http://stackoverflow.com/questions/10732690/offsetting-an-html-anchor-to-adjust-for-fixed-header    
 */
 $jqTheme(document).ready(function() {
-  $jqTheme('a[href*="#"]:not([href="#"])').on('click', function() {
+  $jqTheme('a[href*="#"]:not([href="#"])').on('click', function(e) {
     if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'') 
 && location.hostname == this.hostname) {
       var target = $jqTheme(this.hash);
@@ -12,7 +12,6 @@ $jqTheme(document).ready(function() {
         $jqTheme('html,body').animate({
           scrollTop: target.offset().top - 60 //offsets for fixed header
         }, 1000);
-        return false;
       }
     }
   });
@@ -23,7 +22,6 @@ $jqTheme(document).ready(function() {
         $jqTheme('html,body').animate({
           scrollTop: target.offset().top - 60 //offset height of header here too.
         }, 1000);
-        return false;
       }
     }
 });

@@ -17,31 +17,35 @@ Clear and Reindex
 Clearing Data from Solr
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Please note that the moment you issue this command, it will appear to end users looking at the home page that all data is gone! This is because the home page is powered by the search index.
+Please note that the moment you issue this command, it will appear to end users looking at the home page that all data is gone! This is because the home page is powered by the search index::
 
-``curl http://localhost:8080/api/admin/index/clear``
+    curl http://localhost:8080/api/admin/index/clear
 
 Start Async Reindex
 ~~~~~~~~~~~~~~~~~~~
 
-Please note that this operation may take hours depending on the amount of data in your system. This known issue is being tracked at https://github.com/IQSS/dataverse/issues/50
+Please note that this operation may take hours depending on the amount of data in your system. This known issue is being tracked at https://github.com/IQSS/dataverse/issues/50::
 
-``curl http://localhost:8080/api/admin/index``
+    curl http://localhost:8080/api/admin/index
 
 Reindex in Place
 +++++++++++++++++
 
 An alternative to completely clearing the search index is to reindex in place.
 
+.. _clear_index_timestamps:
+
 Clear Index Timestamps
 ~~~~~~~~~~~~~~~~~~~~~~
 
-``curl -X DELETE http://localhost:8080/api/admin/index/timestamps``
+.. code-block::
+
+  curl -X DELETE http://localhost:8080/api/admin/index/timestamps
 
 Start or Continue Async Reindex
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If indexing stops, this command should pick up where it left off based on which index timestamps have been set, which is why we start by clearing these timestamps above. These timestamps are stored in the ``dvobject`` database table.
+If indexing stops, this command should pick up where it left off based on which index timestamps have been set, which is why we start by clearing these timestamps in :ref:`clear_index_timestamps` section. These timestamps are stored in the ``dvobject`` database table::
 
-``curl http://localhost:8080/api/admin/index/continue``
+    curl http://localhost:8080/api/admin/index/continue
 

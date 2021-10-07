@@ -13,7 +13,7 @@ Introduced in Dataverse Network (DVN) `3.6 <http://guides.dataverse.org/en/3.6.2
 
 Dataverse implements most of SWORDv2_, which is specified at http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html . Please reference the `SWORDv2 specification`_ for expected HTTP status codes (i.e. 201, 204, 404, etc.), headers (i.e. "Location"), etc.
 
-As a profile of AtomPub, XML is used throughout SWORD. As of Dataverse 4.0 datasets can also be created via JSON using the "native" API. SWORD is limited to the dozen or so fields listed below in the crosswalk, but the native API allows you to populate all metadata fields available in Dataverse.
+As a profile of AtomPub, XML is used throughout SWORD. As of Dataverse 4.0 datasets can also be created via JSON using the "native" API. SWORD is limited to the dozen or so fields listed in :ref:`sword_db_element_crosswalk`, but the native API allows you to populate all metadata fields available in Dataverse.
 
 .. _SWORD: http://en.wikipedia.org/wiki/SWORD_%28protocol%29
 
@@ -30,7 +30,8 @@ Backward incompatible changes
 
 For better security than in DVN 3.x, usernames and passwords are no longer accepted. The use of an API token is required.
 
-Differences in Dataverse 4 from DVN 3.x lead to a few minor backward incompatible changes in the Dataverse implementation of SWORD, which are listed below. Old ``v1`` URLs should continue to work but the ``Service Document`` will contain a deprecation warning and responses will contain ``v1.1`` URLs. See also :ref:`known-issues`.
+Differences in Dataverse 4 from DVN 3.x lead to a few minor backward incompatible changes in the Dataverse implementation of SWORD. Old ``v1`` URLs should continue to work but the ``Service Document`` will contain a deprecation warning and responses will contain ``v1.1`` URLs. See also :ref:`known-issues`.
+Differences in SWORD for Dataverse 4 includes:
 
 - Newly required fields when creating/editing datasets for compliance with the `Joint Declaration for Data Citation principles <http://thedata.org/blog/joint-declaration-data-citation-principles-and-dataverse>`_.
 
@@ -45,7 +46,7 @@ Differences in Dataverse 4 from DVN 3.x lead to a few minor backward incompatibl
 New features as of v1.1
 -----------------------
 
-- Dataverse 4 supports API tokens and requires them to be used for APIs instead of a username and password. In the ``curl`` examples below, you will see ``curl -u $API_TOKEN:`` showing that you should send your API token as the username and nothing as the password. For example, ``curl -u 54b143b5-d001-4254-afc0-a1c0f6a5b5a7:``.
+- Dataverse 4 supports API tokens and requires them to be used for APIs instead of a username and password. In :ref:`sword_curl_examples` section, you will see ``curl -u $API_TOKEN:`` showing that you should send your API token as the username and nothing as the password. For example, ``curl -u 54b143b5-d001-4254-afc0-a1c0f6a5b5a7:``.
 
 - SWORD operations no longer require "admin" permission. In order to use any SWORD operation in DVN 3.x, you had to be an "admin" on a dataverse (the container for your dataset) and similar rules were applied in Dataverse 4.4 and earlier (the ``EditDataverse`` permission was required). The SWORD API has now been fully integrated with the Dataverse 4 permission model such that any action you have permission to perform in the GUI or "native" API you are able to perform via SWORD. This means that even a user with a "Contributor" role can operate on datasets via SWORD. Note that users with the "Contributor" role do not have the ``PublishDataset`` permission and will not be able publish their datasets via any mechanism, GUI or API.
 
@@ -64,6 +65,8 @@ New features as of v1.1
 - Zero-length files are now allowed (but not necessarily encouraged).
 
 - "Depositor" and "Deposit Date" are auto-populated.
+
+.. _sword_curl_examples:
 
 curl examples
 -------------
@@ -85,6 +88,8 @@ To create a dataset, you must have the "Dataset Creator" role (the ``AddDataset`
 Example Atom entry (XML)
 
 .. literalinclude:: sword-atom-entry.xml
+
+.. _sword_db_element_crosswalk:
 
 Dublin Core Terms (DC Terms) Qualified Mapping - Dataverse DB Element Crosswalk
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -109,12 +114,14 @@ Dublin Core Terms (DC Terms) Qualified Mapping - Dataverse DB Element Crosswalk
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 |dcterms:source               |                 dataSources                  |              |  List of books, articles, data files if any that served as the sources for the Dataset.                                                                     |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
-|dcterms:relation             |               relatedMaterial                |              |  Any related material (journal article citation is not included here - see: dcterms:isReferencedBy below).                                                  |
+|dcterms:relation             |               relatedMaterial                |              |  Any related material (journal article citation is not included here but in dcterms:isReferencedBy element).                                                |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 |dcterms:coverage             |              otherGeographicCoverage         |              |  General information on the geographic coverage of the Dataset.                                                                                             |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
 |dcterms:isReferencedBy       |             publicationCitation              |              |  The publication (journal article, book, other work) that uses this dataset (include citation, permanent identifier (DOI), and permanent URL).              |
 +-----------------------------+----------------------------------------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+.. _sword_list_datasets_in_dataverse:
 
 List datasets in a dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -170,7 +177,7 @@ You must have the ``DeleteDatasetDraft`` permission (Contributor role or above s
 Determine if a dataverse has been published
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This API endpoint is the same as the "list datasets in a dataverse" endpoint documented above and the same permissions apply but it is documented here separately to point out that you can look for a boolean called ``dataverseHasBeenReleased`` to know if a dataverse has been released, which is required for publishing a dataset.
+This API endpoint is the same as the endpoint documented in :ref:`sword_list_datasets_in_dataverse` and the same permissions apply but it is documented here separately to point out that you can look for a boolean called ``dataverseHasBeenReleased`` to know if a dataverse has been released, which is required for publishing a dataset.
 
 ``curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/$DATAVERSE_ALIAS``
 

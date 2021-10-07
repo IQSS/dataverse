@@ -6,12 +6,14 @@ Dataverse has a flexible data-driven metadata system powered by "metadata blocks
 .. contents:: |toctitle|
 	:local:
 
+.. _metadata_customization_introduction:
+
 Introduction
 ------------
 
 Before you embark on customizing metadata in Dataverse you should make sure you are aware of the modest amount of customization that is available with the Dataverse web interface. It's possible to hide fields and make field required by clicking "Edit" at the dataverse level, clicking "General Information" and making adjustments under "Metadata Fields" as described in the context of dataset templates in the :doc:`/user/dataverse-management` section of the User Guide.
 
-Much more customization of metadata is possible, but this is an advanced topic so feedback on what is written below is very welcome. The possibilities for customization include:
+Much more customization of metadata is possible, but this is an advanced topic so feedback on what is written in this document is very welcome. The possibilities for customization include:
 
 -  Editing and adding metadata fields
 
@@ -80,29 +82,29 @@ Each of the three main sections own sets of properties:
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 +-----------------------+-----------------------+-----------------------+
-| **Property**          | **Purpose**           | **Allowed values and  |
-|                       |                       | restrictions**        |
-+-----------------------+-----------------------+-----------------------+
-| name                  | A user-definable      | \• No spaces or       |
-|                       | string used to        | punctuation,          |
-|                       | identify a            | except underscore.    |
+| Property              | Purpose               | Allowed values and    |
+|                       |                       | restrictions          |
++=======================+=======================+=======================+
+| name                  | A user-definable      | - No spaces or        |
+|                       | string used to        |   punctuation,        |
+|                       | identify a            |   except underscore.  |
 |                       | #metadataBlock        |                       |
-|                       |                       | \• By convention,     |
-|                       |                       | should start with     |
-|                       |                       | a letter, and use     |
-|                       |                       | lower camel           |
-|                       |                       | case [3]_             |
+|                       |                       | - By convention,      |
+|                       |                       |   should start with   |
+|                       |                       |   a letter, and use   |
+|                       |                       |   lower camel         |
+|                       |                       |   case [3]_           |
 |                       |                       |                       |
-|                       |                       | \• Must not collide   |
-|                       |                       | with a field of       |
-|                       |                       | the same name in      |
-|                       |                       | the same or any       |
-|                       |                       | other                 |
-|                       |                       | #datasetField         |
-|                       |                       | definition,           |
-|                       |                       | including metadata    |
-|                       |                       | blocks defined        |
-|                       |                       | elsewhere. [4]_       |
+|                       |                       | - Must not collide    |
+|                       |                       |   with a field of     |
+|                       |                       |   the same name in    |
+|                       |                       |   the same or any     |
+|                       |                       |   other               |
+|                       |                       |   #datasetField       |
+|                       |                       |   definition,         |
+|                       |                       |   including metadata  |
+|                       |                       |   blocks defined      |
+|                       |                       |   elsewhere. [4]_     |
 +-----------------------+-----------------------+-----------------------+
 | dataverseAlias        | If specified, this    | Free text. For an     |
 |                       | metadata block will   | example, see          |
@@ -124,206 +126,208 @@ Each of the three main sections own sets of properties:
 #datasetField (field) properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-+-----------------------+-----------------------+------------------------+
-| **Property**          | **Purpose**           | **Allowed values and   |
-|                       |                       | restrictions**         |
-+-----------------------+-----------------------+------------------------+
-| name                  | A user-definable      | \• (from               |
-|                       | string used to        | DatasetFieldType.java) |
-|                       | identify a            | The internal           |
-|                       | #datasetField. Maps   | DDI-like name, no      |
-|                       | directly to field     | spaces, etc.           |
-|                       | name used by Solr.    |                        |
-|                       |                       | \• (from Solr) Field   |
-|                       |                       | names should           |
-|                       |                       | consist of             |
-|                       |                       | alphanumeric or        |
-|                       |                       | underscore             |
-|                       |                       | characters only        |
-|                       |                       | and not start with     |
-|                       |                       | a digit. This is       |
-|                       |                       | not currently          |
-|                       |                       | strictly enforced,     |
-|                       |                       | but other field        |
-|                       |                       | names will not         |
-|                       |                       | have first class       |
-|                       |                       | support from all       |
-|                       |                       | components and         |
-|                       |                       | back compatibility     |
-|                       |                       | is not guaranteed.     |
-|                       |                       | Names with both        |
-|                       |                       | leading and            |
-|                       |                       | trailing               |
-|                       |                       | underscores (e.g.      |
-|                       |                       | \_version_) are        |
-|                       |                       | reserved.              |
-|                       |                       |                        |
-|                       |                       | \• Must not collide    |
-|                       |                       | with a field of        |
-|                       |                       | the same same name     |
-|                       |                       | in another             |
-|                       |                       | #metadataBlock         |
-|                       |                       | definition or any      |
-|                       |                       | name already           |
-|                       |                       | included as a          |
-|                       |                       | field in the Solr      |
-|                       |                       | index.                 |
-+-----------------------+-----------------------+------------------------+
-| title                 | Acts as a brief label | Should be relatively   |
-|                       | for display related   | brief.                 |
-|                       | to this               |                        |
-|                       | #datasetField.        |                        |
-+-----------------------+-----------------------+------------------------+
-| description           | Used to provide a     | Free text              |
-|                       | description of the    |                        |
-|                       | field.                |                        |
-+-----------------------+-----------------------+------------------------+
-| watermark             | A string to initially | Free text              |
-|                       | display in a field as |                        |
-|                       | a prompt for what the |                        |
-|                       | user should enter.    |                        |
-+-----------------------+-----------------------+------------------------+
-| fieldType             | Defines the type of   | | \• none              |
-|                       | content that the      | | \• date              |
-|                       | field, if not empty,  | | \• email             |
-|                       | is meant to contain.  | | \• text              |
-|                       |                       | | \• textbox           |
-|                       |                       | | \• url               |
-|                       |                       | | \• int               |
-|                       |                       | | \• float             |
-|                       |                       | | \• See below for     |
-|                       |                       | | fieldtype definitions|
-+-----------------------+-----------------------+------------------------+
-| displayOrder          | Controls the sequence | Non-negative integer.  |
-|                       | in which the fields   |                        |
-|                       | are displayed, both   |                        |
-|                       | for input and         |                        |
-|                       | presentation.         |                        |
-+-----------------------+-----------------------+------------------------+
-| displayFormat         | Controls how the      | See below for          |
-|                       | content is displayed  | displayFormat          |
-|                       | for presentation (not | variables              |
-|                       | entry). The value of  |                        |
-|                       | this field may        |                        |
-|                       | contain one or more   |                        |
-|                       | special variables     |                        |
-|                       | (enumerated below).   |                        |
-|                       | HTML tags, likely in  |                        |
-|                       | conjunction with one  |                        |
-|                       | or more of these      |                        |
-|                       | values, may be used   |                        |
-|                       | to control the        |                        |
-|                       | display of content in |                        |
-|                       | the web UI.           |                        |
-+-----------------------+-----------------------+------------------------+
-| advancedSearchField   | Specify whether this  | TRUE (available) or    |
-|                       | field is available in | FALSE (not available)  |
-|                       | advanced search.      |                        |
-+-----------------------+-----------------------+------------------------+
-| allowControlledVocabu\| Specify whether the   | TRUE (controlled) or   |
-| \lary                 | possible values of    | FALSE (not             |
-|                       | this field are        | controlled)            |
-|                       | determined by values  |                        |
-|                       | in the                |                        |
-|                       | #controlledVocabulary |                        |
-|                       | section.              |                        |
-+-----------------------+-----------------------+------------------------+
-| allowmultiples        | Specify whether this  | TRUE (repeatable) or   |
-|                       | field is repeatable.  | FALSE (not             |
-|                       |                       | repeatable)            |
-+-----------------------+-----------------------+------------------------+
-| facetable             | Specify whether the   | TRUE (controlled) or   |
-|                       | field is facetable    | FALSE (not             |
-|                       | (i.e., if the         | controlled)            |
-|                       | expected values for   |                        |
-|                       | this field are        |                        |
-|                       | themselves useful     |                        |
-|                       | search terms for this |                        |
-|                       | field). If a field is |                        |
-|                       | "facetable" (able to  |                        |
-|                       | be faceted on), it    |                        |
-|                       | appears under         |                        |
-|                       | "Browse/Search        |                        |
-|                       | Facets" when you edit |                        |
-|                       | "General Information" |                        |
-|                       | for a dataverse.      |                        |
-|                       | Setting this value to |                        |
-|                       | TRUE generally makes  |                        |
-|                       | sense for enumerated  |                        |
-|                       | or controlled         |                        |
-|                       | vocabulary fields,    |                        |
-|                       | fields representing   |                        |
-|                       | identifiers (IDs,     |                        |
-|                       | names, email          |                        |
-|                       | addresses), and other |                        |
-|                       | fields that are       |                        |
-|                       | likely to share       |                        |
-|                       | values across         |                        |
-|                       | entries. It is less   |                        |
-|                       | likely to make sense  |                        |
-|                       | for fields containing |                        |
-|                       | descriptions,         |                        |
-|                       | floating point        |                        |
-|                       | numbers, and other    |                        |
-|                       | values that are       |                        |
-|                       | likely to be unique.  |                        |
-+-----------------------+-----------------------+------------------------+
-| displayoncreate [5]_  | Designate fields that | TRUE (display during   |
-|                       | should display during | creation) or FALSE     |
-|                       | the creation of a new | (don’t display during  |
-|                       | dataset, even before  | creation)              |
-|                       | the dataset is saved. |                        |
-|                       | Fields not so         |                        |
-|                       | designated will not   |                        |
-|                       | be displayed until    |                        |
-|                       | the dataset has been  |                        |
-|                       | saved.                |                        |
-+-----------------------+-----------------------+------------------------+
-| required              | Specify whether or    | TRUE (required) or     |
-|                       | not the field is      | FALSE (optional)       |
-|                       | required. This means  |                        |
-|                       | that at least one     |                        |
-|                       | instance of the field |                        |
-|                       | must be present. More |                        |
-|                       | than one field may be |                        |
-|                       | allowed, depending on |                        |
-|                       | the value of          |                        |
-|                       | allowmultiples.       |                        |
-+-----------------------+-----------------------+------------------------+
-| parent                | For subfields,        | \• Must not result in  |
-|                       | specify the name of   | a cyclical             |
-|                       | the parent or         | reference.             |
-|                       | containing field.     |                        |
-|                       |                       | \• Must reference an   |
-|                       |                       | existing field in      |
-|                       |                       | the same               |
-|                       |                       | #metadataBlock.        |
-+-----------------------+-----------------------+------------------------+
-| metadatablock_id      | Specify the name of   | \• Must reference an   |
-|                       | the #metadataBlock    | existing               |
-|                       | that contains this    | #metadataBlock.        |
-|                       | field.                |                        |
-|                       |                       | \• As a best           |
-|                       |                       | practice, the          |
-|                       |                       | value should           |
-|                       |                       | reference the          |
-|                       |                       | #metadataBlock in      |
-|                       |                       | the current            |
-|                       |                       | definition             |
-|                       |                       | (it is technically     |
-|                       |                       | possible to            |
-|                       |                       | reference another      |
-|                       |                       | existing metadata      |
-|                       |                       | block.)                |
-+-----------------------+-----------------------+------------------------+
++---------------------------+----------------------------+-------------------------------+
+| Property                  | Purpose                    | Allowed values and            |
+|                           |                            | restrictions                  |
++===========================+============================+===============================+
+| name                      | A user-definable           | - (from                       |
+|                           | string used to             |   DatasetFieldType.java)      |
+|                           | identify a                 |   The internal                |
+|                           | #datasetField. Maps        |   DDI-like name, no           |
+|                           | directly to field          |   spaces, etc.                |
+|                           | name used by Solr.         |                               |
+|                           |                            | - (from Solr) Field           |
+|                           |                            |   names should                |
+|                           |                            |   consist of                  |
+|                           |                            |   alphanumeric or             |
+|                           |                            |   underscore                  |
+|                           |                            |   characters only             |
+|                           |                            |   and not start with          |
+|                           |                            |   a digit. This is            |
+|                           |                            |   not currently               |
+|                           |                            |   strictly enforced,          |
+|                           |                            |   but other field             |
+|                           |                            |   names will not              |
+|                           |                            |   have first class            |
+|                           |                            |   support from all            |
+|                           |                            |   components and              |
+|                           |                            |   back compatibility          |
+|                           |                            |   is not guaranteed.          |
+|                           |                            |   Names with both             |
+|                           |                            |   leading and                 |
+|                           |                            |   trailing                    |
+|                           |                            |   underscores (e.g.           |
+|                           |                            |   \_version_) are             |
+|                           |                            |   reserved.                   |
+|                           |                            |                               |
+|                           |                            | - Must not collide            |
+|                           |                            |   with a field of             |
+|                           |                            |   the same same name          |
+|                           |                            |   in another                  |
+|                           |                            |   #metadataBlock              |
+|                           |                            |   definition or any           |
+|                           |                            |   name already                |
+|                           |                            |   included as a               |
+|                           |                            |   field in the Solr           |
+|                           |                            |   index.                      |
++---------------------------+----------------------------+-------------------------------+
+| title                     | Acts as a brief label      | Should be relatively          |
+|                           | for display related        | brief.                        |
+|                           | to this                    |                               |
+|                           | #datasetField.             |                               |
++---------------------------+----------------------------+-------------------------------+
+| description               | Used to provide a          | Free text                     |
+|                           | description of the         |                               |
+|                           | field.                     |                               |
++---------------------------+----------------------------+-------------------------------+
+| watermark                 | A string to initially      | Free text                     |
+|                           | display in a field as      |                               |
+|                           | a prompt for what the      |                               |
+|                           | user should enter.         |                               |
++---------------------------+----------------------------+-------------------------------+
+| fieldType                 | Defines the type of        | - none                        |
+|                           | content that the           | - date                        |
+|                           | field, if not empty,       | - email                       |
+|                           | is meant to contain.       | - text                        |
+|                           |                            | - textbox                     |
+|                           |                            | - url                         |
+|                           |                            | - int                         |
+|                           |                            | - float                       |
+|                           |                            |                               |
+|                           |                            | See :ref:`fieldtype_def`      |
+|                           |                            | for details                   |
++---------------------------+----------------------------+-------------------------------+
+| displayOrder              | Controls the sequence      | Non-negative integer.         |
+|                           | in which the fields        |                               |
+|                           | are displayed, both        |                               |
+|                           | for input and              |                               |
+|                           | presentation.              |                               |
++---------------------------+----------------------------+-------------------------------+
+| displayFormat             | Controls how the           | See :ref:`displayformat_def`  |
+|                           | content is displayed       | for displayFormat variables   |
+|                           | for presentation (not      |                               |
+|                           | entry). The value of       |                               |
+|                           | this field may             |                               |
+|                           | contain one or more        |                               |
+|                           | special variables          |                               |
+|                           | (enumerated in             |                               |
+|                           | :ref:`displayformat_def`). |                               |
+|                           | HTML tags, likely in       |                               |
+|                           | conjunction with one       |                               |
+|                           | or more of these           |                               |
+|                           | values, may be used        |                               |
+|                           | to control the             |                               |
+|                           | display of content in      |                               |
+|                           | the web UI.                |                               |
++---------------------------+----------------------------+-------------------------------+
+| advancedSearchField       | Specify whether this       | TRUE (available) or           |
+|                           | field is available in      | FALSE (not available)         |
+|                           | advanced search.           |                               |
++---------------------------+----------------------------+-------------------------------+
+| allowControlledVocabulary | Specify whether the        | TRUE (controlled) or          |
+|                           | possible values of         | FALSE (not                    |
+|                           | this field are             | controlled)                   |
+|                           | determined by values       |                               |
+|                           | in the                     |                               |
+|                           | #controlledVocabulary      |                               |
+|                           | section.                   |                               |
++---------------------------+----------------------------+-------------------------------+
+| allowmultiples            | Specify whether this       | TRUE (repeatable) or          |
+|                           | field is repeatable.       | FALSE (not                    |
+|                           |                            | repeatable)                   |
++---------------------------+----------------------------+-------------------------------+
+| facetable                 | Specify whether the        | TRUE (controlled) or          |
+|                           | field is facetable         | FALSE (not                    |
+|                           | (i.e., if the              | controlled)                   |
+|                           | expected values for        |                               |
+|                           | this field are             |                               |
+|                           | themselves useful          |                               |
+|                           | search terms for this      |                               |
+|                           | field). If a field is      |                               |
+|                           | "facetable" (able to       |                               |
+|                           | be faceted on), it         |                               |
+|                           | appears under              |                               |
+|                           | "Browse/Search             |                               |
+|                           | Facets" when you edit      |                               |
+|                           | "General Information"      |                               |
+|                           | for a dataverse.           |                               |
+|                           | Setting this value to      |                               |
+|                           | TRUE generally makes       |                               |
+|                           | sense for enumerated       |                               |
+|                           | or controlled              |                               |
+|                           | vocabulary fields,         |                               |
+|                           | fields representing        |                               |
+|                           | identifiers (IDs,          |                               |
+|                           | names, email               |                               |
+|                           | addresses), and other      |                               |
+|                           | fields that are            |                               |
+|                           | likely to share            |                               |
+|                           | values across              |                               |
+|                           | entries. It is less        |                               |
+|                           | likely to make sense       |                               |
+|                           | for fields containing      |                               |
+|                           | descriptions,              |                               |
+|                           | floating point             |                               |
+|                           | numbers, and other         |                               |
+|                           | values that are            |                               |
+|                           | likely to be unique.       |                               |
++---------------------------+----------------------------+-------------------------------+
+| displayoncreate [5]_      | Designate fields that      | TRUE (display during          |
+|                           | should display during      | creation) or FALSE            |
+|                           | the creation of a new      | (don’t display during         |
+|                           | dataset, even before       | creation)                     |
+|                           | the dataset is saved.      |                               |
+|                           | Fields not so              |                               |
+|                           | designated will not        |                               |
+|                           | be displayed until         |                               |
+|                           | the dataset has been       |                               |
+|                           | saved.                     |                               |
++---------------------------+----------------------------+-------------------------------+
+| required                  | Specify whether or         | TRUE (required) or            |
+|                           | not the field is           | FALSE (optional)              |
+|                           | required. This means       |                               |
+|                           | that at least one          |                               |
+|                           | instance of the field      |                               |
+|                           | must be present. More      |                               |
+|                           | than one field may be      |                               |
+|                           | allowed, depending on      |                               |
+|                           | the value of               |                               |
+|                           | allowmultiples.            |                               |
++---------------------------+----------------------------+-------------------------------+
+| parent                    | For subfields,             | - Must not result in          |
+|                           | specify the name of        |   a cyclical                  |
+|                           | the parent or              |   reference.                  |
+|                           | containing field.          |                               |
+|                           |                            | - Must reference an           |
+|                           |                            |   existing field in           |
+|                           |                            |   the same                    |
+|                           |                            |   #metadataBlock.             |
++---------------------------+----------------------------+-------------------------------+
+| metadatablock_id          | Specify the name of        | - Must reference an           |
+|                           | the #metadataBlock         |   existing                    |
+|                           | that contains this         |   #metadataBlock.             |
+|                           | field.                     |                               |
+|                           |                            | - As a best                   |
+|                           |                            |   practice, the               |
+|                           |                            |   value should                |
+|                           |                            |   reference the               |
+|                           |                            |   #metadataBlock in           |
+|                           |                            |   the current                 |
+|                           |                            |   definition                  |
+|                           |                            |   (it is technically          |
+|                           |                            |   possible to                 |
+|                           |                            |   reference another           |
+|                           |                            |   existing metadata           |
+|                           |                            |   block.)                     |
++---------------------------+----------------------------+-------------------------------+
 
 #controlledVocabulary (enumerated) properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 +-----------------------+-----------------------+-----------------------+
-| **Property**          | **Purpose**           | **Allowed values and  |
-|                       |                       | restrictions**        |
-+-----------------------+-----------------------+-----------------------+
+| Property              | Purpose               | Allowed values and    |
+|                       |                       | restrictions          |
++=======================+=======================+=======================+
 | DatasetField          | Specifies the         | Must reference an     |
 |                       | #datasetField to which| existing              |
 |                       | this entry applies.   | #datasetField.        |
@@ -364,49 +368,51 @@ Each of the three main sections own sets of properties:
 |                       | for selection.        |                       |
 +-----------------------+-----------------------+-----------------------+
 
+.. _fieldtype_def:
+
 FieldType definitions
 ~~~~~~~~~~~~~~~~~~~~~
 
-+-----------------------------------+-----------------------------------+
-| **Fieldtype**                     | **Definition**                    |
-+-----------------------------------+-----------------------------------+
-| none                              | Used for compound fields, in which|
-|                                   | case the parent field would have  |
-|                                   | no value and display no data      |
-|                                   | entry control.                    |
-+-----------------------------------+-----------------------------------+
-| date                              | A date, expressed in one of three |
-|                                   | resolutions of the form           |
-|                                   | YYYY-MM-DD, YYYY-MM, or YYYY.     |
-+-----------------------------------+-----------------------------------+
-| email                             | A valid email address. Not        |
-|                                   | indexed for privacy reasons.      |
-+-----------------------------------+-----------------------------------+
-| text                              | Any text other than newlines may  |
-|                                   | be entered into this field.       |
-+-----------------------------------+-----------------------------------+
-| textbox                           | Any text may be entered. For      |
-|                                   | input, Dataverse presents a       |
-|                                   | multi-line area that accepts      |
-|                                   | newlines. While any HTML is       |
-|                                   | permitted, only a subset of HTML  |
-|                                   | tags will be rendered in the UI.  |
-|                                   | A `list of supported tags is      |
-|                                   | included in the Dataverse User    |
-|                                   | Guide <http://guides.dataverse.or |
-|                                   | g/en/latest/user/dataset-manageme |
-|                                   | nt.html#supported-html-fields>`__ |
-|                                   | .                                 |
-+-----------------------------------+-----------------------------------+
-| url                               | If not empty, field must contain  |
-|                                   | a valid URL.                      |
-+-----------------------------------+-----------------------------------+
-| int                               | An integer value destined for a   |
-|                                   | numeric field.                    |
-+-----------------------------------+-----------------------------------+
-| float                             | A floating point number destined  |
-|                                   | for a numeric field.              |
-+-----------------------------------+-----------------------------------+
++-----------------------------------+--------------------------------------+
+| Fieldtype                         | Definition                           |
++===================================+======================================+
+| none                              | Used for compound fields, in which   |
+|                                   | case the parent field would have     |
+|                                   | no value and display no data         |
+|                                   | entry control.                       |
++-----------------------------------+--------------------------------------+
+| date                              | A date, expressed in one of three    |
+|                                   | resolutions of the form              |
+|                                   | YYYY-MM-DD, YYYY-MM, or YYYY.        |
++-----------------------------------+--------------------------------------+
+| email                             | A valid email address. Not           |
+|                                   | indexed for privacy reasons.         |
++-----------------------------------+--------------------------------------+
+| text                              | Any text other than newlines may     |
+|                                   | be entered into this field.          |
++-----------------------------------+--------------------------------------+
+| textbox                           | Any text may be entered. For         |
+|                                   | input, Dataverse presents a          |
+|                                   | multi-line area that accepts         |
+|                                   | newlines. While any HTML is          |
+|                                   | permitted, only a subset of HTML     |
+|                                   | tags will be rendered in the UI.     |
+|                                   | A list of supported tags is          |
+|                                   | included in                          |
+|                                   | :ref:`dataset_field_supported_html`  |
+|                                   | of the User Guide.                   |
++-----------------------------------+--------------------------------------+
+| url                               | If not empty, field must contain     |
+|                                   | a valid URL.                         |
++-----------------------------------+--------------------------------------+
+| int                               | An integer value destined for a      |
+|                                   | numeric field.                       |
++-----------------------------------+--------------------------------------+
+| float                             | A floating point number destined     |
+|                                   | for a numeric field.                 |
++-----------------------------------+--------------------------------------+
+
+.. _displayformat_def:
 
 displayFormat variables
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -433,7 +439,7 @@ These are common ways to use the displayFormat to control how values are display
 +-----------------------------------+-----------------------------------+
 | <a href="#VALUE">#VALUE</a>       | For displaying the value as a     |
 |                                   | link (if the value entered is a   |
-|                                   | link).                            |         
+|                                   | link).                            |
 +-----------------------------------+-----------------------------------+
 | <a href='URL/#VALUE'>#VALUE</a>   | For displaying the value as a     |
 |                                   | link, with the value included in  |
@@ -491,13 +497,13 @@ Exploring Metadata Blocks
 
 In addition to studying the TSV files themselves you might find the following highly experimental and subject-to-change API endpoints useful to understand the metadata blocks that have already been loaded into your installation of Dataverse:
 
-You can get a dump of metadata fields (yes, the output is odd, please open a issue) like this:
+You can get a dump of metadata fields (yes, the output is odd, please open a issue) like this::
 
-``curl http://localhost:8080/api/admin/datasetfield``
+    curl http://localhost:8080/api/admin/datasetfield
 
-To see details about an individual field such as "title" in the example below:
+To see details about an individual field such as "title" execute command::
 
-``curl http://localhost:8080/api/admin/datasetfield/title``
+    curl http://localhost:8080/api/admin/datasetfield/title
 
 Setting Up a Dev Environment for Testing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -513,13 +519,13 @@ To get a clean environment in Vagrant, you'll be running ``vagrant destroy``. In
 Editing TSV files
 ~~~~~~~~~~~~~~~~~
 
-Early in Dataverse 4 development metadata blocks were edited in the Google spreadsheet mentioned above and then exported in TSV format. This worked fine when there was only one person editing the Google spreadsheet but now that contributions are coming in from all over, the TSV files are edited directly. We are somewhat painfully aware that another format such as XML might make more sense these days. Please see https://github.com/IQSS/dataverse/issues/4451 for a discussion of non-TSV formats.
+Early in Dataverse 4 development metadata blocks were edited in the Google spreadsheet mentioned in :ref:`metadata_customization_introduction` section and then exported in TSV format. This worked fine when there was only one person editing the Google spreadsheet but now that contributions are coming in from all over, the TSV files are edited directly. We are somewhat painfully aware that another format such as XML might make more sense these days. Please see https://github.com/IQSS/dataverse/issues/4451 for a discussion of non-TSV formats.
 
-Please note that metadata fields share a common namespace so they must be unique. The following curl command will print list of metadata fields already available in the system:
+Please note that metadata fields share a common namespace so they must be unique. The following curl command will print list of metadata fields already available in the system::
 
-``curl http://localhost:8080/api/admin/index/solr/schema``
+    curl http://localhost:8080/api/admin/index/solr/schema
 
-We'll use this command again below to update the Solr schema to accomodate metadata fields we've added.
+.. _loading_metadata_fields:
 
 Loading TSV files into Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -529,15 +535,15 @@ A number of TSV files are loaded into Dataverse on every new installation, becom
 Along with TSV file, there are corresponding ResourceBundle property files with key=value pair `here <https://github.com/IQSS/dataverse/tree/develop/src/main/java>`__.  To add other language files, see the :doc:`/installation/config` for dataverse.lang.directory JVM Options section, and add a file, for example: "citation_lang.properties" to the path you specified for the ``dataverse.lang.directory`` JVM option, and then restart Glassfish.
 
 If you are improving an existing metadata block, the Dataverse installation process will load the TSV for you, assuming you edited the TSV file in place. The TSV file for the Citation metadata block, for example, can be found at ``scripts/api/data/metadatablocks/citation.tsv``.
-If any of the below mentioned property values are changed, corresponsing ResourceBundle property file has to be edited and stored under ``dataverse.lang.directory`` location
+If any of the following property values are changed, corresponsing ResourceBundle property file has to be edited and stored under ``dataverse.lang.directory`` location
 
 - name, displayName property under #metadataBlock
 - name, title, description, watermark properties under #datasetfield
 - DatasetField, Value property under #controlledVocabulary
 
-If you are creating a new custom metadata block (hopefully with the idea of contributing it back to the community if you feel like it would provide value to others), the Dataverse installation process won't know about your new TSV file so you must load it manually. The script that loads the TSV files into the system is ``scripts/api/setup-datasetfields.sh`` and contains a series of curl commands. Here's an example of the necessary curl command with the new custom metadata block in the "/tmp" directory.
+If you are creating a new custom metadata block (hopefully with the idea of contributing it back to the community if you feel like it would provide value to others), the Dataverse installation process won't know about your new TSV file so you must load it manually. The script that loads the TSV files into the system is ``scripts/api/setup-datasetfields.sh`` and contains a series of curl commands. Here's an example of the necessary curl command with the new custom metadata block in the "/tmp" directory::
 
-``curl http://localhost:8080/api/admin/datasetfield/load -H "Content-type: text/tab-separated-values" -X POST --upload-file /tmp/new-metadata-block.tsv``
+    curl http://localhost:8080/api/admin/datasetfield/load -H "Content-type: text/tab-separated-values" -X POST --upload-file /tmp/new-metadata-block.tsv``
 
 To create a new ResourceBundle, here are the steps to generate key=value pair for the three main sections:
 
@@ -585,16 +591,18 @@ controlledvocabulary.language.marathi_(marathi)=Marathi (Mar\u0101\u1E6Dh\u012B)
 Enabling a Metadata Block
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Running a curl command like "load" example above should make the new custom metadata block available within the system but in order to start using the fields you must either enable it from the GUI (see "General Information" in the :doc:`/user/dataverse-management` section of the User Guide) or by running a curl command like the one below using a superuser API token. In the example below we are enabling the "journal" and "geospatial" metadata blocks for the root dataverse:
+Running a curl command like "load" example in :ref:`loading_metadata_fields` should make the new custom metadata block available within the system but in order to start using the fields you must either enable it from the GUI (see "General Information" in the :doc:`/user/dataverse-management` section of the User Guide) or by running a curl command like::
 
-``curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-type:application/json" -d "[\"journal\",\"geospatial\"]" http://localhost:8080/api/dataverses/:root/metadatablocks``
+    curl -H "X-Dataverse-key:$API_TOKEN" -X POST -H "Content-type:application/json" -d "[\"journal\",\"geospatial\"]" http://localhost:8080/api/dataverses/:root/metadatablocks``
+
+In this example we are enabling the "journal" and "geospatial" metadata blocks for the root dataverse. API token must belong to the superuser account.
 
 Reloading a Metadata Block
 --------------------------
 
-As mentioned above, changes to metadata blocks that ship with Dataverse will be made over time to improve them and release notes will sometimes instruct you to reload an existing metadata block. The syntax for reloading is the same as reloading. Here's an example with the "citation" metadata block:
+As mentioned in :ref:`metadata_customization_introduction` section, changes to metadata blocks that ship with Dataverse will be made over time to improve them and release notes will sometimes instruct you to reload an existing metadata block. The syntax for reloading is the same as reloading. Here's an example with the "citation" metadata block::
 
-``curl http://localhost:8080/api/admin/datasetfield/load -H "Content-type: text/tab-separated-values" -X POST --upload-file --upload-file citation.tsv``
+    curl http://localhost:8080/api/admin/datasetfield/load -H "Content-type: text/tab-separated-values" -X POST --upload-file --upload-file citation.tsv``
 
 Great care must be taken when reloading a metadata block. Matching is done on field names (or identifiers and then names in the case of controlled vocabulary values) so it's easy to accidentally create duplicate fields.
 
@@ -616,7 +624,7 @@ Footnotes
    https://www.iana.org/assignments/media-types/text/tab-separated-values
 
 .. [2]
-   Although the structure of the data, as you’ll see below, violates the
+   Although the structure of the data can violate the
    “Each record must have the same number of fields” tenet of TSV
 
 .. [3]

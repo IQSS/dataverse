@@ -8,9 +8,7 @@ SELinux
 Introduction
 ------------
 
-The ``shibboleth.te`` file below that is mentioned in the :doc:`/installation/shibboleth` section of the Installation Guide was created on CentOS 6 as part of https://github.com/IQSS/dataverse/issues/3406 but may need to be revised for future versions of RHEL/CentOS (pull requests welcome!). The file is versioned with the docs and can be found in the following location:
-
-``doc/sphinx-guides/source/_static/installation/files/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te``
+The :download:`shibboleth.te <../_static/installation/files/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te>` file that is mentioned in the :doc:`/installation/shibboleth` section of the Installation Guide was created on CentOS 6 as part of https://github.com/IQSS/dataverse/issues/3406 but may need to be revised for future versions of RHEL/CentOS (pull requests welcome!). The file is versioned with the docs and here is the current content of it:
 
 .. literalinclude:: ../_static/installation/files/etc/selinux/targeted/src/policy/domains/misc/shibboleth.te
    :language: text
@@ -20,7 +18,7 @@ This document is something of a survival guide for anyone who is tasked with upd
 Development Environment
 -----------------------
 
-In order to work on the ``shibboleth.te`` file you need to ``ssh`` into a RHEL or CentOS box running Shibboleth (instructions are in the :doc:`/installation/shibboleth` section of the Installation Guide) such as https://beta.dataverse.org or https://demo.dataverse.org that has all the commands below installed. As of this writing, the ``policycoreutils-python`` RPM was required.
+In order to work on the ``shibboleth.te`` file you need to ``ssh`` into a RHEL or CentOS box running Shibboleth (instructions are in the :doc:`/installation/shibboleth` section of the Installation Guide) such as https://beta.dataverse.org or https://demo.dataverse.org that has installed all the commands mentioned in this document. As of this writing, the ``policycoreutils-python`` RPM was required.
 
 Recreating the shibboleth.te File
 ---------------------------------
@@ -56,9 +54,9 @@ In short, all you need to do is try to log in with Shibboleth and you'll see pro
 Stub out the new shibboleth.te file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Iterate on the new ``shibboleth.te`` file wherever you like, such as the root user's home directory in the example below. Start by adding a ``module`` line like this:
+Iterate on the new ``shibboleth.te`` file wherever you like, such as the root user's home directory in the following example. Start by adding a ``module`` line like this::
 
-``echo 'module shibboleth 1.0;' > /root/shibboleth.te``
+    echo 'module shibboleth 1.0;' > /root/shibboleth.te
 
 Note that a version is required and perhaps it should be changed, but we'll stick with ``1.0`` for now. The point is that the ``shibboleth.te`` file must begin with that "module" line or else the ``checkmodule`` command you'll need to run later will fail. Your file should look like this:
 
@@ -71,17 +69,17 @@ Note that a version is required and perhaps it should be changed, but we'll stic
 Iteratively Use audit2allow to Add Rules and Test Your Change
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Now that ``shibboleth.te`` has been stubbed out, we will iteratively add lines to it from the output of piping SELinux Access Vector Cache (AVC) denial messages to ``audit2allow -r``. These errors are found in ``/var/log/audit/audit.log`` so tail the file as you attempt to log in to Shibboleth.
+Now that ``shibboleth.te`` has been stubbed out, we will iteratively add lines to it from the output of piping SELinux Access Vector Cache (AVC) denial messages to ``audit2allow -r``. These errors are found in ``/var/log/audit/audit.log`` so tail the file as you attempt to log in to Shibboleth::
 
-``# tail -f /var/log/audit/audit.log | fgrep type=AVC``
+    tail -f /var/log/audit/audit.log | fgrep type=AVC
 
-You should see messages that look something like this:
+You should see messages that look something like this::
 
-``type=AVC msg=audit(1476728970.378:271405): avc:  denied  { write } for  pid=28548 comm="httpd" name="shibd.sock" dev=dm-2 ino=393300 scontext=unconfined_u:system_r:httpd_t:s0 tcontext=unconfined_u:object_r:var_run_t:s0 tclass=sock_file``
+    type=AVC msg=audit(1476728970.378:271405): avc:  denied  { write } for  pid=28548 comm="httpd" name="shibd.sock" dev=dm-2 ino=393300 scontext=unconfined_u:system_r:httpd_t:s0 tcontext=unconfined_u:object_r:var_run_t:s0 tclass=sock_file
 
-Next, pipe these message to ``audit2allow -r`` like this:
+Next, pipe these message to ``audit2allow -r`` like this::
 
-``echo 'type=AVC msg=audit(1476728970.378:271405): avc:  denied  { write } for  pid=28548 comm="httpd" name="shibd.sock" dev=dm-2 ino=393300 scontext=unconfined_u:system_r:httpd_t:s0 tcontext=unconfined_u:object_r:var_run_t:s0 tclass=sock_file' | audit2allow -r``
+    echo 'type=AVC msg=audit(1476728970.378:271405): avc:  denied  { write } for  pid=28548 comm="httpd" name="shibd.sock" dev=dm-2 ino=393300 scontext=unconfined_u:system_r:httpd_t:s0 tcontext=unconfined_u:object_r:var_run_t:s0 tclass=sock_file' | audit2allow -r
 
 This will produce output like this:
 
@@ -96,7 +94,7 @@ This will produce output like this:
         #============= httpd_t ==============
         allow httpd_t var_run_t:sock_file write;
 
-Copy and paste this output into the ``shibboleth.te`` file you stubbed out above. Then, use the same ``checkmodule``, ``semodule_package``, and ``semodule`` commands documented in the :doc:`/installation/shibboleth` section of the Installation Guide on your file to activate the SELinux rules you're constructing.
+Copy and paste this output into the ``shibboleth.te`` file. Then, use the same ``checkmodule``, ``semodule_package``, and ``semodule`` commands documented in the :doc:`/installation/shibboleth` section of the Installation Guide on your file to activate the SELinux rules you're constructing.
 
 Once your updated SELinux rules are in place, try logging in with Shibboleth again. You should see a different AVC error. Pipe that error into ``audit2allow -r`` as well and put the resulting content into the ``shibboleth.te`` file you're constructing. As you do this, manually reformat the file using the following rules:
 

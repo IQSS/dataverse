@@ -9,7 +9,7 @@ Once you're in production, you'll want to set up some monitoring. This page may 
 Operating System Monitoring
 ---------------------------
 
-In production you'll want to monitor the usual suspects such as CPU, memory, free disk space, etc. There are a variety of tools in this space but we'll highlight Munin below because it's relatively easy to set up.
+In production you'll want to monitor the usual suspects such as CPU, memory, free disk space, etc. There are a variety of tools in this space but we'll highlight Munin in next section because it's relatively easy to set up.
 
 Munin
 +++++
@@ -88,7 +88,7 @@ Process the logs:
 
 ``/usr/share/awstats/tools/awstats_updateall.pl now``
 
-Please note that load balancers (such as Amazon's ELB) might interfer with the ``LogFormat`` mentioned above.  To start troubleshooting errors such as ``AWStats did not find any valid log lines that match your LogFormat parameter``, you might need to bump up the value of ``NbOfLinesForCorruptedLog`` in the config files above and re-try while you interate on your Apache and AWStats config.
+Please note that load balancers (such as Amazon's ELB) might interfer with the ``LogFormat``.  To start troubleshooting errors such as ``AWStats did not find any valid log lines that match your LogFormat parameter``, you might need to bump up the value of ``NbOfLinesForCorruptedLog`` in the config files and re-try while you interate on your Apache and AWStats config.
 
 Please note that the Dataverse team has attempted to parse Glassfish logs using AWStats but it didn't seem to just work and posts have been made at https://stackoverflow.com/questions/49134154/what-logformat-definition-does-awstats-require-to-parse-glassfish-http-access-logs and https://sourceforge.net/p/awstats/discussion/43428/thread/9b1befda/ that can be followed up on some day.
 

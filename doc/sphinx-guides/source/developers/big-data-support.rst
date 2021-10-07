@@ -13,6 +13,8 @@ Data Capture Module (DCM)
 
 Data Capture Module (DCM) is an experimental component that allows users to upload large datasets via rsync over ssh.
 
+.. _install_dcm:
+
 Install a DCM
 ~~~~~~~~~~~~~
 
@@ -30,28 +32,32 @@ This will allow your Dataverse installation to communicate with your DCM, so tha
 Downloading rsync scripts via Dataverse API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The rsync script can be downloaded from Dataverse via API using an authorized API token. In the curl example below, substitute ``$PERSISTENT_ID`` with a DOI or Handle:
+The rsync script can be downloaded from Dataverse via API using an authorized API token. In the following curl example substitute ``$PERSISTENT_ID`` with a DOI or Handle::
 
-``curl -H "X-Dataverse-key: $API_TOKEN" $DV_BASE_URL/api/datasets/:persistentId/dataCaptureModule/rsync?persistentId=$PERSISTENT_ID``
+    curl -H "X-Dataverse-key: $API_TOKEN" $DV_BASE_URL/api/datasets/:persistentId/dataCaptureModule/rsync?persistentId=$PERSISTENT_ID
+
+.. _dcm_success_failure_report:
 
 How a DCM reports checksum success or failure to Dataverse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Once the user uploads files to a DCM, that DCM will perform checksum validation and report to Dataverse the results of that validation. The DCM must be configured to pass the API token of a superuser. The implementation details, which are subject to change, are below.
+Once the user uploads files to a DCM, that DCM will perform checksum validation and report to Dataverse the results of that validation. The DCM must be configured to pass the API token of a superuser.
 
-The JSON that a DCM sends to Dataverse on successful checksum validation looks something like the contents of :download:`checksumValidationSuccess.json <../_static/installation/files/root/big-data-support/checksumValidationSuccess.json>` below:
+The JSON that a DCM sends to Dataverse on successful checksum validation looks something like the contents of :download:`checksumValidationSuccess.json <../_static/installation/files/root/big-data-support/checksumValidationSuccess.json>`:
 
 .. literalinclude:: ../_static/installation/files/root/big-data-support/checksumValidationSuccess.json
    :language: json
+
+Where: 
 
 - ``status`` - The valid strings to send are ``validation passed`` and ``validation failed``.
 - ``uploadFolder`` - This is the directory on disk where Dataverse should attempt to find the files that a DCM has moved into place. There should always be a ``files.sha`` file and a least one data file. ``files.sha`` is a manifest of all the data files and their checksums. The ``uploadFolder`` directory is inside the directory where data is stored for the dataset and may have the same name as the "identifier" of the persistent id (DOI or Handle). For example, you would send ``"uploadFolder": "DNXV2H"`` in the JSON file when the absolute path to this directory is ``/usr/local/glassfish4/glassfish/domains/domain1/files/10.5072/FK2/DNXV2H/DNXV2H``.
 - ``totalSize`` - Dataverse will use this value to represent the total size in bytes of all the files in the "package" that's created. If 360 data files and one ``files.sha`` manifest file are in the ``uploadFolder``, this value is the sum of the 360 data files.
 
 
-Here's the syntax for sending the JSON.
+Here's the syntax for sending the JSON::
 
-``curl -H "X-Dataverse-key: $API_TOKEN" -X POST -H 'Content-type: application/json' --upload-file checksumValidationSuccess.json $DV_BASE_URL/api/datasets/:persistentId/dataCaptureModule/checksumValidation?persistentId=$PERSISTENT_ID``
+    curl -H "X-Dataverse-key: $API_TOKEN" -X POST -H 'Content-type: application/json' --upload-file checksumValidationSuccess.json $DV_BASE_URL/api/datasets/:persistentId/dataCaptureModule/checksumValidation?persistentId=$PERSISTENT_ID
 
 
 Steps to set up a DCM mock for Development
@@ -60,29 +66,29 @@ Steps to set up a DCM mock for Development
 See instructions at https://github.com/sbgrid/data-capture-module/blob/master/doc/mock.md
 
 
-Add Dataverse settings to use mock (same as using DCM, noted above):
+Add Dataverse settings to use mock (same settings as when using non-mock DCM noted in :ref:`install_dcm`)::
 
-- ``curl http://localhost:8080/api/admin/settings/:DataCaptureModuleUrl -X PUT -d "http://localhost:5000"``
-- ``curl http://localhost:8080/api/admin/settings/:UploadMethods -X PUT -d "dcm/rsync+ssh"``
+    curl http://localhost:8080/api/admin/settings/:DataCaptureModuleUrl -X PUT -d "http://localhost:5000"
+    curl http://localhost:8080/api/admin/settings/:UploadMethods -X PUT -d "dcm/rsync+ssh"
 
-At this point you should be able to download a placeholder rsync script. Dataverse is then waiting for news from the DCM about if checksum validation has succeeded or not. First, you have to put files in place, which is usually the job of the DCM. You should substitute "X1METO" for the "identifier" of the dataset you create. You must also use the proper path for where you store files in your dev environment.
+At this point you should be able to download a placeholder rsync script. Dataverse is then waiting for news from the DCM about if checksum validation has succeeded or not. First, you have to put files in place, which is usually the job of the DCM. You should substitute "X1METO" for the "identifier" of the dataset you create. You must also use the proper path for where you store files in your dev environment::
 
-- ``mkdir /usr/local/glassfish4/glassfish/domains/domain1/files/10.5072/FK2/X1METO``
-- ``mkdir /usr/local/glassfish4/glassfish/domains/domain1/files/10.5072/FK2/X1METO/X1METO``
-- ``cd /usr/local/glassfish4/glassfish/domains/domain1/files/10.5072/FK2/X1METO/X1METO``
-- ``echo "hello" > file1.txt``
-- ``shasum file1.txt > files.sha``
+    mkdir /usr/local/glassfish4/glassfish/domains/domain1/files/10.5072/FK2/X1METO
+    mkdir /usr/local/glassfish4/glassfish/domains/domain1/files/10.5072/FK2/X1METO/X1METO
+    cd /usr/local/glassfish4/glassfish/domains/domain1/files/10.5072/FK2/X1METO/X1METO
+    echo "hello" > file1.txt
+    shasum file1.txt > files.sha
 
 
 
-Now the files are in place and you need to send JSON to Dataverse with a success or failure message as described above. Make a copy of ``doc/sphinx-guides/source/_static/installation/files/root/big-data-support/checksumValidationSuccess.json`` and put the identifier in place such as "X1METO" under "uploadFolder"). Then use curl as described above to send the JSON.
+Now the files are in place and you need to send JSON to Dataverse with a success or failure message as described in :ref:`dcm_success_failure_report`. Make a copy of ``doc/sphinx-guides/source/_static/installation/files/root/big-data-support/checksumValidationSuccess.json`` and put the identifier in place such as "X1METO" under "uploadFolder"). Then use curl as described in :ref:`dcm_success_failure_report` to send the JSON.
 
 Troubleshooting
 ~~~~~~~~~~~~~~~
 
-The following low level command should only be used when troubleshooting the "import" code a DCM uses but is documented here for completeness.
+The following low level command should only be used when troubleshooting the "import" code a DCM uses but is documented here for completeness::
 
-``curl -H "X-Dataverse-key: $API_TOKEN" -X POST "$DV_BASE_URL/api/batch/jobs/import/datasets/files/$DATASET_DB_ID?uploadFolder=$UPLOAD_FOLDER&totalSize=$TOTAL_SIZE"``
+    curl -H "X-Dataverse-key: $API_TOKEN" -X POST "$DV_BASE_URL/api/batch/jobs/import/datasets/files/$DATASET_DB_ID?uploadFolder=$UPLOAD_FOLDER&totalSize=$TOTAL_SIZE"
 
 Steps to set up a DCM via Docker for Development
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -101,42 +107,44 @@ Optional steps for setting up the S3 Docker DCM Variant
 
 - Before: the default bucket for DCM to hold files in S3 is named test-dcm. It is coded into `post_upload_s3.bash` (line 30). Change to a different bucket if needed.
 
-  - Add AWS bucket info to dcmsrv
-    - Add AWS credentials to ``~/.aws/credentials``
-      - ``[default]``
-      - ``aws_access_key_id =``
-      - ``aws_secret_access_key =``
+- Add AWS credentials to ``~/.aws/credentials`` (on dcmsrv)::
+
+    [default]
+    aws_access_key_id =
+    aws_secret_access_key =
 
 - Dataverse configuration (on dvsrv):
 
-  - Set S3 as the storage driver
+  - Set S3 as the storage driver::
 
-    - ``cd /opt/glassfish4/bin/``
-    - ``./asadmin delete-jvm-options "\-Ddataverse.files.storage-driver-id=file"``
-    - ``./asadmin create-jvm-options "\-Ddataverse.files.storage-driver-id=s3"``
+      cd /opt/glassfish4/bin/
+      ./asadmin delete-jvm-options "\-Ddataverse.files.storage-driver-id=file"
+      ./asadmin create-jvm-options "\-Ddataverse.files.storage-driver-id=s3"
 
-  - Add AWS bucket info to Dataverse
-    - Add AWS credentials to ``~/.aws/credentials``
-      - ``[default]``
-      - ``aws_access_key_id =``
-      - ``aws_secret_access_key =``
+  - Add AWS credentials to ``~/.aws/credentials``::
 
-    - Also: set region in ``~/.aws/config`` to create a region file. Add these contents:
+      [default]
+      aws_access_key_id =
+      aws_secret_access_key =
 
-      - ``[default]``
-      - ``region = us-east-1``
+  - Also: set region in ``~/.aws/config`` to create a region file. Add these contents::
+
+      [default]
+      region = us-east-1
 
   - Add the S3 bucket names to Dataverse
 
-    - S3 bucket for Dataverse
+    - S3 bucket for Dataverse::
 
-      - ``/usr/local/glassfish4/glassfish/bin/asadmin create-jvm-options "-Ddataverse.files.s3-bucket-name=iqsstestdcmbucket"``
+        /usr/local/glassfish4/glassfish/bin/asadmin create-jvm-options "-Ddataverse.files.s3-bucket-name=iqsstestdcmbucket"
 
-    - S3 bucket for DCM (as Dataverse needs to do the copy over)
+    - S3 bucket for DCM (as Dataverse needs to do the copy over)::
 
-      - ``/usr/local/glassfish4/glassfish/bin/asadmin create-jvm-options "-Ddataverse.files.dcm-s3-bucket-name=test-dcm"``
+        /usr/local/glassfish4/glassfish/bin/asadmin create-jvm-options "-Ddataverse.files.dcm-s3-bucket-name=test-dcm"
 
-  - Set download method to be HTTP, as DCM downloads through S3 are over this protocol ``curl -X PUT "http://localhost:8080/api/admin/settings/:DownloadMethods" -d "native/http"``
+  - Set download method to be HTTP, as DCM downloads through S3 are over this protocol::
+
+      curl -X PUT "http://localhost:8080/api/admin/settings/:DownloadMethods" -d "native/http"
 
 Using the DCM Docker Containers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -183,42 +191,40 @@ Info for configuring the RSAL Mock: https://github.com/sbgrid/rsal/tree/master/m
 
 Also, to configure Dataverse to use the new workflow you must do the following (see also the :doc:`workflows` section):
 
-1. Configure the RSAL URL:
+1. Configure the RSAL URL::
 
-``curl -X PUT -d 'http://<myipaddr>:5050' http://localhost:8080/api/admin/settings/:RepositoryStorageAbstractionLayerUrl``
+    curl -X PUT -d 'http://<myipaddr>:5050' http://localhost:8080/api/admin/settings/:RepositoryStorageAbstractionLayerUrl
 
-2. Update workflow json with correct URL information:
+2. Update workflow json with correct URL information. Edit internal-httpSR-workflow.json and replace url and rollbackUrl to be the url of your RSAL mock.
 
-Edit internal-httpSR-workflow.json and replace url and rollbackUrl to be the url of your RSAL mock.
+3. Create the workflow::
 
-3. Create the workflow:
+    curl http://localhost:8080/api/admin/workflows -X POST --data-binary @internal-httpSR-workflow.json -H "Content-type: application/json"
 
-``curl http://localhost:8080/api/admin/workflows -X POST --data-binary @internal-httpSR-workflow.json -H "Content-type: application/json"``
+4. List available workflows::
 
-4. List available workflows:
+    curl http://localhost:8080/api/admin/workflows
 
-``curl http://localhost:8080/api/admin/workflows``
+5. Set the workflow (id) as the default workflow for the appropriate trigger::
 
-5. Set the workflow (id) as the default workflow for the appropriate trigger:
+    curl http://localhost:8080/api/admin/workflows/default/PrePublishDataset -X PUT -d 2
 
-``curl http://localhost:8080/api/admin/workflows/default/PrePublishDataset -X PUT -d 2``
+6. Check that the trigger has the appropriate default workflow set::
 
-6. Check that the trigger has the appropriate default workflow set:
-
-``curl http://localhost:8080/api/admin/workflows/default/PrePublishDataset``
+    curl http://localhost:8080/api/admin/workflows/default/PrePublishDataset
 
 7. Add RSAL to whitelist
 
-8. When finished testing, unset the workflow:
+8. When finished testing, unset the workflow::
 
-``curl -X DELETE http://localhost:8080/api/admin/workflows/default/PrePublishDataset``
+    curl -X DELETE http://localhost:8080/api/admin/workflows/default/PrePublishDataset
 
 Configuring download via rsync
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In order to see the rsync URLs, you must run this command:
+In order to see the rsync URLs, you must run this command::
 
-``curl -X PUT -d 'rsal/rsync' http://localhost:8080/api/admin/settings/:DownloadMethods``
+    curl -X PUT -d 'rsal/rsync' http://localhost:8080/api/admin/settings/:DownloadMethods
 
 ..  TODO: Document these in the Installation Guide once they're final.
 
@@ -228,29 +234,29 @@ Download :download:`add-storage-site.json <../../../../scripts/api/data/storageS
 
 .. literalinclude:: ../../../../scripts/api/data/storageSites/add-storage-site.json
 
-Then add the storage site using curl:
+Then add the storage site using curl::
 
-``curl -H "Content-type:application/json" -X POST http://localhost:8080/api/admin/storageSites --upload-file add-storage-site.json``
+    curl -H "Content-type:application/json" -X POST http://localhost:8080/api/admin/storageSites --upload-file add-storage-site.json
 
-You make a storage site the primary site by passing "true". Pass "false" to make it not the primary site. (id "1" in the example):
+You make a storage site the primary site by passing "true". Pass "false" to make it not the primary site. (id "1" in the example)::
 
-``curl -X PUT -d true http://localhost:8080/api/admin/storageSites/1/primaryStorage``
+    curl -X PUT -d true http://localhost:8080/api/admin/storageSites/1/primaryStorage
 
-You can delete a storage site like this (id "1" in the example):
+You can delete a storage site like this (id "1" in the example)::
 
-``curl -X DELETE http://localhost:8080/api/admin/storageSites/1``
+    curl -X DELETE http://localhost:8080/api/admin/storageSites/1
 
-You can view a single storage site like this: (id "1" in the example):
+You can view a single storage site like this: (id "1" in the example)::
 
-``curl http://localhost:8080/api/admin/storageSites/1``
+    curl http://localhost:8080/api/admin/storageSites/1
 
-You can view all storage site like this:
+You can view all storage site like this::
 
-``curl http://localhost:8080/api/admin/storageSites``
+    curl http://localhost:8080/api/admin/storageSites
 
-In the GUI, this is called "Local Access". It's where you can compute on files on your cluster.
+In the GUI, this is called "Local Access". It's where you can compute on files on your cluster::
 
-``curl http://localhost:8080/api/admin/settings/:LocalDataAccessPath -X PUT -d "/programs/datagrid"``
+    curl http://localhost:8080/api/admin/settings/:LocalDataAccessPath -X PUT -d "/programs/datagrid"
 
 
 Previous: :doc:`selinux` | Next: :doc:`workflows`

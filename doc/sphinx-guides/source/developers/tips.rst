@@ -11,20 +11,20 @@ Iterating on Code and Redeploying
 
 When you followed the steps in the :doc:`../installation/installation-main` section, the war file was deployed to Glassfish by the ``install`` script. That's fine but once you're ready to make a change to the code you will need to get comfortable with undeploying and redeploying code (a war file) to Glassfish.
 
-It's certainly possible to manage deployment and undeployment of the war file via the command line using the ``asadmin`` command that ships with Glassfish (that's what the ``install`` script uses and the steps are documented below), but we recommend getting set up with and IDE such as Netbeans to manage deployment for you.
+It's certainly possible to manage deployment and undeployment of the war file via the command line using the ``asadmin`` command that ships with Glassfish (see :ref:`deploy_with_asadmin`) (that's what the ``install`` script uses), but we recommend getting set up with and IDE such as Netbeans to manage deployment for you.
 
 Undeploy the war File from the ``install`` Script
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Because the initial deployment of the war file was done outside of Netbeans by the ``install`` script, it's a good idea to undeploy that war file to give Netbeans a clean slate to work with.
 
-Assuming you installed Glassfish in ``/usr/local/glassfish4.1.2``, run the following ``asadmin`` command to see the version of Dataverse that the ``install`` script deployed:
+Assuming you installed Glassfish in ``/usr/local/glassfish4.1.2``, run the following ``asadmin`` command to see the version of Dataverse that the ``install`` script deployed::
 
-``/usr/local/glassfish4.1.2/bin/asadmin list-applications``
+    /usr/local/glassfish4.1.2/bin/asadmin list-applications
 
-You will probably see something like ``dataverse-webapp-4.11 <ejb, web>`` as the output. To undeploy, use whichever version you see like this:
+You will probably see something like ``dataverse-webapp-4.11 <ejb, web>`` as the output. To undeploy, use whichever version you see like this::
 
-``/usr/local/glassfish4.1.2/bin/asadmin undeploy dataverse-webapp-4.11``
+    /usr/local/glassfish4.1.2/bin/asadmin undeploy dataverse-webapp-4.11
 
 Now that Glassfish doesn't have anything deployed, we can proceed with getting Netbeans set up to deploy the code.
 
@@ -54,9 +54,9 @@ Then, from Netbeans, click "Run" and then "Clean and Build Project (dataverse)".
 Confirm the Change Was Deployed
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-After deployment, check the build number in the lower right to make sure it has been customized. You can also check the build number by running the following command:
+After deployment, check the build number in the lower right to make sure it has been customized. You can also check the build number by running the following command::
 
-``curl http://localhost:8080/api/info/version``
+    curl http://localhost:8080/api/info/version
 
 If you can see the change, great! Please go fix a bug or work on a feature! :)
 
@@ -90,20 +90,21 @@ To run this command on your laptop, download SchemaSpy and take a look at the sy
 
 To read more about the phoenix server, see the :doc:`testing` section.
 
+.. _deploy_with_asadmin:
+
 Deploying With ``asadmin``
 --------------------------
 
 Sometimes you want to deploy code without using Netbeans or from the command line on a server you have ssh'ed into.
 
-For the ``asadmin`` commands below, we assume you have already changed directories to ``/usr/local/glassfish4.1.2/glassfish/bin`` or wherever you have installed Glassfish.
+There are six steps to this process:
 
-There are four steps to this process:
-
-1. Build the war file: ``mvn package``
-2. Check which version of Dataverse is deployed: ``./asadmin list-applications``
-3. Undeploy the Dataverse application (if necessary): ``./asadmin undeploy dataverse-VERSION``
-4. Copy the war file to the server (if necessary)
-5. Deploy the new code: ``./asadmin deploy /path/to/dataverse-VERSION.war``
+#. Build the war file: ``mvn package``
+#. Change current directory to the place where you have installed Glassfish, for example: ``cd /usr/local/glassfish4.1.2/glassfish/bin``
+#. Check which version of Dataverse is deployed: ``./asadmin list-applications``
+#. Undeploy the Dataverse application (if necessary): ``./asadmin undeploy dataverse-VERSION``
+#. Copy the war file to the server (if necessary)
+#. Deploy the new code: ``./asadmin deploy /path/to/dataverse-VERSION.war``
 
 Running the Dataverse ``install`` Script in Non-Interactive Mode
 ----------------------------------------------------------------

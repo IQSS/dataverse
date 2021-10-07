@@ -48,7 +48,7 @@ Dump can be prepared using ROR api:
 
 .. literalinclude:: ../_static/util/make_ror_dump.sh
 
-In example above we include ROR identifiers for institutions from `Great Britain` with type `Education`.
+In example we include ROR identifiers for institutions from `Great Britain` with type `Education`.
 You can modify ``ROR_FILTER`` variable in the script to obtain the data you want.
 
 Next you need to execute the same api endpoint as in full dump::
