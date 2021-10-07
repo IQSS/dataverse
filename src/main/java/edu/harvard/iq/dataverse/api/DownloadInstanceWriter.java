@@ -479,9 +479,8 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                     // tabular file is made up of the varHeader and the body of 
                                     // the physical file, we should assume that the requested 
                                     // range may span any portion of the combined stream.
-                                    // Thus we may or may not to write the header, or a 
+                                    // Thus we may or may not have to write the header, or a 
                                     // portion thereof. 
-                                    logger.info("Skipping the variable header completely.");
                                     int headerLength = storageIO.getVarHeader().getBytes().length;
                                     if (offset >= headerLength) {
                                         // We can skip the entire header. 
@@ -489,6 +488,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                         // in the physical file; the number of bytes
                                         // left to write stays unchanged, since we haven't
                                         // written anything.
+                                        logger.info("Skipping the variable header completely.");
                                         offset -= headerLength;
                                     } else {
                                         // We need to write some portion of the header; 
