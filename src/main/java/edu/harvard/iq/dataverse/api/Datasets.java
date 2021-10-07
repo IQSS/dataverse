@@ -2730,9 +2730,6 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         
         try {
             AuthenticatedUser user = findAuthenticatedUserOrDie();
-            if (!user.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Superusers only.");
-            }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
