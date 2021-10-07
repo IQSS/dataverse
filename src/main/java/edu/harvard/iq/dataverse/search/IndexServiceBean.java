@@ -713,7 +713,7 @@ public class IndexServiceBean {
         Dataset dataset = indexableDataset.getDatasetVersion().getDataset();
         logger.fine("adding or updating Solr document for dataset id " + dataset.getId());
         Collection<SolrInputDocument> docs = new ArrayList<>();
-        
+        Collection<SolrInputDocument> fileDocs = new ArrayList<>();
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         String datasetSolrDocId = indexableDataset.getSolrDocId();
         solrInputDocument.addField(SearchFields.ID, datasetSolrDocId);
@@ -937,13 +937,21 @@ public class IndexServiceBean {
             boolean checkForDuplicateMetadata = false;
             if (datasetVersion.isDraft() && dataset.isReleased() && dataset.getReleasedVersion() != null) {
                 checkForDuplicateMetadata = true;
+                System.out.print("We are indexing a draft version of a dataset that has a released version. We'll be checking file metadatas if they are exact clones of the released versions.");
                 logger.fine(
                         "We are indexing a draft version of a dataset that has a released version. We'll be checking file metadatas if they are exact clones of the released versions.");
             }
-            Date date=java.util.Calendar.getInstance().getTime();
-                System.out.print("Start file check: " + date );
+            Date startdate=java.util.Calendar.getInstance().getTime();
+                System.out.print("Start file check: " + startdate );
+                int count = 0;
             for (FileMetadata fileMetadata : fileMetadatas) {
-                
+                    count++;   
+                Date loopdate=java.util.Calendar.getInstance().getTime();
+                Double diff = new Double( (loopdate.getTime() - startdate.getTime())) ;
+                diff = diff/1000.;
+                Double dcount = new Double(count);
+                System.out.print(" fileMetadata: " + fileMetadata.getId() + " " +  count + " " + diff + " " + dcount/diff + " " +  loopdate);
+
                 boolean indexThisMetadata = true;
 
                 if (checkForDuplicateMetadata) {
@@ -986,17 +994,17 @@ public class IndexServiceBean {
                     }
             */
                 }
+                System.out.print(" fileMetadata: " + fileMetadata.getId() + " " +  count + " index?  " + indexThisMetadata);
                 if (indexThisMetadata) {
-                    
 
                     SolrInputDocument datafileSolrInputDocument = new SolrInputDocument();
                     Long fileEntityId = fileMetadata.getDataFile().getId();
                     datafileSolrInputDocument.addField(SearchFields.ENTITY_ID, fileEntityId);
-                    datafileSolrInputDocument.addField(SearchFields.DATAVERSE_VERSION_INDEXED_BY, dataverseVersion);
+                    datafileSolrInputDocument.addField(SearchFields.DATAVERSE_VERSION_INDEXED_BY, dataverseVersion); //common
                     datafileSolrInputDocument.addField(SearchFields.IDENTIFIER, fileEntityId);
-                    datafileSolrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL());
-                    datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
-                    datafileSolrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dataset.getDataverseContext().getIndexableCategoryName());
+                    datafileSolrInputDocument.addField(SearchFields.PERSISTENT_URL, dataset.getPersistentURL()); //common
+                    datafileSolrInputDocument.addField(SearchFields.TYPE, "files"); //common
+                    datafileSolrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dataset.getDataverseContext().getIndexableCategoryName()); //common
 
                     /* Full-text indexing using Apache Tika */
                     if (doFullTextIndexing) {
@@ -1078,7 +1086,7 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.NAME_SORT, filenameCompleteFinal);
                     datafileSolrInputDocument.addField(SearchFields.FILE_NAME, filenameCompleteFinal);
 
-                    datafileSolrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId());
+                    datafileSolrInputDocument.addField(SearchFields.DATASET_VERSION_ID, datasetVersion.getId()); //common
 
                     /**
                      * for rules on sorting files see
@@ -1176,16 +1184,16 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.FILE_DESCRIPTION, fileMetadata.getDescription());
                     datafileSolrInputDocument.addField(SearchFields.FILE_PERSISTENT_ID, fileMetadata.getDataFile().getGlobalId().toString());
                     datafileSolrInputDocument.addField(SearchFields.UNF, fileMetadata.getDataFile().getUnf());
-                    datafileSolrInputDocument.addField(SearchFields.SUBTREE, dataversePaths);
+                    datafileSolrInputDocument.addField(SearchFields.SUBTREE, dataversePaths); //common
                     // datafileSolrInputDocument.addField(SearchFields.HOST_DATAVERSE,
                     // dataFile.getOwner().getOwner().getName());
                     // datafileSolrInputDocument.addField(SearchFields.PARENT_NAME,
                     // dataFile.getDataset().getTitle());
-                    datafileSolrInputDocument.addField(SearchFields.PARENT_ID, fileMetadata.getDataFile().getOwner().getId());
-                    datafileSolrInputDocument.addField(SearchFields.PARENT_IDENTIFIER, fileMetadata.getDataFile().getOwner().getGlobalId().toString());
-                    datafileSolrInputDocument.addField(SearchFields.PARENT_CITATION, fileMetadata.getDataFile().getOwner().getCitation());
+                    datafileSolrInputDocument.addField(SearchFields.PARENT_ID, fileMetadata.getDataFile().getOwner().getId()); //common
+                    datafileSolrInputDocument.addField(SearchFields.PARENT_IDENTIFIER, fileMetadata.getDataFile().getOwner().getGlobalId().toString());//common
+                    datafileSolrInputDocument.addField(SearchFields.PARENT_CITATION, fileMetadata.getDataFile().getOwner().getCitation()); //common
 
-                    datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, parentDatasetTitle);
+                    datafileSolrInputDocument.addField(SearchFields.PARENT_NAME, parentDatasetTitle); //common
 
                     // If this is a tabular data file -- i.e., if there are data
                     // variables associated with this file, we index the variable
@@ -1254,14 +1262,32 @@ public class IndexServiceBean {
 
                     if (indexableDataset.isFilesShouldBeIndexed()) {
                         filesIndexed.add(fileSolrDocId);
-                        docs.add(datafileSolrInputDocument);
+                        fileDocs.add(datafileSolrInputDocument);
+                        if (count % 100 == 0) {
+                            try {
+                                solrClientService.getSolrClient().add(fileDocs);
+                                solrClientService.getSolrClient().commit();
+                                fileDocs.clear();
+                            } catch (SolrServerException | IOException ex) {
+                                if (ex.getCause() instanceof SolrServerException) {
+                                    throw new SolrServerException(ex);
+                                } else if (ex.getCause() instanceof IOException) {
+                                    throw new IOException(ex);
+                                }
+                            }
+                        
+                Date  date=java.util.Calendar.getInstance().getTime();
+                System.out.print("***************Writing file docs: " + count + " " + date );
+                        }
                     }
                 }
             }
         }
-                Date        date=java.util.Calendar.getInstance().getTime();
+                Date  date=java.util.Calendar.getInstance().getTime();
                 System.out.print("End file check: " + date );
         try {
+            solrClientService.getSolrClient().add(fileDocs);
+            solrClientService.getSolrClient().commit();
             solrClientService.getSolrClient().add(docs);
             solrClientService.getSolrClient().commit();
         } catch (SolrServerException | IOException ex) {
@@ -1271,7 +1297,8 @@ public class IndexServiceBean {
                 throw new IOException(ex);
             }
         }
-
+        date=java.util.Calendar.getInstance().getTime();
+        System.out.print("after solr service: " + date );
         Long dsId = dataset.getId();
         /// Dataset updatedDataset =
         /// (Dataset)dvObjectService.updateContentIndexTime(dataset);
