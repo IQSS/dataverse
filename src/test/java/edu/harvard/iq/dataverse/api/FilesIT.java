@@ -1742,9 +1742,41 @@ public class FilesIT {
                         + "\"Tiger\"\t17\t\"cat\"\n"
                         + "\"Panther\"\t21\t\"cat\"\n"));
 
+        // first 10 bytes of tabular format
+        Response downloadTabFirstTen = UtilIT.downloadFile(fileIdCsv, "0-9", null, null, authorApiToken);
+        downloadTabFirstTen.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body(equalTo("name\tpound"));
+
+        // first 30 bytes of tabular format
+        Response downloadTabFirst30 = UtilIT.downloadFile(fileIdCsv, "0-29", null, null, authorApiToken);
+        downloadTabFirst30.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body(equalTo("name\tpounds\tspecies\n"
+                        + "\"Marshall\""));
+
+//        // FIXME: This should be something like "er 21 cat" (the last line) like downloadOrigLastTen
+//        // FIXME: but right now it's showing "17 cat" (the second to last line).
+//        // last 10 bytes of tabular format
+//        Response downloadTabLast10 = UtilIT.downloadFile(fileIdCsv, "-10", null, null, authorApiToken);
+//        downloadTabLast10.then().assertThat()
+//                .statusCode(OK.getStatusCode())
+//                .body(equalTo("er\"\t21\t\"cat\"\n"));
+
+        Response downloadTabMiddleBytesHeader = UtilIT.downloadFile(fileIdCsv, "1-7", null, null, authorApiToken);
+        downloadTabMiddleBytesHeader.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body(equalTo("ame\tpou"));
+
+        Response downloadTabMiddleBytesBody = UtilIT.downloadFile(fileIdCsv, "31-43", null, null, authorApiToken);
+        downloadTabMiddleBytesBody.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body(equalTo("40\t\"dog\"\n"
+                        + "\"Tig"));
+
         // Original version of tabular file (CSV in this case).
-        Response downloadFileOrig = UtilIT.downloadFile(fileIdCsv, null, "original", null, authorApiToken);
-        downloadFileOrig.then().assertThat()
+        Response downloadOrig = UtilIT.downloadFile(fileIdCsv, null, "original", null, authorApiToken);
+        downloadOrig.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body(equalTo("name,pounds,species\n"
                         + "Marshall,40,dog\n"
@@ -1752,16 +1784,22 @@ public class FilesIT {
                         + "Panther,21,cat\n"));
 
         // first ten bytes
-        Response downloadFirstTen = UtilIT.downloadFile(fileIdCsv, "0-9", "original", null, authorApiToken);
-        downloadFirstTen.then().assertThat()
+        Response downloadOrigFirstTen = UtilIT.downloadFile(fileIdCsv, "0-9", "original", null, authorApiToken);
+        downloadOrigFirstTen.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body(equalTo("name,pound"));
 
         // last ten bytes
-        Response downloadLastTen = UtilIT.downloadFile(fileIdCsv, "-10", "original", null, authorApiToken);
-        downloadLastTen.then().assertThat()
+        Response downloadOrigLastTen = UtilIT.downloadFile(fileIdCsv, "-10", "original", null, authorApiToken);
+        downloadOrigLastTen.then().assertThat()
                 .statusCode(OK.getStatusCode())
                 .body(equalTo("er,21,cat\n"));
+
+        // middle bytes
+        Response downloadOrigMiddle = UtilIT.downloadFile(fileIdCsv, "29-39", "original", null, authorApiToken);
+        downloadOrigMiddle.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body(equalTo("40,dog\nTige"));
 
         String pathToZipWithImage = "scripts/search/data/binary/trees.zip";
         Response uploadFileZipWithImage = UtilIT.uploadFileViaNative(datasetId.toString(), pathToZipWithImage, authorApiToken);
