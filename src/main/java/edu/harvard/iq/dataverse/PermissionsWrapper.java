@@ -115,7 +115,11 @@ public class PermissionsWrapper implements java.io.Serializable {
         return canIssueCommand(dvo, CreateDataverseCommand.class);
     }
     
-    
+    // TODO: 
+    // Wondering if there's a reason why we don't attempt to cache the 
+    // looked up Permission.* results as well as Command authorizations
+    // (below). For starters, need to investigate just how much these 
+    // cost us under different scenarios. May be a moot point. -- L.A. 5.7
     public boolean canManagePermissions(DvObject dvo) {
         if (dvo==null || (dvo.getId()==null) ){
             return false;

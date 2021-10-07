@@ -9,7 +9,6 @@ import edu.harvard.iq.dataverse.authorization.groups.GroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
-import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
 
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -41,13 +40,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     DataverseServiceBean dataverseService;
 
     @EJB
-    SettingsServiceBean settingsService;
-
-    @EJB
     GroupServiceBean groupService;
-
-    @EJB
-    PermissionServiceBean permissionService;
 
     @EJB
     SystemConfig systemConfig;
@@ -261,7 +254,7 @@ public class DataverseHeaderFragment implements java.io.Serializable {
     private Boolean signupAllowed = null;
     
     private String redirectToRoot(){
-        return "dataverse.xhtml?alias=" + dataverseService.findRootDataverse().getAlias();
+        return "dataverse.xhtml?alias=" + settingsWrapper.getRootDataverse().getAlias();
     }
     
     public boolean isSignupAllowed() {

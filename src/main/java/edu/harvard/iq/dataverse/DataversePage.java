@@ -25,7 +25,6 @@ import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
-import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -96,8 +95,6 @@ public class DataversePage implements java.io.Serializable {
     ControlledVocabularyValueServiceBean controlledVocabularyValueServiceBean;
     @EJB
     SavedSearchServiceBean savedSearchService;
-    @EJB
-    SystemConfig systemConfig;
     @EJB DataverseRoleServiceBean dataverseRoleServiceBean;
     @Inject
     SearchIncludeFragment searchIncludeFragment;
@@ -317,7 +314,7 @@ public class DataversePage implements java.io.Serializable {
                 dataverse = dataverseService.find(this.getId());
             } else {
                 try {
-                    dataverse = dataverseService.findRootDataverse();
+                    dataverse = settingsWrapper.getRootDataverse();
                 } catch (EJBException e) {
                     // @todo handle case with no root dataverse (a fresh installation) with message about using API to create the root 
                     dataverse = null;
@@ -329,6 +326,7 @@ public class DataversePage implements java.io.Serializable {
                 return permissionsWrapper.notFound();
             }
             if (!dataverse.isReleased() && !permissionService.on(dataverse).has(Permission.ViewUnpublishedDataverse)) {
+                // the permission lookup above should probably be moved into the permissionsWrapper -- L.A. 5.7
                 return permissionsWrapper.notAuthorized();
             }
 
@@ -339,6 +337,7 @@ public class DataversePage implements java.io.Serializable {
             if (dataverse.getOwner() == null) {
                 return  permissionsWrapper.notFound();
             } else if (!permissionService.on(dataverse.getOwner()).has(Permission.AddDataverse)) {
+                // the permission lookup above should probably be moved into the permissionsWrapper -- L.A. 5.7
                 return permissionsWrapper.notAuthorized();            
             }
 
@@ -680,7 +679,7 @@ public class DataversePage implements java.io.Serializable {
             if (editMode != null && editMode.equals(EditMode.FEATURED)) {
                 message = BundleUtil.getStringFromBundle("dataverse.feature.update");
             } else {
-                message = (create) ? BundleUtil.getStringFromBundle("dataverse.create.success", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), systemConfig.getGuidesVersion())) : BundleUtil.getStringFromBundle("dataverse.update.success");
+                message = (create) ? BundleUtil.getStringFromBundle("dataverse.create.success", Arrays.asList(settingsWrapper.getGuidesBaseUrl(), settingsWrapper.getGuidesVersion())) : BundleUtil.getStringFromBundle("dataverse.update.success");
             }
             JsfHelper.addSuccessMessage(message);
             
@@ -713,6 +712,9 @@ public class DataversePage implements java.io.Serializable {
         return dataverse == null ? false : dataverse.getOwner() == null;
     }
 
+    // Wondering what this method is for - what would be the situation, where 
+    // we only have the id of the parent dataverse, but it hasn't been instantiated
+    // yet? It doesn't appear like it's being used anywyere. -- L.A. 5.7
     public Dataverse getOwner() {
         return (ownerId != null) ? dataverseService.find(ownerId) : null;
     }
