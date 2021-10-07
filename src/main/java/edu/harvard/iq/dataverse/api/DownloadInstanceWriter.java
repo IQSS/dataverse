@@ -489,7 +489,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                         // in the physical file; the number of bytes
                                         // left to write stays unchanged, since we haven't
                                         // written anything.
-                                        offset -= storageIO.getVarHeader().getBytes().length;
+                                        offset -= headerLength;
                                     } else {
                                         // We need to write some portion of the header; 
                                         // Once we are done, we may or may not still have 
@@ -539,7 +539,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             // Thinking about it, we could just do instream.skip(offset) 
                             // here... But I would like to have this offset functionality 
                             // in StorageIO, for any future cases where we may not 
-                            // be able to do that on the stream directly -- L.A.
+                            // be able to do that on the stream directly (?) -- L.A.
                             logger.info("Range request of file id " + dataFile.getId());
                             // Read a range of bytes instead of the whole file. We'll count down as we write.
                             // For now we only support a single range.
