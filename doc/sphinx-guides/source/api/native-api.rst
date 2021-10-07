@@ -2862,20 +2862,20 @@ An example JSON file would look like this::
   export SERVER_URL=https://demo.dataverse.org
   export SPECNAME=ffAuthor
 
-  curl -H X-Dataverse-key:$API_TOKEN -X PUT "$SERVER_URL/api/harvest/server/oaisets/$SPECNAME” --upload-file modify-harvestset-finch.json
+  curl -H X-Dataverse-key:$API_TOKEN -X PUT "$SERVER_URL/api/harvest/server/oaisets/$SPECNAME" --upload-file modify-harvestset-finch.json
 
 The fully expanded example above (without the environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/harvest/server/oaisets/ffAuthor” --upload-file "modify-harvestset-finch.json"
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/harvest/server/oaisets/ffAuthor" --upload-file "modify-harvestset-finch.json"
 
 Only users with superuser permissions may modify harvesting sets.
 
 Delete an Existing Harvesting Set
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To delete a harvesting set, use the set's database name. For example, to delete an existing harvesting set whose database name is “ffAuthor”:
+To delete a harvesting set, use the set's database name. For example, to delete an existing harvesting set whose database name is "ffAuthor":
 
 .. code-block:: bash
 
@@ -2883,13 +2883,13 @@ To delete a harvesting set, use the set's database name. For example, to delete 
   export SERVER_URL=https://demo.dataverse.org
   export SPECNAME=ffAuthor
 
-  curl -H X-Dataverse-key:$API_TOKEN -X DELETE "$SERVER_URL/api/harvest/server/oaisets/$SPECNAME”
+  curl -H X-Dataverse-key:$API_TOKEN -X DELETE "$SERVER_URL/api/harvest/server/oaisets/$SPECNAME"
 
 The fully expanded example above (without the environment variables) looks like this:
 
 .. code-block:: bash
 
-  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/harvest/server/oaisets/ffAuthor”
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/harvest/server/oaisets/ffAuthor"
 
 Only users with superuser permissions may delete harvesting sets.
 
