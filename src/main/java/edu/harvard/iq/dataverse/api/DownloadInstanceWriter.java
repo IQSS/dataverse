@@ -416,6 +416,10 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             range = headers.getHeaderString("Range");
                         }
                         long offset = 0;
+                        long leftToRead = -1L; 
+                        // Moving the "left to read" var. here; - since we may need 
+                        // to start counting our range bytes outside the main .write()
+                        // loop, if it's a tabular file with a header. 
                         try {
                             ranges = getRanges(range, fileSize);
                         } catch (Exception ex) {
@@ -427,9 +431,9 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         if (!ranges.isEmpty()) {
                             // For now we only support a single range.
                             offset = ranges.get(0).getStart();
+                            leftToRead = ranges.get(0).getLength();
                         }
-                        storageIO.setOffset(offset);
-                        //if ((contentSize = getFileSize(di, storageIO.getVarHeader())) > 0) {
+                        
                         if ((contentSize = getContentSize(storageIO)) > 0 && ranges.isEmpty()) {
                             logger.fine("Content size (retrieved from the AccessObject): " + contentSize);
                             httpHeaders.add("Content-Length", contentSize);
@@ -452,6 +456,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         int bufsize;
                         byte[] bffr = new byte[4 * 8192];
                         byte[] chunkClose = "\r\n".getBytes();
+                                                
 
                         // before writing out any bytes from the input stream, flush
                         // any extra content, such as the variable header for the 
@@ -459,36 +464,52 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         if (storageIO.getVarHeader() != null) {
                             logger.fine("storageIO.getVarHeader().getBytes().length: " + storageIO.getVarHeader().getBytes().length);
                             if (storageIO.getVarHeader().getBytes().length > 0) {
-                                if (useChunkedTransfer) {
-                                    String chunkSizeLine = String.format("%x\r\n", storageIO.getVarHeader().getBytes().length);
-                                    outstream.write(chunkSizeLine.getBytes());
-                                }
+                                //if (useChunkedTransfer) {
+                                //    String chunkSizeLine = String.format("%x\r\n", storageIO.getVarHeader().getBytes().length);
+                                //    outstream.write(chunkSizeLine.getBytes());
+                                //}
                                 // If a range is not being requested, let's call that the normal case.
                                 // Write the entire line of variable headers. Later, the rest of the file
                                 // will be written.
                                 if (ranges.isEmpty()) {
+                                    logger.info("writing the entire variable header");
                                     outstream.write(storageIO.getVarHeader().getBytes());
                                 } else {
-                                    // Range requested. We should only write the header if the range specifies the
-                                    // start of the file or if the range includes some of the end of the header.
-                                    // For now we only support a single range.
-                                    Range range1 = ranges.get(0);
-                                    if (range1.getStart() == 0 & range1.getLength() >= storageIO.getVarHeader().getBytes().length) {
-                                        // Does the range requested include the whole length of the variable headers?
-                                        // If so, write those headers, if the range is the start of the file (index 0).
-                                        logger.fine("Writing entire variable header line.");
-                                        outstream.write(storageIO.getVarHeader().getBytes());
-                                    } else if (range1.getStart() == 0 & range1.getLength() < storageIO.getVarHeader().getBytes().length) {
-                                        // Is the user requesting a small range near the front, so small that we can't
-                                        // even write the full line of variable headers? Ok, we'll just write as much
-                                        // as we can, within the range.
-                                        logger.fine("Writing this many bytes of the variable header line: " + range1.getLength());
-                                        outstream.write(Arrays.copyOfRange(storageIO.getVarHeader().getBytes(), 0, (int) range1.getLength()));
+                                    // Range requested. Since the output stream of a 
+                                    // tabular file is made up of the varHeader and the body of 
+                                    // the physical file, we should assume that the requested 
+                                    // range may span any portion of the combined stream.
+                                    // Thus we may or may not to write the header, or a 
+                                    // portion thereof. 
+                                    logger.info("Skipping the variable header completely.");
+                                    int headerLength = storageIO.getVarHeader().getBytes().length;
+                                    if (offset >= headerLength) {
+                                        // We can skip the entire header. 
+                                        // All we need to do is adjust the byte offset 
+                                        // in the physical file; the number of bytes
+                                        // left to write stays unchanged, since we haven't
+                                        // written anything.
+                                        offset -= storageIO.getVarHeader().getBytes().length;
                                     } else {
-                                        // TODO: Consider supporting weird scenarios:
-                                        // - The user is requesting the end or middle of the file and should end up with part or all of the variable headers.
-                                        // - ??
-                                        logger.fine("A range was requested but didn't start with 0. Skip printing of variable headers.");
+                                        // We need to write some portion of the header; 
+                                        // Once we are done, we may or may not still have 
+                                        // some bytes left to write from the main physical file.
+                                        if (offset + leftToRead <= headerLength) {
+                                            // This is a more straightforward case - we just need to 
+                                            // write a portion of the header, and then we are done!
+                                            logger.info("Writing this many bytes of the variable header line: " + leftToRead);
+                                            outstream.write(Arrays.copyOfRange(storageIO.getVarHeader().getBytes(), (int)offset, (int)offset + (int)leftToRead));
+                                            // set "left to read" to zero, indicating that we are done:
+                                            leftToRead = 0; 
+                                        } else {
+                                            // write the requested portion of the header:
+                                            logger.info("Writing this many bytes of the variable header line: " + (headerLength - offset));
+                                            outstream.write(Arrays.copyOfRange(storageIO.getVarHeader().getBytes(), (int)offset, headerLength));
+                                            // and adjust the file offset and remaining number of bytes accordingly: 
+                                            leftToRead -= (headerLength - offset);
+                                            offset = 0;
+                                        }
+                                        
                                     }
                                 }
                                 if (useChunkedTransfer) {
@@ -510,11 +531,19 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                     outstream.write(chunkClose);
                                 }
                             }
-                        } else {
-                            logger.fine("Range request of file id " + dataFile.getId());
+                        } else if (leftToRead > 0) {
+                            // This is a range request, and we still have bytes to read 
+                            // (for a tabular file, we may have already written enough
+                            // bytes from the variable header!)
+                            storageIO.setOffset(offset);
+                            // Thinking about it, we could just do instream.skip(offset) 
+                            // here... But I would like to have this offset functionality 
+                            // in StorageIO, for any future cases where we may not 
+                            // be able to do that on the stream directly -- L.A.
+                            logger.info("Range request of file id " + dataFile.getId());
                             // Read a range of bytes instead of the whole file. We'll count down as we write.
                             // For now we only support a single range.
-                            long leftToRead = ranges.get(0).getLength();
+                            //long leftToRead = ranges.get(0).getLength();
                             while ((bufsize = instream.read(bffr)) != -1) {
                                 if (useChunkedTransfer) {
                                     String chunkSizeLine = String.format("%x\r\n", bufsize);
