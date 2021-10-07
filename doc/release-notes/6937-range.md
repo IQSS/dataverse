@@ -3,7 +3,7 @@
 Dataverse now supports the HTTP "Range" header, which allows users to download parts of a file. Here are some examples:
 
 - `bytes=0-9` gets the first 10 bytes.
-- `bytes=10-19` gets 20 bytes from the middle.
+- `bytes=10-19` gets 10 bytes from the middle.
 - `bytes=-10` gets the last 10 bytes.
 - `bytes=9-` gets all bytes except the first 10.
 
