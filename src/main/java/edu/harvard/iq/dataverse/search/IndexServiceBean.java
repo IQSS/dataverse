@@ -788,6 +788,9 @@ public class IndexServiceBean {
             if (datasetVersion.isInReview()) {
                 solrInputDocument.addField(SearchFields.PUBLICATION_STATUS, IN_REVIEW_STRING);
             }
+            if(datasetVersion.getExternalStatusLabel()!=null) {
+                solrInputDocument.addField(SearchFields.EXTERNAL_STATUS, datasetVersion.getExternalStatusLabel());
+            }
 
             Map<Long, JsonObject> cvocMap = datasetFieldService.getCVocConf(false);
             for (DatasetField dsf : datasetVersion.getFlatDatasetFields()) {
