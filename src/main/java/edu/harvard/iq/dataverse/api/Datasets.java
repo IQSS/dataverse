@@ -2727,9 +2727,9 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     @Path("{identifier}/allowedCurationLabels")
     public Response getAllowedCurationLabels(@PathParam("identifier") String dvIdtf,
             @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse { 
-        
+        AuthenticatedUser user = null;
         try {
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            user = findAuthenticatedUserOrDie();
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
@@ -2741,8 +2741,12 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         } catch (WrappedResponse ex) {
             return ex.getResponse();
         }
-        String[] labelArray = systemConfig.getCurationLabels().get(dataset.getEffectiveCurationLabelSetName());
-        return response(req -> ok(Strings.concat(",", labelArray)));
+        if (permissionSvc.requestOn(createDataverseRequest(user), dataset).has(Permission.PublishDataset)) {
+            String[] labelArray = systemConfig.getCurationLabels().get(dataset.getEffectiveCurationLabelSetName());
+            return response(req -> ok(Strings.concat(",", labelArray)));
+        } else {
+            return error(Response.Status.FORBIDDEN, "You are not permitted to view the allowed curation labels for this dataset.");
+        }
     }
     
     @GET
