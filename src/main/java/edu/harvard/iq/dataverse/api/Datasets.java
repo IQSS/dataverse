@@ -2743,7 +2743,7 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
         }
         if (permissionSvc.requestOn(createDataverseRequest(user), dataset).has(Permission.PublishDataset)) {
             String[] labelArray = systemConfig.getCurationLabels().get(dataset.getEffectiveCurationLabelSetName());
-            return response(req -> ok(Strings.concat(",", labelArray)));
+            return response(req -> ok(String.join(",", labelArray)));
         } else {
             return error(Response.Status.FORBIDDEN, "You are not permitted to view the allowed curation labels for this dataset.");
         }
