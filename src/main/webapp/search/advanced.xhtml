@@ -127,6 +127,7 @@
                                                         <f:passThroughAttribute name="data-cvoc-allowfreetext" value="#{cvoc.getBoolean('allow-free-text', false)}"/>
                                                         <f:passThroughAttribute name="data-cvoc-parent" value="#{cvoc.getString('field-name','')}"/>
                                                         <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvoc.get('managed-fields').toString()}"/>
+                                                        <f:passThroughAttribute name="data-cvoc-placeholder" value=""/>
                                                     </p:inputText>
                                                 </ui:fragment>
                                                 <div class="ui-inputfield form-control select-scroll-block" jsf:rendered="#{!empty item.controlledVocabularyValues}">

@@ -1011,9 +1011,7 @@ progress::-webkit-progress-value {
         display:inline;
         background:#ffffff;
 }
-.select2-container {
-        display: inline!important;
-}
+
 .select2-container .select2-selection--single .select2-selection__rendered {
         display:inline-block!important;
         max-width:90%
