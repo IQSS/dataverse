@@ -457,7 +457,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         int bufsize;
                         byte[] bffr = new byte[4 * 8192];
 
-                        // before writing out any bytes from the input stream, flush
+                        // Before writing out any bytes from the input stream, write
                         // any extra content, such as the variable header for the 
                         // subsettable files: 
                         if (storageIO.getVarHeader() != null) {
@@ -528,7 +528,6 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             logger.fine("Range request of file id " + dataFile.getId());
                             // Read a rangeHeader of bytes instead of the whole file. We'll count down as we write.
                             // For now we only support a single rangeHeader.
-                            //long leftToRead = ranges.get(0).getLength();
                             while ((bufsize = instream.read(bffr)) != -1) {
                                 if ((leftToRead -= bufsize) > 0) {
                                     // Just do a normal write. Potentially lots to go. Don't break.

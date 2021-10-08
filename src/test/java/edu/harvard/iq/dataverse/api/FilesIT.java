@@ -1585,65 +1585,6 @@ public class FilesIT {
         dashes(); msg(m); dashes();
     }
 
-    @Ignore
-    @Test
-    public void test2toNull() {
-        Integer localFile = 15;
-        Integer s3file = 16;
-        Integer fileId = 0;
-        fileId = localFile;
-        String nullApiToken = null;
-        String nullFormat = null;
-        String nullThumbnail = null;
-        String byteRange = null;
-        byteRange = "2-";
-        // java.lang.IndexOutOfBoundsException: Range [0, 0 + -2) out of bounds for length 32768
-        Response downloadFile = UtilIT.downloadFile(fileId, byteRange, nullFormat, nullThumbnail, nullApiToken);
-        downloadFile.prettyPrint();
-    }
-
-    @Ignore
-    @Test
-    public void test0to100() {
-        Integer localFile = 16;
-        Integer tabularLocalFile = 156;
-        Integer s3file = 11;
-        Integer fileId = 0;
-        fileId = localFile;
-//        fileId = s3file;
-        fileId = tabularLocalFile;
-        String nullApiToken = null;
-        String format = null;
-        format = "original";
-        String nullThumbnail = null;
-        String byteRange = null;
-//        byteRange = "0-9"; // first ten
-        byteRange = "0-150"; 
-//        byteRange = "-9"; // last ten
-//        byteRange = "9-"; // last ten
-        Response downloadFile = UtilIT.downloadFile(fileId, byteRange, format, nullThumbnail, nullApiToken);
-        downloadFile.prettyPrint();
-    }
-
-    // test Range header with thumbnails, etc.
-    
-    @Ignore
-    @Test
-    public void testMultipleRanges() {
-        Integer localFile = 16;
-        Integer s3file = 11;
-        Integer fileId = 0;
-        fileId = localFile;
-//        fileId = s3file;
-        String nullApiToken = null;
-        String nullFormat = null;
-        String nullThumbnail = null;
-        String byteRange = null;
-        byteRange = "0-9,90-99";
-        Response downloadFile = UtilIT.downloadFile(fileId, byteRange, nullFormat, nullThumbnail, nullApiToken);
-        downloadFile.prettyPrint();
-    }    
-
     @Test
     public void testRange() throws IOException {
 
@@ -1819,6 +1760,16 @@ public class FilesIT {
         Response downloadThumbnail = UtilIT.downloadFile(fileIdPng, "0-149", null, imageThumbPixels, authorApiToken);
 //        downloadThumbnail.prettyPrint();
         downloadThumbnail.then().assertThat().statusCode(OK.getStatusCode());
+
+        Response multipleRangesNotSupported = UtilIT.downloadFile(fileIdTxt, "0-9,20-29", null, null, authorApiToken);
+        // Datafile download error due to Range header: Only one range is allowed.
+//        multipleRangesNotSupported.prettyPrint();
+        multipleRangesNotSupported.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+
+        Response startLargerThanEndError = UtilIT.downloadFile(fileIdTxt, "20-10", null, null, authorApiToken);
+        // Datafile download error due to Range header: Start is larger than end.
+        startLargerThanEndError.prettyPrint();
+        startLargerThanEndError.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
 
 //        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, authorApiToken);
 //        publishDataverse.then().assertThat().statusCode(OK.getStatusCode());

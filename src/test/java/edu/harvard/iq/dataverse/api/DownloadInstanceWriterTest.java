@@ -75,6 +75,19 @@ public class DownloadInstanceWriterTest {
         assertNotNull(expectedException);
     }
 
+    // Attempt to get invalid range (multiple ranges).
+    @Test
+    public void testGetRangeInvalidMultipleRanges() {
+        Exception expectedException = null;
+        try {
+            List<Range> ranges = diw.getRanges("bytes=0-9,90-99", 100);
+        } catch (Exception ex) {
+            System.out.println("exeption: " + ex);
+            expectedException = ex;
+        }
+        assertNotNull(expectedException);
+    }
+
     // Test "junk" instead of "bytes=0-10"
     @Test
     public void testGetRangeInvalidJunk() {
