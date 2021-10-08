@@ -275,18 +275,7 @@
             <artifactId>commons-httpclient</artifactId>
             <version>3.1</version>
         </dependency>
-        <dependency>
-            <groupId>org.skyscreamer</groupId>
-            <artifactId>jsonassert</artifactId>
-            <version>1.5.0</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.vaadin.external.google</groupId>
-                    <artifactId>android-json</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+    
         <!-- BEGIN Data Deposit API v1 (SWORD v2) -->
         <dependency>
             <groupId>io.gdcc</groupId>
@@ -350,7 +339,6 @@
             <!-- a dependency of commons-fileupload, but newer version required by tika -->
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.11.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
