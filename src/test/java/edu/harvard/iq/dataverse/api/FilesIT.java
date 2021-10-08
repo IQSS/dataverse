@@ -1755,13 +1755,11 @@ public class FilesIT {
                 .body(equalTo("name\tpounds\tspecies\n"
                         + "\"Marshall\""));
 
-//        // FIXME: This should be something like "er 21 cat" (the last line) like downloadOrigLastTen
-//        // FIXME: but right now it's showing "17 cat" (the second to last line).
-//        // last 10 bytes of tabular format
-//        Response downloadTabLast10 = UtilIT.downloadFile(fileIdCsv, "-10", null, null, authorApiToken);
-//        downloadTabLast10.then().assertThat()
-//                .statusCode(OK.getStatusCode())
-//                .body(equalTo("er\"\t21\t\"cat\"\n"));
+        // last 16 bytes of tabular format
+        Response downloadTabLast16 = UtilIT.downloadFile(fileIdCsv, "-16", null, null, authorApiToken);
+        downloadTabLast16.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body(equalTo("nther\"\t21\t\"cat\"\n"));
 
         Response downloadTabMiddleBytesHeader = UtilIT.downloadFile(fileIdCsv, "1-7", null, null, authorApiToken);
         downloadTabMiddleBytesHeader.then().assertThat()
