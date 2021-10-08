@@ -467,7 +467,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                 // Write the entire line of variable headers. Later, the rest of the file
                                 // will be written.
                                 if (ranges.isEmpty()) {
-                                    logger.info("writing the entire variable header");
+                                    logger.fine("writing the entire variable header");
                                     outstream.write(storageIO.getVarHeader().getBytes());
                                 } else {
                                     // Range requested. Since the output stream of a 
@@ -483,7 +483,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                         // in the physical file; the number of bytes
                                         // left to write stays unchanged, since we haven't
                                         // written anything.
-                                        logger.info("Skipping the variable header completely.");
+                                        logger.fine("Skipping the variable header completely.");
                                         offset -= headerLength;
                                     } else {
                                         // We need to write some portion of the header; 
@@ -492,13 +492,13 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                         if (offset + leftToRead <= headerLength) {
                                             // This is a more straightforward case - we just need to 
                                             // write a portion of the header, and then we are done!
-                                            logger.info("Writing this many bytes of the variable header line: " + leftToRead);
+                                            logger.fine("Writing this many bytes of the variable header line: " + leftToRead);
                                             outstream.write(Arrays.copyOfRange(storageIO.getVarHeader().getBytes(), (int)offset, (int)offset + (int)leftToRead));
                                             // set "left to read" to zero, indicating that we are done:
                                             leftToRead = 0; 
                                         } else {
                                             // write the requested portion of the header:
-                                            logger.info("Writing this many bytes of the variable header line: " + (headerLength - offset));
+                                            logger.fine("Writing this many bytes of the variable header line: " + (headerLength - offset));
                                             outstream.write(Arrays.copyOfRange(storageIO.getVarHeader().getBytes(), (int)offset, headerLength));
                                             // and adjust the file offset and remaining number of bytes accordingly: 
                                             leftToRead -= (headerLength - offset);
@@ -525,7 +525,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             // here... But I would like to have this offset functionality 
                             // in StorageIO, for any future cases where we may not 
                             // be able to do that on the stream directly (?) -- L.A.
-                            logger.info("Range request of file id " + dataFile.getId());
+                            logger.fine("Range request of file id " + dataFile.getId());
                             // Read a rangeHeader of bytes instead of the whole file. We'll count down as we write.
                             // For now we only support a single rangeHeader.
                             //long leftToRead = ranges.get(0).getLength();
