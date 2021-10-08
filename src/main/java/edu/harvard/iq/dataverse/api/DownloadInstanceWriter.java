@@ -403,10 +403,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         httpHeaders.add("Content-Type", mimeType + "; name=\"" + finalFileName + "\"");
 
                         long contentSize;
-                        // This is hard-coded to false and could probably be removed some day,
-                        // but for now it's illustrative.
-                        boolean useChunkedTransfer = false;
-
+                        
                         // User may have requested a range of bytes.
                         List<Range> ranges = new ArrayList<>();
                         long fileSize = storageIO.getSize();
@@ -445,18 +442,12 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         } else {
                             // Neither a range request, nor do we know the size. Must be dynamically
                             // generated, such as a subsetting request.
-                            // Note the chunk lines below are commented out because Payara will see
-                            // that the header is not present and switch into chunk mode.
-                            //httpHeaders.add("Transfer-encoding", "chunked");
-                            //useChunkedTransfer = true;
                         }
 
                         // (the httpHeaders map must be modified *before* writing any
                         // data in the output stream!)
                         int bufsize;
                         byte[] bffr = new byte[4 * 8192];
-                        byte[] chunkClose = "\r\n".getBytes();
-                                                
 
                         // before writing out any bytes from the input stream, flush
                         // any extra content, such as the variable header for the 
@@ -464,10 +455,6 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         if (storageIO.getVarHeader() != null) {
                             logger.fine("storageIO.getVarHeader().getBytes().length: " + storageIO.getVarHeader().getBytes().length);
                             if (storageIO.getVarHeader().getBytes().length > 0) {
-                                //if (useChunkedTransfer) {
-                                //    String chunkSizeLine = String.format("%x\r\n", storageIO.getVarHeader().getBytes().length);
-                                //    outstream.write(chunkSizeLine.getBytes());
-                                //}
                                 // If a range is not being requested, let's call that the normal case.
                                 // Write the entire line of variable headers. Later, the rest of the file
                                 // will be written.
@@ -512,9 +499,6 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                         
                                     }
                                 }
-                                if (useChunkedTransfer) {
-                                    outstream.write(chunkClose);
-                                }
                             }
                         }
 
@@ -522,14 +506,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         if (ranges.isEmpty()) {
                             logger.fine("Normal, non-range request of file id " + dataFile.getId());
                             while ((bufsize = instream.read(bffr)) != -1) {
-                                if (useChunkedTransfer) {
-                                    String chunkSizeLine = String.format("%x\r\n", bufsize);
-                                    outstream.write(chunkSizeLine.getBytes());
-                                }
                                 outstream.write(bffr, 0, bufsize);
-                                if (useChunkedTransfer) {
-                                    outstream.write(chunkClose);
-                                }
                             }
                         } else if (leftToRead > 0) {
                             // This is a range request, and we still have bytes to read 
@@ -545,10 +522,6 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             // For now we only support a single range.
                             //long leftToRead = ranges.get(0).getLength();
                             while ((bufsize = instream.read(bffr)) != -1) {
-                                if (useChunkedTransfer) {
-                                    String chunkSizeLine = String.format("%x\r\n", bufsize);
-                                    outstream.write(chunkSizeLine.getBytes());
-                                }
                                 if ((leftToRead -= bufsize) > 0) {
                                     // Just do a normal write. Potentially lots to go. Don't break.
                                     outstream.write(bffr, 0, bufsize);
@@ -557,16 +530,8 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                     outstream.write(bffr, 0, (int) leftToRead + bufsize);
                                     break;
                                 }
-                                if (useChunkedTransfer) {
-                                    outstream.write(chunkClose);
-                                }
                             }
 
-                        }
-
-                        if (useChunkedTransfer) {
-                            String chunkClosing = "0\r\n\r\n";
-                            outstream.write(chunkClosing.getBytes());
                         }
 
                         logger.fine("di conversion param: " + di.getConversionParam() + ", value: " + di.getConversionParamValue());
