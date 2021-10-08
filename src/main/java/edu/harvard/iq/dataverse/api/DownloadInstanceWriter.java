@@ -404,44 +404,52 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
 
                         long contentSize;
                         
-                        // User may have requested a range of bytes.
+                        // User may have requested a rangeHeader of bytes.
+                        // Ranges are only supported when the size of the content 
+                        // stream is known (i.e., it's not a dynamically generated 
+                        // stream. 
                         List<Range> ranges = new ArrayList<>();
-                        long fileSize = storageIO.getSize();
-                        String range = null;
+                        String rangeHeader = null;
                         HttpHeaders headers = di.getRequestHttpHeaders();
                         if (headers != null) {
-                            range = headers.getHeaderString("Range");
+                            rangeHeader = headers.getHeaderString("Range");
                         }
                         long offset = 0;
                         long leftToRead = -1L; 
                         // Moving the "left to read" var. here; - since we may need 
-                        // to start counting our range bytes outside the main .write()
+                        // to start counting our rangeHeader bytes outside the main .write()
                         // loop, if it's a tabular file with a header. 
-                        try {
-                            ranges = getRanges(range, fileSize);
-                        } catch (Exception ex) {
-                            logger.fine("Exception caught processing Range header: " + ex.getLocalizedMessage());
-                            // The message starts with "Datafile" because otherwise the message is not passed
-                            // to the user due to how WebApplicationExceptionHandler works.
-                            throw new NotFoundException("Datafile download error due to Range header: " + ex.getLocalizedMessage());
-                        }
-                        if (!ranges.isEmpty()) {
-                            // For now we only support a single range.
-                            offset = ranges.get(0).getStart();
-                            leftToRead = ranges.get(0).getLength();
-                        }
                         
-                        if ((contentSize = getContentSize(storageIO)) > 0 && ranges.isEmpty()) {
-                            logger.fine("Content size (retrieved from the AccessObject): " + contentSize);
-                            httpHeaders.add("Content-Length", contentSize);
-                        } else if (!ranges.isEmpty()) {
-                            // For now we only support a single range.
-                            long rangeContentSize = ranges.get(0).getLength();
-                            logger.fine("Content size (Range header in use): " + rangeContentSize);
-                            httpHeaders.add("Content-Length", rangeContentSize);
+                        if ((contentSize = getContentSize(storageIO)) > 0) {
+                            try {
+                                ranges = getRanges(rangeHeader, contentSize);
+                            } catch (Exception ex) {
+                                logger.fine("Exception caught processing Range header: " + ex.getLocalizedMessage());
+                                // The message starts with "Datafile" because otherwise the message is not passed
+                                // to the user due to how WebApplicationExceptionHandler works.
+                                throw new NotFoundException("Datafile download error due to Range header: " + ex.getLocalizedMessage());
+                            }
+                            
+                            if (ranges.isEmpty()) {
+                                logger.fine("Content size (retrieved from the AccessObject): " + contentSize);
+                                httpHeaders.add("Content-Length", contentSize);
+                            } else  {
+                                // For now we only support a single rangeHeader.
+                                long rangeContentSize = ranges.get(0).getLength();
+                                logger.fine("Content size (Range header in use): " + rangeContentSize);
+                                httpHeaders.add("Content-Length", rangeContentSize);
+                                
+                                offset = ranges.get(0).getStart();
+                                leftToRead = rangeContentSize;
+                            }
                         } else {
-                            // Neither a range request, nor do we know the size. Must be dynamically
-                            // generated, such as a subsetting request.
+                            // Content size unknown, must be a dynamically
+                            // generated stream, such as a subsetting request.
+                            // We do NOT want to support rangeHeader requests on such streams:
+                            if (rangeHeader != null) {
+                                throw new NotFoundException("Range headers are not supported on dynamically-generated content, such as tabular subsetting.");
+                            }
+                            
                         }
 
                         // (the httpHeaders map must be modified *before* writing any
@@ -455,7 +463,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                         if (storageIO.getVarHeader() != null) {
                             logger.fine("storageIO.getVarHeader().getBytes().length: " + storageIO.getVarHeader().getBytes().length);
                             if (storageIO.getVarHeader().getBytes().length > 0) {
-                                // If a range is not being requested, let's call that the normal case.
+                                // If a rangeHeader is not being requested, let's call that the normal case.
                                 // Write the entire line of variable headers. Later, the rest of the file
                                 // will be written.
                                 if (ranges.isEmpty()) {
@@ -465,7 +473,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                     // Range requested. Since the output stream of a 
                                     // tabular file is made up of the varHeader and the body of 
                                     // the physical file, we should assume that the requested 
-                                    // range may span any portion of the combined stream.
+                                    // rangeHeader may span any portion of the combined stream.
                                     // Thus we may or may not have to write the header, or a 
                                     // portion thereof. 
                                     int headerLength = storageIO.getVarHeader().getBytes().length;
@@ -509,7 +517,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                 outstream.write(bffr, 0, bufsize);
                             }
                         } else if (leftToRead > 0) {
-                            // This is a range request, and we still have bytes to read 
+                            // This is a rangeHeader request, and we still have bytes to read 
                             // (for a tabular file, we may have already written enough
                             // bytes from the variable header!)
                             storageIO.setOffset(offset);
@@ -518,8 +526,8 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                             // in StorageIO, for any future cases where we may not 
                             // be able to do that on the stream directly (?) -- L.A.
                             logger.info("Range request of file id " + dataFile.getId());
-                            // Read a range of bytes instead of the whole file. We'll count down as we write.
-                            // For now we only support a single range.
+                            // Read a rangeHeader of bytes instead of the whole file. We'll count down as we write.
+                            // For now we only support a single rangeHeader.
                             //long leftToRead = ranges.get(0).getLength();
                             while ((bufsize = instream.read(bffr)) != -1) {
                                 if ((leftToRead -= bufsize) > 0) {
@@ -678,14 +686,14 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
      */
     public List<Range> getRanges(String range, long fileSize) {
         // Inspired by https://gist.github.com/davinkevin/b97e39d7ce89198774b4
-        // via https://stackoverflow.com/questions/28427339/how-to-implement-http-byte-range-requests-in-spring-mvc/28479001#28479001
+        // via https://stackoverflow.com/questions/28427339/how-to-implement-http-byte-rangeHeader-requests-in-spring-mvc/28479001#28479001
         List<Range> ranges = new ArrayList<>();
 
         if (range != null) {
             logger.fine("Range header supplied: " + range);
 
             // Technically this regex supports multiple ranges.
-            // Below we have a check to enforce a single range.
+            // Below we have a check to enforce a single rangeHeader.
             if (!range.matches("^bytes=\\d*-\\d*(,\\d*-\\d*)*$")) {
                 throw new RuntimeException("The format is bytes=<range-start>-<range-end> where start and end are optional.");
             }
