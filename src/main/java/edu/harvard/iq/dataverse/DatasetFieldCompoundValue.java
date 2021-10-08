@@ -153,7 +153,7 @@ public class DatasetFieldCompoundValue implements Serializable {
         // todo - this currently only supports child datasetfields with single values
         // need to determine how we would want to handle multiple
         Map<DatasetField, String> fieldMap = new LinkedHashMap<>();
-        linkMap = new LinkedHashMap<>();
+        linkMap.clear();
         boolean fixTrailingComma = false;
         Pair<String, String> linkComponents = getLinkComponents();
         linkScheme = null;

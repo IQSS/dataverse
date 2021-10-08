@@ -7,8 +7,6 @@
 package edu.harvard.iq.dataverse;
 
 import java.util.Comparator;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  *
@@ -88,33 +86,6 @@ public class DatasetAuthor {
            );
     }
 
-    public static final Map<String, LinkTemplate> linkSchemeTemplates = Map.of(
-        // https://support.orcid.org/hc/en-us/articles/360006897674-Structure-of-the-ORCID-Identifier
-        "ORCID",
-            new LinkTemplate("https://orcid.org/%s", "^\\d{4}-\\d{4}-\\d{4}-(\\d{4}|\\d{3}X)$"),
-        "ISNI",
-            new LinkTemplate("http://www.isni.org/isni/%s", "^\\d*$"),
-        "LCNA",
-            new LinkTemplate("http://id.loc.gov/authorities/names/%s", "^[a-z]+\\d+$"),
-        "VIAF",
-            new LinkTemplate("https://viaf.org/viaf/%s", "^\\d*$"),
-        // GND regex from https://www.wikidata.org/wiki/Property:P227
-        "GND",
-            new LinkTemplate("https://d-nb.info/gnd/%s", "^1[01]?\\d{7}[0-9X]|[47]\\d{6}-\\d|[1-9]\\d{0,7}-[0-9X]|3\\d{7}[0-9X]$"),
-        // note: DAI is missing from this list, because it doesn't have resolvable URL
-        "ResearcherID",
-            new LinkTemplate("https://publons.com/researcher/%s/", "^[A-Z\\d][A-Z\\d-]+[A-Z\\d]$"),
-        "ScopusID",
-            new LinkTemplate("https://www.scopus.com/authid/detail.uri?authorId=%s", "^\\d*$")
-    );
-
-    /**
-     * Each author identification type has its own valid pattern/syntax.
-     */
-    public static Pattern getValidPattern(String regex) {
-        return Pattern.compile(regex);
-    }
-
     public String getIdentifierAsUrl() {
         if (idType != null && !idType.isEmpty() && idValue != null && !idValue.isEmpty()) {
             return getIdentifierAsUrl(idType, idValue);
@@ -124,12 +95,12 @@ public class DatasetAuthor {
 
     public static String getIdentifierAsUrl(String idType, String idValue) {
         if (idType != null && !idType.isEmpty() && idValue != null && !idValue.isEmpty()) {
-            DatasetFieldValueValidator datasetFieldValueValidator = new DatasetFieldValueValidator();
-            if (linkSchemeTemplates.containsKey(idType)) {
-                LinkTemplate template = linkSchemeTemplates.get(idType);
-                if (datasetFieldValueValidator.isValidAuthorIdentifier(idValue, template.getPattern())) {
-                    return String.format(template.getTemplate(), idValue);
-                }
+            try {
+              ExternalIdentifier externalIdentifier = ExternalIdentifier.valueOf(idType);
+              if (externalIdentifier.isValidIdentifier(idValue))
+                return externalIdentifier.format(idValue);
+            } catch (Exception e) {
+                // non registered identifier
             }
         }
         return null;
