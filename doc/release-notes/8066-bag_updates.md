@@ -1,0 +1,3 @@
+### Bag update to support file paths
+
+The original Bag generation code stored all dataset files directly under the /data directory. With the addition in Dataverse of a directory path for files and then a change to allow files with different paths to have the same name, archival Bags will now use the directory path from Dataverse to avoid name collisions within the /data directory. Prior to this update, Bags from Datasets with multiple files with the same name would have been created with only one of the files with that name (with warnings in the log, but still generating the Bag).
