@@ -198,6 +198,11 @@ public class DatasetServiceBean implements java.io.Serializable {
         return em.createQuery("SELECT o.id FROM Dataset o WHERE o.indexTime IS null ORDER BY o.id DESC", Long.class).getResultList();
     }
 
+    //Used in datasets listcurationstatus API
+    public List<Dataset> findAllUnpublished() {
+        return em.createQuery("SELECT object(o) FROM Dataset o, DvObject d WHERE d.id=o.id and d.publicationDate IS null ORDER BY o.id ASC", Dataset.class).getResultList();
+    }
+
     /**
      * For docs, see the equivalent method on the DataverseServiceBean.
      * @param numPartitions
@@ -273,8 +278,8 @@ public class DatasetServiceBean implements java.io.Serializable {
         switch (identifierType) {
             case "randomString":
                 return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
-            case "sequentialNumber":
-                return generateIdentifierAsSequentialNumber(dataset, idServiceBean, shoulder);
+            case "storedProcGenerated":
+                return generateIdentifierFromStoredProcedure(dataset, idServiceBean, shoulder);
             default:
                 /* Should we throw an exception instead?? -- L.A. 4.6.2 */
                 return generateIdentifierAsRandomString(dataset, idServiceBean, shoulder);
@@ -290,19 +295,19 @@ public class DatasetServiceBean implements java.io.Serializable {
         return identifier;
     }
 
-    private String generateIdentifierAsSequentialNumber(Dataset dataset, GlobalIdServiceBean idServiceBean, String shoulder) {
+    private String generateIdentifierFromStoredProcedure(Dataset dataset, GlobalIdServiceBean idServiceBean, String shoulder) {
         
         String identifier; 
         do {
-            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierAsSequentialNumber");
+            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierFromStoredProcedure");
             query.execute();
-            Integer identifierNumeric = (Integer) query.getOutputParameterValue(1); 
+            String identifierFromStoredProcedure = (String) query.getOutputParameterValue(1);
             // some diagnostics here maybe - is it possible to determine that it's failing 
             // because the stored procedure hasn't been created in the database?
-            if (identifierNumeric == null) {
+            if (identifierFromStoredProcedure == null) {
                 return null; 
             }
-            identifier = shoulder + identifierNumeric.toString();
+            identifier = shoulder + identifierFromStoredProcedure;
         } while (!isIdentifierLocallyUnique(identifier, dataset));
         
         return identifier;
@@ -732,21 +737,30 @@ public class DatasetServiceBean implements java.io.Serializable {
     //depends on dataset state and user privleges
     public String getReminderString(Dataset dataset, boolean canPublishDataset) {
 
+        String reminderString;
+
         if(!dataset.isReleased() ){
             //messages for draft state.
             if (canPublishDataset){
-                return BundleUtil.getStringFromBundle("dataset.message.publish.remind.draft");
+                reminderString = BundleUtil.getStringFromBundle("dataset.message.publish.remind.draft");
             } else {
-                return BundleUtil.getStringFromBundle("dataset.message.submit.remind.draft");
+                reminderString = BundleUtil.getStringFromBundle("dataset.message.submit.remind.draft");
             }            
         } else{
             //messages for new version - post-publish
             if (canPublishDataset){
-                return BundleUtil.getStringFromBundle("dataset.message.publish.remind.version");
+                reminderString = BundleUtil.getStringFromBundle("dataset.message.publish.remind.version");
             } else {
-                return BundleUtil.getStringFromBundle("dataset.message.submit.remind.version");
+                reminderString = BundleUtil.getStringFromBundle("dataset.message.submit.remind.version");
             }           
         }             
+
+        if (reminderString != null) {
+            return reminderString;
+        } else {
+            logger.warning("Unable to get reminder string from bundle. Returning empty string.");
+            return "";
+        }
     }
     
     public void updateLastExportTimeStamp(Long datasetId) {

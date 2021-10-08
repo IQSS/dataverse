@@ -238,6 +238,10 @@ public class FilePage implements java.io.Serializable {
     private boolean canViewUnpublishedDataset() {
         return permissionsWrapper.canViewUnpublishedDataset( dvRequestService.getDataverseRequest(), fileMetadata.getDatasetVersion().getDataset());
     }
+    
+    public boolean canPublishDataset(){
+        return permissionsWrapper.canIssuePublishDatasetCommand(fileMetadata.getDatasetVersion().getDataset());
+    }
    
 
     public FileMetadata getFileMetadata() {
@@ -971,5 +975,11 @@ public class FilePage implements java.io.Serializable {
 
     public void setFileAccessRequest(boolean fileAccessRequest) {
         this.fileAccessRequest = fileAccessRequest;
-    }  
+    }
+    public boolean isAnonymizedAccess() {
+        if(session.getUser() instanceof PrivateUrlUser) {
+            return ((PrivateUrlUser)session.getUser()).hasAnonymizedAccess();
+        }
+        return false;
+    }
 }

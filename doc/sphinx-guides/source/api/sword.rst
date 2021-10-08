@@ -34,11 +34,15 @@ HTTP Basic Authentication commonly makes use of both a username and a password b
 
 Clients such as ``curl`` expect both a username and a password separated by a colon. With ``curl``, the way to indicate that the password should be blank or empty is to include the colon at the end of the username (the API token) like this:
 
-``curl -u 54b143b5-d001-4254-afc0-a1c0f6a5b5a7:``
+.. code-block:: bash
+
+  curl -u 54b143b5-d001-4254-afc0-a1c0f6a5b5a7:
 
 All the curl examples below take this form but instead of showing an API token like above, a Bash environment variable called ``$API_TOKEN`` is shown instead like this:
 
-``curl -u $API_TOKEN:``
+.. code-block:: bash
+
+  curl -u $API_TOKEN:
 
 .. _RFC 7617: https://tools.ietf.org/html/rfc7617
 
@@ -53,9 +57,9 @@ Differences in Dataverse Software 4 from DVN 3.x lead to a few minor backward in
 
 - Newly required fields when creating/editing datasets for compliance with the `Joint Declaration for Data Citation principles <http://thedata.org/blog/joint-declaration-data-citation-principles-and-dataverse>`_.
 
-  - dcterms:creator (maps to authorName)
+  - ``dcterms:creator`` (maps to authorName)
 
-  - dcterms:description
+  - ``dcterms:description``
 
 - Deaccessioning is no longer supported. An alternative will be developed at https://github.com/IQSS/dataverse/issues/778
 
@@ -72,11 +76,11 @@ New features as of v1.1
 
 - Datasets versions will only be increased to the next minor version (i.e. 1.1) rather than a major version (2.0) if possible. This depends on the nature of the change. Adding or removing a file, for example, requires a major version bump.
 
-- "Author Affiliation" can now be populated with an XML attribute. For example: <dcterms:creator affiliation="Coffee Bean State University">Stumptown, Jane</dcterms:creator>
+- "Author Affiliation" can now be populated with an XML attribute. For example: ``<dcterms:creator affiliation="Coffee Bean State University">Stumptown, Jane</dcterms:creator>``
 
-- "Contributor" can now be populated and the "Type" (Editor, Funder, Researcher, etc.) can be specified with an XML attribute. For example: <dcterms:contributor type="Funder">CaffeineForAll</dcterms:contributor>
+- "Contributor" can now be populated and the "Type" (Editor, Funder, Researcher, etc.) can be specified with an XML attribute. For example: ``<dcterms:contributor type="Funder">CaffeineForAll</dcterms:contributor>``
 
-- "License" can now be set with dcterms:license and the possible values are "CC0" and "NONE". "License" interacts with "Terms of Use" (dcterms:rights) in that if you include dcterms:rights in the XML, the license will be set to "NONE". If you don't include dcterms:rights, the license will default to "CC0". It is invalid to specify "CC0" as a license and also include dcterms:rights; an error will be returned. For backwards compatibility, dcterms:rights is allowed to be blank (i.e. <dcterms:rights></dcterms:rights>) but blank values will not be persisted to the database and the license will be set to "NONE".
+- "License" can now be set with ``dcterms:license`` and the possible values are "CC0" and "NONE". "License" interacts with "Terms of Use" (``dcterms:rights``) in that if you include ``dcterms:rights`` in the XML, the license will be set to "NONE". If you don't include ``dcterms:rights``, the license will default to "CC0". It is invalid to specify "CC0" as a license and also include ``dcterms:rights``; an error will be returned. For backwards compatibility, ``dcterms:rights`` is allowed to be blank (i.e. ``<dcterms:rights></dcterms:rights>``) but blank values will not be persisted to the database and the license will be set to "NONE".
 
 - "Contact E-mail" is automatically populated from dataset owner's email.
 
@@ -94,18 +98,23 @@ Retrieve SWORD service document
 
 The service document enumerates the Dataverse collections (also "collections" from a SWORD perspective) the user can deposit data into. The "collectionPolicy" element for each Dataverse collections contains the Terms of Use. Any user with an API token can use this API endpoint. Institution-wide Shibboleth groups are not respected because membership in such a group can only be set via a browser.
 
-``curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/service-document``
+.. code-block:: bash
+
+  curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/service-document
 
 Create a dataset with an Atom entry
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To create a dataset, you must have the "Dataset Creator" role (the ``AddDataset`` permission) on a Dataverse collection. Practically speaking, you should first retrieve the service document to list the Dataverse collections into which you are authorized to deposit data.
 
-``curl -u $API_TOKEN: --data-binary "@path/to/atom-entry-study.xml" -H "Content-Type: application/atom+xml" https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/$DATAVERSE_ALIAS``
+.. code-block:: bash
+
+  curl -u $API_TOKEN: --data-binary "@path/to/atom-entry-study.xml" -H "Content-Type: application/atom+xml" https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/$DATAVERSE_ALIAS
 
 Example Atom entry (XML)
 
 .. literalinclude:: sword-atom-entry.xml
+    :language: xml
 
 Dublin Core Terms (DC Terms) Qualified Mapping - Dataverse Project DB Element Crosswalk
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -146,14 +155,18 @@ List datasets in a Dataverse Collection
 
 You must have permission to add datasets in a Dataverse collection (the Dataverse collection should appear in the service document) to list the datasets inside. Institution-wide Shibboleth groups are not respected because membership in such a group can only be set via a browser.
 
-``curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/$DATAVERSE_ALIAS``
+.. code-block:: bash
+
+  curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/$DATAVERSE_ALIAS
 
 Add files to a dataset with a zip file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You must have ``EditDataset`` permission (Contributor role or above such as Curator or Admin) on the dataset to add files.
 
-``curl -u $API_TOKEN: --data-binary @path/to/example.zip -H "Content-Disposition: filename=example.zip" -H "Content-Type: application/zip" -H "Packaging: http://purl.org/net/sword/package/SimpleZip" https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit-media/study/doi:TEST/12345``
+.. code-block:: bash
+
+  curl -u $API_TOKEN: --data-binary @path/to/example.zip -H "Content-Disposition: filename=example.zip" -H "Content-Type: application/zip" -H "Packaging: http://purl.org/net/sword/package/SimpleZip" https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit-media/study/doi:TEST/12345
 
 Display a dataset atom entry
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -162,56 +175,72 @@ You must have ``ViewUnpublishedDataset`` permission (Contributor role or above s
 
 Contains data citation (bibliographicCitation), alternate URI (persistent URI of study), edit URI, edit media URI, statement URI.
 
-``curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345``
+.. code-block:: bash
+  
+  curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345
 
 Display a dataset statement
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Contains title, author, feed of file entries, latestVersionState, locked boolean, updated timestamp. You must have ``ViewUnpublishedDataset`` permission (Contributor role or above such as Curator or Admin) on the dataset to display the statement.
 
-``curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/statement/study/doi:TEST/12345``
+.. code-block:: bash
+
+  curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/statement/study/doi:TEST/12345
 
 Delete a file by database id
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You must have ``EditDataset`` permission (Contributor role or above such as Curator or Admin) on the dataset to delete files.
 
-``curl -u $API_TOKEN: -X DELETE https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit-media/file/123``
+.. code-block:: bash
+
+  curl -u $API_TOKEN: -X DELETE https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit-media/file/123
 
 Replacing metadata for a dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Please note that **ALL** metadata (title, author, etc.) will be replaced, including fields that can not be expressed with "dcterms" fields. You must have ``EditDataset`` permission (Contributor role or above such as Curator or Admin) on the dataset to replace metadata.
 
-``curl -u $API_TOKEN: --upload-file "path/to/atom-entry-study2.xml" -H "Content-Type: application/atom+xml" https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345``
+.. code-block:: bash
+
+  curl -u $API_TOKEN: --upload-file "path/to/atom-entry-study2.xml" -H "Content-Type: application/atom+xml" https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345``
 
 Delete a dataset
 ~~~~~~~~~~~~~~~~
 
 You must have the ``DeleteDatasetDraft`` permission (Contributor role or above such as Curator or Admin) on the dataset to delete it. Please note that if the dataset has never been published you will be able to delete it completely but if the dataset has already been published you will only be able to delete post-publication drafts, never a published version.
 
-``curl -u $API_TOKEN: -i -X DELETE https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345``
+.. code-block:: bash
+
+  curl -u $API_TOKEN: -i -X DELETE https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345
 
 Determine if a Dataverse Collection has been published
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This API endpoint is the same as the "list datasets in a Dataverse collection" endpoint documented above and the same permissions apply but it is documented here separately to point out that you can look for a boolean called ``dataverseHasBeenReleased`` to know if a Dataverse collection has been released, which is required for publishing a dataset.
 
-``curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/$DATAVERSE_ALIAS``
+.. code-block:: bash
+
+  curl -u $API_TOKEN: https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/collection/dataverse/$DATAVERSE_ALIAS
 
 Publish a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The ``cat /dev/null`` and ``--data-binary @-`` arguments are used to send zero-length content to the API, which is required by the upstream library to process the ``In-Progress: false`` header. You must have the ``PublishDataverse`` permission (Admin role) on the Dataverse collection to publish it.
 
-``cat /dev/null | curl -u $API_TOKEN: -X POST -H "In-Progress: false" --data-binary @- https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/dataverse/$DATAVERSE_ALIAS``
+.. code-block:: bash
+
+  cat /dev/null | curl -u $API_TOKEN: -X POST -H "In-Progress: false" --data-binary @- https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/dataverse/$DATAVERSE_ALIAS
 
 Publish a dataset
 ~~~~~~~~~~~~~~~~~
 
 The ``cat /dev/null`` and ``--data-binary @-`` arguments are used to send zero-length content to the API, which is required by the upstream library to process the ``In-Progress: false`` header. You must have the ``PublishDataset`` permission (Curator or Admin role) on the dataset to publish it.
 
-``cat /dev/null | curl -u $API_TOKEN: -X POST -H "In-Progress: false" --data-binary @- https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345``
+.. code-block:: bash
+
+  cat /dev/null | curl -u $API_TOKEN: -X POST -H "In-Progress: false" --data-binary @- https://$HOSTNAME/dvn/api/data-deposit/v1.1/swordv2/edit/study/doi:TEST/12345
 
 .. _known-issues:
 
@@ -249,4 +278,3 @@ Client libraries
 - R: https://github.com/IQSS/dataverse-client-r
 - Ruby: https://github.com/swordapp/sword2ruby
 - PHP: https://github.com/swordapp/swordappv2-php-library
-

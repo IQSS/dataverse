@@ -9,83 +9,79 @@ import com.google.gson.Gson;
 import edu.harvard.iq.dataverse.GlobalId;
 import edu.harvard.iq.dataverse.api.dto.DatasetDTO;
 import edu.harvard.iq.dataverse.api.dto.DatasetVersionDTO;
-import edu.harvard.iq.dataverse.api.dto.FileDTO;
 import edu.harvard.iq.dataverse.export.openaire.OpenAireExportUtil;
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.logging.Logger;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
-/**
- *
- * @author francesco.cadili@4science.it
- */
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class OpenAireExportUtilTest {
 
-    public OpenAireExportUtilTest() {
+    private static final Logger logger = Logger.getLogger(OpenAireExportUtilTest.class.getCanonicalName());
+    private static final XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
+    private final StringWriter stringWriter = new StringWriter();
+    private XMLStreamWriter xmlWriter;
+    
+    @BeforeEach
+    private void setup() throws XMLStreamException {
+        xmlWriter = xmlOutputFactory.createXMLStreamWriter(stringWriter);
     }
-
-    @BeforeClass
-    public static void setUpClass() {
+    @AfterEach
+    private void teardown() throws XMLStreamException {
+        stringWriter.flush();
+        xmlWriter.close();
     }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
+    
     /**
-     * Test: 1, Identifier (with mandatory type sub-property) (M)
-     *
-     * identifier
+     * Test: 1a, Identifier (with mandatory type sub-property) (M) - DOI version
      */
     @Test
-    public void testWriteIdentifierElement() throws XMLStreamException {
-        System.out.println("writeIdentifierElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        // doi
+    public void testWriteIdentifierElementDoi() throws XMLStreamException {
+        // given
         String persistentAgency = "doi";
         String persistentAuthority = "10.123";
         String persistentId = "123";
         GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId);
-        OpenAireExportUtil.writeIdentifierElement(xmlw, globalId.toURL().toString(), null);
-        xmlw.close();
-        Assert.assertEquals("<identifier identifierType=\"DOI\">"
-                + persistentAuthority + "/" + persistentId + "</identifier>",
-                sw.toString());
-
-        // handle
-        sw = new StringWriter();
-        xmlw = f.createXMLStreamWriter(sw);
-        persistentAgency = "hdl";
-        persistentAuthority = "1902.1";
-        persistentId = "111012";
-        globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId);
-        OpenAireExportUtil.writeIdentifierElement(xmlw, globalId.toURL().toString(), null);
-        xmlw.close();
-        Assert.assertEquals("<identifier identifierType=\"Handle\">"
-                + persistentAuthority + "/" + persistentId + "</identifier>",
-                sw.toString());
+        
+        // when
+        OpenAireExportUtil.writeIdentifierElement(xmlWriter, globalId.toURL().toString(), null);
+        xmlWriter.flush();
+        
+        // then
+        assertEquals(String.format("<identifier identifierType=\"DOI\">%s/%s</identifier>", persistentAuthority, persistentId),
+                stringWriter.toString());
+    }
+    
+    /**
+     * Test: 1b, Identifier (with mandatory type sub-property) (M) - Handle version
+     */
+    @Test
+    public void testWriteIdentifierElementHandle() throws XMLStreamException {
+        // given
+        String persistentAgency = "hdl";
+        String persistentAuthority = "1902.1";
+        String persistentId = "111012";
+        GlobalId globalId = new GlobalId(persistentAgency, persistentAuthority, persistentId);
+        
+        // when
+        OpenAireExportUtil.writeIdentifierElement(xmlWriter, globalId.toURL().toString(), null);
+        xmlWriter.flush();
+        
+        // then
+        assertEquals(String.format("<identifier identifierType=\"Handle\">%s/%s</identifier>", persistentAuthority, persistentId),
+                stringWriter.toString());
     }
 
     /**
@@ -95,21 +91,17 @@ public class OpenAireExportUtilTest {
      * creators
      */
     @Test
-    public void testWriteCreatorsElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeCreatorsElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-simplified.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteCreatorsElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-simplified.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeCreatorsElement(xmlw, dto, null);
-
-        xmlw.close();
-        Assert.assertEquals("<creators>"
+        
+        // when
+        OpenAireExportUtil.writeCreatorsElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+        
+        // then
+        assertEquals("<creators>"
                 + "<creator>"
                 + "<creatorName nameType=\"Personal\">Privileged, Pete</creatorName>"
                 + "<givenName>Pete</givenName>"
@@ -140,7 +132,7 @@ public class OpenAireExportUtilTest {
                 + "<affiliation>Bottom</affiliation>"
                 + "</creator>"
                 + "</creators>",
-                sw.toString());
+                stringWriter.toString());
     }
 
     /**
@@ -152,21 +144,17 @@ public class OpenAireExportUtilTest {
      * creators
      */
     @Test
-    public void testWriteCreatorsElementWithOrganizations() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeCreatorsElementWithOrganizations");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-organizations.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteCreatorsElementWithOrganizations() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-organizations.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeCreatorsElement(xmlw, dto, null);
-
-        xmlw.close();
-        Assert.assertEquals("<creators>"
+    
+        // when
+        OpenAireExportUtil.writeCreatorsElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+        
+        // then
+        assertEquals("<creators>"
                 + "<creator>"
                 + "<creatorName nameType=\"Organizational\">IBM</creatorName>"
                 + "</creator>"
@@ -186,7 +174,7 @@ public class OpenAireExportUtilTest {
                 + "<creatorName nameType=\"Organizational\">Michael J. Fox Foundation for Parkinson's Research</creatorName>"
                 + "</creator>"
                 + "</creators>",
-                sw.toString());
+                stringWriter.toString());
     }
     
     /**
@@ -198,20 +186,17 @@ public class OpenAireExportUtilTest {
      * creators
      */
     @Test
-    public void testWriteCreatorsElementWithOrganizationsAndComma() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeCreatorsElementWithOrganizationsAndComma");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-organizations-comma.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteCreatorsElementWithOrganizationsAndComma() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-organizations-comma.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeCreatorsElement(xmlw, dto, null);
-        xmlw.close();
-        Assert.assertEquals("<creators>"
+    
+        // when
+        OpenAireExportUtil.writeCreatorsElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+
+        // then
+        assertEquals("<creators>"
                 + "<creator>"
                 + "<creatorName nameType=\"Organizational\">Digital Archive of Massachusetts Anti-Slavery and Anti-Segregation Petitions, Massachusetts Archives, Boston MA</creatorName>"
                 + "</creator>"
@@ -225,7 +210,7 @@ public class OpenAireExportUtilTest {
                 + "<creatorName nameType=\"Organizational\">Geographic Data Technology, Inc. (GDT)</creatorName>"
                 + "</creator>"
                 + "</creators>",
-                sw.toString());
+                stringWriter.toString());
     }
     
     /**
@@ -234,22 +219,17 @@ public class OpenAireExportUtilTest {
      * titles
      */
     @Test
-    public void testWriteTitleElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeTotlesElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-simplified.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteTitleElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-simplified.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeTitlesElement(xmlw, dto, null);
-
-        xmlw.close();
-        Assert.assertEquals("<titles><title>My Dataset</title></titles>",
-                sw.toString());
+    
+        // when
+        OpenAireExportUtil.writeTitlesElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+        
+        //then
+        assertEquals("<titles><title>My Dataset</title></titles>", stringWriter.toString());
     }
 
     /**
@@ -258,23 +238,20 @@ public class OpenAireExportUtilTest {
      * publisher
      *
      * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
      */
     @Test
-    public void testWritePublisherElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writePublisherElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
+    public void testWritePublisherElement() throws XMLStreamException {
+        // given
         DatasetDTO datasetDto = new DatasetDTO();
         datasetDto.setPublisher("Publisher01");
         String publisher = datasetDto.getPublisher();
-        OpenAireExportUtil.writeFullElement(xmlw, null, "publisher", null, publisher, null);
+    
+        // when
+        OpenAireExportUtil.writeFullElement(xmlWriter, null, "publisher", null, publisher, null);
+        xmlWriter.flush();
 
-        xmlw.close();
-        Assert.assertEquals("<publisher>Publisher01</publisher>",
-                sw.toString());
+        //then
+        assertEquals("<publisher>Publisher01</publisher>", stringWriter.toString());
     }
 
     /**
@@ -283,25 +260,20 @@ public class OpenAireExportUtilTest {
      * publicationYear
      *
      * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
      */
     @Test
-    public void testWritePublicationYearElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writePublicationYearElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-simplified.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWritePublicationYearElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-simplified.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writePublicationYearElement(xmlw, dto, null, null);
-
-        xmlw.close();
-        Assert.assertEquals("<publicationYear>2014</publicationYear>",
-                sw.toString());
+    
+        // when
+        OpenAireExportUtil.writePublicationYearElement(xmlWriter, dto, null, null);
+        xmlWriter.flush();
+        
+        // then
+        assertEquals("<publicationYear>2014</publicationYear>", stringWriter.toString());
     }
 
     /**
@@ -310,23 +282,20 @@ public class OpenAireExportUtilTest {
      * subjects
      *
      * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
      */
     @Test
-    public void testSubjectsElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeSubjectsElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testSubjectsElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeSubjectsElement(xmlw, dto, null);
-        xmlw.close();
-        Assert.assertEquals("<subjects>"
+    
+        // when
+        OpenAireExportUtil.writeSubjectsElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+        
+        // then
+        assertEquals("<subjects>"
                 + "<subject>Agricultural Sciences</subject>"
                 + "<subject>Business and Management</subject>"
                 + "<subject>Engineering</subject>"
@@ -336,7 +305,7 @@ public class OpenAireExportUtilTest {
                 + "<subject schemeURI=\"http://KeywordVocabularyURL2.org\" "
                 + "subjectScheme=\"KeywordVocabulary2\">KeywordTerm2</subject>"
                 + "</subjects>",
-                sw.toString());
+                stringWriter.toString());
     }
 
     /**
@@ -346,21 +315,17 @@ public class OpenAireExportUtilTest {
      * contributors
      */
     @Test
-    public void testWriteContributorsElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeContributorsElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-simplified.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteContributorsElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-simplified.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeContributorsElement(xmlw, dto, null);
-
-        xmlw.close();
-        Assert.assertEquals("<contributors>"
+    
+        // when
+        OpenAireExportUtil.writeContributorsElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+        
+        // then
+        assertEquals("<contributors>"
                 + "<contributor contributorType=\"ContactPerson\">"
                 + "<contributorName nameType=\"Personal\">Smith, John</contributorName>"
                 + "<givenName>John</givenName><familyName>Smith</familyName>"
@@ -372,7 +337,7 @@ public class OpenAireExportUtilTest {
                 + "<contributorName>pete@malinator.com</contributorName>"
                 + "</contributor>"
                 + "</contributors>",
-                sw.toString());
+                stringWriter.toString());
     }
     
     /**
@@ -384,21 +349,17 @@ public class OpenAireExportUtilTest {
      * contributors
      */
     @Test
-    public void testWriteContributorsElementWithOrganizations() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeContributorsElementWithOrganizations");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-organizations.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteContributorsElementWithOrganizations() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-organizations.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeContributorsElement(xmlw, dto, null);
-
-        xmlw.close();
-        Assert.assertEquals("<contributors>"
+    
+        // when
+        OpenAireExportUtil.writeContributorsElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+        
+        //then
+        assertEquals("<contributors>"
                 + "<contributor contributorType=\"ContactPerson\">"
                 + "<contributorName nameType=\"Organizational\">IBM</contributorName>"
                 + "</contributor>"
@@ -421,7 +382,7 @@ public class OpenAireExportUtilTest {
                 + "<contributorName>pete@malinator.com</contributorName>"
                 + "</contributor>"
                 + "</contributors>",
-                sw.toString());
+                stringWriter.toString());
     }
     
     /**
@@ -433,21 +394,17 @@ public class OpenAireExportUtilTest {
      * contributors
      */
     @Test
-    public void testWriteContributorsElementWithOrganizationsAndComma() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeContributorsElementWithOrganizationsAndComma");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-organizations-comma.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteContributorsElementWithOrganizationsAndComma() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-organizations-comma.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeContributorsElement(xmlw, dto, null);
-
-        xmlw.close();
-        Assert.assertEquals("<contributors>"
+    
+        // when
+        OpenAireExportUtil.writeContributorsElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+        
+        // then
+        assertEquals("<contributors>"
                 + "<contributor contributorType=\"ContactPerson\">"
                 + "<contributorName nameType=\"Organizational\">Digital Archive of Massachusetts Anti-Slavery and Anti-Segregation Petitions, Massachusetts Archives, Boston MA</contributorName>"
                 + "</contributor>"
@@ -464,7 +421,7 @@ public class OpenAireExportUtilTest {
                 + "<contributorName>pete@malinator.com</contributorName>"
                 + "</contributor>"
                 + "</contributors>",
-                sw.toString());
+                stringWriter.toString());
     }
 
     /**
@@ -474,21 +431,17 @@ public class OpenAireExportUtilTest {
      * contributors
      */
     @Test
-    public void testWriteContributorsElementComplete() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeContributorsElementComplete");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteContributorsElementComplete() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeContributorsElement(xmlw, dto, null);
-
-        xmlw.close();
-        Assert.assertEquals("<contributors>"
+    
+        // when
+        OpenAireExportUtil.writeContributorsElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+        
+        // then
+        assertEquals("<contributors>"
                 + "<contributor contributorType=\"ContactPerson\">"
                 + "<contributorName nameType=\"Organizational\">LastContact1, FirstContact1</contributorName>"
                 + "<affiliation>ContactAffiliation1</affiliation>"
@@ -524,7 +477,7 @@ public class OpenAireExportUtilTest {
                 + "<affiliation>DistributorAffiliation2</affiliation>"
                 + "</contributor>"
                 + "</contributors>",
-                sw.toString());
+                stringWriter.toString());
     }
 
     /**
@@ -533,24 +486,20 @@ public class OpenAireExportUtilTest {
      * dates
      *
      * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
      */
     @Test
-    public void testWriteDatesElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeDatesElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteDatesElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeDatesElement(xmlw, dto, null);
-
-        xmlw.close();
-        Assert.assertEquals("<dates>"
+    
+        // when
+        OpenAireExportUtil.writeDatesElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+        
+        //then
+        assertEquals("<dates>"
                 + "<date dateType=\"Issued\">1004-01-01</date>"
                 + "<date dateType=\"Created\">1003-01-01</date>"
                 + "<date dateType=\"Submitted\">1002-01-01</date>"
@@ -558,7 +507,7 @@ public class OpenAireExportUtilTest {
                 + "<date dateType=\"Collected\">1006-01-01/1006-01-01</date>"
                 + "<date dateType=\"Collected\">1006-02-01/1006-02-02</date>"
                 + "</dates>",
-                sw.toString());
+                stringWriter.toString());
     }
 
     /**
@@ -567,26 +516,21 @@ public class OpenAireExportUtilTest {
      * language
      *
      * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
      */
     @Test
-    public void testWriteLanguageElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeLanguageElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteLanguageElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        String language = OpenAireExportUtil.getLanguage(xmlw, dto);
-        OpenAireExportUtil.writeFullElement(xmlw, null, "language", null, language, null);
-
-        xmlw.close();
-        Assert.assertEquals("<language>it</language>",
-                sw.toString());
+        String language = OpenAireExportUtil.getLanguage(xmlWriter, dto);
+    
+        // when
+        OpenAireExportUtil.writeFullElement(xmlWriter, null, "language", null, language, null);
+        xmlWriter.flush();
+        
+        // then
+        assertEquals("<language>it</language>", stringWriter.toString());
     }
 
     /**
@@ -596,26 +540,20 @@ public class OpenAireExportUtilTest {
      * resourceType
      *
      * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
      */
     @Test
-    public void testWriteResourceTypeElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeResourceTypeElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteResourceTypeElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeResourceTypeElement(xmlw, dto, null);
-
-        xmlw.close();
-        Assert.assertEquals("<resourceType resourceTypeGeneral=\"Dataset\">"
-                + "KindOfData1</resourceType>",
-                sw.toString());
+    
+        // when
+        OpenAireExportUtil.writeResourceTypeElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+    
+        //then
+        assertEquals("<resourceType resourceTypeGeneral=\"Dataset\">KindOfData1</resourceType>", stringWriter.toString());
     }
 
     /**
@@ -624,31 +562,26 @@ public class OpenAireExportUtilTest {
      * alternateIdentifier
      *
      * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
      */
     @Test
-    public void testWriteAlternateIdentifierElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeAlternateIdentifierElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteAlternateIdentifierElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-
-        OpenAireExportUtil.writeAlternateIdentifierElement(xmlw, dto, null);
-
-        xmlw.close();
-        Assert.assertEquals("<alternateIdentifiers>"
+    
+        // when
+        OpenAireExportUtil.writeAlternateIdentifierElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+    
+        //then
+        assertEquals("<alternateIdentifiers>"
                 + "<alternateIdentifier alternateIdentifierType=\"OtherIDAgency1\">"
                 + "OtherIDIdentifier1</alternateIdentifier>"
                 + "<alternateIdentifier alternateIdentifierType=\"OtherIDAgency2\">"
                 + "OtherIDIdentifier2</alternateIdentifier>"
                 + "</alternateIdentifiers>",
-                sw.toString());
+                stringWriter.toString());
     }
 
     /**
@@ -658,30 +591,26 @@ public class OpenAireExportUtilTest {
      * relatedIdentifier
      *
      * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
      */
     @Test
-    public void testWriteRelatedIdentifierElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeRelatedIdentifierElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteRelatedIdentifierElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeRelatedIdentifierElement(xmlw, dto, null);
-
-        xmlw.close();
-        Assert.assertEquals("<relatedIdentifiers>"
+    
+        // when
+        OpenAireExportUtil.writeRelatedIdentifierElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+    
+        //then
+        assertEquals("<relatedIdentifiers>"
                 + "<relatedIdentifier relationType=\"IsCitedBy\" relatedIdentifierType=\"ARK\">"
                 + "RelatedPublicationIDNumber1</relatedIdentifier>"
                 + "<relatedIdentifier relationType=\"IsCitedBy\" relatedIdentifierType=\"arXiv\">"
                 + "RelatedPublicationIDNumber2</relatedIdentifier>"
                 + "</relatedIdentifiers>",
-                sw.toString());
+                stringWriter.toString());
     }
 
     /**
@@ -690,33 +619,25 @@ public class OpenAireExportUtilTest {
      * size
      *
      * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
      */
     @Test
-    public void testWriteEmptySizeElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeEmptySizeElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteEmptySizeElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        {
-            // set an empty file list
-            dto.setFiles(new ArrayList<FileDTO>());
-
-            // Fragment must be enclosed in a fake root element.
-            xmlw.writeStartElement("root");
-            OpenAireExportUtil.writeSizeElement(xmlw, dto, null);
-
-            xmlw.writeEndElement();
-        }
-        xmlw.close();
-        Assert.assertEquals("<root />",
-                sw.toString());
+        // set an empty file list
+        dto.setFiles(new ArrayList<>());
+    
+        // when
+        // note: fragment must be enclosed in a fake root element.
+        xmlWriter.writeStartElement("root");
+        OpenAireExportUtil.writeSizeElement(xmlWriter, dto, null);
+        xmlWriter.writeEndElement();
+        xmlWriter.flush();
+        
+        //then
+        assertEquals("<root/>", stringWriter.toString());
     }
 
     /**
@@ -725,28 +646,25 @@ public class OpenAireExportUtilTest {
      * relatedIdentifier
      *
      * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
      */
     @Test
-    public void testWriteSizeElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeSizeElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteSizeElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeSizeElement(xmlw, dto, null);
-
-        xmlw.close();
-        Assert.assertEquals("<sizes>"
+    
+        // when
+        // note: fragment must be enclosed in a fake root element.
+        OpenAireExportUtil.writeSizeElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+    
+        //then
+        assertEquals("<sizes>"
                 + "<size>1000</size>"
                 + "<size>20</size>"
                 + "</sizes>",
-                sw.toString());
+                stringWriter.toString());
     }
 
     /**
@@ -755,34 +673,25 @@ public class OpenAireExportUtilTest {
      * size
      *
      * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
      */
     @Test
-    public void testWriteEmptyFormatElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeEmptyFormatElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteEmptyFormatElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        {
-            // set an empty file list
-            dto.setFiles(new ArrayList<FileDTO>());
-
-            // Fragment must be enclosed in a fake root element.
-            xmlw.writeStartElement("root");
-            OpenAireExportUtil.writeFormatElement(xmlw, dto, null);
-
-            xmlw.writeEndElement();
-        }
-
-        xmlw.close();
-        Assert.assertEquals("<root />",
-                sw.toString());
+        // set an empty file list
+        dto.setFiles(new ArrayList<>());
+    
+        // when
+        // note: fragment must be enclosed in a fake root element.
+        xmlWriter.writeStartElement("root");
+        OpenAireExportUtil.writeFormatElement(xmlWriter, dto, null);
+        xmlWriter.writeEndElement();
+        xmlWriter.flush();
+    
+        //then
+        assertEquals("<root/>", stringWriter.toString());
     }
 
     /**
@@ -791,28 +700,24 @@ public class OpenAireExportUtilTest {
      * size
      *
      * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
      */
     @Test
-    public void testWriteFormatElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeFormatElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteFormatElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeFormatElement(xmlw, dto, null);
-
-        xmlw.close();
-        Assert.assertEquals("<formats>"
+    
+        // when
+        OpenAireExportUtil.writeFormatElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+    
+        //then
+        assertEquals("<formats>"
                 + "<format>application/pdf</format>"
                 + "<format>application/xml</format>"
                 + "</formats>",
-                sw.toString());
+                stringWriter.toString());
     }
 
     /**
@@ -821,31 +726,23 @@ public class OpenAireExportUtilTest {
      * version
      *
      * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
      */
     @Test
-    public void testWriteEmptyVersionElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeEmptyVersionElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteEmptyVersionElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        {
-            // Fragment must be enclosed in a fake root element.
-            xmlw.writeStartElement("root");
-            OpenAireExportUtil.writeVersionElement(xmlw, dto, null);
-
-            xmlw.writeEndElement();
-        }
-
-        xmlw.close();
-        Assert.assertEquals("<root><version>1.0</version></root>",
-                sw.toString());
+    
+        // when
+        // note: fragment must be enclosed in a fake root element.
+        xmlWriter.writeStartElement("root");
+        OpenAireExportUtil.writeVersionElement(xmlWriter, dto, null);
+        xmlWriter.writeEndElement();
+        xmlWriter.flush();
+    
+        //then
+        assertEquals("<root><version>1.0</version></root>", stringWriter.toString());
     }
 
     /**
@@ -854,29 +751,22 @@ public class OpenAireExportUtilTest {
      * version
      *
      * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
      */
     @Test
-    public void testWriteVersionElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeVersionElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteVersionElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        {
-            dto.setVersionNumber(2L);
-            dto.setMinorVersionNumber(1L);
-        }
-        OpenAireExportUtil.writeVersionElement(xmlw, dto, null);
-
-        xmlw.close();
-        Assert.assertEquals("<version>2.1</version>",
-                sw.toString());
+        dto.setVersionNumber(2L);
+        dto.setMinorVersionNumber(1L);
+    
+        // when
+        OpenAireExportUtil.writeVersionElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+    
+        //then
+        assertEquals("<version>2.1</version>", stringWriter.toString());
     }
 
     /**
@@ -885,27 +775,24 @@ public class OpenAireExportUtilTest {
      * rights
      *
      * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
      */
     @Test
-    public void testWriteAccessRightElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeAccessRightElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteAccessRightElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null);
-        xmlw.close();
-        Assert.assertEquals("<rightsList>"
-                + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\" />"
+    
+        // when
+        OpenAireExportUtil.writeAccessRightsElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+    
+        //then
+        assertEquals("<rightsList>"
+                + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\"/>"
                 + "<rights rightsURI=\"https://creativecommons.org/publicdomain/zero/1.0/\">"
                 + "CC0 Waiver</rights></rightsList>",
-                sw.toString());
+                stringWriter.toString());
     }
 
     /**
@@ -914,32 +801,26 @@ public class OpenAireExportUtilTest {
      * rights
      *
      * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
      */
     @Test
-    public void testWriteRestrictedAccessRightElementWithRequestAccessEnabled() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeRestrictedAccessRightElementWithRequestAccessEnabled");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteRestrictedAccessRightElementWithRequestAccessEnabled() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        {
-            dto.setLicense(null);
-            dto.setTermsOfUse(null);
-            dto.setFileAccessRequest(true);
-        }
-
-        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null);
-        xmlw.close();
-        Assert.assertEquals("<rightsList>"
-                + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\" />"
-                + "<rights /></rightsList>",
-                sw.toString());
+        dto.setLicense(null);
+        dto.setTermsOfUse(null);
+        dto.setFileAccessRequest(true);
+    
+        // when
+        OpenAireExportUtil.writeAccessRightsElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+    
+        //then
+        assertEquals("<rightsList>"
+                + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\"/>"
+                + "<rights/></rightsList>",
+                stringWriter.toString());
     }
 
     /**
@@ -948,32 +829,26 @@ public class OpenAireExportUtilTest {
      * rights
      *
      * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
      */
     @Test
-    public void testWriteRestrictedAccessRightElementWithRequestAccessDisabled() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeWriteRestrictedAccessRightElementWithRequestAccessDisabled");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteRestrictedAccessRightElementWithRequestAccessDisabled() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        {
-            dto.setLicense(null);
-            dto.setTermsOfUse(null);
-            dto.setFileAccessRequest(false);
-        }
-
-        OpenAireExportUtil.writeAccessRightsElement(xmlw, dto, null);
-        xmlw.close();
-        Assert.assertEquals("<rightsList>"
-                + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\" />"
-                + "<rights /></rightsList>",
-                sw.toString());
+        dto.setLicense(null);
+        dto.setTermsOfUse(null);
+        dto.setFileAccessRequest(false);
+    
+        // when
+        OpenAireExportUtil.writeAccessRightsElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+    
+        //then
+        assertEquals("<rightsList>"
+                + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\"/>"
+                + "<rights/></rightsList>",
+                stringWriter.toString());
     }
 
     /**
@@ -982,24 +857,20 @@ public class OpenAireExportUtilTest {
      * description
      *
      * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
      */
     @Test
-    public void testWriteDescriptionsElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeDescriptionsElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteDescriptionsElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeDescriptionsElement(xmlw, dto, null);
-
-        xmlw.close();
-        Assert.assertEquals("<descriptions>"
+    
+        // when
+        OpenAireExportUtil.writeDescriptionsElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+    
+        //then
+        assertEquals("<descriptions>"
                 + "<description descriptionType=\"Abstract\">DescriptionText 1"
                 + "</description>"
                 + "<description descriptionType=\"Abstract\">DescriptionText2"
@@ -1018,7 +889,7 @@ public class OpenAireExportUtilTest {
                 + "</description>"
                 + "<description descriptionType=\"Other\">Notes1"
                 + "</description></descriptions>",
-                sw.toString());
+                stringWriter.toString());
     }
 
     /**
@@ -1027,24 +898,20 @@ public class OpenAireExportUtilTest {
      * description
      *
      * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
      */
     @Test
-    public void testWriteGeoLocationElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeGeoLocationElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteGeoLocationElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeGeoLocationsElement(xmlw, dto, null);
-
-        xmlw.close();
-        Assert.assertEquals("<geoLocations>"
+    
+        // when
+        OpenAireExportUtil.writeGeoLocationsElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+    
+        //then
+        assertEquals("<geoLocations>"
                 + "<geoLocation>"
                 + "<geoLocationPlace>ProductionPlace</geoLocationPlace></geoLocation>"
                 + "<geoLocation>"
@@ -1063,7 +930,7 @@ public class OpenAireExportUtilTest {
                 + "<westBoundLongitude>50</westBoundLongitude>"
                 + "</geoLocationBox>"
                 + "</geoLocation></geoLocations>",
-                sw.toString());
+                stringWriter.toString());
     }
 
     /**
@@ -1072,24 +939,20 @@ public class OpenAireExportUtilTest {
      * description
      *
      * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
      */
     @Test
-    public void testWriteGeoLocationElement2() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeGeoLocationElement2");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-simplified.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteGeoLocationElement2() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-simplified.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeGeoLocationsElement(xmlw, dto, null);
-
-        xmlw.close();
-        Assert.assertEquals("<geoLocations>"
+    
+        // when
+        OpenAireExportUtil.writeGeoLocationsElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+    
+        //then
+        assertEquals("<geoLocations>"
                 + "<geoLocation>"
                 + "<geoLocationBox>"
                 + "<eastBoundLongitude>23</eastBoundLongitude>"
@@ -1098,7 +961,7 @@ public class OpenAireExportUtilTest {
                 + "<southBoundLatitude>34</southBoundLatitude>"
                 + "</geoLocationBox>"
                 + "</geoLocation></geoLocations>",
-                sw.toString());
+                stringWriter.toString());
     }
 
     /**
@@ -1108,24 +971,20 @@ public class OpenAireExportUtilTest {
      * fundingReference
      *
      * @throws javax.xml.stream.XMLStreamException
-     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
      */
     @Test
-    public void testWriteFundingReferencesElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeFundingReferencesElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/dataset-all-defaults.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteFundingReferencesElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-all-defaults.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeFundingReferencesElement(xmlw, dto, null);
-
-        xmlw.close();
-        Assert.assertEquals("<fundingReferences><fundingReference>"
+    
+        // when
+        OpenAireExportUtil.writeFundingReferencesElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+    
+        //then
+        assertEquals("<fundingReferences><fundingReference>"
                 + "<funderName>GrantInformationGrantAgency1</funderName>"
                 + "<awardNumber>GrantInformationGrantNumber1</awardNumber>"
                 + "</fundingReference>"
@@ -1133,7 +992,7 @@ public class OpenAireExportUtilTest {
                 + "<funderName>GrantInformationGrantAgency2</funderName>"
                 + "<awardNumber>GrantInformationGrantNumber2</awardNumber>"
                 + "</fundingReference></fundingReferences>",
-                sw.toString());
+                stringWriter.toString());
     }
 
     /**
@@ -1142,27 +1001,20 @@ public class OpenAireExportUtilTest {
      * funderName
      */
     @Test
-    public void testWriteFunderNamePropertyNotInContributor() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeFunderNamePropertyNotInContributor");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/datase-updated.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteFunderNamePropertyNotInContributor() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-updated.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        {
-            // Fragment must be enclosed in a fake root element.
-            xmlw.writeStartElement("root");
-            OpenAireExportUtil.writeContributorsElement(xmlw, dto, null);
-
-            xmlw.writeEndElement();
-        }
-        xmlw.close();
-        Assert.assertEquals("<root />",
-                sw.toString());
+    
+        // when
+        // note: fragment must be enclosed in a fake root element.
+        xmlWriter.writeStartElement("root");
+        OpenAireExportUtil.writeContributorsElement(xmlWriter, dto, null);
+        xmlWriter.writeEndElement();
+        xmlWriter.flush();
+    
+        //then
+        assertEquals("<root/>", stringWriter.toString());
     }
 
     /**
@@ -1171,25 +1023,32 @@ public class OpenAireExportUtilTest {
      * funderName
      */
     @Test
-    public void testWriteFunderNamePropertyInFundingReferencesElement() throws XMLStreamException, FileNotFoundException {
-        System.out.println("writeFunderNamePropertyInFundingReferencesElement");
-        XMLOutputFactory f = XMLOutputFactory.newInstance();
-        StringWriter sw = new StringWriter();
-        XMLStreamWriter xmlw = f.createXMLStreamWriter(sw);
-
-        File file = new File("src/test/java/edu/harvard/iq/dataverse/export/datase-updated.txt");
-        String text = new Scanner(file).useDelimiter("\\Z").next();
-        Gson gson = new Gson();
-        DatasetDTO datasetDto = gson.fromJson(text, DatasetDTO.class);
+    public void testWriteFunderNamePropertyInFundingReferencesElement() throws XMLStreamException, IOException {
+        // given
+        DatasetDTO datasetDto = mapObjectFromJsonTestFile("export/dataset-updated.txt", DatasetDTO.class);
         DatasetVersionDTO dto = datasetDto.getDatasetVersion();
-        OpenAireExportUtil.writeFundingReferencesElement(xmlw, dto, null);
-
-        xmlw.close();
-        Assert.assertEquals("<fundingReferences>"
+    
+        // when
+        OpenAireExportUtil.writeFundingReferencesElement(xmlWriter, dto, null);
+        xmlWriter.flush();
+    
+        //then
+        assertEquals("<fundingReferences>"
                 + "<fundingReference><funderName>Dennis</funderName></fundingReference>"
                 + "<fundingReference><funderName>NIH</funderName><awardNumber>NIH1231245154</awardNumber></fundingReference>"
                 + "<fundingReference><funderName>NIH</funderName><awardNumber>NIH99999999</awardNumber></fundingReference>"
                 + "</fundingReferences>",
-                sw.toString());
+                stringWriter.toString());
+    }
+    
+    // private static final Jsonb jsonb = JsonbBuilder.create();
+    private static final Gson gson = new Gson();
+    
+    public static <T> T mapObjectFromJsonTestFile(String subPath, Class<T> klass) throws IOException {
+        Path file = Path.of("src/test/java/edu/harvard/iq/dataverse", subPath);
+        String json = Files.readString(file, StandardCharsets.UTF_8);
+        // Jakarta JSON-B is no capable to map many of the DTO fields... :-( Needs Gson for now.
+        // return jsonb.fromJson(json, klass);
+        return gson.fromJson(json, klass);
     }
 }
