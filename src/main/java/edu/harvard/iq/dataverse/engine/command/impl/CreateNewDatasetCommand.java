@@ -21,9 +21,9 @@ import java.util.logging.Logger;
 import edu.harvard.iq.dataverse.GlobalIdServiceBean;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 
+import java.util.List;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.List;
 
 /**
  * Creates a new {@link Dataset}, used to store unpublished data. This is as opposed to 
@@ -115,7 +115,6 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
             // two commands. But it may be a good idea to make sure they are properly
             // linked here (?)
             theDataset.setPermissionModificationTime(getTimestamp());
-            
         }
         
         if ( template != null ) {
@@ -148,6 +147,10 @@ public class CreateNewDatasetCommand extends AbstractCreateDatasetCommand {
         }
         }
     }
+    
+    // Re-enabling the method below will change the permission setup to dynamic.
+    // This will make it so that in an unpublished dataverse only users with the 
+    // permission to view it will be allowed to create child datasets. 
     /*@Override
     public Map<String, Set<Permission>> getRequiredPermissions() {
         Map<String, Set<Permission>> ret = new HashMap<>();

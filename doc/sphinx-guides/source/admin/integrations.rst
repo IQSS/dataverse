@@ -56,6 +56,13 @@ Flagship deployment of the Renku platform: https://renkulab.io
 
 Renku discourse: https://renku.discourse.group/
 
+Amnesia
++++++++
+
+Amnesia is a flexible data anonymization tool that transforms relational and transactional databases to datasets where formal privacy guarantees hold. Amnesia transforms original data to provide k-anonymity and km-anonymity: the original data are transformed by generalizing (i.e., replacing one value with a more abstract one) or suppressing values to achieve the statistical properties required by the anonymization guarantees. Amnesia employs visualization tools and supportive mechanisms to allow non expert users to anonymize relational and object-relational data.
+
+For instructions on depositing or loading data from Dataverse installations to Amnesia, visit https://amnesia.openaire.eu/about-documentation.html
+
 
 Embedding Data on Websites
 --------------------------

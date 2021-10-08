@@ -239,6 +239,19 @@
                                             </div>
                                         </p:fragment>
                                     </div>
+                                    <div class="col-md-6 form-group" jsf:rendered="#{DataversePage.getMetadataLanguages().size()>2}">
+                                        <h:outputLabel for="dsMetadataLanguage" styleClass="control-label">
+                                            #{bundle.metadataLanguage} 
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.metadatalanguage.title']}"></span>
+                                        </h:outputLabel>
+                                        <div class="form-col-container">
+                                            <h:selectOneMenu id="dsMetadataLanguage" styleClass="form-control" value="#{DataversePage.dataverse.metadataLanguage}">
+                                                <f:selectItems value="#{DataversePage.getMetadataLanguages()}" var="lang" itemLabel="#{lang.getValue()}" itemValue="#{lang.getKey()}"/>
+                                            </h:selectOneMenu>
+                                            <p:message for="dsMetadataLanguage" display="text"/>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6 form-group">

@@ -1,24 +1,51 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.xmlunit.assertj3.XmlAssert;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
-import static junit.framework.TestCase.assertNull;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Testing DataCitation class
  * @author pkiraly@gwdg.de
  */
 public class DataCitationTest {
-
+    
+    /**
+     * This test relies on {@link BrandingUtil}. We need to provide mocks for it.
+     */
+    @BeforeAll
+    static void setup() {
+        BrandingUtilTest.setupMocks();
+    }
+    /**
+     * After this test is done, the mocks should be turned of
+     * (so we keep atomicity and no one relies on them being present).
+     */
+    @AfterAll
+    static void tearDown() {
+        BrandingUtilTest.tearDownMocks();
+    }
+    
     /**
      * Test the public properties of DataCitation class via their getters
      * @throws ParseException
@@ -224,27 +251,29 @@ public class DataCitationTest {
     public void testToEndNoteString_withTitleAndAuthor() throws ParseException {
         DatasetVersion datasetVersion = createATestDatasetVersion("Dataset Title", true);
         DataCitation dataCitation = new DataCitation(datasetVersion);
-        assertEquals(
-           "<?xml version='1.0' encoding='UTF-8'?>" +
-           "<xml>" +
-           "<records>" +
-           "<record>" +
-           "<ref-type name=\"Dataset\">59</ref-type>" +
-           "<contributors>" +
-           "<authors><author>First Last</author></authors>" +
-           "</contributors>" +
-           "<titles><title>Dataset Title</title></titles>" +
-           "<section>1955-11-05</section>" +
-           "<dates><year>1955</year></dates>" +
-           "<edition>V1</edition>" +
-           "<publisher>LibraScholar</publisher>" +
-           "<urls><related-urls><url>https://doi.org/10.5072/FK2/LK0D1H</url></related-urls></urls>" +
-           "<electronic-resource-num>doi/10.5072/FK2/LK0D1H</electronic-resource-num>" +
-           "</record>" +
-           "</records>" +
-           "</xml>",
-           dataCitation.toEndNoteString()
-        );
+        String expected = "<?xml version='1.0' encoding='UTF-8'?>" +
+            "<xml>" +
+            "<records>" +
+            "<record>" +
+            "<ref-type name=\"Dataset\">59</ref-type>" +
+            "<contributors>" +
+            "<authors><author>First Last</author></authors>" +
+            "</contributors>" +
+            "<titles><title>Dataset Title</title></titles>" +
+            "<section>1955-11-05</section>" +
+            "<dates><year>1955</year></dates>" +
+            "<edition>V1</edition>" +
+            "<publisher>LibraScholar</publisher>" +
+            "<urls><related-urls><url>https://doi.org/10.5072/FK2/LK0D1H</url></related-urls></urls>" +
+            "<electronic-resource-num>doi/10.5072/FK2/LK0D1H</electronic-resource-num>" +
+            "</record>" +
+            "</records>" +
+            "</xml>";
+    
+        // similar = the content of the nodes in the documents are the same, but minor differences exist
+        //           e.g. sequencing of sibling elements, values of namespace prefixes, use of implied attribute values
+        // https://www.xmlunit.org/api/java/2.8.2/org/custommonkey/xmlunit/Diff.html
+        XmlAssert.assertThat(dataCitation.toEndNoteString()).and(expected).areSimilar();
     }
 
     @Test
@@ -252,7 +281,7 @@ public class DataCitationTest {
         String nullDatasetTitle = null;
         DatasetVersion datasetVersion = createATestDatasetVersion(nullDatasetTitle, false);
         DataCitation dataCitation = new DataCitation(datasetVersion);
-        assertEquals(
+        String expected =
            "<?xml version='1.0' encoding='UTF-8'?>" +
            "<xml>" +
            "<records>" +
@@ -268,9 +297,12 @@ public class DataCitationTest {
            "<electronic-resource-num>doi/10.5072/FK2/LK0D1H</electronic-resource-num>" +
            "</record>" +
            "</records>" +
-           "</xml>",
-           dataCitation.toEndNoteString()
-        );
+           "</xml>";
+    
+        // similar = the content of the nodes in the documents are the same, but minor differences exist
+        //           e.g. sequencing of sibling elements, values of namespace prefixes, use of implied attribute values
+        // https://www.xmlunit.org/api/java/2.8.2/org/custommonkey/xmlunit/Diff.html
+        XmlAssert.assertThat(dataCitation.toEndNoteString()).and(expected).areSimilar();
     }
 
     @Test

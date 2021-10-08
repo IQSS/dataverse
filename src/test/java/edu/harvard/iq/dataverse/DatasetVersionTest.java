@@ -1,5 +1,6 @@
 package edu.harvard.iq.dataverse;
 
+import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
 import edu.harvard.iq.dataverse.mocks.MocksFactory;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
@@ -11,44 +12,32 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import org.junit.After;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
 
-/**
- *
- * @author michael
- */
 public class DatasetVersionTest {
-
-    public DatasetVersionTest() {
+    
+    private static final Logger logger = Logger.getLogger(DatasetVersion.class.getCanonicalName());
+    
+    @BeforeAll
+    public static void setUp() {
+        BrandingUtilTest.setupMocks();
     }
     
-    @BeforeClass
-    public static void setUpClass() {
+    @AfterAll
+    public static void tearDown() {
+        BrandingUtilTest.setupMocks();
     }
     
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-    @Before
-    public void setUp() {
-    }
-    
-    @After
-    public void tearDown() {
-    }
-
     @Test
     public void testComparator() {
         DatasetVersion ds1_0 = new DatasetVersion();
@@ -124,7 +113,7 @@ public class DatasetVersionTest {
         terms.setLicense(TermsOfUseAndAccess.License.CC0);
         datasetVersion.setTermsOfUseAndAccess(terms);
         String jsonLd = datasetVersion.getJsonLd();
-        System.out.println("jsonLd: " + JsonUtil.prettyPrint(jsonLd));
+        logger.fine("jsonLd: " + JsonUtil.prettyPrint(jsonLd));
         JsonReader jsonReader = Json.createReader(new StringReader(jsonLd));
         JsonObject obj = jsonReader.readObject();
         assertEquals("http://schema.org", obj.getString("@context"));
@@ -181,7 +170,7 @@ public class DatasetVersionTest {
         datasetVersion.setTermsOfUseAndAccess(terms);
 
         String jsonLd = datasetVersion.getJsonLd();
-        System.out.println("jsonLd: " + JsonUtil.prettyPrint(jsonLd));
+        logger.fine("jsonLd: " + JsonUtil.prettyPrint(jsonLd));
         JsonReader jsonReader = Json.createReader(new StringReader(jsonLd));
         JsonObject obj = jsonReader.readObject();
         assertEquals("http://schema.org", obj.getString("@context"));

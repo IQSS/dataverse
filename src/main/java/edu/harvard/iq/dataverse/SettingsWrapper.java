@@ -16,17 +16,24 @@ import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 
 import java.time.LocalDate;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonValue;
 import javax.mail.internet.InternetAddress;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -44,7 +51,7 @@ public class SettingsWrapper implements java.io.Serializable {
     private static final Logger logger = Logger.getLogger(SettingsWrapper.class.getCanonicalName());
 
     @EJB
-    SettingsServiceBean settingService;
+    SettingsServiceBean settingsService;
 
     @EJB
     DataverseServiceBean dataverseService;
@@ -127,7 +134,7 @@ public class SettingsWrapper implements java.io.Serializable {
     private void initSettingsMap() {
         // initialize settings map
         settingsMap = new HashMap<>();
-        for (Setting setting : settingService.listAll()) {
+        for (Setting setting : settingsService.listAll()) {
             settingsMap.put(setting.getName(), setting.getContent());
         }
     }
@@ -322,15 +329,86 @@ public class SettingsWrapper implements java.io.Serializable {
         return anonymizedFieldTypes.contains(df.getDatasetFieldType().getName());
     }
 
+    Map<String,String> languageMap = null;
+    
+    Map<String, String> getBaseMetadataLanguageMap(boolean refresh) {
+        if (languageMap == null || refresh) {
+            languageMap = new HashMap<String, String>();
+
+            /* If MetadataLanaguages is set, use it.
+             * If not, we can't assume anything and should avoid assuming a metadata language
+             */
+            String mlString = getValueForKey(SettingsServiceBean.Key.MetadataLanguages,"");
+            
+            if(mlString.isEmpty()) {
+                mlString="[]";
+            }
+            JsonReader jsonReader = Json.createReader(new StringReader(mlString));
+            JsonArray languages = jsonReader.readArray();
+            for(JsonValue jv: languages) {
+                JsonObject lang = (JsonObject) jv;
+                languageMap.put(lang.getString("locale"), lang.getString("title"));
+            }
+        }
+        return languageMap;
+    }
+    
+    public Map<String, String> getMetadataLanguages(DvObjectContainer target) {
+        Map<String,String> currentMap = new HashMap<String,String>();
+        currentMap.putAll(getBaseMetadataLanguageMap(true));
+        languageMap.put(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE, getDefaultMetadataLanguageLabel(target));
+        return languageMap;
+    }
+    
+    private String getDefaultMetadataLanguageLabel(DvObjectContainer target) {
+        String mlLabel = Locale.getDefault().getDisplayLanguage();
+        Dataverse parent = target.getOwner();
+        boolean fromAncestor=false;
+        if(parent != null) {
+            mlLabel = parent.getEffectiveMetadataLanguage();
+            //recurse dataverse chain to root and if any have a metadata language set, fromAncestor is true
+            while(parent!=null) {
+                if(!parent.getMetadataLanguage().equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+                    fromAncestor=true;
+                    break;
+                }
+                parent=parent.getOwner();
+            }
+        }
+        if(mlLabel.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+            mlLabel = getBaseMetadataLanguageMap(false).get(getDefaultMetadataLanguage());
+        }
+        if(fromAncestor) {
+            mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.inherited");
+        } else {
+            mlLabel = mlLabel + " " + BundleUtil.getStringFromBundle("dataverse.default");
+        }
+        return mlLabel;
+    }
+    
+    public String getDefaultMetadataLanguage() {
+        Map<String, String> mdMap = getBaseMetadataLanguageMap(false);
+        if(mdMap.size()>=1) {
+            if(mdMap.size()==1) {
+                //One entry - it's the default
+            return (String) mdMap.keySet().toArray()[0];
+            } else {
+                //More than one - :MetadataLanguages is set so we use the default
+                return DvObjectContainer.DEFAULT_METADATA_LANGUAGE_CODE;
+            }
+        } else {
+            // None - :MetadataLanguages is not set so return null to turn off the display (backward compatibility)
+            return null;
+        }
+    }
+
     List<String> allowedExternalStatuses = null;
 
     public List<String> getAllowedExternalStatuses(Dataset d) {
         String setName = d.getEffectiveCurationLabelSetName();
-        logger.info("Set name: " + setName);
         if(setName.equals(SystemConfig.CURATIONLABELSDISABLED)) {
             return new ArrayList<String>();
         }
-        logger.info(Strings.concat(",", systemConfig.getCurationLabels().keySet()));
         String[] labelArray = systemConfig.getCurationLabels().get(setName);
         if(labelArray==null) {
             return new ArrayList<String>();

@@ -62,6 +62,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -69,6 +70,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -83,6 +85,11 @@ import javax.faces.event.ValueChangeEvent;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonString;
 
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
@@ -101,6 +108,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SetExternalStatusCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.SetCurationStatusCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
@@ -314,6 +322,9 @@ public class DatasetPage implements java.io.Serializable {
     private Boolean hasRsyncScript = false;
 
     private Boolean hasTabular = false;
+    
+    //External Vocabulary support
+    Map<Long, JsonObject> cachedCvocMap=null;
 
     /**
      * If the dataset version has at least one tabular file. The "hasTabular"
@@ -3498,6 +3509,8 @@ public class DatasetPage implements java.io.Serializable {
 
         try {
             if (editMode == EditMode.CREATE) {
+                //Lock the metadataLanguage once created
+                dataset.setMetadataLanguage(getEffectiveMetadataLanguage());
                 if ( selectedTemplate != null ) {
                     if ( isSessionUserAuthenticated() ) {
                         cmd = new CreateNewDatasetCommand(dataset, dvRequestService.getDataverseRequest(), false, selectedTemplate);
@@ -3527,6 +3540,12 @@ public class DatasetPage implements java.io.Serializable {
                 ((UpdateDatasetVersionCommand) cmd).setValidateLenient(true);
             }
             dataset = commandEngine.submit(cmd);
+            for (DatasetField df : dataset.getLatestVersion().getDatasetFields()) {
+                logger.fine("Found id: " + df.getDatasetFieldType().getId());
+                if (fieldService.getCVocConf(false).containsKey(df.getDatasetFieldType().getId())) {
+                    fieldService.registerExternalVocabValues(df);
+                }
+            }
             if (editMode == EditMode.CREATE) {
                 if (session.getUser() instanceof AuthenticatedUser) {
                     userNotificationService.sendNotification((AuthenticatedUser) session.getUser(), dataset.getCreateDate(), UserNotification.Type.CREATEDS, dataset.getLatestVersion().getId());
@@ -5518,10 +5537,42 @@ public class DatasetPage implements java.io.Serializable {
         return dataFile.getDeleted();
     }
     
+    public String getEffectiveMetadataLanguage() {
+        String mdLang = dataset.getEffectiveMetadataLanguage();
+        if (mdLang.equals(DvObjectContainer.UNDEFINED_METADATA_LANGUAGE_CODE)) {
+            mdLang = settingsWrapper.getDefaultMetadataLanguage();
+        }
+        return mdLang;
+    }
+    
+    public String getLocaleDisplayName(String code) {
+        String displayName = settingsWrapper.getBaseMetadataLanguageMap(false).get(code);
+        if(displayName==null) {
+            //Default (for cases such as :when a Dataset has a metadatalanguage code but :MetadataLanguages is no longer defined).
+            displayName = new Locale(code).getDisplayName(); 
+        }
+        return displayName; 
+    }
+    
+    public Map<Long, JsonObject> getCVocConf() {
+        //Cache this in the view
+        if(cachedCvocMap==null) {
+        cachedCvocMap = fieldService.getCVocConf(false);
+        }
+        return cachedCvocMap;
+    }
+    
+    public List<String> getVocabScripts() {
+        return fieldService.getVocabScripts(getCVocConf());
+    }
 
+    public String getFieldLanguage(String languages) {
+        return fieldService.getFieldLanguage(languages,session.getLocaleCode());
+    }
+    
     public void setExternalStatus(String status) {
         try {
-            dataset = commandEngine.submit(new SetExternalStatusCommand(dvRequestService.getDataverseRequest(), dataset, status));
+            dataset = commandEngine.submit(new SetCurationStatusCommand(dvRequestService.getDataverseRequest(), dataset, status));
             workingVersion=dataset.getLatestVersion();
             if (status == null || status.isEmpty()) {
                 JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("dataset.externalstatus.removed"));

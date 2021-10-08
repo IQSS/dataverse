@@ -60,7 +60,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         // base class - default to nothing.
     }
     
-    //QDR
+
     protected void postDBFlush( Dataset theDataset, CommandContext ctxt ) throws CommandException {
         // base class - default to nothing.
     }
@@ -128,7 +128,7 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         // Now we need the actual dataset id, so we can start indexing.
         ctxt.em().flush();
         
-        //QDR
+        //Use for code that requires database ids
         postDBFlush(theDataset, ctxt);
         
         // TODO: this needs to be moved in to an onSuccess method; not adding to this PR as its out of scope

@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse.util;
 import com.ocpsoft.pretty.PrettyContext;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -24,7 +25,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -718,13 +721,13 @@ public class SystemConfig {
             } catch (NumberFormatException nfe) {
                 version = null; 
             }
-        }        
+        }
         
         if (version != null) {
             return version;
         }
         
-        return 1;        
+        return 1;
     }
     public boolean isShibAttributeCharacterSetConversionEnabled() {
         boolean defaultResponse = true;
@@ -1108,6 +1111,35 @@ public class SystemConfig {
         return System.getProperty("doi.dataciterestapiurlstring", System.getProperty("doi.mdcbaseurlstring", "https://api.datacite.org"));
 	}
 
+    public long getDatasetValidationSizeLimit() {
+        String limitEntry = settingsService.getValueForKey(SettingsServiceBean.Key.DatasetChecksumValidationSizeLimit);
+
+        if (limitEntry != null) {
+            try {
+                Long sizeOption = new Long(limitEntry);
+                return sizeOption;
+            } catch (NumberFormatException nfe) {
+                logger.warning("Invalid value for DatasetValidationSizeLimit option? - " + limitEntry);
+            }
+        }
+        // -1 means no limit is set;
+        return -1;
+    }
+
+    public long getFileValidationSizeLimit() {
+        String limitEntry = settingsService.getValueForKey(SettingsServiceBean.Key.DataFileChecksumValidationSizeLimit);
+
+        if (limitEntry != null) {
+            try {
+                Long sizeOption = new Long(limitEntry);
+                return sizeOption;
+            } catch (NumberFormatException nfe) {
+                logger.warning("Invalid value for FileValidationSizeLimit option? - " + limitEntry);
+            }
+        }
+        // -1 means no limit is set;
+        return -1;
+    }
     public Map<String, String[]> getCurationLabels() {
         Map<String, String[]> labelMap = new HashMap<String, String[]>();
 

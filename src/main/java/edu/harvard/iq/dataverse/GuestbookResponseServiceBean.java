@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -44,11 +45,14 @@ import javax.persistence.TypedQuery;
 public class GuestbookResponseServiceBean {
     private static final Logger logger = Logger.getLogger(GuestbookResponseServiceBean.class.getCanonicalName());
     
+    @EJB
+    DataverseServiceBean dataverseService;
+    
     // The query below is used for retrieving guestbook responses used to download 
     // the collected data, in CSV format, from the manage-guestbooks and 
     // guestbook-results pages. (for entire dataverses, and for the individual 
     // guestbooks within dataverses, respectively). -- L.A. 
-    private static final String BASE_QUERY_STRING_FOR_DOWNLOAD_AS_CSV = "select r.id, g.name, v.value, r.responsetime, f.downloadtype,"
+    /*private static final String BASE_QUERY_STRING_FOR_DOWNLOAD_AS_CSV = "select r.id, g.name, v.value, r.responsetime, f.downloadtype,"
                 + " m.label, r.dataFile_id, r.name, r.email, r.institution, r.position,"
                 + " o.protocol, o.authority, o.identifier, d.protocol, d.authority, d.identifier "
                 + "from guestbookresponse r, filedownload f, datasetfieldvalue v, filemetadata m, dvobject o, guestbook g, dvobject d "
@@ -56,6 +60,18 @@ public class GuestbookResponseServiceBean {
                 + " v.datasetfield_id = (select id from datasetfield f where datasetfieldtype_id = 1 "
                 + " and datasetversion_id = (select max(id) from datasetversion where dataset_id =r.dataset_id )) "
                 + " and m.datasetversion_id = (select max(datasetversion_id) from filemetadata where datafile_id =r.datafile_id ) "
+                + " and m.datafile_id = r.datafile_id "
+                + " and d.id = r.datafile_id "
+                + " and r.id = f.guestbookresponse_id "
+                + " and r.dataset_id = o.id "
+                + " and r.guestbook_id = g.id ";*/
+    
+    private static final String BASE_QUERY_STRING_FOR_DOWNLOAD_AS_CSV = "select r.id, g.name, o.id, r.responsetime, f.downloadtype,"
+                + " m.label, r.dataFile_id, r.name, r.email, r.institution, r.position,"
+                + " o.protocol, o.authority, o.identifier, d.protocol, d.authority, d.identifier "
+                + "from guestbookresponse r, filedownload f, filemetadata m, dvobject o, guestbook g, dvobject d "
+                + "where "  
+                + "m.datasetversion_id = (select max(datasetversion_id) from filemetadata where datafile_id =r.datafile_id ) "
                 + " and m.datafile_id = r.datafile_id "
                 + " and d.id = r.datafile_id "
                 + " and r.id = f.guestbookresponse_id "
@@ -83,7 +99,7 @@ public class GuestbookResponseServiceBean {
                 + "where q.id = r.customquestion_id "
                 + "and r.guestbookResponse_id = g.id "
                 + "and g.dataset_id = o.id ";
-
+    
     
     private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MM/d/yyyy");
     
@@ -129,12 +145,13 @@ public class GuestbookResponseServiceBean {
         // of queries now) -- L.A. 
         
         Map<Integer, Object> customQandAs = mapCustomQuestionAnswersAsStrings(dataverseId, guestbookId);
+        Map<Integer, String> datasetTitles = mapDatasetTitles(dataverseId);
                 
         List<Object[]> guestbookResults = getGuestbookResults( dataverseId,  guestbookId );
         // the CSV header:
         out.write("Guestbook, Dataset, Dataset PID, Date, Type, File Name, File Id, File PID, User Name, Email, Institution, Position, Custom Questions\n".getBytes());
         for (Object[] result : guestbookResults) {
-            StringBuilder sb = convertGuestbookResponsesToCSV(customQandAs, result);
+            StringBuilder sb = convertGuestbookResponsesToCSV(customQandAs, datasetTitles, result);
             out.write(sb.toString().getBytes());
             out.flush();
         }
@@ -157,7 +174,7 @@ public class GuestbookResponseServiceBean {
         
     }
     
-    public StringBuilder convertGuestbookResponsesToCSV ( Map<Integer, Object> customQandAs, Object[] result) throws IOException {
+    public StringBuilder convertGuestbookResponsesToCSV ( Map<Integer, Object> customQandAs, Map<Integer, String> datasetTitles, Object[] result) throws IOException {
 
             Integer guestbookResponseId = (Integer)result[0];
             
@@ -173,7 +190,9 @@ public class GuestbookResponseServiceBean {
 
             
             // Dataset name: 
-            sb.append(((String)result[2]).replace(',', ' '));
+            Integer datasetId = (Integer) result[2];
+            String datasetTitle = datasetTitles.get(datasetId);
+            sb.append(datasetTitle == null ? "" : datasetTitle.replace(',', ' '));
             sb.append(SEPARATOR);
             
             // Dataset persistent identifier: 
@@ -920,6 +939,25 @@ public class GuestbookResponseServiceBean {
         Query query = em.createNamedQuery("GuestbookResponse.findByAuthenticatedUserId"); 
         query.setParameter("authenticatedUserId", user.getId());
         return query.getResultList();
+    }
+        
+    public Map<Integer, String> mapDatasetTitles(Long dataverseId) {
+        Map<Integer, String> ret = new HashMap<>();
+
+        List<Object[]> titleResults = dataverseService.getDatasetTitlesWithinDataverse(dataverseId);
+
+        if (titleResults != null) {
+            for (Object[] titleObj : titleResults) {
+                Integer datasetId = (Integer) titleObj[1];
+                String datasetTitle = (String) titleObj[0];
+                
+                ret.put(datasetId, datasetTitle);
+
+            }
+        }
+
+        return ret;
+        
     }
     
 }
