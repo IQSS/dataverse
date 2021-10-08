@@ -947,13 +947,14 @@ public class IndexServiceBean {
             Date startdate=java.util.Calendar.getInstance().getTime();
                 System.out.print("Start file check: " + startdate );
                 int count = 0;
+                int countIgnore = 0;
             for (FileMetadata fileMetadata : fileMetadatas) {
                     count++;   
                 Date loopdate=java.util.Calendar.getInstance().getTime();
                 Double diff = new Double( (loopdate.getTime() - startdate.getTime())) ;
                 diff = diff/1000.;
                 Double dcount = new Double(count);
-                System.out.print(" fileMetadata: " + fileMetadata.getId() + " " +  count + " " + diff + " " + dcount/diff + " " +  loopdate);
+                
 
                 boolean indexThisMetadata = true;
 
@@ -966,6 +967,7 @@ public class IndexServiceBean {
                                 if (fileMetadata.contentEquals(findReleasedFileMetadata)
                                         && variableMetadataUtil.compareVariableMetadata(findReleasedFileMetadata, fileMetadata)) {
                                     indexThisMetadata = false;
+                                    countIgnore++;
                                     logger.fine("This file metadata hasn't changed since the released version; skipping indexing.");
                                 } else {
                                     logger.fine("This file metadata has changed since the released version; we want to index it!");
@@ -997,7 +999,9 @@ public class IndexServiceBean {
                     }
             */
                 }
-                System.out.print(" fileMetadata: " + fileMetadata.getId() + " " +  count + " index?  " + indexThisMetadata);
+                int include = count -countIgnore;
+                System.out.print(" count: " +  count + " " + diff + " per second " + dcount/diff + "  " +  loopdate  + " indexed count: " + include);
+
                 if (indexThisMetadata) {
 
                     SolrInputDocument datafileSolrInputDocument = new SolrInputDocument();

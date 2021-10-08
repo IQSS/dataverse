@@ -531,7 +531,7 @@ public class FileMetadata implements Serializable {
     
     public boolean compareContent(FileMetadata other){
          FileVersionDifference diffObj = new FileVersionDifference(this, other, false);
-         return diffObj.compareMetadata(this, other);
+         return diffObj.isSame();
     }
     
     @Override

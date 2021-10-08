@@ -20,6 +20,9 @@ public final class FileVersionDifference {
     private  FileMetadata newFileMetadata;
     private  FileMetadata originalFileMetadata;   
     private boolean details = false;
+    private boolean same = false;
+
+
 
     private List<FileDifferenceSummaryGroup> differenceSummaryGroups = new ArrayList<>();   
     private List<FileDifferenceDetailItem> differenceDetailItems = new ArrayList<>();
@@ -36,7 +39,7 @@ public final class FileVersionDifference {
         this.originalFileMetadata = originalFileMetadata;
         this.details = details;
 
-        compareMetadata(newFileMetadata, originalFileMetadata);
+        this.same = compareMetadata(newFileMetadata, originalFileMetadata);
         //Compare versions - File Metadata first
 
     } 
@@ -267,6 +270,14 @@ public final class FileVersionDifference {
 
     public void setOriginalFileMetadata(FileMetadata originalFileMetadata) {
         this.originalFileMetadata = originalFileMetadata;
+    }
+    
+    public boolean isSame() {
+        return same;
+    }
+
+    public void setSame(boolean same) {
+        this.same = same;
     }
     
     
