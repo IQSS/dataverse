@@ -2002,13 +2002,4 @@ public class DatasetVersion implements Serializable {
     public void setExternalStatusLabel(String externalStatusLabel) {
         this.externalStatusLabel = externalStatusLabel;
     }
-
-    public String getExternalStatusLabel() {
-        return externalStatusLabel;
-    }
-
-    public void setExternalStatusLabel(String externalStatusLabel) {
-        this.externalStatusLabel = externalStatusLabel;
-    }
-
 }

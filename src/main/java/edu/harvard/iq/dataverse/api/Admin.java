@@ -1900,27 +1900,6 @@ public class Admin extends AbstractApiBean {
     }
     
     @GET
-    @Path("/dataverse/curationLabelSets")
-    public Response listCurationLabelSets() throws WrappedResponse {
-        try {
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
-            if (!user.isSuperuser()) {
-                return error(Response.Status.FORBIDDEN, "Superusers only.");
-            }
-        } catch (WrappedResponse wr) {
-            return wr.getResponse();
-        }
-        JsonObjectBuilder bld = Json.createObjectBuilder();
-
-        systemConfig.getCurationLabels().entrySet().forEach(s -> {
-            JsonArrayBuilder labels = Json.createArrayBuilder();
-            Arrays.asList(s.getValue()).forEach(l -> labels.add(l));
-            bld.add(s.getKey(), labels);
-        });
-        return ok(bld);
-    }
-    
-    @GET
     @Path("/dataverse/{alias}/curationLabelSet")
     public Response getCurationLabelSet(@PathParam("alias") String alias) throws WrappedResponse {
         Dataverse dataverse = dataverseSvc.findByAlias(alias);
