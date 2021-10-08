@@ -61,7 +61,7 @@
     <stdyInfo>
       <subject>
         <keyword>Agricultural Sciences</keyword>
-        <keyword>Business and Management</keyword>
+        <keyword xml:lang="en">Business and Management</keyword>
         <keyword>Engineering</keyword>
         <keyword>Law</keyword>
         <keyword vocab="KeywordVocabulary1" vocabURI="http://KeywordVocabularyURL1.org">KeywordTerm1</keyword>
