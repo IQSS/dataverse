@@ -14,7 +14,8 @@ params.alias; // Dataverse Alias
 params.persistentId; // persistentId
 params.dvUrl; // Dataverse Installation URL
 params.heightPx; // iframe height in pixels
-params.text; // search input placeholder text
+params.text = params.text || 'Search my dataverse'; // search input label/placeholder text
+params.buttonText = params.buttonText || 'Find'; // search button text
 
 // Utility function to convert "a=b&c=d" into { a:'b', c:'d' }
 function parseQueryString(queryString) {
@@ -39,7 +40,7 @@ if(params.widget === 'search') {
     /*
     * Dataverse Search Box
     */
-   document.write('<input type="text" placeholder="' + params.text + '..." onkeydown="if (event.keyCode == 13) document.getElementById(\'btnDataverseSearch\').click()" style="background:#fff; border:1px solid #ccc; border-radius:3px; box-shadow:0 1px 1px rgba(0, 0, 0, 0.075) inset; padding:4px; min-width:180px;"/>&#160;<input id="btnDataverseSearch" value="Find" type="button" onclick="window.open(&#39;' + params.dvUrl + '/dataverse.xhtml?alias=' + params.alias + '&amp;q=&#39; + this.previousSibling.previousSibling.value + &#39;&#39;, &#39;_blank&#39;);" style="-moz-border-bottom-colors:none; -moz-border-left-colors:none; -moz-border-right-colors:none; -moz-border-top-colors:none; background-color:#f5f5f5; background-image:-moz-linear-gradient(center top , #ffffff, #e6e6e6); background-repeat:repeat-x; border:1px solid #ccc; border-color:#e6e6e6 #e6e6e6 #b3b3b3; border-image:none; border-radius:4px; box-shadow:0 1px 0 rgba(255, 255, 255, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.05); color:#333; cursor:pointer; text-shadow:0 1px 1px rgba(255, 255, 255, 0.75); padding:0.3em 1em; line-height:1.4;" />');
+   document.write('<input type="text" aria-label="' + params.text + '" placeholder="' + params.text + '..." onkeydown="if (event.keyCode == 13) document.getElementById(\'btnDataverseSearch\').click()" style="min-width:180px;"/>&#160;<input id="btnDataverseSearch" value="' + params.buttonText + '" type="button" onclick="window.open(&#39;' + params.dvUrl + '/dataverse.xhtml?alias=' + params.alias + '&amp;q=&#39; + this.previousSibling.previousSibling.value + &#39;&#39;, &#39;_blank&#39;);" />');
 }
 
 if(params.widget === 'iframe' && params.alias) {
