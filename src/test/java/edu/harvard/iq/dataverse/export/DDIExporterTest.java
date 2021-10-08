@@ -181,5 +181,7 @@ public class DDIExporterTest {
             t.setParentDatasetFieldType(compoundSingleType);
         }
         compoundSingleType.setChildDatasetFieldTypes(childTypes);
+        
+        datasetFieldTypeSvc.setMetadataBlock("citation");
     }
 }
