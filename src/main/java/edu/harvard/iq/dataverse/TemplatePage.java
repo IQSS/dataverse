@@ -124,13 +124,9 @@ public class TemplatePage implements java.io.Serializable {
             template = templateService.find(templateId);
             template.setDataverse(dataverse);
             template.setMetadataValueBlocks();
-            
-            if (template.getTermsOfUseAndAccess() != null) {
 
-            } else {
-                TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-                terms.setTemplate(template);
-                terms.setLicense(licenseServiceBean.getDefault());
+            if (template.getTermsOfUseAndAccess() != null) {
+                TermsOfUseAndAccess terms = template.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
                 template.setTermsOfUseAndAccess(terms);
             }
 

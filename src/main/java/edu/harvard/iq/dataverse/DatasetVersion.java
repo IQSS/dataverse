@@ -87,10 +87,6 @@ public class DatasetVersion implements Serializable {
         DRAFT, RELEASED, ARCHIVED, DEACCESSIONED
     }
 
-    public enum License {
-        NONE, CC0
-    }
-
     public static final int ARCHIVE_NOTE_MAX_LENGTH = 1000;
     public static final int VERSION_NOTE_MAX_LENGTH = 1000;
     
@@ -558,7 +554,7 @@ public class DatasetVersion implements Serializable {
         return !this.fileMetadatas.get(0).getDataFile().getContentType().equals(DataFileServiceBean.MIME_TYPE_PACKAGE_FILE);
     }
 
-    public void updateDefaultValuesFromTemplate(Template template, edu.harvard.iq.dataverse.License license) {
+    public void updateDefaultValuesFromTemplate(Template template) {
         if (!template.getDatasetFields().isEmpty()) {
             this.setDatasetFields(this.copyDatasetFields(template.getDatasetFields()));
         }
@@ -566,16 +562,10 @@ public class DatasetVersion implements Serializable {
             TermsOfUseAndAccess terms = template.getTermsOfUseAndAccess().copyTermsOfUseAndAccess();
             terms.setDatasetVersion(this);
             this.setTermsOfUseAndAccess(terms);
-        } else {
-            TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-            terms.setDatasetVersion(this);
-            terms.setLicense(license);
-            terms.setDatasetVersion(this);
-            this.setTermsOfUseAndAccess(terms);
         }
     }
     
-    public DatasetVersion cloneDatasetVersion(edu.harvard.iq.dataverse.License license){
+    public DatasetVersion cloneDatasetVersion(){
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(this.getPriorVersionState());
         dsv.setFileMetadatas(new ArrayList<>());
@@ -590,11 +580,6 @@ public class DatasetVersion implements Serializable {
             
             if (this.getTermsOfUseAndAccess()!= null){
                 dsv.setTermsOfUseAndAccess(this.getTermsOfUseAndAccess().copyTermsOfUseAndAccess());
-            } else {
-                TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-                terms.setDatasetVersion(dsv);
-                terms.setLicense(license);
-                dsv.setTermsOfUseAndAccess(terms);
             }
 
             for (FileMetadata fm : this.getFileMetadatas()) {
@@ -617,12 +602,8 @@ public class DatasetVersion implements Serializable {
                 dsv.getFileMetadatas().add(newFm);
             }
 
-
-
-
         dsv.setDataset(this.getDataset());
         return dsv;
-        
     }
 
     public void initDefaultValues(edu.harvard.iq.dataverse.License license) {

@@ -270,15 +270,6 @@ public class TermsOfUseAndAccess implements Serializable {
         return retVal;
     }
 
-    public static License getCC0() {
-        String shortDescription = "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.";
-        URI uri = URI.create("https://creativecommons.org/publicdomain/zero/1.0/");
-        URI iconUrl = URI.create("/resources/images/cc0.png");
-        License license = new edu.harvard.iq.dataverse.License("CC0", shortDescription, uri, iconUrl, true);
-        license.setDefault(true);
-        return license;
-    }
-
     public void clearCustomTermsVariables(){
         termsOfUse = null;
         confidentialityDeclaration = null;

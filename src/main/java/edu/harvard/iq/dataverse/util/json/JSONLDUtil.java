@@ -3,7 +3,6 @@ package edu.harvard.iq.dataverse.util.json;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -16,7 +15,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -30,6 +28,7 @@ import javax.json.JsonWriter;
 import javax.json.JsonWriterFactory;
 import javax.json.JsonValue.ValueType;
 import javax.json.stream.JsonGenerator;
+import javax.persistence.NoResultException;
 import javax.ws.rs.BadRequestException;
 
 import edu.harvard.iq.dataverse.ControlledVocabularyValue;
@@ -46,8 +45,6 @@ import edu.harvard.iq.dataverse.MetadataBlockServiceBean;
 import edu.harvard.iq.dataverse.License;
 import edu.harvard.iq.dataverse.LicenseServiceBean;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
-import edu.harvard.iq.dataverse.api.ConflictException;
-import edu.harvard.iq.dataverse.api.FetchException;
 import org.apache.commons.lang3.StringUtils;
 
 import com.apicatalog.jsonld.JsonLd;
@@ -55,7 +52,6 @@ import com.apicatalog.jsonld.api.JsonLdError;
 import com.apicatalog.jsonld.document.JsonDocument;
 
 import edu.harvard.iq.dataverse.DatasetVersion.VersionState;
-import edu.harvard.iq.dataverse.util.bagit.OREMap;
 
 public class JSONLDUtil {
 
@@ -204,7 +200,7 @@ public class JSONLDUtil {
                                         License license = licenseSvc.getByNameOrUri(jsonld.getString(key));
                                         setSemTerm(terms, key, license);
                                     }
-                                    catch (FetchException e) {
+                                    catch (NoResultException e) {
                                         throw new BadRequestException("Invalid license");
                                     }
                                 }
@@ -259,7 +255,7 @@ public class JSONLDUtil {
      * @return
      */
     public static DatasetVersion deleteDatasetVersionMDFromJsonLD(DatasetVersion dsv, String jsonLDBody,
-            MetadataBlockServiceBean metadataBlockSvc, DatasetFieldServiceBean datasetFieldSvc) {
+            MetadataBlockServiceBean metadataBlockSvc, LicenseServiceBean licenseSvc) {
         logger.fine("deleteDatasetVersionMD");
         JsonObject jsonld = decontextualizeJsonLD(jsonLDBody);
         //All terms are now URIs
@@ -309,13 +305,12 @@ public class JSONLDUtil {
                     // Internal/non-metadatablock terms
                     boolean found=false;
                     if (key.equals(JsonLDTerm.schemaOrg("license").getUrl())) {
-                        // TODO: FIND OUT THE INTENTION OF THIS CODE: IF CC0 THEN NONE ???
-//                        if(jsonld.getString(key).equals(TermsOfUseAndAccess.CC0_URI)) {
-//                            setSemTerm(terms, key, TermsOfUseAndAccess.License.NONE);
-//                        } else {
-//                            throw new BadRequestException(
-//                                    "Term: " + key + " with value: " + jsonld.getString(key) + " not found.");
-//                        }
+                        if(licenseSvc.getByNameOrUri(jsonld.getString(key)) != null) {
+                            setSemTerm(terms, key, licenseSvc.getDefault());
+                        } else {
+                            throw new BadRequestException(
+                                    "Term: " + key + " with value: " + jsonld.getString(key) + " not found.");
+                        }
                         found=true;
                     } else if (datasetTerms.contains(key)) {
                         if(!deleteIfSemTermMatches(terms, key, jsonld.get(key))) {

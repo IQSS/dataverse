@@ -1196,7 +1196,7 @@ public class AddReplaceFileHelper{
 
         // Load the working version of the Dataset
         workingVersion = dataset.getEditVersion();
-        clone =   workingVersion.cloneDatasetVersion(licenseServiceBean.getDefault());
+        clone =   workingVersion.cloneDatasetVersion();
         try {
             initialFileList = FileUtil.createDataFiles(workingVersion,
                     this.newFileInputStream,

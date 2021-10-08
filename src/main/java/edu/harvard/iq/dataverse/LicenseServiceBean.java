@@ -2,10 +2,7 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
-import edu.harvard.iq.dataverse.api.ConflictException;
-import edu.harvard.iq.dataverse.api.FetchException;
-import edu.harvard.iq.dataverse.api.RequestBodyException;
-import edu.harvard.iq.dataverse.api.UpdateException;
+import edu.harvard.iq.dataverse.api.*;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -16,6 +13,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import java.net.URI;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -40,56 +38,37 @@ public class LicenseServiceBean {
         return em.createNamedQuery("License.findAllActive", License.class).getResultList();
     }
 
-    public License getById(Long id) throws FetchException {
-        List<License> licenses = em.createNamedQuery("License.findById", License.class)
-                .setParameter("id", id )
-                .getResultList();
-        if (licenses.isEmpty()) {
-            throw new FetchException("License with that ID doesn't exist.");
-        }
-        return licenses.get(0);
+    public License getById(Long id) throws NoResultException  {
+        return em.createNamedQuery("License.findById", License.class)
+                    .setParameter("id", id)
+                    .getSingleResult();
     }
 
     public License getDefault() {
-        List<License> licenses = em.createNamedQuery("License.findDefault", License.class)
-                .getResultList();
-        return licenses.get(0);
+        return em.createNamedQuery("License.findDefault", License.class)
+                .getSingleResult();
     }
 
-    public License getByNameOrUri(String nameOrUri) throws FetchException {
-        License license;
-        try {
-            license = em.createNamedQuery("License.findByNameOrUri", License.class)
+    public License getByNameOrUri(String nameOrUri) throws NoResultException {
+        return em.createNamedQuery("License.findActiveByNameOrUri", License.class)
                     .setParameter("name", nameOrUri)
                     .setParameter("uri", nameOrUri)
                     .getSingleResult();
-        } catch (NoResultException noResultException){
-            throw new FetchException("Couldn't find an active license with that name or uri");
-        }
-        if (license == null || !license.isActive()){
-            throw new FetchException("Couldn't find an active license with that name or uri");
-        }
-        return license;
     }
 
-    public void setDefault(Long id) throws UpdateException, FetchException {
+    public void setDefault(Long id) throws NoResultException {
         License candidate = getById(id);
         if (candidate.isActive()) {
-            try {
                 em.createNamedQuery("License.clearDefault").executeUpdate();
                 em.createNamedQuery("License.setDefault").setParameter("id", id).executeUpdate();
-            }
-            catch (PersistenceException e) {
-                throw new UpdateException("Inactive license cannot be default.");
-            }
-        }
-        else
+        } else {
             throw new IllegalArgumentException("Cannot set an inactive license as default");
+        }
     }
 
-    public License save(License license) throws RequestBodyException, ConflictException {
+    public License save(License license) {
         if (license.getId() != null) {
-            throw new RequestBodyException("There shouldn't be an ID in the request body");
+            throw new IllegalArgumentException("There shouldn't be an ID in the request body");
         }
         try {
             em.persist(license);
@@ -97,7 +76,7 @@ public class LicenseServiceBean {
         }
         catch (PersistenceException p) {
             if (p.getMessage().contains("duplicate key")) {
-                throw new ConflictException("A license with the same URI or name is already present.", p);
+                throw new IllegalStateException("A license with the same URI or name is already present.", p);
             }
             else {
                 throw p;
@@ -106,34 +85,14 @@ public class LicenseServiceBean {
         return license;
     }
 
-    public void setById(long id, String name, String shortDescription, URI uri, URI iconUrl, boolean active) throws UpdateException {
-        List<License> licenses = em.createNamedQuery("License.findById", License.class)
-                .setParameter("id", id )
-                .getResultList();
-
-        if(licenses.size() > 0) {
-            License license = licenses.get(0);
-            license.setName(name);
-            license.setShortDescription(shortDescription);
-            license.setUri(uri);
-            license.setIconUrl(iconUrl);
-            license.setActive(active);        
-            em.merge(license);
-            actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Admin, "set")
-                .setInfo(name + ": " + uri + ": " + iconUrl + ": " + active));
-        } else {
-            throw new UpdateException("There is no existing License with that ID. To add a license use POST.");
-        }
-    }
-
-    public int deleteById(long id) throws ConflictException {
+    public int deleteById(long id) {
         actionLogSvc.log( new ActionLogRecord(ActionLogRecord.ActionType.Admin, "delete")
                             .setInfo(Long.toString(id)));
         try {
             return em.createNamedQuery("License.deleteById").setParameter("id", id).executeUpdate();
         } catch (PersistenceException p) {
             if (p.getMessage().contains("violates foreign key constraint")) {
-                throw new ConflictException("License with id " + id + " is referenced and cannot be deleted.", p);
+                throw new IllegalStateException("License with id " + id + " is referenced and cannot be deleted.", p);
             } else {
                 throw p;
             }

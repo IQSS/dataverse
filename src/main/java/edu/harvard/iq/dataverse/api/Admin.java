@@ -46,6 +46,8 @@ import edu.harvard.iq.dataverse.settings.Setting;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
+import javax.persistence.NoResultException;
+import javax.persistence.PersistenceException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -1992,8 +1994,8 @@ public class Admin extends AbstractApiBean {
         try {
             License license = licenseService.getById(id);
             return ok(json(license));
-        } catch (FetchException e) {
-            return error(Response.Status.NOT_FOUND, e.getMessage());
+        } catch (NoResultException nre) {
+            return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
         }
     }
 
@@ -2003,9 +2005,9 @@ public class Admin extends AbstractApiBean {
         try {
             licenseService.save(license);
             return created("/api/admin/licenses", Json.createObjectBuilder().add("message", "License created"));
-        } catch (RequestBodyException e) {
+        } catch (IllegalArgumentException e) {
             return error(Response.Status.BAD_REQUEST, e.getMessage());
-        } catch(ConflictException e) {
+        } catch(IllegalStateException e) {
             return error(Response.Status.CONFLICT, e.getMessage());
         }
     }
@@ -2023,23 +2025,13 @@ public class Admin extends AbstractApiBean {
             licenseService.setDefault(id);
             return ok("Default license ID set to " + id);
         }
-        catch (UpdateException | FetchException e) {
-            return error(Status.INTERNAL_SERVER_ERROR, e.getMessage());
+        catch (IllegalArgumentException | NoResultException e) {
+        	if (e instanceof IllegalArgumentException) {
+		        return badRequest(e.getMessage());
+	        } else {
+        		return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
+	        }
         }
-        catch (IllegalArgumentException e) {
-            return badRequest(e.getMessage());
-        }
-    }
-
-    @PUT
-    @Path("/licenses/{id}")
-    public Response putLicenseById(@PathParam("id") long id, License license) {
-        try {
-            licenseService.setById(id, license.getName(), license.getShortDescription(), license.getUri(), license.getIconUrl(), license.isActive());
-        } catch (UpdateException e) {
-            return error(Response.Status.BAD_REQUEST, e.getMessage());
-        }
-        return ok("License with ID " + id + " was replaced.");
     }
 
     @DELETE
@@ -2050,15 +2042,15 @@ public class Admin extends AbstractApiBean {
 		        if (licenseService.getById(id).isDefault()){
 			        return error(Status.CONFLICT, "Please make sure the license is not the default before deleting it. ");
 		        }
-	        } catch (FetchException e) {
-		        return error(Status.NOT_FOUND, e.getMessage());
+	        } catch (NoResultException e) {
+		        return error(Status.NOT_FOUND, "License with ID " + id + " not found");
 	        }
 	        int result = licenseService.deleteById(id);
             if (result == 1) {
                 return ok("OK. License with ID " + id + " was deleted.");
             }
             return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
-        } catch(ConflictException e) {
+        } catch(IllegalStateException e) {
             return error(Response.Status.CONFLICT, e.getMessage());
         }
     }

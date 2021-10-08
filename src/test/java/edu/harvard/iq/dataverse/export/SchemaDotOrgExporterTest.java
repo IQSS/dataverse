@@ -1,13 +1,6 @@
 package edu.harvard.iq.dataverse.export;
 
-import edu.harvard.iq.dataverse.ControlledVocabularyValue;
-import edu.harvard.iq.dataverse.DataFile;
-import edu.harvard.iq.dataverse.Dataset;
-import edu.harvard.iq.dataverse.DatasetFieldType;
-import edu.harvard.iq.dataverse.DatasetVersion;
-import edu.harvard.iq.dataverse.Dataverse;
-import edu.harvard.iq.dataverse.FileMetadata;
-import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.branding.BrandingUtilTest;
 import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 
@@ -19,6 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringReader;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
@@ -66,6 +60,8 @@ public class SchemaDotOrgExporterTest {
     public void testExportDataset() throws Exception {
         File datasetVersionJson = new File("src/test/resources/json/dataset-finch2.json");
         String datasetVersionAsJson = new String(Files.readAllBytes(Paths.get(datasetVersionJson.getAbsolutePath())));
+        License license = new License("CC0", "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.", URI.create("https://creativecommons.org/publicdomain/zero/1.0/"), URI.create("/resources/images/cc0.png"), true);
+        license.setDefault(true);
 
         JsonReader jsonReader1 = Json.createReader(new StringReader(datasetVersionAsJson));
         JsonObject json1 = jsonReader1.readObject();
@@ -77,7 +73,7 @@ public class SchemaDotOrgExporterTest {
         version.setReleaseTime(publicationDate);
         version.setVersionNumber(1l);
         TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-        terms.setLicense(terms.getCC0());
+        terms.setLicense(license);
         version.setTermsOfUseAndAccess(terms);
 
         Dataset dataset = new Dataset();

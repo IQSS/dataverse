@@ -291,7 +291,7 @@ public class Dataset extends DvObjectContainer {
         this.versions = versions;
     }
 
-    private DatasetVersion createNewDatasetVersion(Template template, FileMetadata fmVarMet, License license) {
+    private DatasetVersion createNewDatasetVersion(Template template, FileMetadata fmVarMet) {
         DatasetVersion dsv = new DatasetVersion();
         dsv.setVersionState(DatasetVersion.VersionState.DRAFT);
         dsv.setFileMetadatas(new ArrayList<>());
@@ -299,8 +299,8 @@ public class Dataset extends DvObjectContainer {
 
         //if the latest version has values get them copied over
         if (template != null) {
-            dsv.updateDefaultValuesFromTemplate(template, license);
-            setVersions(new ArrayList());
+            dsv.updateDefaultValuesFromTemplate(template);
+            setVersions(new ArrayList<>());
         } else {
             latestVersion = getLatestVersionForCopy();
             
@@ -314,11 +314,6 @@ public class Dataset extends DvObjectContainer {
             
             if (latestVersion.getTermsOfUseAndAccess()!= null){
                 dsv.setTermsOfUseAndAccess(latestVersion.getTermsOfUseAndAccess().copyTermsOfUseAndAccess());
-            } else {
-                TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-                terms.setDatasetVersion(dsv);
-                terms.setLicense(license);
-                dsv.setTermsOfUseAndAccess(terms);
             }
 
             for (FileMetadata fm : latestVersion.getFileMetadatas()) {
@@ -373,18 +368,18 @@ public class Dataset extends DvObjectContainer {
      * @return The edit version {@code this}.
      */
     public DatasetVersion getEditVersion() {
-        return getEditVersion(null, null, null);
+        return getEditVersion(null, null);
     }
 
     public DatasetVersion getEditVersion(FileMetadata fm) {
-        return getEditVersion(null, fm, null);
+        return getEditVersion(null, fm);
     }
 
-    public DatasetVersion getEditVersion(Template template, FileMetadata fm, License license) {
+    public DatasetVersion getEditVersion(Template template, FileMetadata fm) {
         DatasetVersion latestVersion = this.getLatestVersion();
         if (!latestVersion.isWorkingCopy() || template != null) {
             // if the latest version is released or archived, create a new version for editing
-            return createNewDatasetVersion(template, fm, license);
+            return createNewDatasetVersion(template, fm);
         } else {
             // else, edit existing working copy
             return latestVersion;

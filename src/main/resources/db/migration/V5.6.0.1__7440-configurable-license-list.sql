@@ -1,4 +1,3 @@
-
 ALTER TABLE termsofuseandaccess ADD COLUMN IF NOT EXISTS license_id BIGINT;
 
 DO $$
@@ -13,7 +12,7 @@ BEGIN
   BEGIN
       INSERT INTO license (uri, name, shortdescription, active, isDefault, iconurl) VALUES ('http://creativecommons.org/publicdomain/zero/1.0', 'CC0','You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.',true, true, '/resources/images/cc0.png');
   EXCEPTION
-    WHEN duplicate_object THEN RAISE NOTICE 'CC0 has already been added to the license table';
+    WHEN unique_violation THEN RAISE NOTICE 'CC0 has already been added to the license table';
   END;
 
 END $$;

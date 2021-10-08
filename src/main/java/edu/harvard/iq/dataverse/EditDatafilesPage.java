@@ -513,7 +513,7 @@ public class EditDatafilesPage implements java.io.Serializable {
             return permissionsWrapper.notAuthorized();
         }
         
-        clone = workingVersion.cloneDatasetVersion(licenseServiceBean.getDefault());
+        clone = workingVersion.cloneDatasetVersion();
         this.maxFileUploadSizeInBytes = systemConfig.getMaxFileUploadSizeForStore(dataset.getEffectiveStorageDriverId());
         this.multipleUploadFilesLimit = systemConfig.getMultipleUploadFilesLimit();        
 

@@ -1131,26 +1131,10 @@ public class OpenAireExportUtil {
         }
         xmlw.writeEndElement(); // </rights>
 
-        // check if getLicense() method contains CC0
-        // check if getTermsOfUse() method starts with http://
         writeRightsHeader(xmlw, language);
         if (datasetVersionDTO.getLicense() != null) {
-            if (!StringUtils.containsIgnoreCase(datasetVersionDTO.getLicense().getLabel(), "custom")) {
-                xmlw.writeAttribute("rightsURI", datasetVersionDTO.getLicense().getUri());
-                xmlw.writeCharacters(datasetVersionDTO.getLicense().getLabel());
-            } else if (StringUtils.isNotBlank(datasetVersionDTO.getTermsOfUse())) {
-                if (StringUtils.startsWithIgnoreCase(datasetVersionDTO.getTermsOfUse().trim(), "http")) {
-                    xmlw.writeAttribute("rightsURI", datasetVersionDTO.getTermsOfUse());
-                } else {
-                    xmlw.writeCharacters(datasetVersionDTO.getTermsOfUse());
-                }
-            }
-        } else if (StringUtils.isNotBlank(datasetVersionDTO.getTermsOfUse())) {
-            if (StringUtils.startsWithIgnoreCase(datasetVersionDTO.getTermsOfUse().trim(), "http")) {
-                xmlw.writeAttribute("rightsURI", datasetVersionDTO.getTermsOfUse());
-            } else {
-                xmlw.writeCharacters(datasetVersionDTO.getTermsOfUse());
-            }
+            xmlw.writeAttribute("rightsURI", datasetVersionDTO.getLicense().getUri());
+            xmlw.writeCharacters(datasetVersionDTO.getLicense().getLabel());
         }
         xmlw.writeEndElement(); // </rights>
         xmlw.writeEndElement(); // </rightsList>
