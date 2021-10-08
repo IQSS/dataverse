@@ -60,10 +60,10 @@
     </citation>
     <stdyInfo>
       <subject>
-        <keyword xml:lang="en">Agricultural Sciences</keyword>
-        <keyword xml:lang="en">Business and Management</keyword>
-        <keyword xml:lang="en">Engineering</keyword>
-        <keyword xml:lang="en">Law</keyword>
+        <keyword>Agricultural Sciences</keyword>
+        <keyword>Business and Management</keyword>
+        <keyword>Engineering</keyword>
+        <keyword>Law</keyword>
         <keyword vocab="KeywordVocabulary1" vocabURI="http://KeywordVocabularyURL1.org">KeywordTerm1</keyword>
         <keyword vocab="KeywordVocabulary2" vocabURI="http://KeywordVocabularyURL2.org">KeywordTerm2</keyword>
       </subject>

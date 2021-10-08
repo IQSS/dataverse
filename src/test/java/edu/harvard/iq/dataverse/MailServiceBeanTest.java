@@ -37,7 +37,7 @@ class MailServiceBeanTest {
         // without name, but root dataverse name available
         "dataverse@dataverse.org, NotLibraScholar, NULL, NotLibraScholar",
         // without name, without root dataverse name, without installation name -> default to bundle string.
-        "dataverse@dataverse.org, NULL, NULL, Dataverse Installation Admin"
+        "dataverse@dataverse.org, NULL, NULL, QDR Admin"
     }, nullValues = {"NULL"})
     void setContactDelegation(String fromMail, String rootDataverseName, String installationName, String expectedStartsWith) {
         BrandingUtilTest.setRootDataverseName(rootDataverseName);

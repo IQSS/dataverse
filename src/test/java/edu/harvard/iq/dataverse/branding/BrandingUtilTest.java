@@ -108,6 +108,8 @@ public class BrandingUtilTest {
     public void testGetSupportTeamName(String mockedRootName, String expected, InternetAddress email) throws AddressException, UnsupportedEncodingException {
         // given
         Mockito.when(dataverseSvc.getRootDataverseName()).thenReturn(mockedRootName);
+        //QDR uses installation name
+        Mockito.when(settingsSvc.getValueForKey(SettingsServiceBean.Key.InstallationName)).thenReturn(mockedRootName);
         // when & then
         assertEquals(expected, BrandingUtil.getSupportTeamName(email));
     }
@@ -193,7 +195,7 @@ public class BrandingUtilTest {
     @Test
     public void testGetContactHeader() {
         Mockito.when(dataverseSvc.getRootDataverseName()).thenReturn(null);
-        assertEquals("Contact Support", BrandingUtil.getContactHeader(null));
+        assertEquals("Contact aScholar Support", BrandingUtil.getContactHeader(null));
     }
 
 }

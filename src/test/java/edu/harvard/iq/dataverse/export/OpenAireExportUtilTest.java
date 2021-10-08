@@ -637,7 +637,7 @@ public class OpenAireExportUtilTest {
         xmlWriter.flush();
         
         //then
-        assertEquals("<root/>", stringWriter.toString());
+        assertEquals("<root />", stringWriter.toString());
     }
 
     /**
@@ -691,7 +691,7 @@ public class OpenAireExportUtilTest {
         xmlWriter.flush();
     
         //then
-        assertEquals("<root/>", stringWriter.toString());
+        assertEquals("<root />", stringWriter.toString());
     }
 
     /**
@@ -790,7 +790,7 @@ public class OpenAireExportUtilTest {
         //then
         assertEquals("<rightsList>"
                 + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\"/>"
-                + "<rights rightsURI=\"https://creativecommons.org/publicdomain/zero/1.0/\">"
+                + "<rights rightsURI=\"https://creativecommons.org/publicdomain/zero/1.0/\" >"
                 + "CC0 Waiver</rights></rightsList>",
                 stringWriter.toString());
     }
@@ -818,7 +818,7 @@ public class OpenAireExportUtilTest {
     
         //then
         assertEquals("<rightsList>"
-                + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\"/>"
+                + "<rights rightsURI=\"info:eu-repo/semantics/restrictedAccess\" />"
                 + "<rights/></rightsList>",
                 stringWriter.toString());
     }
@@ -846,7 +846,7 @@ public class OpenAireExportUtilTest {
     
         //then
         assertEquals("<rightsList>"
-                + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\"/>"
+                + "<rights rightsURI=\"info:eu-repo/semantics/closedAccess\" />"
                 + "<rights/></rightsList>",
                 stringWriter.toString());
     }
@@ -1014,7 +1014,7 @@ public class OpenAireExportUtilTest {
         xmlWriter.flush();
     
         //then
-        assertEquals("<root/>", stringWriter.toString());
+        assertEquals("<root />", stringWriter.toString());
     }
 
     /**
