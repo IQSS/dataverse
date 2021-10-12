@@ -18,5 +18,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
+-- Extra indexes for the DatasetVersion table
+CREATE INDEX index_datasetversion_termsofuseandaccess_id ON datasetversion (termsofuseandaccess_id);
+-- TODO: what else?
 
 
