@@ -240,7 +240,7 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         String userName = (String) value;
         logger.log(Level.FINE, "Validating username: {0}", userName);
         boolean userNameFound = authenticationSvc.identifierExists(userName);
-        boolean userNameValid = UserNameValidator.isUserNameValid(userName, null);
+        boolean userNameValid = UserNameValidator.isUserNameValid(userName);
 
         if (userNameFound) {
             ((UIInput) toValidate).setValid(false);
