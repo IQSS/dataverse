@@ -481,18 +481,16 @@
                                      jsf:rendered="#{!(settingsWrapper.rsyncDownload or DatasetPage.workingVersion.deaccessioned)}">
                                     <!-- Metrics -->
                                     <div id="metrics-block">
-                                        <div id="metrics-heading">
-                                            #{settingsWrapper.makeDataCountDisplayEnabled ? bundle['metrics.dataset.makedatacount.title'] : bundle['metrics.dataset.title']}
-                                            <ui:fragment rendered="#{!settingsWrapper.makeDataCountDisplayEnabled}">
-                                                <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto top" 
-                                                    data-trigger="hover" data-original-title="#{bundle['metrics.dataset.tip.default']}"></span>
-                                            </ui:fragment>
-                                            <ui:fragment rendered="#{settingsWrapper.makeDataCountDisplayEnabled}">
-                                                <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto top" 
-                                                    data-original-title="#{bundle['metrics.dataset.tip.makedatacount']}"></span>
-                                                    <div id="metrics-heading-subtitle">#{bundle['metrics.dataset.makedatacount.since']} #{settingsWrapper.getMDCStartDate().toString()}</div>
-                                            </ui:fragment>
-                                        </div>
+                                        <h:outputFormat  id="metrics-heading" value="#{settingsWrapper.makeDataCountDisplayEnabled ? bundle['metrics.dataset.makedatacount.title'] : bundle['metrics.dataset.title']}" escape = "false"/>
+                                        <ui:fragment rendered="#{!settingsWrapper.makeDataCountDisplayEnabled}">
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto top" 
+                                                data-trigger="hover" data-original-title="#{bundle['metrics.dataset.tip.default']}"></span>
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{settingsWrapper.makeDataCountDisplayEnabled}">
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto top" 
+                                                data-original-title="#{bundle['metrics.dataset.tip.makedatacount']}"></span>
+                                                <div id="metrics-heading-subtitle">#{bundle['metrics.dataset.makedatacount.since']} #{settingsWrapper.getMDCStartDate().toString()}</div>
+                                        </ui:fragment>
                                         <div id="metrics-body">
                                             <!-- Classic downloads -->
                                             <div class="metrics-count-block" jsf:rendered="#{!settingsWrapper.makeDataCountDisplayEnabled}">

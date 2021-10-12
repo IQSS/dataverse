@@ -1365,7 +1365,7 @@ progress::-webkit-progress-value {
 }
 
 .external-status {
-  background-color: #EA4CED
+  background-color: #CE15D1
 }
 
 /*External vocabulary support*/
@@ -1405,3 +1405,7 @@ padding-right:0px;
 .text-muted {
         color: #666;
 }
+span.label-success { background-color: #388038 }
+span.label-warning { background-color: #A4660E }
+span.label-info { background-color: #20809D }
+

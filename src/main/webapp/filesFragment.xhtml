@@ -51,7 +51,8 @@
                  rowIndexVar="rowNum" rowKey="#{fileMetadata.dataFile.storageIdentifier}"
                  rowSelectMode="checkbox" selection="#{DatasetPage.selectedFiles}" var="fileMetadata" widgetVar="filesTable"
                  rendered="#{DatasetPage.fileDisplayTable and (DatasetPage.workingVersion != null)}"
-                 emptyMessage="#{DatasetPage.workingVersion.fileMetadatas.size() == 0 ? bundle['file.notFound.tip'] : bundle['file.notFound.search']}">
+                 emptyMessage="#{DatasetPage.workingVersion.fileMetadatas.size() == 0 ? bundle['file.notFound.tip'] : bundle['file.notFound.search']}"
+                 ariaRowLabel="#{bundle['file.select.action']} #{fileMetadata.label}">
         <p:ajax event="page" listener="#{DatasetPage.fileListingPaginatorListener}" update="filesTable" process="@this"  oncomplete="refreshPaginator(),rebindCommand()"  immediate="true"/>
         <p:ajax event="toggleSelect" listener="#{DatasetPage.toggleAllSelected()}" update="filesTable"  process="@this" oncomplete="rebindCommand()"  /> 
         <p:ajax event="rowUnselectCheckbox" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" oncomplete="rebindCommand()"  />
@@ -375,7 +376,6 @@
         </f:facet>
 
         <p:column selectionMode="multiple" class="text-center" ariaHeaderText="#{bundle['file.select.tooltip']}"/>
-
         <p:column class="col-file-metadata">
             <f:facet name="header">
                 <f:passThroughAttribute name="aria-label" value="#{bundle['file.count.label']}"/>
