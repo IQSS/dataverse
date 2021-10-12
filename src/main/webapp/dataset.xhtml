@@ -109,7 +109,7 @@
                             <div class="col-xs-12">
                                 <div id="datasetVersionBlock" class="row">
                                     <div id="title-block" class="col-xs-12 margin-bottom-half" jsf:rendered="#{!empty DatasetPage.datasetVersionUI.title.value}">
-                                        <span id="title">#{DatasetPage.datasetVersionUI.title.value}</span>
+                                        <H1 id="title">#{DatasetPage.datasetVersionUI.title.value}</H1>
                                         <div id="title-label-block" class="margin-top-half">
                                             <!-- DATASET Publication Status -->
                                             <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{DatasetPage.workingVersion.draft}"/>
@@ -488,8 +488,8 @@
                                                     data-trigger="hover" data-original-title="#{bundle['metrics.dataset.tip.default']}"></span>
                                             </ui:fragment>
                                             <ui:fragment rendered="#{settingsWrapper.makeDataCountDisplayEnabled}">
-                                                <a tabindex="0" role="button" class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="popover" data-placement="auto top" 
-                                                    data-trigger="focus" data-html="true" data-content="#{bundle['metrics.dataset.tip.makedatacount']}"></a>
+                                                <span class="glyphicon glyphicon-question-sign tooltip-icon" data-toggle="tooltip" data-placement="auto top" 
+                                                    data-original-title="#{bundle['metrics.dataset.tip.makedatacount']}"></span>
                                                     <div id="metrics-heading-subtitle">#{bundle['metrics.dataset.makedatacount.since']} #{settingsWrapper.getMDCStartDate().toString()}</div>
                                             </ui:fragment>
                                         </div>
