@@ -587,7 +587,7 @@ You should expect a 200 ("OK") response and JSON output.
 Retrieve Guestbook Responses for a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In order to retrieve a file containing a list of Guestbook Responses in csv format for Dataverse collection, you must know either its "alias" (which the GUI calls an "identifier") or its database ID. If the Dataverse collection has more than one guestbook you may provide the id of a single guestbook as an optional parameter. If no guestbook id is provided the results returned will be the same as pressing the "Download All Responses" button on the Manage Dataset Guestbook page. If the guestbook id is provided then only those responses from that guestbook will be included.  The FILENAME parameter is optional without it the responses will be displayed in the console.
+In order to retrieve the Guestbook Responses for a Dataverse collection, you must know either its "alias" (which the GUI calls an "identifier") or its database ID. If the Dataverse collection has more than one guestbook you may provide the id of a single guestbook as an optional parameter. If no guestbook id is provided the results returned will be the same as pressing the "Download All Responses" button on the Manage Dataset Guestbook page. If the guestbook id is provided then only those responses from that guestbook will be included.  The FILENAME parameter is optional, and if it is not included, the responses will be displayed in the console.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
 
