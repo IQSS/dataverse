@@ -1,10 +1,6 @@
 package edu.harvard.iq.dataverse.authorization.providers.oauth2;
 
-import edu.harvard.iq.dataverse.DataverseSession;
-import edu.harvard.iq.dataverse.EMailValidator;
-import edu.harvard.iq.dataverse.UserNotification;
-import edu.harvard.iq.dataverse.UserNotificationServiceBean;
-import edu.harvard.iq.dataverse.ValidateEmail;
+import edu.harvard.iq.dataverse.*;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthUtil;
 import edu.harvard.iq.dataverse.authorization.AuthenticatedUserDisplayInfo;
@@ -239,11 +235,20 @@ public class OAuth2FirstLoginPage implements java.io.Serializable {
         String userName = (String) value;
         logger.log(Level.FINE, "Validating username: {0}", userName);
         boolean userNameFound = authenticationSvc.identifierExists(userName);
+        boolean userNameValid = !userName.isBlank() && UserNameValidator.isUserNameValid(userName, null);
+
         if (userNameFound) {
             ((UIInput) toValidate).setValid(false);
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.taken"), null);
             context.addMessage(toValidate.getClientId(context), message);
         }
+
+        if (!userNameValid) {
+            ((UIInput) toValidate).setValid(false);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, BundleUtil.getStringFromBundle("user.username.invalid"), null);
+            context.addMessage(toValidate.getClientId(context), message);
+        }
+
     }
 
     /*
