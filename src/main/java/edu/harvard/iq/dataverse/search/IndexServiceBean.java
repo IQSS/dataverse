@@ -627,16 +627,18 @@ public class IndexServiceBean {
                 for (FileMetadata fm : latestVersion.getFileMetadatas()) {
                     datafilesInDraftVersion.add(fm.getDataFile().getId());
                 }
-                String indexDraftResult = addOrUpdateDataset(indexableDraftVersion);
-                results.append("The latest version is a working copy (latestVersionState: ")
-                        .append(latestVersionStateString).append(") and will be indexed as ")
-                        .append(solrIdDraftDataset).append(" (limited visibility). Result: ").append(indexDraftResult).append("\n");
+
 
                 desiredCards.put(DatasetVersion.VersionState.RELEASED, true);
                 IndexableDataset indexableReleasedVersion = new IndexableDataset(releasedVersion);
                 String indexReleasedVersionResult = addOrUpdateDataset(indexableReleasedVersion, datafilesInDraftVersion);
                 results.append("There is a published version we will attempt to index. Result: ").append(indexReleasedVersionResult).append("\n");
 
+                String indexDraftResult = addOrUpdateDataset(indexableDraftVersion);
+                results.append("The latest version is a working copy (latestVersionState: ")
+                        .append(latestVersionStateString).append(") and will be indexed as ")
+                        .append(solrIdDraftDataset).append(" (limited visibility). Result: ").append(indexDraftResult).append("\n");
+                
                 desiredCards.put(DatasetVersion.VersionState.DEACCESSIONED, false);
                 if (doNormalSolrDocCleanUp) {
                     String deleteDeaccessionedResult = removeDeaccessioned(dataset);
@@ -940,21 +942,11 @@ public class IndexServiceBean {
             boolean checkForDuplicateMetadata = false;
             if (datasetVersion.isDraft() && dataset.isReleased() && dataset.getReleasedVersion() != null) {
                 checkForDuplicateMetadata = true;
-                System.out.print("We are indexing a draft version of a dataset that has a released version. We'll be checking file metadatas if they are exact clones of the released versions.");
                 logger.fine(
                         "We are indexing a draft version of a dataset that has a released version. We'll be checking file metadatas if they are exact clones of the released versions.");
             }
-            Date startdate=java.util.Calendar.getInstance().getTime();
-                System.out.print("Start file check: " + startdate );
-                int count = 0;
-                int countIgnore = 0;
+
             for (FileMetadata fileMetadata : fileMetadatas) {
-                    count++;   
-                Date loopdate=java.util.Calendar.getInstance().getTime();
-                Double diff = new Double( (loopdate.getTime() - startdate.getTime())) ;
-                diff = diff/1000.;
-                Double dcount = new Double(count);
-                
 
                 boolean indexThisMetadata = true;
 
@@ -967,7 +959,6 @@ public class IndexServiceBean {
                                 if (fileMetadata.contentEquals(findReleasedFileMetadata)
                                         && variableMetadataUtil.compareVariableMetadata(findReleasedFileMetadata, fileMetadata)) {
                                     indexThisMetadata = false;
-                                    countIgnore++;
                                     logger.fine("This file metadata hasn't changed since the released version; skipping indexing.");
                                 } else {
                                     logger.fine("This file metadata has changed since the released version; we want to index it!");
@@ -977,31 +968,8 @@ public class IndexServiceBean {
                             }
                         }
                     }
-
-                    /*
-                    for (FileMetadata releasedFileMetadata : dataset.getReleasedVersion().getFileMetadatas()) {
-                        if (fileMetadata.getDataFile() != null && fileMetadata.getDataFile().equals(releasedFileMetadata.getDataFile())) {
-
-                            if ((fileMetadata.getDataFile().isRestricted() == releasedFileMetadata.getDataFile().isRestricted())) {
-                                if (fileMetadata.contentEquals(releasedFileMetadata)
-                                        && variableMetadataUtil.compareVariableMetadata(releasedFileMetadata,fileMetadata)
-                                        ) {
-                                    indexThisMetadata = false;
-                                    logger.fine("This file metadata hasn't changed since the released version; skipping indexing.");
-                                } else {
-                                    logger.fine("This file metadata has changed since the released version; we want to index it!");
-                                }
-                            } else {
-                                logger.fine("This file's restricted status has changed since the released version; we want to index it!");
-                            }
-                            break;
-                        }
-                    }
-            */
                 }
-                int include = count -countIgnore;
-                System.out.print(" count: " +  count + " " + diff + " per second " + dcount/diff + "  " +  loopdate  + " indexed count: " + include);
-
+                
                 if (indexThisMetadata) {
 
                     SolrInputDocument datafileSolrInputDocument = new SolrInputDocument();
@@ -1270,31 +1238,16 @@ public class IndexServiceBean {
                     if (indexableDataset.isFilesShouldBeIndexed()) {
                         filesIndexed.add(fileSolrDocId);
                         fileDocs.add(datafileSolrInputDocument);
-                        if (count % 100 == 0) {
-                            try {
-                                solrClientService.getSolrClient().add(fileDocs);
-                                solrClientService.getSolrClient().commit();
-                                fileDocs.clear();
-                            } catch (SolrServerException | IOException ex) {
-                                if (ex.getCause() instanceof SolrServerException) {
-                                    throw new SolrServerException(ex);
-                                } else if (ex.getCause() instanceof IOException) {
-                                    throw new IOException(ex);
-                                }
-                            }
-                        
-                Date  date=java.util.Calendar.getInstance().getTime();
-                System.out.print("***************Writing file docs: " + count + " " + date );
-                        }
                     }
                 }
             }
         }
-                Date  date=java.util.Calendar.getInstance().getTime();
-                System.out.print("End file check: " + date );
+
         try {
-            solrClientService.getSolrClient().add(fileDocs);
-            solrClientService.getSolrClient().commit();
+            if (!fileDocs.isEmpty()) {
+                solrClientService.getSolrClient().add(fileDocs);
+                solrClientService.getSolrClient().commit();
+            }
             solrClientService.getSolrClient().add(docs);
             solrClientService.getSolrClient().commit();
         } catch (SolrServerException | IOException ex) {
@@ -1304,8 +1257,7 @@ public class IndexServiceBean {
                 throw new IOException(ex);
             }
         }
-        date=java.util.Calendar.getInstance().getTime();
-        System.out.print("after solr service: " + date );
+
         Long dsId = dataset.getId();
         /// Dataset updatedDataset =
         /// (Dataset)dvObjectService.updateContentIndexTime(dataset);
