@@ -7,7 +7,7 @@
     -->
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>5.6</version>
+    <version>5.7</version>
     <packaging>war</packaging>
     <name>dataverse</name>
     <properties>
@@ -29,9 +29,12 @@
         <payara.version>5.2021.5</payara.version>
         <postgresql.version>42.2.19</postgresql.version>
         <aws.version>1.11.762</aws.version>
+        <slf4j.version>1.7.32</slf4j.version>
+        <commons.io.version>2.11.0</commons.io.version>
         <commons.logging.version>1.2</commons.logging.version>
         <commons.lang3.version>3.12.0</commons.lang3.version>
-        <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
+        <apache.httpcomponents.client.version>4.5.13</apache.httpcomponents.client.version>
+        <apache.httpcomponents.core.version>4.4.14</apache.httpcomponents.core.version>
         <google.cloud.version>0.157.0</google.cloud.version>
         <junit.version>4.13.1</junit.version>
         <junit.jupiter.version>5.7.0</junit.jupiter.version>
@@ -110,6 +113,18 @@
             <name>Local repository for hosting jars not available from network repositories.</name>
             <url>file://${project.basedir}/local_lib</url>
         </repository>
+        <!-- Uncomment when using snapshot releases from Maven Central
+        <repository>
+            <id>oss-sonatype</id>
+            <name>oss-sonatype</name>
+            <url>
+                https://s01.oss.sonatype.org/content/repositories/snapshots/
+            </url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        -->
     </repositories>
     <!-- Transitive dependencies, bigger library "bill of materials" (BOM) and
          versions of dependencies used both directly and transitive are managed here. -->
@@ -139,10 +154,23 @@
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons.lang3.version}</version>
             </dependency>
+            <!-- Dependency of SolrJ, DuraCloud & used by ourselves -->
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
-                <version>${httpcomponents.client.version}</version>
+                <version>${apache.httpcomponents.client.version}</version>
+            </dependency>
+            <!-- Dependency of SolrJ, Tika, RestAssured, DuraCloud - added here for convergence reasons -->
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpmime</artifactId>
+                <version>${apache.httpcomponents.client.version}</version>
+            </dependency>
+            <!-- Dependency of SolrJ, DuraCloud Store Client & used in our codebase -->
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <version>${apache.httpcomponents.core.version}</version>
             </dependency>
             <dependency>
               <groupId>com.google.cloud</groupId>
@@ -158,6 +186,56 @@
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
+            
+            <!-- Dependency of Tika, Sword2-server, JOSS (Swift), DuraCloud, Lyncode XOAI -->
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons.io.version}</version>
+            </dependency>
+            <!-- Dependency of Sword2-server, Apache POI and in our own codebase -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-compress</artifactId>
+                <version>1.21</version>
+            </dependency>
+            
+            <!-- Dependency of sword2-server and used in our codebase -->
+            <dependency>
+                <groupId>org.apache.abdera</groupId>
+                <artifactId>abdera-core</artifactId>
+                <version>1.1.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.abdera</groupId>
+                <artifactId>abdera-i18n</artifactId>
+                <version>1.1.3</version>
+            </dependency>
+    
+            <!-- Dependency of A LOT of libraries. Ensuring convergence here. -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-jdk14</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <!-- In *theory* the log4j12 bridge should not be made convergent, as WE decide which way logs flow.
+                 Libraries should *only* rely on the api package. But sometimes... :-/ -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jcl-over-slf4j</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            
         </dependencies>
     </dependencyManagement>
     <!-- Declare any DIRECT dependencies here.
@@ -166,66 +244,57 @@
     -->
     <!-- TODO: Housekeeping is utterly needed. -->
     <dependencies>
+    
+        <!-- This dependency ensures the lib is on the classpath. That way, anything coming from
+             SLF4J should flow through our usual ways of using java.util.logging.
+             (Which makes it also configurable using those mechanisms.) No direct use intended. -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+        </dependency>
+        
         <dependency>
             <groupId>org.passay</groupId>
             <artifactId>passay</artifactId>
-            <version>1.1.0</version>
+            <version>1.6.0</version>
         </dependency>
+        
+        <!-- TECHNICAL DEBT
+             For a very long time, in a lots of places people used org.apache.commons.httpclient to access
+             HTTP resources, wrap responses in exceptions etc.
+             
+             This library had been used via an transitive dependency of sword2-server. During its recent updates,
+             the dependency was dropped, went missing, eventually breaking our code. Re-adding this 2007 goodie here
+             as a direct dependency.
+             
+             There is a lot of technical debt in the codebase regarding HTTP client calls. Sometimes
+             java.net.HttpUrlConnection is used, sometimes Apache, sometimes Unirest and what not.
+             A big pile of historically grown mess. Some poor dev should take a Kleenex and call for "payback time". -->
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
-            <version>1.1.4</version>
-            <scope>test</scope>
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
+            <version>3.1</version>
         </dependency>
-        <dependency>
-            <groupId>org.skyscreamer</groupId>
-            <artifactId>jsonassert</artifactId>
-            <version>1.5.0</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.vaadin.external.google</groupId>
-                    <artifactId>android-json</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpcore</artifactId>
-            <version>4.4.9</version>
-        </dependency>
+    
         <!-- BEGIN Data Deposit API v1 (SWORD v2) -->
         <dependency>
-            <groupId>org.swordapp</groupId>
+            <groupId>io.gdcc</groupId>
             <artifactId>sword2-server</artifactId>
-            <version>1.0</version>
-            <type>jar</type>
-            <classifier>classes</classifier>
+            <version>1.2.1</version>
         </dependency>
+        <!-- Dependency to use sword2-server in our codebase -->
         <dependency>
-            <groupId>org.swordapp</groupId>
-            <artifactId>sword2-server</artifactId>
-            <!--
-            Built from https://github.com/IQSS/swordv2-java-server-library
-            to return a proper SWORD error message rather than a Glassfish
-            Exception per https://github.com/IQSS/dataverse/issues/893
-            If the fix is merged upstream at
-            https://github.com/swordapp/JavaServer2.0/issues/6
-            we can switch back to the official SWORD library.
-            -->
-            <version>1.1-SNAPSHOT</version>
-            <type>war</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>xerces</groupId>
-                    <artifactId>xercesImpl</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.apache.abdera</groupId>
+            <artifactId>abdera-core</artifactId>
+            <!-- no version here as managed in <dependencyManagement> above for convergence! -->
         </dependency>
+        <!-- Dependency to use sword2-server in our codebase -->
+        <dependency>
+            <groupId>org.apache.abdera</groupId>
+            <artifactId>abdera-i18n</artifactId>
+            <!-- no version here as managed in <dependencyManagement> above for convergence! -->
+        </dependency>
+        
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
@@ -235,30 +304,6 @@
           <groupId>com.apicatalog</groupId>
           <artifactId>titanium-json-ld</artifactId>
           <version>0.8.6</version>
-        </dependency>
-        <dependency>
-            <!-- required by org.swordapp.server.sword2-server -->
-            <groupId>org.apache.abdera</groupId>
-            <artifactId>abdera-core</artifactId>
-            <version>1.1.3</version>
-        </dependency>
-        <dependency>
-            <!-- required by org.swordapp.server.sword2-server -->
-            <groupId>org.apache.abdera</groupId>
-            <artifactId>abdera-parser</artifactId>
-            <version>1.1.3</version>
-        </dependency>
-        <dependency>
-            <!-- required by org.swordapp.server.sword2-server -->
-            <groupId>commons-fileupload</groupId>
-            <artifactId>commons-fileupload</artifactId>
-            <version>1.3.3</version>
-        </dependency>
-        <dependency>
-            <!-- a dependency of commons-fileupload, but newer version required by tika -->
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.7</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -278,13 +323,6 @@
             <artifactId>jackson-databind</artifactId>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <!-- required by org.swordapp.server.sword2-server -->
-            <groupId>com.io7m.xom</groupId>
-            <artifactId>xom</artifactId>
-            <version>1.2.10</version>
-        </dependency>
-        <!-- END Data Deposit API v1 (SWORD v2) -->
         <dependency>
             <!-- There are later versions of this lib available at jitpack.io,
                  but it seemed better to not add another repo. -->
@@ -324,6 +362,13 @@
             <version>${jakartaee-api.version}</version>
             <scope>provided</scope>
         </dependency>
+        <!-- JSON-P -->
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.json</artifactId>
+            <scope>provided</scope>
+            <!-- no version here as managed by Payara BOM above! -->
+        </dependency>
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>jakarta.mail</artifactId>
@@ -358,20 +403,22 @@
             <artifactId>jakarta.el</artifactId>
             <scope>provided</scope>
         </dependency>
+        
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <!-- no version here as managed in <dependencyManagement> above for convergence! -->
+        </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
+            <!-- no version here as managed in <dependencyManagement> above for convergence! -->
         </dependency>
         <!-- Some utils from commons.lang have been moved to commons-text (especially escapeHtml()) -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
             <version>1.9</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.solr</groupId>
-            <artifactId>solr-solrj</artifactId>
-            <version>8.8.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -381,7 +428,13 @@
         <dependency>
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
-            <version>1.6</version>
+            <version>1.7</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-solrj</artifactId>
+            <version>8.8.1</version>
         </dependency>
         <dependency>
             <groupId>colt</groupId>
@@ -463,12 +516,12 @@
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
             <artifactId>rewrite-servlet</artifactId>
-            <version>3.4.2.Final</version>
+            <version>3.5.0.Final</version>
         </dependency>
         <dependency>
             <groupId>org.ocpsoft.rewrite</groupId>
             <artifactId>rewrite-config-prettyfaces</artifactId>
-            <version>3.4.2.Final</version>
+            <version>3.5.0.Final</version>
         </dependency>
         <dependency>
             <groupId>edu.ucsb.nceas</groupId>
@@ -479,28 +532,8 @@
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.11.3</version>
+            <version>1.14.2</version>
         </dependency>
-        <!-- Added specific versionf of SLF4J jars; otherwise we end up with
-        conflicting versions of slf4j-api and slf4j-log4j12, loaded as
-        dependencies for different packages; which was causing some incompatibility
-        issues -L.A. 4.3 -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.7</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.7</version>
-        </dependency>
-        <!-- Added for DataCite -->
-        <!--dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.6.1</version>
-        </dependency -->
         <dependency>
             <groupId>io.searchbox</groupId>
             <artifactId>jest</artifactId>
@@ -584,7 +617,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.19</version>
+            <!-- no version here as managed by <dependencyManagement> above! -->
         </dependency>
         <dependency>
             <groupId>org.duracloud</groupId>
@@ -620,16 +653,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>commons-cli</groupId>
-            <artifactId>commons-cli</artifactId>
-            <version>1.2</version>
-        </dependency>
         <!--  Full text indexing -->
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-parsers</artifactId>
-            <version>1.24.1</version>
+            <version>1.27</version>
         </dependency>
         <!-- Named Entity Recognition -->
         <dependency>
@@ -669,10 +697,34 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.20.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-assertj3</artifactId>
+            <version>2.8.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.jayway.restassured</groupId>
             <artifactId>rest-assured</artifactId>
             <version>2.4.0</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.skyscreamer</groupId>
+            <artifactId>jsonassert</artifactId>
+            <version>1.5.0</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.vaadin.external.google</groupId>
+                    <artifactId>android-json</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
@@ -779,7 +831,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.1.1</version>
+                <version>3.2.0</version>
             </plugin>
             <plugin>
                 <groupId>de.qaware.maven</groupId>

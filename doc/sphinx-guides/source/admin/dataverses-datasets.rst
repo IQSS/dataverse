@@ -40,7 +40,7 @@ Recursively assigns the users and groups having a role(s),that are in the set co
  
     curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/$dataverse-alias/addRoleAssignmentsToChildren
     
-Configure a Dataverse Collection to store all new files in a specific file store
+Configure a Dataverse Collection to Store All New Files in a Specific File Store
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To direct new files (uploaded when datasets are created or edited) for all datasets in a given Dataverse collection, the store can be specified via the API as shown below, or by editing the 'General Information' for a Dataverse collection on the Dataverse collection page. Only accessible to superusers. ::
@@ -61,6 +61,36 @@ The available drivers can be listed with::
     
 (Individual datasets can be configured to use specific file stores as well. See the "Datasets" section below.)
 
+Configure a Dataverse Collection to Allow Use of a Given Curation Label Set
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Datasets within a given Dataverse collection can be annotated with a Curation Label to indicate the status of the dataset with respect to a defined curation process. Labels are completely customizable (alphanumeric or spaces, up to 32 characters, e.g. "Author contacted", "Privacy Review", "Awaiting paper publication").
+
+The label is applied to a draft Dataset version via the user interface or API and the available label sets are defined by :ref:`:AllowedCurationLabels <:AllowedCurationLabels>`. Internally, the labels have no effect, and at publication, any existing label will be removed. A reporting API call allows admins to get a list of datasets and their curation statuses.
+
+The label set used for a collection can be specified via the API as shown below, or by editing the 'General Information' for a Dataverse collection on the Dataverse collection page. Only accessible to superusers.
+
+The curationLabelSet to use within a given collection can be set by specifying its name using::
+ 
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT http://$SERVER/api/admin/dataverse/$dataverse-alias/curationLabelSet?name=$curationLabelSetName
+    
+The reserved word "DISABLED" can be used to disable this feature within a given Dataverse collection. 
+    
+The name of the current curationLabelSet can be seen using::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/$dataverse-alias/curationLabelSet
+
+and can be reset to the default (inherited from the parent collection or DISABLED for the root collection) with::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/admin/dataverse/$dataverse-alias/curationLabelSet
+    
+The available curation label sets can be listed with::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/curationLabelSets
+    
+If the :AllowedCurationLabels setting has a value, one of the available choices will always be "DISABLED" which allows curation labels to be turned off for a given collection/dataset.
+    
+Individual datasets can be configured to use specific curationLabelSets as well. See the "Datasets" section below.
 
 Datasets
 --------
@@ -134,7 +164,7 @@ Diagnose Constraint Violations Issues in Datasets
 
 To identify invalid data values in specific datasets (if, for example, an attempt to edit a dataset results in a ConstraintViolationException in the server log), or to check all the datasets in the Dataverse installation for constraint violations, see :ref:`Dataset Validation <dataset-validation-api>` in the :doc:`/api/native-api` section of the User Guide.
 
-Configure a Dataset to store all new files in a specific file store
+Configure a Dataset to Store All New Files in a Specific File Store
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Configure a dataset to use a specific file store (this API can only be used by a superuser) ::
@@ -153,4 +183,33 @@ The available drivers can be listed with::
 
     curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/storageDrivers
     
+Configure a Dataset to Allow Use of a Curation Label Set
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+A dataset can be annotated with a Curation Label to indicate the status of the dataset with respect to a defined curation process. Labels are completely customizable (alphanumeric or spaces, up to 32 characters, e.g. "Author contacted", "Privacy Review", "Awaiting paper publication").
+
+The label is applied to a draft Dataset version via the user interface or API and the available label sets are defined by :ref:`:AllowedCurationLabels <:AllowedCurationLabels>`. Internally, the labels have no effect, and at publication, any existing label will be removed. A reporting API call allows admins to get a list of datasets and their curation statuses.
+
+The label set used for a dataset can be specified via the API as shown below. Only accessible to superusers.
+ 
+The curationLabelSet to use within a given dataset can be set by specifying its name using::
+ 
+    curl -H "X-Dataverse-key: $API_TOKEN" -X PUT http://$SERVER/api/datasets/$dataset-id/curationLabelSet?name=$curationLabelSetName
+    
+The reserved word "DISABLED" can be used to disable this feature within a given Dataverse collection. 
+    
+The name of the current curationLabelSet can be seen using::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/datasets/$dataset-id/curationLabelSet
+
+and can be reset to the default (inherited from the parent collection) with (only a superuser can do this) ::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" -X DELETE http://$SERVER/api/datasets/$dataset-id/curationLabelSet
+    
+The available curationLabelSets can be listed with::
+
+    curl -H "X-Dataverse-key: $API_TOKEN" http://$SERVER/api/admin/dataverse/curationLabelSets
+    
+If the :AllowedCurationLabels setting has a value, one of the available choices will always be "DISABLED" which allows curation labels to be turned off for a given collection/dataset.
+
+Collections can be configured to use specific curationLabelSets as well. See the "Dataverse Collections" section above.
