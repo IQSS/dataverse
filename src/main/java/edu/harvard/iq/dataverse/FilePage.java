@@ -248,6 +248,10 @@ public class FilePage implements java.io.Serializable {
     private boolean canViewUnpublishedDataset() {
         return permissionsWrapper.canViewUnpublishedDataset( dvRequestService.getDataverseRequest(), fileMetadata.getDatasetVersion().getDataset());
     }
+    
+    public boolean canPublishDataset(){
+        return permissionsWrapper.canIssuePublishDatasetCommand(fileMetadata.getDatasetVersion().getDataset());
+    }
    
 
     public FileMetadata getFileMetadata() {

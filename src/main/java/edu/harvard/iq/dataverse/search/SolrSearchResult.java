@@ -8,7 +8,6 @@ import edu.harvard.iq.dataverse.DvObject;
 import edu.harvard.iq.dataverse.api.Util;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.util.DateUtil;
-import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import java.util.ArrayList;
@@ -253,6 +252,9 @@ public class SolrSearchResult {
      * @todo: used? remove
      */
     private List<String> matchedFields;
+
+    //External Status Label (enabled via AllowedCurationLabels setting)
+    private String externalStatus;
 
     /**
      * @todo: remove name?
@@ -1207,5 +1209,12 @@ public class SolrSearchResult {
         this.nameOfDataverse = id;
     }
     
-    
+    public String getExternalStatus() {
+        return externalStatus;
+    }
+
+    public void setExternalStatus(String externalStatus) {
+        this.externalStatus = externalStatus;
+        
+    }
 }

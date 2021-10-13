@@ -1271,6 +1271,10 @@ public class SearchIncludeFragment implements java.io.Serializable {
 
     }
 
+    public boolean canPublishDataset(Long datasetId){
+        return permissionsWrapper.canIssuePublishDatasetCommand(dvObjectService.findDvObject(datasetId));
+    }
+    
     public void setDisplayCardValues() {
 
         Set<Long> harvestedDatasetIds = null;

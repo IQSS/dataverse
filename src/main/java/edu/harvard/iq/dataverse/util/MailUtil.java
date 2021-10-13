@@ -61,6 +61,8 @@ public class MailUtil {
                 return BundleUtil.getStringFromBundle("notification.email.workflow.success.subject", rootDvNameAsList);
             case WORKFLOW_FAILURE:
                 return BundleUtil.getStringFromBundle("notification.email.workflow.failure.subject", rootDvNameAsList);
+            case STATUSUPDATED:
+                return BundleUtil.getStringFromBundle("notification.email.status.change.subject", rootDvNameAsList);
             case CREATEACC:
                 return BundleUtil.getStringFromBundle("notification.email.create.account.subject", rootDvNameAsList);
             case CHECKSUMFAIL:
