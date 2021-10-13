@@ -7,7 +7,7 @@
     -->
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
-    <version>5.6-qdr-dev</version>
+    <version>5.7-qdr-dev</version>
     <packaging>war</packaging>
     <name>dataverse</name>
     <properties>
