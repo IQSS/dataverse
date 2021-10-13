@@ -427,6 +427,10 @@ public class SearchServiceBean {
                 // this method also sets booleans for individual statuses
                 solrSearchResult.setPublicationStatuses(states);
             }
+            String externalStatus = (String) solrDocument.getFieldValue(SearchFields.EXTERNAL_STATUS);
+            if (externalStatus != null) {
+                solrSearchResult.setExternalStatus(externalStatus);
+            }
 //            logger.info(id + ": " + description);
             solrSearchResult.setId(id);
             solrSearchResult.setEntityId(entityid);
@@ -605,6 +609,7 @@ public class SearchServiceBean {
                 if (solrFieldNameForDataset != null && facetField.getName().equals(solrFieldNameForDataset)) {
                     metadataBlockName = datasetField.getMetadataBlock().getName() ;
                     datasetFieldName = datasetField.getName();
+                    facetCategory.setDatasetFieldTypeId(datasetField.getId());
                     break;
                 }
             }

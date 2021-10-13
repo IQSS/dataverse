@@ -171,6 +171,8 @@ public class DatasetVersion implements Serializable {
     @OneToMany(mappedBy = "datasetVersion", cascade={CascadeType.REMOVE, CascadeType.MERGE, CascadeType.PERSIST})
     private List<WorkflowComment> workflowComments;
 
+    @Column(nullable=true)
+    private String externalStatusLabel;
     
     public Long getId() {
         return this.id;
@@ -1616,6 +1618,7 @@ public class DatasetVersion implements Serializable {
 
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
+
         for (DatasetField dsf : this.getFlatDatasetFields()) {
             dsf.setValidationMessage(null); // clear out any existing validation message
             Set<ConstraintViolation<DatasetField>> constraintViolations = validator.validate(dsf);
@@ -1654,7 +1657,7 @@ public class DatasetVersion implements Serializable {
                 }
             }
         }
-        
+
         return returnSet;
     }
     
@@ -1958,6 +1961,14 @@ public class DatasetVersion implements Serializable {
 
     public String getLocaleLastUpdateTime() {
         return DateUtil.formatDate(new Timestamp(lastUpdateTime.getTime()));
+    }
+    
+    public String getExternalStatusLabel() {
+        return externalStatusLabel;
+    }
+
+    public void setExternalStatusLabel(String externalStatusLabel) {
+        this.externalStatusLabel = externalStatusLabel;
     }
 
 }
