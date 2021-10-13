@@ -233,7 +233,12 @@ body.widget-view #dataverse-header-block {padding-top:0px;}
   font-weight: bold;
   color: #101010; 
 }
-
+#dataverseHeader .dataverseHeaderName .dataverseHeaderDataverseName h1 {
+    font-weight: inherit;
+    margin-top: 5px;
+    font-size: 35px;
+    margin-bottom: 10px;
+}
 #dataverseHeader .dataverseHeaderName .dataverseHeaderDataverseName:hover,
 #dataverseHeader .dataverseHeaderName .dataverseHeaderDataverseName:focus {text-decoration: none;} 
 #dataverseHeader .dataverseHeaderName span.label.label-unpublished {vertical-align:text-top; line-height: normal; margin-left:1em;}

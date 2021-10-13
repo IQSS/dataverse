@@ -20,7 +20,9 @@
     <div class="row panelSearchForm" jsf:rendered="#{!SearchIncludeFragment.solrIsDown}">
         <div class="col-xs-12">
             <h:form> 
-                <p:inputText id="searchBasic" title="#{bundle.search}" aria-label="#{bundle.search}" styleClass="form-control search-input" size="35" value="#{SearchIncludeFragment.query}" onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
+                <p:inputText id="searchBasic" title="#{bundle.search}" styleClass="form-control search-input" size="35" value="#{SearchIncludeFragment.query}" onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }">
+                    <f:passThroughAttribute name="aria-label" value="#{bundle.search}"/>
+                </p:inputText>
                 <p:watermark for="searchBasic" value="#{dataverseRedirectPage == 'dataverseuser.xhtml' ? bundle['account.search.input.watermark'] : bundle['dataverse.search.input.watermark']}"/>
                 <p:commandLink id="searchbutton" title="#{bundle['dataverse.search.btn.find']}" styleClass="searchbutton bootstrap-button-tooltip" 
                     action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage, DataversePage.dataverse)}">
@@ -492,7 +494,8 @@
                         <div class="card-preview-icon-block text-center">
                             <h:outputLink value="#{!SearchIncludeFragment.rootDv and !result.isInTree ? dvUrl : widgetWrapper.wrapURL(dvUrl)}" target="#{!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView ? '_blank' : ''}">
                                 <img src="#{result.imageUrl}" jsf:rendered="#{!empty result.imageUrl}" alt="#{of:format1(bundle['alt.logo'], result.name)}"/>
-                                <span class="icon-dataverse text-brand" jsf:rendered="#{empty result.imageUrl}" aria-label="#{of:format1(bundle['alt.logo'], result.name)}"/>
+                                <span class="icon-dataverse text-brand" jsf:rendered="#{empty result.imageUrl}"/>
+                                <f:passThroughAttribute name="aria-label" value="#{of:format1(bundle['alt.logo'], result.name)}"/>
                             </h:outputLink>
                         </div>
 
@@ -620,10 +623,10 @@
                         </div>
 
                         <div class="card-preview-icon-block text-center">
-                            <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? (result.harvested ? result.fileDatasetUrl : result.fileUrl) : widgetWrapper.wrapURL(result.harvested ? result.fileDatasetUrl : result.fileUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">
+                            <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? (result.harvested ? result.fileDatasetUrl : result.fileUrl) : widgetWrapper.wrapURL(result.harvested ? result.fileDatasetUrl : result.fileUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}" aria-label="#{result.name}">
                                 <img src="#{result.imageUrl}" jsf:rendered="#{!empty result.imageUrl}" alt="#{result.name}"/>
                                 <span class="icon-#{dataFileServiceBean.getFileThumbnailClass(result.entity)} text-muted h1"
-                                      jsf:rendered="#{empty result.imageUrl}" aria-label="#{result.name}"/>
+                                      jsf:rendered="#{empty result.imageUrl}"/>
                             </a>
                         </div>
 
