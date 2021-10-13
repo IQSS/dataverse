@@ -20,7 +20,7 @@
     <div class="row panelSearchForm" jsf:rendered="#{!SearchIncludeFragment.solrIsDown}">
         <div class="col-xs-12">
             <h:form> 
-                <p:inputText id="searchBasic" title="#{bundle.search}" styleClass="form-control search-input" size="35" value="#{SearchIncludeFragment.query}" onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
+                <p:inputText id="searchBasic" title="#{bundle.search}" aria-label="#{bundle.search}" styleClass="form-control search-input" size="35" value="#{SearchIncludeFragment.query}" onkeypress="if (event.keyCode == 13) { submitsearch(); return false; }"/>
                 <p:watermark for="searchBasic" value="#{dataverseRedirectPage == 'dataverseuser.xhtml' ? bundle['account.search.input.watermark'] : bundle['dataverse.search.input.watermark']}"/>
                 <p:commandLink id="searchbutton" title="#{bundle['dataverse.search.btn.find']}" styleClass="searchbutton bootstrap-button-tooltip" 
                     action="#{SearchIncludeFragment.searchRedirect(dataverseRedirectPage, DataversePage.dataverse)}">
@@ -102,9 +102,7 @@
                         <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                         <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                         <f:param name="page" value="1"/>
-                        <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('dataverses') == null ? true : false}">
-                             <f:passThroughAttribute name="title" value="#{bundle['facet.collection.title']}"/>
-                        </p:selectBooleanCheckbox>
+                        <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('dataverses') == null ? true : false}" ariaLabel="#{bundle['facet.collection.label']}"/>
                     </h:outputLink>
                     <!--DATAVERSES ONLY-->
                     <h:outputLink value="#{widgetWrapper.wrapURL(page)}" disabled="#{false}" styleClass="facetTypeLink chkbox-label-margin #{SearchIncludeFragment.selectedTypesList.contains('dataverses') ? 'facetSelected': ''}">
@@ -135,9 +133,7 @@
                         <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                         <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                         <f:param name="page" value="1"/>
-                        <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('datasets') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('datasets') == null ? true : false}">
-                            <f:passThroughAttribute name="title" value="#{bundle['facet.dataset.title']}"/>
-                        </p:selectBooleanCheckbox>
+                        <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('datasets') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('datasets') == null ? true : false}" ariaLabel="#{bundle['facet.dataset.label']}"/>
                         
                     </h:outputLink>
                     <!--DATASETS ONLY-->
@@ -169,9 +165,7 @@
                         <f:param name="sort" value="#{SearchIncludeFragment.sortField}"/>
                         <f:param name="order" value="#{SearchIncludeFragment.sortOrder}"/>
                         <f:param name="page" value="1"/>
-                        <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('files') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('files') == null ? true : false}">
-                            <f:passThroughAttribute name="title" value="#{bundle['facet.datafile.title']}"/>
-                        </p:selectBooleanCheckbox>
+                        <p:selectBooleanCheckbox value="#{SearchIncludeFragment.selectedTypesList.contains('files') ? true : false}" disabled="#{SearchIncludeFragment.getNewSelectedTypes('files') == null ? true : false}" ariaLabel="#{bundle['facet.datafile.label']}"/>
                         
                     </h:outputLink>
                     <!--FILES ONLY-->
@@ -558,9 +552,9 @@
                             <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
                         </div>
                         <div class="card-preview-icon-block text-center">
-                            <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">                               
+                            <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}" aria-label="#{result.title}">
                                 <img src="#{result.imageUrl}" jsf:rendered="#{!empty result.imageUrl and !result.deaccessionedState}" alt="#{result.title}"/>
-                                <span class="icon-dataset" jsf:rendered="#{empty result.imageUrl or result.deaccessionedState}" aria-label="#{result.title}"/>
+                                <span class="icon-dataset" jsf:rendered="#{empty result.imageUrl or result.deaccessionedState}"/>
                             </a>
                         </div>
 
