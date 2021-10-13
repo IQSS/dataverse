@@ -1,3 +1,0 @@
-### Administrators can now be notified when Datasets are created
-
-A new :SendNotificationOnDatasetCreation setting has been added. When true, administrators and curators (those who could publish the dataset) will get an email/notification when a new dataset is created. This makes it easier to track activity in a Dataverse and, for example, allow admins to follow up when users do not publish a new dataset within some period of time.

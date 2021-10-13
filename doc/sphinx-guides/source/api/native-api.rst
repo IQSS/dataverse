@@ -587,7 +587,7 @@ You should expect a 200 ("OK") response and JSON output.
 Retrieve Guestbook Responses for a Dataverse Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In order to retrieve a file containing a list of Guestbook Responses in csv format for Dataverse collection, you must know either its "alias" (which the GUI calls an "identifier") or its database ID. If the Dataverse collection has more than one guestbook you may provide the id of a single guestbook as an optional parameter. If no guestbook id is provided the results returned will be the same as pressing the "Download All Responses" button on the Manage Dataset Guestbook page. If the guestbook id is provided then only those responses from that guestbook will be included.  The FILENAME parameter is optional without it the responses will be displayed in the console.
+In order to retrieve the Guestbook Responses for a Dataverse collection, you must know either its "alias" (which the GUI calls an "identifier") or its database ID. If the Dataverse collection has more than one guestbook you may provide the id of a single guestbook as an optional parameter. If no guestbook id is provided the results returned will be the same as pressing the "Download All Responses" button on the Manage Dataset Guestbook page. If the guestbook id is provided then only those responses from that guestbook will be included.  The FILENAME parameter is optional, and if it is not included, the responses will be displayed in the console.
 
 .. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of ``export`` below.
 
@@ -2783,6 +2783,115 @@ Each user can get a dump of their basic information in JSON format by passing in
     curl -H "X-Dataverse-key:$API_TOKEN" $SERVER_URL/api/users/:me    
 
 .. _pids-api:
+
+Managing Harvesting Server and Sets
+-----------------------------------
+
+This API can be used to manage the Harvesting sets that your installation makes available over OAI-PMH. For more information, see the :doc:`/admin/harvestserver` section of the Admin Guide.
+
+List All Harvesting Sets
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Shows all Harvesting Sets defined in the installation::
+
+  GET http://$SERVER/api/harvest/server/oaisets/
+
+List A Specific Harvesting Set 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Shows a Harvesting Set with a defined specname::
+
+  GET http://$SERVER/api/harvest/server/oaisets/$specname
+
+Create a Harvesting Set
+~~~~~~~~~~~~~~~~~~~~~~~
+
+To create a harvesting set you must supply a JSON file that contains the following fields: 
+
+- Name: Alpha-numeric may also contain -, _, or %, but no spaces. Must also be unique in the installation.
+- Definition: A search query to select the datasets to be harvested. For example, a query containing authorName:YYY would include all datasets where ‘YYY’ is the authorName.
+- Description: Text that describes the harvesting set. The description appears in the Manage Harvesting Sets dashboard and in API responses. This field is optional.
+
+An example JSON file would look like this::
+
+  {
+   "name":"ffAuthor",
+   "definition":"authorName:Finch, Fiona",
+   "description":"Fiona Finch’s Datasets"
+  }
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+
+  curl -H X-Dataverse-key:$API_TOKEN -X POST "$SERVER_URL/api/harvest/server/oaisets/add" --upload-file harvestset-finch.json
+
+The fully expanded example above (without the environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X POST "https://demo.dataverse.org/api/harvest/server/oaisets/add" --upload-file "harvestset-finch.json"
+
+Only users with superuser permissions may create harvesting sets.
+
+Modify an Existing Harvesting Set
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To modify a harvesting set, you must supply a JSON file that contains one or both of the following fields:
+
+- Definition: A search query to select the datasets to be harvested. For example, a query containing authorName:YYY would include all datasets where ‘YYY’ is the authorName.
+- Description: Text that describes the harvesting set. The description appears in the Manage Harvesting Sets dashboard and in API responses. This field is optional.
+
+Note that you may not modify the name of an existing harvesting set.
+
+An example JSON file would look like this::
+
+  {
+   "definition":"authorName:Finch, Fiona AND subject:trees",
+   "description":"Fiona Finch’s Datasets with subject of trees"
+  }
+
+.. note:: See :ref:`curl-examples-and-environment-variables` if you are unfamiliar with the use of export below.
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export SPECNAME=ffAuthor
+
+  curl -H X-Dataverse-key:$API_TOKEN -X PUT "$SERVER_URL/api/harvest/server/oaisets/$SPECNAME" --upload-file modify-harvestset-finch.json
+
+The fully expanded example above (without the environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X PUT "https://demo.dataverse.org/api/harvest/server/oaisets/ffAuthor" --upload-file "modify-harvestset-finch.json"
+
+Only users with superuser permissions may modify harvesting sets.
+
+Delete an Existing Harvesting Set
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To delete a harvesting set, use the set's database name. For example, to delete an existing harvesting set whose database name is "ffAuthor":
+
+.. code-block:: bash
+
+  export API_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  export SERVER_URL=https://demo.dataverse.org
+  export SPECNAME=ffAuthor
+
+  curl -H X-Dataverse-key:$API_TOKEN -X DELETE "$SERVER_URL/api/harvest/server/oaisets/$SPECNAME"
+
+The fully expanded example above (without the environment variables) looks like this:
+
+.. code-block:: bash
+
+  curl -H "X-Dataverse-key:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -X DELETE "https://demo.dataverse.org/api/harvest/server/oaisets/ffAuthor"
+
+Only users with superuser permissions may delete harvesting sets.
 
 PIDs
 ----
