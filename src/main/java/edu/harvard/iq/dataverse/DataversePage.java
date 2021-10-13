@@ -25,6 +25,7 @@ import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import static edu.harvard.iq.dataverse.util.JsfHelper.JH;
+import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
@@ -96,6 +97,8 @@ public class DataversePage implements java.io.Serializable {
     ControlledVocabularyValueServiceBean controlledVocabularyValueServiceBean;
     @EJB
     SavedSearchServiceBean savedSearchService;
+    @EJB
+    SystemConfig systemConfig;
     @EJB DataverseRoleServiceBean dataverseRoleServiceBean;
     @Inject
     SearchIncludeFragment searchIncludeFragment;
