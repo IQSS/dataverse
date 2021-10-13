@@ -184,7 +184,7 @@ While most of the information in this guide focuses on service and backing beans
 
 .. _avoid-efficiency-issues-with-render-logic-expressions:
 
-Avoiding Inefficiencies in JSF render logic
+Avoiding Inefficiencies in JSF Render Logic
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 It is important to keep in mind that the expressions in JSF ``rendered=`` attributes may be evaluated **multiple** times. So it is crucial not to use any expressions that require database lookups, or otherwise take any appreciable amount of time and resources. Render attributes should exclusively contain calls to methods in backing beans or caching service wrappers that perform any real work on the first call only, then keep returning the cached result on all the consecutive calls. This way it is irrelevant how many times PrimeFaces may need to call the method as any effect on the performance will be negligible.
