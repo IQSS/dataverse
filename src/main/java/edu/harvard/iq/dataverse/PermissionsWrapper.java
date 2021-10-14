@@ -68,13 +68,12 @@ public class PermissionsWrapper implements java.io.Serializable {
         }
 
         if (checkDvoCacheForCommandAuthorization(dvo.getId(), CreateDataverseCommand.class, commandMap) == null) {
-            boolean canIssueCommand = false;
-            canIssueCommand = permissionService.requestOn(dvRequestService.getDataverseRequest(), dvo).canIssue(command);
-            logger.info("rerieved authorization for " + command.toString() + " on dvo " + dvo.getId());
+            boolean canIssueCommand = permissionService.requestOn(dvRequestService.getDataverseRequest(), dvo).canIssue(command);
+            logger.fine("retrieved authorization for " + command.toString() + " on dvo " + dvo.getId());
 
             addCommandAuthorizationToDvoCache(dvo.getId(), CreateDataverseCommand.class, commandMap, canIssueCommand);
         } else {
-            logger.info("using cached authorization for " + command.toString() + " on dvo " + dvo.getId());
+            logger.fine("using cached authorization for " + command.toString() + " on dvo " + dvo.getId());
         }
         return checkDvoCacheForCommandAuthorization(dvo.getId(), CreateDataverseCommand.class, commandMap);
     }
@@ -269,16 +268,11 @@ public class PermissionsWrapper implements java.io.Serializable {
             return false;
         }
         if (checkDvoCacheForCommandAuthorization(dataverse.getId(), CreateNewDatasetCommand.class, authUsersCommandMap) == null) {
-            boolean canIssueCommand = false;
-            try {
-                canIssueCommand = permissionService.userOn(AuthenticatedUsers.get(),dataverse).canIssueCommand("CreateNewDatasetCommand");
-                logger.info("rerieved auth users can create datasets");
-            } catch (ClassNotFoundException ex) {
-                logger.info("ClassNotFoundException checking if authenticated users can create datasets in dataverse.");
-            }
+            boolean canIssueCommand = permissionService.isUserAllowedOn(AuthenticatedUsers.get(), CreateNewDatasetCommand.class, dataverse);
+            logger.fine("retrieved auth users can create datasets");
             addCommandAuthorizationToDvoCache(dataverse.getId(), CreateNewDatasetCommand.class, authUsersCommandMap, canIssueCommand);
         } else {
-            logger.info("using cached authUsersCanCreateDatasetsInDataverse result");
+            logger.fine("using cached authUsersCanCreateDatasetsInDataverse result");
         }
         return checkDvoCacheForCommandAuthorization(dataverse.getId(), CreateNewDatasetCommand.class, authUsersCommandMap);
     }
@@ -288,16 +282,11 @@ public class PermissionsWrapper implements java.io.Serializable {
             return false;
         }
         if (checkDvoCacheForCommandAuthorization(dataverse.getId(), CreateDataverseCommand.class, authUsersCommandMap) == null) {
-            boolean canIssueCommand = false;
-            try {
-                canIssueCommand = permissionService.userOn(AuthenticatedUsers.get(),dataverse).canIssueCommand("CreateDataverseCommand");
-                logger.info("rerieved auth users can create dataverses");
-            } catch (ClassNotFoundException ex) {
-                logger.info("ClassNotFoundException checking if authenticated users can create dataverses in dataverse.");
-            }
+            boolean canIssueCommand = permissionService.isUserAllowedOn(AuthenticatedUsers.get(), CreateDataverseCommand.class, dataverse);
+            logger.fine("retrieved auth users can create dataverses");
             addCommandAuthorizationToDvoCache(dataverse.getId(), CreateDataverseCommand.class, authUsersCommandMap, canIssueCommand);
         } else {
-            logger.info("using cached authUsersCanCreateDataversesInDataverse result");
+            logger.fine("using cached authUsersCanCreateDataversesInDataverse result");
         }
         return checkDvoCacheForCommandAuthorization(dataverse.getId(), CreateDataverseCommand.class, authUsersCommandMap);
     }
