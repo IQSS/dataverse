@@ -2382,12 +2382,11 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         createDataverseResponse.prettyPrint();
         String dataverseAlias = UtilIT.getAliasFromResponse(createDataverseResponse);
 
-        SystemConfig systemConfig = Mockito.mock(SystemConfig.class);
-        Map<String, String[]> labelSets = new HashMap<String, String[]>();
-        labelSets.put("StandardProcess", new String[] { "Author contacted", "Privacy Review", "Awaiting paper publication", "Final Approval"});
-        labelSets.put("AlternateProcess", new String[] {"State 1","State 2","State 3"});
-        Mockito.when(systemConfig.getCurationLabels()).thenReturn(labelSets);
-
+        Response setCurationLabelSets = UtilIT.setSetting(SettingsServiceBean.Key.AllowedCurationLabels, "{\"StandardProcess\":[\"Author contacted\", \"Privacy Review\", \"Awaiting paper publication\", \"Final Approval\"],\"AlternateProcess\":[\"State 1\",\"State 2\",\"State 3\"]}");
+        setCurationLabelSets.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        
         //Set curation label set on dataverse
         //Valid option, bad user
         Response setDataverseCurationLabelSetResponse = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "AlternateProcess");
