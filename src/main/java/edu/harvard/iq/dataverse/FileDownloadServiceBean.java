@@ -541,11 +541,12 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         }
                 
         if (location != null && fileName != null) {
-            em.createNativeQuery("INSERT INTO CUSTOMZIPSERVICEREQUEST (KEY, STORAGELOCATION, FILENAME, ISSUETIME) VALUES ("
-                    + "'" + key + "',"
-                    + "'" + location + "',"
-                    + "'" + fileName + "',"
-                    + "'" + timestamp + "');").executeUpdate();
+            em.createNativeQuery("INSERT INTO CUSTOMZIPSERVICEREQUEST (KEY, STORAGELOCATION, FILENAME, ISSUETIME) VALUES (?1,?2,?3,?4);")
+                    .setParameter(1,key)
+                    .setParameter(2,location)
+                    .setParameter(3,fileName)
+                    .setParameter(4,timestamp)
+                    .executeUpdate();
         }
         
         // TODO:

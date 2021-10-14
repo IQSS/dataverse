@@ -107,6 +107,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.RestrictFileCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.SetCurationStatusCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
 import edu.harvard.iq.dataverse.externaltools.ExternalTool;
 import edu.harvard.iq.dataverse.externaltools.ExternalToolServiceBean;
@@ -5545,5 +5546,26 @@ public class DatasetPage implements java.io.Serializable {
 
     public String getFieldLanguage(String languages) {
         return fieldService.getFieldLanguage(languages,session.getLocaleCode());
+    }
+    
+    public void setExternalStatus(String status) {
+        try {
+            dataset = commandEngine.submit(new SetCurationStatusCommand(dvRequestService.getDataverseRequest(), dataset, status));
+            workingVersion=dataset.getLatestVersion();
+            if (status == null || status.isEmpty()) {
+                JsfHelper.addInfoMessage(BundleUtil.getStringFromBundle("dataset.externalstatus.removed"));
+            } else {
+                JH.addMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.externalstatus.header"), BundleUtil.getStringFromBundle("dataset.externalstatus.info", Arrays.asList(status)));
+            }
+
+        } catch (CommandException ex) {
+            String msg = BundleUtil.getStringFromBundle("dataset.externalstatus.cantchange");
+            logger.warning("Unable to change external status to " + status + " for dataset id " + dataset.getId() + ". Message to user: " + msg + " Exception: " + ex);
+            JsfHelper.addErrorMessage(msg);
+        }
+    }
+    
+    public List<String> getAllowedExternalStatuses() {
+        return settingsWrapper.getAllowedExternalStatuses(dataset);
     }
 }
