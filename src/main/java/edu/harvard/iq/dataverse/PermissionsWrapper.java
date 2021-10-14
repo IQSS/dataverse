@@ -259,36 +259,30 @@ public class PermissionsWrapper implements java.io.Serializable {
     // root collection. For the "Add Data" menu further in the search include fragment
     // if the user is not logged in, the page will check if authenticated users can 
     // add dataverses and datasets in the *current* dataverse. 
-    // These are not very expensive operations - but it'll add up quickly, if the 
-    // page keeps asking for these repeatedly. So these values absolutely need to be
-    // cached. 
+    // These are not very expensive operations - but each take about 10 database queries, 
+    // and it'll add up quickly, if the page keeps evaluating the expressions repeatedly. 
+    // So these values absolutely need to be cached too. 
     
-    public boolean authUsersCanCreateDatasetsInDataverse(Dataverse dataverse) {
-        if (dataverse == null || dataverse.getId() == null) {
+    public boolean authenticatedUsersCanIssueCommand(DvObject dvo, Class<? extends Command<?>> command) {
+        if (dvo == null || dvo.getId() == null || command == null) {
             return false;
         }
-        if (checkDvoCacheForCommandAuthorization(dataverse.getId(), CreateNewDatasetCommand.class, authUsersCommandMap) == null) {
-            boolean canIssueCommand = permissionService.isUserAllowedOn(AuthenticatedUsers.get(), CreateNewDatasetCommand.class, dataverse);
-            logger.fine("retrieved auth users can create datasets");
-            addCommandAuthorizationToDvoCache(dataverse.getId(), CreateNewDatasetCommand.class, authUsersCommandMap, canIssueCommand);
+        if (checkDvoCacheForCommandAuthorization(dvo.getId(), command, authUsersCommandMap) == null) {
+            boolean canIssueCommand = permissionService.isUserAllowedOn(AuthenticatedUsers.get(), command, dvo);
+            logger.fine("retrieved the authorization for authenticated users to issue "+command.toString());
+            addCommandAuthorizationToDvoCache(dvo.getId(), command, authUsersCommandMap, canIssueCommand);
         } else {
-            logger.fine("using cached authUsersCanCreateDatasetsInDataverse result");
+            logger.fine("using cached authorization for authenticated users to issue "+command.toString());
         }
-        return checkDvoCacheForCommandAuthorization(dataverse.getId(), CreateNewDatasetCommand.class, authUsersCommandMap);
+        return checkDvoCacheForCommandAuthorization(dvo.getId(), command, authUsersCommandMap);
+    }
+    
+    public boolean authUsersCanCreateDatasetsInDataverse(Dataverse dataverse) {
+        return authenticatedUsersCanIssueCommand(dataverse, CreateNewDatasetCommand.class);
     }
     
     public boolean authUsersCanCreateDataversesInDataverse(Dataverse dataverse) {
-        if (dataverse == null || dataverse.getId() == null) {
-            return false;
-        }
-        if (checkDvoCacheForCommandAuthorization(dataverse.getId(), CreateDataverseCommand.class, authUsersCommandMap) == null) {
-            boolean canIssueCommand = permissionService.isUserAllowedOn(AuthenticatedUsers.get(), CreateDataverseCommand.class, dataverse);
-            logger.fine("retrieved auth users can create dataverses");
-            addCommandAuthorizationToDvoCache(dataverse.getId(), CreateDataverseCommand.class, authUsersCommandMap, canIssueCommand);
-        } else {
-            logger.fine("using cached authUsersCanCreateDataversesInDataverse result");
-        }
-        return checkDvoCacheForCommandAuthorization(dataverse.getId(), CreateDataverseCommand.class, authUsersCommandMap);
+        return authenticatedUsersCanIssueCommand(dataverse, CreateDataverseCommand.class);
     }
     
     // todo: move any calls to this to call NavigationWrapper   
