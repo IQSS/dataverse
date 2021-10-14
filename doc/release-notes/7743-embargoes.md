@@ -7,4 +7,4 @@ Embargoes can only be set/changed/removed before a file has been published. (Adm
 
 * While embargoed, files cannot be previewed or downloaded (as if restricted, with no option to allow access requests). After the embargo expires, files become accessible. (If the were also restricted, they remain inacessible and functionality is the same as for any restricted file.)
 
-* By default, the citation date reported for the dataset and the datafiles in version 1.0 reflect the longest embargo period on any file in version 1.0, which is consistent with recommended practice from DataCite. Administrators can still specify an alternate date field to be used in the citation date via the <blank> setting.
+* By default, the citation date reported for the dataset and the datafiles in version 1.0 reflect the longest embargo period on any file in version 1.0, which is consistent with recommended practice from DataCite. Administrators can still specify an alternate date field to be used in the citation date via the <a href="https://guides.dataverse.org/en/latest/api/native-api.html#set-citation-date-field-type-for-a-dataset">Set Citation Date Field Type for a Dataset API Call</a>.
