@@ -2106,7 +2106,7 @@ public class FileUtil implements java.io.Serializable  {
         Embargo e = df.getEmbargo();
         if (e != null) {
             LocalDate endDate = e.getDateAvailable();
-            if (endDate.isAfter(LocalDate.now())) {
+            if (endDate != null && endDate.isAfter(LocalDate.now())) {
                 return true;
             }
         }

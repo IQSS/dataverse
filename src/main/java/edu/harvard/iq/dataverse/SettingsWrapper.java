@@ -29,6 +29,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.validator.ValidatorException;
 import javax.faces.view.ViewScoped;
@@ -350,6 +351,18 @@ public class SettingsWrapper implements java.io.Serializable {
     
     public void validateEmbargoDate(FacesContext context, UIComponent component, Object value)
             throws ValidatorException {
+        UIComponent cb = component.findComponent("embargoCheckbox");
+        UIInput endComponent = (UIInput) cb;
+        boolean removedState = false;
+        if (endComponent != null) {
+            removedState = (Boolean) endComponent.getSubmittedValue();
+        }
+        if (!removedState && value == null) {
+            String msgString = BundleUtil.getStringFromBundle("embargo.date.required");
+            FacesMessage msg = new FacesMessage(msgString);
+            msg.setSeverity(FacesMessage.SEVERITY_ERROR);
+            throw new ValidatorException(msg);
+        }
         Embargo newE = new Embargo(((LocalDate) value), null);
         if (!isValidEmbargoDate(newE)) {
             String minDate = getMinEmbargoDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
