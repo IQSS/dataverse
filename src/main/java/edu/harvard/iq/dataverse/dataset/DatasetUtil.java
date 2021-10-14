@@ -151,7 +151,7 @@ public class DatasetUtil {
         } else {
             DataFile thumbnailFile = dataset.getThumbnailFile();
 
-            if (thumbnailFile.isRestricted() || FileUtil.isActivelyEmbargoed(thumbnailFile)) {
+            if (thumbnailFile !=null && (thumbnailFile.isRestricted() || FileUtil.isActivelyEmbargoed(thumbnailFile))) {
                 logger.fine("Dataset (id :" + dataset.getId() + ") has a thumbnail (user selected or automatically chosen) but the file must have later been restricted or embargoed. Returning null.");
                 thumbnailFile= null;
             }
