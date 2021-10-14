@@ -3556,7 +3556,7 @@ Validate an existing check sum value against one newly calculated from the saved
 Physical Files Validation in a Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The following validates all the physical files in the dataset spcified, by recalculating the checksums and comparing them against the values saved in the database::
+The following validates all the physical files in the dataset specified, by recalculating the checksums and comparing them against the values saved in the database::
 
   $SERVER_URL/api/admin/validate/dataset/files/{datasetId}
 
