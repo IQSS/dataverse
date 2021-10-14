@@ -2412,7 +2412,8 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         response.then().assertThat().statusCode(OK.getStatusCode());
         //Verify that the set name is what was set on the dataverse
         String labelSetName = getData(response.getBody().asString());
-        assertEquals("AlternateProcess", labelSetName);
+        // full should be {"message":"AlternateProcess"}
+        assertTrue(labelSetName.contains("AlternateProcess"));
         
         // Now set a label
         //Option from the wrong set
