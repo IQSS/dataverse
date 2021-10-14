@@ -2397,11 +2397,11 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         assertEquals(200, makeSuperUser.getStatusCode());
 
         //Non-existent option
-        setDataverseCurationLabelSetResponse = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "OddProcess");
-        setDataverseCurationLabelSetResponse.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        Response setDataverseCurationLabelSetResponse2 = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "OddProcess");
+        setDataverseCurationLabelSetResponse2.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
         //Valid option, superuser
-        setDataverseCurationLabelSetResponse = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "AlternateProcess");
-        setDataverseCurationLabelSetResponse.then().assertThat().statusCode(OK.getStatusCode());
+        Response setDataverseCurationLabelSetResponse3 = UtilIT.setDataverseCurationLabelSet(dataverseAlias, apiToken, "AlternateProcess");
+        setDataverseCurationLabelSetResponse3.then().assertThat().statusCode(OK.getStatusCode());
 
         
         // Create a dataset using native api
@@ -2417,11 +2417,11 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
         
         // Now set a label
         //Option from the wrong set
-        response = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "Author contacted");
-        response.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
+        Response response2 = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "Author contacted");
+        response2.then().assertThat().statusCode(BAD_REQUEST.getStatusCode());
         // Valid option
-        response = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "State 1");
-        response.then().assertThat().statusCode(OK.getStatusCode());
+        Response response3 = UtilIT.setDatasetCurationLabel(datasetId, apiToken, "State 1");
+        response3.then().assertThat().statusCode(OK.getStatusCode());
     }
 
     private String getData(String body) {
