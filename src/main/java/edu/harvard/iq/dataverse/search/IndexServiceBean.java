@@ -715,7 +715,6 @@ public class IndexServiceBean {
         Dataset dataset = indexableDataset.getDatasetVersion().getDataset();
         logger.fine("adding or updating Solr document for dataset id " + dataset.getId());
         Collection<SolrInputDocument> docs = new ArrayList<>();
-        Collection<SolrInputDocument> fileDocs = new ArrayList<>();
         SolrInputDocument solrInputDocument = new SolrInputDocument();
         String datasetSolrDocId = indexableDataset.getSolrDocId();
         solrInputDocument.addField(SearchFields.ID, datasetSolrDocId);
@@ -1237,17 +1236,13 @@ public class IndexServiceBean {
 
                     if (indexableDataset.isFilesShouldBeIndexed()) {
                         filesIndexed.add(fileSolrDocId);
-                        fileDocs.add(datafileSolrInputDocument);
+                        docs.add(datafileSolrInputDocument);
                     }
                 }
             }
         }
 
         try {
-            if (!fileDocs.isEmpty()) {
-                solrClientService.getSolrClient().add(fileDocs);
-                solrClientService.getSolrClient().commit();
-            }
             solrClientService.getSolrClient().add(docs);
             solrClientService.getSolrClient().commit();
         } catch (SolrServerException | IOException ex) {
