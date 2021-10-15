@@ -51,3 +51,211 @@ where +
 "c78323bf-d1e0-4058-b5c4-bdc74b69f42f" is an API key, +
 "doi:10.33563/FK2/POMAFL" is a DatasetId, +
 "payload_otherId.json" is the file name of a payload (json file)
+
+== DatasetField-related Relationships 
+=== An example
+
+* DatasetField Table stores relationships among DatasetVersion, DatasetFieldType, parent-child-relationships within DatasetFields
+** each DatasetField's row has non-null cell of DatasetFieldType and it tells its type
+
+** A parent DatasetField's row has a non-null cell of DatasetVersion
+*** Top parent field such as "otherId" appears once for a given DatasetVersion value on the table (e.g., id=38, datasetfieldtype=5)
+
+** A child DatasetFields's row has a non-null cell of the column (parentdatasetfieldcompoundvalue) that tabulate each DatasetField row's relationships with other rows on the table
+*** A child field such as "otherIdAgency" can appear multiple times (e.g., id=40, datasetfieldtype_id=6, id=47, datasetfieldtype_id=6)
++
+----
+# DatasetField Table
+
+
+id|datasetfieldtype_id|datasetversion_id|parentdatasetfieldcompoundvalue_id|template_id|
+--+-------------------+-----------------+----------------------------------+-----------+
+ 1|                  8|                1|                                  |           |
+ 2|                 13|                1|                                  |           |
+ 3|                 17|                1|                                  |           |
+ 4|                 57|                1|                                  |           |
+ 5|                  9|                 |                                 1|           |
+ 6|                 18|                 |                                 3|           |
+ 7|                 16|                 |                                 2|           |
+ 8|                  1|                1|                                  |           |
+ 9|                 14|                 |                                 2|           |
+10|                 20|                1|                                  |           |
+11|                 13|                2|                                  |           |
+12|                  8|                2|                                  |           |
+13|                 17|                2|                                  |           |
+14|                 16|                 |                                 4|           |
+15|                 18|                 |                                 6|           |
+16|                 20|                2|                                  |           |
+17|                 14|                 |                                 4|           |
+18|                  9|                 |                                 5|           |
+19|                  1|                2|                                  |           |
+20|                 10|                 |                                 5|           |
+21|                 13|                3|                                  |           |
+22|                  8|                3|                                  |           |
+23|                 17|                3|                                  |           |
+26|                 14|                 |                                 7|           |
+27|                 16|                 |                                 7|           |
+28|                 18|                 |                                 9|           |
+29|                 58|                3|                                  |           |
+30|                 20|                3|                                  |           |
+32|                  1|                3|                                  |           |
+33|                  9|                 |                                 8|           |
+34|                 10|                 |                                 8|           |
+35|                 15|                 |                                 7|           |
+36|                 57|                3|                                  |           |
+37|                 34|                3|                                  |           |
+
+38|                  5|                3|                                  |           |
+
+39|                  7|                 |                                11|           |
+40|                  6|                 |                                11|           |
+
+46|                  7|                 |                                14|           |
+47|                  6|                 |                                14|           |
+
+48|                  7|                 |                                15|           |
+49|                  6|                 |                                15|           |
+
+
+50|                 29|                3|                                  |           |
+51|                 44|                3|                                  |           |
+52|                 11|                 |                                 8|           |
+53|                 31|                 |                                16|           |
+54|                  2|                3|                                  |           |
+55|                 45|                 |                                17|           |
+----
+
+
+* DatasetFieldType Table stores each field's definition and parent-child relationships
+** otherId:p/otherIdAgency:c/otherIdValue:c 
++
+----
+# DatasetFieldType Table
+
+id ||allowmultiples|description                                        |displayformat |displayoncreate|displayorder|facetable|fieldtype|name             |required|title            | |||metadatablock_id|parentdatasetfieldtype_id
+---++--------------+---------------------------------------------------+--------------+---------------+------------+---------+---------+-----------------+--------+-----------------+-+++----------------+-------------------------
+
+  5||true          |Another unique identifier that identifies this Dat |:             |false          |           4|false    |NONE     |otherId          |false   |Other ID         | |||               1|                         
+  6||false         |Name of agency which generated this identifier.    |#VALUE        |false          |           5|false    |TEXT     |otherIdAgency    |false   |Agency           | |||               1|                        5
+  7||false         |Other identifier that corresponds to this Dataset. |#VALUE        |false          |           6|false    |TEXT     |otherIdValue     |false   |Identifier       | |||               1|                        5
+
+----
+* datasetfieldcompoundvalue Table
++
+----
+# Joint Table: datasetfieldcompoundvalue
+
+id|displayorder|parentdatasetfield_id|
+--+------------+---------------------+
+ 1|           0|                    1|
+ 2|           0|                    2|
+ 3|           0|                    3|
+ 4|           0|                   11|
+ 5|           0|                   12|
+ 6|           0|                   13|
+ 7|           0|                   21|
+ 8|           0|                   22|
+ 9|           0|                   23|
+
+11|           0|                   38|
+14|           1|                   38|
+15|           2|                   38|
+
+16|           0|                   50|
+17|           0|                   51|
+
+
+----
+
+* DatasetFieldValue Table stores an entered value for each field.
++
+----
+# DatasetFieldValue Table
+
+id|displayorder|value                                                          |datasetfield_id|
+--+------------+---------------------------------------------------------------+---------------+
+ 1|           0|spruce@mailinator.com                                          |              7|
+ 2|           0|Spruce, Sabrina                                                |              5|
+ 3|           0|What the Spruce Goose was really made of.                      |              6|
+ 4|           0|Spruce, Sabrina                                                |              4|
+ 5|           0|Sabrina Spruce                                                 |              9|
+ 6|           0|Spruce Goose                                                   |              8|
+ 7|           0|finch@mailinator.com                                           |             14|
+ 8|           0|Finch, Fiona                                                   |             17|
+ 9|           0|Finch, Fiona                                                   |             18|
+10|           0|Darwin's finches (also known as the Galápagos finches) are a gr|             15|
+11|           0|Darwin's Finches                                               |             19|
+12|           0|Birds Inc.                                                     |             20|
+14|           0|Dataverse.org                                                  |             35|
+15|           0|Dataverse.org                                                  |             34|
+16|           0|testing an OtherID                                             |             28|
+17|           0|Admin, Dataverse                                               |             36|
+18|           0|2021-09-17                                                     |             29|
+19|           0|dataverse@mailinator.com                                       |             27|
+20|           0|Admin, Dataverse                                               |             33|
+21|           0|Admin, Dataverse                                               |             26|
+22|           0|trsa test dataset for otherID                                  |             32|
+
+23|           0|1bb30a949033d087a9dd519da90ad8dc32f93a25                       |             39|
+24|           0|ImPACT Notary Service                                          |             40|
+
+25|           0|ImPACT Notary Service2                                         |             47|
+26|           0|23110e7b94ad734bea01329497ab48e4                               |             46|
+
+27|           0|515cdf76a430a3aedf561e0a765154a6                               |             48|
+28|           0|ImPACT Notary Service3                                         |             49|
+
+13|           0|This dataset is going to have an otherId.; subtitle was added; |             37|
+29|           0|how otherID: get and set actions                               |             54|
+
+
+
+----
+
+=== How access a row of DatasetFieldValue Table?
+* backward-way retrieval logic
+. datasetfieldvalue#value: ImPACT Notary Service
+. datasetfieldvalue#dat#datasetfield_id: 40
+
+. get DatasetField#parentdatasetfieldcompoundvalue_id=11, 14, 15 => 11:(7:39, 6:40), 14:(7:46, 6:47), 15:(7:48, 6:49) 
+. get all rows whose datasetfieldcompoundvalue#parentdatasetfield_id==38 => id=11, 14, 15
+. get DatasetField#datasetfieldtype_id==5 => id=38
+. get the row whose DatasetField#datasetfieldtype_id==5 for the given datasetversion_id
+. get the version of DatasetVersion you want to access, e.g., datasetversion_id==3
+
+* based on the actual coding 
+
+. DatasetVersion must be determined: this decides which set of fields to be retrieved from DatasetField Table
+[source, Java]
+----
+// first loop: for each DatasetField whose DatasetVersion is given
+for (DatasetField dsf : datasetVersion.getDatasetFields()) {
+
+}
+// find for a particular parent field-name
+if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.otherId)) {
+}
+// loop through its children keys
+for (DatasetFieldCompoundValue relPubVal : dsf.getDatasetFieldCompoundValues()) {
+}
+// loop through linked children datasetfields
+for (DatasetField subField : relPubVal.getChildDatasetFields()) {
+  if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.otherIdValue) {
+      // subField.getValue() contains the value
+  }
+  if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.otherIdAgency) {
+       // subField.getValue() contain the value
+  }
+  // create otherId and set values 
+
+}
+
+
+----
+
+
+
+
+
+==== remaining questions
+* how to find a correct one if there are multiple-otherIDs

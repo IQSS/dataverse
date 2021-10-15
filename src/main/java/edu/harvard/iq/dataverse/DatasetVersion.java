@@ -3,6 +3,7 @@ package edu.harvard.iq.dataverse;
 import edu.harvard.iq.dataverse.util.MarkupChecker;
 import edu.harvard.iq.dataverse.DatasetFieldType.FieldType;
 import edu.harvard.iq.dataverse.branding.BrandingUtil;
+import edu.harvard.iq.dataverse.trsa.OtherId;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -1960,4 +1961,42 @@ public class DatasetVersion implements Serializable {
         return DateUtil.formatDate(new Timestamp(lastUpdateTime.getTime()));
     }
 
+    
+    
+    // Odum extensions
+    public List<OtherId> getOtherIds(){
+        logger.log(Level.INFO, "DatasetVersion#getOtherIds() starts here");
+        List<OtherId> idList = new ArrayList<>();
+        
+        for (DatasetField dsf : this.getDatasetFields()){
+            
+            if (dsf.getDatasetFieldType().getName().equals(DatasetFieldConstant.otherId)) {
+                logger.log(Level.INFO, "matched fieldType={0}", dsf.getDatasetFieldType().getName());
+                OtherId oi = null;
+                for (DatasetFieldCompoundValue otherId : dsf.getDatasetFieldCompoundValues()) {
+                    oi = new OtherId();
+                    for (DatasetField subField : otherId.getChildDatasetFields()) {
+                        logger.log(Level.INFO, "matched sub-DatasetField={0}", subField.getDatasetFieldType().getName());
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.otherIdAgency)){
+                            logger.log(Level.INFO, "IdAgency={0}", subField.getValue());
+                            oi.setIdAgency(subField.getValue());
+                        }
+                        if (subField.getDatasetFieldType().getName().equals(DatasetFieldConstant.otherIdValue)){
+                            logger.log(Level.INFO, "IdValue={0}", subField.getValue());
+                            oi.setIdValue(subField.getValue());
+                        }
+                    }
+                    idList.add(oi);
+                }
+                
+            }
+
+            
+        }
+        logger.log(Level.INFO, "before leaving DatasetVersion#getOtherIds={0}", idList);
+        return idList;
+    }
+    
+    
+    
 }

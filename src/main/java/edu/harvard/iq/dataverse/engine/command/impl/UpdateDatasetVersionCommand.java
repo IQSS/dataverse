@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+import edu.harvard.iq.dataverse.trsa.OtherId;
 import edu.harvard.iq.dataverse.util.FileMetadataUtil;
 
 import java.io.IOException;
@@ -259,6 +260,15 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 DatasetVersionDifference dvd = new DatasetVersionDifference(editVersion, clone);
                 AuthenticatedUser au = (AuthenticatedUser) getUser();
                 ctxt.datasetVersion().writeEditVersionLog(dvd, au);
+            }
+            
+            logger.log(Level.INFO, "within UpdateDatasetVersionCommand#exec: checking otherIds");
+            List<OtherId> oi = editVersion.getOtherIds();
+            logger.log(Level.INFO, "otherId list: size={0}", oi.size());
+            if (!oi.isEmpty()){
+                logger.log(Level.INFO, "other ID list={0}", oi);
+            } else {
+                logger.log(Level.INFO, "oi is empty");
             }
         } finally {
             // We're done making changes - remove the lock...

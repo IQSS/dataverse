@@ -18,6 +18,7 @@ import edu.harvard.iq.dataverse.makedatacount.MakeDataCountLoggingServiceBean.Ma
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrlServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+//import edu.harvard.iq.dataverse.trsa.OtherId;
 import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
 import java.io.IOException;
@@ -199,7 +200,8 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             if (isNSBound){
                 // NS case: forwarding the NS server
                 logger.log(Level.INFO, "========== FileDownloadServiceBean#writeGuestbookAndStartFileDownload: NS case: start ==========");
-                logger.log(Level.INFO, "========== FileDownloadServiceBean#writeGuestbookAndStartFileDownload: NS case: end ==========");
+                //List<OtherId> otherIdList = fileMetadata.getDatasetVersion().getOtherIds();
+                //logger.log(Level.INFO, "otherIdList:size={0}", otherIdList.size());
                 // how to call the sever info that is
                 String nsServerURL = fileMetadata.getDatasetVersion().getDataset().getTrsa().getNotaryserviceurl();
                 logger.log(Level.INFO, "nsServerURL={0}", nsServerURL);
@@ -209,7 +211,6 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             } else {
                 // non-NS case: forwarding file-server
                 logger.log(Level.INFO, "========== FileDownloadServiceBean#writeGuestbookAndStartFileDownload: nonNS case: start ==========");
-                logger.log(Level.INFO, "========== FileDownloadServiceBean#writeGuestbookAndStartFileDownload: nonNS case: end ==========");
                 String datafileServerURl = fileMetadata.getDatasetVersion().getDataset().getTrsa().getDatafileserverurl();
                 String doi = fileMetadata.getDatasetVersion().getDataset().getStorageIdentifier();
                 logger.log(Level.INFO, "doi={0}", doi);

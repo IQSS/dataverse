@@ -32,7 +32,7 @@ ns -> wb: response: registration success message
 
 == Diagram 2: Datafile-downloading
 [plantuml]
-.....
+....
 @startuml
 title Communications between Dataverse and Notary Service: 2. Datafile-downloading request 
 actor Researcher as rs
