@@ -15,6 +15,7 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseRequestServiceBean;
+import edu.harvard.iq.dataverse.DataverseRoleServiceBean;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DataverseSession;
 import edu.harvard.iq.dataverse.DvObject;
@@ -71,6 +72,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.RemoveLockCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ReturnDatasetToAuthorCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SetDatasetCitationDateCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.SetCurationStatusCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.SubmitDatasetForReviewCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetTargetURLCommand;
@@ -128,12 +130,14 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -182,6 +186,7 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.omnifaces.el.functions.Strings;
 
 import com.amazonaws.services.s3.model.PartETag;
 
@@ -247,6 +252,9 @@ public class Datasets extends AbstractApiBean {
     @Inject
     TrsaRegistryServiceBean trsaRegistryServiceBean;
     WorkflowServiceBean wfService;
+    
+    @Inject
+    DataverseRoleServiceBean dataverseRoleService;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -1801,6 +1809,62 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
+    @GET
+    @Path("{id}/curationStatus")
+    public Response getCurationStatus(@PathParam("id") String idSupplied) {
+        try {
+            Dataset ds = findDatasetOrDie(idSupplied);
+            DatasetVersion dsv = ds.getLatestVersion();
+            if (dsv.isDraft() && permissionSvc.requestOn(createDataverseRequest(findUserOrDie()), ds).has(Permission.PublishDataset)) {
+                return response(req -> ok(dsv.getExternalStatusLabel()==null ? "":dsv.getExternalStatusLabel()));
+            } else {
+                return error(Response.Status.FORBIDDEN, "You are not permitted to view the curation status of this dataset.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
+    @PUT
+    @Path("{id}/curationStatus")
+    public Response setCurationStatus(@PathParam("id") String idSupplied, @QueryParam("label") String label) {
+        Dataset ds = null;
+        User u = null;
+        try {
+            ds = findDatasetOrDie(idSupplied);
+            u = findUserOrDie();
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        try {
+            execCommand(new SetCurationStatusCommand(createDataverseRequest(u), ds, label));
+            return ok("Curation Status updated");
+        } catch (WrappedResponse wr) {
+            // Just change to Bad Request and send
+            return Response.fromResponse(wr.getResponse()).status(Response.Status.BAD_REQUEST).build();
+        }
+    }
+    
+    @DELETE
+    @Path("{id}/curationStatus")
+    public Response deleteCurationStatus(@PathParam("id") String idSupplied) {
+        Dataset ds = null;
+        User u = null;
+        try {
+            ds = findDatasetOrDie(idSupplied);
+            u = findUserOrDie();
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        try {
+            execCommand(new SetCurationStatusCommand(createDataverseRequest(u), ds, null));
+            return ok("Curation Status deleted");
+        } catch (WrappedResponse wr) {
+            //Just change to Bad Request and send
+            return Response.fromResponse(wr.getResponse()).status(Response.Status.BAD_REQUEST).build();
+        }
+    }
+    
 @GET
 @Path("{id}/uploadsid")
 @Deprecated
@@ -2746,6 +2810,127 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
     }
 
     @GET
+    @Path("{identifier}/curationLabelSet")
+    public Response getCurationLabelSet(@PathParam("identifier") String dvIdtf,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse { 
+        
+        try {
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        
+        Dataset dataset; 
+        
+        try {
+            dataset = findDatasetOrDie(dvIdtf);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+            
+        return response(req -> ok(dataset.getEffectiveCurationLabelSetName()));
+    }
+    
+    @PUT
+    @Path("{identifier}/curationLabelSet")
+    public Response setCurationLabelSet(@PathParam("identifier") String dvIdtf,
+            @QueryParam("name") String curationLabelSet,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+        
+        // Superuser-only:
+        AuthenticatedUser user;
+        try {
+            user = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.UNAUTHORIZED, "Authentication is required.");
+        }
+        if (!user.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+        
+        Dataset dataset; 
+        
+        try {
+            dataset = findDatasetOrDie(dvIdtf);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+        if (SystemConfig.CURATIONLABELSDISABLED.equals(curationLabelSet) || SystemConfig.DEFAULTCURATIONLABELSET.equals(curationLabelSet)) {
+            dataset.setCurationLabelSetName(curationLabelSet);
+            datasetService.merge(dataset);
+            return ok("Curation Label Set Name set to: " + curationLabelSet);
+        } else {
+            for (String setName : systemConfig.getCurationLabels().keySet()) {
+                if (setName.equals(curationLabelSet)) {
+                    dataset.setCurationLabelSetName(curationLabelSet);
+                    datasetService.merge(dataset);
+                    return ok("Curation Label Set Name set to: " + setName);
+                }
+            }
+        }
+        return error(Response.Status.BAD_REQUEST,
+            "No Such Curation Label Set");
+    }
+    
+    @DELETE
+    @Path("{identifier}/curationLabelSet")
+    public Response resetCurationLabelSet(@PathParam("identifier") String dvIdtf,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse {
+    
+        // Superuser-only:
+        AuthenticatedUser user;
+        try {
+            user = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse ex) {
+            return error(Response.Status.BAD_REQUEST, "Authentication is required.");
+        }
+        if (!user.isSuperuser()) {
+            return error(Response.Status.FORBIDDEN, "Superusers only.");
+        }
+        
+        Dataset dataset; 
+        
+        try {
+            dataset = findDatasetOrDie(dvIdtf);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+        
+        dataset.setCurationLabelSetName(SystemConfig.DEFAULTCURATIONLABELSET);
+        datasetService.merge(dataset);
+        return ok("Curation Label Set reset to default: " + SystemConfig.DEFAULTCURATIONLABELSET);
+    }
+
+    @GET
+    @Path("{identifier}/allowedCurationLabels")
+    public Response getAllowedCurationLabels(@PathParam("identifier") String dvIdtf,
+            @Context UriInfo uriInfo, @Context HttpHeaders headers) throws WrappedResponse { 
+        AuthenticatedUser user = null;
+        try {
+            user = findAuthenticatedUserOrDie();
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+        
+        Dataset dataset; 
+        
+        try {
+            dataset = findDatasetOrDie(dvIdtf);
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+        if (permissionSvc.requestOn(createDataverseRequest(user), dataset).has(Permission.PublishDataset)) {
+            String[] labelArray = systemConfig.getCurationLabels().get(dataset.getEffectiveCurationLabelSetName());
+            return response(req -> ok(String.join(",", labelArray)));
+        } else {
+            return error(Response.Status.FORBIDDEN, "You are not permitted to view the allowed curation labels for this dataset.");
+        }
+    }
+    
+    @GET
     @Path("{identifier}/timestamps")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTimestamps(@PathParam("identifier") String id) {
@@ -2884,5 +3069,66 @@ public Response completeMPUpload(String partETagBody, @QueryParam("globalid") St
 
         return addFileHelper.addFiles(jsonData, dataset, authUser);
 
+    }
+    
+    /** 
+     * API to find curation assignments and statuses
+     * 
+     * @return
+     * @throws WrappedResponse
+     */
+    @GET
+    @Path("/listCurationStates")
+    @Produces("text/csv")
+    public Response getCurationStates() throws WrappedResponse {
+
+        try {
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
+            if (!user.isSuperuser()) {
+                return error(Response.Status.FORBIDDEN, "Superusers only.");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+
+        List<DataverseRole> allRoles = dataverseRoleService.findAll();
+        List<DataverseRole> curationRoles = new ArrayList<DataverseRole>();
+        allRoles.forEach(r -> {
+            if (r.permissions().contains(Permission.PublishDataset))
+                curationRoles.add(r);
+        });
+        HashMap<String, HashSet<String>> assignees = new HashMap<String, HashSet<String>>();
+        curationRoles.forEach(r -> {
+            assignees.put(r.getAlias(), null);
+        });
+
+        StringBuilder csvSB = new StringBuilder(String.join(",",
+                BundleUtil.getStringFromBundle("dataset"),
+                BundleUtil.getStringFromBundle("datasets.api.creationdate"),
+                BundleUtil.getStringFromBundle("datasets.api.modificationdate"),
+                BundleUtil.getStringFromBundle("datasets.api.curationstatus"),
+                String.join(",", assignees.keySet())));
+        for (Dataset dataset : datasetSvc.findAllUnpublished()) {
+            List<RoleAssignment> ras = permissionService.assignmentsOn(dataset);
+            curationRoles.forEach(r -> {
+                assignees.put(r.getAlias(), new HashSet<String>());
+            });
+            for (RoleAssignment ra : ras) {
+                if (curationRoles.contains(ra.getRole())) {
+                    assignees.get(ra.getRole().getAlias()).add(ra.getAssigneeIdentifier());
+                }
+            }
+            String name = "\"" + dataset.getCurrentName().replace("\"", "\"\"") + "\"";
+            String status = dataset.getLatestVersion().getExternalStatusLabel();
+            String url = systemConfig.getDataverseSiteUrl() + dataset.getTargetUrl() + dataset.getGlobalId().asString();
+            String date = new SimpleDateFormat("yyyy-MM-dd").format(dataset.getCreateDate());
+            String modDate = new SimpleDateFormat("yyyy-MM-dd").format(dataset.getModificationTime());
+            String hyperlink = "\"=HYPERLINK(\"\"" + url + "\"\",\"\"" + name + "\"\")\"";
+            List<String> sList = new ArrayList<String>();
+            assignees.entrySet().forEach(e -> sList.add(e.getValue().size() == 0 ? "" : String.join(";", e.getValue())));
+            csvSB.append("\n").append(String.join(",", hyperlink, date, modDate, status == null ? "" : status, String.join(",", sList)));
+        }
+        csvSB.append("\n");
+        return ok(csvSB.toString(), MediaType.valueOf(FileUtil.MIME_TYPE_CSV), "datasets.status.csv");
     }
 }

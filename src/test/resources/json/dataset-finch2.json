@@ -309,10 +309,12 @@
             ]
           }
         ],
-        "displayName": "Citation Metadata"
+        "displayName": "Citation Metadata",
+        "name": "citation"
       },
       "geospatial": {
         "displayName": "Geospatial Metadata",
+        "name": "geospatial",
         "fields": [
           {
             "typeName": "geographicCoverage",

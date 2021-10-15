@@ -71,9 +71,12 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
         newVersion.setDatasetFields(newVersion.initDatasetFields());
         newVersion.setCreateTime(getTimestamp());
         newVersion.setLastUpdateTime(getTimestamp());
-        
-        tidyUpFields(newVersion);
+        //Switching the order of validate and tidy up
+        //originally missing/empty required fields were not
+        //throwing constraint violations because they
+        //had been stripped from the dataset fields prior to validation 
         validateOrDie(newVersion, false);
+        tidyUpFields(newVersion);
         
         final List<DatasetVersion> currentVersions = dataset.getVersions();
         ArrayList<DatasetVersion> dsvs = new ArrayList<>(currentVersions.size());

@@ -675,6 +675,21 @@ The presence of the :ref:`:Languages` database setting adds a dropdown in the he
 
 ``curl http://localhost:8080/api/admin/settings/:Languages -X PUT -d '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]'``
 
+When a user selects one of the available choices, the Dataverse user interfaces will be translated into that language (assuming you also configure the "lang" directory and populate it with translations as described below).
+
+Allowing the Language Used for Dataset Metadata to be Specified
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Since dataset metadata can only be entered in one language, and administrators may wish to limit which languages metadata can be entered in, Dataverse also offers a separate setting defining allowed metadata languages. 
+The presence of the :ref:`:MetadataLanguages` database setting identifies the available options (which can be different from those in the :Languages setting above, with fewer or more options). 
+Dataverse collection admins can select from these options to indicate which language should be used for new Datasets created with that specific collection.
+
+When creating or editing a dataset, users will be asked to enter the metadata in that language. The metadata language selected will also be shown when dataset metadata is viewed and will be included in metadata exports (as appropriate for each format) for published datasets:
+
+``curl http://localhost:8080/api/admin/settings/:MetadataLanguages -X PUT -d '[{"locale":"en","title":"English"},{"locale":"fr","title":"Français"}]'``
+
+Note that metadata selected from Controlled Vocabularies will also display in the metadata language of the dataset, but only if translations have been configured, i.e. you configure the "lang" directory and populate it with translations as described below). In metadata export files, controlled vocabulary values will be included in the Dataverse installations default language and in the metadata language of the dataset (if specified).
+
 Configuring the "lang" Directory
 ++++++++++++++++++++++++++++++++
 
@@ -1595,7 +1610,7 @@ By default this setting is absent and the Dataverse Software assumes it to be fa
 .. _:HandleAuthHandle:
 
 :HandleAuthHandle
-+++++++++++++++++++++++++
++++++++++++++++++
 
 Specific for Handle PIDs. Set this setting to <prefix>/<suffix> to be used on a global handle service when the public key is NOT stored in the default handle.
 By default this setting is absent and the Dataverse Software assumes it to be not set. If the public key for instance is stored in handle: 21.T12996/USER01.
@@ -2209,6 +2224,16 @@ in the header.
 
 See :ref:`i18n` for a curl example and related settings.
 
+.. _:MetadataLanguages:
+
+:MetadataLanguages
+++++++++++++++++++
+
+Sets which languages can be used when entering dataset metadata. 
+
+See :ref:`i18n` for further discussion, a curl example, and related settings.
+
+
 :InheritParentRoleAssignments
 +++++++++++++++++++++++++++++
 
@@ -2308,3 +2333,69 @@ A comma-separated list of field type names that should be 'withheld' when datase
 A suggested minimum includes author, datasetContact, and contributor, but additional fields such as depositor, grantNumber, and publication might also need to be included.
 
 ``curl -X PUT -d 'author, datasetContact, contributor, depositor, grantNumber, publication' http://localhost:8080/api/admin/settings/:AnonymizedFieldTypeNames``
+
+:DatasetChecksumValidationSizeLimit
++++++++++++++++++++++++++++++++++++
+
+Setting ``DatasetChecksumValidationSizeLimit`` to a threshold in bytes, disables the checksum validation while publishing for any dataset size greater than the limit.
+
+For example, if you want your Dataverse installation to skip validation for any dataset larger than 5 GB while publishing, use this setting:
+
+``curl -X PUT -d 5000000000 http://localhost:8080/api/admin/settings/:DatasetChecksumValidationSizeLimit``
+
+When this option is used to disable the checksum validation, it's strongly recommended to perform periodic asynchronous checks via the integrity API
+
+Refer to "Physical Files Validation in a Dataset" API :ref:`dataset-files-validation-api` section of our :doc:`/api/native-api` documentation.
+
+Also refer to the "Datafile Integrity" API  :ref:`datafile-integrity`
+
+:DataFileChecksumValidationSizeLimit
+++++++++++++++++++++++++++++++++++++
+
+Setting ``DataFileChecksumValidationSizeLimit`` to a threshold in bytes, disables the checksum validation while publishing for any datafiles greater than the limit.
+
+For example, if you want your Dataverse installation to skip validation for any data files larger than 2 GB while publishing, use this setting:
+
+``curl -X PUT -d 2000000000 http://localhost:8080/api/admin/settings/:DataFileChecksumValidationSizeLimit``
+
+When this option is used to disable the checksum validation, it's strongly recommended to perform periodic asynchronous checks via the integrity API
+
+Refer to "Physical Files Validation in a Dataset" API :ref:`dataset-files-validation-api` section of our :doc:`/api/native-api` documentation.
+
+Also refer to the "Datafile Integrity" API  :ref:`datafile-integrity`
+
+:SendNotificationOnDatasetCreation
+++++++++++++++++++++++++++++++++++
+
+A boolean setting that, if true will send an email and notification to users when a Dataset is created. Messages go to those, other than the dataset creator,
+ who have the ability/permission necessary to publish the dataset. The intent of this functionality is to simplify tracking activity and planning to follow-up contact.
+  
+``curl -X PUT -d true http://localhost:8080/api/admin/settings/:SendNotificationOnDatasetCreation``
+
+.. _:CVocConf:
+
+:CVocConf
++++++++++
+
+A JSON-structured setting that configures Dataverse to associate specific metadatablock fields with external vocabulary services and specific vocabularies/sub-vocabularies managed by that service. More information about this capability is available at :doc:`/admin/metadatacustomization`.
+
+Scripts that implement this association for specific service protocols are maintained at https://github.com/gdcc/dataverse-external-vocab-support. That repository also includes a json-schema for validating the structure required by this setting along with an example metadatablock and sample :CVocConf setting values associating entries in the example block with ORCID and SKOSMOS based services. 
+
+``wget https://gdcc.github.io/dataverse-external-vocab-support/examples/config/cvoc-conf.json``
+
+``curl -X PUT --upload-file cvoc-conf.json http://localhost:8080/api/admin/settings/:CVocConf``
+
+.. _:AllowedCurationLabels:
+
+:AllowedCurationLabels
+++++++++++++++++++++++
+ 
+A JSON Object containing lists of allowed labels (up to 32 characters, spaces allowed) that can be set, via API or UI by users with the permission to publish a dataset. The set of labels allowed 
+for datasets can be selected by a superuser - via the Dataverse collection page (Edit/General Info) or set via API call. 
+The labels in a set should correspond to the states in an organization's curation process and are intended to help users/curators track the progress of a dataset through a defined curation process. 
+A dataset may only have one label at a time and if a label is set, it will be removed at publication time. 
+This functionality is disabled when this setting is empty/not set.
+Each set of labels is identified by a curationLabelSet name and a JSON Array of the labels allowed in that set.
+
+``curl -X PUT -d '{"Standard Process":["Author contacted", "Privacy Review", "Awaiting paper publication", "Final Approval"], "Alternate Process":["State 1","State 2","State 3"]}' http://localhost:8080/api/admin/settings/:AllowedCurationLabels``
+

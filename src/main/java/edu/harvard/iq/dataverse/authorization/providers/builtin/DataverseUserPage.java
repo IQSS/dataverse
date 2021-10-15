@@ -482,6 +482,7 @@ public class DataverseUserPage implements java.io.Serializable {
                     break;
                 case GRANTFILEACCESS:
                 case REJECTFILEACCESS:
+                case DATASETCREATED:
                     userNotification.setTheObject(datasetService.find(userNotification.getObjectId()));
                     break;
 
@@ -492,6 +493,7 @@ public class DataverseUserPage implements java.io.Serializable {
                 case RETURNEDDS:
                 case WORKFLOW_SUCCESS:
                 case WORKFLOW_FAILURE:
+                case STATUSUPDATED:
                     userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
                     break;
                     

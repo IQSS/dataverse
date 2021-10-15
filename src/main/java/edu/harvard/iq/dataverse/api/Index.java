@@ -36,6 +36,7 @@ import edu.harvard.iq.dataverse.search.SearchFilesServiceBean;
 import edu.harvard.iq.dataverse.search.SearchUtil;
 import edu.harvard.iq.dataverse.search.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.SortBy;
+import edu.harvard.iq.dataverse.util.ConstraintViolationUtil;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import java.io.IOException;
@@ -181,10 +182,7 @@ public class Index extends AbstractApiBean {
                 sb.append(cause.getClass().getCanonicalName() + " ");
                 sb.append(cause.getMessage()).append(" ");
                 if (cause instanceof ConstraintViolationException) {
-                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append("(invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ").append(violation.getPropertyPath()).append(" at ").append(violation.getLeafBean()).append(" - ").append(violation.getMessage()).append(")");
-                    }
+                    sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
                 } else if (cause instanceof NullPointerException) {
                     for (int i = 0; i < 2; i++) {
                         StackTraceElement stacktrace = cause.getStackTrace()[i];
@@ -285,10 +283,7 @@ public class Index extends AbstractApiBean {
                 sb.append(cause.getClass().getCanonicalName()).append(" ");
                 sb.append(cause.getMessage()).append(" ");
                 if (cause instanceof ConstraintViolationException) {
-                    ConstraintViolationException constraintViolationException = (ConstraintViolationException) cause;
-                    for (ConstraintViolation<?> violation : constraintViolationException.getConstraintViolations()) {
-                        sb.append("(invalid value: <<<").append(violation.getInvalidValue()).append(">>> for ").append(violation.getPropertyPath()).append(" at ").append(violation.getLeafBean()).append(" - ").append(violation.getMessage()).append(")");
-                    }
+                    sb.append(ConstraintViolationUtil.getErrorStringForConstraintViolations(cause));
                 } else if (cause instanceof NullPointerException) {
                     for (int i = 0; i < 2; i++) {
                         StackTraceElement stacktrace = cause.getStackTrace()[i];
