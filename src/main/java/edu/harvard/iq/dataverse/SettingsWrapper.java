@@ -355,7 +355,11 @@ public class SettingsWrapper implements java.io.Serializable {
         UIInput endComponent = (UIInput) cb;
         boolean removedState = false;
         if (endComponent != null) {
-            removedState = (Boolean) endComponent.getSubmittedValue();
+            try {
+                removedState = (Boolean) endComponent.getSubmittedValue();
+            } catch (NullPointerException npe) {
+                // Do nothing - checkbox is not being shown (and is therefore not checked)
+            }
         }
         if (!removedState && value == null) {
             String msgString = BundleUtil.getStringFromBundle("embargo.date.required");
