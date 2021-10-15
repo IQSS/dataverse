@@ -2710,7 +2710,7 @@ public class UtilIT {
     static Response setDatasetCurationLabel(Integer datasetId, String apiToken, String label) {
         Response response = given()
                 .header(API_TOKEN_HTTP_HEADER, apiToken)
-                .put("/api/datasets/" + datasetId + "/curationLabelSet?label=" + label);
+                .put("/api/datasets/" + datasetId + "/curationStatus?label=" + label);
         return response;
     }
 
