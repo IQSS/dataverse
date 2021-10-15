@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
+import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.RedirectionException;
 import javax.ws.rs.ServiceUnavailableException;
@@ -425,9 +426,7 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                                 ranges = getRanges(rangeHeader, contentSize);
                             } catch (Exception ex) {
                                 logger.fine("Exception caught processing Range header: " + ex.getLocalizedMessage());
-                                // The message starts with "Datafile" because otherwise the message is not passed
-                                // to the user due to how WebApplicationExceptionHandler works.
-                                throw new NotFoundException("Datafile download error due to Range header: " + ex.getLocalizedMessage());
+                                throw new ClientErrorException("Error due to Range header: " + ex.getLocalizedMessage(), Response.Status.REQUESTED_RANGE_NOT_SATISFIABLE);
                             }
                             
                             if (ranges.isEmpty()) {
@@ -692,13 +691,19 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
             logger.fine("Range header supplied: " + range);
 
             // Technically this regex supports multiple ranges.
-            // Below we have a check to enforce a single rangeHeader.
+            // Below we have a check to enforce a single range.
             if (!range.matches("^bytes=\\d*-\\d*(,\\d*-\\d*)*$")) {
                 throw new RuntimeException("The format is bytes=<range-start>-<range-end> where start and end are optional.");
             }
 
             // The 6 is to remove "bytes="
-            for (String part : range.substring(6).split(",")) {
+            String[] parts = range.substring(6).split(",");
+            if (parts.length > 1) {
+                // Only allow a single range.
+                throw new RuntimeException("Only one range is allowed.");
+            }
+            // This loop is here in case we ever want to support multiple ranges.
+            for (String part : parts) {
 
                 long start = getRangeStart(part);
                 long end = getRangeEnd(part);
@@ -715,14 +720,10 @@ public class DownloadInstanceWriter implements MessageBodyWriter<DownloadInstanc
                 }
 
                 if (start > end) {
-                    throw new RuntimeException("Start is larger than end.");
+                    throw new RuntimeException("Start is larger than end or size of file.");
                 }
 
-                if (ranges.size() < 1) {
-                    ranges.add(new Range(start, end));
-                } else {
-                    throw new RuntimeException("Only one range is allowed.");
-                }
+                ranges.add(new Range(start, end));
 
             }
         }

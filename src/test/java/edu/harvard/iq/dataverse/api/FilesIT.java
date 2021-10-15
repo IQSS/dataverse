@@ -31,6 +31,7 @@ import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.REQUESTED_RANGE_NOT_SATISFIABLE;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static junit.framework.Assert.assertEquals;
 import org.hamcrest.CoreMatchers;
@@ -1762,14 +1763,19 @@ public class FilesIT {
         downloadThumbnail.then().assertThat().statusCode(OK.getStatusCode());
 
         Response multipleRangesNotSupported = UtilIT.downloadFile(fileIdTxt, "0-9,20-29", null, null, authorApiToken);
-        // Datafile download error due to Range header: Only one range is allowed.
-//        multipleRangesNotSupported.prettyPrint();
-        multipleRangesNotSupported.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+        // "Error due to Range header: Only one range is allowed."
+        multipleRangesNotSupported.prettyPrint();
+        multipleRangesNotSupported.then().assertThat().statusCode(REQUESTED_RANGE_NOT_SATISFIABLE.getStatusCode());
 
         Response startLargerThanEndError = UtilIT.downloadFile(fileIdTxt, "20-10", null, null, authorApiToken);
-        // Datafile download error due to Range header: Start is larger than end.
+        // "Error due to Range header: Start is larger than end or size of file."
         startLargerThanEndError.prettyPrint();
-        startLargerThanEndError.then().assertThat().statusCode(NOT_FOUND.getStatusCode());
+        startLargerThanEndError.then().assertThat().statusCode(REQUESTED_RANGE_NOT_SATISFIABLE.getStatusCode());
+
+        Response rangeBeyondFileSize = UtilIT.downloadFile(fileIdTxt, "88888-99999", null, null, authorApiToken);
+        // "Error due to Range header: Start is larger than end or size of file."
+        rangeBeyondFileSize.prettyPrint();
+        rangeBeyondFileSize.then().assertThat().statusCode(REQUESTED_RANGE_NOT_SATISFIABLE.getStatusCode());
 
 //        Response publishDataverse = UtilIT.publishDataverseViaNativeApi(dataverseAlias, authorApiToken);
 //        publishDataverse.then().assertThat().statusCode(OK.getStatusCode());

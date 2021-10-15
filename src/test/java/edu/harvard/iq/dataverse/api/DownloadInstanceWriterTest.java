@@ -69,7 +69,8 @@ public class DownloadInstanceWriterTest {
         try {
             List<Range> ranges = diw.getRanges("bytes=20-10", 100);
         } catch (Exception ex) {
-            System.out.println("exeption: " + ex);
+            // "Start is larger than end or size of file."
+            System.out.println("exception: " + ex);
             expectedException = ex;
         }
         assertNotNull(expectedException);
@@ -82,7 +83,23 @@ public class DownloadInstanceWriterTest {
         try {
             List<Range> ranges = diw.getRanges("bytes=0-9,90-99", 100);
         } catch (Exception ex) {
-            System.out.println("exeption: " + ex);
+            // "Only one range is allowed."
+            System.out.println("exception: " + ex);
+            expectedException = ex;
+        }
+        assertNotNull(expectedException);
+    }
+
+    // Attempt to get invalid range (multiple ranges, beyond file size).
+    @Test
+    public void testGetRangeInvalidMultipleRangesBeyondFileSize() {
+        Exception expectedException = null;
+        try {
+            List<Range> ranges = diw.getRanges("bytes=0-9,90-99", 40);
+        } catch (Exception ex) {
+            // "Only one range is allowed."
+            // We report the multiple ranges error before reporting the "beyond filesize" error.
+            System.out.println("exception: " + ex);
             expectedException = ex;
         }
         assertNotNull(expectedException);
@@ -95,7 +112,8 @@ public class DownloadInstanceWriterTest {
         try {
             List<Range> ranges = diw.getRanges("junk", 100);
         } catch (Exception ex) {
-            System.out.println("exeption: " + ex);
+            // "The format is bytes=<range-start>-<range-end> where start and end are optional."
+            System.out.println("exception: " + ex);
             expectedException = ex;
         }
         assertNotNull(expectedException);
@@ -120,7 +138,8 @@ public class DownloadInstanceWriterTest {
             assertEquals(99, ranges.get(1).getEnd());
             assertEquals(10, ranges.get(1).getLength());
         } catch (Exception ex) {
-            System.out.println("exeption: " + ex);
+            // Only one range is allowed.
+            System.out.println("exception: " + ex);
             expectedException = ex;
         }
         assertNotNull(expectedException);
