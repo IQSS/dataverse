@@ -1408,9 +1408,15 @@ padding-right:0px;
 /*Accessibility*/
 
 .text-muted {
-        color: #666;
+        color: #636363;
 }
 span.label-success { background-color: #388038 }
 span.label-warning { background-color: #A4660E }
 span.label-info { background-color: #20809D }
 span.label-default { background-color: #757575 }
+
+.btn.btn-link {color: #3174AF;}
+.dropdown-header {color:#666;}
+.help-block {color:#666;}
+.alert-success {color:#376D38}
+

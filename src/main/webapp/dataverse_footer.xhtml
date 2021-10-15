@@ -18,7 +18,7 @@
             </div>
         </div>
     </div>
-    <div id="footer" class="#{widgetView ? 'widget-view' : ''}">
+    <aside id="footer" class="#{widgetView ? 'widget-view' : ''}">
         <div class="container">
             <div class="row">
                 <div class="col-sm-8 small" jsf:rendered="#{!widgetView}">
@@ -50,6 +50,6 @@
                 </div>
             </div>
         </div>
-    </div>
+    </aside>
     <o:resourceInclude path="/CustomizationFilesServlet?customFileType=footer" rendered="#{!widgetView}"/>
 </ui:composition>
