@@ -53,6 +53,7 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObjectBuilder;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
+import static javax.ws.rs.core.Response.Status.OK;
 import static org.junit.Assert.assertEquals;
 import org.hamcrest.CoreMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -2429,4 +2430,67 @@ createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverse1Alias, apiToken
             return Json.createReader(rdr).readObject().getJsonObject("data").toString();
         }
     }
+
+    @Test
+    public void testFilesUnchangedAfterDatasetMetadataUpdate() throws IOException {
+        Response createUser = UtilIT.createRandomUser();
+        createUser.prettyPrint();
+        createUser.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        String apiToken = UtilIT.getApiTokenFromResponse(createUser);
+
+        Response createDataverse = UtilIT.createRandomDataverse(apiToken);
+        createDataverse.prettyPrint();
+        createDataverse.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String dataverseAlias = UtilIT.getAliasFromResponse(createDataverse);
+
+        Response createDataset = UtilIT.createRandomDatasetViaNativeApi(dataverseAlias, apiToken);
+        createDataset.prettyPrint();
+        createDataset.then().assertThat()
+                .statusCode(CREATED.getStatusCode());
+
+        String datasetPid = JsonPath.from(createDataset.asString()).getString("data.persistentId");
+        Integer datasetId = JsonPath.from(createDataset.asString()).getInt("data.id");
+
+        Path pathtoScript = Paths.get(java.nio.file.Files.createTempDirectory(null) + File.separator + "run.sh");
+        java.nio.file.Files.write(pathtoScript, "#!/bin/bash\necho hello".getBytes());
+
+        JsonObjectBuilder json1 = Json.createObjectBuilder()
+                .add("description", "A script to reproduce results.")
+                .add("directoryLabel", "code");
+
+        Response uploadReadme1 = UtilIT.uploadFileViaNative(datasetId.toString(), pathtoScript.toString(), json1.build(), apiToken);
+        uploadReadme1.prettyPrint();
+        uploadReadme1.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.files[0].label", equalTo("run.sh"))
+                .body("data.files[0].directoryLabel", equalTo("code"));
+
+        UtilIT.publishDataverseViaNativeApi(dataverseAlias, apiToken).then().assertThat().statusCode(OK.getStatusCode());
+        UtilIT.publishDatasetViaNativeApi(datasetId, "major", apiToken).then().assertThat().statusCode(OK.getStatusCode());
+
+        Response getDatasetJsonBeforeUpdate = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonBeforeUpdate.prettyPrint();
+        getDatasetJsonBeforeUpdate.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.latestVersion.files[0].label", equalTo("run.sh"))
+                .body("data.latestVersion.files[0].directoryLabel", equalTo("code"));
+        
+        String pathToJsonFile = "doc/sphinx-guides/source/_static/api/dataset-update-metadata.json";
+        Response updateTitle = UtilIT.updateDatasetMetadataViaNative(datasetPid, pathToJsonFile, apiToken);
+        updateTitle.prettyPrint();
+        updateTitle.then().assertThat()
+                .statusCode(OK.getStatusCode());
+        
+        Response getDatasetJsonAfterUpdate = UtilIT.nativeGet(datasetId, apiToken);
+        getDatasetJsonAfterUpdate.prettyPrint();
+        getDatasetJsonAfterUpdate.then().assertThat()
+                .statusCode(OK.getStatusCode())
+                .body("data.latestVersion.files[0].label", equalTo("run.sh"))
+                .body("data.latestVersion.files[0].directoryLabel", equalTo("code"));
+        
+    }
+    
 }
