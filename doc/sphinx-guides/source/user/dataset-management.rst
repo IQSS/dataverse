@@ -508,10 +508,11 @@ Creating a Private URL for your dataset allows you to share your dataset (for vi
 #. Go to your unpublished dataset
 #. Select the “Edit” button
 #. Select “Private URL” in the dropdown menu
-#. In the pop-up select “Create Private URL”
+#. In the pop-up select “Create Private URL” or "Create URL for Anonymized Access". The latter supports anonymous review by removing author names and other potentially identifying information from citations, version history tables, and some metadata fields (as configured by the administrator).
 #. Copy the Private URL which has been created for this dataset and it can now be shared with anyone you wish to have access to view or download files in your unpublished dataset.
 
 To disable a Private URL and to revoke access, follow the same steps as above until step #3 when you return to the popup, click the “Disable Private URL” button.
+Note that only one PrivateURL (normal or with anonymized access) can be configured per dataset at a time. 
 
 Dataset Versions
 ================

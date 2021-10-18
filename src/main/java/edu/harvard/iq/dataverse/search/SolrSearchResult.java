@@ -259,6 +259,9 @@ public class SolrSearchResult {
      */
     private List<String> matchedFields;
 
+    //External Status Label (enabled via AllowedCurationLabels setting)
+    private String externalStatus;
+
     /**
      * @todo: remove name?
      */
@@ -454,11 +457,11 @@ public class SolrSearchResult {
     } //getJsonForMydata
     
     public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls) {
-		return json(showRelevance, showEntityIds, showApiUrls, null);
-	}
+        return json(showRelevance, showEntityIds, showApiUrls, null);
+    }
 
-	public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls,
-			List<String> metadataFields) {
+    public JsonObjectBuilder json(boolean showRelevance, boolean showEntityIds, boolean showApiUrls,
+            List<String> metadataFields) {
 
         if (this.type == null) {
             return jsonObjectBuilder();
@@ -664,19 +667,19 @@ public class SolrSearchResult {
                 }
                 
                 if (CollectionUtils.isNotEmpty(metadataFields)) {
-					// create metadata fields map names
-					Map<String, List<String>> metadataFieldMapNames = computeRequestedMetadataFieldMapNames(
-							metadataFields);
+                    // create metadata fields map names
+                    Map<String, List<String>> metadataFieldMapNames = computeRequestedMetadataFieldMapNames(
+                            metadataFields);
 
-					// add metadatafields objet to wrap all requeested fields
-					NullSafeJsonBuilder metadataFieldBuilder = jsonObjectBuilder();
+                    // add metadatafields objet to wrap all requeested fields
+                    NullSafeJsonBuilder metadataFieldBuilder = jsonObjectBuilder();
 
-					Map<MetadataBlock, List<DatasetField>> groupedFields = DatasetField
-							.groupByBlock(dv.getFlatDatasetFields());
-					json(metadataFieldMapNames, groupedFields, metadataFieldBuilder);
+                    Map<MetadataBlock, List<DatasetField>> groupedFields = DatasetField
+                            .groupByBlock(dv.getFlatDatasetFields());
+                    json(metadataFieldMapNames, groupedFields, metadataFieldBuilder);
 
-					nullSafeJsonBuilder.add("metadataBlocks", metadataFieldBuilder);
-				}
+                    nullSafeJsonBuilder.add("metadataBlocks", metadataFieldBuilder);
+                }
             }
         }
 
@@ -703,54 +706,54 @@ public class SolrSearchResult {
         }
         return nullSafeJsonBuilder;
     }
-	
-	private void json(Map<String, List<String>> metadataFieldMapNames,
-			Map<MetadataBlock, List<DatasetField>> groupedFields, NullSafeJsonBuilder metadataFieldBuilder) {
-		for (Map.Entry<String, List<String>> metadataFieldNamesEntry : metadataFieldMapNames.entrySet()) {
-			String metadataBlockName = metadataFieldNamesEntry.getKey();
-			List<String> metadataBlockFieldNames = metadataFieldNamesEntry.getValue();
-			for (MetadataBlock metadataBlock : groupedFields.keySet()) {
-				if (metadataBlockName.equals(metadataBlock.getName())) {
-					// create metadataBlock object
-					NullSafeJsonBuilder metadataBlockBuilder = jsonObjectBuilder();
-					metadataBlockBuilder.add("displayName", metadataBlock.getDisplayName());
-					JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
+    
+    private void json(Map<String, List<String>> metadataFieldMapNames,
+            Map<MetadataBlock, List<DatasetField>> groupedFields, NullSafeJsonBuilder metadataFieldBuilder) {
+        for (Map.Entry<String, List<String>> metadataFieldNamesEntry : metadataFieldMapNames.entrySet()) {
+            String metadataBlockName = metadataFieldNamesEntry.getKey();
+            List<String> metadataBlockFieldNames = metadataFieldNamesEntry.getValue();
+            for (MetadataBlock metadataBlock : groupedFields.keySet()) {
+                if (metadataBlockName.equals(metadataBlock.getName())) {
+                    // create metadataBlock object
+                    NullSafeJsonBuilder metadataBlockBuilder = jsonObjectBuilder();
+                    metadataBlockBuilder.add("displayName", metadataBlock.getDisplayName());
+                    JsonArrayBuilder fieldsArray = Json.createArrayBuilder();
 
-					List<DatasetField> datasetFields = groupedFields.get(metadataBlock);
-					for (DatasetField datasetField : datasetFields) {
-						if (metadataBlockFieldNames.contains("*")
-								|| metadataBlockFieldNames.contains(datasetField.getDatasetFieldType().getName())) {
-							if (datasetField.getDatasetFieldType().isCompound()) {
-								fieldsArray.add(JsonPrinter.json(datasetField));
-							} else if (!datasetField.getDatasetFieldType().isHasParent()) {
-								fieldsArray.add(JsonPrinter.json(datasetField));
-							}
-						}
-					}
-					// with a fields to hold all requested properties
-					metadataBlockBuilder.add("fields", fieldsArray);
+                    List<DatasetField> datasetFields = groupedFields.get(metadataBlock);
+                    for (DatasetField datasetField : datasetFields) {
+                        if (metadataBlockFieldNames.contains("*")
+                                || metadataBlockFieldNames.contains(datasetField.getDatasetFieldType().getName())) {
+                            if (datasetField.getDatasetFieldType().isCompound()) {
+                                fieldsArray.add(JsonPrinter.json(datasetField));
+                            } else if (!datasetField.getDatasetFieldType().isHasParent()) {
+                                fieldsArray.add(JsonPrinter.json(datasetField));
+                            }
+                        }
+                    }
+                    // with a fields to hold all requested properties
+                    metadataBlockBuilder.add("fields", fieldsArray);
 
-					metadataFieldBuilder.add(metadataBlock.getName(), metadataBlockBuilder);
-				}
-			}
-		}
-	}
-	
-	private Map<String, List<String>> computeRequestedMetadataFieldMapNames(List<String> metadataFields) {
-		Map<String, List<String>> metadataFieldMapNames = new HashMap<>();
-		for (String metadataField : metadataFields) {
-			String parts[] = metadataField.split(":");
-			if (parts.length == 2) {
-				List<String> metadataFieldNames = metadataFieldMapNames.get(parts[0]);
-				if (metadataFieldNames == null) {
-					metadataFieldNames = new ArrayList<>();
-					metadataFieldMapNames.put(parts[0], metadataFieldNames);
-				}
-				metadataFieldNames.add(parts[1]);
-			}
-		}
-		return metadataFieldMapNames;
-	}
+                    metadataFieldBuilder.add(metadataBlock.getName(), metadataBlockBuilder);
+                }
+            }
+        }
+    }
+    
+    private Map<String, List<String>> computeRequestedMetadataFieldMapNames(List<String> metadataFields) {
+        Map<String, List<String>> metadataFieldMapNames = new HashMap<>();
+        for (String metadataField : metadataFields) {
+            String parts[] = metadataField.split(":");
+            if (parts.length == 2) {
+                List<String> metadataFieldNames = metadataFieldMapNames.get(parts[0]);
+                if (metadataFieldNames == null) {
+                    metadataFieldNames = new ArrayList<>();
+                    metadataFieldMapNames.put(parts[0], metadataFieldNames);
+                }
+                metadataFieldNames.add(parts[1]);
+            }
+        }
+        return metadataFieldMapNames;
+    }
 
     private String getDateTimePublished() {
         String datePublished = null;
@@ -1282,5 +1285,14 @@ public class SolrSearchResult {
     
     public void setNameOfDataverse(String id) {
         this.nameOfDataverse = id;
+    }
+    
+    public String getExternalStatus() {
+        return externalStatus;
+    }
+
+    public void setExternalStatus(String externalStatus) {
+        this.externalStatus = externalStatus;
+        
     }
 }
