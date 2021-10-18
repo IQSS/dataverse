@@ -353,6 +353,7 @@ https://demo.dataverse.org/api/search?q=\*&type=dataset&metadata_fields=citation
 The above example ``metadata_fields=citation:*`` return in a "metadataBlocks" all properties from metadata fields named "citation"
 
 ..  code-block:: json
+
     {
         "status": "OK",
         "data": {
