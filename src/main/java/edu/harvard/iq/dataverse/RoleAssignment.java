@@ -71,13 +71,21 @@ public class RoleAssignment implements java.io.Serializable {
     @Column(nullable = true)
     private String privateUrlToken;
 	
+    @Column(nullable = true)
+    private Boolean privateUrlAnonymizedAccess;
+	
 	public RoleAssignment() {}
 		
 	public RoleAssignment(DataverseRole aRole, RoleAssignee anAssignee, DvObject aDefinitionPoint, String privateUrlToken) {
+	    this(aRole, anAssignee, aDefinitionPoint, privateUrlToken, false);
+	}
+	
+	public RoleAssignment(DataverseRole aRole, RoleAssignee anAssignee, DvObject aDefinitionPoint, String privateUrlToken, Boolean anonymizedAccess) {
         role = aRole;
         assigneeIdentifier = anAssignee.getIdentifier();
         definitionPoint = aDefinitionPoint;
         this.privateUrlToken = privateUrlToken;
+        this.privateUrlAnonymizedAccess=anonymizedAccess;
     }
 	
 	public Long getId() {
@@ -114,6 +122,10 @@ public class RoleAssignment implements java.io.Serializable {
 
     public String getPrivateUrlToken() {
         return privateUrlToken;
+    }
+
+    public boolean isAnonymizedAccess(){
+        return (privateUrlAnonymizedAccess==null) ? false: privateUrlAnonymizedAccess;
     }
 
 	@Override

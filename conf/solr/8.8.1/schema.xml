@@ -162,6 +162,7 @@
     <field name="dvSubject" type="string" stored="true" indexed="true" multiValued="true"/>
 
     <field name="publicationStatus" type="string" stored="true" indexed="true" multiValued="true"/>
+    <field name="externalStatus" type="string" stored="true" indexed="true" multiValued="false"/>
 
     <field name="subtreePaths" type="string" stored="true" indexed="true" multiValued="true"/>
 

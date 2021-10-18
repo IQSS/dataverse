@@ -4,6 +4,7 @@
   "persistentUrl": "https://doi.org/10.5072/FK2/PCA2E3",
   "protocol": "doi",
   "authority": "10.5072/FK2",
+  "metadataLanguage": "en",
   "datasetVersion": {
     "id": 2,
     "versionNumber": 1,
@@ -16,6 +17,7 @@
     "metadataBlocks": {
       "citation": {
         "displayName": "Citation Metadata",
+        "name":"citation",
         "fields": [
           {
             "typeName": "title",
@@ -306,6 +308,7 @@
             },
             "geospatial": {
                 "displayName": "Geospatial",
+                "name":"geospatial",
                 "fields": [
                     {
                         "typeName": "geographicCoverage",
