@@ -61,7 +61,7 @@
                           <div></div>
                           <span>#{bundle['dataverse.results.btn.addData']}</span>
                         </button>
-                        <ul class="dropdown-menu pull-right text-left" role="menu">
+                        <ul class="dropdown-menu pull-right text-left">
                             <ui:fragment rendered="#{permissionsWrapper.canIssueCreateDataverseCommand(SearchIncludeFragment.dataverse) }">
                                 <li><a href="/dataverse.xhtml?ownerId=#{SearchIncludeFragment.dataverse.id}">#{bundle['dataverse.results.btn.addData.newDataverse']}</a></li>
                             </ui:fragment>
@@ -391,7 +391,7 @@
                         <button type="button" class="btn dropdown-toggle color-btn" data-toggle="dropdown">
                             #{bundle['dataverse.results.btn.sort']} <span class="caret"/>
                         </button>
-                        <ul class="dropdown-menu pull-right text-left" role="menu">
+                        <ul class="dropdown-menu pull-right text-left">
                             <li>
                                 <h:outputLink value="#{widgetWrapper.wrapURL(page)}">
                                     <h:outputText value="#{bundle['dataverse.results.btn.sort.option.nameAZ']}" styleClass="#{SearchIncludeFragment.sortedByNameAsc ? 'highlightBold' : ''}"/>
