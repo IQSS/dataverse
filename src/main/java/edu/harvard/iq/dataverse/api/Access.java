@@ -888,14 +888,21 @@ public class Access extends AbstractApiBean {
                                         
                                         zipper.addToManifest(fileName + " (" + mimeType + ") " + " skipped because the total size of the download bundle exceeded the limit of " + zipDownloadSizeLimit + " bytes.\r\n");
                                     }
-                                } else if(file.isRestricted()) {
-                                    if (zipper == null) {
-                                        fileManifest = fileManifest + file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n";
+                                } else { 
+                                    boolean embargoed = FileUtil.isActivelyEmbargoed(file);
+                                    if (file.isRestricted() || embargoed) {
+                                        if (zipper == null) {
+                                            fileManifest = fileManifest + file.getFileMetadata().getLabel() + " IS "
+                                                    + (embargoed ? "EMBARGOED" : "RESTRICTED")
+                                                    + " AND CANNOT BE DOWNLOADED\r\n";
+                                        } else {
+                                            zipper.addToManifest(file.getFileMetadata().getLabel() + " IS "
+                                                    + (embargoed ? "EMBARGOED" : "RESTRICTED")
+                                                    + " AND CANNOT BE DOWNLOADED\r\n");
+                                        }
                                     } else {
-                                        zipper.addToManifest(file.getFileMetadata().getLabel() + " IS RESTRICTED AND CANNOT BE DOWNLOADED\r\n");
+                                        fileId = null;
                                     }
-                                } else {
-                                    fileId = null;
                                 }
                             
                             } if (null == fileId) {
