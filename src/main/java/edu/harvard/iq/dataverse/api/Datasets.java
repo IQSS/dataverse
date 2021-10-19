@@ -1391,7 +1391,7 @@ public class Datasets extends AbstractApiBean {
             boolean badFiles = false;
             for (DataFile datafile : filesToEmbargo) {
                 // superuser can overrule an existing embargo, even on released files
-                if ((datafile.isReleased() && datafile.getEmbargo() != null) && !authenticatedUser.isSuperuser()) {
+                if (datafile.isReleased() && !authenticatedUser.isSuperuser()) {
                     restrictedFiles.add(datafile.getId());
                     badFiles = true;
                 }
