@@ -1552,6 +1552,9 @@ public class FileUtil implements java.io.Serializable  {
             logger.fine(msg);
             return false;
         }
+        if (isActivelyEmbargoed(fileMetadata)) {
+            return false;
+        }
         boolean popupReasons = isDownloadPopupRequired(fileMetadata.getDatasetVersion());
         if (popupReasons == true) {
             /**
