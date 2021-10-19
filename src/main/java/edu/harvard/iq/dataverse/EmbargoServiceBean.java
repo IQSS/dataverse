@@ -38,13 +38,17 @@ public class EmbargoServiceBean {
         }
     }
 
+    public Embargo merge(Embargo e) {
+        return em.merge(e);
+    }
+    
     public Long save(Embargo embargo) {
         if (embargo.getId() == null) {
             em.persist(embargo);
             em.flush();
-            actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "embargoCreate")
-                    .setInfo("date available: " + embargo.getDateAvailable() + " reason: " + embargo.getReason()));
         }
+        actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "embargoCreate")
+                .setInfo("id: " + embargo.getId() + " date available: " + embargo.getDateAvailable() + " reason: " + embargo.getReason()));
         return embargo.getId();
     }
 
