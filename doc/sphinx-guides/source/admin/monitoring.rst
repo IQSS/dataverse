@@ -121,3 +121,21 @@ EJB Timers
 Should you be interested in monitoring the EJB timers, this script may be used as an example:
 
 .. literalinclude:: ../_static/util/check_timer.bash
+
+AWS RDS
+-------
+
+Some installations of Dataverse use AWS's "database as a service" offering called RDS (Relational Database Service) so it's worth mentioning some monitoring tips here.
+
+There are two documents that are especially worth reviewing:
+
+- `Monitoring an Amazon RDS DB instance <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Monitoring.html>`_: The official documentation.
+- `Performance Monitoring Workshop for RDS PostgreSQL and Aurora PostgreSQL <https://rdspg-monitoring.workshop.aws/en/intro.html>`_: A workshop that steps through practical examples.
+
+Tips:
+
+- Enable **Performance Insights**. The `product page <https://aws.amazon.com/rds/performance-insights/>`_ includes a `video from 2017 <https://youtu.be/4462hcfkApM>`_ that is still compelling today. For example, the `Top SQL <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.UsingDashboard.Components.AvgActiveSessions.TopLoadItemsTable.TopSQL.html>`_ tab shows the SQL queries that are contributing the most to database load. Performance Insights seems to only be available for `PostgreSQL 10 and higher <https://aws.amazon.com/about-aws/whats-new/2018/04/rds-performance-insights-on-rds-for-postgresql/>`_.
+- Enable the **slow query log** and consider using pgbadger to analyze the log files. Set ``log_min_duration_statement`` to "5000" for 5 seconds. See `slides <https://rdspg-monitoring.workshop.aws/en/postgresql-logs/enable-slow-query-log.html>`_ from the workshop for details.
+- Use **CloudWatch**. CloudWatch gathers metrics about CPU utilization from the hypervisor for a DB instance. It has a separate GUI to log into. See `CloudWatch docs <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/monitoring-cloudwatch.html>`_.
+- Use **Enhanced Monitoring**. Enhanced Monitoring gathers its metrics from an agent on the instance. See `Enhanced Monitoring docs <https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Monitoring.OS.html>`_.
+- `dataverse-ansible <https://github.com/GlobalDataverseCommunityConsortium/dataverse-ansible>`_ has a ``use_rds`` flag.
