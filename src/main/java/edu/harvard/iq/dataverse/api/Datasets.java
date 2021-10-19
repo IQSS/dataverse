@@ -1463,7 +1463,7 @@ public class Datasets extends AbstractApiBean {
         // client is superadmin or (client has EditDataset permission on these files and files are unreleased)
         // check if files are unreleased(DRAFT?)
         //ToDo - here and below - check the release status of files and not the dataset state (draft dataset version still can have released files)
-        if ((!authenticatedUser.isSuperuser() && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, Objects.requireNonNull(dataset).getOwner()).has(Permission.EditDataset)) {
+        if ((!authenticatedUser.isSuperuser() && (dataset.getLatestVersion().getVersionState() != DatasetVersion.VersionState.DRAFT) ) || !permissionService.userOn(authenticatedUser, dataset).has(Permission.EditDataset)) {
             return error(Status.FORBIDDEN, "Either the files are released and user is not a superuser or user does not have EditDataset permissions");
         }
 
