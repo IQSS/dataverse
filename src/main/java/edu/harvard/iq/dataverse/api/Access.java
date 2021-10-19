@@ -455,7 +455,7 @@ public class Access extends AbstractApiBean {
            throw new BadRequestException("tabular data required");
         }
         
-        if (dataFile.isRestricted()) {
+        if (dataFile.isRestricted() || FileUtil.isActivelyEmbargoed(dataFile)) {
             boolean hasPermissionToDownloadFile = false;
             DataverseRequest dataverseRequest;
             try {
