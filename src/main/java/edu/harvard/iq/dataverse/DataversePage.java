@@ -1216,23 +1216,28 @@ public class DataversePage implements java.io.Serializable {
         return settingsWrapper.getMetadataLanguages(this.dataverse).entrySet();
     }
     
+    private Set<Entry<String, String>> curationLabelSetOptions = null; 
+    
     public Set<Entry<String, String>> getCurationLabelSetOptions() {
-        HashMap<String, String> setNames = new HashMap<String, String>();
-        Set<String> allowedSetNames = systemConfig.getCurationLabels().keySet();
-        if (allowedSetNames.size() > 0) {
-            // Add an entry for the default (inherited from an ancestor or the system
-            // default)
-            String inheritedLabelSet = getCurationLabelSetNameLabel();
-            if (!StringUtils.isBlank(inheritedLabelSet)) {
-                setNames.put(inheritedLabelSet,SystemConfig.DEFAULTCURATIONLABELSET);
+        if (curationLabelSetOptions == null) {
+            HashMap<String, String> setNames = new HashMap<String, String>();
+            Set<String> allowedSetNames = systemConfig.getCurationLabels().keySet();
+            if (allowedSetNames.size() > 0) {
+                // Add an entry for the default (inherited from an ancestor or the system
+                // default)
+                String inheritedLabelSet = getCurationLabelSetNameLabel();
+                if (!StringUtils.isBlank(inheritedLabelSet)) {
+                    setNames.put(inheritedLabelSet, SystemConfig.DEFAULTCURATIONLABELSET);
+                }
+                // Add an entry for disabled
+                setNames.put(BundleUtil.getStringFromBundle("dataverse.curationLabels.disabled"), SystemConfig.CURATIONLABELSDISABLED);
+                allowedSetNames.forEach(name -> {
+                    setNames.put(name, name);
+                });
             }
-            // Add an entry for disabled
-            setNames.put(BundleUtil.getStringFromBundle("dataverse.curationLabels.disabled"), SystemConfig.CURATIONLABELSDISABLED);
-            allowedSetNames.forEach(name -> {
-                setNames.put(name, name);
-            });
+            curationLabelSetOptions = setNames.entrySet();
         }
-        return setNames.entrySet();
+        return curationLabelSetOptions;
     }
 
     public String getCurationLabelSetNameLabel() {
