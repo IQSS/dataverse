@@ -8,11 +8,16 @@ RETURNS bigint AS $$
 DECLARE
   estimatedsize bigint;
 BEGIN
-  SELECT ((reltuples / relpages)
-  		* (pg_relation_size('public.guestbookresponse') / current_setting('block_size')::int)
-		)::bigint
-		FROM   pg_class
-		WHERE  oid = 'public.guestbookresponse'::regclass INTO estimatedsize;
+  SELECT CASE WHEN relpages=0 THEN 0
+       	      ELSE ((reltuples / relpages)
+	           * (pg_relation_size('public.guestbookresponse') / current_setting('block_size')::int))::bigint
+         END
+	 FROM   pg_class
+	 WHERE  oid = 'public.guestbookresponse'::regclass INTO estimatedsize;
+
+     if estimatedsize = 0 then
+     SELECT COUNT(id) FROM guestbookresponse INTO estimatedsize;
+     END if;   
 
   RETURN estimatedsize;
 END;
