@@ -2749,15 +2749,17 @@ div[id$="facetCategoryList"] div li div.ui-widget {
 @media screen and (max-width: $screen-xs-max) {
 	.row.row-offcanvas.row-offcanvas-left {
 		#dv-sidebar {
-			visibility: hidden;
+			display: none;
 			opacity: 0;
+			height: 0;
 
 			transition: opacity 0.25s ease-in-out;
 		}
 
 		&.active #dv-sidebar {
-			visibility: visible;
+			display: block;
 			opacity: 1;
+			height: auto;
 
 			transition: opacity 0.25s ease-in-out;
 		}
