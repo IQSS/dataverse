@@ -524,6 +524,7 @@ https://demo.dataverse.org/api/search?q=*&type=dataset&metadata_fields=citation:
 The above example ``metadata_fields=citation:dsDescription&metadata_fields=citation:author`` return in a "metadataBlocks" only the compound fields "dsDescription" and "author" metadata fields named "citation"
 
 .. code-block:: json
+
 {
 	"status": "OK",
 	"data": {
