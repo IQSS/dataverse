@@ -88,40 +88,46 @@ public class ExportService {
         boolean clearCachedExport = false;
         if (formatName.equals(DDIExporter.PROVIDER_NAME) && (exportInputStream != null)) {
             // We want ddi and there was a cached version
-            LocalDate exportTime = dataset.getLastExportTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            //Track which embargoes we've already checked
-            Set<Long> embargoIds = new HashSet<Long>();
-            // Check for all files in the latest released version
-            for (FileMetadata fm : dataset.getLatestVersionForCopy().getFileMetadatas()) {
-                // ToDo? This loop is necessary because we have not stored the date when the
-                // next embargo in this datasetversion will end. If we knew that (another
-                // dataset/datasetversion column), we could make
-                // one check that nextembargoEnd exists and is after the last export and before
-                // now versus scanning through files until we potentially find such an embargo.
-                Embargo e = fm.getDataFile().getEmbargo();
-                if (e != null && !embargoIds.contains(e.getId()) && e.getDateAvailable().isAfter(exportTime)
-                        && e.getDateAvailable().isBefore(LocalDate.now())) {
-                    // The file has been embargoed and the embargo ended after the last export and
-                    // before the current date, so we need to remove the cached DDI export and make
-                    // it refresh
-                    clearCachedExport = true;
-                    break;
-                } else {
-                    embargoIds.add(e.getId());
+            LocalDate exportLocalDate = null;
+            Date lastExportDate = dataset.getLastExportTime();
+            // if lastExportDate == null, assume it's not set because were exporting for the
+            // first time now (e.g. during publish) and therefore no changes are needed
+            if (lastExportDate != null) {
+                exportLocalDate = lastExportDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                // Track which embargoes we've already checked
+                Set<Long> embargoIds = new HashSet<Long>();
+                // Check for all files in the latest released version
+                for (FileMetadata fm : dataset.getLatestVersionForCopy().getFileMetadatas()) {
+                    // ToDo? This loop is necessary because we have not stored the date when the
+                    // next embargo in this datasetversion will end. If we knew that (another
+                    // dataset/datasetversion column), we could make
+                    // one check that nextembargoEnd exists and is after the last export and before
+                    // now versus scanning through files until we potentially find such an embargo.
+                    Embargo e = fm.getDataFile().getEmbargo();
+                    if (e != null && !embargoIds.contains(e.getId()) && e.getDateAvailable().isAfter(exportLocalDate)
+                            && e.getDateAvailable().isBefore(LocalDate.now())) {
+                        // The file has been embargoed and the embargo ended after the last export and
+                        // before the current date, so we need to remove the cached DDI export and make
+                        // it refresh
+                        clearCachedExport = true;
+                        break;
+                    } else {
+                        embargoIds.add(e.getId());
+                    }
+                }
+            }
+            if (clearCachedExport) {
+                try {
+                    exportInputStream.close();
+                    clearCachedExport(dataset, formatName);
+                } catch (Exception ex) {
+                    logger.warning("Failure deleting DDI export format for dataset id: " + dataset.getId()
+                            + " after embargo expiration: " + ex.getLocalizedMessage());
+                } finally {
+                    exportInputStream = null;
                 }
             }
         }
-        if (clearCachedExport) {
-            try {
-                exportInputStream.close();
-                clearCachedExport(dataset, formatName);
-            } catch (Exception ex) {
-                logger.warning("Failure deleting DDI export format for dataset id: " + dataset.getId()
-                        + " after embargo expiration: " + ex.getLocalizedMessage());
-            } finally {
-                exportInputStream = null;
-            }
-        } 
         
         if (exportInputStream != null) {
             return exportInputStream;
