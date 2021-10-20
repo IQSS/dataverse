@@ -3,6 +3,14 @@
  */
 
 /**
+ * The screen width value where the top navbar changes into the mobile state (hamburger menu),
+ * Default value: 768
+ * @type integer screen width in px
+ */
+
+var accessibilityTopNavbarMobileBreakpoint = 992;
+
+/**
  * Denotes whether to print debug info to console.
  * @type boolean true = enabled, false = disabled
  */
@@ -212,7 +220,7 @@ function accessibilityApplySetting(setting, value) {
 function accessibilityToggleNavbar(visible) {
     var navbar = document.getElementById("topNavBar");
 
-    if (window.innerWidth > 768) {
+    if (window.innerWidth > accessibilityTopNavbarMobileBreakpoint) {
         if (visible) {
             navbar.classList.add("in");
             navbar.setAttribute("aria-expanded", "true");

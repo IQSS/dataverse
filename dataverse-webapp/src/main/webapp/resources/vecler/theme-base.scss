@@ -2081,6 +2081,23 @@ $navbar-height: 102px;
 	margin: 8px;
 }
 
+@media screen and (min-width: $screen-md-min) {
+	#userDisplayInfoTitle {
+		max-width: 100px;
+		display: inline-block;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		vertical-align: bottom;
+	}
+}
+
+@media screen and (min-width: $screen-lg-min) {
+	#userDisplayInfoTitle {
+		max-width: 200px;
+	}
+}
+
 @media screen and (max-width: $screen-xs-max) {
 	$navbar-height-mobile: 70px;
 
@@ -2141,6 +2158,8 @@ $navbar-height: 102px;
 			height: $navbar-height;
 	}
 }
+
+/* Accessibility controls */
 
 #accessibility-controls {
 	position: absolute;
@@ -2313,6 +2332,116 @@ $navbar-height: 102px;
 
 #accessibility-controls button[aria-pressed="true"]:not(.toggle) {
 	cursor: default;
+}
+
+/* Force navbar mobile mode on sm-md screen width */
+
+@mixin force-navbar-mobile {
+	.navbar-toggle {
+		display: block;
+	}
+
+	.navbar-header {
+		float: none;
+	}
+
+	.navbar-default #topNavBar {
+		border-top: 1px solid $gray-border-color;
+
+		&.navbar-collapse.collapse {
+			display: none !important;
+
+			&.in {
+				display: block !important;
+			}
+		}
+
+		.pull-right {
+			width: 100%;
+			float: none !important;
+		}
+
+		.navbar-nav {
+			height: auto;
+			margin: 7.5px -15px;
+			display: block;
+
+			> li, .navbar-left {
+				float: none !important;
+			}
+
+			.open .dropdown-menu {
+				position: static;
+				float: none;
+				width: auto;
+				margin-top: 0;
+				background-color: transparent;
+				border: 0;
+				-webkit-box-shadow: none;
+				box-shadow: none;
+
+				> li > a {
+					line-height: 20px;
+
+					&:focus, &:hover {
+						background-image: none;
+					}
+				}
+
+				.dropdown-header, > li > a, > li > form > a {
+					padding: 0.667em 1em !important;
+				}
+			}
+		}
+	}
+
+	@include accessibility-controls-mobile;
+
+	.navbar-default #topNavBar .navbar-nav .open .dropdown-menu {
+		.dropdown-header, > li > a, > li > form > a {
+			padding: 0.667em 1em !important;
+		}
+	}
+
+	.navbar-nav .open .dropdown-menu {
+		position: static;
+		float: none;
+		width: 100%;
+		margin-top: 0;
+		background-color: transparent;
+		box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+	}
+
+	.navbar-default #topNavBar .navbar-nav .open .dropdown-menu {
+		.dropdown-header, > li > a, > li > form > a {
+			padding: 0.667em 1em !important;
+		}
+	}
+
+	.navbar-nav .open .dropdown-menu {
+		position: static;
+		float: none;
+		width: 100%;
+		margin-top: 0;
+		background-color: transparent;
+		box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+	}
+}
+
+@media screen and (min-width: $screen-sm-min) and (max-width: $screen-sm-max) {
+	@include force-navbar-mobile;
+
+	body.navbar-expanded {
+		overflow: hidden;
+	}
+}
+
+@media only screen and (hover: none) and (pointer: coarse) {
+	@include force-navbar-mobile;
+
+	body.navbar-expanded {
+		overflow: hidden;
+	}
 }
 
 /* Footer */
@@ -3602,80 +3731,7 @@ body.wcag-text-toggle {
 body.font-size-percent-150,
 body.font-size-percent-200 {
 	@media (min-width: $screen-sm-min) {
-		.navbar-toggle {
-			display: block;
-		}
-
-		.navbar-header {
-			float: none;
-		}
-
-		.navbar-default #topNavBar {
-			border-top: 1px solid $gray-border-color;
-
-			&.navbar-collapse.collapse {
-				display: none !important;
-
-				&.in {
-					display: block !important;
-				}
-			}
-
-			.pull-right {
-				width: 100%;
-				float: none !important;
-			}
-
-			.navbar-nav {
-				height: auto;
-				margin: 7.5px -15px;
-				display: block;
-
-				> li, .navbar-left {
-					float: none !important;
-				}
-
-				.open .dropdown-menu {
-					position: static;
-					float: none;
-					width: auto;
-					margin-top: 0;
-					background-color: transparent;
-					border: 0;
-					-webkit-box-shadow: none;
-					box-shadow: none;
-
-					> li > a {
-						line-height: 20px;
-
-						&:focus, &:hover {
-							background-image: none;
-						}
-					}
-
-					.dropdown-header, > li > a, > li > form > a {
-						padding: 0.667em 1em !important;
-					}
-				}
-			}
-		}
-
-		@include accessibility-controls-mobile;
-	}
-
-	.navbar-default #topNavBar .navbar-nav .open .dropdown-menu {
-		.dropdown-header, > li > a, > li > form > a {
-			padding: 0.667em 1em !important;
-		}
-	}
-
-	.navbar-nav .open .dropdown-menu {
-		position: static;
-		float: none;
-		width: 100%;
-		margin-top: 0;
-		background-color: transparent;
-		box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+		@include force-navbar-mobile;
 	}
 }
 
