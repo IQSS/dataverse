@@ -111,7 +111,7 @@ public class ExportService {
                         // it refresh
                         clearCachedExport = true;
                         break;
-                    } else {
+                    } else if(e!=null) {
                         embargoIds.add(e.getId());
                     }
                 }

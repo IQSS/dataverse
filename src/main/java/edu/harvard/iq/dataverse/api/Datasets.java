@@ -272,6 +272,7 @@ public class Datasets extends AbstractApiBean {
                     .type(mediaType).
                     build();
         } catch (Exception wr) {
+            logger.warning(wr.getMessage());
             return error(Response.Status.FORBIDDEN, "Export Failed");
         }
     }
