@@ -66,7 +66,10 @@ public class SettingsWrapper implements java.io.Serializable {
     private Map<String, String> settingsMap;
     
     // Related to a specific setting for guide urls
-    private String guidesBaseUrl = null; 
+    private String guidesBaseUrl = null;
+    
+    private boolean embargoDateChecked = false;
+    private LocalDate maxEmbargoDate = null;
 
  
     public String get(String settingKey) {
@@ -310,24 +313,30 @@ public class SettingsWrapper implements java.io.Serializable {
         }
         return anonymizedFieldTypes.contains(df.getDatasetFieldType().getName());
     }
-    public LocalDate getMaxEmbargoDate() {
-        String months = getValueForKey(SettingsServiceBean.Key.MaxEmbargoDurationInMonths);
-        Long maxMonths = null;
-        if (months != null) {
-            try {
-                maxMonths = Long.parseLong(months);
-            } catch (NumberFormatException nfe) {
-                logger.warning("Cant interpret :MaxEmbargoDurationInMonths as a long");
-            }
-        }
     
-        if (maxMonths != null) {
-            if (maxMonths == -1) {
-                maxMonths = 12000l; //Arbitrary cutoff at 1000 years - needs to keep maxDate < year 999999999 and somehwere 1K> x >10K years the datepicker widget stops showing a popup calendar
+    public LocalDate getMaxEmbargoDate() {
+        if (!embargoDateChecked) {
+            String months = getValueForKey(SettingsServiceBean.Key.MaxEmbargoDurationInMonths);
+            Long maxMonths = null;
+            if (months != null) {
+                try {
+                    maxMonths = Long.parseLong(months);
+                } catch (NumberFormatException nfe) {
+                    logger.warning("Cant interpret :MaxEmbargoDurationInMonths as a long");
+                }
             }
-            return LocalDate.now().plusMonths(maxMonths);
+
+            if (maxMonths != null && maxMonths != 0) {
+                if (maxMonths == -1) {
+                    maxMonths = 12000l; // Arbitrary cutoff at 1000 years - needs to keep maxDate < year 999999999 and
+                                        // somehwere 1K> x >10K years the datepicker widget stops showing a popup
+                                        // calendar
+                }
+                maxEmbargoDate = LocalDate.now().plusMonths(maxMonths);
+            }
+            embargoDateChecked = true;
         }
-        return null;
+        return maxEmbargoDate;
     }
     
     public LocalDate getMinEmbargoDate() {
@@ -336,8 +345,8 @@ public class SettingsWrapper implements java.io.Serializable {
     
     public boolean isValidEmbargoDate(Embargo e) {
         
-        if (e.getDateAvailable()==null || e.getDateAvailable().isAfter(LocalDate.now())
-                && e.getDateAvailable().isBefore(getMaxEmbargoDate().plusDays(1))) {
+        if (e.getDateAvailable()==null || (isEmbargoAllowed() && e.getDateAvailable().isAfter(LocalDate.now())
+                && e.getDateAvailable().isBefore(getMaxEmbargoDate().plusDays(1)))) {
             return true;
         }
         
