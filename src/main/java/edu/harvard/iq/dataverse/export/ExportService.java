@@ -94,6 +94,7 @@ public class ExportService {
             // first time now (e.g. during publish) and therefore no changes are needed
             if (lastExportDate != null) {
                 exportLocalDate = lastExportDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                logger.fine("Last export date: " + exportLocalDate.toString());
                 // Track which embargoes we've already checked
                 Set<Long> embargoIds = new HashSet<Long>();
                 // Check for all files in the latest released version
@@ -104,14 +105,20 @@ public class ExportService {
                     // one check that nextembargoEnd exists and is after the last export and before
                     // now versus scanning through files until we potentially find such an embargo.
                     Embargo e = fm.getDataFile().getEmbargo();
+                    if(e!=null) {
+                    logger.fine("Datafile:  " + fm.getDataFile().getId());
+                    logger.fine("Embargo end date: "+ e.getFormattedDateAvailable());
+                    }
                     if (e != null && !embargoIds.contains(e.getId()) && e.getDateAvailable().isAfter(exportLocalDate)
                             && e.getDateAvailable().isBefore(LocalDate.now())) {
+                        logger.fine("Request that the ddi export be cleared.");
                         // The file has been embargoed and the embargo ended after the last export and
                         // before the current date, so we need to remove the cached DDI export and make
                         // it refresh
                         clearCachedExport = true;
                         break;
                     } else if(e!=null) {
+                        logger.fine("adding embargo to checked list: " + e.getId());
                         embargoIds.add(e.getId());
                     }
                 }
@@ -258,6 +265,9 @@ public class ExportService {
         } catch (IllegalStateException e) {
             throw new ExportException("No published version found during export. " + dataset.getGlobalId().toString());
         }
+        
+        //As with exportAll, we should update the lastexporttime for the dataset
+        dataset.setLastExportTime(new Timestamp(new Date().getTime()));
     }
     
 
