@@ -45,38 +45,47 @@
             <ui:param name="releaseDraft" value="#{DatasetPage.releaseDraftPopup()}"/>
             <ui:param name="releaseBoth" value="#{DatasetPage.publishBothPopup()}"/>
             <ui:define name="meta_header">
-                <meta name="description" content="#{DatasetPage.description}"/>
+                <ui:fragment rendered="#{!DatasetPage.anonymizedAccess}">
+                    <meta name="description" content="#{DatasetPage.description}"/>
+                </ui:fragment>
             </ui:define>
             <ui:define name="dc_meta_header">
-                <meta name="DC.identifier" content="#{DatasetPage.persistentId}"/>
-                <meta name="DC.type" content="Dataset"/>
-                <meta name="DC.title" content="#{DatasetPage.title}"/>
-                <meta name="DC.date" content="#{DatasetPage.workingVersion.publicationDateAsString}"/>
-                <meta name="DC.publisher" content="#{DatasetPage.publisher}" />
-                <meta name="DC.description" content="#{DatasetPage.description}" />
-                <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
-                    <meta name="DC.creator" content="#{author}"/>
-                </ui:repeat>
-                <ui:repeat var="subject" value="#{DatasetPage.workingVersion.datasetSubjects}">
-                    <meta name="DC.subject" content="#{subject}"/>
-                </ui:repeat>
+                <ui:fragment rendered="#{!DatasetPage.anonymizedAccess}">
+                    <meta name="DC.identifier" content="#{DatasetPage.persistentId}"/>
+                    <meta name="DC.type" content="Dataset"/>
+                    <meta name="DC.title" content="#{DatasetPage.title}"/>
+                    <meta name="DC.date" content="#{DatasetPage.workingVersion.publicationDateAsString}"/>
+                    <meta name="DC.publisher" content="#{DatasetPage.publisher}" />
+                    <meta name="DC.description" content="#{DatasetPage.description}" />
+                    <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
+                        <meta name="DC.creator" content="#{author}"/>
+                    </ui:repeat>
+                    <ui:repeat var="subject" value="#{DatasetPage.workingVersion.datasetSubjects}">
+                        <meta name="DC.subject" content="#{subject}"/>
+                    </ui:repeat>
+                </ui:fragment>
             </ui:define>
+                
             <ui:define name="jsonld_header">
-                <script type="application/ld+json">
-                    <h:outputText value="#{DatasetPage.jsonLd}"/>
-                </script>
+                <ui:fragment rendered="#{!DatasetPage.anonymizedAccess}">
+                    <script type="application/ld+json">
+                        <h:outputText value="#{DatasetPage.jsonLd}"/>
+                    </script>
+                </ui:fragment>
             </ui:define>
             <ui:define name="og_header">
-                <meta property="og:title" content="#{DatasetPage.title}" />
-                <meta property="og:type" content="article" />
-                <meta property="og:url" content="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" />
-                <meta property="og:image" content="#{DatasetPage.dataverseSiteUrl.concat(resource['images/dataverse-icon-1200.png'])}" />
-                <meta property="og:site_name" content="#{DatasetPage.publisher}" />
-                <meta property="og:description" content="#{(DatasetPage.description.length()>150 ? DatasetPage.description.substring(0,147).concat('...') : DatasetPage.description)}" />
-                <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
-                    <meta property="article:author" content="#{author}" />
-                </ui:repeat>
-                <meta property="article:published_time" content="#{DatasetPage.workingVersion.publicationDateAsString}" />
+                <ui:fragment rendered="#{!DatasetPage.anonymizedAccess}">
+                    <meta property="og:title" content="#{DatasetPage.title}" />
+                    <meta property="og:type" content="article" />
+                    <meta property="og:url" content="#{DatasetPage.dataverseSiteUrl}/dataset.xhtml?persistentId=#{dataset.globalId}" />
+                    <meta property="og:image" content="#{DatasetPage.dataverseSiteUrl.concat(resource['images/dataverse-icon-1200.png'])}" />
+                    <meta property="og:site_name" content="#{DatasetPage.publisher}" />
+                    <meta property="og:description" content="#{(DatasetPage.description.length()>150 ? DatasetPage.description.substring(0,147).concat('...') : DatasetPage.description)}" />
+                    <ui:repeat var="author" value="#{DatasetPage.datasetAuthors}">
+                        <meta property="article:author" content="#{author}" />
+                    </ui:repeat>
+                    <meta property="article:published_time" content="#{DatasetPage.workingVersion.publicationDateAsString}" />
+                </ui:fragment>
             </ui:define>
             <ui:define name="body">
                 <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
