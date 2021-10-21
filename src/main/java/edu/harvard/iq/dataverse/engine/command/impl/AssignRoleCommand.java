@@ -76,7 +76,7 @@ public class AssignRoleCommand extends AbstractCommand<RoleAssignment> {
         // for data file check permission on owning dataset
         return Collections.singletonMap("",
                 defPoint instanceof Dataverse ? Collections.singleton(Permission.ManageDataversePermissions)
-                : Collections.singleton(Permission.ManageDatasetPermissions));
+                : defPoint instanceof Dataset ? Collections.singleton(Permission.ManageDatasetPermissions) : Collections.singleton(Permission.ManageFilePermissions));
     }
 
     @Override
