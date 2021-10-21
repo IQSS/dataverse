@@ -22,6 +22,8 @@ public class UserNameValidator implements ConstraintValidator<ValidateUserName, 
 
     }
     
+    // note: while the ConstraintValidatorContext is not used in this method, 
+    // it is required in order to impelement the ConstraintValidator interface
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         return isUserNameValid(value);
