@@ -2744,6 +2744,27 @@ public class UtilIT {
                 .post("/api/dataverses/" + dataverseAlias +"/datasets");
         return response;
     }
+    
+    static Response setDataverseCurationLabelSet(String alias, String apiToken, String labelSetName) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put("/api/admin/dataverse/" + alias + "/curationLabelSet?name=" + labelSetName);
+        return response;
+    }
+    
+    static Response getDatasetCurationLabelSet(Integer datasetId, String apiToken) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .get("/api/datasets/" + datasetId + "/curationLabelSet");
+        return response;
+    }
+    
+    static Response setDatasetCurationLabel(Integer datasetId, String apiToken, String label) {
+        Response response = given()
+                .header(API_TOKEN_HTTP_HEADER, apiToken)
+                .put("/api/datasets/" + datasetId + "/curationStatus?label=" + label);
+        return response;
+    }
 
     private static DatasetField constructPrimitive(String fieldName, String value) {
         DatasetField field = new DatasetField();

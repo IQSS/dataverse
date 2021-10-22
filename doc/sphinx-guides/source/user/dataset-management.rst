@@ -505,6 +505,8 @@ Private URL to Review Unpublished Dataset
 
 Creating a Private URL for your dataset allows you to share your dataset (for viewing and downloading of files) before it is published to a wide group of individuals who may not have a user account on the Dataverse installation. Anyone you send the Private URL to will not have to log into the Dataverse installation to view the dataset.
 
+**Note:** To create a Private URL, you must have the *ManageDatasetPermissions* permission for your dataset, usually given by the :ref:`roles <permissions>` *Curator* or *Administrator*.
+
 #. Go to your unpublished dataset
 #. Select the “Edit” button
 #. Select “Private URL” in the dropdown menu

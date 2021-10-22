@@ -467,6 +467,20 @@ public class SettingsServiceBean {
          * ability/permission necessary to publish the dataset
          */
         SendNotificationOnDatasetCreation,
+        /**
+         * A JSON Object containing named comma separated sets(s) of allowed labels (up
+         * to 32 characters, spaces allowed) that can be set on draft datasets, via API
+         * or UI by users with the permission to publish a dataset. (Set names are
+         * string keys, labels are a JSON array of strings). These should correspond to
+         * the states in an organizations curation process(es) and are intended to help
+         * users/curators track the progress of a dataset through an externally defined
+         * curation process. Only one set of labels are allowed per dataset (defined via
+         * API by a superuser per collection (UI or API) or per dataset (API only)). A
+         * dataset may only have one label at a time and if a label is set, it will be
+         * removed at publication time. This functionality is disabled when this setting
+         * is empty/not set.
+         */
+        AllowedCurationLabels,
         /*
          * Include "Custom Terms" as an item in the license drop-down or not.
          */
