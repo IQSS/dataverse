@@ -421,8 +421,8 @@ A **Provenance Description** allows you to add more provenance information in ad
 You can return to attach provenance to your data file later on by clicking the "Add + Edit Metadata" button on the file page, and then clicking the "Edit -> Provenance" button.
 
 ..	COMMENTED OUT UNTIL PROV TAB IS ADDED: 
-..	You can also attach provenance to your data file later on by clicking the "Add Provenance" button on the file page, under the Provenance tab:
-................................................................................................................................................
+..	You can also attach provenance to your data file later on by clicking the "Add Provenance" button on the file page, under the Provenance tab: 
+..
 ..	**(Insert screenshot of Provenance Tab's "Add Provenance button" here, once that functionality is developed)**
 
 .. COMMENTED OUT UNTIL PROV GRAPH IS ADDED: 
