@@ -53,12 +53,12 @@
                  rendered="#{DatasetPage.fileDisplayTable and (DatasetPage.workingVersion != null)}"
                  emptyMessage="#{DatasetPage.workingVersion.fileMetadatas.size() == 0 ? bundle['file.notFound.tip'] : bundle['file.notFound.search']}">
         <p:ajax event="page" listener="#{DatasetPage.fileListingPaginatorListener}" update="filesTable" process="@this"  oncomplete="refreshPaginator(),rebindCommand()"  immediate="true"/>
-        <p:ajax event="toggleSelect" listener="#{DatasetPage.toggleAllSelected()}" update="filesTable"  process="@this" oncomplete="rebindCommand()"  /> 
-        <p:ajax event="rowUnselectCheckbox" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" oncomplete="rebindCommand()"  />
-        <p:ajax event="rowSelect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" oncomplete="rebindCommand()" />
-        <p:ajax event="rowSelectCheckbox" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" oncomplete="rebindCommand()"  />
-        <p:ajax event="rowUnselect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" oncomplete="rebindCommand()" />
-        <p:ajax event="rowDblselect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="filesTable" process="@this" oncomplete="rebindCommand()" />
+        <p:ajax event="toggleSelect" listener="#{DatasetPage.toggleAllSelected()}" update="@form:validateFilesOutcome, filesTable"  process="@this" oncomplete="rebindCommand()"  /> 
+        <p:ajax event="rowUnselectCheckbox" listener="#{DatasetPage.setSelectAllFiles(false)}" update="@form:validateFilesOutcome, filesTable" process="@this" oncomplete="rebindCommand()"  />
+        <p:ajax event="rowSelect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="@form:validateFilesOutcome, filesTable" process="@this" oncomplete="rebindCommand()" />
+        <p:ajax event="rowSelectCheckbox" listener="#{DatasetPage.setSelectAllFiles(false)}" update="@form:validateFilesOutcome, filesTable" process="@this" oncomplete="rebindCommand()"  />
+        <p:ajax event="rowUnselect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="@form:validateFilesOutcome, filesTable" process="@this" oncomplete="rebindCommand()" />
+        <p:ajax event="rowDblselect" listener="#{DatasetPage.setSelectAllFiles(false)}" update="@form:validateFilesOutcome, filesTable" process="@this" oncomplete="rebindCommand()" />
 
         <f:facet name="header">
             <div class="row form-inline" jsf:id="cloudStorageBlock" jsf:rendered="#{DatasetPage.showComputeButton()}">
