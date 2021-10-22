@@ -6,13 +6,10 @@ public class Range {
     private final long start;
     // Used to calculate the length.
     private final long end;
-    // Used to determine when to stop reading.
-    private final long length;
 
     public Range(long start, long end) {
         this.start = start;
         this.end = end;
-        this.length = end - start + 1;
     }
 
     public long getStart() {
@@ -23,8 +20,9 @@ public class Range {
         return end;
     }
 
+    // Used to determine when to stop reading.
     public long getLength() {
-        return length;
+        return end - start + 1;
     }
 
 }
