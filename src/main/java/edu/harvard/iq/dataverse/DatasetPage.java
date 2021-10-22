@@ -5630,26 +5630,41 @@ public class DatasetPage implements java.io.Serializable {
     private Embargo selectionEmbargo = new Embargo();
     
     public boolean isValidEmbargoSelection() {
-        for(FileMetadata fmd: selectedFiles) {
-            if(!fmd.getDataFile().isReleased()) {
+        //If fileMetadataForAction is set, someone is using the kebab/single file menu
+        if (fileMetadataForAction != null) {
+            if (!fileMetadataForAction.getDataFile().isReleased()) {
                 return true;
+            } else {
+                return false;
             }
         }
-        if(fileMetadataForAction!=null && !fileMetadataForAction.getDataFile().isReleased()) {
-            return true;
+        //Otherwise we check the selected files
+        for (FileMetadata fmd : selectedFiles) {
+            if (!fmd.getDataFile().isReleased()) {
+                return true;
+            }
         }
         return false;
     }
     
+    /*
+     * This method checks to see if the selected file/files have an embargo that could be removed. It doesn't return true of a released file has an embargo.
+     */
     public boolean isExistingEmbargo() {
-        for(FileMetadata fmd: selectedFiles) {
-            if(!fmd.getDataFile().isReleased() && (fmd.getDataFile().getEmbargo()!=null)) {
+        if (fileMetadataForAction != null) {
+            if (!fileMetadataForAction.getDataFile().isReleased()
+                    && (fileMetadataForAction.getDataFile().getEmbargo() != null)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        for (FileMetadata fmd : selectedFiles) {
+            if (!fmd.getDataFile().isReleased() && (fmd.getDataFile().getEmbargo() != null)) {
                 return true;
             }
         }
-        if(fileMetadataForAction!=null && !fileMetadataForAction.getDataFile().isReleased() && (fileMetadataForAction.getDataFile().getEmbargo()!=null)) {
-            return true;
-        }
+
         return false;
     }
     
@@ -5704,11 +5719,11 @@ public class DatasetPage implements java.io.Serializable {
         }
         List<Embargo> orphanedEmbargoes = new ArrayList<Embargo>();
         List<FileMetadata> embargoFMs = null;
-        if (selectedFiles != null && selectedFiles.size() > 0) {
-            embargoFMs = selectedFiles;
-        } else if (fileMetadataForAction != null) {
+        if (fileMetadataForAction != null) {
             embargoFMs = new ArrayList<FileMetadata>();
             embargoFMs.add(fileMetadataForAction);
+        } else if (selectedFiles != null && selectedFiles.size() > 0) {
+            embargoFMs = selectedFiles;
         }
         if(embargoFMs!=null && !embargoFMs.isEmpty()) {
             for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
