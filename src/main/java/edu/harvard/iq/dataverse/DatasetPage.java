@@ -3296,7 +3296,7 @@ public class DatasetPage implements java.io.Serializable {
         String retVal = save();
         //And delete them only after the dataset is updated
         for(Embargo emb: orphanedEmbargoes) {
-            embargoService.deleteById(emb.getId());
+            embargoService.deleteById(emb.getId(), ((AuthenticatedUser)session.getUser()).getUserIdentifier());
         }
         return retVal;
 
@@ -5729,7 +5729,9 @@ public class DatasetPage implements java.io.Serializable {
         } else if (selectedFiles != null && selectedFiles.size() > 0) {
             embargoFMs = selectedFiles;
         }
+        
         if(embargoFMs!=null && !embargoFMs.isEmpty()) {
+            selectionEmbargo = embargoService.merge(selectionEmbargo);
             for (FileMetadata fmd : workingVersion.getFileMetadatas()) {
                 for (FileMetadata fm : embargoFMs) {
                     if (fm.getDataFile().equals(fmd.getDataFile()) && (isSuperUser()||!fmd.getDataFile().isReleased())) {
@@ -5747,6 +5749,7 @@ public class DatasetPage implements java.io.Serializable {
                 }
             }
         }
+        embargoService.save(selectionEmbargo, ((AuthenticatedUser)session.getUser()).getUserIdentifier());
         // success message:
         String successMessage = BundleUtil.getStringFromBundle("file.assignedEmbargo.success");
         logger.fine(successMessage);
@@ -5756,7 +5759,7 @@ public class DatasetPage implements java.io.Serializable {
 
         save();
         for(Embargo emb: orphanedEmbargoes) {
-            embargoService.deleteById(emb.getId());
+            embargoService.deleteById(emb.getId(), ((AuthenticatedUser)session.getUser()).getUserIdentifier());
         }
         return returnToDraftVersion();
     }

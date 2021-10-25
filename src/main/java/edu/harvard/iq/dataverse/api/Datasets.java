@@ -1420,10 +1420,10 @@ public class Datasets extends AbstractApiBean {
                 fileService.save(datafile);
             }
             //Call service to get action logged
-            long embargoId = embargoService.save(embargo);
+            long embargoId = embargoService.save(embargo, authenticatedUser.getUserIdentifier());
             if (orphanedEmbargoes.size() > 0) {
                 for (Embargo emb : orphanedEmbargoes) {
-                    embargoService.deleteById(emb.getId());
+                    embargoService.deleteById(emb.getId(), authenticatedUser.getUserIdentifier());
                 }
             }
             //If superuser, report changes to any released files
@@ -1431,9 +1431,11 @@ public class Datasets extends AbstractApiBean {
                 String releasedFiles = filesToEmbargo.stream().filter(d -> d.isReleased())
                         .map(d -> d.getId().toString()).collect(Collectors.joining(","));
                 if (!releasedFiles.isBlank()) {
-                    actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "embargoRemovedFrom")
-                            .setInfo("Embargo id: " + embargoId + " added for released file(s), id(s) " + releasedFiles
-                                    + "."));
+                    actionLogSvc
+                            .log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "embargoAddedTo")
+                                    .setInfo("Embargo id: " + embargo.getId() + " added for released file(s), id(s) "
+                                            + releasedFiles + ".")
+                                    .setUserIdentifier(authenticatedUser.getUserIdentifier()));
                 }
             }
             return ok(Json.createObjectBuilder().add("message", "Files were embargoed"));
@@ -1537,12 +1539,14 @@ public class Datasets extends AbstractApiBean {
             }
             if (orphanedEmbargoes.size() > 0) {
                 for (Embargo emb : orphanedEmbargoes) {
-                    embargoService.deleteById(emb.getId());
+                    embargoService.deleteById(emb.getId(), authenticatedUser.getUserIdentifier());
                 }
             }
             String releasedFiles = embargoFilesToUnset.stream().filter(d -> d.isReleased()).map(d->d.getId().toString()).collect(Collectors.joining(","));
             if(!releasedFiles.isBlank()) {
-                actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "embargoRemovedFrom").setInfo("Embargo removed from released file(s), id(s) " + releasedFiles + "."));
+                ActionLogRecord removeRecord = new ActionLogRecord(ActionLogRecord.ActionType.Admin, "embargoRemovedFrom").setInfo("Embargo removed from released file(s), id(s) " + releasedFiles + ".");
+                removeRecord.setUserIdentifier(authenticatedUser.getUserIdentifier());
+                actionLogSvc.log(removeRecord);
             }
             return ok(Json.createObjectBuilder().add("message", "Embargo(es) were removed from files"));
         } else {

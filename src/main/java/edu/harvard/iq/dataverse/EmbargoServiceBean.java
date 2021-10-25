@@ -42,19 +42,20 @@ public class EmbargoServiceBean {
         return em.merge(e);
     }
     
-    public Long save(Embargo embargo) {
+    public Long save(Embargo embargo, String userIdentifier) {
         if (embargo.getId() == null) {
             em.persist(embargo);
             em.flush();
         }
         actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "embargoCreate")
-                .setInfo("id: " + embargo.getId() + " date available: " + embargo.getDateAvailable() + " reason: " + embargo.getReason()));
+                .setInfo("id: " + embargo.getId() + " date available: " + embargo.getDateAvailable() + " reason: " + embargo.getReason()).setUserIdentifier(userIdentifier));
         return embargo.getId();
     }
 
-    public int deleteById(long id) {
+    public int deleteById(long id, String userIdentifier) {
         actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "embargoDelete")
-                .setInfo(Long.toString(id)));
+                .setInfo(Long.toString(id))
+                .setUserIdentifier(userIdentifier));
         return em.createNamedQuery("Embargo.deleteById")
                 .setParameter("id", id)
                 .executeUpdate();
