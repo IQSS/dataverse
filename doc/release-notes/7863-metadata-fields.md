@@ -1,3 +1,5 @@
-### Metadata Fields in Search API
+### Dynamically Request Arbitrary Metadata Fields from Search API 
 
-API Users can now specify metadata fields and blocks in search API responses. This allows for more precise, customized queries.
+The Search API now allows arbitrary metadata fields to be requested when displaying results from datasets. You can request all fields from metadata blocks or pick and choose certain fields.
+
+The new parameter is called `metadata_fields` and the Search API documentation contains details and examples: https://guides.dataverse.org/en/latest/api/search.html
