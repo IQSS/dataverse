@@ -524,129 +524,129 @@ https://demo.dataverse.org/api/search?q=*&type=dataset&metadata_fields=citation:
 The above example ``metadata_fields=citation:dsDescription&metadata_fields=citation:author`` return in a "metadataBlocks" only the compound fields "dsDescription" and "author" metadata fields named "citation"
 
 .. code-block:: json
-{
-	"status": "OK",
-	"data": {
-		"q": "*",
-		"total_count": 4,
-		"start": 0,
-		"spelling_alternatives": {},
-		"items": [
-			{
-				"name": "JDD avec GeoJson 2021-07-13T10:23:46.409Z",
-				"type": "dataset",
-				"url": "https://doi.org/10.5072/FK2/GIWCKB",
-				"global_id": "doi:10.5072/FK2/GIWCKB",
-				"description": "Démo sprint 5. Cette couche représente l'emprise des cimetières sur le territoire des Métropole. Ces périmètres d'emprise des cimetières sont issus du recensement des informations des PLU/POS de chaque commune de la métropole, des données du cadastre DGFiP et d'un inventaire terrain du Service Planification et Études Urbaines de Métropole",
-				"publisher": "Sample Data",
-				"citationHtml": "Rennes M&eacute;tropole, 2021, \"JDD avec GeoJson 2021-07-13T10:23:46.409Z\", <a href=\"https://doi.org/10.5072/FK2/GIWCKB\" target=\"_blank\">https://doi.org/10.5072/FK2/GIWCKB</a>, Root, DRAFT VERSION",
-				"identifier_of_dataverse": "Sample_data",
-				"name_of_dataverse": "Sample Data",
-				"citation": "Métropole, 2021, \"JDD avec GeoJson 2021-07-13T10:23:46.409Z\", https://doi.org/10.5072/FK2/GIWCKB, Root, DRAFT VERSION",
-				"storageIdentifier": "file://10.5072/FK2/GIWCKB",
-				"subjects": [
-					"Other"
-				],
-				"fileCount": 0,
-				"versionId": 9976,
-				"versionState": "DRAFT",
-				"createdAt": "2021-07-13T10:28:45Z",
-				"updatedAt": "2021-07-13T10:28:45Z",
-				"contacts": [
-					{
-						"name": "string",
-						"affiliation": "string"
-					}
-				],
-				"metadataBlocks": {
-					"citation": {
-						"displayName": "Citation Metadata",
-						"fields": [
-							{
-								"typeName": "dsDescription",
-								"multiple": true,
-								"typeClass": "compound",
-								"value": [
-									{
-										"dsDescriptionValue": {
-											"typeName": "dsDescriptionValue",
-											"multiple": false,
-											"typeClass": "primitive",
-											"value": "Démo sprint 5. Cette couche représente l'emprise des cimetières sur le territoire des Métropole. Ces périmètres d'emprise des cimetières sont issus du recensement des informations des PLU/POS de chaque commune de la métropole, des données du cadastre DGFiP et d'un inventaire terrain du Service Planification et Études Urbaines de Métropole"
-										},
-										"dsDescriptionDate": {
-											"typeName": "dsDescriptionDate",
-											"multiple": false,
-											"typeClass": "primitive",
-											"value": "2021-07-13"
-										}
-									}
-								]
-							},
-							{
-								"typeName": "author",
-								"multiple": true,
-								"typeClass": "compound",
-								"value": [
-									{
-										"authorName": {
-											"typeName": "authorName",
-											"multiple": false,
-											"typeClass": "primitive",
-											"value": "Métropole"
-										},
-										"authorAffiliation": {
-											"typeName": "authorAffiliation",
-											"multiple": false,
-											"typeClass": "primitive",
-											"value": "string"
-										}
-									}
-								]
-							}
-						]
-					}
-				},
-				"authors": [
-					"Métropole"
-				]
-			},
-			{
-				"name": "Raja Ampat Islands",
-				"type": "dataset",
-				"url": "https://doi.org/10.5072/FK2/ITNXGR",
-				"global_id": "doi:10.5072/FK2/ITNXGR",
-				"description": "Raja Ampat is located off the northwest tip of Bird's Head Peninsula on the island of New Guinea, in Indonesia's West Papua province, Raja Ampat, or the Four Kings, is an archipelago comprising over 1,500 small islands, cays, and shoals surrounding the four main islands of Misool, Salawati, Batanta, and Waigeo, and the smaller island of Kofiau. The Raja Ampat archipelago straddles the Equator and forms part of Coral Triangle which contains the richest marine biodiversity on earth. Administratively, the archipelago is part of the province of West Papua (formerly known as Irian Jaya). Most of the islands constitute the Raja Ampat Regency, which was separated out from Sorong Regency in 2004. The regency encompasses around 70,000 square kilometres (27,000 sq mi) of land and sea, and has a population of about 50,000 (as of 2017). (Wikipedia: https://en.wikipedia.org/wiki/Raja_Ampat_Islands)",
-				"published_at": "2020-07-30T09:23:34Z",
-				"publisher": "Root",
-				"citationHtml": "Admin, Dataverse, 2020, \"Raja Ampat Islands\", <a href=\"https://doi.org/10.5072/FK2/ITNXGR\" target=\"_blank\">https://doi.org/10.5072/FK2/ITNXGR</a>, Root, V1",
-				"identifier_of_dataverse": "root",
-				"name_of_dataverse": "Root",
-				"citation": "Admin, Dataverse, 2020, \"Raja Ampat Islands\", https://doi.org/10.5072/FK2/ITNXGR, Root, V1",
-				"authors": [
-					"Admin, Dataverse"
-				]
-			},
-			{
-				"name": "Sample Media Test",
-				"type": "dataverse",
-				"url": "https://68b2d8bb37c6/dataverse/Sample_media_test",
-				"identifier": "Sample_media_test",
-				"description": "Dataverse de test contenant les médias de Sample, comme les images des fournisseurs et des producteurs",
-				"published_at": "2021-04-08T15:04:14Z"
-			},
-			{
-				"name": "Sample Test",
-				"type": "dataverse",
-				"url": "https://68b2d8bb37c6/dataverse/Sample_test",
-				"identifier": "Sample_test",
-				"description": "Dataverse utilisé pour les tests unitaires de Sample",
-				"published_at": "2021-03-16T08:11:54Z"
-			}
-		],
-		"count_in_response": 4
-	}
-}
+    {
+        "status": "OK",
+        "data": {
+            "q": "*",
+            "total_count": 4,
+            "start": 0,
+            "spelling_alternatives": {},
+            "items": [
+                {
+                    "name": "JDD avec GeoJson 2021-07-13T10:23:46.409Z",
+                    "type": "dataset",
+                    "url": "https://doi.org/10.5072/FK2/GIWCKB",
+                    "global_id": "doi:10.5072/FK2/GIWCKB",
+                    "description": "Démo sprint 5. Cette couche représente l'emprise des cimetières sur le territoire des Métropole. Ces périmètres d'emprise des cimetières sont issus du recensement des informations des PLU/POS de chaque commune de la métropole, des données du cadastre DGFiP et d'un inventaire terrain du Service Planification et Études Urbaines de Métropole",
+                    "publisher": "Sample Data",
+                    "citationHtml": "Rennes M&eacute;tropole, 2021, \"JDD avec GeoJson 2021-07-13T10:23:46.409Z\", <a href=\"https://doi.org/10.5072/FK2/GIWCKB\" target=\"_blank\">https://doi.org/10.5072/FK2/GIWCKB</a>, Root, DRAFT VERSION",
+                    "identifier_of_dataverse": "Sample_data",
+                    "name_of_dataverse": "Sample Data",
+                    "citation": "Métropole, 2021, \"JDD avec GeoJson 2021-07-13T10:23:46.409Z\", https://doi.org/10.5072/FK2/GIWCKB, Root, DRAFT VERSION",
+                    "storageIdentifier": "file://10.5072/FK2/GIWCKB",
+                    "subjects": [
+                        "Other"
+                    ],
+                    "fileCount": 0,
+                    "versionId": 9976,
+                    "versionState": "DRAFT",
+                    "createdAt": "2021-07-13T10:28:45Z",
+                    "updatedAt": "2021-07-13T10:28:45Z",
+                    "contacts": [
+                        {
+                            "name": "string",
+                            "affiliation": "string"
+                        }
+                    ],
+                    "metadataBlocks": {
+                        "citation": {
+                            "displayName": "Citation Metadata",
+                            "fields": [
+                                {
+                                    "typeName": "dsDescription",
+                                    "multiple": true,
+                                    "typeClass": "compound",
+                                    "value": [
+                                        {
+                                            "dsDescriptionValue": {
+                                                "typeName": "dsDescriptionValue",
+                                                "multiple": false,
+                                                "typeClass": "primitive",
+                                                "value": "Démo sprint 5. Cette couche représente l'emprise des cimetières sur le territoire des Métropole. Ces périmètres d'emprise des cimetières sont issus du recensement des informations des PLU/POS de chaque commune de la métropole, des données du cadastre DGFiP et d'un inventaire terrain du Service Planification et Études Urbaines de Métropole"
+                                            },
+                                            "dsDescriptionDate": {
+                                                "typeName": "dsDescriptionDate",
+                                                "multiple": false,
+                                                "typeClass": "primitive",
+                                                "value": "2021-07-13"
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "typeName": "author",
+                                    "multiple": true,
+                                    "typeClass": "compound",
+                                    "value": [
+                                        {
+                                            "authorName": {
+                                                "typeName": "authorName",
+                                                "multiple": false,
+                                                "typeClass": "primitive",
+                                                "value": "Métropole"
+                                            },
+                                            "authorAffiliation": {
+                                                "typeName": "authorAffiliation",
+                                                "multiple": false,
+                                                "typeClass": "primitive",
+                                                "value": "string"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "authors": [
+                        "Métropole"
+                    ]
+                },
+                {
+                    "name": "Raja Ampat Islands",
+                    "type": "dataset",
+                    "url": "https://doi.org/10.5072/FK2/ITNXGR",
+                    "global_id": "doi:10.5072/FK2/ITNXGR",
+                    "description": "Raja Ampat is located off the northwest tip of Bird's Head Peninsula on the island of New Guinea, in Indonesia's West Papua province, Raja Ampat, or the Four Kings, is an archipelago comprising over 1,500 small islands, cays, and shoals surrounding the four main islands of Misool, Salawati, Batanta, and Waigeo, and the smaller island of Kofiau. The Raja Ampat archipelago straddles the Equator and forms part of Coral Triangle which contains the richest marine biodiversity on earth. Administratively, the archipelago is part of the province of West Papua (formerly known as Irian Jaya). Most of the islands constitute the Raja Ampat Regency, which was separated out from Sorong Regency in 2004. The regency encompasses around 70,000 square kilometres (27,000 sq mi) of land and sea, and has a population of about 50,000 (as of 2017). (Wikipedia: https://en.wikipedia.org/wiki/Raja_Ampat_Islands)",
+                    "published_at": "2020-07-30T09:23:34Z",
+                    "publisher": "Root",
+                    "citationHtml": "Admin, Dataverse, 2020, \"Raja Ampat Islands\", <a href=\"https://doi.org/10.5072/FK2/ITNXGR\" target=\"_blank\">https://doi.org/10.5072/FK2/ITNXGR</a>, Root, V1",
+                    "identifier_of_dataverse": "root",
+                    "name_of_dataverse": "Root",
+                    "citation": "Admin, Dataverse, 2020, \"Raja Ampat Islands\", https://doi.org/10.5072/FK2/ITNXGR, Root, V1",
+                    "authors": [
+                        "Admin, Dataverse"
+                    ]
+                },
+                {
+                    "name": "Sample Media Test",
+                    "type": "dataverse",
+                    "url": "https://68b2d8bb37c6/dataverse/Sample_media_test",
+                    "identifier": "Sample_media_test",
+                    "description": "Dataverse de test contenant les médias de Sample, comme les images des fournisseurs et des producteurs",
+                    "published_at": "2021-04-08T15:04:14Z"
+                },
+                {
+                    "name": "Sample Test",
+                    "type": "dataverse",
+                    "url": "https://68b2d8bb37c6/dataverse/Sample_test",
+                    "identifier": "Sample_test",
+                    "description": "Dataverse utilisé pour les tests unitaires de Sample",
+                    "published_at": "2021-03-16T08:11:54Z"
+                }
+            ],
+            "count_in_response": 4
+        }
+    }
 
 .. _search-date-range:
 
