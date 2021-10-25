@@ -35,7 +35,7 @@ show_relevance   boolean  Whether or not to show details of which fields were ma
 show_facets      boolean  Whether or not to show facets that can be operated on by the "fq" parameter. False by default. See :ref:`advanced search example <advancedsearch-example>`.
 fq               string   A filter query on the search term. Multiple "fq" parameters can be used. See :ref:`advanced search example <advancedsearch-example>`.
 show_entity_ids  boolean  Whether or not to show the database IDs of the search results (for developer use).
-metadata_fields  string	  Includes the requested fields for each dataset in the response. Multiple "metadata_fields" parameters can be used to include several fields. The value must be with the form "{metadata_field_set_name}:{field_name}" to include a specific field from a metadata field set or "{metadata_field_set_name}:\*" to include all the fields for a metadata field set. {field_name} could not be a sub field of a compound field and if {field_name} is a compound field, all sub-fields are included.  
+metadata_fields  string	  Includes the requested fields for each dataset in the response. Multiple "metadata_fields" parameters can be used to include several fields. The value must be in the form "{metadata_block_name}:{field_name}" to include a specific field from a metadata block (see :ref:`example <dynamic-citation-some>`) or "{metadata_field_set_name}:\*" to include all the fields for a metadata block (see :ref:`example <dynamic-citation-all>`). "{field_name}" cannot be a subfield of a compound field. If "{field_name}" is a compound field, all subfields are included.
 ===============  =======  ===========
 
 Basic Search Example
@@ -151,8 +151,8 @@ https://demo.dataverse.org/api/search?q=trees
 Advanced Search Examples
 ------------------------
 
-Include Relevance Score
-~~~~~~~~~~~~~~~~~~~~~~~
+Narrowed to Collection, Show Relevance and Facets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 https://demo.dataverse.org/api/search?q=finch&show_relevance=true&show_facets=true&fq=publicationDate:2016&subtree=birds
 
@@ -266,10 +266,10 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
         }
     }
 
-https://demo.dataverse.org/api/search?q=finch&fq=publicationStatus:Published&type=dataset
-
 Retrieve Released Versions Only
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+https://demo.dataverse.org/api/search?q=finch&fq=publicationStatus:Published&type=dataset
 
 The above example ``fq=publicationStatus:Published`` retrieves only "RELEASED" versions of datasets. The same could be done to retrieve "DRAFT" versions, ``fq=publicationStatus:Draft``
 
@@ -354,12 +354,14 @@ The above example ``fq=publicationStatus:Published`` retrieves only "RELEASED" v
         }
     }
     
+.. _dynamic-citation-all:
+
 Include Metadata Blocks and/or Metadata Fields
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 https://demo.dataverse.org/api/search?q=\*&type=dataset&metadata_fields=citation:\*
 
-The above example ``metadata_fields=citation:*`` return in a "metadataBlocks" all properties from metadata fields named "citation"
+The above example ``metadata_fields=citation:*`` returns under "metadataBlocks" all fields from the "citation" metadata block.
 
 ..  code-block:: json
 
@@ -528,12 +530,14 @@ The above example ``metadata_fields=citation:*`` return in a "metadataBlocks" al
         }
     }
 
+.. _dynamic-citation-some:
+
 Include Specific Fields Only
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-https://demo.dataverse.org/api/search?q=*&type=dataset&metadata_fields=citation:*
+https://demo.dataverse.org/api/search?q=*&type=dataset&metadata_fields=citation:dsDescription&metadata_fields=citation:author
 
-The above example ``metadata_fields=citation:dsDescription&metadata_fields=citation:author`` return in a "metadataBlocks" only the compound fields "dsDescription" and "author" metadata fields named "citation"
+The above example ``metadata_fields=citation:dsDescription&metadata_fields=citation:author`` returns under "metadataBlocks" only the compound fields "dsDescription" and "author" metadata fields from the "citation" metadata block.
 
 .. code-block:: json
 
