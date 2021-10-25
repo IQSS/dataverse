@@ -151,6 +151,9 @@ https://demo.dataverse.org/api/search?q=trees
 Advanced Search Examples
 ------------------------
 
+Include Relevance Score
+~~~~~~~~~~~~~~~~~~~~~~~
+
 https://demo.dataverse.org/api/search?q=finch&show_relevance=true&show_facets=true&fq=publicationDate:2016&subtree=birds
 
 In this example, ``show_relevance=true`` matches per field are shown. Available facets are shown with ``show_facets=true`` and of the facets is being used with ``fq=publicationDate:2016``. The search is being narrowed to the Dataverse collection with the identifier "birds" with the parameter ``subtree=birds``.
@@ -265,6 +268,9 @@ In this example, ``show_relevance=true`` matches per field are shown. Available 
 
 https://demo.dataverse.org/api/search?q=finch&fq=publicationStatus:Published&type=dataset
 
+Retrieve Released Versions Only
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 The above example ``fq=publicationStatus:Published`` retrieves only "RELEASED" versions of datasets. The same could be done to retrieve "DRAFT" versions, ``fq=publicationStatus:Draft``
 
 .. code-block:: json
@@ -348,6 +354,9 @@ The above example ``fq=publicationStatus:Published`` retrieves only "RELEASED" v
         }
     }
     
+Include Metadata Blocks and/or Metadata Fields
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 https://demo.dataverse.org/api/search?q=\*&type=dataset&metadata_fields=citation:\*
 
 The above example ``metadata_fields=citation:*`` return in a "metadataBlocks" all properties from metadata fields named "citation"
@@ -518,6 +527,9 @@ The above example ``metadata_fields=citation:*`` return in a "metadataBlocks" al
             "count_in_response": 4
         }
     }
+
+Include Specific Fields Only
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 https://demo.dataverse.org/api/search?q=*&type=dataset&metadata_fields=citation:*
 
