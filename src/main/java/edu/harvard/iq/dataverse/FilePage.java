@@ -1058,13 +1058,17 @@ public class FilePage implements java.io.Serializable {
                 emb.getDataFiles().remove(fileMetadata.getDataFile());
                 logger.fine("After: " + emb.getDataFiles().size());
             }
-            embargoService.merge(selectionEmbargo);
+            if (selectionEmbargo != null) {
+                embargoService.merge(selectionEmbargo);
+            }
             file.setEmbargo(selectionEmbargo);
             if (emb != null && !emb.getDataFiles().isEmpty()) {
                 emb = null;
             }
         }
-        embargoService.save(selectionEmbargo, ((AuthenticatedUser)session.getUser()).getUserIdentifier());
+        if(selectionEmbargo!=null) {
+            embargoService.save(selectionEmbargo, ((AuthenticatedUser)session.getUser()).getIdentifier());
+        }
         // success message:
         String successMessage = BundleUtil.getStringFromBundle("file.assignedEmbargo.success");
         logger.fine(successMessage);
@@ -1078,7 +1082,7 @@ public class FilePage implements java.io.Serializable {
         save();
         init();
         if(emb!=null) {
-            embargoService.deleteById(emb.getId(),((AuthenticatedUser)session.getUser()).getUserIdentifier());
+            embargoService.deleteById(emb.getId(),((AuthenticatedUser)session.getUser()).getIdentifier());
         }
         return returnToDraftVersion();
     }

@@ -47,13 +47,15 @@ public class EmbargoServiceBean {
             em.persist(embargo);
             em.flush();
         }
-        actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "embargoCreate")
+        //Not quite from a command, but this action can be done by anyone, so command seems better than Admin or other alternatives
+        actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Command, "embargoCreate")
                 .setInfo("id: " + embargo.getId() + " date available: " + embargo.getDateAvailable() + " reason: " + embargo.getReason()).setUserIdentifier(userIdentifier));
         return embargo.getId();
     }
 
     public int deleteById(long id, String userIdentifier) {
-        actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Admin, "embargoDelete")
+        //Not quite from a command, but this action can be done by anyone, so command seems better than Admin or other alternatives
+        actionLogSvc.log(new ActionLogRecord(ActionLogRecord.ActionType.Command, "embargoDelete")
                 .setInfo(Long.toString(id))
                 .setUserIdentifier(userIdentifier));
         return em.createNamedQuery("Embargo.deleteById")
