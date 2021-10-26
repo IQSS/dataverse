@@ -224,7 +224,7 @@ public class FileDownloadHelper implements java.io.Serializable {
            }
        }
 
-        if (!isRestrictedFile){
+        if (!isRestrictedFile && !FileUtil.isActivelyEmbargoed(fileMetadata)){
             // Yes, save answer and return true
             this.fileDownloadPermissionMap.put(fid, true);
             return true;
@@ -239,6 +239,10 @@ public class FileDownloadHelper implements java.io.Serializable {
 
         this.fileDownloadPermissionMap.put(fid, false);
         return false;
+    }
+
+    public boolean isRestrictedOrEmbargoed(FileMetadata fileMetadata) {
+        return fileMetadata.isRestricted() || FileUtil.isActivelyEmbargoed(fileMetadata);
     }
 
      /**
