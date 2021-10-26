@@ -42,6 +42,9 @@
 
     <!-- Files Table -->
     <!-- TABLESTYLE + WIDTH:AUTO FIX COL WIDTH OVERFLOW HIDDEN, MIN-WIDTH 100% ADDED FOR TABLE CONTENT LESS THAN 100% https://stackoverflow.com/a/38582318 -->
+    <ui:remove>
+        <!--TODO - consider moving the validateFilesOutcome param here/ other refactoring to simplify managing selection state - see issue #8180/PR #8182 -->
+    </ui:remove>
     <p:dataTable id="filesTable" 
                  rows="10" paginator="#{DatasetPage.fileMetadatasSearch.size() gt 10}" paginatorPosition="bottom"
                  paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} #{bundle['file.dynamicCounter.filesPerPage']} {RowsPerPageDropdown}"
