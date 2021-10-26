@@ -59,14 +59,25 @@ jobs:
         container:
             image: rockylinux/rockylinux:8
         steps:
-            -   uses: actions/checkout@v2
-            -   name: Install shellspec
-                run: |
-                    curl -fsSL https://github.com/shellspec/shellspec/releases/download/${{ env.SHELLSPEC_VERSION }}/shellspec-dist.tar.gz | tar -xz -C /usr/share
-                    ln -s /usr/share/shellspec/shellspec /usr/bin/shellspec
-            -   name: Install dependencies
-                run: dnf install -y ed bc diffutils
-            -   name: Run shellspec
-                run: |
-                    cd tests/shell
-                    shellspec
+            - uses: actions/checkout@v2
+            - name: Install shellspec
+              run: |
+                  curl -fsSL https://github.com/shellspec/shellspec/releases/download/${{ env.SHELLSPEC_VERSION }}/shellspec-dist.tar.gz | tar -xz -C /usr/share
+                  ln -s /usr/share/shellspec/shellspec /usr/bin/shellspec
+            - name: Install dependencies
+              run: dnf install -y ed bc diffutils
+            - name: Run shellspec
+              run: |
+                  cd tests/shell
+                  shellspec
+    shellspec-macos:
+        name: "MacOS"
+        runs-on: macos-10.15
+        steps:
+            - name: Install shellspec
+              run: curl -fsSL https://git.io/shellspec | sh -s 0.28.1 --yes
+            - uses: actions/checkout@v2
+            - name: Run Shellspec
+              run: |
+                  cd tests/shell
+                  /Users/runner/.local/bin/shellspec
