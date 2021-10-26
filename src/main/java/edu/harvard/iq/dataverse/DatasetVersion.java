@@ -174,6 +174,10 @@ public class DatasetVersion implements Serializable {
     @Column(nullable=true)
     private String externalStatusLabel;
     
+    @Transient
+    private DatasetVersionDifference dvd;
+    
+    
     public Long getId() {
         return this.id;
     }
@@ -396,6 +400,10 @@ public class DatasetVersion implements Serializable {
     }
 
     public DatasetVersionDifference getDefaultVersionDifference() {
+        //Cache to avoid recalculating the difference many many times in the dataset-versions.xhtml page
+        if(dvd!=null) {
+            return dvd;
+        }
         // if version is deaccessioned ignore it for differences purposes
         int index = 0;
         int size = this.getDataset().getVersions().size();
@@ -407,7 +415,7 @@ public class DatasetVersion implements Serializable {
                 if ((index + 1) <= (size - 1)) {
                     for (DatasetVersion dvTest : this.getDataset().getVersions().subList(index + 1, size)) {
                         if (!dvTest.isDeaccessioned()) {
-                            DatasetVersionDifference dvd = new DatasetVersionDifference(this, dvTest);
+                            dvd = new DatasetVersionDifference(this, dvTest);
                             return dvd;
                         }
                     }
