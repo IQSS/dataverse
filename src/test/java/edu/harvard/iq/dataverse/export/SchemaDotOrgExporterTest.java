@@ -6,6 +6,8 @@ import edu.harvard.iq.dataverse.mocks.MockDatasetFieldSvc;
 
 import static edu.harvard.iq.dataverse.util.SystemConfig.SITE_URL;
 import static edu.harvard.iq.dataverse.util.SystemConfig.FILES_HIDE_SCHEMA_DOT_ORG_DOWNLOAD_URLS;
+
+import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
 import edu.harvard.iq.dataverse.util.json.JsonUtil;
 import java.io.ByteArrayOutputStream;
@@ -30,6 +32,7 @@ import javax.json.JsonReader;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -40,6 +43,8 @@ public class SchemaDotOrgExporterTest {
 
     private static final Logger logger = Logger.getLogger(SchemaDotOrgExporterTest.class.getCanonicalName());
     private static final MockDatasetFieldSvc datasetFieldTypeSvc = new MockDatasetFieldSvc();
+    private static final SettingsServiceBean settingsService = Mockito.mock(SettingsServiceBean.class);
+    private static final LicenseServiceBean licenseService = Mockito.mock(LicenseServiceBean.class);
     private static final SchemaDotOrgExporter schemaDotOrgExporter = new SchemaDotOrgExporter();
 
     @BeforeAll
@@ -65,7 +70,7 @@ public class SchemaDotOrgExporterTest {
 
         JsonReader jsonReader1 = Json.createReader(new StringReader(datasetVersionAsJson));
         JsonObject json1 = jsonReader1.readObject();
-        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, null);
+        JsonParser jsonParser = new JsonParser(datasetFieldTypeSvc, null, settingsService, licenseService);
         DatasetVersion version = jsonParser.parseDatasetVersion(json1.getJsonObject("datasetVersion"));
         version.setVersionState(DatasetVersion.VersionState.RELEASED);
         SimpleDateFormat dateFmt = new SimpleDateFormat("yyyyMMdd");
