@@ -1033,3 +1033,40 @@ padding-right:0px;
 .cvoc-term {
 padding-right:0px;
 }
+
+/*EMBARGO*/
+.ui-datepicker {
+  z-index: 100001!important;
+}
+.embargoright {
+  margin-left:10px;
+}
+.embargocheckbox {
+  margin-top: 20px;
+  padding-bottom: 30px;
+}
+.embargomsg {
+  display:block;
+}
+.embargo {
+        display:flex;
+        flex-direction:column;
+}
+.embargo.text-warning, .embargo.text-danger {
+        flex-direction:row;
+}
+.embargo span {
+        margin-right: 10px;
+}
+.embargo span.glyphicon-asterisk {
+            font-size: .5em;
+                vertical-align: top;
+}
+
+.embargo .col-lg-3 {
+    padding-left:0px;
+}
+
+.embargolabel {
+    font-weight: 700;
+}
