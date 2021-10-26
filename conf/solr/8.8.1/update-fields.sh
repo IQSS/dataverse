@@ -65,21 +65,17 @@ while getopts ":hp" opt; do
   esac
 done
 
-# Check for recent Bash version
-# shellcheck disable=SC2086
-if [ ${BASH_VERSION%%.*} -lt 4 ]; then
-  error "Bash v4.x or later required"
-fi
-
 # Check for ed and bc being present
-exists ed || error "Please ensure ed & bc are installed"
-exists bc || error "Please ensure ed & bc are installed"
+exists ed || error "Please ensure ed, bc, sed + awk are installed"
+exists bc || error "Please ensure ed, bc, sed + awk are installed"
+exists awk || error "Please ensure ed, bc, sed + awk are installed"
+exists sed || error "Please ensure ed, bc, sed + awk are installed"
 
 # remove all the parsed options
 shift $((OPTIND-1))
 
 # User overrideable locations
-SCHEMA=$(readlink -f "${SCHEMA:-${1:-schema.xml}}")
+SCHEMA=${SCHEMA:-${1:-schema.xml}}
 SOURCE=${SOURCE:-${2:-"-"}}
 
 
@@ -97,7 +93,8 @@ else
   )
 
   # Check guards are unique (count occurrences and sum calc via bc)
-  [ "$(echo -n "${CHECKS}" | tr '\n' '+' | sed -e 's#$#\n#' | bc)" -eq 4 ] || \
+  # Note: fancy workaround to re-add closing \n on Linux & MacOS or no calculation
+  [ "$( (echo -n "${CHECKS}" | tr '\n' '+' ; echo ) | bc)" -eq 4 ] || \
     error "Some include guards are not unique in ${SCHEMA}"
 
   # Check guards are in order (line number comparison via bc tricks)
@@ -108,7 +105,7 @@ else
     done
   )
   # Actual comparison of line numbers
-  [ "$(echo "${CHECKS}" | tr '\n' '<' | sed -e 's#<$#\n#' -e 's#\(<[0-9]\+\)<\([0-9]\+\)#\1 \&\& \2#' | bc)" -eq 1 ] || \
+  echo "${CHECKS}" | tr '\n' '<' | awk -F'<' '{ if ($1 < $2 && $2 < $3 && $3 < $4) {exit 0} else {exit 1} }' || \
     error "Include guards are not in correct order in ${SCHEMA}"
 
   # Check guards are exclusively in their lines
@@ -120,23 +117,24 @@ else
   done
 
   # Check if there are no lines between the field marks (then skip delete in ed)
+  # Note: fancy workaround to re-add closing \n on Linux & MacOS or no calculation
   DISTANCE_FIELDS_MARKS=$( \
-    grep -n -e "\(${SOLR_SCHEMA_FIELD_BEGIN_MARK}\|${SOLR_SCHEMA_FIELD_END_MARK}\)" "${SCHEMA}" \
-      | cut -f 1 -d ":" | tr '\n' '<' | sed -e 's#<$#-1\n#' | bc
+    (grep -n -e "\(${SOLR_SCHEMA_FIELD_BEGIN_MARK}\|${SOLR_SCHEMA_FIELD_END_MARK}\)" "${SCHEMA}" \
+      | cut -f 1 -d ":" | tr '\n' '<' | sed -e 's#<$#-1#' ; echo) \
+      | bc
   )
   if [ "${DISTANCE_FIELDS_MARKS}" -eq 0 ]; then
     ED_DELETE_FIELDS="#"
   fi
   # Check if there are no lines between the copyfield marks (then skip delete in ed)
   DISTANCE_COPYFIELDS_MARKS=$( \
-    grep -n -e "\(${SOLR_SCHEMA_COPYFIELD_BEGIN_MARK}\|${SOLR_SCHEMA_COPYFIELD_END_MARK}\)" "${SCHEMA}" \
-      | cut -f 1 -d ":" | tr '\n' '<' | sed -e 's#<$#-1\n#' | bc
+    (grep -n -e "\(${SOLR_SCHEMA_COPYFIELD_BEGIN_MARK}\|${SOLR_SCHEMA_COPYFIELD_END_MARK}\)" "${SCHEMA}" \
+      | cut -f 1 -d ":" | tr '\n' '<' | sed -e 's#<$#-1#' ; echo ) \
+      | bc
   )
   if [ "${DISTANCE_COPYFIELDS_MARKS}" -eq 0 ]; then
     ED_DELETE_COPYFIELDS="#"
   fi
-  #TODO
-  #-> IF NO ELEMENTS BETWEEN GUARDS, DO NOT DELETE TO AVOID ED ERRORS
 fi
 
 
@@ -150,8 +148,6 @@ if [ -z "${SOURCE}" ] || [ "${SOURCE}" = "-" ]; then
     error "No data - either provide source file or piped input"
   fi
 else
-  # Always make the path absolute
-  SOURCE=$(readlink -f "${SOURCE}")
   # Check the given file for readability and non-zero length
   if [ ! -r "${SOURCE}" ] || [ ! -s "${SOURCE}" ]; then
     error "Cannot read from or empty file ${SOURCE}"
@@ -172,7 +168,8 @@ else
   # If file actually contains output, write to schema
   if [ -s "${FIELDS}" ]; then
     # Use an ed script to replace all <field>
-    cat << EOF | ed -s -v "${SCHEMA}"
+    cat << EOF | grep -v -e "^#" | ed -s "${SCHEMA}"
+H
 # Mark field begin as 'a'
 /${SOLR_SCHEMA_FIELD_BEGIN_MARK}/ka
 # Mark field end as 'b'
@@ -193,8 +190,9 @@ EOF
   echo "${INPUT}" | grep -e "<copyField .*/>" | sed -e 's#^#    #' > "${COPY_FIELDS}" || true
   # If file actually contains output, write to schema
   if [ -s "${COPY_FIELDS}" ]; then
-      # Use an ed script to replace all <copyField>
-      cat << EOF | ed -s "${SCHEMA}"
+      # Use an ed script to replace all <copyField>, filter comments (BSD ed does not support comments)
+      cat << EOF | grep -v -e "^#" | ed -s "${SCHEMA}"
+H
 # Mark copyField begin as 'a'
 /${SOLR_SCHEMA_COPYFIELD_BEGIN_MARK}/ka
 # Mark copyField end as 'b'
