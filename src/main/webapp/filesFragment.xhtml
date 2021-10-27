@@ -478,8 +478,7 @@
 
                     <!-- TO-DO FIX RSYNC LOGIC !fileMetadata.dataFile.filePackage or
                                                     fileMetadata.dataFile.filePackage and systemConfig.HTTPDownload -->
-
-                    <ui:fragment rendered="#{DatasetPage.isShowPreviewButton(fileMetadata.dataFile.id) and not fileMetadata.restricted}">
+                    <ui:fragment rendered="#{DatasetPage.isShowPreviewButton(fileMetadata.dataFile.id) and fileDownloadHelper.isPreviewAllowed(fileMetadata)}">
                         <a class="btn-preview btn btn-link bootstrap-button-tooltip" title="#{bundle.preview}"
                             href="#{widgetWrapper.wrapURL('/file.xhtml?'.concat(!empty fileMetadata.dataFile.globalIdString ? 'persistentId=' : 'fileId=').concat(!empty fileMetadata.dataFile.globalIdString ? fileMetadata.dataFile.globalIdString : fileMetadata.dataFile.id).concat('&amp;version=').concat(fileMetadata.datasetVersion.friendlyVersionNumber))}">
                             <span class="glyphicon glyphicon-eye-open"/><span class="sr-only">#{bundle.preview}</span>

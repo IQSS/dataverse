@@ -42,7 +42,7 @@
                             </div>
                             <div id="panelCollapseDataversesFieldList" class="panel-body form-horizontal collapse in">
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">
+                                    <label for="advancedSearchForm:dvFieldName" class="col-sm-4 control-label">
                                         #{bundle.name}
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['advanced.search.dataverses.name.tip']}"></span>
@@ -52,7 +52,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">
+                                    <label for="advancedSearchForm:dvFieldAlias" class="col-sm-4 control-label">
                                         #{bundle.identifier}
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataverse.identifier.title']}"></span>
@@ -62,7 +62,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">
+                                    <label for="advancedSearchForm:dvFieldAffiliation" class="col-sm-4 control-label">
                                         #{bundle.affiliation}
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['advanced.search.dataverses.affiliation.tip']}"></span>
@@ -72,7 +72,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">
+                                    <label for="advancedSearchForm:dvFieldDescription" class="col-sm-4 control-label">
                                         #{bundle.description}
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['advanced.search.dataverses.description.tip']}"></span>
@@ -99,15 +99,15 @@
                             </div>
                         </div>
 
-                        <ui:repeat value="#{AdvancedSearchPage.metadataBlocks}" var="mdb" varStatus="status">
+                        <ui:repeat id="block" value="#{AdvancedSearchPage.metadataBlocks}" var="mdb" varStatus="status">
                             <div class="panel panel-default" jsf:rendered="#{not empty AdvancedSearchPage.metadataFieldMap.get(mdb.getId())}">
                                 <div data-toggle="collapse" data-target="#panelCollapseCitationFieldList#{mdb.id}" class="panel-heading">
                                     <h:outputText value="#{bundle['advanced.search.header.datasets']}: #{mdb.localeDisplayName}"/> &#160;<span class="glyphicon glyphicon-chevron-down"/>
                                 </div>
                                 <div id="panelCollapseCitationFieldList#{mdb.id}" class="collapse in panel-body form-horizontal">
-                                    <ui:repeat value="#{AdvancedSearchPage.metadataFieldMap.get(mdb.getId())}" var="item">
+                                    <ui:repeat id="field" value="#{AdvancedSearchPage.metadataFieldMap.get(mdb.getId())}" var="item" varStatus="fieldStatus">
                                         <div class="form-group">
-                                            <label class="col-sm-4 control-label">
+                                            <label for="advancedSearchForm:block:#{status.index}:field:#{fieldStatus.index}:#{cvoc==null ? 'searchValue':'searchValue2'}" class="col-sm-4 control-label">
                                                 #{item.displayName}
                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{item.localeDescription}"></span>
@@ -127,6 +127,7 @@
                                                         <f:passThroughAttribute name="data-cvoc-allowfreetext" value="#{cvoc.getBoolean('allow-free-text', false)}"/>
                                                         <f:passThroughAttribute name="data-cvoc-parent" value="#{cvoc.getString('field-name','')}"/>
                                                         <f:passThroughAttribute name="data-cvoc-managedfields" value="#{cvoc.get('managed-fields').toString()}"/>
+                                                        <f:passThroughAttribute name="data-cvoc-placeholder" value=""/>
                                                     </p:inputText>
                                                 </ui:fragment>
                                                 <div class="ui-inputfield form-control select-scroll-block" jsf:rendered="#{!empty item.controlledVocabularyValues}">
@@ -140,7 +141,7 @@
                                     </ui:repeat>
                                     <ui:fragment rendered="#{mdb.id == '1'}">
                                         <div class="form-group">
-                                            <label class="col-sm-4 control-label">
+                                            <label for="advancedSearchForm:block:0:dvFieldNamez" class="col-sm-4 control-label">
                                                 #{bundle['dataset.metadata.publicationYear']}
                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.metadata.publicationYear.tip']}"></span>
@@ -150,7 +151,7 @@
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <label class="col-sm-4 control-label">
+                                            <label for="advancedSearchForm:block:0:dsPersistentIdentifier" class="col-sm-4 control-label">
                                                 #{bundle['dataset.metadata.persistentId']}
                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                                       data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.metadata.persistentId.tip']}"></span>
@@ -170,7 +171,7 @@
                             </div>
                             <div id="panelCollapseFilesFieldList" class="panel-body form-horizontal collapse in">
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">
+                                    <label for="advancedSearchForm:fileFieldName" class="col-sm-4 control-label">
                                         #{bundle.name}
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['advanced.search.files.name.tip']}"></span>
@@ -180,7 +181,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">
+                                    <label for="advancedSearchForm:fileFieldDescription" class="col-sm-4 control-label">
                                         #{bundle.description}
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['advanced.search.files.description.tip']}"></span>
@@ -190,7 +191,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">
+                                    <label for="advancedSearchForm:fileFieldFiletype" class="col-sm-4 control-label">
                                         #{bundle['advanced.search.files.fileType']}
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['advanced.search.files.fileType.tip']}"></span>
@@ -200,7 +201,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">
+                                    <label for="advancedSearchForm:fileFieldPersistentId" class="col-sm-4 control-label">
                                         #{bundle['advanced.search.files.persistentId']}
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['advanced.search.files.persistentId.tip']}"></span>
@@ -210,7 +211,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">
+                                    <label for="advancedSearchForm:fileFieldVariableName" class="col-sm-4 control-label">
                                         #{bundle['advanced.search.files.variableName']}
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['advanced.search.files.variableName.tip']}"></span>
@@ -220,7 +221,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">
+                                    <label for="advancedSearchForm:fileFieldVariableLabel" class="col-sm-4 control-label">
                                         #{bundle['advanced.search.files.variableLabel']}
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['advanced.search.files.variableLabel.tip']}"></span>
@@ -230,7 +231,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">
+                                    <label for="advancedSearchForm:fileFieldFileTags" class="col-sm-4 control-label">
                                         #{bundle['advanced.search.files.fileTags']}
                                         <span class="glyphicon glyphicon-question-sign tooltip-icon"
                                               data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['advanced.search.files.fileTags.tip']}"></span>
