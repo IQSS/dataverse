@@ -54,6 +54,7 @@ import org.omnifaces.cdi.ViewScoped;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 
+import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -86,6 +87,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import static edu.harvard.iq.dataverse.common.FileSizeUtil.bytesToHumanReadable;
 import static java.util.stream.Collectors.joining;
@@ -592,6 +594,16 @@ public class EditDatafilesPage implements java.io.Serializable {
         	logger.warning("Failed to cleanup temporary file " + FileUtil.getFilesTempDirectory());
         }
 	}
+
+    /**
+     * The method is used to clean temporary files on variuos events
+     * such as closing the upload tab or logging out.
+     */
+	@PreDestroy
+	void cleanTempFilesOnViewDestroy() {
+        newFiles.forEach(this::deleteTempFile);
+        uploadedFiles.forEach(this::deleteTempFile);
+    }
 
     private void deleteTempFile(DataFile dataFile) {
         // Before we remove the file from the list and forget about
