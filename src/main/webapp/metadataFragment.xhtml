@@ -249,7 +249,7 @@
                                                                     <h:outputText value="#{bundle.htmlAllowedMsg}" escape="false"/>
                                                                 </p>
                                                             </ui:fragment>
-                                                            <label jsf:for="#{subdsf.datasetFieldType.fieldType == 'TEXTBOX' ? 'description' : 'inputText'}" class="control-label">
+                                                            <label jsf:for="#{subdsf.datasetFieldType.controlledVocabulary ? 'cvv_focus' : subdsf.datasetFieldType.fieldType == 'TEXTBOX' ? 'description' : 'inputText'}" class="control-label">
                                                                 #{subdsf.datasetFieldType.localeTitle}
                                                                 <span class="glyphicon glyphicon-asterisk text-danger" jsf:rendered="#{subdsf.required and dsf.required}"/>
                                                                 <span class="glyphicon glyphicon-question-sign tooltip-icon"
@@ -265,7 +265,7 @@
                                                             </ui:fragment>
                                                             <!-- MOVED SELECT ONE TO dataFieldForEdit -->
                                                             <div jsf:rendered="#{subdsf.datasetFieldType.controlledVocabulary}">
-                                                                <p:selectOneMenu value="#{subdsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;"
+                                                                <p:selectOneMenu id="cvv" value="#{subdsf.singleControlledVocabularyValue}" converter="controlledVocabularyValueConverter" style="width: auto !important; max-width:100%; min-width:200px;"
                                                                                  rendered="#{!subdsf.datasetFieldType.allowMultiples}">
                                                                     <f:selectItem itemLabel="#{bundle.select}" itemValue="" noSelectionOption="true"/>
                                                                     <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
@@ -276,7 +276,13 @@
                                                                         <h:outputText value="#{cvv.localeStrValue}"  style="margin-right:.5em;display:inline-block;"/>
                                                                     </ui:repeat>
                                                                 </p:outputPanel>
--->
+                                                                -->
+                                                                <ui:remove>
+                                                                <!-- Todo: If there are instances of multi-val cvv in a compound field, some addition will probably be needed for accessibility -
+                                                                     to associate this field with the label above (as was done in this commit for the single value cvv in a compound field case).
+                                                                     I did that by inspecting the html source produced, so skipping this unless/until I find an example. 
+                                                                -->
+                                                                </ui:remove> 
                                                                     <p:selectCheckboxMenu value="#{subdsf.controlledVocabularyValues}" converter="controlledVocabularyValueConverter"
                                                                                           rendered="#{subdsf.datasetFieldType.allowMultiples}" label="#{bundle.select}" multiple="true"  >
                                                                         <f:selectItems value="#{subdsf.datasetFieldType.controlledVocabularyValues}" var="cvv" itemLabel="#{cvv.localeStrValue}" itemValue="#{cvv}" />
