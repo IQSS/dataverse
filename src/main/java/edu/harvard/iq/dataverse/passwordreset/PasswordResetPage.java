@@ -92,7 +92,7 @@ public class PasswordResetPage implements java.io.Serializable {
     
     PasswordResetData passwordResetData;
 
-    boolean validationFailed;
+    boolean validationFailed = true;
     
     private List<String> passwordErrors;
 
