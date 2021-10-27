@@ -373,7 +373,7 @@
                     <!-- END Top Button/Citation Blocks -->
                     <a name="tabs"></a>
                     <div id="contentTabs">
-                        <div id="file-row-panel-backdrop"></div>
+                        <div class="file-row-panel-backdrop"></div>
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{FilePage.selectedTabIndex}">
                             <p:ajax event="tabChange" listener="#{FilePage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
                             <p:tab id="accessTab" class="padding-none" title="#{bundle['file.dataFilesTab.dataAccess']}"

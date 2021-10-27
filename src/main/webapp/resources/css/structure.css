@@ -1135,7 +1135,7 @@ div.container {
   z-index: -1;
 }
 
-#file-row-panel-backdrop {
+.file-row-panel-backdrop {
   background: #f7f7f9;
   position: absolute;
   left: calc(-50vw + 50%);

@@ -756,7 +756,7 @@
                     <!-- END Create/Edit editMode -->
                     <!-- View/Tabs infoMode -->
                     <div id="contentTabs" jsf:rendered="#{DatasetPage.editMode != 'INFO'}">
-                    <div id="file-row-panel-backdrop"></div>
+                    <div class="file-row-panel-backdrop"></div>
                         <p:fragment id="pageRefreshFragment"> <!-- rendered="_{empty DatasetPage.editMode}" -->
                             <h:inputHidden value="#{DatasetPage.lockedForAnyReason}" id="datasetLockedForAnyReasonVariable" />
                             <h:inputHidden value="#{DatasetPage.stateChanged}" id="datasetStateChangedVariable" />
