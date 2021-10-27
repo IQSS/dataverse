@@ -806,6 +806,15 @@ textarea {
     display: inline;
 }
 
+.ui-spinner-button {
+	background: #fff;
+	border: 1px solid #ddd;
+
+	&:hover {
+		background: #eee;
+	}
+}
+
 /* Overriding bootstrap defaults */
 legend.control-label {
     border-bottom: none;

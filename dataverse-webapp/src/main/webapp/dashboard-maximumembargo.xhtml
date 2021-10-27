@@ -20,7 +20,7 @@
     </f:metadata>
 
     <ui:composition template="/dataverse_template.xhtml">
-        <ui:param name="pageTitle" value="#{bundle['dashboard.card.users.header']} - #{dataverseDao.findRootDataverse().name} #{bundle.dataverse}"/>
+        <ui:param name="pageTitle" value="#{bundle['dashboard.card.maximumembargo.header']} - #{dataverseDao.findRootDataverse().name} #{bundle.dataverse}"/>
         <ui:param name="showDataverseHeader" value="false"/>
         <ui:define name="body">
             <h:form id="dashboardMaximumEmbargoForm" onkeypress="return event.keyCode != 13">
