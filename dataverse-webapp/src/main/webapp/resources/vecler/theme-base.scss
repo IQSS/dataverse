@@ -1689,6 +1689,13 @@ div.filesTable {
 	}
 }
 
+/* Fix erroneous horizontal scrollbar in mobile Chrome */
+.ui-datatable-tablewrapper {
+	.ui-helper-hidden-accessible, .sr-only {
+		position: fixed;
+	}
+}
+
 /* Fix submenus in scrollable tables not overflowing outside */
 .ui-tabs {
 	position: static;
@@ -3154,6 +3161,10 @@ div.filesTable .ui-paginator {
 
 .dataverseHeaderCell span[style="color:#888888;"] {
 	color: $gray-text-color !important;
+}
+
+#dataverseHeader .dataverseHeaderLogo img {
+	max-width: Min(940px, calc(100vw - 30px));
 }
 
 @media screen and (max-width: $screen-xs-max) {
