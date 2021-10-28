@@ -2,7 +2,6 @@ package edu.harvard.iq.dataverse;
 
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
-import edu.harvard.iq.dataverse.api.*;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -11,9 +10,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
-import java.net.URI;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -38,10 +35,15 @@ public class LicenseServiceBean {
         return em.createNamedQuery("License.findAllActive", License.class).getResultList();
     }
 
-    public License getById(Long id) throws NoResultException  {
-        return em.createNamedQuery("License.findById", License.class)
+    public License getById(Long id) {
+        try {
+            return em.createNamedQuery("License.findById", License.class)
                     .setParameter("id", id)
                     .getSingleResult();
+        }catch (NoResultException noResultException) {
+            logger.warning("Couldn't find a license for id: " + id);
+            return null;
+        }
     }
 
     public License getDefault() {
@@ -49,18 +51,24 @@ public class LicenseServiceBean {
                 .getSingleResult();
     }
 
-    public License getByNameOrUri(String nameOrUri) throws NoResultException {
-        return em.createNamedQuery("License.findActiveByNameOrUri", License.class)
+    public License getByNameOrUri(String nameOrUri) {
+        try {
+            return em.createNamedQuery("License.findActiveByNameOrUri", License.class)
                     .setParameter("name", nameOrUri)
                     .setParameter("uri", nameOrUri)
                     .getSingleResult();
+        } catch (NoResultException noResultException) {
+            logger.warning("Couldn't find a license for: " + nameOrUri);
+            return null;
+        }
     }
 
-    public void setDefault(Long id) throws NoResultException {
+    public int setDefault(Long id){
         License candidate = getById(id);
+        if (candidate == null) return 0;
         if (candidate.isActive()) {
                 em.createNamedQuery("License.clearDefault").executeUpdate();
-                em.createNamedQuery("License.setDefault").setParameter("id", id).executeUpdate();
+               return em.createNamedQuery("License.setDefault").setParameter("id", id).executeUpdate();
         } else {
             throw new IllegalArgumentException("Cannot set an inactive license as default");
         }

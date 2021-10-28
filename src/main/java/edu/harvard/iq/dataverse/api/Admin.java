@@ -47,7 +47,6 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.NoResultException;
-import javax.persistence.PersistenceException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -56,7 +55,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
-import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 
 import java.io.InputStream;
 import java.io.StringReader;
@@ -113,7 +111,6 @@ import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.json.JsonArray;
 import javax.persistence.Query;
@@ -2085,12 +2082,9 @@ public class Admin extends AbstractApiBean {
     @GET
     @Path("/licenses/{id}")
     public Response getLicenseById(@PathParam("id") long id) {
-        try {
-            License license = licenseService.getById(id);
-            return ok(json(license));
-        } catch (NoResultException nre) {
-            return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
-        }
+	    License license = licenseService.getById(id);
+	    if (license == null) return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
+	    return ok(json(license));
     }
 
     @POST
@@ -2113,18 +2107,14 @@ public class Admin extends AbstractApiBean {
 	}
 
     @PUT
-    @Path("/licenses/default")
-    public Response setDefault(long id) {
+    @Path("/licenses/default/{id}")
+    public Response setDefault(@PathParam("id") long id) {
         try {
-            licenseService.setDefault(id);
+            if (licenseService.setDefault(id) == 0) return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
             return ok("Default license ID set to " + id);
         }
-        catch (IllegalArgumentException | NoResultException e) {
-        	if (e instanceof IllegalArgumentException) {
-		        return badRequest(e.getMessage());
-	        } else {
-        		return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
-	        }
+        catch (IllegalArgumentException illegalArgumentException) {
+        	return badRequest(illegalArgumentException.getMessage());
         }
     }
 
