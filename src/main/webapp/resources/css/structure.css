@@ -456,14 +456,14 @@ div.panelSearchForm input.search-input {
   padding: 4px;
   vertical-align: middle;
   display: block;
-  color: rgba(0, 0, 0, 0.6);
+  color: #666666;
   display: block;
   font-size: 25px;
   background: transparent;
   width: 550px;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2), inset 0 1px 3px 0 rgba(0, 0, 0, 0.2);
 }
-div.panelSearchForm input.search-input::placeholder {color: rgba(0, 0, 0, 0.3);}
+div.panelSearchForm input.search-input::placeholder {color: #666666;}
 div.panelSearchForm .button-block {
 	float: right;
 	margin-top: -35px;
@@ -1447,6 +1447,7 @@ padding-right:0px;
 .text-muted {
         color: #636363;
 }
+
 span.label-success { background-color: #388038 }
 span.label-warning { background-color: #A4660E }
 span.label-info { background-color: #20809D }
