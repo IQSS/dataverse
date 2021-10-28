@@ -568,7 +568,8 @@ textarea,
 .ui-tabs-header,
 .ui-sortable-column,
 .select-scroll-block,
-ul.pagination a {
+ul.pagination a,
+.ui-paginator a[class*=ui-paginator] {
 	&:focus {
 		outline-offset: -2px;
 	}
@@ -3077,6 +3078,23 @@ div.filesTable .ui-paginator {
 
 	.ui-paginator-page {
 		@include link-color;
+	}
+}
+
+@media screen and (min-width: $screen-sm-min) {
+	.ui-paginator-container {
+		display: inline;
+		margin-right: 1em;
+	}
+}
+
+@media screen and (max-width: $screen-xs-max) {
+	.ui-paginator .ui-paginator-current, .ui-paginator .ui-paginator-rpp-options {
+		margin-right: 0;
+	}
+
+	.ui-paginator-container {
+		margin-bottom: 0.5em;
 	}
 }
 

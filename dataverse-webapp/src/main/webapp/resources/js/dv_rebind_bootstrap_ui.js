@@ -745,14 +745,26 @@ function reinitializePrimefacesComponentsJS() {
             originalPaginatorInit.apply(this, [cfg]);
 
             var currentPage = this.pagesContainer.find('.ui-paginator-page.ui-state-active');
-            currentPage.attr('aria-label', currentPage.attr('aria-label') + ' ' + PrimeFaces.getLocaleSettings().ariaCurrentPagePaginator)
+            currentPage.attr('aria-label', currentPage.attr('aria-label') + ' ' + PrimeFaces.getLocaleSettings().ariaCurrentPagePaginator);
+
+            /* Move pagination controls inside a container */
+            var paginatorMainContainer = document.getElementById(this.pagesContainer.prevObject.attr("id"));
+            var buttonContainer = document.createElement("div");
+            buttonContainer.classList.add("ui-paginator-container");
+            paginatorMainContainer.insertBefore(buttonContainer, paginatorMainContainer.firstChild);
+
+            var paginationElements = paginatorMainContainer.querySelectorAll("a[class*=ui-paginator]:not(a.ui-paginator-page), span.ui-paginator-pages");
+            
+            for (var i=0; i<paginationElements.length; i++) {
+                buttonContainer.appendChild(paginationElements[i]);
+            }
         }
 
         PrimeFaces.widget.Paginator.prototype.updatePageLinks = function() {
             originalPaginatorUpdatePageLinks.apply(this);
 
             var currentPage = this.pagesContainer.find('.ui-paginator-page.ui-state-active');
-            currentPage.attr('aria-label', currentPage.attr('aria-label') + ' ' + PrimeFaces.getLocaleSettings().ariaCurrentPagePaginator)
+            currentPage.attr('aria-label', currentPage.attr('aria-label') + ' ' + PrimeFaces.getLocaleSettings().ariaCurrentPagePaginator);
         }
     }
 
