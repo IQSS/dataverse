@@ -31,19 +31,30 @@ import edu.harvard.iq.dataverse.harvest.client.HarvestingClient;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.workflow.Workflow;
 import edu.harvard.iq.dataverse.workflow.step.WorkflowStepData;
-import java.net.URI;
-import java.net.URISyntaxException;
 import org.apache.commons.validator.routines.DomainValidator;
 
 import java.io.StringReader;
 import java.sql.Timestamp;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.json.*;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonString;
+import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
-import javax.persistence.NoResultException;
 
 /**
  * Parses JSON objects into domain objects.

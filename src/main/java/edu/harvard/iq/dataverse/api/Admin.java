@@ -46,7 +46,6 @@ import edu.harvard.iq.dataverse.settings.Setting;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
-import javax.persistence.NoResultException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -72,8 +71,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.omnifaces.el.functions.Strings;
 
 import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
@@ -2121,21 +2118,21 @@ public class Admin extends AbstractApiBean {
     @DELETE
     @Path("/licenses/{id}")
     public Response deleteLicenseById(@PathParam("id") long id) {
-        try {
-	        try {
-		        if (licenseService.getById(id).isDefault()){
-			        return error(Status.CONFLICT, "Please make sure the license is not the default before deleting it. ");
-		        }
-	        } catch (NoResultException e) {
-		        return error(Status.NOT_FOUND, "License with ID " + id + " not found");
-	        }
-	        int result = licenseService.deleteById(id);
-            if (result == 1) {
-                return ok("OK. License with ID " + id + " was deleted.");
-            }
-            return error(Response.Status.NOT_FOUND, "License with ID " + id + " not found");
-        } catch(IllegalStateException e) {
-            return error(Response.Status.CONFLICT, e.getMessage());
-        }
+	    try {
+		    License license = licenseService.getById(id);
+		    if (license == null) {
+			    return error(Status.NOT_FOUND, "License with ID " + id + " not found");
+		    } else if (license.isDefault()){
+			    return error(Status.CONFLICT, "Please make sure the license is not the default before deleting it. ");
+		    } else {
+			    if (licenseService.deleteById(id) == 1) {
+				    return ok("OK. License with ID " + id + " was deleted.");
+			    } else {
+				    return error(Status.CONFLICT, "Couldn't delete license with ID: " + id);
+			    }
+		    }
+	    } catch(IllegalStateException e) {
+		    return error(Response.Status.CONFLICT, e.getMessage());
+	    }
     }
 }
