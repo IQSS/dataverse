@@ -81,7 +81,11 @@ Some useful examples of search queries to define OAI sets:
 
   ``subtreePaths:"/NNN"``
 
-  where NNN is the database id of the Dataverse collection object (consult the Dataverse table of the SQL database used by the application to verify the database id). 
+  where NNN is the database id of the Dataverse collection (consult the Dataverse table of the SQL database used by the application to verify the database id). If the Dataverse collection has one or more parent collections, it has to include the database IDs of each of the collection's parent collections, for example:
+
+  ``subtreePaths:"/AAA/NNN"``
+
+  where NNN is the database id of the Dataverse collection which is a child of the collection with the AAA database id.  
 
 - A query to find all the dataset by a certain author: 
 
