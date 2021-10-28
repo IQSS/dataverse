@@ -81,7 +81,7 @@ Some useful examples of search queries to define OAI sets:
 
   ``subtreePaths:"/NNN"``
 
-  where NNN is the database ID of the Dataverse collection (to verify the database ID, consult the Dataverse table of the SQL database used by the application or use the "View a Dataverse Collection" API endpoint). If the Dataverse collection has one or more parent collections, the subtreePaths query has to include the database IDs of each of the collection's parent collections, up to but excluding the "Root" collection, for example:
+  where NNN is the database ID of the Dataverse collection (to verify the database ID, consult the Dataverse table of the SQL database used by the application or use the "View a Dataverse Collection" API endpoint). If the Dataverse collection has one or more parent collections, the subtreePaths query has to include the database IDs of each of the collection's parent collections, up to but excluding the "Root" collection. For example:
 
   ``subtreePaths:"/AAA/BBB/NNN"``
 
