@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -326,6 +327,15 @@ public class IndexServiceBean {
     public Future<String> indexDatasetInNewTransaction(Long datasetId) throws  SolrServerException, IOException{ //Dataset dataset) {
         boolean doNormalSolrDocCleanUp = false;
         Dataset dataset = em.find(Dataset.class, datasetId);
+        // return indexDataset(dataset, doNormalSolrDocCleanUp);
+        Future<String> ret = indexDataset(dataset, doNormalSolrDocCleanUp);
+        dataset = null;
+        return ret;
+    }
+    
+    @TransactionAttribute(REQUIRES_NEW)
+    public Future<String> indexDatasetObjectInNewTransaction(Dataset dataset) throws  SolrServerException, IOException{ //Dataset dataset) {
+        boolean doNormalSolrDocCleanUp = false;
         // return indexDataset(dataset, doNormalSolrDocCleanUp);
         Future<String> ret = indexDataset(dataset, doNormalSolrDocCleanUp);
         dataset = null;
@@ -938,9 +948,15 @@ public class IndexServiceBean {
         List<String> filesIndexed = new ArrayList<>();
         if (datasetVersion != null) {
             List<FileMetadata> fileMetadatas = datasetVersion.getFileMetadatas();
+            List<FileMetadata> releasedFileMetadatas = new ArrayList<>();
+            Map<Long, FileMetadata> fileMap = new HashMap<>();
             boolean checkForDuplicateMetadata = false;
             if (datasetVersion.isDraft() && dataset.isReleased() && dataset.getReleasedVersion() != null) {
                 checkForDuplicateMetadata = true;
+                releasedFileMetadatas = dataset.getReleasedVersion().getFileMetadatas(); 
+                for(FileMetadata released: releasedFileMetadatas){
+                    fileMap.put(released.getDataFile().getId(), released);
+                }
                 logger.fine(
                         "We are indexing a draft version of a dataset that has a released version. We'll be checking file metadatas if they are exact clones of the released versions.");
             }
@@ -948,27 +964,23 @@ public class IndexServiceBean {
             for (FileMetadata fileMetadata : fileMetadatas) {
 
                 boolean indexThisMetadata = true;
-
-                if (checkForDuplicateMetadata) {
-                    logger.fine("Checking if this file metadata is a duplicate.");                    
-                    if (fileMetadata.getDataFile() != null) {
-                        FileMetadata findReleasedFileMetadata = dataFileService.findFileMetadataByDatasetVersionIdAndDataFileId(dataset.getReleasedVersion().getId(), fileMetadata.getDataFile().getId());
-                        if (findReleasedFileMetadata != null) {
-                            if ((fileMetadata.getDataFile().isRestricted() == findReleasedFileMetadata.getDataFile().isRestricted())) {
-                                if (fileMetadata.contentEquals(findReleasedFileMetadata)
-                                        && variableMetadataUtil.compareVariableMetadata(findReleasedFileMetadata, fileMetadata)) {
-                                    indexThisMetadata = false;
-                                    logger.fine("This file metadata hasn't changed since the released version; skipping indexing.");
-                                } else {
-                                    logger.fine("This file metadata has changed since the released version; we want to index it!");
-                                }
+                if (checkForDuplicateMetadata && !releasedFileMetadatas.isEmpty()) {
+                    logger.fine("Checking if this file metadata is a duplicate.");
+                    FileMetadata getFromMap = fileMap.get(fileMetadata.getDataFile().getId());
+                    if (getFromMap != null) {
+                        if ((fileMetadata.getDataFile().isRestricted() == getFromMap.getDataFile().isRestricted())) {
+                            if (fileMetadata.contentEquals(getFromMap)
+                                    && variableMetadataUtil.compareVariableMetadata(getFromMap, fileMetadata)) {
+                                indexThisMetadata = false;
+                                logger.fine("This file metadata hasn't changed since the released version; skipping indexing.");
                             } else {
-                                logger.fine("This file's restricted status has changed since the released version; we want to index it!");
+                                logger.fine("This file metadata has changed since the released version; we want to index it!");
                             }
+                        } else {
+                            logger.fine("This file's restricted status has changed since the released version; we want to index it!");
                         }
                     }
-                }
-                
+                }        
                 if (indexThisMetadata) {
 
                     SolrInputDocument datafileSolrInputDocument = new SolrInputDocument();

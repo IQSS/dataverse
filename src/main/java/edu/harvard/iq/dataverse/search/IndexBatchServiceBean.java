@@ -1,12 +1,15 @@
 package edu.harvard.iq.dataverse.search;
 
+import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -205,7 +208,11 @@ public class IndexBatchServiceBean {
             try {
                 datasetIndexCount++;
                 logger.info("indexing dataset " + datasetIndexCount + " of " + datasetIds.size() + " (id=" + id + ")");
-                Future<String> result = indexService.indexDatasetInNewTransaction(id);
+                
+                Dataset dataset = datasetService.find(id);
+                Future<String> result = indexService.indexDatasetObjectInNewTransaction(dataset);
+                
+               // Future<String> result = indexService.indexDatasetInNewTransaction(id);
             } catch (Exception e) {
                 //We want to keep running even after an exception so throw some more info into the log
                 datasetFailureCount++;
@@ -268,8 +275,9 @@ public class IndexBatchServiceBean {
         for (Long childId : datasetChildren) {
             try {
                 datasetIndexCount++;
+                Dataset dataset = datasetService.find(childId);
                 logger.info("indexing dataset " + datasetIndexCount + " of " + datasetChildren.size() + " (id=" + childId + ")");
-                indexService.indexDatasetInNewTransaction(childId);
+                indexService.indexDatasetObjectInNewTransaction(dataset);
             } catch (Exception e) {
                 //We want to keep running even after an exception so throw some more info into the log
                 datasetFailureCount++;
