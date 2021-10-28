@@ -85,7 +85,7 @@ Some useful examples of search queries to define OAI sets:
 
   ``subtreePaths:"/AAA/BBB/NNN"``
 
-  where NNN is the database id of the Dataverse collection containing the desired dataset and AAA and BBB are the database IDs of the parent collections.
+  where NNN is the database ID of the Dataverse collection containing the desired dataset and AAA and BBB are the database IDs of the parent collections.
 
 - A query to find all the dataset by a certain author: 
 
