@@ -26,6 +26,7 @@ import edu.harvard.iq.dataverse.DataFile.ChecksumType;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Embargo;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.TermsOfUseAndAccess;
 import edu.harvard.iq.dataverse.dataaccess.DataAccess;
@@ -48,7 +49,6 @@ import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatTableC
 import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatLink;
 import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatTableCellAlignRight;
 import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatTableRow;
-import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -70,6 +70,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ArrayList;
@@ -96,7 +97,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.apache.commons.io.FilenameUtils;
 
-import com.amazonaws.AmazonServiceException;
 import edu.harvard.iq.dataverse.dataaccess.DataAccessOption;
 import edu.harvard.iq.dataverse.dataaccess.StorageIO;
 import edu.harvard.iq.dataverse.datasetutility.FileSizeChecker;
@@ -1563,6 +1563,9 @@ public class FileUtil implements java.io.Serializable  {
             logger.fine(msg);
             return false;
         }
+        if (isActivelyEmbargoed(fileMetadata)) {
+            return false;
+        }
         boolean popupReasons = isDownloadPopupRequired(fileMetadata.getDatasetVersion());
         if (popupReasons == true) {
             /**
@@ -1602,6 +1605,9 @@ public class FileUtil implements java.io.Serializable  {
             return false;
         }
         if (fileMetadata.isRestricted()) {
+            return false;
+        }
+        if (isActivelyEmbargoed(fileMetadata)) {
             return false;
         }
         return true;
@@ -2109,4 +2115,29 @@ public class FileUtil implements java.io.Serializable  {
         });
         return csvSB.toString();
     }
+
+    public static boolean isActivelyEmbargoed(DataFile df) {
+        Embargo e = df.getEmbargo();
+        if (e != null) {
+            LocalDate endDate = e.getDateAvailable();
+            if (endDate != null && endDate.isAfter(LocalDate.now())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isActivelyEmbargoed(FileMetadata fileMetadata) {
+        return isActivelyEmbargoed(fileMetadata.getDataFile());
+    }
+    
+    public static boolean isActivelyEmbargoed(List<FileMetadata> fmdList) {
+        for (FileMetadata fmd : fmdList) {
+            if (isActivelyEmbargoed(fmd)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
 }

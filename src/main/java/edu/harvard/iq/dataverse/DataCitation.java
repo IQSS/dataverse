@@ -688,8 +688,8 @@ public class DataCitation {
         if (!dsv.getDataset().isHarvested()) {
             citationDate = dsv.getCitationDate();
             if (citationDate == null) {
-                if (dsv.getDataset().getPublicationDate() != null) {
-                    citationDate = dsv.getDataset().getPublicationDate();
+                if (dsv.getDataset().getCitationDate() != null) {
+                    citationDate = dsv.getDataset().getCitationDate();
                 } else { // for drafts
                     citationDate = dsv.getLastUpdateTime();
                 }

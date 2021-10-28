@@ -107,6 +107,19 @@
             </p:commandLink>    
         </li>  
     </ui:fragment> 
+    
+    <ui:fragment rendered="#{settingsWrapper.embargoAllowed}">
+        <li>
+            <p:commandLink      update="@([id$=fileEmbargoPopup])" 
+                                onclick="if (!(#{fileMetadata!=null} || testFilesSelected()))
+                                            return false;" 
+                                oncomplete="PF('fileEmbargoPopup').show();"
+                                action="#{bean[refreshEmbargoPopoupAction]()}">
+                                <f:setPropertyActionListener target="#{fileMetadataForAction}" value="#{fileMetadata}" />
+                <h:outputText value="#{bundle['file.embargo']}"/>
+            </p:commandLink> 
+        </li>
+    </ui:fragment>
 
     <!-- TO-DO #7342 - ADD PROVENANCE FOR SINGLE FILE-->    
     <ui:fragment rendered="#{isFilePg and systemConfig.provCollectionEnabled}">

@@ -3,6 +3,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:c="http://java.sun.com/jsp/jstl/core"
+                xmlns:fn="http://java.sun.com/jsp/jstl/functions"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:o="http://omnifaces.org/ui"
                 xmlns:jsf="http://xmlns.jcp.org/jsf">
@@ -55,6 +56,14 @@
                                                   data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.metadata.publicationYear.tip']}"></span>
                                         </th>
                                         <td>#{publicationDate}</td>
+                                    </tr>
+                                    <tr id="metadata_citationDate" jsf:rendered="#{!empty publicationDate and (publicationDate ne citationDate)}">
+                                        <th scope="row">
+                                            #{bundle['dataset.metadata.citationDate']}
+                                            <span class="glyphicon glyphicon-question-sign tooltip-icon"
+                                                  data-toggle="tooltip" data-placement="auto right" data-original-title="#{bundle['dataset.metadata.citationDate.tip']}"></span>
+                                        </th>
+                                        <td>#{citationDate}</td>
                                     </tr>
                                 </ui:fragment>
                                 <ui:repeat value="#{metadataBlockVal.value}" var="dsf">
