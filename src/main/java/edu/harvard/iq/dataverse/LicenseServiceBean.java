@@ -11,6 +11,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -41,7 +42,7 @@ public class LicenseServiceBean {
                     .setParameter("id", id)
                     .getSingleResult();
         }catch (NoResultException noResultException) {
-            logger.warning("Couldn't find a license for id: " + id);
+            logger.log(Level.WARNING, "License with ID {0} doesn't exist.", id);
             return null;
         }
     }
@@ -58,7 +59,7 @@ public class LicenseServiceBean {
                     .setParameter("uri", nameOrUri)
                     .getSingleResult();
         } catch (NoResultException noResultException) {
-            logger.warning("Couldn't find a license for: " + nameOrUri);
+            logger.log(Level.WARNING, "Couldn't find a license for: {0}", nameOrUri);
             return null;
         }
     }
