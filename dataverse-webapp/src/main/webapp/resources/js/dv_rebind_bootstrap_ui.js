@@ -656,6 +656,10 @@ function reinitializePrimefacesComponentsJS() {
                 }
             }
 
+            /* Disable drag & drop for touchscreens */
+            if(window.matchMedia('(pointer: coarse)').matches) {
+                $(this.jqId + ' ul').sortable('disable');
+            }
         };
 
         PrimeFaces.widget.PickList.prototype.disableButton = function(button) {

@@ -1266,6 +1266,22 @@ input.fancy-checkbox[type=checkbox] {
     }
 }
 
+@media screen and (max-width: $screen-xs-max) {
+	.ui-picklist .ui-picklist-buttons .ui-picklist-buttons-cell {
+		margin: 0;
+		padding: 0;
+	}
+}
+
+/* Fix scroll block on touch devices */
+.ui-picklist .ui-sortable-handle {
+	touch-action: auto;
+}
+
+/* Fix erroneous horizontal scrollbar in Chrome */
+.ui-picklist.ui-picklist-responsive > div.ui-helper-hidden-accessible {
+	width: 1px !important;
+}
 
 /* Float elements parent size fix */
 .col-md-6.form-group.form-col-container {
