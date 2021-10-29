@@ -413,7 +413,7 @@
                             disabled="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                         <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFiles']} <span class="caret"></span>
                     </button>
-                    <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
+                    <ul class="dropdown-menu multi-level pull-right text-left">
                         <ui:include src="file-edit-button-fragment.xhtml">
                             <ui:param name="datasetVersion" value="#{DatasetPage.workingVersion}"/>
                             <ui:param name="fileMetadataForAction" value="#{DatasetPage.fileMetadataForAction}"/>
@@ -452,7 +452,7 @@
                     <button type="button" class="btn btn-default btn-download dropdown-toggle" data-toggle="dropdown">  
                         <span class="glyphicon glyphicon-download-alt"/> #{bundle.download} <span class="caret"></span>
                     </button>
-                    <ul jsf:id="downloadDropdownOptions" class="dropdown-menu multi-level pull-right text-left" role="menu">
+                    <ul jsf:id="downloadDropdownOptions" class="dropdown-menu multi-level pull-right text-left">
                         <li >
                             <p:commandLink
                                            disabled="#{false and DatasetPage.lockedFromDownload}"

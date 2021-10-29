@@ -435,7 +435,7 @@
                                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                             <span class="glyphicon glyphicon-pencil"/> #{bundle['file.editFilesSelected']} <span class="caret"></span>
                                         </button>
-                                        <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
+                                        <ul class="dropdown-menu multi-level pull-right text-left">
                                             <li class="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                                                 <p:commandLink  onclick="if (!testFilesSelected2()) return false;" 
                                                                 oncomplete="PF('editDeleteFileConfirmation').show();">                                                  
@@ -483,7 +483,7 @@
                                             disabled="#{DatasetPage.lockedFromEdits ? 'disabled' : ''}">
                                         <span class="glyphicon glyphicon-option-vertical"/><span class="sr-only">#{bundle['file.optionsBtn']}</span><span class="caret"></span>
                                     </button>
-                                    <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
+                                    <ul class="dropdown-menu multi-level pull-right text-left">
                                         <!-- Edit Options -->
                                         <li class="dropdown-header">#{bundle['file.optionsBtn.header.edit']} <span class="glyphicon glyphicon-pencil"/></li>
                                         <ui:fragment rendered="#{systemConfig.provCollectionEnabled}">
