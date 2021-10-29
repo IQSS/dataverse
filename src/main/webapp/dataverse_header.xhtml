@@ -299,7 +299,7 @@
                     </a>
                 </ui:fragment>
             </div>
-            <div class="dropdown-menu" role="menu" aria-labelledby="breadcrumbLnk#{status.index}" rendered="#{dataverseHeaderFragment.hasVisibleChildren(dv)}">
+            <div class="dropdown-menu" aria-labelledby="breadcrumbLnk#{status.index}" rendered="#{dataverseHeaderFragment.hasVisibleChildren(dv)}">
                 <p:tree value="#{dataverseHeaderFragment.getDataverseTree(dv)}" var="node"  cache="true" id="tree">
                     <p:treeNode>
                         <h:outputText value="#{node.name}" styleClass="breadcrumbActive" rendered="#{dataverse.id == node.id and dataset == null}"/>
