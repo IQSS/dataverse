@@ -56,7 +56,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
         // Copy metadata from draft version to latest published version
         updateVersion.setDatasetFields(getDataset().getEditVersion().initDatasetFields());
 
-        validateOrDie(updateVersion, isValidateLenient());
+        validateOrDie(updateVersion, isValidateLenient(), ctxt);
 
         // final DatasetVersion editVersion = getDataset().getEditVersion();
         tidyUpFields(updateVersion);
@@ -185,7 +185,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
             destTermsOfUse.setAllRightsReserved(sourceTermsOfUse.isAllRightsReserved());
             destTermsOfUse.setRestrictType(sourceTermsOfUse.getRestrictType());
             destTermsOfUse.setRestrictCustomText(sourceTermsOfUse.getRestrictCustomText());
-            
+
             metadataUpdated = true;
         }
 
@@ -193,7 +193,7 @@ public class CuratePublishedDatasetVersionCommand extends AbstractDatasetCommand
             dest.setProvFreeForm(source.getProvFreeForm());
             metadataUpdated = true;
         }
-        
+
         return metadataUpdated;
     }
 }

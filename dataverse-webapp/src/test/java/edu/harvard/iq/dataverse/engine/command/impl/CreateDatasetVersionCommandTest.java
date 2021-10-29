@@ -9,6 +9,7 @@ import edu.harvard.iq.dataverse.persistence.MocksFactory;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.user.Permission;
+import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,6 +36,9 @@ public class CreateDatasetVersionCommandTest {
 
     @Mock
     private DatasetDao datasetDao;
+
+    @Mock
+    private DatasetFieldValidationService fieldValidationService;
 
     @Before
     public void prepare(){
@@ -68,6 +72,11 @@ public class CreateDatasetVersionCommandTest {
             @Override
             public DatasetDao datasets() {
                 return datasetDao;
+            }
+
+            @Override
+            public DatasetFieldValidationService fieldValidationService() {
+                return fieldValidationService;
             }
         });
 

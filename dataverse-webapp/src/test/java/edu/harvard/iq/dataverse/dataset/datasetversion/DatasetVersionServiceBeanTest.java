@@ -8,6 +8,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersionRepository;
+import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,6 +42,9 @@ class DatasetVersionServiceBeanTest {
     @Mock
     EntityManager entityManager;
 
+    @Mock
+    private DatasetFieldValidationService fieldValidationService;
+
     DatasetVersionRepository versionRepository = mock(DatasetVersionRepository.class);
 
     @InjectMocks
@@ -60,7 +64,7 @@ class DatasetVersionServiceBeanTest {
     public void updateDatasetVersion() {
         //given
         DatasetVersion testDatasetVersion = prepareDataset();
-        
+
         TypedQuery<DatasetVersion> dbQuery = mock(TypedQuery.class);
         when(dbQuery.setParameter("datasetId", 1L)).thenReturn(dbQuery);
         when(dbQuery.setMaxResults(1)).thenReturn(dbQuery);

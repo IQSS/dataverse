@@ -15,12 +15,15 @@ import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
 import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
+import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
+import edu.harvard.iq.dataverse.validation.datasetfield.ValidationResult;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.Deposit;
 import org.swordapp.server.DepositReceipt;
@@ -71,6 +74,8 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
     private UrlManagerServiceBean urlManagerServiceBean;
     @Inject
     private CitationFactory citationFactory;
+    @Inject
+    private DatasetFieldValidationService fieldValidationService;
 
     private HttpServletRequest httpRequest;
 
@@ -315,16 +320,20 @@ public class MediaResourceManagerImpl implements MediaResourceManager {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: Virus detected");
             } catch (EJBException | IOException ex) {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: Unknown error");
-            } 
+            }
             if (!dataFiles.isEmpty()) {
-                Set<ConstraintViolation> constraintViolations = editVersion.validate();
-                if (constraintViolations.size() > 0) {
-                    ConstraintViolation violation = constraintViolations.iterator().next();
-                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "Unable to add file(s) to dataset: " + violation.getMessage() + " The invalid value was \"" + violation.getInvalidValue() + "\".");
+                List<ValidationResult> validationResults = fieldValidationService.validateFieldsOfDatasetVersion(editVersion);
+                Set<ConstraintViolation<FileMetadata>> constraintViolations = editVersion.validateFileMetadata();
+                if (!validationResults.isEmpty()) {
+                    ValidationResult firstError = validationResults.get(0);
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST,
+                            String.format("Unable to add file(s) to dataset: %s The invalid value was \"%s\".", firstError.getMessage(), firstError.getField().getValue()));
+                } else if (!constraintViolations.isEmpty()) {
+                    ConstraintViolation<FileMetadata> violation = constraintViolations.iterator().next();
+                    throw new SwordError(UriRegistry.ERROR_BAD_REQUEST,
+                            String.format("Unable to add file(s) to dataset: %s The invalid value was \"%s\".", violation.getMessage(), violation.getInvalidValue()));
                 } else {
-
                     ingestService.saveAndAddFilesToDataset(editVersion, dataFiles);
-
                 }
             } else {
                 throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, "No files to add to dataset. Perhaps the zip file was empty.");

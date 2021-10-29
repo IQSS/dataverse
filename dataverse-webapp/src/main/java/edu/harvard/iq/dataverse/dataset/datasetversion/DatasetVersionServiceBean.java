@@ -21,6 +21,8 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersionRepository;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
+import edu.harvard.iq.dataverse.validation.datasetfield.ValidationResult;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,6 +84,9 @@ public class DatasetVersionServiceBean implements java.io.Serializable {
 
     @Inject
     private DataverseRequestServiceBean dvRequestService;
+
+    @Inject
+    private DatasetFieldValidationService fieldValidationService;
 
     private final DatasetVersionRepository versionRepository;
 
@@ -1082,9 +1087,10 @@ w
     }
 
     public Dataset updateDatasetVersion(DatasetVersion editVersion, List<DataFile> filesToDelete, boolean validateLenient) {
-        Set<ConstraintViolation> constraintViolations = editVersion.validate();
-
-        if (!constraintViolations.isEmpty()) {
+        List<ValidationResult> validationResults = fieldValidationService.validateFieldsOfDatasetVersion(editVersion);
+        Set<ConstraintViolation<FileMetadata>> constraintViolations = editVersion.validateFileMetadata();
+        if (!validationResults.isEmpty() || !constraintViolations.isEmpty()) {
+            validationResults.forEach(r -> log.warn(r.getMessage()));
             constraintViolations.forEach(constraintViolation -> log.warn(constraintViolation.getMessage()));
             throw new ValidationException("There was validation error during updating dataset attempt with id: " + editVersion.getDataset().getId());
         }
@@ -1092,11 +1098,8 @@ w
         Dataset dataset = editVersion.getDataset();
         DatasetVersion datasetBeforeChanges = findLatestVersion(dataset.getId());
 
-
-        UpdateDatasetVersionCommand command = new UpdateDatasetVersionCommand(dataset,
-                                                                              dvRequestService.getDataverseRequest(),
-                                                                              filesToDelete,
-                                                                              datasetBeforeChanges);
+        UpdateDatasetVersionCommand command = new UpdateDatasetVersionCommand(
+                dataset, dvRequestService.getDataverseRequest(), filesToDelete, datasetBeforeChanges);
         command.setValidateLenient(validateLenient);
         return commandEngine.submit(command);
     }

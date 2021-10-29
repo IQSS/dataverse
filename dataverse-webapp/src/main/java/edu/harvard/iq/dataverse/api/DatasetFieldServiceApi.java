@@ -377,6 +377,9 @@ public class DatasetFieldServiceApi extends AbstractApiBean {
         if (values.length > 18 && !StringUtils.isEmpty(values[18])) {
             dsf.setUri(values[18]);
         }
+        if (values.length > 19 && StringUtils.isNotBlank(values[19])) {
+            dsf.setValidation(values[19]);
+        }
         datasetFieldService.save(dsf);
         return dsf.getName();
     }

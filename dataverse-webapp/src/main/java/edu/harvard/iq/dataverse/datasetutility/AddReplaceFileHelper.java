@@ -17,6 +17,8 @@ import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.util.json.JsonPrinter;
+import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
+import edu.harvard.iq.dataverse.validation.datasetfield.ValidationResult;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.ocpsoft.common.util.Strings;
@@ -35,6 +37,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
@@ -1007,23 +1010,24 @@ public class AddReplaceFileHelper {
         // Iterate through checking for constraint violations
         //  Gather all error messages
         // -----------------------------------------------------------
-        Set<ConstraintViolation> constraintViolations = workingVersion.validate();
+        DatasetFieldValidationService fieldValidationService = commandEngine.getContext().fieldValidationService();
+        List<ValidationResult> validationResults = fieldValidationService.validateFieldsOfDatasetVersion(workingVersion);
+        Set<ConstraintViolation<FileMetadata>> constraintViolations = workingVersion.validateFileMetadata();
 
         // -----------------------------------------------------------
         // No violations found
         // -----------------------------------------------------------
-        if (constraintViolations.isEmpty()) {
+        if (validationResults.isEmpty() && constraintViolations.isEmpty()) {
             return true;
         }
 
         // -----------------------------------------------------------
         // violations found: gather all error messages
         // -----------------------------------------------------------
-        List<String> errMsgs = new ArrayList<>();
-        for (ConstraintViolation violation : constraintViolations) {
-            this.addError(violation.getMessage());
-        }
-
+        Stream.concat(
+                validationResults.stream().map(ValidationResult::getMessage),
+                constraintViolations.stream().map(ConstraintViolation::getMessage))
+                .forEach(this::addError);
         return this.hasError();
     }
 

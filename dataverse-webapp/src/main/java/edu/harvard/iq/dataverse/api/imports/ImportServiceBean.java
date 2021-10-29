@@ -34,6 +34,8 @@ import edu.harvard.iq.dataverse.search.index.IndexServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
 import edu.harvard.iq.dataverse.util.json.JsonParser;
+import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
+import edu.harvard.iq.dataverse.validation.datasetfield.ValidationResult;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -41,7 +43,6 @@ import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -51,23 +52,17 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.logging.Formatter;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static javax.ejb.TransactionAttributeType.REQUIRES_NEW;
 
@@ -105,6 +100,9 @@ public class ImportServiceBean {
 
     @Inject
     private HarvestedJsonParser harvestedJsonParser;
+
+    @Inject
+    private DatasetFieldValidationService fieldValidationService;
 
     /**
      * This is just a convenience method, for testing migration.  It creates
@@ -213,23 +211,23 @@ public class ImportServiceBean {
         DatasetDTO dsDTO = null;
         String json = null;
 
-        // TODO: 
+        // TODO:
         // At the moment (4.5; the first official "export/harvest release"), there
-        // are 3 supported metadata formats: DDI, DC and native Dataverse metadata 
+        // are 3 supported metadata formats: DDI, DC and native Dataverse metadata
         // encoded in JSON. The 2 XML formats are handled by custom implementations;
-        // each of the 2 implementations uses its own parsing approach. (see the 
-        // ImportDDIServiceBean and ImportGenerciServiceBean for details). 
+        // each of the 2 implementations uses its own parsing approach. (see the
+        // ImportDDIServiceBean and ImportGenerciServiceBean for details).
         // TODO: Need to create a system of standardized import plugins - similar to Stephen
         // Kraffmiller's export modules; replace the logic below with clean
-        // programmatic lookup of the import plugin needed. 
+        // programmatic lookup of the import plugin needed.
 
         if ("ddi".equalsIgnoreCase(metadataFormat) || "oai_ddi".equals(metadataFormat)
                 || metadataFormat.toLowerCase().matches("^oai_ddi.*")) {
             try {
                 String xmlToParse = new String(Files.readAllBytes(metadataFile.toPath()));
-                // TODO: 
-                // import type should be configurable - it should be possible to 
-                // select whether you want to harvest with or without files, 
+                // TODO:
+                // import type should be configurable - it should be possible to
+                // select whether you want to harvest with or without files,
                 // ImportType.HARVEST vs. ImportType.HARVEST_WITH_FILES
                 logger.fine("importing DDI " + metadataFile.getAbsolutePath());
                 dsDTO = importDDIService.doImport(ImportType.HARVEST, xmlToParse);
@@ -245,7 +243,7 @@ public class ImportServiceBean {
                 throw new ImportException("Failed to process Dublin Core XML record: " + e.getClass() + " (" + e.getMessage() + ")");
             }
         } else if ("dataverse_json".equals(metadataFormat)) {
-            // This is Dataverse metadata already formatted in JSON. 
+            // This is Dataverse metadata already formatted in JSON.
             // Simply read it into a string, and pass to the final import further down:
             logger.fine("Attempting to import custom dataverse metadata from file " + metadataFile.getAbsolutePath());
             json = new String(Files.readAllBytes(metadataFile.toPath()));
@@ -255,7 +253,7 @@ public class ImportServiceBean {
 
         if (json == null) {
             if (dsDTO != null) {
-                // convert DTO to Json, 
+                // convert DTO to Json,
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 json = gson.toJson(dsDTO);
                 logger.fine("JSON produced for the metadata harvested: " + json);
@@ -276,46 +274,12 @@ public class ImportServiceBean {
             ds.setOwner(owner);
             ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
 
-            // Check data against required contraints
-            List<ConstraintViolation<DatasetField>> violations = ds.getVersions().get(0).validateRequired();
-            if (!violations.isEmpty()) {
+            // Check data against validation contraints
+            DatasetVersion versionToValidate = ds.getVersions().get(0);
+            List<ValidationResult> validationResults = fieldValidationService.validateFieldsOfDatasetVersion(versionToValidate);
+            if (!validationResults.isEmpty()) {
                 // For migration and harvest, add NA for missing required values
-                for (ConstraintViolation<DatasetField> v : violations) {
-                    DatasetField f = v.getRootBean();
-                    f.setFieldValue(DatasetField.NA_VALUE);
-                }
-            }
-
-            // Check data against validation constraints
-            // If we are migrating and "scrub migration data" is true we attempt to fix invalid data
-            // if the fix fails stop processing of this file by throwing exception
-            Set<ConstraintViolation> invalidViolations = ds.getVersions().get(0).validate();
-            ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-            Validator validator = factory.getValidator();
-            if (!invalidViolations.isEmpty()) {
-                for (ConstraintViolation<DatasetField> v : invalidViolations) {
-                    DatasetField f = v.getRootBean();
-                    boolean fixed = false;
-                    boolean converted = false;
-                    // TODO: Is this scrubbing something we want to continue doing? 
-                    if (settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData)) {
-                        fixed = processMigrationValidationError(f, cleanupLog, metadataFile.getName());
-                        converted = true;
-                        if (fixed) {
-                            Set<ConstraintViolation<DatasetField>> scrubbedViolations = validator.validate(f);
-                            if (!scrubbedViolations.isEmpty()) {
-                                fixed = false;
-                            }
-                        }
-                    }
-                    if (!fixed) {
-                        String msg = "Data modified - File: " + metadataFile.getName() + "; Field: " + f.getDatasetFieldType().getDisplayName() + "; "
-                                + "Invalid value:  '" + f.getValue() + "'" + " Converted Value:'" + DatasetField.NA_VALUE + "'";
-                        cleanupLog.println(msg);
-                        f.setFieldValue(DatasetField.NA_VALUE);
-
-                    }
-                }
+                validationResults.forEach(r -> r.getField().setFieldValue(DatasetField.NA_VALUE));
             }
 
             // A Global ID is required, in order for us to be able to harvest and import
@@ -336,8 +300,8 @@ public class ImportServiceBean {
                     throw new ImportException("The dataset with the global id " + ds.getGlobalIdString() + " already exists, in the dataverse " + existingDs.getOwner().getAlias() + ", skipping.");
                 }
                 // And if we already have a dataset with this same id, in this same
-                // dataverse, but it is  LOCAL dataset (can happen!), we're going to 
-                // skip it also: 
+                // dataverse, but it is  LOCAL dataset (can happen!), we're going to
+                // skip it also:
                 if (!existingDs.isHarvested()) {
                     throw new ImportException("A LOCAL dataset with the global id " + ds.getGlobalIdString() + " already exists in this dataverse; skipping.");
                 }
@@ -346,19 +310,19 @@ public class ImportServiceBean {
                 if (existingDs.getVersions().size() != 1) {
                     throw new ImportException("Error importing Harvested Dataset, existing dataset has " + existingDs.getVersions().size() + " versions");
                 }
-                // Purge all the SOLR documents associated with this client from the 
-                // index server: 
+                // Purge all the SOLR documents associated with this client from the
+                // index server:
                 indexService.deleteHarvestedDocuments(existingDs);
-                // files from harvested datasets are removed unceremoniously, 
-                // directly in the database. no need to bother calling the 
+                // files from harvested datasets are removed unceremoniously,
+                // directly in the database. no need to bother calling the
                 // DeleteFileCommand on them.
                 for (DataFile harvestedFile : existingDs.getFiles()) {
                     DataFile merged = em.merge(harvestedFile);
                     em.remove(merged);
                     harvestedFile = null;
                 }
-                // TODO: 
-                // Verify what happens with the indexed files in SOLR? 
+                // TODO:
+                // Verify what happens with the indexed files in SOLR?
                 // are they going to be overwritten by the reindexing of the dataset?
                 existingDs.setFiles(null);
                 Dataset merged = em.merge(existingDs);
@@ -407,12 +371,12 @@ public class ImportServiceBean {
         } catch (XMLStreamException e) {
             throw new ImportException("XMLStreamException" + e);
         }
-        // convert DTO to Json, 
+        // convert DTO to Json,
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String json = gson.toJson(dsDTO);
         JsonReader jsonReader = Json.createReader(new StringReader(json));
         JsonObject obj = jsonReader.readObject();
-        //and call parse Json to read it into a dataset   
+        //and call parse Json to read it into a dataset
         try {
             JsonParser parser = new JsonParser(datasetfieldService, metadataBlockService, settingsService);
             parser.setLenient(!importType.equals(ImportType.NEW));
@@ -429,67 +393,23 @@ public class ImportServiceBean {
             ds.setOwner(owner);
             ds.getLatestVersion().setDatasetFields(ds.getLatestVersion().initDatasetFields());
 
-            // Check data against required contraints
-            List<ConstraintViolation<DatasetField>> violations = ds.getVersions().get(0).validateRequired();
-            if (!violations.isEmpty()) {
+            // Check data against validation contraints
+            DatasetVersion versionToValidate = ds.getVersions().get(0);
+            List<ValidationResult> validationResults = fieldValidationService.validateFieldsOfDatasetVersion(versionToValidate);
+            if (!validationResults.isEmpty()) {
                 if (importType.equals(ImportType.HARVEST)) {
                     // For migration and harvest, add NA for missing required values
-                    for (ConstraintViolation<DatasetField> v : violations) {
-                        DatasetField f = v.getRootBean();
-                        f.setFieldValue(DatasetField.NA_VALUE);
-                    }
+                    validationResults.forEach(r -> r.getField().setFieldValue(DatasetField.NA_VALUE));
                 } else {
                     // when importing a new dataset, the import will fail
                     // if required values are missing.
-                    String errMsg = "Error importing data:";
-                    for (ConstraintViolation<DatasetField> v : violations) {
-                        errMsg += " " + v.getMessage();
-                    }
+                    String errMsg = String.format("Error importing data: %s",
+                            validationResults.stream()
+                                    .map(ValidationResult::getMessage)
+                                    .collect(Collectors.joining(" ")));
                     throw new ImportException(errMsg);
                 }
             }
-
-            // Check data against validation constraints
-            // If we are migrating and "scrub migration data" is true we attempt to fix invalid data
-            // if the fix fails stop processing of this file by throwing exception
-            Set<ConstraintViolation> invalidViolations = ds.getVersions().get(0).validate();
-            ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-            Validator validator = factory.getValidator();
-            if (!invalidViolations.isEmpty()) {
-                for (ConstraintViolation<DatasetField> v : invalidViolations) {
-                    DatasetField f = v.getRootBean();
-                    boolean fixed = false;
-                    boolean converted = false;
-                    if (importType.equals(ImportType.HARVEST) &&
-                            settingsService.isTrueForKey(SettingsServiceBean.Key.ScrubMigrationData)) {
-                        fixed = processMigrationValidationError(f, cleanupLog, fileName);
-                        converted = true;
-                        if (fixed) {
-                            Set<ConstraintViolation<DatasetField>> scrubbedViolations = validator.validate(f);
-                            if (!scrubbedViolations.isEmpty()) {
-                                fixed = false;
-                            }
-                        }
-                    }
-                    if (!fixed) {
-                        if (importType.equals(ImportType.HARVEST)) {
-                            String msg = "Data modified - File: " + fileName + "; Field: " + f.getDatasetFieldType().getDisplayName() + "; "
-                                    + "Invalid value:  '" + f.getValue() + "'" + " Converted Value:'" + DatasetField.NA_VALUE + "'";
-                            cleanupLog.println(msg);
-                            f.setFieldValue(DatasetField.NA_VALUE);
-
-                        } else {
-                            String msg = " Validation error for ";
-                            if (converted) {
-                                msg += "converted ";
-                            }
-                            msg += "value: " + f.getValue() + ", " + f.getValidationMessage();
-                            throw new ImportException(msg);
-                        }
-                    }
-                }
-            }
-
 
             Dataset existingDs = datasetDao.findByGlobalId(ds.getGlobalIdString());
 
@@ -632,7 +552,7 @@ public class ImportServiceBean {
             }
         }
 
-        //Convert string months to numeric    
+        //Convert string months to numeric
 
 
         if (inString.toUpperCase().contains("JANUARY")) {

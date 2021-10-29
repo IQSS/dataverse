@@ -157,7 +157,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 	@Test
 	void validate_emptyFileMetadata() {
 		datasetVersion.setFileMetadatas(new ArrayList<>());
-		Set<ConstraintViolation> violations2 = datasetVersion.validate();
+		Set<ConstraintViolation<FileMetadata>> violations2 = datasetVersion.validateFileMetadata();
 		assertEquals(0, violations2.size());
 	}
 
@@ -169,7 +169,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 	@ParameterizedTest
 	@ValueSource(strings = {"/has/leading/slash", "has/trailing/slash/", "/leadingAndTrailing/"})
 	void validate_expectedViolationWithMessage(String directoryLabel) {
-		Set<ConstraintViolation> violations = checkConstraintViolations(directoryLabel, 1);
+		Set<ConstraintViolation<FileMetadata>> violations = checkConstraintViolations(directoryLabel, 1);
 		assertEquals("{directoryname.illegalCharacters}", violations.iterator().next().getMessageTemplate());
 	}
 
@@ -217,11 +217,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
         return datasetVersion;
     }
 
-    private Set<ConstraintViolation> checkConstraintViolations(String directoryLabel, int expectedViolationsNumber) {
+    private Set<ConstraintViolation<FileMetadata>> checkConstraintViolations(String directoryLabel, int expectedViolationsNumber) {
         fileMetadata.setDirectoryLabel(directoryLabel);
         datasetVersion.getFileMetadatas().add(fileMetadata);
 
-        Set<ConstraintViolation> violations = datasetVersion.validate();
+        Set<ConstraintViolation<FileMetadata>> violations = datasetVersion.validateFileMetadata();
         assertEquals(expectedViolationsNumber, violations.size());
         return violations;
     }

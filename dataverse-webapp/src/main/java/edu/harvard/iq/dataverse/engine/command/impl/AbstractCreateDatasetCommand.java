@@ -75,8 +75,8 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
 
         DatasetVersion dsv = getVersionToPersist(theDataset);
         // This re-uses the state setup logic of CreateDatasetVersionCommand, but
-        // without persisting the new version, or altering its files. 
-        new CreateDatasetVersionCommand(getRequest(), theDataset, dsv).prepareDatasetAndVersion();
+        // without persisting the new version, or altering its files.
+        new CreateDatasetVersionCommand(getRequest(), theDataset, dsv).prepareDatasetAndVersion(ctxt);
 
         theDataset.setCreator((AuthenticatedUser) getRequest().getUser());
 
@@ -126,10 +126,10 @@ public abstract class AbstractCreateDatasetCommand extends AbstractDatasetComman
         ctxt.em().flush();
 
         // TODO: switch to asynchronous version when JPA sync works
-        // ctxt.index().asyncIndexDataset(theDataset.getId(), true); 
+        // ctxt.index().asyncIndexDataset(theDataset.getId(), true);
         ctxt.index().indexDataset(theDataset, true);
         ctxt.solrIndex().indexPermissionsOnSelfAndChildren(theDataset.getId());
-        
+
         /*
         if (DataCaptureModuleUtil.rsyncSupportEnabled(ctxt.settings().getValueForKey(SettingsServiceBean.Key.UploadMethods))) {
             logger.fine("Requesting rsync support.");

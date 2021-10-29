@@ -45,6 +45,8 @@ import edu.harvard.iq.dataverse.util.FileUtil;
 import edu.harvard.iq.dataverse.util.JsfHelper;
 import edu.harvard.iq.dataverse.util.PrimefacesUtil;
 import edu.harvard.iq.dataverse.util.StringUtil;
+import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
+import edu.harvard.iq.dataverse.validation.datasetfield.ValidationResult;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import org.apache.commons.lang3.StringUtils;
@@ -116,6 +118,7 @@ public class DatasetFilesTab implements Serializable {
     private RequestedDownloadType requestedDownloadType;
     private GuestbookResponseDialog guestbookResponseDialog;
     private ConfirmEmailServiceBean confirmEmailService;
+    private DatasetFieldValidationService fieldValidationService;
 
     private Dataset dataset;
     private DatasetVersion workingVersion;
@@ -191,11 +194,9 @@ public class DatasetFilesTab implements Serializable {
                            SettingsServiceBean settingsService, EjbDataverseEngine commandEngine,
                            ExternalToolServiceBean externalToolService, TermsOfUseFormMapper termsOfUseFormMapper,
                            FileDownloadRequestHelper fileDownloadRequestHelper, RequestedDownloadType requestedDownloadType,
-                           GuestbookResponseDialog guestbookResponseDialog,
-                           ImageThumbConverter imageThumbConverter,
-                           FileMetadataService fileMetadataService,
-                           DatasetFilesTabFacade datasetFilesTabFacade,
-                           ConfirmEmailServiceBean confirmEmailService) {
+                           GuestbookResponseDialog guestbookResponseDialog, ImageThumbConverter imageThumbConverter,
+                           FileMetadataService fileMetadataService, DatasetFilesTabFacade datasetFilesTabFacade,
+                           ConfirmEmailServiceBean confirmEmailService, DatasetFieldValidationService fieldValidationService) {
         this.fileDownloadHelper = fileDownloadHelper;
         this.datafileService = datafileService;
         this.permissionService = permissionService;
@@ -215,6 +216,7 @@ public class DatasetFilesTab implements Serializable {
         this.imageThumbConverter = imageThumbConverter;
         this.datasetFilesTabFacade = datasetFilesTabFacade;
         this.confirmEmailService = confirmEmailService;
+        this.fieldValidationService = fieldValidationService;
     }
 
     public void init(DatasetVersion workingVersion) {
@@ -925,8 +927,9 @@ public class DatasetFilesTab implements Serializable {
     private String save(DatasetVersion updatedVersion, boolean printBannerMessage) {
 
         // Validate
-        Set<ConstraintViolation> constraintViolations = updatedVersion.validate();
-        if (!constraintViolations.isEmpty()) {
+        List<ValidationResult> validationResults = fieldValidationService.validateFieldsOfDatasetVersion(updatedVersion);
+        Set<ConstraintViolation<FileMetadata>> constraintViolations = updatedVersion.validateFileMetadata();
+        if (!validationResults.isEmpty() || !constraintViolations.isEmpty()) {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.validationError"), "");
             return "";
         }

@@ -152,6 +152,9 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
 
     private boolean advancedSearchFieldType;
 
+    @Column(name="validation", nullable = false)
+    private String validation;
+
     // -------------------- CONSTRUCTORS --------------------
 
     public DatasetFieldType() { }
@@ -277,6 +280,9 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
         return inputRendererOptions;
     }
 
+    public String getValidation() {
+        return validation;
+    }
 
     // -------------------- LOGIC --------------------
 
@@ -566,6 +572,10 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
 
     public void setInputRendererOptions(String inputRendererOptions) {
         this.inputRendererOptions = inputRendererOptions;
+    }
+
+    public void setValidation(String validation) {
+        this.validation = validation;
     }
 
     // -------------------- hashCode & equals --------------------

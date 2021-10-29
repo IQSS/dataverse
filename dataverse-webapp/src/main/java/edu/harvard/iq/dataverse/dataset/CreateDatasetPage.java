@@ -30,6 +30,8 @@ import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.JsfHelper;
+import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
+import edu.harvard.iq.dataverse.validation.datasetfield.ValidationResult;
 import io.vavr.control.Try;
 import org.apache.commons.lang3.StringUtils;
 import org.omnifaces.cdi.ViewScoped;
@@ -77,6 +79,8 @@ public class CreateDatasetPage implements Serializable {
     private DatasetService DatasetService;
     @EJB
     private InputFieldRendererManager inputFieldRendererManager;
+    @Inject
+    private DatasetFieldValidationService fieldValidationService;
 
     private Dataset dataset;
     private Long ownerId;
@@ -147,7 +151,7 @@ public class CreateDatasetPage implements Serializable {
     }
 
     public Template getSelectedTemplate() {
-        return selectedTemplate; 
+        return selectedTemplate;
     }
 
     public Map<MetadataBlock, List<DatasetFieldsByType>> getMetadataBlocksForEdit() {
@@ -179,8 +183,9 @@ public class CreateDatasetPage implements Serializable {
     public String save() {
         workingVersion.setDatasetFields(DatasetFieldUtil.flattenDatasetFieldsFromBlocks(metadataBlocksForEdit));
 
-        Set<ConstraintViolation> constraintViolations = workingVersion.validate();
-        if (!constraintViolations.isEmpty()) {
+        List<ValidationResult> validationResults = fieldValidationService.validateFieldsOfDatasetVersion(workingVersion);
+        Set<ConstraintViolation<FileMetadata>> constraintViolations = workingVersion.validateFileMetadata();
+        if (!validationResults.isEmpty() || !constraintViolations.isEmpty()) {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.validationError"),
                     BundleUtil.getStringFromBundle("dataset.message.validationErrorDetails"));
             return StringUtils.EMPTY;
@@ -245,9 +250,9 @@ public class CreateDatasetPage implements Serializable {
         inputRenderersByFieldType = inputFieldRendererManager.obtainRenderersByType(datasetFields);
 
         metadataBlocksForEdit = datasetFieldsInitializer.groupAndUpdateFlagsForEdit(datasetFields, dataset.getOwner().getMetadataBlockRootDataverse());
-        
+
     }
-    
+
     private void mapTermsOfUseInFiles(List<DataFile> files) {
         for (DataFile file : files) {
             TermsOfUseForm termsOfUseForm = file.getFileMetadata().getTermsOfUseForm();

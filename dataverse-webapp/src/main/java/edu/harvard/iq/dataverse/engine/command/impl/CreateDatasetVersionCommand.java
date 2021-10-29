@@ -42,7 +42,7 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
             }
         }
 
-        prepareDatasetAndVersion();
+        prepareDatasetAndVersion(ctxt);
 
         newVersion.setFileMetadatas(new ArrayList<>(latest.getFileMetadatas().size()));
         for (FileMetadata fmd : latest.getFileMetadatas()) {
@@ -63,14 +63,14 @@ public class CreateDatasetVersionCommand extends AbstractDatasetCommand<DatasetV
      * the internal fields of the dataset version.
      *
      */
-    public void prepareDatasetAndVersion() {
+    public void prepareDatasetAndVersion(CommandContext context) {
         newVersion.setDataset(dataset);
         newVersion.setDatasetFields(newVersion.initDatasetFields());
         newVersion.setCreateTime(getTimestamp());
         newVersion.setLastUpdateTime(getTimestamp());
 
         tidyUpFields(newVersion);
-        validateOrDie(newVersion, false);
+        validateOrDie(newVersion, false, context);
 
         final List<DatasetVersion> currentVersions = dataset.getVersions();
         ArrayList<DatasetVersion> dsvs = new ArrayList<>(currentVersions.size());

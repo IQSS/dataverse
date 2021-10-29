@@ -375,6 +375,12 @@ public class DatasetField implements Serializable {
         return this.getDatasetFieldType().getDisplayOrder();
     }
 
+    public DatasetField getTopParentDatasetField() {
+        return getDatasetFieldParent()
+                .map(DatasetField::getTopParentDatasetField)
+                .getOrElse(this);
+    }
+
     // -------------------- PRIVATE --------------------
 
     private static DatasetField createNewEmptyDatasetField(DatasetFieldType dsfType) {

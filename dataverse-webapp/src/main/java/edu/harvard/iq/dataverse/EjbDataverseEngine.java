@@ -39,6 +39,7 @@ import edu.harvard.iq.dataverse.search.index.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionFacade;
 import org.apache.commons.collections4.CollectionUtils;
@@ -204,6 +205,9 @@ public class EjbDataverseEngine {
 
     @Inject
     DownloadDatasetLogDao downloadDatasetLogDao;
+
+    @Inject
+    DatasetFieldValidationService fieldValidationService;
 
 
     @Resource
@@ -541,6 +545,11 @@ public class EjbDataverseEngine {
                 @Override
                 public DownloadDatasetLogDao downloadDatasetDao() {
                     return downloadDatasetLogDao;
+                }
+
+                @Override
+                public DatasetFieldValidationService fieldValidationService() {
+                    return fieldValidationService;
                 }
             };
         }

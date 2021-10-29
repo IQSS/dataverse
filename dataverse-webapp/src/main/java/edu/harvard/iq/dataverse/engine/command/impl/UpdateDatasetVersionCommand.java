@@ -69,7 +69,7 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         // Invariant: Dataset has no locks prventing the update
 
         getDataset().getEditVersion().setDatasetFields(getDataset().getEditVersion().initDatasetFields());
-        validateOrDie(getDataset().getEditVersion(), isValidateLenient());
+        validateOrDie(getDataset().getEditVersion(), isValidateLenient(), ctxt);
 
         final DatasetVersion editVersion = getDataset().getEditVersion();
         tidyUpFields(editVersion);
@@ -91,16 +91,16 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
 
         // Remove / delete any files that were removed
 
-        // If any of the files that we are deleting has a UNF, we will need to 
-        // re-calculate the UNF of the version - since that is the product 
-        // of the UNFs of the individual files. 
+        // If any of the files that we are deleting has a UNF, we will need to
+        // re-calculate the UNF of the version - since that is the product
+        // of the UNFs of the individual files.
         boolean recalculateUNF = false;
-        /* The separate loop is just to make sure that the dataset database is 
+        /* The separate loop is just to make sure that the dataset database is
         updated, specifically when an image datafile is being deleted, which
-        is being used as the dataset thumbnail as part of a batch delete. 
-        if we don't remove the thumbnail association with the dataset before the 
-        actual deletion of the file, it might throw foreign key integration 
-        violation exceptions. 
+        is being used as the dataset thumbnail as part of a batch delete.
+        if we don't remove the thumbnail association with the dataset before the
+        actual deletion of the file, it might throw foreign key integration
+        violation exceptions.
         */
         for (DataFile df : dataFilesToDelete) {
             //  check if this file is being used as the default thumbnail
@@ -113,10 +113,10 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
                 recalculateUNF = true;
             }
         }
-        // we have to merge to update the database but not flush because 
+        // we have to merge to update the database but not flush because
         // we don't want to create two draft versions!
         Dataset tempDataset = ctxt.em().merge(getDataset());
-        
+
         List<DataFile> managedDataFilesToDelete = collectDatafileFromDataset(tempDataset, dataFilesToDelete);
         Map<Long, FileMetadata> fileMetadatasToDelete = collectFileMetadataFromVersion(tempDataset.getEditVersion(), managedDataFilesToDelete);
 
@@ -174,6 +174,6 @@ public class UpdateDatasetVersionCommand extends AbstractDatasetCommand<Dataset>
         return version.getFileMetadatas().stream()
                 .filter(fm -> dataFiles.contains(fm.getDataFile()))
                 .collect(toMap(fm -> fm.getDataFile().getId(), Function.identity()));
-        
+
     }
 }

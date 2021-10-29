@@ -16,6 +16,7 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
+import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
 import io.vavr.control.Option;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,6 +53,9 @@ class FileServiceTest {
 
     @Mock
     private EjbDataverseEngine commandEngine;
+
+    @Mock
+    private DatasetFieldValidationService fieldValidationService;
 
     @BeforeEach
     void setUp() throws CommandException {

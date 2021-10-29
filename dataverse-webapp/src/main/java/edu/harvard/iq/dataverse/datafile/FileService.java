@@ -15,7 +15,8 @@ import edu.harvard.iq.dataverse.persistence.datafile.DataFile;
 import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
-import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
+import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
+import edu.harvard.iq.dataverse.validation.datasetfield.ValidationResult;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
@@ -26,14 +27,6 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
 import javax.validation.ValidationException;
-
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -48,7 +41,7 @@ public class FileService {
     private DataverseRequestServiceBean dvRequestService;
     private EjbDataverseEngine commandEngine;
     private DataFileServiceBean dataFileService;
-
+    private DatasetFieldValidationService fieldValidationService;
 
     // -------------------- CONSTRUCTORS --------------------
 
@@ -57,11 +50,12 @@ public class FileService {
     }
 
     @Inject
-    public FileService(DataverseRequestServiceBean dvRequestService, EjbDataverseEngine commandEngine, 
-                       DataFileServiceBean dataFileServiceBean) {
+    public FileService(DataverseRequestServiceBean dvRequestService, EjbDataverseEngine commandEngine,
+                       DataFileServiceBean dataFileServiceBean, DatasetFieldValidationService fieldValidationService) {
         this.dvRequestService = dvRequestService;
         this.commandEngine = commandEngine;
         this.dataFileService = dataFileServiceBean;
+        this.fieldValidationService = fieldValidationService;
     }
 
     // -------------------- LOGIC --------------------
@@ -80,9 +74,12 @@ public class FileService {
     public Dataset deleteFile(FileMetadata fileToDelete) {
         Dataset datasetFileOwner = fileToDelete.getDataFile().getOwner();
 
-        Set<ConstraintViolation> constraintViolations = fileToDelete.getDatasetVersion().validate();
+        DatasetVersion versionToValidate = fileToDelete.getDatasetVersion();
+        List<ValidationResult> validationResults = fieldValidationService.validateFieldsOfDatasetVersion(versionToValidate);
+        Set<ConstraintViolation<FileMetadata>> constraintViolations = versionToValidate.validateFileMetadata();
 
-        if (!constraintViolations.isEmpty()) {
+        if (!validationResults.isEmpty() || !constraintViolations.isEmpty()) {
+            validationResults.forEach(r -> logger.warn(r.getMessage()));
             constraintViolations.forEach(constraintViolation -> logger.warn(constraintViolation.getMessage()));
             throw new ValidationException("There was validation error during deletion attempt with the dataFile id: " + fileToDelete.getDataFile().getId());
 
@@ -114,9 +111,12 @@ public class FileService {
                                                                                                     provenanceDesciption)))
         .getOrElseThrow(throwable -> new RuntimeException("There was a problem with persisting provenance file", throwable));
 
-        Set<ConstraintViolation> constraintViolations = editedFile.getDatasetVersion().validate();
+        DatasetVersion versionToValidate = editedFile.getDatasetVersion();
+        List<ValidationResult> validationResults = fieldValidationService.validateFieldsOfDatasetVersion(versionToValidate);
+        Set<ConstraintViolation<FileMetadata>> constraintViolations = versionToValidate.validateFileMetadata();
 
-        if (!constraintViolations.isEmpty()) {
+        if (!validationResults.isEmpty() || !constraintViolations.isEmpty()) {
+            validationResults.forEach(r -> logger.warn(r.getMessage()));
             constraintViolations.forEach(constraintViolation -> logger.warn(constraintViolation.getMessage()));
             throw new ValidationException("There was validation error during deletion attempt with the dataFile id: " + editedFile.getDataFile().getId());
         }

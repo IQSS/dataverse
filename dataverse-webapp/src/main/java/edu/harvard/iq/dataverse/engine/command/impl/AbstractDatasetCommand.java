@@ -10,6 +10,7 @@ import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException
 import edu.harvard.iq.dataverse.globalid.DOIDataCiteServiceBean;
 import edu.harvard.iq.dataverse.globalid.FakePidProviderServiceBean;
 import edu.harvard.iq.dataverse.globalid.GlobalIdServiceBean;
+import edu.harvard.iq.dataverse.persistence.datafile.FileMetadata;
 import edu.harvard.iq.dataverse.persistence.dataset.Dataset;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetField;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetFieldUtil;
@@ -17,6 +18,8 @@ import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersion;
 import edu.harvard.iq.dataverse.persistence.dataset.DatasetVersionUser;
 import edu.harvard.iq.dataverse.persistence.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.persistence.user.AuthenticatedUser;
+import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
+import edu.harvard.iq.dataverse.validation.datasetfield.ValidationResult;
 import io.vavr.control.Try;
 
 import javax.validation.ConstraintViolation;
@@ -99,26 +102,34 @@ public abstract class AbstractDatasetCommand<T> extends AbstractCommand<T> {
      * @param dsv     The dataset version whose fields we validate
      * @param lenient when {@code true}, invalid fields are populated with N/A
      *                value.
+     * @param context CommandContext
      * @throws CommandException if and only if {@code lenient=false}, and field
      *                          validation failed.
      */
-    protected void validateOrDie(DatasetVersion dsv, Boolean lenient) {
-        Set<ConstraintViolation> constraintViolations = dsv.validate();
-        if (!constraintViolations.isEmpty()) {
+    protected void validateOrDie(DatasetVersion dsv, Boolean lenient, CommandContext context) {
+        DatasetFieldValidationService fieldValidationService = context.fieldValidationService();
+        List<ValidationResult> validationResults = fieldValidationService.validateFieldsOfDatasetVersion(dsv);
+        if (!validationResults.isEmpty()) {
             if (lenient) {
                 // populate invalid fields with N/A
-                constraintViolations.stream()
-                                    .map(cv -> ((DatasetField) cv.getRootBean()))
-                                    .forEach(f -> f.setFieldValue(DatasetField.NA_VALUE));
+                validationResults.stream()
+                        .map(ValidationResult::getField)
+                        .forEach(f -> f.setFieldValue(DatasetField.NA_VALUE));
 
             } else {
                 // explode with a helpful message
-                String validationMessage = constraintViolations.stream()
-                                                               .map(cv -> cv.getMessage() + " (Invalid value:" + cv.getInvalidValue() + ")")
-                                                               .collect(joining(", ", "Validation Failed: ", "."));
-
+                String validationMessage = validationResults.stream()
+                        .map(r -> String.format("%s (Invalid value:%s)", r.getMessage(), r.getField().getValue()))
+                        .collect(joining(", ", "Validation Failed: ", "."));
                 throw new IllegalCommandException(validationMessage, this);
             }
+        }
+        Set<ConstraintViolation<FileMetadata>> constraintViolations = dsv.validateFileMetadata();
+        if (!constraintViolations.isEmpty()) {
+            String validationMessage = constraintViolations.stream()
+                    .map(v -> String.format("%s: %s", v.getRootBean().getLabel(), v.getMessage()))
+                    .collect(joining(", ", "FileMetadata validation failed: ", "."));
+            throw new IllegalCommandException(validationMessage, this);
         }
     }
 

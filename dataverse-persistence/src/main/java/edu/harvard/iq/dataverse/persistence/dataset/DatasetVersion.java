@@ -1393,46 +1393,11 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
         // }
     }
 
-    public List<ConstraintViolation<DatasetField>> validateRequired() {
-        List<ConstraintViolation<DatasetField>> returnListreturnList = new ArrayList<>();
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
-        for (DatasetField dsf : this.getFlatDatasetFields()) {
-            dsf.setValidationMessage(null); // clear out any existing validation message
-            Set<ConstraintViolation<DatasetField>> constraintViolations = validator.validate(dsf);
-            for (ConstraintViolation<DatasetField> constraintViolation : constraintViolations) {
-                dsf.setValidationMessage(constraintViolation.getMessage());
-                returnListreturnList.add(constraintViolation);
-                break; // currently only support one message, so we can break out of the loop after the first constraint violation
-            }
-
-        }
-        return returnListreturnList;
-    }
-
-    public Set<ConstraintViolation> validate() {
-        Set<ConstraintViolation> returnSet = new HashSet<>();
+    public Set<ConstraintViolation<FileMetadata>> validateFileMetadata() {
+        Set<ConstraintViolation<FileMetadata>> returnSet = new HashSet<>();
 
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
-        for (DatasetField dsf : this.getFlatDatasetFields()) {
-            dsf.setValidationMessage(null); // clear out any existing validation message
-            Set<ConstraintViolation<DatasetField>> constraintViolations = validator.validate(dsf);
-            for (ConstraintViolation<DatasetField> constraintViolation : constraintViolations) {
-                dsf.setValidationMessage(constraintViolation.getMessage());
-                returnSet.add(constraintViolation);
-                break; // currently only support one message, so we can break out of the loop after the first constraint violation
-            }
-            for (DatasetField dsfv : dsf.getDatasetFieldsChildren()) {
-                dsfv.setValidationMessage(null); // clear out any existing validation message
-                Set<ConstraintViolation<DatasetField>> constraintViolations2 = validator.validate(dsfv);
-                for (ConstraintViolation<DatasetField> constraintViolation : constraintViolations2) {
-                    dsfv.setValidationMessage(constraintViolation.getMessage());
-                    returnSet.add(constraintViolation);
-                    break; // currently only support one message, so we can break out of the loop after the first constraint violation
-                }
-            }
-        }
         List<FileMetadata> dsvfileMetadatas = this.getFileMetadatas();
         if (dsvfileMetadatas != null) {
             for (FileMetadata fileMetadata : dsvfileMetadatas) {

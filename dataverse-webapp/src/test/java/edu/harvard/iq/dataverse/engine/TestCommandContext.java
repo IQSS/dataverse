@@ -42,6 +42,7 @@ import edu.harvard.iq.dataverse.search.index.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionFacade;
 
@@ -279,6 +280,11 @@ public class TestCommandContext implements CommandContext {
 
     @Override
     public DownloadDatasetLogDao downloadDatasetDao() {
+        return null;
+    }
+
+    @Override
+    public DatasetFieldValidationService fieldValidationService() {
         return null;
     }
 }

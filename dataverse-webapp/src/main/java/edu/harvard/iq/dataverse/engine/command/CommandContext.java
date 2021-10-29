@@ -42,6 +42,7 @@ import edu.harvard.iq.dataverse.search.index.SolrIndexServiceBean;
 import edu.harvard.iq.dataverse.search.savedsearch.SavedSearchServiceBean;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
+import edu.harvard.iq.dataverse.validation.DatasetFieldValidationService;
 import edu.harvard.iq.dataverse.workflow.WorkflowServiceBean;
 import edu.harvard.iq.dataverse.workflow.execution.WorkflowExecutionFacade;
 
@@ -151,4 +152,6 @@ public interface CommandContext {
     CitationFactory citationFactory();
 
     DownloadDatasetLogDao downloadDatasetDao();
+
+    DatasetFieldValidationService fieldValidationService();
 }
