@@ -41,7 +41,9 @@ public class FileMetadataIT {
     public void setUpDataverse() {
         try {
             // create random test name
-            testName = UUID.randomUUID().toString().substring(0, 8);
+            // "abc" added so the name/alias isn't an integer, a requirement for dataverse creation.
+            // Longer term, consider switching to UtilIT.getRandomDvAlias (and rewriting these tests).
+            testName = "abc" + UUID.randomUUID().toString().substring(0, 8);
             // create user and set token
             token = given()
                     .body("{"

@@ -9,7 +9,13 @@
      xmlns:jsf="http://xmlns.jcp.org/jsf">
 
     <c:set var="page" value="/dataverse/#{DataversePage.dataverse.alias}"/>
-
+    <c:set var="cvocConf" value="#{DatasetPage.getCVocConf()}"/>
+    <p:fragment>
+        <p:autoUpdate/>
+        <ui:repeat value="#{DatasetPage.vocabScripts}" var="vocabScriptUrl">
+          <script defer="defer" src="#{vocabScriptUrl}?version=#{systemConfig.getVersion()}"/>
+        </ui:repeat>
+    </p:fragment>
     <!-- Search Form + Add Data Button -->
     <div class="row panelSearchForm" jsf:rendered="#{!SearchIncludeFragment.solrIsDown}">
         <div class="#{widgetWrapper.widgetView ? 'col-xs-12' : 'col-sm-9'}">
@@ -188,8 +194,12 @@
                     <h:outputText value="#{facetCategory.friendlyName}" styleClass="facetCategoryName"/>
                     <p:dataList value="#{facetCategory.facetLabel}" var="facetLabel" rows="#{DataversePage.getNumberOfFacets(facetCategory.name,5)}">
                         <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{!DataversePage.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink">
-                            <h:outputFormat value="{0} &#40;{1}&#41;">
-                                <f:param value="#{facetLabel.name}"/>
+                            <h:outputText value="#{facetLabel.name}">
+                                <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(facetCategory.datasetFieldTypeId).getString('languages'))}" />
+                                <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).getString('cvoc-url','')}" />
+                                <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).getString('protocol','')}" />
+                            </h:outputText>
+                            <h:outputFormat value=" &#40;{0}&#41;">
                                 <f:param value="#{facetLabel.count}"/>
                             </h:outputFormat>
                             <f:param name="q" value="#{DataversePage.query}"/>
@@ -203,8 +213,12 @@
                         </h:outputLink>
 
                         <h:outputLink value="#{widgetWrapper.wrapURL(page)}" rendered="#{DataversePage.filterQueries.contains(facetLabel.filterQuery)}" styleClass="facetLink facetSelected">
-                            <h:outputFormat value="{0} &#40;{1}&#41;">
-                                <f:param value="#{facetLabel.name}"/>
+                            <h:outputText value="#{facetLabel.name}">
+                                <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(facetCategory.datasetFieldTypeId).getString('languages'))}" />
+                                <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).getString('cvoc-url','')}" />
+                                <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(facetCategory.datasetFieldTypeId).getString('protocol','')}" />
+                            </h:outputText>
+                            <h:outputFormat value=" &#40;{0}&#41;">
                                 <f:param value="#{facetLabel.count}"/>
                             </h:outputFormat>
                             <span class="glyphicon glyphicon-remove"></span>
@@ -341,7 +355,13 @@
                     <ui:param name="filterType" value="#{SearchIncludeFragment.getTypeFromFilterQuery(filterQuery)}"/>
                     <h:outputLink value="#{widgetWrapper.wrapURL(page)}" styleClass="facetLink facetSelected" rendered="#{not empty friendlyNames
                                 and filterType != DataversePage.searchFieldType and filterType != DataversePage.searchFieldSubtree}">
-                        <h:outputText value="#{friendlyNames.get(0)}: #{friendlyNames.get(1)}"/> <span class="glyphicon glyphicon-remove"></span>
+                        <h:outputText value="#{friendlyNames.get(0)}: "/>
+                        <h:outputText value="#{friendlyNames.get(1)}">
+                                <f:passThroughAttribute name="lang" value="#{DatasetPage.getFieldLanguage(cvocConf.get(SearchIncludeFragment.getFieldTypeId(friendlyNames.get(0))).getString('languages'))}" />
+                                <f:passThroughAttribute name="data-cvoc-service-url" value="#{cvocConf.get(SearchIncludeFragment.getFieldTypeId(friendlyNames.get(0))).getString('cvoc-url','')}" />
+                                <f:passThroughAttribute name="data-cvoc-protocol" value="#{cvocConf.get(SearchIncludeFragment.getFieldTypeId(friendlyNames.get(0))).getString('protocol','')}" />
+                        </h:outputText>
+                        <span class="glyphicon glyphicon-remove"></span>
                         <f:param name="q" value="#{SearchIncludeFragment.query}"/>
                         <c:forEach items="#{SearchIncludeFragment.filterQueries}" var="clickedFilterQuery" varStatus="status">
                             <f:param name="fq#{status.index}" value='#{clickedFilterQuery}' disable="#{clickedFilterQuery == filterQuery}"/>
@@ -525,11 +545,13 @@
                             <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{result.inReviewState}"/>
                             <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
                             <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{result.deaccessionedState}"/>
+                            <h:outputText value="#{bundle['embargoed']}" styleClass="label label-primary" rendered="#{SearchIncludeFragment.isActivelyEmbargoed(result)}"/>
+                            <h:outputText value="#{result.externalStatus}" styleClass="label label-info" rendered="#{!empty result.externalStatus and SearchIncludeFragment.canPublishDataset(result.entityId)}"/>
                             <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
                         </div>
                         <div class="card-preview-icon-block text-center">
                             <a href="#{!SearchIncludeFragment.rootDv and !result.isInTree ? result.datasetUrl : widgetWrapper.wrapURL(result.datasetUrl)}" target="#{(!SearchIncludeFragment.rootDv and !result.isInTree and widgetWrapper.widgetView) or result.harvested ? '_blank' : ''}">                               
-                                <img src="#{result.imageUrl}" jsf:rendered="#{!empty result.imageUrl and !result.deaccessionedState}" alt="#{result.title}"/>                               
+                                <img src="#{result.imageUrl}" jsf:rendered="#{!empty result.imageUrl and !result.deaccessionedState}" alt="#{result.title}"/>
                                 <span class="icon-dataset" jsf:rendered="#{empty result.imageUrl or result.deaccessionedState}"/>
                             </a>
                         </div>
@@ -590,6 +612,7 @@
                             <h:outputText value="#{bundle['dataset.versionUI.draft']}" styleClass="label label-primary" rendered="#{result.draftState}"/>
                             <h:outputText value="#{bundle['dataset.versionUI.inReview']}" styleClass="label label-success" rendered="#{result.inReviewState}"/>
                             <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{result.unpublishedState}"/>
+                            <h:outputText value="#{bundle['embargoed']}" styleClass="label label-primary" rendered="#{SearchIncludeFragment.isActivelyEmbargoed(result)}"/>
                             <h:outputText value="#{result.userRole}" styleClass="label label-primary" rendered="#{!empty result.userRole}"/>
                         </div>
 

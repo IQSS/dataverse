@@ -64,6 +64,8 @@ public class DataFileServiceBean implements java.io.Serializable {
     
     @EJB 
     IngestServiceBean ingestService;
+
+    @EJB EmbargoServiceBean embargoService;
     
     @PersistenceContext(unitName = "VDCNet-ejbPU")
     private EntityManager em;
@@ -584,6 +586,8 @@ public class DataFileServiceBean implements java.io.Serializable {
         
         
         int i = 0; 
+        //Cache responses
+        Map<Long, Embargo> embargoMap = new HashMap<Long, Embargo>();
         
         List<Object[]> dataTableResults = em.createNativeQuery("SELECT t0.ID, t0.DATAFILE_ID, t0.UNF, t0.CASEQUANTITY, t0.VARQUANTITY, t0.ORIGINALFILEFORMAT, t0.ORIGINALFILESIZE, t0.ORIGINALFILENAME FROM dataTable t0, dataFile t1, dvObject t2 WHERE ((t0.DATAFILE_ID = t1.ID) AND (t1.ID = t2.ID) AND (t2.OWNER_ID = " + owner.getId() + ")) ORDER BY t0.ID").getResultList();
         
@@ -636,7 +640,7 @@ public class DataFileServiceBean implements java.io.Serializable {
 
         i = 0;
         
-        List<Object[]> fileResults = em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t1.CONTENTTYPE, t0.STORAGEIDENTIFIER, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t1.CHECKSUMTYPE, t1.PREVIOUSDATAFILEID, t1.ROOTDATAFILEID, t0.PROTOCOL, t0.AUTHORITY, t0.IDENTIFIER FROM DVOBJECT t0, DATAFILE t1 WHERE ((t0.OWNER_ID = " + owner.getId() + ") AND ((t1.ID = t0.ID) AND (t0.DTYPE = 'DataFile'))) ORDER BY t0.ID").getResultList(); 
+        List<Object[]> fileResults = em.createNativeQuery("SELECT t0.ID, t0.CREATEDATE, t0.INDEXTIME, t0.MODIFICATIONTIME, t0.PERMISSIONINDEXTIME, t0.PERMISSIONMODIFICATIONTIME, t0.PUBLICATIONDATE, t0.CREATOR_ID, t0.RELEASEUSER_ID, t1.CONTENTTYPE, t0.STORAGEIDENTIFIER, t1.FILESIZE, t1.INGESTSTATUS, t1.CHECKSUMVALUE, t1.RESTRICTED, t1.CHECKSUMTYPE, t1.PREVIOUSDATAFILEID, t1.ROOTDATAFILEID, t0.PROTOCOL, t0.AUTHORITY, t0.IDENTIFIER, t1.EMBARGO_ID FROM DVOBJECT t0, DATAFILE t1 WHERE ((t0.OWNER_ID = " + owner.getId() + ") AND ((t1.ID = t0.ID) AND (t0.DTYPE = 'DataFile'))) ORDER BY t0.ID").getResultList(); 
     
         for (Object[] result : fileResults) {
             Integer file_id = (Integer) result[0];
@@ -758,6 +762,17 @@ public class DataFileServiceBean implements java.io.Serializable {
             String identifier = (String) result[20];
             if (identifier != null) {
                 dataFile.setIdentifier(identifier);
+            }
+            
+            Long embargo_id = (Long) result[21];
+            if (embargo_id != null) {
+                if (embargoMap.containsKey(embargo_id)) {
+                    dataFile.setEmbargo(embargoMap.get(embargo_id));
+                } else {
+                    Embargo e = embargoService.findByEmbargoId(embargo_id);
+                    dataFile.setEmbargo(e);
+                    embargoMap.put(embargo_id, e);
+                }
             }
             
             // TODO: 
@@ -1428,11 +1443,11 @@ public class DataFileServiceBean implements java.io.Serializable {
         switch (doiIdentifierType) {
             case "randomString":               
                 return generateIdentifierAsRandomString(datafile, idServiceBean, prepend);
-            case "sequentialNumber":
+            case "storedProcGenerated":
                 if (doiDataFileFormat.equals(SystemConfig.DataFilePIDFormat.INDEPENDENT.toString())){ 
-                    return generateIdentifierAsIndependentSequentialNumber(datafile, idServiceBean, prepend);
+                    return generateIdentifierFromStoredProcedureIndependent(datafile, idServiceBean, prepend);
                 } else {
-                    return generateIdentifierAsDependentSequentialNumber(datafile, idServiceBean, prepend);
+                    return generateIdentifierFromStoredProcedureDependent(datafile, idServiceBean, prepend);
                 }
             default:
                 /* Should we throw an exception instead?? -- L.A. 4.6.2 */
@@ -1450,24 +1465,24 @@ public class DataFileServiceBean implements java.io.Serializable {
     }
 
 
-    private String generateIdentifierAsIndependentSequentialNumber(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
+    private String generateIdentifierFromStoredProcedureIndependent(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
         String identifier; 
         do {
-            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierAsSequentialNumber");
+            StoredProcedureQuery query = this.em.createNamedStoredProcedureQuery("Dataset.generateIdentifierFromStoredProcedure");
             query.execute();
-            Integer identifierNumeric = (Integer) query.getOutputParameterValue(1); 
+            String identifierFromStoredProcedure = (String) query.getOutputParameterValue(1);
             // some diagnostics here maybe - is it possible to determine that it's failing 
             // because the stored procedure hasn't been created in the database?
-            if (identifierNumeric == null) {
+            if (identifierFromStoredProcedure == null) {
                 return null; 
             }
-            identifier = prepend + identifierNumeric.toString();
+            identifier = prepend + identifierFromStoredProcedure;
         } while (!isGlobalIdUnique(identifier, datafile, idServiceBean));
         
         return identifier;
     }
     
-    private String generateIdentifierAsDependentSequentialNumber(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
+    private String generateIdentifierFromStoredProcedureDependent(DataFile datafile, GlobalIdServiceBean idServiceBean, String prepend) {
         String identifier;
         Long retVal;
 
@@ -1628,5 +1643,14 @@ public class DataFileServiceBean implements java.io.Serializable {
         } catch (Exception ex) {
             return false;
         }
+    }
+    
+    public boolean isActivelyEmbargoed(FileMetadata fm) {
+        return FileUtil.isActivelyEmbargoed(fm);
+    }
+
+    public Embargo findEmbargo(Long id) {
+        DataFile d = find(id);
+        return d.getEmbargo();
     }
 }

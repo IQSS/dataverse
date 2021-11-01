@@ -3,29 +3,48 @@ package edu.harvard.iq.dataverse.util;
 import com.ocpsoft.pretty.PrettyContext;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.Dataset;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.DvObjectContainer;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.providers.builtin.BuiltinAuthenticationProvider;
 import edu.harvard.iq.dataverse.authorization.providers.oauth2.AbstractOAuth2AuthenticationProvider;
+import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
+
 import static edu.harvard.iq.dataverse.datasetutility.FileSizeChecker.bytesToHumanReadable;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.validation.PasswordValidatorUtil;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Year;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Named;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonString;
+import javax.json.JsonValue;
+
 import org.passay.CharacterRule;
 import org.apache.commons.io.IOUtils;
 
@@ -93,6 +112,7 @@ public class SystemConfig {
      * zip file upload.
      */
     private static final int defaultZipUploadFilesLimit = 1000; 
+    private static final long defaultZipDownloadLimit = 104857600L; // 100MB
     private static final int defaultMultipleUploadFilesLimit = 1000;
     private static final int defaultLoginSessionTimeout = 480; // = 8 hours
 
@@ -102,6 +122,9 @@ public class SystemConfig {
     private static final String JVM_TIMER_SERVER_OPTION = "dataverse.timerServer";
     
     private static final long DEFAULT_GUESTBOOK_RESPONSES_DISPLAY_LIMIT = 5000L; 
+    
+    public final static String DEFAULTCURATIONLABELSET = "DEFAULT";
+    public final static String CURATIONLABELSDISABLED = "DISABLED";
     
     public String getVersion() {
         return getVersion(false);
@@ -423,13 +446,12 @@ public class SystemConfig {
 
     /**
      * Download-as-zip size limit.
-     * returns 0 if not specified; 
-     * (the file zipper will then use the default value)
+     * returns defaultZipDownloadLimit if not specified; 
      * set to -1 to disable zip downloads. 
      */
     public long getZipDownloadLimit() {
         String zipLimitOption = settingsService.getValueForKey(SettingsServiceBean.Key.ZipDownloadLimit);
-        return getLongLimitFromStringOrDefault(zipLimitOption, 0L);
+        return getLongLimitFromStringOrDefault(zipLimitOption, defaultZipDownloadLimit);
     }
     
     public int getZipUploadFilesLimit() {
@@ -1017,7 +1039,7 @@ public class SystemConfig {
     public boolean isDataFilePIDSequentialDependent(){
         String doiIdentifierType = settingsService.getValueForKey(SettingsServiceBean.Key.IdentifierGenerationStyle, "randomString");
         String doiDataFileFormat = settingsService.getValueForKey(SettingsServiceBean.Key.DataFilePIDFormat, "DEPENDENT");
-        if (doiIdentifierType.equals("sequentialNumber") && doiDataFileFormat.equals("DEPENDENT")){
+        if (doiIdentifierType.equals("storedProcGenerated") && doiDataFileFormat.equals("DEPENDENT")){
             return true;
         }
         return false;
@@ -1045,6 +1067,11 @@ public class SystemConfig {
     
     }
     
+    public String getHandleAuthHandle() {
+        String handleAuthHandle = settingsService.getValueForKey(SettingsServiceBean.Key.HandleAuthHandle, null);
+        return handleAuthHandle;
+    }
+
     public String getMDCLogPath() {
         String mDCLogPath = settingsService.getValueForKey(SettingsServiceBean.Key.MDCLogPath, null);
         return mDCLogPath;
@@ -1064,4 +1091,70 @@ public class SystemConfig {
         return System.getProperty("doi.dataciterestapiurlstring", System.getProperty("doi.mdcbaseurlstring", "https://api.datacite.org"));
 	}
 
+    public long getDatasetValidationSizeLimit() {
+        String limitEntry = settingsService.getValueForKey(SettingsServiceBean.Key.DatasetChecksumValidationSizeLimit);
+
+        if (limitEntry != null) {
+            try {
+                Long sizeOption = new Long(limitEntry);
+                return sizeOption;
+            } catch (NumberFormatException nfe) {
+                logger.warning("Invalid value for DatasetValidationSizeLimit option? - " + limitEntry);
+            }
+        }
+        // -1 means no limit is set;
+        return -1;
+    }
+
+    public long getFileValidationSizeLimit() {
+        String limitEntry = settingsService.getValueForKey(SettingsServiceBean.Key.DataFileChecksumValidationSizeLimit);
+
+        if (limitEntry != null) {
+            try {
+                Long sizeOption = new Long(limitEntry);
+                return sizeOption;
+            } catch (NumberFormatException nfe) {
+                logger.warning("Invalid value for FileValidationSizeLimit option? - " + limitEntry);
+            }
+        }
+        // -1 means no limit is set;
+        return -1;
+    }
+    public Map<String, String[]> getCurationLabels() {
+        Map<String, String[]> labelMap = new HashMap<String, String[]>();
+
+        try {
+            JsonReader jsonReader = Json.createReader(new StringReader(settingsService.getValueForKey(SettingsServiceBean.Key.AllowedCurationLabels, "")));
+
+            Pattern pattern = Pattern.compile("(^[\\w ]+$)"); // alphanumeric, underscore and whitespace allowed
+
+            JsonObject labelSets = jsonReader.readObject();
+            for (String key : labelSets.keySet()) {
+                JsonArray labels = (JsonArray) labelSets.getJsonArray(key);
+                String[] labelArray = new String[labels.size()];
+                
+                boolean allLabelsOK = true;
+                Iterator<JsonValue> iter = labels.iterator();
+                int i=0;
+                while(iter.hasNext()) {
+                    String label = ((JsonString)iter.next()).getString();
+                    Matcher matcher = pattern.matcher(label);
+                    if (!matcher.matches()) {
+                        logger.warning("Label rejected: " + label + ", Label set " + key + " ignored.");
+                        allLabelsOK = false;
+                        break;
+                    }
+                    labelArray[i] = label;
+                    i++;
+                }
+                if (allLabelsOK) {
+                    labelMap.put(key, labelArray);
+                }
+            }
+        } catch (Exception e) {
+            logger.warning("Unable to parse " + SettingsServiceBean.Key.AllowedCurationLabels.name() + ": " + e.getLocalizedMessage());
+            e.printStackTrace();
+        }
+        return labelMap;
+    }
 }

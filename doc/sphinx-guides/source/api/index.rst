@@ -20,5 +20,6 @@ API Guide
    sword
    client-libraries
    external-tools
+   curation-labels
    apps
    faq
