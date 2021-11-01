@@ -415,6 +415,7 @@
                                             </f:facet>
                                             <f:facet name="targetCaption">#{bundle['dataverse.selected']}</f:facet>
                                             <p:ajax event="transfer" listener="#{DataversePage.onFacetTransfer}" update="editFacets" />
+                                            <f:passThroughAttribute name="aria-disabled" value="#{!DataversePage.dataverse.facetRoot and DataversePage.dataverse.owner != null}"/>
                                         </p:pickList>
                                     </div>
                                 </div>
