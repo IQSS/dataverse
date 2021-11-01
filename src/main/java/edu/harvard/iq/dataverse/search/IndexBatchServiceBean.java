@@ -208,11 +208,7 @@ public class IndexBatchServiceBean {
             try {
                 datasetIndexCount++;
                 logger.info("indexing dataset " + datasetIndexCount + " of " + datasetIds.size() + " (id=" + id + ")");
-                
-                Dataset dataset = datasetService.find(id);
-                Future<String> result = indexService.indexDatasetObjectInNewTransaction(dataset);
-                
-               // Future<String> result = indexService.indexDatasetInNewTransaction(id);
+                Future<String> result = indexService.indexDatasetInNewTransaction(id);
             } catch (Exception e) {
                 //We want to keep running even after an exception so throw some more info into the log
                 datasetFailureCount++;
@@ -275,9 +271,8 @@ public class IndexBatchServiceBean {
         for (Long childId : datasetChildren) {
             try {
                 datasetIndexCount++;
-                Dataset dataset = datasetService.find(childId);
                 logger.info("indexing dataset " + datasetIndexCount + " of " + datasetChildren.size() + " (id=" + childId + ")");
-                indexService.indexDatasetObjectInNewTransaction(dataset);
+                indexService.indexDatasetInNewTransaction(childId);
             } catch (Exception e) {
                 //We want to keep running even after an exception so throw some more info into the log
                 datasetFailureCount++;
