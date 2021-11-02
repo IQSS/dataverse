@@ -697,7 +697,7 @@ public class JsonParserTest {
 
         @Override
         public boolean isTrueForKey(Key key, boolean safeDefaultIfKeyNotFound) {
-            if (key == Key.AllowCustomTerms) {
+            if (key == Key.AllowCustomTermsOfUse) {
                 return false;
             }
             return safeDefaultIfKeyNotFound;

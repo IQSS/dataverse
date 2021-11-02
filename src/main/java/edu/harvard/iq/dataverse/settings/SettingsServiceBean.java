@@ -484,7 +484,7 @@ public class SettingsServiceBean {
         /*
          * Include "Custom Terms" as an item in the license drop-down or not.
          */
-        AllowCustomTerms
+        AllowCustomTermsOfUse
         ;
 
         @Override

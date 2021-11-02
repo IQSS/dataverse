@@ -390,7 +390,7 @@ public class JsonParser {
     private edu.harvard.iq.dataverse.License parseLicense(String licenseNameOrUri) throws JsonParseException {
         if (licenseNameOrUri == null){
             boolean safeDefaultIfKeyNotFound = true;
-            if (settingsService.isTrueForKey(SettingsServiceBean.Key.AllowCustomTerms, safeDefaultIfKeyNotFound)){
+            if (settingsService.isTrueForKey(SettingsServiceBean.Key.AllowCustomTermsOfUse, safeDefaultIfKeyNotFound)){
                 return null;
             } else {
                 return licenseService.getDefault();
