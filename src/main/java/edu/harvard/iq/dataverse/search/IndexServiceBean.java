@@ -996,7 +996,7 @@ public class IndexServiceBean {
                     datafileSolrInputDocument.addField(SearchFields.TYPE, "files");
                     datafileSolrInputDocument.addField(SearchFields.CATEGORY_OF_DATAVERSE, dataset.getDataverseContext().getIndexableCategoryName());
                     if(end!=null) {
-                        datafileSolrInputDocument.addField(SearchFields.EMBARGO_END_DATE, (end==null) ? null : end.toEpochDay()); 
+                        datafileSolrInputDocument.addField(SearchFields.EMBARGO_END_DATE, end.toEpochDay()); 
                     }
                     
                     /* Full-text indexing using Apache Tika */
@@ -1268,7 +1268,9 @@ public class IndexServiceBean {
                     }
                 }
             }
-            solrInputDocument.addField(SearchFields.EMBARGO_END_DATE, (embargoEndDate==null) ? null : embargoEndDate.toEpochDay());
+            if(embargoEndDate!=null) {
+              solrInputDocument.addField(SearchFields.EMBARGO_END_DATE, embargoEndDate.toEpochDay());
+            }
         }
         
         try {
