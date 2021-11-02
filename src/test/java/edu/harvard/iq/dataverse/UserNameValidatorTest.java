@@ -70,6 +70,6 @@ public class UserNameValidatorTest {
 
     @Test
     public void testIsUserNameValid() {
-        assertEquals(isValid, UserNameValidator.isUserNameValid(userName, null));
+        assertEquals(isValid, UserNameValidator.isUserNameValid(userName));
     }
 }
