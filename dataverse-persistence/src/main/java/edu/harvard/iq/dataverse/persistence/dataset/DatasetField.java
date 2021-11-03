@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
  * @author skraffmiller
  */
 @Entity
-@ValidateDatasetFieldType
 @Table(indexes = {@Index(columnList = "datasetfieldtype_id"), @Index(columnList = "datasetversion_id"),
         @Index(columnList = "template_id")})
 public class DatasetField implements Serializable {

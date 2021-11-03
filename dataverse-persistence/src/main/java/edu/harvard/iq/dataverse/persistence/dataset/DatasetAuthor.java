@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package edu.harvard.iq.dataverse.persistence.dataset;
 
 import org.apache.commons.lang3.StringUtils;
@@ -15,75 +9,75 @@ import java.util.regex.Pattern;
 /**
  * @author skraffmiller
  */
-
 public class DatasetAuthor {
 
-    public DatasetAuthor() {
-    }
+    /**
+     * https://support.orcid.org/hc/en-us/articles/360006897674-Structure-of-the-ORCID-Identifier
+     */
+    final public static String REGEX_ORCID = "^\\d{4}-\\d{4}-\\d{4}-(\\d{4}|\\d{3}X)$";
+    final public static String REGEX_ISNI = "^\\d*$";
+    final public static String REGEX_LCNA = "^[a-z]+\\d+$";
+    final public static String REGEX_VIAF = "^\\d*$";
+
+    /**
+     * GND regex from https://www.wikidata.org/wiki/Property:P227
+     */
+    final public static String REGEX_GND = "^1[01]?\\d{7}[0-9X]|[47]\\d{6}-\\d|[1-9]\\d{0,7}-[0-9X]|3\\d{7}[0-9X]$";
+
+    public static Comparator<DatasetAuthor> displayOrderComparator = Comparator.comparingInt(DatasetAuthor::getDisplayOrder);
+
+
+    private DatasetVersion datasetVersion;
+
+    private DatasetField name;
+
+    private int displayOrder;
+
+    private DatasetField affiliation;
+
+    private DatasetField affiliationIdentifier;
+
+    private String idType;
+
+    private String idValue;
+
+    // -------------------- CONSTRUCTORS --------------------
+
+    public DatasetAuthor() { }
 
     public DatasetAuthor(int displayOrder) {
         this.displayOrder = displayOrder;
     }
 
-    public static Comparator<DatasetAuthor> DisplayOrder = new Comparator<DatasetAuthor>() {
-        @Override
-        public int compare(DatasetAuthor o1, DatasetAuthor o2) {
-            return o1.getDisplayOrder() - o2.getDisplayOrder();
-        }
-    };
 
-    private DatasetVersion datasetVersion;
+
+    // -------------------- GETTERS --------------------
 
     public DatasetVersion getDatasetVersion() {
         return datasetVersion;
     }
 
-    public void setDatasetVersion(DatasetVersion metadata) {
-        this.datasetVersion = metadata;
-    }
-
-    //@NotBlank(message = "Please enter an Author Name for your dataset.")
-    private DatasetField name;
-
     public DatasetField getName() {
         return this.name;
     }
-
-    public void setName(DatasetField name) {
-        this.name = name;
-    }
-
-    private int displayOrder;
 
     public int getDisplayOrder() {
         return this.displayOrder;
     }
 
-    public void setDisplayOrder(int displayOrder) {
-        this.displayOrder = displayOrder;
-    }
-
-    private DatasetField affiliation;
-
     public DatasetField getAffiliation() {
         return this.affiliation;
     }
-
-    public void setAffiliation(DatasetField affiliation) {
-        this.affiliation = affiliation;
-    }
-
-    private DatasetField affiliationIdentifier;
 
     public DatasetField getAffiliationIdentifier() {
         return affiliationIdentifier;
     }
 
-    public void setAffiliationIdentifier(DatasetField affiliationIdentifier) {
-        this.affiliationIdentifier = affiliationIdentifier;
+    public String getIdValue() {
+        return idValue;
     }
 
-    private String idType;
+    // -------------------- LOGIC --------------------
 
     public String getIdType() {
         if ((this.idType == null || this.idType.isEmpty()) && (this.idValue != null && !this.idValue.isEmpty())) {
@@ -93,38 +87,11 @@ public class DatasetAuthor {
         }
     }
 
-    public void setIdType(String idType) {
-        this.idType = idType;
-    }
-
-    private String idValue;
-
-
-    public String getIdValue() {
-        return idValue;
-    }
-
-    public void setIdValue(String idValue) {
-        this.idValue = idValue;
-    }
-
     public boolean isEmpty() {
         return ((affiliation == null || StringUtils.isBlank(affiliation.getValue()))
                 && (name == null || StringUtils.isBlank(name.getValue()))
         );
     }
-
-    /**
-     * https://support.orcid.org/hc/en-us/articles/360006897674-Structure-of-the-ORCID-Identifier
-     */
-    final public static String REGEX_ORCID = "^\\d{4}-\\d{4}-\\d{4}-(\\d{4}|\\d{3}X)$";
-    final public static String REGEX_ISNI = "^\\d*$";
-    final public static String REGEX_LCNA = "^[a-z]+\\d+$";
-    final public static String REGEX_VIAF = "^\\d*$";
-    /**
-     * GND regex from https://www.wikidata.org/wiki/Property:P227
-     */
-    final public static String REGEX_GND = "^1[01]?\\d{7}[0-9X]|[47]\\d{6}-\\d|[1-9]\\d{0,7}-[0-9X]|3\\d{7}[0-9X]$";
 
     /**
      * Each author identification type has its own valid pattern/syntax.
@@ -135,30 +102,29 @@ public class DatasetAuthor {
 
     public String getIdentifierAsUrl() {
         if (idType != null && !idType.isEmpty() && idValue != null && !idValue.isEmpty()) {
-            DatasetFieldValidator datasetFieldValueValidator = new DatasetFieldValidator();
             switch (idType) {
                 case "ORCID":
-                    if (datasetFieldValueValidator.isValidAuthorIdentifier(idValue, getValidPattern(REGEX_ORCID))) {
+                    if (isValidAuthorIdentifier(idValue, getValidPattern(REGEX_ORCID))) {
                         return "https://orcid.org/" + idValue;
                     }
                     break;
                 case "ISNI":
-                    if (datasetFieldValueValidator.isValidAuthorIdentifier(idValue, getValidPattern(REGEX_ISNI))) {
+                    if (isValidAuthorIdentifier(idValue, getValidPattern(REGEX_ISNI))) {
                         return "http://www.isni.org/isni/" + idValue;
                     }
                     break;
                 case "LCNA":
-                    if (datasetFieldValueValidator.isValidAuthorIdentifier(idValue, getValidPattern(REGEX_LCNA))) {
+                    if (isValidAuthorIdentifier(idValue, getValidPattern(REGEX_LCNA))) {
                         return "http://id.loc.gov/authorities/names/" + idValue;
                     }
                     break;
                 case "VIAF":
-                    if (datasetFieldValueValidator.isValidAuthorIdentifier(idValue, getValidPattern(REGEX_VIAF))) {
+                    if (isValidAuthorIdentifier(idValue, getValidPattern(REGEX_VIAF))) {
                         return "https://viaf.org/viaf/" + idValue;
                     }
                     break;
                 case "GND":
-                    if (datasetFieldValueValidator.isValidAuthorIdentifier(idValue, getValidPattern(REGEX_GND))) {
+                    if (isValidAuthorIdentifier(idValue, getValidPattern(REGEX_GND))) {
                         return "https://d-nb.info/gnd/" + idValue;
                     }
                     break;
@@ -169,4 +135,39 @@ public class DatasetAuthor {
         return null;
     }
 
+    // -------------------- PRIVATE --------------------
+
+    private boolean isValidAuthorIdentifier(String userInput, Pattern pattern) {
+        return pattern.matcher(userInput).matches();
+    }
+
+    // -------------------- SETTERS --------------------
+
+    public void setDatasetVersion(DatasetVersion metadata) {
+        this.datasetVersion = metadata;
+    }
+
+    public void setName(DatasetField name) {
+        this.name = name;
+    }
+
+    public void setDisplayOrder(int displayOrder) {
+        this.displayOrder = displayOrder;
+    }
+
+    public void setAffiliation(DatasetField affiliation) {
+        this.affiliation = affiliation;
+    }
+
+    public void setAffiliationIdentifier(DatasetField affiliationIdentifier) {
+        this.affiliationIdentifier = affiliationIdentifier;
+    }
+
+    public void setIdValue(String idValue) {
+        this.idValue = idValue;
+    }
+
+    public void setIdType(String idType) {
+        this.idType = idType;
+    }
 }

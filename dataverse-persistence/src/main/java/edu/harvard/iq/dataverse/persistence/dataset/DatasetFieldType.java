@@ -85,8 +85,6 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
     /** A watermark to be displayed in the UI. */
     private String watermark;
 
-    private String validationFormat;
-
     @OneToMany(mappedBy = "datasetFieldType")
     private Set<DataverseFacet> dataverseFacets;
 
@@ -214,10 +212,6 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
 
     public boolean isFacetable() {
         return facetable;
-    }
-
-    public String getValidationFormat() {
-        return validationFormat;
     }
 
     public boolean isDisplayOnCreate() {
@@ -516,10 +510,6 @@ public class DatasetFieldType implements Serializable, Comparable<DatasetFieldTy
 
     public void setFacetable(boolean facetable) {
         this.facetable = facetable;
-    }
-
-    public void setValidationFormat(String validationFormat) {
-        this.validationFormat = validationFormat;
     }
 
     public void setDisplayOnCreate(boolean displayOnCreate) {

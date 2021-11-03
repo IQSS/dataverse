@@ -61,7 +61,7 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static edu.harvard.iq.dataverse.persistence.dataset.DatasetAuthor.DisplayOrder;
+import static edu.harvard.iq.dataverse.persistence.dataset.DatasetAuthor.displayOrderComparator;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -771,7 +771,7 @@ public class DatasetVersion implements Serializable, JpaEntity<Long>, DatasetVer
             }
         }
 
-        Collections.sort(retList, DisplayOrder);
+        Collections.sort(retList, displayOrderComparator);
         return retList;
     }
 
